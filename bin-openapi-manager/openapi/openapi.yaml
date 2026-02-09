@@ -191,6 +191,9 @@ tags:
   - name: Timeline
     description: Operations related to timeline events
 
+  - name: RAG
+    description: Operations related to RAG (Retrieval-Augmented Generation)
+
 
 components:
 
@@ -3868,6 +3871,54 @@ components:
           description: Timestamp when deleted
 
 
+#########################################
+# RAG Manager
+#########################################
+    RagManagerDocType:
+      type: string
+      description: Type of documentation source
+      enum:
+        - devdoc
+        - openapi
+        - design
+        - guideline
+      x-enum-varnames:
+        - RagManagerDocTypeDevDoc
+        - RagManagerDocTypeOpenAPI
+        - RagManagerDocTypeDesign
+        - RagManagerDocTypeGuideline
+
+    RagManagerSource:
+      type: object
+      description: A source reference in the query response
+      properties:
+        source_file:
+          type: string
+          description: Path to the source file
+        section_title:
+          type: string
+          description: Title of the relevant section
+        doc_type:
+          $ref: '#/components/schemas/RagManagerDocType'
+        relevance_score:
+          type: number
+          format: double
+          description: Relevance score of the source
+
+    RagManagerQueryResponse:
+      type: object
+      description: Response from a RAG query
+      properties:
+        answer:
+          type: string
+          description: Generated answer based on retrieved documentation
+        sources:
+          type: array
+          description: List of source references used to generate the answer
+          items:
+            $ref: '#/components/schemas/RagManagerSource'
+
+
 ###########################################################################################################################
 # Path
 ###########################################################################################################################
@@ -4286,6 +4337,9 @@ paths:
 
   /timelines/calls/{call_id}/pcap:
     $ref: './paths/timelines/call_pcap.yaml'
+
+  /rags/query:
+    $ref: './paths/rags/query.yaml'
 
   /ws:
     $ref: './paths/ws/main.yaml'

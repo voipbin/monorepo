@@ -289,3 +289,11 @@ func (r *requestHandler) sendRequestContact(ctx context.Context, uri string, met
 
 	return r.sendRequest(ctx, commonoutline.QueueNameContactRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestRag send a request to the rag-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestRag(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameRagRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
