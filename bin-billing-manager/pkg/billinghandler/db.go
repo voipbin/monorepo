@@ -52,6 +52,7 @@ func (h *billingHandler) Create(
 
 	if errCreate := h.db.BillingCreate(ctx, c); errCreate != nil {
 		log.Errorf("Could not create a billing. err: %v", errCreate)
+		return nil, fmt.Errorf("could not create a billing. err: %v", errCreate)
 	}
 	promBillingCreateTotal.WithLabelValues(string(c.ReferenceType)).Inc()
 

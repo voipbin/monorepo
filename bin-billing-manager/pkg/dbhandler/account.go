@@ -244,6 +244,49 @@ func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, ba
 	return nil
 }
 
+// AccountSubtractBalanceWithCheck atomically checks the balance is sufficient and subtracts the amount.
+// Returns ErrInsufficientBalance if the account balance is less than the amount.
+func (h *handler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// lock the row and read current balance
+	var balance float32
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
+	if err := row.Scan(&balance); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not read balance. err: %v", err)
+	}
+
+	// check sufficient balance
+	if balance < amount {
+		return ErrInsufficientBalance
+	}
+
+	// deduct
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance = balance - ?, tm_update = ? WHERE id = ?",
+		amount, h.utilHandler.TimeNow(), accountID.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not subtract balance. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not commit. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.accountUpdateToCache(ctx, accountID)
+
+	return nil
+}
+
 // AccountSubtractBalance substract the value from the account balance
 func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
 	// prepare

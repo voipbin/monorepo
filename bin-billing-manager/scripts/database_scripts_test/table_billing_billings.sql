@@ -27,4 +27,5 @@ create table billing_billings(
 create index idx_billing_billings_customer_id on billing_billings(customer_id);
 create index idx_billing_billings_account_id on billing_billings(account_id);
 create index idx_billing_billings_reference_id on billing_billings(reference_id);
+create unique index idx_billings_ref_type_id_active on billing_billings(reference_type, reference_id, tm_delete);
 create index idx_billing_billings_create on billing_billings(tm_create);

@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // BillingStart starts the billing
@@ -31,6 +32,28 @@ func (h *billingHandler) BillingStart(
 		"reference_id":     referenceID,
 		"tm_billing_start": tmBillingStart,
 	})
+
+	// idempotency check — return early if billing already exists for this reference
+	existing, err := h.db.BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID)
+	if err != nil && err != dbhandler.ErrNotFound {
+		// real DB error (connection timeout, etc.) — do NOT fall through to create
+		return errors.Wrap(err, "could not check for existing billing")
+	}
+	if err == nil && existing != nil {
+		if existing.Status == billing.StatusEnd {
+			log.WithField("billing", existing).Debugf("Billing already completed. Skipping. reference_type: %s, reference_id: %s", referenceType, referenceID)
+			return nil
+		}
+		// billing exists but not completed — re-run end phase for immediate-end types
+		log.WithField("billing", existing).Debugf("Billing exists but not completed. status: %s", existing.Status)
+		switch referenceType {
+		case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
+			if errBilling := h.BillingEnd(ctx, existing, tmBillingStart, source, destination); errBilling != nil {
+				return errors.Wrap(errBilling, "could not complete billing on retry")
+			}
+		}
+		return nil
+	}
 
 	// get account
 	a, err := h.accountHandler.GetByCustomerID(ctx, customerID)
@@ -69,12 +92,10 @@ func (h *billingHandler) BillingStart(
 
 	if flagEnd {
 		log.Debugf("The end flag has set. End the billing now. reference_id: %s", referenceID)
-		go func() {
-			if errBilling := h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination); errBilling != nil {
-				// note: we could not bill the cost. But we write the log only here.
-				log.Errorf("Could not end the billing. err: %v", errBilling)
-			}
-		}()
+		if errBilling := h.BillingEnd(ctx, tmp, tmBillingStart, source, destination); errBilling != nil {
+			log.Errorf("Could not end the billing. err: %v", errBilling)
+			return errors.Wrap(errBilling, "could not end the billing")
+		}
 	}
 
 	return nil
@@ -116,11 +137,15 @@ func (h *billingHandler) BillingEnd(
 	}
 	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
 
-	// update account balance
-	ac, err := h.accountHandler.SubtractBalance(ctx, tmp.AccountID, tmp.CostTotal)
+	// update account balance with atomic check
+	ac, err := h.accountHandler.SubtractBalanceWithCheck(ctx, tmp.AccountID, tmp.CostTotal)
 	if err != nil {
-		log.Errorf("Could not substract the balance from the account. err: %v", err)
-		return errors.Wrap(err, "could not substract the account balance from the account")
+		log.Errorf("Could not subtract the balance from the account. Reverting billing status. err: %v", err)
+		// revert status so a retry can re-attempt the full BillingEnd flow
+		if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
+			log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
+		}
+		return errors.Wrap(err, "could not subtract the account balance from the account")
 	}
 	log.WithField("account", ac).Debugf("Updated account balance. account_id: %s, balance: %f", ac.ID, ac.Balance)
 

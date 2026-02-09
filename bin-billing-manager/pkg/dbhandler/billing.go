@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -17,6 +18,11 @@ import (
 const (
 	billingsTable = "billing_billings"
 )
+
+// tmDeleteDefault is the sentinel value used for active (non-deleted) billing records.
+// This enables the unique index on (reference_type, reference_id, tm_delete) to work,
+// since MySQL treats NULL != NULL and would not prevent duplicates with NULL values.
+var tmDeleteDefault = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 // billingGetFromRow gets the billing from the row.
 func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
@@ -33,7 +39,10 @@ func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 	c.TMCreate = h.utilHandler.TimeNow()
 	c.TMUpdate = nil
-	c.TMDelete = nil
+	// Use sentinel value (not nil) so the unique index on
+	// (reference_type, reference_id, tm_delete) can enforce uniqueness.
+	// MySQL treats NULL != NULL, so NULL values would bypass the constraint.
+	c.TMDelete = &tmDeleteDefault
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -47,6 +56,10 @@ func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 
 	_, err = h.db.Exec(query, args...)
 	if err != nil {
+		// handle duplicate key error gracefully (MySQL error 1062)
+		if isDuplicateKeyError(err) {
+			return nil
+		}
 		return fmt.Errorf("BillingCreate: could not execute query. err: %v", err)
 	}
 
@@ -132,6 +145,53 @@ func (h *handler) billingGetByReferenceIDFromDB(ctx context.Context, referenceID
 	if err != nil {
 		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not scan row. err: %v", err)
 	}
+
+	return res, nil
+}
+
+// billingGetByReferenceTypeAndIDFromDB returns an active billing matching the reference type and id.
+func (h *handler) billingGetByReferenceTypeAndIDFromDB(ctx context.Context, referenceType billing.ReferenceType, referenceID uuid.UUID) (*billing.Billing, error) {
+	cols := commondatabasehandler.GetDBFields(billing.Billing{})
+
+	query, args, err := sq.Select(cols...).
+		From(billingsTable).
+		Where(sq.Eq{
+			"reference_type": string(referenceType),
+			"reference_id":   referenceID.Bytes(),
+		}).
+		Where(sq.Or{sq.Expr("tm_delete IS NULL"), sq.Eq{"tm_delete": tmDeleteDefault}}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.billingGetFromRow(rows)
+	if err != nil {
+		return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: could not scan row. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// BillingGetByReferenceTypeAndID returns an active billing matching the reference type and id.
+func (h *handler) BillingGetByReferenceTypeAndID(ctx context.Context, referenceType billing.ReferenceType, referenceID uuid.UUID) (*billing.Billing, error) {
+	res, err := h.billingGetByReferenceTypeAndIDFromDB(ctx, referenceType, referenceID)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = h.billingSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -329,4 +389,14 @@ func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
 	_ = h.billingUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// isDuplicateKeyError checks if the error is a MySQL duplicate key error (1062)
+// or a SQLite unique constraint violation.
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "Duplicate entry") || strings.Contains(errMsg, "UNIQUE constraint failed")
 }

@@ -382,6 +382,39 @@ Follow these standards:
 
 **For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
+### Database Handling Rules
+
+**CRITICAL: All database operations MUST follow these conventions. No exceptions.**
+
+#### 1. Model Structs with `db:` Tags (MANDATORY)
+Every database table MUST have a corresponding Go model struct with `db:` tags.
+- Location: `models/<entity>/<entity>.go`
+- UUID fields MUST use `db:"column_name,uuid"` tag
+- JSON fields MUST use `db:"column_name,json"` tag
+- NO loose variables for scanning rows (`var id []byte` is FORBIDDEN)
+
+#### 2. Squirrel Query Builder (MANDATORY)
+All SQL queries MUST be built using the squirrel query builder (`sq.Select`, `sq.Insert`, `sq.Update`, `sq.Delete`).
+- Raw SQL strings are FORBIDDEN except for computed expressions that squirrel cannot express (e.g., `cost_per_unit * ?`)
+- String concatenation for table/column names is FORBIDDEN
+- When raw SQL is unavoidable, document WHY with a comment
+
+#### 3. commondatabasehandler Utilities (MANDATORY)
+- **INSERT**: Use `commondatabasehandler.PrepareFields(struct)` → `sq.Insert(table).SetMap(fields)`
+- **SELECT**: Use `commondatabasehandler.GetDBFields(struct)` → `sq.Select(cols...)` → `commondatabasehandler.ScanRow(rows, &struct)`
+- **UPDATE**: Use `sq.Update(table).SetMap(preparedFields).Where(...)`
+- Manual `rows.Scan(&var1, &var2, ...)` is FORBIDDEN — always use `ScanRow`
+
+#### 4. DB Operations in `dbhandler/` Package Only (MANDATORY)
+- All database operations MUST live in `pkg/dbhandler/<entity>.go`
+- All methods MUST be part of the `DBHandler` interface in `pkg/dbhandler/main.go`
+- NO direct `*sql.DB` access outside of `dbhandler/` — handlers receive `DBHandler` interface only
+- Business logic packages (billinghandler, accounthandler, etc.) MUST NOT import `database/sql`
+
+#### 5. Field Type for Updates (MANDATORY)
+- Each model MUST define a `Field` type in `models/<entity>/field.go`
+- Update methods accept `map[<entity>.Field]any` for type-safe field updates
+
 ### Debug Logging for Retrieved Data
 
 **CRITICAL: Always add debug logs when retrieving data from other services or databases.**
