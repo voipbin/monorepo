@@ -103,6 +103,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-rag-manager:
+    type: boolean
+    default: false
+
   run-bin-registrar-manager:
     type: boolean
     default: false
@@ -497,6 +501,23 @@ workflows:
           <<: *context_production
           requires:
             - bin-queue-manager-build
+
+  bin-rag-manager:
+    when: << pipeline.parameters.run-bin-rag-manager >>
+    jobs:
+      - build-approval:
+          type: approval
+      - bin-rag-manager-test:
+          requires:
+            - build-approval
+      - bin-rag-manager-build:
+          <<: *context_production
+          requires:
+            - bin-rag-manager-test
+      - bin-rag-manager-release:
+          <<: *context_production
+          requires:
+            - bin-rag-manager-build
 
   bin-registrar-manager:
     when: << pipeline.parameters.run-bin-registrar-manager >>
@@ -1242,6 +1263,33 @@ jobs:
           project-repository: bin-queue-manager
           image-name: queue-manager
           source-directory: bin-queue-manager
+
+  # bin-rag-manager
+  bin-rag-manager-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: bin-rag-manager
+
+  bin-rag-manager-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          source-directory: bin-rag-manager
+          project-id: voipbin
+          project-repository: bin-rag-manager
+
+  bin-rag-manager-release:
+    docker: *gcloud_image
+    resource_class: small
+    steps:
+      - docker-release:
+          source-directory: bin-rag-manager
+          image-name: rag-manager
+          project-id: voipbin
+          project-repository: bin-rag-manager
 
   # bin-registrar-manager
   bin-registrar-manager-test:
