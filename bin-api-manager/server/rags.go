@@ -11,7 +11,7 @@ import (
 func (h *server) PostRagsQuery(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostRagsQuery",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmp, exists := c.Get("agent")
