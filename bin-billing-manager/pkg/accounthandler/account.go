@@ -45,6 +45,23 @@ func (h *accountHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 	return res, nil
 }
 
+// UpdatePlanType updates the account's plan type
+func (h *accountHandler) UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "UpdatePlanType",
+		"id":        id,
+		"plan_type": planType,
+	})
+
+	res, err := h.dbUpdatePlanType(ctx, id, planType)
+	if err != nil {
+		log.Errorf("Could not update the account plan type. err: %v", err)
+		return nil, errors.Wrap(err, "could not update the account plan type")
+	}
+
+	return res, nil
+}
+
 // UpdatePaymentInfo updates the account's basic info
 func (h *accountHandler) UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{

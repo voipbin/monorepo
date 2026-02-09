@@ -252,3 +252,18 @@ func (mr *MockAccountHandlerMockRecorder) UpdatePaymentInfo(ctx, id, paymentType
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaymentInfo", reflect.TypeOf((*MockAccountHandler)(nil).UpdatePaymentInfo), ctx, id, paymentType, paymentMethod)
 }
+
+// UpdatePlanType mocks base method.
+func (m *MockAccountHandler) UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePlanType", ctx, id, planType)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePlanType indicates an expected call of UpdatePlanType.
+func (mr *MockAccountHandlerMockRecorder) UpdatePlanType(ctx, id, planType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlanType", reflect.TypeOf((*MockAccountHandler)(nil).UpdatePlanType), ctx, id, planType)
+}
