@@ -30,6 +30,7 @@ type AccountHandler interface {
 	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error)
 	UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error)
+	UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error)
 
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 

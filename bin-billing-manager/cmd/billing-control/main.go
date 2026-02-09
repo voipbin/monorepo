@@ -64,6 +64,7 @@ func initCommand() *cobra.Command {
 	cmdAccount.AddCommand(cmdAccountList())
 	cmdAccount.AddCommand(cmdAccountUpdate())
 	cmdAccount.AddCommand(cmdAccountUpdatePaymentInfo())
+	cmdAccount.AddCommand(cmdAccountUpdatePlanType())
 	cmdAccount.AddCommand(cmdAccountDelete())
 	cmdAccount.AddCommand(cmdAccountAddBalance())
 	cmdAccount.AddCommand(cmdAccountSubtractBalance())
@@ -208,6 +209,47 @@ func runAccountUpdatePaymentInfo(cmd *cobra.Command, args []string) error {
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update account payment info")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccountUpdatePlanType() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-plan-type",
+		Short: "Update account plan type",
+		RunE:  runAccountUpdatePlanType,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.String("plan-type", "", "Plan type (free, basic, professional, unlimited) (required)")
+
+	return cmd
+}
+
+func runAccountUpdatePlanType(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	planType := account.PlanType(viper.GetString("plan-type"))
+	switch planType {
+	case account.PlanTypeFree, account.PlanTypeBasic, account.PlanTypeProfessional, account.PlanTypeUnlimited:
+		// valid
+	default:
+		return fmt.Errorf("invalid plan-type: %q (must be one of: free, basic, professional, unlimited)", planType)
+	}
+
+	res, err := accountHandler.UpdatePlanType(context.Background(), targetID, planType)
+	if err != nil {
+		return errors.Wrap(err, "failed to update account plan type")
 	}
 
 	return printJSON(res)
