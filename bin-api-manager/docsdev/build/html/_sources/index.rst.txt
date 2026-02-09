@@ -60,6 +60,7 @@ Welcome to VoIPBIN's documentation!
 
    number
    agent
+   contact
    customer
    billing_account
    storage
