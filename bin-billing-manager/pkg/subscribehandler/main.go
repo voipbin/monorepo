@@ -125,7 +125,8 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	if errProcess := h.processEvent(m); errProcess != nil {
 		log.Errorf("Could not consume the subscribed event message correctly. Persisting for retry. err: %v", errProcess)
 		if errSave := h.failedEventHandler.Save(context.Background(), m, errProcess); errSave != nil {
-			log.Errorf("CRITICAL: Could not save failed event. Data loss possible. err: %v", errSave)
+			log.Errorf("CRITICAL: Could not save failed event. Data loss possible. Returning error to NACK message. err: %v", errSave)
+			return errSave
 		}
 	}
 

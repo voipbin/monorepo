@@ -106,7 +106,7 @@ func Test_BillingStart(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check - no existing billing
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
 
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
@@ -213,7 +213,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check - no existing billing
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
 
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
@@ -386,6 +386,7 @@ func Test_BillingStart_idempotent(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d3333333-0000-0000-0000-000000000001"),
 				},
+				Status:        billing.StatusEnd,
 				ReferenceType: billing.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("d2222222-0000-0000-0000-000000000001"),
 			},
@@ -484,6 +485,8 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, gomock.Any(), tt.tmBillingEnd).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(nil, fmt.Errorf("insufficient balance"))
+			// expect status revert to progressing after subtract failure
+			mockDB.EXPECT().BillingSetStatus(ctx, tt.billing.ID, billing.StatusProgressing).Return(nil)
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {

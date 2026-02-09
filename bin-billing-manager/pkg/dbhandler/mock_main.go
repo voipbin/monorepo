@@ -13,6 +13,7 @@ import (
 	context "context"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
+	failedevent "monorepo/bin-billing-manager/models/failedevent"
 	reflect "reflect"
 	time "time"
 
@@ -301,4 +302,61 @@ func (m *MockDBHandler) BillingUpdate(ctx context.Context, id uuid.UUID, fields 
 func (mr *MockDBHandlerMockRecorder) BillingUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingUpdate", reflect.TypeOf((*MockDBHandler)(nil).BillingUpdate), ctx, id, fields)
+}
+
+// FailedEventCreate mocks base method.
+func (m *MockDBHandler) FailedEventCreate(ctx context.Context, c *failedevent.FailedEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailedEventCreate", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FailedEventCreate indicates an expected call of FailedEventCreate.
+func (mr *MockDBHandlerMockRecorder) FailedEventCreate(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailedEventCreate", reflect.TypeOf((*MockDBHandler)(nil).FailedEventCreate), ctx, c)
+}
+
+// FailedEventDelete mocks base method.
+func (m *MockDBHandler) FailedEventDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailedEventDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FailedEventDelete indicates an expected call of FailedEventDelete.
+func (mr *MockDBHandlerMockRecorder) FailedEventDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailedEventDelete", reflect.TypeOf((*MockDBHandler)(nil).FailedEventDelete), ctx, id)
+}
+
+// FailedEventListPendingRetry mocks base method.
+func (m *MockDBHandler) FailedEventListPendingRetry(ctx context.Context, now time.Time) ([]*failedevent.FailedEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailedEventListPendingRetry", ctx, now)
+	ret0, _ := ret[0].([]*failedevent.FailedEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FailedEventListPendingRetry indicates an expected call of FailedEventListPendingRetry.
+func (mr *MockDBHandlerMockRecorder) FailedEventListPendingRetry(ctx, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailedEventListPendingRetry", reflect.TypeOf((*MockDBHandler)(nil).FailedEventListPendingRetry), ctx, now)
+}
+
+// FailedEventUpdate mocks base method.
+func (m *MockDBHandler) FailedEventUpdate(ctx context.Context, id uuid.UUID, fields map[failedevent.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FailedEventUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FailedEventUpdate indicates an expected call of FailedEventUpdate.
+func (mr *MockDBHandlerMockRecorder) FailedEventUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailedEventUpdate", reflect.TypeOf((*MockDBHandler)(nil).FailedEventUpdate), ctx, id, fields)
 }

@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/models/failedevent"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
 )
 
@@ -38,6 +39,11 @@ type DBHandler interface {
 	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error
 	BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error
 	BillingDelete(ctx context.Context, id uuid.UUID) error
+
+	FailedEventCreate(ctx context.Context, c *failedevent.FailedEvent) error
+	FailedEventListPendingRetry(ctx context.Context, now time.Time) ([]*failedevent.FailedEvent, error)
+	FailedEventUpdate(ctx context.Context, id uuid.UUID, fields map[failedevent.Field]any) error
+	FailedEventDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

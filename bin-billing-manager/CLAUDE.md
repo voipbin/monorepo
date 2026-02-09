@@ -112,6 +112,7 @@ go generate ./...
 # - pkg/accounthandler/main.go -> mock_main.go
 # - pkg/billinghandler/main.go -> mock_main.go
 # - pkg/dbhandler/main.go -> mock_main.go
+# - pkg/failedeventhandler/main.go -> mock_main.go
 # - pkg/listenhandler/main.go -> mock_main.go
 # - pkg/subscribehandler/main.go -> mock_main.go
 ```
@@ -162,9 +163,10 @@ cmd/billing-manager/main.go
 **Layer Responsibilities:**
 - `models/account/`: Account data structures (Account, PaymentType, PaymentMethod)
 - `models/billing/`: Billing data structures (Billing, ReferenceType, Status, default costs)
+- `models/failedevent/`: Failed event data structures for retry persistence (FailedEvent, Status, Field)
 - `pkg/accounthandler/`: Account operations (balance management, payment info, validation)
 - `pkg/billinghandler/`: Billing operations (create/track billing records, process events)
-- `pkg/dbhandler/`: Database operations for accounts and billings
+- `pkg/dbhandler/`: Database operations for accounts, billings, and failed events
 - `pkg/cachehandler/`: Redis caching for account lookups
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/accounts`, `/v1/billings`)
 - `pkg/subscribehandler/`: Event consumption from other services for billing triggers
@@ -310,7 +312,8 @@ Service exposes metrics on configured endpoint (default `:2112/metrics`):
 ## Database Schema
 
 While not explicitly in code, the service expects these tables:
-- `accounts`: Billing accounts with balance tracking
-- `billings`: Billing records for all billable events
+- `billing_accounts`: Billing accounts with balance tracking
+- `billing_billings`: Billing records for all billable events
+- `billing_failed_events`: Failed event records for retry persistence (hard delete on success)
 
-Both tables use soft delete pattern with `tm_delete` column.
+The accounts and billings tables use soft delete pattern with `tm_delete` column. The failed events table uses hard delete (records are removed after successful retry).

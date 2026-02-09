@@ -88,7 +88,7 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeCall, tt.call.ID).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeCall, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
@@ -285,7 +285,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 				targetRefID := uuid.NewV5(tt.message.ID, fmt.Sprintf("target-%d", i))
 
 				// idempotency check
-				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, targetRefID).Return(nil, fmt.Errorf("not found"))
+				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, targetRefID).Return(nil, dbhandler.ErrNotFound)
 
 				// BillingStart
 				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(tt.responseAccount, nil)
@@ -371,7 +371,7 @@ func Test_EventNMNumberCreated(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumber, tt.number.ID).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumber, tt.number.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
@@ -457,7 +457,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, tt.number.ID).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, tt.number.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)

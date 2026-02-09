@@ -136,9 +136,9 @@ func Test_processEventRun_failure_save_also_fails(t *testing.T) {
 			mockBilling.EXPECT().EventCMCallHangup(gomock.Any(), gomock.Any()).Return(processErr)
 			mockFailed.EXPECT().Save(gomock.Any(), tt.event, gomock.Any()).Return(fmt.Errorf("save failed"))
 
-			// processEventRun always returns nil to avoid nacking the message
-			if err := h.processEventRun(tt.event); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			// processEventRun returns the save error so the message is NACKed
+			if err := h.processEventRun(tt.event); err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
 			}
 		})
 	}

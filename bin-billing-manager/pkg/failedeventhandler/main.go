@@ -4,7 +4,6 @@ package failedeventhandler
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -15,6 +14,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-billing-manager/models/failedevent"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // EventProcessor is a callback function that processes a sock event.
@@ -28,13 +30,12 @@ type FailedEventHandler interface {
 
 type failedEventHandler struct {
 	utilHandler    utilhandler.UtilHandler
-	db             *sql.DB
+	db             dbhandler.DBHandler
 	eventProcessor EventProcessor
 }
 
 const (
-	failedEventsTable = "billing_failed_events"
-	maxRetries        = 5
+	maxRetries = 5
 )
 
 var (
@@ -77,7 +78,7 @@ func init() {
 }
 
 // NewFailedEventHandler creates a new FailedEventHandler.
-func NewFailedEventHandler(db *sql.DB, processor EventProcessor) FailedEventHandler {
+func NewFailedEventHandler(db dbhandler.DBHandler, processor EventProcessor) FailedEventHandler {
 	return &failedEventHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		db:             db,
@@ -102,18 +103,19 @@ func (h *failedEventHandler) Save(ctx context.Context, event *sock.Event, proces
 	now := time.Now().UTC()
 	nextRetry := now.Add(1 * time.Minute) // first retry in 1 minute
 
-	q := `
-	INSERT INTO ` + failedEventsTable + `
-		(id, event_type, event_publisher, event_data, error_message, retry_count, max_retries, next_retry_at, status, tm_create, tm_update)
-	VALUES
-		(?, ?, ?, ?, ?, 0, ?, ?, 'pending', ?, ?)
-	`
+	fe := &failedevent.FailedEvent{
+		ID:             id,
+		EventType:      string(event.Type),
+		EventPublisher: event.Publisher,
+		EventData:      string(eventData),
+		ErrorMessage:   processingErr.Error(),
+		RetryCount:     0,
+		MaxRetries:     maxRetries,
+		NextRetryAt:    &nextRetry,
+		Status:         failedevent.StatusPending,
+	}
 
-	_, err = h.db.ExecContext(ctx, q,
-		id.Bytes(), event.Type, event.Publisher, eventData,
-		processingErr.Error(), maxRetries, nextRetry, now, now,
-	)
-	if err != nil {
+	if err := h.db.FailedEventCreate(ctx, fe); err != nil {
 		log.Errorf("Could not save failed event. err: %v", err)
 		return fmt.Errorf("could not save failed event. err: %v", err)
 	}
@@ -130,43 +132,29 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 
 	now := time.Now().UTC()
 
-	rows, err := h.db.QueryContext(ctx,
-		"SELECT id, event_type, event_publisher, event_data, retry_count, max_retries FROM "+failedEventsTable+" WHERE status IN ('pending', 'retrying') AND next_retry_at <= ?",
-		now,
-	)
+	events, err := h.db.FailedEventListPendingRetry(ctx, now)
 	if err != nil {
 		return fmt.Errorf("could not query failed events. err: %v", err)
 	}
-	defer func() { _ = rows.Close() }()
 
-	for rows.Next() {
-		var id []byte
-		var eventType, publisher string
-		var eventData []byte
-		var retryCount, maxRetryCount int
-
-		if err := rows.Scan(&id, &eventType, &publisher, &eventData, &retryCount, &maxRetryCount); err != nil {
-			log.Errorf("Could not scan failed event row. err: %v", err)
-			continue
-		}
-
+	for _, fe := range events {
 		// unmarshal the event
 		var event sock.Event
-		if err := json.Unmarshal(eventData, &event); err != nil {
+		if err := json.Unmarshal([]byte(fe.EventData), &event); err != nil {
 			log.Errorf("Could not unmarshal failed event. err: %v", err)
-			h.markExhausted(ctx, id, eventType)
+			h.markExhausted(ctx, fe)
 			continue
 		}
 
 		// attempt retry
 		if err := h.eventProcessor(&event); err != nil {
 			promFailedEventRetryTotal.WithLabelValues("failure").Inc()
-			newRetryCount := retryCount + 1
+			newRetryCount := fe.RetryCount + 1
 
-			if newRetryCount >= maxRetryCount {
-				log.Errorf("Failed event exhausted all retries. event_type: %s, publisher: %s", eventType, publisher)
-				promFailedEventExhaustedTotal.WithLabelValues(eventType).Inc()
-				h.markExhausted(ctx, id, eventType)
+			if newRetryCount >= fe.MaxRetries {
+				log.Errorf("Failed event exhausted all retries. event_type: %s, publisher: %s", fe.EventType, fe.EventPublisher)
+				promFailedEventExhaustedTotal.WithLabelValues(fe.EventType).Inc()
+				h.markExhausted(ctx, fe)
 				continue
 			}
 
@@ -174,11 +162,12 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 			backoff := time.Duration(math.Pow(5, float64(newRetryCount))) * time.Minute
 			nextRetry := now.Add(backoff)
 
-			_, errUpdate := h.db.ExecContext(ctx,
-				"UPDATE "+failedEventsTable+" SET retry_count = ?, next_retry_at = ?, status = 'retrying', tm_update = ? WHERE id = ?",
-				newRetryCount, nextRetry, now, id,
-			)
-			if errUpdate != nil {
+			fields := map[failedevent.Field]any{
+				failedevent.FieldRetryCount:  newRetryCount,
+				failedevent.FieldNextRetryAt: nextRetry,
+				failedevent.FieldStatus:      failedevent.StatusRetrying,
+			}
+			if errUpdate := h.db.FailedEventUpdate(ctx, fe.ID, fields); errUpdate != nil {
 				log.Errorf("Could not update failed event retry. err: %v", errUpdate)
 			}
 			log.Infof("Retrying failed event. retry_count: %d, next_retry_at: %s", newRetryCount, nextRetry)
@@ -187,24 +176,21 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 
 		// success - delete the record
 		promFailedEventRetryTotal.WithLabelValues("success").Inc()
-		_, errDelete := h.db.ExecContext(ctx, "DELETE FROM "+failedEventsTable+" WHERE id = ?", id)
-		if errDelete != nil {
+		if errDelete := h.db.FailedEventDelete(ctx, fe.ID); errDelete != nil {
 			log.Errorf("Could not delete retried event. err: %v", errDelete)
 		}
-		log.Infof("Successfully retried failed event. event_type: %s, publisher: %s", eventType, publisher)
+		log.Infof("Successfully retried failed event. event_type: %s, publisher: %s", fe.EventType, fe.EventPublisher)
 	}
 
 	return nil
 }
 
 // markExhausted marks a failed event as exhausted.
-func (h *failedEventHandler) markExhausted(ctx context.Context, id []byte, eventType string) {
-	now := time.Now().UTC()
-	_, err := h.db.ExecContext(ctx,
-		"UPDATE "+failedEventsTable+" SET status = 'exhausted', tm_update = ? WHERE id = ?",
-		now, id,
-	)
-	if err != nil {
+func (h *failedEventHandler) markExhausted(ctx context.Context, fe *failedevent.FailedEvent) {
+	fields := map[failedevent.Field]any{
+		failedevent.FieldStatus: failedevent.StatusExhausted,
+	}
+	if err := h.db.FailedEventUpdate(ctx, fe.ID, fields); err != nil {
 		logrus.Errorf("Could not mark failed event as exhausted. err: %v", err)
 	}
 }

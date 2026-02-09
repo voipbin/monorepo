@@ -22,7 +22,7 @@ def upgrade():
             id              binary(16),
             event_type      varchar(255) NOT NULL,
             event_publisher varchar(255) NOT NULL,
-            event_data      mediumblob   NOT NULL,
+            event_data      text         NOT NULL,
             error_message   text         NOT NULL,
 
             retry_count     int          NOT NULL DEFAULT 0,

@@ -10,10 +10,10 @@ create table billing_failed_events(
   status          varchar(32) not null default 'pending',
 
   -- timestamps
-  tm_create datetime(6) not null,
-  tm_update datetime(6) not null,
+  tm_create datetime(6),
+  tm_update datetime(6),
 
   primary key(id)
 );
 
-create index idx_failed_events_status_retry on billing_failed_events(status, next_retry_at);
+create index idx_billing_failed_events_status_next_retry on billing_failed_events(status, next_retry_at);

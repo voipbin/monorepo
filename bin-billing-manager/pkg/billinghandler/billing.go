@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // BillingStart starts the billing
@@ -34,8 +35,23 @@ func (h *billingHandler) BillingStart(
 
 	// idempotency check — return early if billing already exists for this reference
 	existing, err := h.db.BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID)
+	if err != nil && err != dbhandler.ErrNotFound {
+		// real DB error (connection timeout, etc.) — do NOT fall through to create
+		return errors.Wrap(err, "could not check for existing billing")
+	}
 	if err == nil && existing != nil {
-		log.WithField("billing", existing).Debugf("Billing already exists for reference. Skipping creation. reference_type: %s, reference_id: %s", referenceType, referenceID)
+		if existing.Status == billing.StatusEnd {
+			log.WithField("billing", existing).Debugf("Billing already completed. Skipping. reference_type: %s, reference_id: %s", referenceType, referenceID)
+			return nil
+		}
+		// billing exists but not completed — re-run end phase for immediate-end types
+		log.WithField("billing", existing).Debugf("Billing exists but not completed. status: %s", existing.Status)
+		switch referenceType {
+		case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
+			if errBilling := h.BillingEnd(ctx, existing, tmBillingStart, source, destination); errBilling != nil {
+				return errors.Wrap(errBilling, "could not complete billing on retry")
+			}
+		}
 		return nil
 	}
 
@@ -124,7 +140,11 @@ func (h *billingHandler) BillingEnd(
 	// update account balance with atomic check
 	ac, err := h.accountHandler.SubtractBalanceWithCheck(ctx, tmp.AccountID, tmp.CostTotal)
 	if err != nil {
-		log.Errorf("Could not subtract the balance from the account. err: %v", err)
+		log.Errorf("Could not subtract the balance from the account. Reverting billing status. err: %v", err)
+		// revert status so a retry can re-attempt the full BillingEnd flow
+		if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
+			log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
+		}
 		return errors.Wrap(err, "could not subtract the account balance from the account")
 	}
 	log.WithField("account", ac).Debugf("Updated account balance. account_id: %s, balance: %f", ac.ID, ac.Balance)

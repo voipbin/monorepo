@@ -127,7 +127,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run subscribe (with failed event handler)
-	if err := runSubscribe(sqlDB, sockHandler, accountHandler, billingHandler); err != nil {
+	if err := runSubscribe(db, sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
@@ -135,7 +135,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sqlDB *sql.DB, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
@@ -163,7 +163,7 @@ func runSubscribe(sqlDB *sql.DB, sockHandler sockhandler.SockHandler, accoutHand
 	)
 
 	// create failed event handler with the subscribe handler's process function
-	failedHandler = failedeventhandler.NewFailedEventHandler(sqlDB, subscribehandler.GetEventProcessor(subHandler))
+	failedHandler = failedeventhandler.NewFailedEventHandler(db, subscribehandler.GetEventProcessor(subHandler))
 
 	// set the failed event handler on the subscribe handler
 	subscribehandler.SetFailedEventHandler(subHandler, failedHandler)
@@ -204,6 +204,7 @@ func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		return err
 	}
 
 	return nil
