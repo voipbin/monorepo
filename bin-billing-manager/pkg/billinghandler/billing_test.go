@@ -85,6 +85,51 @@ func Test_BillingStart(t *testing.T) {
 				TMBillingEnd:     nil,
 			},
 		},
+		{
+			name: "call_extension",
+
+			customerID:     uuid.FromStringOrNil("f1111111-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCallExtension,
+			referenceID:    uuid.FromStringOrNil("f2222222-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "1001",
+			},
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "1002",
+			},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f3333333-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("f1111111-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("f4444444-0000-0000-0000-000000000001"),
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f4444444-0000-0000-0000-000000000001"),
+				},
+			},
+
+			expectBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f4444444-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("f1111111-0000-0000-0000-000000000001"),
+				},
+				AccountID:        uuid.FromStringOrNil("f3333333-0000-0000-0000-000000000001"),
+				Status:           billing.StatusProgressing,
+				ReferenceType:    billing.ReferenceTypeCallExtension,
+				ReferenceID:      uuid.FromStringOrNil("f2222222-0000-0000-0000-000000000001"),
+				CostPerUnit:      billing.DefaultCostPerUnitReferenceTypeCallExtension,
+				CostTotal:        0,
+				BillingUnitCount: 0,
+				TMBillingStart:   &tmBillingStart,
+				TMBillingEnd:     nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -174,6 +219,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeSMS,
 				ReferenceID:   uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
 			},
 
 			expectBilling: &billing.Billing{
@@ -281,6 +327,8 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 10.004,
 				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
@@ -314,6 +362,8 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeSMS,
 				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
@@ -348,6 +398,91 @@ func Test_BillingEnd(t *testing.T) {
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
 			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+
+			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_BillingEnd_call_extension(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		billing      *billing.Billing
+		tmBillingEnd *time.Time
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+
+		responseBilling *billing.Billing
+
+		expectBillingUnitCount float32
+	}{
+		{
+			name: "call_extension skips balance deduction",
+
+			billing: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fa111111-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("fa222222-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("fa333333-0000-0000-0000-000000000001"),
+				ReferenceType:  billing.ReferenceTypeCallExtension,
+				TMBillingStart: &tmBillingStart,
+			},
+			tmBillingEnd: &tmBillingEnd,
+			source: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "1001",
+			},
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "1002",
+			},
+
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fa111111-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("fa222222-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("fa333333-0000-0000-0000-000000000001"),
+				ReferenceType:  billing.ReferenceTypeCallExtension,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCallExtension,
+				CostTotal:      0,
+				TMBillingStart: &tmBillingStart,
+			},
+
+			expectBillingUnitCount: 10.004,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
+
+			// SubtractBalanceWithCheck should NOT be called — cost is zero
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -459,6 +594,8 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("e2222222-0000-0000-0000-000000000001"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 10.004,
 				TMBillingStart: &tmBillingStart,
 			},
 		},

@@ -70,6 +70,10 @@ func (h *billingHandler) BillingStart(
 		costPerUnit = billing.DefaultCostPerUnitReferenceTypeCall
 		flagEnd = false
 
+	case billing.ReferenceTypeCallExtension:
+		costPerUnit = billing.DefaultCostPerUnitReferenceTypeCallExtension
+		flagEnd = false
+
 	case billing.ReferenceTypeSMS:
 		costPerUnit = billing.DefaultCostPerUnitReferenceTypeSMS
 		flagEnd = true
@@ -117,7 +121,7 @@ func (h *billingHandler) BillingEnd(
 	// calculate billing unit count
 	var billingUnitCount time.Duration
 	switch bill.ReferenceType {
-	case billing.ReferenceTypeCall:
+	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension:
 		if bill.TMBillingStart != nil && tmBillingEnd != nil {
 			billingUnitCount = time.Duration(tmBillingEnd.Sub(*bill.TMBillingStart))
 		}
@@ -137,17 +141,20 @@ func (h *billingHandler) BillingEnd(
 	}
 	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
 
-	// update account balance with atomic check
-	ac, err := h.accountHandler.SubtractBalanceWithCheck(ctx, tmp.AccountID, tmp.CostTotal)
-	if err != nil {
-		log.Errorf("Could not subtract the balance from the account. Reverting billing status. err: %v", err)
-		// revert status so a retry can re-attempt the full BillingEnd flow
-		if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
-			log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
+	// skip balance deduction when cost is zero (e.g. call_extension)
+	if tmp.CostTotal > 0 {
+		// update account balance with atomic check
+		ac, err := h.accountHandler.SubtractBalanceWithCheck(ctx, tmp.AccountID, tmp.CostTotal)
+		if err != nil {
+			log.Errorf("Could not subtract the balance from the account. Reverting billing status. err: %v", err)
+			// revert status so a retry can re-attempt the full BillingEnd flow
+			if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
+				log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
+			}
+			return errors.Wrap(err, "could not subtract the account balance from the account")
 		}
-		return errors.Wrap(err, "could not subtract the account balance from the account")
+		log.WithField("account", ac).Debugf("Updated account balance. account_id: %s, balance: %f", ac.ID, ac.Balance)
 	}
-	log.WithField("account", ac).Debugf("Updated account balance. account_id: %s, balance: %f", ac.ID, ac.Balance)
 
 	return nil
 }

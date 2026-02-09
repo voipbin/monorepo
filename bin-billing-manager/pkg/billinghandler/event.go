@@ -19,11 +19,36 @@ import (
 
 // EventCMCallProgressing handles the call-manager's call_progressing event
 func (h *billingHandler) EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error {
-	if errBilling := h.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeCall, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
+	refType := getReferenceTypeForCall(c)
+
+	if errBilling := h.BillingStart(ctx, c.CustomerID, refType, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
 		return errors.Wrap(errBilling, "could not start a billing")
 	}
 
 	return nil
+}
+
+// getReferenceTypeForCall determines the billing reference type based on the call's direction and address type.
+// Incoming calls with a PSTN source (TypeTel) are charged; outgoing calls with a PSTN destination (TypeTel) are charged.
+// All other call types (extension, agent, sip, conference, line) are free (call_extension).
+func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
+	switch c.Direction {
+	case cmcall.DirectionIncoming:
+		if c.Source.Type == commonaddress.TypeTel {
+			return billing.ReferenceTypeCall
+		}
+		return billing.ReferenceTypeCallExtension
+
+	case cmcall.DirectionOutgoing:
+		if c.Destination.Type == commonaddress.TypeTel {
+			return billing.ReferenceTypeCall
+		}
+		return billing.ReferenceTypeCallExtension
+
+	default:
+		// safe fallback: charge it
+		return billing.ReferenceTypeCall
+	}
 }
 
 // EventCMCallHangup handles the call-manager's call_hangup event

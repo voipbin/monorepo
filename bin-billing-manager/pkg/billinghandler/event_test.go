@@ -67,6 +67,39 @@ func Test_EventCMCallProgressing(t *testing.T) {
 				TMBillingEnd:  nil,
 			},
 		},
+		{
+			name: "outgoing call to extension creates call_extension billing",
+
+			call: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb111111-0000-0000-0000-000000000001"),
+				},
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "1002",
+				},
+			},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb222222-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
+
+			expectBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
+				},
+				AccountID:     uuid.FromStringOrNil("fb222222-0000-0000-0000-000000000001"),
+				Status:        billing.StatusProgressing,
+				ReferenceType: billing.ReferenceTypeCallExtension,
+				ReferenceID:   uuid.FromStringOrNil("fb111111-0000-0000-0000-000000000001"),
+				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCallExtension,
+				TMBillingEnd:  nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -88,7 +121,7 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeCall, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.expectBilling.ReferenceType, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
@@ -138,6 +171,8 @@ func Test_EventCMCallHangup(t *testing.T) {
 				},
 				ReferenceType:  billing.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 60,
 				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
@@ -245,6 +280,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 					ReferenceType: billing.ReferenceTypeSMS,
 					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
 					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
+					CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
 					TMBillingEnd:  nil,
 				},
 				{
@@ -256,6 +292,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 					ReferenceType: billing.ReferenceTypeSMS,
 					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
 					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
+					CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
 					TMBillingEnd:  nil,
 				},
 			},
@@ -347,6 +384,7 @@ func Test_EventNMNumberCreated(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeNumber,
 				ReferenceID:   uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
+				CostTotal:     billing.DefaultCostPerUnitReferenceTypeNumber,
 				TMBillingEnd:  nil,
 			},
 		},
@@ -433,6 +471,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeNumberRenew,
 				ReferenceID:   uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
+				CostTotal:     billing.DefaultCostPerUnitReferenceTypeNumber,
 				TMBillingEnd:  nil,
 			},
 		},
@@ -473,6 +512,154 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 
 			if err := h.EventNMNumberRenewed(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_getReferenceTypeForCall(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call *cmcall.Call
+
+		expectReferenceType billing.ReferenceType
+	}{
+		{
+			name: "incoming call from PSTN",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCall,
+		},
+		{
+			name: "incoming call from extension",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeExtension,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "incoming call from agent",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "incoming call from sip",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeSIP,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to PSTN",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCall,
+		},
+		{
+			name: "outgoing call to extension",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeExtension,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to agent",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to sip",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeSIP,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to conference",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeConference,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to line",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeLine,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to email",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeEmail,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "incoming call with no source type",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeNone,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "unknown direction defaults to call",
+			call: &cmcall.Call{
+				Direction: "",
+			},
+			expectReferenceType: billing.ReferenceTypeCall,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := getReferenceTypeForCall(tt.call)
+			if res != tt.expectReferenceType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectReferenceType, res)
 			}
 		})
 	}
