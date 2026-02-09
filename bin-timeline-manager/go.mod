@@ -4,6 +4,8 @@ go 1.25.3
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-rag-manager => ../bin-rag-manager
+
 replace monorepo/bin-contact-manager => ../bin-contact-manager
 
 require (

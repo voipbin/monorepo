@@ -593,6 +593,14 @@ const (
 	QueueManagerQueuecallStatusWaiting    QueueManagerQueuecallStatus = "waiting"
 )
 
+// Defines values for RagManagerDocType.
+const (
+	RagManagerDocTypeDesign    RagManagerDocType = "design"
+	RagManagerDocTypeDevDoc    RagManagerDocType = "devdoc"
+	RagManagerDocTypeGuideline RagManagerDocType = "guideline"
+	RagManagerDocTypeOpenAPI   RagManagerDocType = "openapi"
+)
+
 // Defines values for RegistrarManagerAuthType.
 const (
 	RegistrarManagerAuthTypeBasic RegistrarManagerAuthType = "basic"
@@ -2811,6 +2819,33 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
 type QueueManagerQueuecallStatus string
 
+// RagManagerDocType Type of documentation source
+type RagManagerDocType string
+
+// RagManagerQueryResponse Response from a RAG query
+type RagManagerQueryResponse struct {
+	// Answer Generated answer based on retrieved documentation
+	Answer *string `json:"answer,omitempty"`
+
+	// Sources List of source references used to generate the answer
+	Sources *[]RagManagerSource `json:"sources,omitempty"`
+}
+
+// RagManagerSource A source reference in the query response
+type RagManagerSource struct {
+	// DocType Type of documentation source
+	DocType *RagManagerDocType `json:"doc_type,omitempty"`
+
+	// RelevanceScore Relevance score of the source
+	RelevanceScore *float64 `json:"relevance_score,omitempty"`
+
+	// SectionTitle Title of the relevant section
+	SectionTitle *string `json:"section_title,omitempty"`
+
+	// SourceFile Path to the source file
+	SourceFile *string `json:"source_file,omitempty"`
+}
+
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
 
@@ -4612,6 +4647,18 @@ type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
 }
 
+// PostRagsQueryJSONBody defines parameters for PostRagsQuery.
+type PostRagsQueryJSONBody struct {
+	// DocTypes Optional list of document types to search. If empty, all types are searched.
+	DocTypes *[]RagManagerDocType `json:"doc_types,omitempty"`
+
+	// Query The natural language question to ask.
+	Query string `json:"query"`
+
+	// TopK Number of top relevant chunks to retrieve. Defaults to server configuration if not specified.
+	TopK *int `json:"top_k,omitempty"`
+}
+
 // GetRecordingsParams defines parameters for GetRecordings.
 type GetRecordingsParams struct {
 	// PageSize The size of results.
@@ -5360,6 +5407,9 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
 
+// PostRagsQueryJSONRequestBody defines body for PostRagsQuery for application/json ContentType.
+type PostRagsQueryJSONRequestBody PostRagsQueryJSONBody
+
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody
 
@@ -6049,6 +6099,9 @@ type ServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(c *gin.Context, id string)
+	// Query RAG documentation system
+	// (POST /rags/query)
+	PostRagsQuery(c *gin.Context)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(c *gin.Context, id string)
@@ -11297,6 +11350,19 @@ func (siw *ServerInterfaceWrapper) PutQueuesIdTagIds(c *gin.Context) {
 	siw.Handler.PutQueuesIdTagIds(c, id)
 }
 
+// PostRagsQuery operation middleware
+func (siw *ServerInterfaceWrapper) PostRagsQuery(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostRagsQuery(c)
+}
+
 // GetRecordingfilesId operation middleware
 func (siw *ServerInterfaceWrapper) GetRecordingfilesId(c *gin.Context) {
 
@@ -13818,6 +13884,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/queues/:id", wrapper.PutQueuesId)
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
+	router.POST(options.BaseURL+"/rags/query", wrapper.PostRagsQuery)
 	router.GET(options.BaseURL+"/recordingfiles/:id", wrapper.GetRecordingfilesId)
 	router.GET(options.BaseURL+"/recordings", wrapper.GetRecordings)
 	router.DELETE(options.BaseURL+"/recordings/:id", wrapper.DeleteRecordingsId)
@@ -17751,6 +17818,31 @@ func (response PutQueuesIdTagIds200JSONResponse) VisitPutQueuesIdTagIdsResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostRagsQueryRequestObject struct {
+	Body *PostRagsQueryJSONRequestBody
+}
+
+type PostRagsQueryResponseObject interface {
+	VisitPostRagsQueryResponse(w http.ResponseWriter) error
+}
+
+type PostRagsQuery200JSONResponse RagManagerQueryResponse
+
+func (response PostRagsQuery200JSONResponse) VisitPostRagsQueryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRagsQuery400Response struct {
+}
+
+func (response PostRagsQuery400Response) VisitPostRagsQueryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type GetRecordingfilesIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -20264,6 +20356,9 @@ type StrictServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(ctx context.Context, request PutQueuesIdTagIdsRequestObject) (PutQueuesIdTagIdsResponseObject, error)
+	// Query RAG documentation system
+	// (POST /rags/query)
+	PostRagsQuery(ctx context.Context, request PostRagsQueryRequestObject) (PostRagsQueryResponseObject, error)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(ctx context.Context, request GetRecordingfilesIdRequestObject) (GetRecordingfilesIdResponseObject, error)
@@ -26584,6 +26679,39 @@ func (sh *strictHandler) PutQueuesIdTagIds(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutQueuesIdTagIdsResponseObject); ok {
 		if err := validResponse.VisitPutQueuesIdTagIdsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostRagsQuery operation middleware
+func (sh *strictHandler) PostRagsQuery(ctx *gin.Context) {
+	var request PostRagsQueryRequestObject
+
+	var body PostRagsQueryJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostRagsQuery(ctx, request.(PostRagsQueryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostRagsQuery")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostRagsQueryResponseObject); ok {
+		if err := validResponse.VisitPostRagsQueryResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

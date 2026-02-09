@@ -75,6 +75,8 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
+	rmrag "monorepo/bin-rag-manager/pkg/raghandler"
+
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -861,6 +863,9 @@ type ServiceHandler interface {
 	TimelineEventList(ctx context.Context, a *amagent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
 	TimelineSIPAnalysisGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*tmsipmessage.SIPAnalysisResponse, error)
 	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)
+
+	// rag handlers
+	RagQuery(ctx context.Context, a *amagent.Agent, query string, docTypes []string, topK int) (*rmrag.QueryResponse, error)
 
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
 }

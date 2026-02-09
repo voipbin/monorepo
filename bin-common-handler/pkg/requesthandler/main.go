@@ -91,6 +91,8 @@ import (
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	tmtts "monorepo/bin-tts-manager/models/tts"
 
+	rmrag "monorepo/bin-rag-manager/pkg/raghandler"
+
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -1251,6 +1253,9 @@ type RequestHandler interface {
 	// timeline-manager sip
 	TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPAnalysisResponse, error)
 	TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) ([]byte, error)
+
+	// rag-manager query
+	RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*rmrag.QueryResponse, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error

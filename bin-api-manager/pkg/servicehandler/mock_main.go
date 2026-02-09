@@ -48,6 +48,7 @@ import (
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
+	raghandler "monorepo/bin-rag-manager/pkg/raghandler"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
@@ -3005,6 +3006,21 @@ func (m *MockServiceHandler) QueuecallList(ctx context.Context, a *agent.Agent, 
 func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallList), ctx, a, size, token)
+}
+
+// RagQuery mocks base method.
+func (m *MockServiceHandler) RagQuery(ctx context.Context, a *agent.Agent, query string, docTypes []string, topK int) (*raghandler.QueryResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagQuery", ctx, a, query, docTypes, topK)
+	ret0, _ := ret[0].(*raghandler.QueryResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagQuery indicates an expected call of RagQuery.
+func (mr *MockServiceHandlerMockRecorder) RagQuery(ctx, a, query, docTypes, topK any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagQuery", reflect.TypeOf((*MockServiceHandler)(nil).RagQuery), ctx, a, query, docTypes, topK)
 }
 
 // RecordingDelete mocks base method.

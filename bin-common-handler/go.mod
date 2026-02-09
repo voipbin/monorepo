@@ -38,6 +38,8 @@ replace monorepo/bin-pipecat-manager => ../bin-pipecat-manager
 
 replace monorepo/bin-queue-manager => ../bin-queue-manager
 
+replace monorepo/bin-rag-manager => ../bin-rag-manager
+
 replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
@@ -91,6 +93,7 @@ require (
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da
+	monorepo/bin-rag-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
@@ -121,6 +124,7 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
+	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect

@@ -1,0 +1,35 @@
+post:
+  summary: Query RAG documentation system
+  description: Submit a natural language query to the RAG documentation system and receive an answer grounded in the indexed documentation sources.
+  tags:
+    - RAG
+  requestBody:
+    description: Query parameters for the RAG system.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - query
+          properties:
+            query:
+              type: string
+              description: The natural language question to ask.
+            doc_types:
+              type: array
+              description: Optional list of document types to search. If empty, all types are searched.
+              items:
+                $ref: '#/components/schemas/RagManagerDocType'
+            top_k:
+              type: integer
+              description: Number of top relevant chunks to retrieve. Defaults to server configuration if not specified.
+  responses:
+    '200':
+      description: Successful query response with answer and sources.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerQueryResponse'
+    '400':
+      description: Invalid request.
