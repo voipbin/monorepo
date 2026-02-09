@@ -103,7 +103,7 @@ func (h *failedEventHandler) Save(ctx context.Context, event *sock.Event, proces
 	nextRetry := now.Add(1 * time.Minute) // first retry in 1 minute
 
 	q := `
-	INSERT INTO billing_failed_events
+	INSERT INTO ` + failedEventsTable + `
 		(id, event_type, event_publisher, event_data, error_message, retry_count, max_retries, next_retry_at, status, tm_create, tm_update)
 	VALUES
 		(?, ?, ?, ?, ?, 0, ?, ?, 'pending', ?, ?)
@@ -131,7 +131,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 	now := time.Now().UTC()
 
 	rows, err := h.db.QueryContext(ctx,
-		"SELECT id, event_type, event_publisher, event_data, retry_count, max_retries FROM billing_failed_events WHERE status IN ('pending', 'retrying') AND next_retry_at <= ?",
+		"SELECT id, event_type, event_publisher, event_data, retry_count, max_retries FROM "+failedEventsTable+" WHERE status IN ('pending', 'retrying') AND next_retry_at <= ?",
 		now,
 	)
 	if err != nil {
@@ -175,7 +175,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 			nextRetry := now.Add(backoff)
 
 			_, errUpdate := h.db.ExecContext(ctx,
-				"UPDATE billing_failed_events SET retry_count = ?, next_retry_at = ?, status = 'retrying', tm_update = ? WHERE id = ?",
+				"UPDATE "+failedEventsTable+" SET retry_count = ?, next_retry_at = ?, status = 'retrying', tm_update = ? WHERE id = ?",
 				newRetryCount, nextRetry, now, id,
 			)
 			if errUpdate != nil {
@@ -187,7 +187,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 
 		// success - delete the record
 		promFailedEventRetryTotal.WithLabelValues("success").Inc()
-		_, errDelete := h.db.ExecContext(ctx, "DELETE FROM billing_failed_events WHERE id = ?", id)
+		_, errDelete := h.db.ExecContext(ctx, "DELETE FROM "+failedEventsTable+" WHERE id = ?", id)
 		if errDelete != nil {
 			log.Errorf("Could not delete retried event. err: %v", errDelete)
 		}
@@ -201,7 +201,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 func (h *failedEventHandler) markExhausted(ctx context.Context, id []byte, eventType string) {
 	now := time.Now().UTC()
 	_, err := h.db.ExecContext(ctx,
-		"UPDATE billing_failed_events SET status = 'exhausted', tm_update = ? WHERE id = ?",
+		"UPDATE "+failedEventsTable+" SET status = 'exhausted', tm_update = ? WHERE id = ?",
 		now, id,
 	)
 	if err != nil {

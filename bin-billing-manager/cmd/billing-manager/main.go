@@ -102,7 +102,7 @@ func runDaemon() error {
 func signalHandler() {
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
-	chDone <- true
+	close(chDone)
 }
 
 // run runs the billing-manager

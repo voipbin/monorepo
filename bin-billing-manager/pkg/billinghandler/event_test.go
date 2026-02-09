@@ -281,8 +281,11 @@ func Test_EventMMMessageCreated(t *testing.T) {
 			ctx := context.Background()
 
 			for i := range tt.message.Targets {
+				// per-target deterministic reference ID
+				targetRefID := uuid.NewV5(tt.message.ID, fmt.Sprintf("target-%d", i))
+
 				// idempotency check
-				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, tt.message.ID).Return(nil, fmt.Errorf("not found"))
+				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, targetRefID).Return(nil, fmt.Errorf("not found"))
 
 				// BillingStart
 				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(tt.responseAccount, nil)

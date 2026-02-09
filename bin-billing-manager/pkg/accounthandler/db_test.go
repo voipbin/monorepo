@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -449,6 +450,174 @@ func Test_Delete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccount, res)
 			}
 		})
+	}
+}
+
+func Test_SubtractBalanceWithCheck_normal(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    float32
+
+		responseAccount        *account.Account
+		responseUpdatedAccount *account.Account
+	}{
+		{
+			name: "normal account uses atomic check",
+
+			accountID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
+			amount:    15.5,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
+				},
+				Type:    account.TypeNormal,
+				Balance: 100.0,
+			},
+			responseUpdatedAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
+				},
+				Type:    account.TypeNormal,
+				Balance: 84.5,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			// get account to check type
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+			// atomic check-and-subtract
+			mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, tt.accountID, tt.amount).Return(nil)
+			// get updated account
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseUpdatedAccount, nil)
+
+			res, err := h.SubtractBalanceWithCheck(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseUpdatedAccount, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseUpdatedAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractBalanceWithCheck_admin(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    float32
+
+		responseAccount        *account.Account
+		responseUpdatedAccount *account.Account
+	}{
+		{
+			name: "admin account bypasses check",
+
+			accountID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
+			amount:    50.0,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
+				},
+				Type:    account.TypeAdmin,
+				Balance: 10.0,
+			},
+			responseUpdatedAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
+				},
+				Type:    account.TypeAdmin,
+				Balance: -40.0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			// get account to check type — admin
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+			// admin bypasses to SubtractBalance (no check)
+			mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.amount).Return(nil)
+			// get updated account
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseUpdatedAccount, nil)
+
+			res, err := h.SubtractBalanceWithCheck(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseUpdatedAccount, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseUpdatedAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractBalanceWithCheck_insufficient(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("dd111111-0000-0000-0000-000000000001")
+
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity: commonidentity.Identity{ID: accountID},
+		Type:     account.TypeNormal,
+		Balance:  5.0,
+	}, nil)
+	mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, accountID, float32(50.0)).Return(fmt.Errorf("insufficient balance"))
+
+	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50.0)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
 

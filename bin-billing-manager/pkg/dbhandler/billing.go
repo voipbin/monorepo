@@ -19,6 +19,11 @@ const (
 	billingsTable = "billing_billings"
 )
 
+// tmDeleteDefault is the sentinel value used for active (non-deleted) billing records.
+// This enables the unique index on (reference_type, reference_id, tm_delete) to work,
+// since MySQL treats NULL != NULL and would not prevent duplicates with NULL values.
+var tmDeleteDefault = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
+
 // billingGetFromRow gets the billing from the row.
 func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 	res := &billing.Billing{}
@@ -34,7 +39,10 @@ func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 	c.TMCreate = h.utilHandler.TimeNow()
 	c.TMUpdate = nil
-	c.TMDelete = nil
+	// Use sentinel value (not nil) so the unique index on
+	// (reference_type, reference_id, tm_delete) can enforce uniqueness.
+	// MySQL treats NULL != NULL, so NULL values would bypass the constraint.
+	c.TMDelete = &tmDeleteDefault
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -151,7 +159,7 @@ func (h *handler) billingGetByReferenceTypeAndIDFromDB(ctx context.Context, refe
 			"reference_type": string(referenceType),
 			"reference_id":   referenceID.Bytes(),
 		}).
-		Where("tm_delete IS NULL OR tm_delete = '9999-01-01 00:00:00.000000'").
+		Where(sq.Or{sq.Expr("tm_delete IS NULL"), sq.Eq{"tm_delete": tmDeleteDefault}}).
 		Limit(1).
 		ToSql()
 	if err != nil {

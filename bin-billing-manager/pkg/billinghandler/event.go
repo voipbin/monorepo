@@ -12,6 +12,7 @@ import (
 
 	nmnumber "monorepo/bin-number-manager/models/number"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -54,9 +55,12 @@ func (h *billingHandler) EventMMMessageCreated(ctx context.Context, m *mmmessage
 	})
 	log.Debugf("Received message_created event. message_id: %s", m.ID)
 
-	for _, target := range m.Targets {
-		log.WithField("target", target).Debugf("Creating billing for message. destination: %v", target.Destination)
-		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, m.ID, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
+	for i, target := range m.Targets {
+		// Generate a deterministic per-target reference ID so each target gets its own
+		// billing record, while event redelivery still triggers idempotency protection.
+		targetRefID := uuid.NewV5(m.ID, fmt.Sprintf("target-%d", i))
+		log.WithField("target", target).Debugf("Creating billing for message. destination: %v, target_ref_id: %s", target.Destination, targetRefID)
+		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, targetRefID, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
 			return errors.Wrapf(errBilling, "could not create a billing. target: %v", target)
 		}
 	}
