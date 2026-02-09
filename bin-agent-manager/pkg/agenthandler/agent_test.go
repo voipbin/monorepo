@@ -816,7 +816,7 @@ func Test_UpdateAddresses(t *testing.T) {
 					mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, uuid.FromStringOrNil(addr.Target)).Return(tt.responseExtension, nil)
 				}
 
-				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr).Return(nil, nil)
+				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr).Return(nil, dbhandler.ErrNotFound)
 			}
 			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
