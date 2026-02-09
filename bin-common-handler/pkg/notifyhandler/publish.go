@@ -8,6 +8,7 @@ import (
 
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
+	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -120,7 +121,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
 
 	// Also publish to ClickHouse (fire-and-forget)
-	if h.chClient != nil {
+	if h.chClient.Load() != nil {
 		go h.publishToClickHouse(eventType, dataType, data)
 	}
 
@@ -157,10 +158,15 @@ func (h *notifyHandler) publishToClickHouse(eventType string, dataType string, d
 		"event_type": eventType,
 	})
 
+	client, ok := h.chClient.Load().(clickhouse.Conn)
+	if !ok || client == nil {
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := h.chClient.Exec(ctx,
+	err := client.Exec(ctx,
 		"INSERT INTO events (timestamp, event_type, publisher, data_type, data) VALUES (?, ?, ?, ?, ?)",
 		time.Now(),
 		eventType,

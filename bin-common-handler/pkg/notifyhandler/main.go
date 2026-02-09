@@ -4,6 +4,7 @@ package notifyhandler
 
 import (
 	"context"
+	"sync/atomic"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -92,7 +93,7 @@ type notifyHandler struct {
 	publisher commonoutline.ServiceName
 
 	clickhouseAddress string
-	chClient          clickhouse.Conn
+	chClient          atomic.Value // stores clickhouse.Conn; Load() returns nil until connected
 }
 
 // NewNotifyHandler create NotifyHandler
@@ -160,7 +161,7 @@ func (h *notifyHandler) clickhouseConnectionLoop() {
 
 	for {
 		// Skip if already connected
-		if h.chClient != nil {
+		if h.chClient.Load() != nil {
 			time.Sleep(clickhouseRetryInterval)
 			continue
 		}
@@ -174,7 +175,7 @@ func (h *notifyHandler) clickhouseConnectionLoop() {
 		}
 
 		log.Info("Successfully connected to ClickHouse")
-		h.chClient = client
+		h.chClient.Store(client)
 		time.Sleep(clickhouseRetryInterval)
 	}
 }
