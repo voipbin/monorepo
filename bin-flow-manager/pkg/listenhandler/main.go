@@ -58,8 +58,9 @@ var (
 	regV1ActiveflowsIDServiceStop     = regexp.MustCompile("/v1/activeflows/" + regUUID + "/service_stop$")
 
 	// flows
-	regV1FlowsGet         = regexp.MustCompile(`/v1/flows\?`)
-	regV1Flows            = regexp.MustCompile("/v1/flows$")
+	regV1FlowsCountByCustomer = regexp.MustCompile("/v1/flows/count_by_customer$")
+	regV1FlowsGet             = regexp.MustCompile(`/v1/flows\?`)
+	regV1Flows                = regexp.MustCompile("/v1/flows$")
 	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
 	regV1FlowsIDActions   = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
 	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
@@ -221,7 +222,12 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/activeflows/<activeflow-id>/service_stop"
 		response, err = h.v1ActiveflowsIDServiceStopPost(ctx, m)
 
-		// flows
+	// flows
+	// GET /flows/count_by_customer
+	case regV1FlowsCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/flows/count_by_customer"
+		response, err = h.processV1FlowsCountByCustomerGet(ctx, m)
+
 	case regV1Flows.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/flows"
 		response, err = h.v1FlowsPost(ctx, m)

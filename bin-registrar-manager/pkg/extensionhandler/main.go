@@ -20,6 +20,7 @@ import (
 
 // ExtensionHandler is interface for service handle
 type ExtensionHandler interface {
+	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

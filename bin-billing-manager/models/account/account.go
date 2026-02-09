@@ -13,7 +13,8 @@ type Account struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
-	Type Type `json:"type" db:"type"`
+	Type     Type     `json:"type" db:"type"`
+	PlanType PlanType `json:"plan_type" db:"plan_type"`
 
 	Balance float32 `json:"balance" db:"balance"` // USD
 

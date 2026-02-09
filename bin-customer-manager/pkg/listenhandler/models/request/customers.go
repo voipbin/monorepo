@@ -67,3 +67,8 @@ type V1DataCustomersIDIsValidBalancePost struct {
 	Country       string                  `json:"country"`
 	Count         int                     `json:"count"`
 }
+
+// V1DataCustomersIDIsValidResourceLimitPost is rquest param define for POST /customers/<customer-id>/is_valid_resource_limit
+type V1DataCustomersIDIsValidResourceLimitPost struct {
+	ResourceType string `json:"resource_type"`
+}

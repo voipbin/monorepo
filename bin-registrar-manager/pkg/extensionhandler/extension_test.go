@@ -5,8 +5,10 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -116,11 +118,13 @@ func Test_Create(t *testing.T) {
 		defer mc.Finish()
 
 		mockUtil := utilhandler.NewMockUtilHandler(mc)
+		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &extensionHandler{
 			utilHandler:   mockUtil,
+			reqHandler:    mockReq,
 			dbAst:         mockDBAst,
 			dbBin:         mockDBBin,
 			notifyHandler: mockNotify,
@@ -132,6 +136,7 @@ func Test_Create(t *testing.T) {
 			t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 		}
 
+		mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeExtension).Return(true, nil)
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)

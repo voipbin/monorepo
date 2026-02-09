@@ -38,6 +38,27 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 	return res, nil
 }
 
+// AgentCountByCustomerID returns the count of active agents for the given customer.
+func (h *handler) AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(agentTable).
+		Where(squirrel.Eq{string(agent.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(agent.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("AgentCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("AgentCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 // AgentCreate creates new agent record and returns the created agent record.
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	now := h.utilHandler.TimeNow()

@@ -3,7 +3,10 @@ package conferencehandler
 import (
 	"context"
 
+	"fmt"
+
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -47,6 +50,17 @@ func (h *conferenceHandler) Create(
 	}
 	log = log.WithField("conference_id", id.String())
 	log.Debugf("Creating a new conference. conference_id: %s", id.String())
+
+	// check resource limit
+	valid, errLimit := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeConference)
+	if errLimit != nil {
+		log.Errorf("Could not validate resource limit. err: %v", errLimit)
+		return nil, fmt.Errorf("could not validate resource limit: %w", errLimit)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	// send confbridge create request
 	confbridgeType := cmconfbridge.TypeConnect

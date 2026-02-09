@@ -7,6 +7,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -120,6 +121,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeConference).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			confbridgeType := cmconfbridge.TypeConnect
 			if tt.conferenceType == conference.TypeConference {

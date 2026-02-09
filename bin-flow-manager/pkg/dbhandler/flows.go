@@ -30,6 +30,27 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 	return res, nil
 }
 
+// FlowCountByCustomerID returns the count of active flows for the given customer.
+func (h *handler) FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(flowsTable).
+		Where(squirrel.Eq{string(flow.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(flow.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("FlowCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("FlowCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	now := h.util.TimeNow()
 

@@ -21,6 +21,7 @@ import (
 // DBHandler interface
 type DBHandler interface {
 	// Queue operations
+	QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	QueueCreate(ctx context.Context, a *queue.Queue) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	QueueList(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)

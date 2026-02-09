@@ -59,6 +59,21 @@ func (mr *MockFlowHandlerMockRecorder) ActionGet(ctx, flowID, actionID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActionGet), ctx, flowID, actionID)
 }
 
+// CountByCustomerID mocks base method.
+func (m *MockFlowHandler) CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByCustomerID indicates an expected call of CountByCustomerID.
+func (mr *MockFlowHandlerMockRecorder) CountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).CountByCustomerID), ctx, customerID)
+}
+
 // Create mocks base method.
 func (m *MockFlowHandler) Create(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, persist bool, actions []action.Action, onCompleteFlowID uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()

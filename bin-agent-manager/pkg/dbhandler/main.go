@@ -18,6 +18,7 @@ import (
 
 // DBHandler interface
 type DBHandler interface {
+	AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	AgentCreate(ctx context.Context, a *agent.Agent) error
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)

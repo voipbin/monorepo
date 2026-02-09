@@ -47,6 +47,7 @@ type DBHandler interface {
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
 
 	// Extension
+	ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
@@ -62,6 +63,7 @@ type DBHandler interface {
 	SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAuth, error)
 
 	// Trunk
+	TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	TrunkCreate(ctx context.Context, t *trunk.Trunk) error
 	TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) error
 	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)

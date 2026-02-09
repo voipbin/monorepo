@@ -85,6 +85,21 @@ func (mr *MockDBHandlerMockRecorder) ConferenceAddTranscribeIDs(ctx, id, transcr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddTranscribeIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddTranscribeIDs), ctx, id, transcribeID)
 }
 
+// ConferenceCountByCustomerID mocks base method.
+func (m *MockDBHandler) ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceCountByCustomerID indicates an expected call of ConferenceCountByCustomerID.
+func (mr *MockDBHandlerMockRecorder) ConferenceCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCountByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceCountByCustomerID), ctx, customerID)
+}
+
 // ConferenceCreate mocks base method.
 func (m *MockDBHandler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	m.ctrl.T.Helper()

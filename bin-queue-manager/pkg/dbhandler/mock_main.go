@@ -58,6 +58,21 @@ func (mr *MockDBHandlerMockRecorder) QueueAddWaitQueueCallID(ctx, id, queueCallI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueAddWaitQueueCallID", reflect.TypeOf((*MockDBHandler)(nil).QueueAddWaitQueueCallID), ctx, id, queueCallID)
 }
 
+// QueueCountByCustomerID mocks base method.
+func (m *MockDBHandler) QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueCountByCustomerID indicates an expected call of QueueCountByCustomerID.
+func (mr *MockDBHandlerMockRecorder) QueueCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCountByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).QueueCountByCustomerID), ctx, customerID)
+}
+
 // QueueCreate mocks base method.
 func (m *MockDBHandler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	m.ctrl.T.Helper()

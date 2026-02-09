@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -112,10 +113,12 @@ func Test_Create(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDBBin := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := &trunkHandler{
 				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
 				db:            mockDBBin,
 				notifyHandler: mockNotify,
 			}
@@ -126,6 +129,7 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 
+			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeTrunk).Return(true, nil)
 			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)

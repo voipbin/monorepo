@@ -32,6 +32,7 @@ import (
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	outplan "monorepo/bin-campaign-manager/models/outplan"
 	address "monorepo/bin-common-handler/models/address"
+	billing0 "monorepo/bin-common-handler/models/billing"
 	outline "monorepo/bin-common-handler/models/outline"
 	service "monorepo/bin-common-handler/models/service"
 	sock "monorepo/bin-common-handler/models/sock"
@@ -469,6 +470,21 @@ func (m *MockRequestHandler) AIV1ToolList(ctx context.Context) ([]tool.Tool, err
 func (mr *MockRequestHandlerMockRecorder) AIV1ToolList(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ToolList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ToolList), ctx)
+}
+
+// AgentV1AgentCountByCustomerID mocks base method.
+func (m *MockRequestHandler) AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1AgentCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1AgentCountByCustomerID indicates an expected call of AgentV1AgentCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentCountByCustomerID), ctx, customerID)
 }
 
 // AgentV1AgentCreate mocks base method.
@@ -1278,6 +1294,21 @@ func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context,
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, accountID, billingType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country, count)
+}
+
+// BillingV1AccountIsValidResourceLimit mocks base method.
+func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidResourceLimit", ctx, accountID, resourceType)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountIsValidResourceLimit indicates an expected call of BillingV1AccountIsValidResourceLimit.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidResourceLimit(ctx, accountID, resourceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidResourceLimit", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidResourceLimit), ctx, accountID, resourceType)
 }
 
 // BillingV1AccountList mocks base method.
@@ -2620,6 +2651,21 @@ func (mr *MockRequestHandlerMockRecorder) CampaignV1OutplanUpdateDialInfo(ctx, i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1OutplanUpdateDialInfo", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1OutplanUpdateDialInfo), ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
 
+// ConferenceV1ConferenceCountByCustomerID mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferenceCountByCustomerID indicates an expected call of ConferenceV1ConferenceCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceCountByCustomerID), ctx, customerID)
+}
+
 // ConferenceV1ConferenceCreate mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferenceCreate(ctx context.Context, id, customerID uuid.UUID, conferenceType conference.Type, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
@@ -3442,6 +3488,21 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID, referenceType, country, count)
 }
 
+// CustomerV1CustomerIsValidResourceLimit mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerIsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidResourceLimit", ctx, customerID, resourceType)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1CustomerIsValidResourceLimit indicates an expected call of CustomerV1CustomerIsValidResourceLimit.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidResourceLimit(ctx, customerID, resourceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidResourceLimit", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidResourceLimit), ctx, customerID, resourceType)
+}
+
 // CustomerV1CustomerList mocks base method.
 func (m *MockRequestHandler) CustomerV1CustomerList(ctx context.Context, pageToken string, pageSize uint64, filters map[customer.Field]any) ([]customer.Customer, error) {
 	m.ctrl.T.Helper()
@@ -3765,6 +3826,21 @@ func (m *MockRequestHandler) FlowV1ActiveflowUpdateForwardActionID(ctx context.C
 func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowUpdateForwardActionID(ctx, activeflowID, forwardActionID, forwardNow any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowUpdateForwardActionID", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowUpdateForwardActionID), ctx, activeflowID, forwardActionID, forwardNow)
+}
+
+// FlowV1FlowCountByCustomerID mocks base method.
+func (m *MockRequestHandler) FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowV1FlowCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowV1FlowCountByCustomerID indicates an expected call of FlowV1FlowCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) FlowV1FlowCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowCountByCustomerID), ctx, customerID)
 }
 
 // FlowV1FlowCreate mocks base method.
@@ -4423,6 +4499,21 @@ func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminateWithDelay
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminateWithDelay), ctx, hostID, pipecatcallID, delay)
 }
 
+// QueueV1QueueCountByCustomerID mocks base method.
+func (m *MockRequestHandler) QueueV1QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueueCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueueCountByCustomerID indicates an expected call of QueueV1QueueCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueCountByCustomerID), ctx, customerID)
+}
+
 // QueueV1QueueCreate mocks base method.
 func (m *MockRequestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
@@ -4793,6 +4884,21 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactRefresh(ctx, filters
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactRefresh", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactRefresh), ctx, filters)
 }
 
+// RegistrarV1ExtensionCountByCustomerID mocks base method.
+func (m *MockRequestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1ExtensionCountByCustomerID indicates an expected call of RegistrarV1ExtensionCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionCountByCustomerID), ctx, customerID)
+}
+
 // RegistrarV1ExtensionCreate mocks base method.
 func (m *MockRequestHandler) RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password, name, detail string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
@@ -4866,6 +4972,21 @@ func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id 
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionUpdate(ctx, id, name, detail, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionUpdate), ctx, id, name, detail, password)
+}
+
+// RegistrarV1TrunkCountByCustomerID mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkCountByCustomerID indicates an expected call of RegistrarV1TrunkCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkCountByCustomerID), ctx, customerID)
 }
 
 // RegistrarV1TrunkCreate mocks base method.

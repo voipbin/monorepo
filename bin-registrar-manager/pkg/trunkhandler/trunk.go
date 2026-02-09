@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/sipauth"
@@ -32,6 +33,17 @@ func (h *trunkHandler) Create(
 		"domain_name": domainName,
 	})
 	log.Debugf("Creating trunk. domain_name: %s", domainName)
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeTrunk)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	if !isValidDomainName(domainName) {
 		log.Errorf("Invalid domain name. domain_name: %s", domainName)

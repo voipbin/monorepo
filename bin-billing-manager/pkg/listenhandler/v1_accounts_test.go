@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -60,7 +61,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"dafc10d0-0b97-11ee-af30-2fb7811295dd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"db4e7e24-0b97-11ee-91f9-c7d5620abcd7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"dafc10d0-0b97-11ee-af30-2fb7811295dd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"db4e7e24-0b97-11ee-91f9-c7d5620abcd7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -132,7 +133,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c28443b6-0e75-11ee-90ec-1bb28081d375","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c28443b6-0e75-11ee-90ec-1bb28081d375","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -193,7 +194,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"922907b6-0942-11ee-960e-f31d2cc10daa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"922907b6-0942-11ee-960e-f31d2cc10daa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -260,7 +261,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3a952284-4ccf-11ee-bd5e-03a7d7220fad","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"3a952284-4ccf-11ee-bd5e-03a7d7220fad","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -321,7 +322,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a9e3587c-4ccf-11ee-9872-8b9300051977","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"a9e3587c-4ccf-11ee-9872-8b9300051977","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -386,7 +387,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"42d34adc-0dbb-11ee-a41b-eb337ba453c8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"42d34adc-0dbb-11ee-a41b-eb337ba453c8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -451,7 +452,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"43180e06-0dbb-11ee-8124-17d122da2950","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"43180e06-0dbb-11ee-8124-17d122da2950","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -583,7 +584,7 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"512ab538-4cd2-11ee-91be-7779c29dd4f8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"512ab538-4cd2-11ee-91be-7779c29dd4f8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -602,6 +603,67 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			}
 
 			mockAccount.EXPECT().UpdatePaymentInfo(gomock.Any(), tt.expectAccountID, tt.expectPaymentType, tt.expectPaymentMethod).Return(tt.responseAccount, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AccountsIDIsValidResourceLimitPost(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *sock.Request
+
+		responseValid bool
+
+		expectAccountID    uuid.UUID
+		expectResourceType commonbilling.ResourceType
+		expectRes          *sock.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/accounts/6b8a1c20-133e-11ee-a1b2-3f0139f4ec84/is_valid_resource_limit",
+				Method:   sock.RequestMethodPost,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"resource_type":"agent"}`),
+			},
+
+			responseValid: true,
+
+			expectAccountID:    uuid.FromStringOrNil("6b8a1c20-133e-11ee-a1b2-3f0139f4ec84"),
+			expectResourceType: commonbilling.ResourceTypeAgent,
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"valid":true}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				accountHandler: mockAccount,
+			}
+
+			mockAccount.EXPECT().IsValidResourceLimit(gomock.Any(), tt.expectAccountID, tt.expectResourceType).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -11,7 +11,8 @@ const (
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
 
-	FieldType Field = "type"
+	FieldType     Field = "type"
+	FieldPlanType Field = "plan_type"
 
 	FieldBalance Field = "balance"
 

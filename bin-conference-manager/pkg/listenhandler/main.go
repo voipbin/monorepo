@@ -47,6 +47,7 @@ var (
 
 	// v1
 	// conferences
+	regV1ConferencesCountByCustomer   = regexp.MustCompile("/v1/conferences/count_by_customer$")
 	regV1Conferences                  = regexp.MustCompile("/v1/conferences$")
 	regV1ConferencesGet               = regexp.MustCompile(`/v1/conferences\?`)
 	regV1ConferencesID                = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
@@ -160,6 +161,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	//////////////////
 	// conferences
 	////////////////////
+
+	// GET /conferences/count_by_customer
+	case regV1ConferencesCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ConferencesCountByCustomerGet(ctx, m)
+		requestType = "/v1/conferences/count_by_customer"
 
 	// POST /conferences
 	case regV1Conferences.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

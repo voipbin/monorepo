@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -105,6 +106,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeQueue).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().QueueCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueueGet(ctx, gomock.Any()).Return(tt.responseQueue, nil)

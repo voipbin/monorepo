@@ -51,7 +51,8 @@ var (
 	regV1AccountsID                     = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 	regV1AccountsIDBalanceAddForce      = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add_force$")
 	regV1AccountsIDBalanceSubtractForce = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
-	regV1AccountsIDIsValidBalance       = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
+	regV1AccountsIDIsValidBalance        = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
+	regV1AccountsIDIsValidResourceLimit = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_resource_limit$")
 	regV1AccountsIDIsValidPaymentInfo   = regexp.MustCompile("/v1/accounts/" + regUUID + "/payment_info$")
 
 	// billings
@@ -187,6 +188,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AccountsIDIsValidBalance.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AccountsIDIsValidBalancePost(ctx, m)
 		requestType = "/v1/accounts/<account-id>/is_valid_balance"
+
+	// POST /accounts/<account-id>/is_valid_resource_limit
+	case regV1AccountsIDIsValidResourceLimit.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccountsIDIsValidResourceLimitPost(ctx, m)
+		requestType = "/v1/accounts/<account-id>/is_valid_resource_limit"
 
 	// PUT /accounts/<account-id>/payment_info
 	case regV1AccountsIDIsValidPaymentInfo.MatchString(m.URI) && m.Method == sock.RequestMethodPut:

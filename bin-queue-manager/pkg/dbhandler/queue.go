@@ -39,6 +39,27 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 	return res, nil
 }
 
+// QueueCountByCustomerID returns the count of active queues for the given customer.
+func (h *handler) QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(queueQueuesTable).
+		Where(squirrel.Eq{string(queue.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(queue.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("QueueCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("QueueCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 // QueueCreate creates new queue record and returns the created queue.
 func (h *handler) QueueCreate(ctx context.Context, q *queue.Queue) error {
 	now := h.utilHandler.TimeNow()

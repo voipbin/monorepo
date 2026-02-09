@@ -43,6 +43,27 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	return res, nil
 }
 
+// ConferenceCountByCustomerID returns the count of active conferences for the given customer.
+func (h *handler) ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(conferenceTable).
+		Where(squirrel.Eq{string(conference.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(conference.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	now := h.utilHandler.TimeNow()

@@ -249,6 +249,21 @@ func (mr *MockDBHandlerMockRecorder) AstEndpointGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointGet", reflect.TypeOf((*MockDBHandler)(nil).AstEndpointGet), ctx, id)
 }
 
+// ExtensionCountByCustomerID mocks base method.
+func (m *MockDBHandler) ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionCountByCustomerID indicates an expected call of ExtensionCountByCustomerID.
+func (mr *MockDBHandlerMockRecorder) ExtensionCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCountByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ExtensionCountByCustomerID), ctx, customerID)
+}
+
 // ExtensionCreate mocks base method.
 func (m *MockDBHandler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
 	m.ctrl.T.Helper()
@@ -406,6 +421,21 @@ func (m *MockDBHandler) SIPAuthUpdate(ctx context.Context, id uuid.UUID, fields 
 func (mr *MockDBHandlerMockRecorder) SIPAuthUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthUpdate", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthUpdate), ctx, id, fields)
+}
+
+// TrunkCountByCustomerID mocks base method.
+func (m *MockDBHandler) TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkCountByCustomerID indicates an expected call of TrunkCountByCustomerID.
+func (mr *MockDBHandlerMockRecorder) TrunkCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkCountByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).TrunkCountByCustomerID), ctx, customerID)
 }
 
 // TrunkCreate mocks base method.

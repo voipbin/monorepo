@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -38,6 +39,17 @@ func (h *queueHandler) Create(
 		"service_timeout": serviceTimeout,
 	})
 	log.Debug("Creating a new queue.")
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeQueue)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	// generate queue id
 	id := h.utilHandler.UUIDCreate()
