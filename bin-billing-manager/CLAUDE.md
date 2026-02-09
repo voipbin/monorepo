@@ -277,9 +277,9 @@ Access control is handled by `bin-api-manager`, NOT by this service. This servic
 See `bin-api-manager/CLAUDE.md` for complete authentication and authorization patterns.
 
 ### Balance Validation
-Admin accounts always have valid balance regardless of actual balance:
+Unlimited plan accounts always have valid balance regardless of actual balance:
 ```go
-if account.Type == account.TypeAdmin {
+if a.PlanType == account.PlanTypeUnlimited {
     return true, nil
 }
 ```

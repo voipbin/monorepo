@@ -15,7 +15,6 @@ func TestAccountStruct(t *testing.T) {
 	a := Account{
 		Name:          "Test Account",
 		Detail:        "Test account details",
-		Type:          TypeNormal,
 		Balance:       100.50,
 		PaymentType:   PaymentTypePrepaid,
 		PaymentMethod: PaymentMethodCreditCard,
@@ -31,30 +30,8 @@ func TestAccountStruct(t *testing.T) {
 	if a.Name != "Test Account" {
 		t.Errorf("Account.Name = %v, expected %v", a.Name, "Test Account")
 	}
-	if a.Type != TypeNormal {
-		t.Errorf("Account.Type = %v, expected %v", a.Type, TypeNormal)
-	}
 	if a.Balance != 100.50 {
 		t.Errorf("Account.Balance = %v, expected %v", a.Balance, 100.50)
-	}
-}
-
-func TestTypeConstants(t *testing.T) {
-	tests := []struct {
-		name     string
-		constant Type
-		expected string
-	}{
-		{"type_admin", TypeAdmin, "admin"},
-		{"type_normal", TypeNormal, "normal"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if string(tt.constant) != tt.expected {
-				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
-			}
-		})
 	}
 }
 

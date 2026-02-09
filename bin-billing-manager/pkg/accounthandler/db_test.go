@@ -60,7 +60,6 @@ func Test_Create(t *testing.T) {
 				},
 				Name:          "test name",
 				Detail:        "test detail",
-				Type:          account.TypeNormal,
 				Balance:       0,
 				PaymentType:   account.PaymentTypePrepaid,
 				PaymentMethod: account.PaymentMethodNone,
@@ -474,15 +473,15 @@ func Test_SubtractBalanceWithCheck_normal(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
 				},
-				Type:    account.TypeNormal,
-				Balance: 100.0,
+				PlanType: account.PlanTypeFree,
+				Balance:  100.0,
 			},
 			responseUpdatedAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
 				},
-				Type:    account.TypeNormal,
-				Balance: 84.5,
+				PlanType: account.PlanTypeFree,
+				Balance:  84.5,
 			},
 		},
 	}
@@ -522,7 +521,7 @@ func Test_SubtractBalanceWithCheck_normal(t *testing.T) {
 	}
 }
 
-func Test_SubtractBalanceWithCheck_admin(t *testing.T) {
+func Test_SubtractBalanceWithCheck_unlimited(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -534,7 +533,7 @@ func Test_SubtractBalanceWithCheck_admin(t *testing.T) {
 		responseUpdatedAccount *account.Account
 	}{
 		{
-			name: "admin account bypasses check",
+			name: "unlimited plan account bypasses check",
 
 			accountID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
 			amount:    50.0,
@@ -543,15 +542,15 @@ func Test_SubtractBalanceWithCheck_admin(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
 				},
-				Type:    account.TypeAdmin,
-				Balance: 10.0,
+				PlanType: account.PlanTypeUnlimited,
+				Balance:  10.0,
 			},
 			responseUpdatedAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
 				},
-				Type:    account.TypeAdmin,
-				Balance: -40.0,
+				PlanType: account.PlanTypeUnlimited,
+				Balance:  -40.0,
 			},
 		},
 	}
@@ -572,9 +571,9 @@ func Test_SubtractBalanceWithCheck_admin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// get account to check type — admin
+			// get account to check plan type — unlimited
 			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
-			// admin bypasses to SubtractBalance (no check)
+			// unlimited bypasses to SubtractBalance (no check)
 			mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.amount).Return(nil)
 			// get updated account
 			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseUpdatedAccount, nil)
@@ -610,7 +609,7 @@ func Test_SubtractBalanceWithCheck_insufficient(t *testing.T) {
 
 	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
 		Identity: commonidentity.Identity{ID: accountID},
-		Type:     account.TypeNormal,
+		PlanType: account.PlanTypeFree,
 		Balance:  5.0,
 	}, nil)
 	mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, accountID, float32(50.0)).Return(fmt.Errorf("insufficient balance"))
