@@ -1,7 +1,7 @@
 """number_add_type_column
 
 Revision ID: fc1a2b3d4e5f
-Revises: fb5b8d1359c9
+Revises: d4e5f6a7b8c9
 Create Date: 2026-02-10 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'fc1a2b3d4e5f'
-down_revision = 'fb5b8d1359c9'
+down_revision = 'd4e5f6a7b8c9'
 branch_labels = None
 depends_on = None
 
