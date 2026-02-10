@@ -358,6 +358,20 @@ components:
         - BillingManagerAccountPaymentTypeNone
         - BillingManagerAccountPaymentTypePrepaid
 
+    BillingManagerAccountPlanType:
+      type: string
+      description: The plan tier of the billing account. Determines resource creation limits.
+      enum:
+        - free
+        - basic
+        - professional
+        - unlimited
+      x-enum-varnames:
+        - BillingManagerAccountPlanTypeFree
+        - BillingManagerAccountPlanTypeBasic
+        - BillingManagerAccountPlanTypeProfessional
+        - BillingManagerAccountPlanTypeUnlimited
+
     BillingManagerAccount:
       type: object
       properties:
@@ -373,6 +387,8 @@ components:
         detail:
           type: string
           description: Additional details about the account.
+        plan_type:
+          $ref: '#/components/schemas/BillingManagerAccountPlanType'
         balance:
           type: number
           format: float
