@@ -13,6 +13,7 @@ import (
 var (
 	DomainConference      = projectconfig.Get().DomainConference
 	DomainPSTN            = projectconfig.Get().DomainPSTN
+	DomainSIP             = projectconfig.Get().DomainSIP
 	DomainTrunkSuffix     = projectconfig.Get().DomainTrunkSuffix
 	DomainRegistrarSuffix = projectconfig.Get().DomainRegistrarSuffix
 )

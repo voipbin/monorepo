@@ -57,6 +57,11 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 			domainTypePSTN,
 		},
 		{
+			"sip",
+			"sip.voipbin.net",
+			domainTypeSIP,
+		},
+		{
 			"None type",
 			"randome-invalid-domain.voipbin.net",
 			domainTypeNone,
