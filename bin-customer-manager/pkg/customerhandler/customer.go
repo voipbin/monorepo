@@ -2,9 +2,11 @@ package customerhandler
 
 import (
 	"context"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/metricshandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -71,11 +73,16 @@ func (h *customerHandler) validateCreate(ctx context.Context, email string) bool
 		amagent.FieldDeleted:  false,
 		amagent.FieldUsername: email,
 	}
+	start := time.Now()
 	tmpAgents, err := h.reqHandler.AgentV1AgentList(ctx, "", 100, filterAgent)
+	elapsed := float64(time.Since(start).Milliseconds())
+	metricshandler.RPCCallDuration.WithLabelValues("agent-manager", "agent_list").Observe(elapsed)
 	if err != nil {
 		log.Errorf("Could not get the agent info. err: %v", err)
+		metricshandler.RPCCallTotal.WithLabelValues("agent-manager", "agent_list", "error").Inc()
 		return false
 	}
+	metricshandler.RPCCallTotal.WithLabelValues("agent-manager", "agent_list", "success").Inc()
 	if len(tmpAgents) > 0 {
 		log.Errorf("The email is already used. email: %s", email)
 		return false

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -11,6 +12,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-customer-manager/models/accesskey"
+	"monorepo/bin-customer-manager/pkg/metricshandler"
 )
 
 const (
@@ -30,6 +32,13 @@ func (h *handler) accesskeyGetFromRow(row *sql.Rows) (*accesskey.Accesskey, erro
 
 // AccesskeyCreate creates new accesskey record and returns the created accesskey record.
 func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("create", "accesskey", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("create", "accesskey").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
@@ -57,6 +66,8 @@ func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) e
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. AccesskeyCreate. err: %v", err)
 	}
+
+	status = "success"
 
 	// update the cache
 	_ = h.accesskeyUpdateToCache(ctx, c.ID)
@@ -140,13 +151,24 @@ func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*access
 func (h *handler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
 	res, err := h.accesskeyGetFromCache(ctx, id)
 	if err == nil {
+		metricshandler.CacheOperationTotal.WithLabelValues("get", "accesskey", "hit").Inc()
 		return res, nil
 	}
+	metricshandler.CacheOperationTotal.WithLabelValues("get", "accesskey", "miss").Inc()
+
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("get", "accesskey", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("get", "accesskey").Observe(float64(time.Since(start).Milliseconds()))
+	}()
 
 	res, err = h.accesskeyGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+
+	status = "success"
 
 	// set to the cache
 	_ = h.accesskeySetToCache(ctx, res)
@@ -156,6 +178,13 @@ func (h *handler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 
 // AccesskeyGets returns accesskeys.
 func (h *handler) AccesskeyList(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("list", "accesskey", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("list", "accesskey").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -199,6 +228,8 @@ func (h *handler) AccesskeyList(ctx context.Context, size uint64, token string, 
 		return nil, fmt.Errorf("rows iteration error. AccesskeyGets. err: %v", err)
 	}
 
+	status = "success"
+
 	return res, nil
 }
 
@@ -207,6 +238,13 @@ func (h *handler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[
 	if len(fields) == 0 {
 		return nil
 	}
+
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("update", "accesskey", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("update", "accesskey").Observe(float64(time.Since(start).Milliseconds()))
+	}()
 
 	fields[accesskey.FieldTMUpdate] = h.utilHandler.TimeNow()
 
@@ -229,12 +267,21 @@ func (h *handler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return fmt.Errorf("AccesskeyUpdate: exec failed: %w", err)
 	}
 
+	status = "success"
+
 	_ = h.accesskeyUpdateToCache(ctx, id)
 	return nil
 }
 
 // AccesskeyDelete deletes the accesskey.
 func (h *handler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("delete", "accesskey", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("delete", "accesskey").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	ts := h.utilHandler.TimeNow()
 
 	fields := map[accesskey.Field]any{
@@ -268,6 +315,8 @@ func (h *handler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
 	} else if rowsAffected == 0 {
 		return ErrNotFound
 	}
+
+	status = "success"
 
 	// update the cache
 	_ = h.accesskeyUpdateToCache(ctx, id)
