@@ -51,7 +51,7 @@ func Test_extensionsGET(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"result":[{"id":"7ea872bc-bbc5-11ef-83ae-dfcd9b190c58","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"7efedf4e-bbc5-11ef-8d7d-ff69121f9899","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes: `{"result":[{"id":"7ea872bc-bbc5-11ef-83ae-dfcd9b190c58","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"7efedf4e-bbc5-11ef-8d7d-ff69121f9899","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -117,7 +117,7 @@ func Test_extensionsIDGET(t *testing.T) {
 			},
 
 			expectedExtensionID: uuid.FromStringOrNil("7f22ea24-bbc5-11ef-8c3f-139aa5535776"),
-			expectedRes:         `{"id":"7f22ea24-bbc5-11ef-8c3f-139aa5535776","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"7f22ea24-bbc5-11ef-8c3f-139aa5535776","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

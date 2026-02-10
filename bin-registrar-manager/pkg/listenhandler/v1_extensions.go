@@ -128,9 +128,38 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 		extension.FieldPassword: req.Password,
 	}
 
-	tmp, err := h.extensionHandler.Update(ctx, extensionID, fields)
-	if err != nil {
+	if _, err := h.extensionHandler.Update(ctx, extensionID, fields); err != nil {
 		log.Errorf("Could not update the extension info. err: %v", err)
+		return nil, err
+	}
+
+	// handle direct extension enable/disable
+	if req.Direct != nil {
+		if *req.Direct {
+			if _, err := h.extensionHandler.DirectEnable(ctx, extensionID); err != nil {
+				log.Errorf("Could not enable direct extension. err: %v", err)
+				return simpleResponse(500), nil
+			}
+		} else {
+			if err := h.extensionHandler.DirectDisable(ctx, extensionID); err != nil {
+				log.Errorf("Could not disable direct extension. err: %v", err)
+				return simpleResponse(500), nil
+			}
+		}
+	}
+
+	// handle direct regenerate
+	if req.DirectRegenerate != nil && *req.DirectRegenerate {
+		if _, err := h.extensionHandler.DirectRegenerate(ctx, extensionID); err != nil {
+			log.Errorf("Could not regenerate direct extension hash. err: %v", err)
+			return simpleResponse(500), nil
+		}
+	}
+
+	// re-fetch the extension to get updated DirectHash
+	tmp, err := h.extensionHandler.Get(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not get updated extension info. err: %v", err)
 		return nil, err
 	}
 

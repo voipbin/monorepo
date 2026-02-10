@@ -13,6 +13,7 @@ import (
 	context "context"
 	customer "monorepo/bin-customer-manager/models/customer"
 	extension "monorepo/bin-registrar-manager/models/extension"
+	extensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -88,6 +89,50 @@ func (mr *MockExtensionHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockExtensionHandler)(nil).Delete), ctx, id)
 }
 
+// DirectDisable mocks base method.
+func (m *MockExtensionHandler) DirectDisable(ctx context.Context, extensionID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectDisable", ctx, extensionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DirectDisable indicates an expected call of DirectDisable.
+func (mr *MockExtensionHandlerMockRecorder) DirectDisable(ctx, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectDisable", reflect.TypeOf((*MockExtensionHandler)(nil).DirectDisable), ctx, extensionID)
+}
+
+// DirectEnable mocks base method.
+func (m *MockExtensionHandler) DirectEnable(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectEnable", ctx, extensionID)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectEnable indicates an expected call of DirectEnable.
+func (mr *MockExtensionHandlerMockRecorder) DirectEnable(ctx, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectEnable", reflect.TypeOf((*MockExtensionHandler)(nil).DirectEnable), ctx, extensionID)
+}
+
+// DirectRegenerate mocks base method.
+func (m *MockExtensionHandler) DirectRegenerate(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectRegenerate", ctx, extensionID)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectRegenerate indicates an expected call of DirectRegenerate.
+func (mr *MockExtensionHandlerMockRecorder) DirectRegenerate(ctx, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectRegenerate", reflect.TypeOf((*MockExtensionHandler)(nil).DirectRegenerate), ctx, extensionID)
+}
+
 // EventCUCustomerDeleted mocks base method.
 func (m *MockExtensionHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()
@@ -130,6 +175,21 @@ func (m *MockExtensionHandler) GetByExtension(ctx context.Context, customerID uu
 func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, customerID, ext any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, customerID, ext)
+}
+
+// GetDirectByHash mocks base method.
+func (m *MockExtensionHandler) GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDirectByHash", ctx, hash)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDirectByHash indicates an expected call of GetDirectByHash.
+func (mr *MockExtensionHandlerMockRecorder) GetDirectByHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDirectByHash", reflect.TypeOf((*MockExtensionHandler)(nil).GetDirectByHash), ctx, hash)
 }
 
 // List mocks base method.

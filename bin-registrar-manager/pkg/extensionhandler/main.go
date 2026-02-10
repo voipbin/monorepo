@@ -15,7 +15,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 )
 
 // ExtensionHandler is interface for service handle
@@ -35,16 +37,22 @@ type ExtensionHandler interface {
 	GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) (*extension.Extension, error)
 
+	DirectEnable(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error)
+	DirectDisable(ctx context.Context, extensionID uuid.UUID) error
+	DirectRegenerate(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error)
+	GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error)
+
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // extensionHandler structure for service handle
 type extensionHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	dbAst         dbhandler.DBHandler
-	dbBin         dbhandler.DBHandler
-	notifyHandler notifyhandler.NotifyHandler
+	utilHandler            utilhandler.UtilHandler
+	reqHandler             requesthandler.RequestHandler
+	dbAst                  dbhandler.DBHandler
+	dbBin                  dbhandler.DBHandler
+	notifyHandler          notifyhandler.NotifyHandler
+	extensionDirectHandler extensiondirecthandler.ExtensionDirectHandler
 }
 
 var (
@@ -75,14 +83,15 @@ func init() {
 }
 
 // NewExtensionHandler returns new service handler
-func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) ExtensionHandler {
+func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, extensionDirectHandler extensiondirecthandler.ExtensionDirectHandler) ExtensionHandler {
 
 	h := &extensionHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    r,
-		dbAst:         dbAst,
-		dbBin:         dbBin,
-		notifyHandler: notifyHandler,
+		utilHandler:            utilhandler.NewUtilHandler(),
+		reqHandler:             r,
+		dbAst:                  dbAst,
+		dbBin:                  dbBin,
+		notifyHandler:          notifyHandler,
+		extensionDirectHandler: extensionDirectHandler,
 	}
 
 	return h

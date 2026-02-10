@@ -3299,6 +3299,9 @@ components:
           description: "Username, same as the Extension, used by Kamailio's INVITE validation"
         password:
           type: string
+        direct_hash:
+          type: string
+          description: "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net"
         tm_create:
           type: string
           description: "Timestamp when the extension was created"
