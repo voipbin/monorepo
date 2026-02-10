@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -14,58 +13,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 )
-
-// BillingV1AccountList returns list of billing accounts.
-func (r *requestHandler) BillingV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
-
-	m, err := json.Marshal(filters)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal filters")
-	}
-
-	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res []bmaccount.Account
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return res, nil
-}
-
-// BillingV1AccountCreate creates a new billing account.
-func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error) {
-	uri := "/v1/accounts"
-
-	m, err := json.Marshal(bmrequest.V1DataAccountsPOST{
-		CustomerID:    custoerID,
-		Name:          name,
-		Detail:        detail,
-		PaymentType:   paymentType,
-		PaymentMethod: paymentMethod,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res bmaccount.Account
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
 
 // BillingV1AccountGet returns a billing account.
 func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
@@ -122,23 +70,6 @@ func (r *requestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Context, 
 	}
 
 	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPut, "billing/accounts/<account-id>/payment_info", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res bmaccount.Account
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
-// BillingV1AccountDelete deletes a billing account.
-func (r *requestHandler) BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
-
-	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodDelete, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
