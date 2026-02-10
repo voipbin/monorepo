@@ -104,7 +104,6 @@ func initCommand() *cobra.Command {
 
 	cmdSub := &cobra.Command{Use: "number", Short: "Number operations"}
 	cmdSub.AddCommand(cmdCreate())
-	cmdSub.AddCommand(cmdRegister())
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdGetAvailable())
 	cmdSub.AddCommand(cmdList())
@@ -160,6 +159,7 @@ func cmdCreate() *cobra.Command {
 	flags.String("message-flow-id", "", "Message flow ID")
 	flags.String("name", "", "Number name")
 	flags.String("detail", "", "Description")
+	flags.Bool("virtual-number", false, "Create a virtual number (skips provider purchase)")
 
 	return cmd
 }
@@ -183,75 +183,32 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	res, err := handler.Create(
-		context.Background(),
-		customerID,
-		num,
-		callFlowID,
-		messageFlowID,
-		viper.GetString("name"),
-		viper.GetString("detail"),
-	)
+	var res *number.Number
+	if viper.GetBool("virtual-number") {
+		// CLI allows reserved range (+999000XXXXXX)
+		res, err = handler.CreateVirtual(
+			context.Background(),
+			customerID,
+			num,
+			callFlowID,
+			messageFlowID,
+			viper.GetString("name"),
+			viper.GetString("detail"),
+			true,
+		)
+	} else {
+		res, err = handler.Create(
+			context.Background(),
+			customerID,
+			num,
+			callFlowID,
+			messageFlowID,
+			viper.GetString("name"),
+			viper.GetString("detail"),
+		)
+	}
 	if err != nil {
 		return errors.Wrap(err, "failed to create number")
-	}
-
-	return printJSON(res)
-}
-
-func cmdRegister() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "register",
-		Short: "Register a new number",
-		RunE:  runRegister,
-	}
-
-	flags := cmd.Flags()
-	flags.String("customer-id", "", "Customer ID (required)")
-	flags.String("number", "", "Phone number (e.g., +15551234567) (required)")
-	flags.String("call-flow-id", "", "Call flow ID")
-	flags.String("message-flow-id", "", "Message flow ID")
-	flags.String("name", "", "Number name")
-	flags.String("detail", "", "Description")
-
-	return cmd
-}
-
-func runRegister(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer-id", "Customer ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid customer ID")
-	}
-
-	num, err := resolveString("number", "Phone number")
-	if err != nil {
-		return errors.Wrap(err, "invalid phone number")
-	}
-
-	callFlowID := uuid.FromStringOrNil(viper.GetString("call-flow-id"))
-	messageFlowID := uuid.FromStringOrNil(viper.GetString("message-flow-id"))
-
-	handler, err := initHandler()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	res, err := handler.Register(
-		context.Background(),
-		customerID,
-		num,
-		callFlowID,
-		messageFlowID,
-		viper.GetString("name"),
-		viper.GetString("detail"),
-		number.ProviderNameNone,
-		"",
-		number.StatusActive,
-		false,
-		false,
-	)
-	if err != nil {
-		return errors.Wrap(err, "failed to register number")
 	}
 
 	return printJSON(res)
@@ -338,24 +295,34 @@ func cmdGetAvailable() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("country-code", "", "Country code (e.g., US, GB) (required)")
+	flags.String("country-code", "", "Country code (e.g., US, GB)")
 	flags.Uint("limit", 10, "Number of results to return")
+	flags.Bool("virtual", false, "Get available virtual numbers instead of provider numbers")
 
 	return cmd
 }
 
 func runGetAvailable(cmd *cobra.Command, args []string) error {
-	countryCode, err := resolveString("country-code", "Country code")
-	if err != nil {
-		return errors.Wrap(err, "invalid country code")
-	}
-
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
 	limit := viper.GetUint("limit")
+
+	if viper.GetBool("virtual") {
+		res, err := handler.GetAvailableVirtualNumbers(context.Background(), limit)
+		if err != nil {
+			return errors.Wrap(err, "failed to get available virtual numbers")
+		}
+		return printJSON(res)
+	}
+
+	countryCode, err := resolveString("country-code", "Country code")
+	if err != nil {
+		return errors.Wrap(err, "invalid country code")
+	}
+
 	res, err := handler.GetAvailableNumbers(countryCode, limit)
 	if err != nil {
 		return errors.Wrap(err, "failed to get available numbers")

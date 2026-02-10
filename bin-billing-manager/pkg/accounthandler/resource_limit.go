@@ -76,6 +76,8 @@ func (h *accountHandler) getResourceCount(ctx context.Context, customerID uuid.U
 		return h.reqHandler.FlowV1FlowCountByCustomerID(ctx, customerID)
 	case commonbilling.ResourceTypeConference:
 		return h.reqHandler.ConferenceV1ConferenceCountByCustomerID(ctx, customerID)
+	case commonbilling.ResourceTypeVirtualNumber:
+		return h.reqHandler.NumberV1VirtualNumberCountByCustomerID(ctx, customerID)
 	default:
 		return 0, fmt.Errorf("unsupported resource type: %s", resourceType)
 	}

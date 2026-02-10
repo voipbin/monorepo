@@ -25,8 +25,10 @@ import (
 // NumberHandler is interface for service handle
 type NumberHandler interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
+	GetAvailableVirtualNumbers(ctx context.Context, limit uint) ([]*availablenumber.AvailableNumber, error)
 
 	Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
+	CreateVirtual(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string, allowReserved bool) (*number.Number, error)
 	Get(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	List(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error)
 	Delete(ctx context.Context, id uuid.UUID) (*number.Number, error)
@@ -38,6 +40,7 @@ type NumberHandler interface {
 		messageFlowID uuid.UUID,
 		name string,
 		detail string,
+		numType number.Type,
 		providerName number.ProviderName,
 		providerReferenceID string,
 		status number.Status,
@@ -46,6 +49,8 @@ type NumberHandler interface {
 	) (*number.Number, error)
 
 	Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error)
+
+	CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	RenewNumbers(ctx context.Context, days int, hours int, tmRenew string) ([]*number.Number, error)
 

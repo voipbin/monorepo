@@ -946,6 +946,7 @@ type RequestHandler interface {
 	NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]nmnumber.Number, error)
+	NumberV1VirtualNumberCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// outdial-manager outdial
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)

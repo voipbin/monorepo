@@ -572,6 +572,12 @@ const (
 	NumberManagerStatusDeleted NumberManagerNumberStatus = "deleted"
 )
 
+// Defines values for NumberManagerNumberType.
+const (
+	NumberManagerNumberTypeNormal  NumberManagerNumberType = "normal"
+	NumberManagerNumberTypeVirtual NumberManagerNumberType = "virtual"
+)
+
 // Defines values for OutdialManagerOutdialtargetStatus.
 const (
 	OutdialManagerOutdialtargetStatusDone        OutdialManagerOutdialtargetStatus = "done"
@@ -2660,6 +2666,9 @@ type NumberManagerNumber struct {
 
 	// TmUpdate The timestamp of when the number was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type The type of the number.
+	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
 // NumberManagerNumberProviderName The provider name for the number.
@@ -2667,6 +2676,9 @@ type NumberManagerNumberProviderName string
 
 // NumberManagerNumberStatus The status of the number.
 type NumberManagerNumberStatus string
+
+// NumberManagerNumberType The type of the number.
+type NumberManagerNumberType string
 
 // OutdialManagerOutdial defines model for OutdialManagerOutdial.
 type OutdialManagerOutdial struct {
@@ -3656,8 +3668,11 @@ type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// CountryCode The ISO country code.
-	CountryCode string `form:"country_code" json:"country_code"`
+	// CountryCode The ISO country code. Required when type is not virtual.
+	CountryCode *string `form:"country_code,omitempty" json:"country_code,omitempty"`
+
+	// Type The type of available numbers to retrieve (normal or virtual). Defaults to normal.
+	Type *NumberManagerNumberType `form:"type,omitempty" json:"type,omitempty"`
 }
 
 // PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
@@ -4377,6 +4392,9 @@ type PostNumbersJSONBody struct {
 
 	// Number The phone number.
 	Number string `json:"number"`
+
+	// Type The type of the number.
+	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
 // PostNumbersRenewJSONBody defines parameters for PostNumbersRenew.
@@ -7426,18 +7444,19 @@ func (siw *ServerInterfaceWrapper) GetAvailableNumbers(c *gin.Context) {
 		return
 	}
 
-	// ------------- Required query parameter "country_code" -------------
+	// ------------- Optional query parameter "country_code" -------------
 
-	if paramValue := c.Query("country_code"); paramValue != "" {
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Query argument country_code is required, but not found"), http.StatusBadRequest)
+	err = runtime.BindQueryParameter("form", true, false, "country_code", c.Request.URL.Query(), &params.CountryCode)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter country_code: %w", err), http.StatusBadRequest)
 		return
 	}
 
-	err = runtime.BindQueryParameter("form", true, true, "country_code", c.Request.URL.Query(), &params.CountryCode)
+	// ------------- Optional query parameter "type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter country_code: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter type: %w", err), http.StatusBadRequest)
 		return
 	}
 

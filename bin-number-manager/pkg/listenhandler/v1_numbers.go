@@ -30,7 +30,15 @@ func (h *listenHandler) processV1NumbersPost(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	numb, err := h.numberHandler.Create(ctx, req.CustomerID, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	var numb *number.Number
+	var err error
+
+	switch req.Type {
+	case number.TypeVirtual:
+		numb, err = h.numberHandler.CreateVirtual(ctx, req.CustomerID, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail, false)
+	default:
+		numb, err = h.numberHandler.Create(ctx, req.CustomerID, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	}
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil

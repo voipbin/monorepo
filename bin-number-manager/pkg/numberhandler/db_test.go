@@ -68,6 +68,7 @@ func Test_dbCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("9469dadc-1f4f-11ee-8336-df1969096eee"),
 				},
 				Number:              "+821100000001",
+				Type:                number.TypeNormal,
 				CallFlowID:          uuid.FromStringOrNil("94a0b5c0-1f4f-11ee-aae2-4b3d5394a85a"),
 				MessageFlowID:       uuid.FromStringOrNil("94cd4568-1f4f-11ee-8246-4f9a649f4565"),
 				Name:                "test name",
@@ -107,7 +108,7 @@ func Test_dbCreate(t *testing.T) {
 			mockDB.EXPECT().NumberGet(ctx, tt.responseUUID).Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
 
-			res, err := h.dbCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
+			res, err := h.dbCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.TypeNormal, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

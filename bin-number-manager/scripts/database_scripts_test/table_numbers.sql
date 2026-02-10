@@ -2,6 +2,7 @@ create table number_numbers(
   -- identity
   id            binary(16),     -- id
   number        varchar(255),   -- number
+  type          varchar(255) not null default 'normal', -- number type (normal, virtual)
   customer_id   binary(16),     -- customer id
 
   call_flow_id      binary(16), --
@@ -29,6 +30,7 @@ create table number_numbers(
 );
 
 create index idx_number_numbers_number on number_numbers(number);
+create index idx_number_numbers_type on number_numbers(type);
 create index idx_number_numbers_customer_id on number_numbers(customer_id);
 create index idx_number_numbers_call_flow_id on number_numbers(call_flow_id);
 create index idx_number_numbers_message_flow_id on number_numbers(message_flow_id);

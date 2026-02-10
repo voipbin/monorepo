@@ -431,6 +431,39 @@ func Test_EventNMNumberCreated(t *testing.T) {
 	}
 }
 
+func Test_EventNMNumberCreated_virtual(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+	h := billingHandler{
+		utilHandler:    mockUtil,
+		db:             mockDB,
+		notifyHandler:  mockNotify,
+		accountHandler: mockAccount,
+	}
+	ctx := context.Background()
+
+	n := &nmnumber.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			CustomerID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000002"),
+		},
+		Type: nmnumber.TypeVirtual,
+	}
+
+	// no mock expectations — billing should be skipped entirely
+
+	if err := h.EventNMNumberCreated(ctx, n); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
 func Test_EventNMNumberRenewed(t *testing.T) {
 
 	type test struct {
@@ -514,6 +547,39 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_EventNMNumberRenewed_virtual(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+	h := billingHandler{
+		utilHandler:    mockUtil,
+		db:             mockDB,
+		notifyHandler:  mockNotify,
+		accountHandler: mockAccount,
+	}
+	ctx := context.Background()
+
+	n := &nmnumber.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("b2c3d4e5-f6a7-11ee-bbbb-000000000001"),
+			CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ee-bbbb-000000000002"),
+		},
+		Type: nmnumber.TypeVirtual,
+	}
+
+	// no mock expectations — billing should be skipped entirely
+
+	if err := h.EventNMNumberRenewed(ctx, n); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
 

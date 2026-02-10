@@ -54,8 +54,22 @@ func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *soc
 		}
 	}
 
+	// Extract type from filters
+	numType := ""
+	if t, ok := filters["type"]; ok {
+		if tStr, ok := t.(string); ok {
+			numType = tStr
+		}
+	}
+
 	log.Debug("processV1AvailableNumbersGet. Getting available numbers.")
-	numbers, err := h.numberHandler.GetAvailableNumbers(countryCode, pageSize)
+
+	var numbers any
+	if numType == "virtual" {
+		numbers, err = h.numberHandler.GetAvailableVirtualNumbers(ctx, pageSize)
+	} else {
+		numbers, err = h.numberHandler.GetAvailableNumbers(countryCode, pageSize)
+	}
 	if err != nil {
 		log.Debugf("Could not get available numbers. err: %v", err)
 		return simpleResponse(500), nil

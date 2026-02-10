@@ -34,9 +34,13 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
-	n.TMPurchase = now
-	n.TMRenew = now
 	n.TMCreate = now
+	if n.Type != number.TypeVirtual {
+		// only set purchase/renew timestamps for provider-backed numbers;
+		// virtual numbers have no purchase and must not enter renewal queries
+		n.TMPurchase = now
+		n.TMRenew = now
+	}
 	n.TMUpdate = nil
 	n.TMDelete = nil
 
@@ -286,6 +290,76 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	_ = h.numberUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// NumberGetExistingNumbers returns which of the given numbers already exist (active, not deleted) in the database.
+func (h *handler) NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error) {
+	if len(numbers) == 0 {
+		return nil, nil
+	}
+
+	// build IN clause values
+	vals := make([]any, len(numbers))
+	for i, n := range numbers {
+		vals[i] = n
+	}
+
+	query, args, err := squirrel.
+		Select(string(number.FieldNumber)).
+		From(numbersTable).
+		Where(squirrel.Eq{string(number.FieldNumber): vals}).
+		Where(squirrel.Eq{string(number.FieldStatus): string(number.StatusActive)}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. NumberGetExistingNumbers. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGetExistingNumbers. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	// Using manual rows.Scan here because this is a single-column string query;
+	// ScanRow is designed for scanning into model structs with db tags.
+	var res []string
+	for rows.Next() {
+		var num string
+		if err := rows.Scan(&num); err != nil {
+			return nil, fmt.Errorf("could not scan row. NumberGetExistingNumbers. err: %v", err)
+		}
+		res = append(res, num)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. NumberGetExistingNumbers. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// NumberCountVirtualByCustomerID returns the count of active virtual numbers for a customer.
+func (h *handler) NumberCountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(numbersTable).
+		Where(squirrel.Eq{string(number.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(number.FieldType): string(number.TypeVirtual)}).
+		Where(squirrel.Eq{string(number.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("could not build query. NumberCountVirtualByCustomerID. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("could not query. NumberCountVirtualByCustomerID. err: %v", err)
+	}
+
+	return count, nil
 }
 
 // NumberGetsByTMRenew returns a list of numbers by tm_renew.

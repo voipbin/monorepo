@@ -36,6 +36,9 @@ post:
             number:
               description: The phone number.
               type: string
+            type:
+              $ref: '#/components/schemas/NumberManagerNumberType'
+              description: The type of the number (normal or virtual). Defaults to normal.
             call_flow_id:
               description: The ID of the call flow.
               type: string

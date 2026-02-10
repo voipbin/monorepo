@@ -4171,6 +4171,21 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdateFlowID(ctx, id, ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberUpdateFlowID", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberUpdateFlowID), ctx, id, callFlowID, messageFlowID)
 }
 
+// NumberV1VirtualNumberCountByCustomerID mocks base method.
+func (m *MockRequestHandler) NumberV1VirtualNumberCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1VirtualNumberCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1VirtualNumberCountByCustomerID indicates an expected call of NumberV1VirtualNumberCountByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) NumberV1VirtualNumberCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1VirtualNumberCountByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1VirtualNumberCountByCustomerID), ctx, customerID)
+}
+
 // OutdialV1OutdialCreate mocks base method.
 func (m *MockRequestHandler) OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*outdial.Outdial, error) {
 	m.ctrl.T.Helper()
