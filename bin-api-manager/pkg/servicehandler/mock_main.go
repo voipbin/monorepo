@@ -754,18 +754,18 @@ func (mr *MockServiceHandlerMockRecorder) AuthPasswordReset(ctx, token, password
 }
 
 // AvailableNumberList mocks base method.
-func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *agent.Agent, size uint64, countryCode string) ([]*availablenumber.WebhookMessage, error) {
+func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *agent.Agent, size uint64, countryCode, numType string) ([]*availablenumber.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AvailableNumberList", ctx, a, size, countryCode)
+	ret := m.ctrl.Call(m, "AvailableNumberList", ctx, a, size, countryCode, numType)
 	ret0, _ := ret[0].([]*availablenumber.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AvailableNumberList indicates an expected call of AvailableNumberList.
-func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, countryCode any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, countryCode, numType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberList", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberList), ctx, a, size, countryCode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberList", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberList), ctx, a, size, countryCode, numType)
 }
 
 // BillingAccountAddBalanceForce mocks base method.

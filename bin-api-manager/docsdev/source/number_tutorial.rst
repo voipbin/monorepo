@@ -3,7 +3,7 @@
 Tutorial
 ========
 
-Get list of available-numbers
+Get list of available numbers
 -----------------------------
 
 Example
@@ -30,6 +30,60 @@ Example
         ...
     ]
 
+
+
+Get list of available virtual numbers
+-------------------------------------
+
+Example
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/available_numbers?token=<YOUR_AUTH_TOKEN>&type=virtual&page_size=5'
+
+    {
+    "result": [
+        {
+            "number": "+999100000001",
+            "country": "",
+            "region": "",
+            "postal_code": "",
+            "features": []
+        },
+        ...
+    ]
+
+
+Create virtual number
+---------------------
+
+Virtual numbers use the +999 prefix and do not require a provider purchase.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "number": "+999100000001"
+    }'
+
+    {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "number": "+999100000001",
+        "type": "virtual",
+        "call_flow_id": "00000000-0000-0000-0000-000000000000",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "",
+        "detail": "",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "tm_create": "2024-01-15 10:30:00.000000",
+        "tm_update": "",
+        "tm_delete": ""
+    }
 
 
 Get list of numbers

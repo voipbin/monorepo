@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -11,6 +12,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/metricshandler"
 )
 
 const (
@@ -30,6 +32,13 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 // CustomerCreate creates new customer record and returns the created customer record.
 func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("create", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("create", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
@@ -57,6 +66,8 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. CustomerCreate. err: %v", err)
 	}
+
+	status = "success"
 
 	// update the cache
 	_ = h.customerUpdateToCache(ctx, c.ID)
@@ -140,13 +151,24 @@ func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*custome
 func (h *handler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	res, err := h.customerGetFromCache(ctx, id)
 	if err == nil {
+		metricshandler.CacheOperationTotal.WithLabelValues("get", "customer", "hit").Inc()
 		return res, nil
 	}
+	metricshandler.CacheOperationTotal.WithLabelValues("get", "customer", "miss").Inc()
+
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("get", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("get", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
 
 	res, err = h.customerGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+
+	status = "success"
 
 	// set to the cache
 	_ = h.customerSetToCache(ctx, res)
@@ -156,6 +178,13 @@ func (h *handler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Cust
 
 // CustomerGets returns customers.
 func (h *handler) CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("list", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("list", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -199,6 +228,8 @@ func (h *handler) CustomerList(ctx context.Context, size uint64, token string, f
 		return nil, fmt.Errorf("rows iteration error. CustomerGets. err: %v", err)
 	}
 
+	status = "success"
+
 	return res, nil
 }
 
@@ -207,6 +238,13 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 	if len(fields) == 0 {
 		return nil
 	}
+
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("update", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("update", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
 
 	fields[customer.FieldTMUpdate] = h.utilHandler.TimeNow()
 
@@ -229,12 +267,21 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 		return fmt.Errorf("CustomerUpdate: exec failed: %w", err)
 	}
 
+	status = "success"
+
 	_ = h.customerUpdateToCache(ctx, id)
 	return nil
 }
 
 // CustomerDelete deletes the customer.
 func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("delete", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("delete", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	ts := h.utilHandler.TimeNow()
 
 	fields := map[customer.Field]any{
@@ -269,6 +316,8 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 		return ErrNotFound
 	}
 
+	status = "success"
+
 	// update the cache
 	_ = h.customerUpdateToCache(ctx, id)
 
@@ -277,6 +326,13 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 
 // CustomerHardDelete permanently removes a customer record from the database.
 func (h *handler) CustomerHardDelete(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("hard_delete", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("hard_delete", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
 	sb := squirrel.Delete(customerTable).
 		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question)
@@ -289,6 +345,8 @@ func (h *handler) CustomerHardDelete(ctx context.Context, id uuid.UUID) error {
 	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("CustomerHardDelete: exec failed: %w", err)
 	}
+
+	status = "success"
 
 	return nil
 }

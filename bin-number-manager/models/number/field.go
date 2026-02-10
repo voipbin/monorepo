@@ -9,6 +9,7 @@ const (
 	FieldCustomerID Field = "customer_id"
 
 	FieldNumber Field = "number"
+	FieldType   Field = "type"
 
 	FieldCallFlowID    Field = "call_flow_id"
 	FieldMessageFlowID Field = "message_flow_id"

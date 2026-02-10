@@ -101,6 +101,12 @@ func (h *billingHandler) EventNMNumberCreated(ctx context.Context, n *nmnumber.N
 	})
 	log.Debugf("Received number_created event. number_id: %s", n.ID)
 
+	// virtual numbers have no billing
+	if n.Type == nmnumber.TypeVirtual {
+		log.Debugf("Skipping billing for virtual number. number_id: %s", n.ID)
+		return nil
+	}
+
 	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumber, n.ID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
 		return errors.Wrapf(errBilling, "could not create a billing. number_id: %s", n.ID)
 	}
@@ -115,6 +121,12 @@ func (h *billingHandler) EventNMNumberRenewed(ctx context.Context, n *nmnumber.N
 		"number": n,
 	})
 	log.Debugf("Received number_renewed event. number_id: %s", n.ID)
+
+	// virtual numbers have no billing
+	if n.Type == nmnumber.TypeVirtual {
+		log.Debugf("Skipping billing for virtual number. number_id: %s", n.ID)
+		return nil
+	}
 
 	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumberRenew, n.ID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
 		log.Errorf("Could not create a billing. number_id: %s", n.ID)

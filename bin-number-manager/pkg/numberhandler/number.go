@@ -3,8 +3,10 @@ package numberhandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -22,6 +24,11 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		"target_number": num,
 	})
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
+
+	// reject virtual number prefix for normal number creation
+	if strings.HasPrefix(num, number.VirtualNumberPrefix) {
+		return nil, fmt.Errorf("numbers starting with %s are reserved for virtual numbers", number.VirtualNumberPrefix)
+	}
 
 	// check the customer has enough balance
 	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1)
@@ -50,6 +57,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		messageFlowID,
 		name,
 		detail,
+		number.TypeNormal,
 		number.ProviderNameTelnyx,
 		tmp.ID,
 		tmp.Status,
@@ -71,6 +79,57 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	return res, nil
 }
 
+// CreateVirtual creates a virtual number without provider purchase or billing.
+func (h *numberHandler) CreateVirtual(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string, allowReserved bool) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "CreateVirtual",
+		"customer_id":   customerID,
+		"target_number": num,
+	})
+	log.Debugf("Creating a virtual number. customer_id: %s, number: %v", customerID, num)
+
+	// validate virtual number format
+	if err := number.ValidateVirtualNumber(num, allowReserved); err != nil {
+		log.Errorf("Invalid virtual number format. err: %v", err)
+		return nil, fmt.Errorf("invalid virtual number format: %w", err)
+	}
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeVirtualNumber)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
+
+	// register without provider
+	res, err := h.Register(
+		ctx,
+		customerID,
+		num,
+		callFlowID,
+		messageFlowID,
+		name,
+		detail,
+		number.TypeVirtual,
+		number.ProviderNameNone,
+		"",
+		number.StatusActive,
+		false,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Could not create virtual number. err: %v", err)
+		return nil, errors.Wrap(err, "could not create virtual number")
+	}
+	log.WithField("number", res).Debugf("Created virtual number. number_id: %s", res.ID)
+
+	return res, nil
+}
+
 // Register adds a number record to the database without purchasing it from a provider.
 // Unlike Create, which purchases the number from a provider (e.g. Telnyx), Register is used for existing numbers.
 func (h *numberHandler) Register(
@@ -81,6 +140,7 @@ func (h *numberHandler) Register(
 	messageFlowID uuid.UUID,
 	name string,
 	detail string,
+	numType number.Type,
 	providerName number.ProviderName,
 	providerReferenceID string,
 	status number.Status,
@@ -116,6 +176,7 @@ func (h *numberHandler) Register(
 		messageFlowID,
 		name,
 		detail,
+		numType,
 		providerName,
 		providerReferenceID,
 		status,
@@ -153,6 +214,10 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 
 	case number.ProviderNameTwilio:
 		err = h.numberHandlerTwilio.ReleaseNumber(ctx, num)
+
+	case number.ProviderNameNone:
+		// virtual number or no provider — skip provider release
+		log.Debugf("No provider to release for number. number: %s", num.Number)
 
 	default:
 		err = fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)
@@ -205,6 +270,23 @@ func (h *numberHandler) List(ctx context.Context, pageSize uint64, pageToken str
 	}
 
 	return res, nil
+}
+
+// CountVirtualByCustomerID returns the count of active virtual numbers for a customer.
+func (h *numberHandler) CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CountVirtualByCustomerID",
+		"customer_id": customerID,
+	})
+
+	count, err := h.db.NumberCountVirtualByCustomerID(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not get virtual number count. err: %v", err)
+		return 0, errors.Wrap(err, "could not get virtual number count")
+	}
+	log.Debugf("Virtual number count. customer_id: %s, count: %d", customerID, count)
+
+	return count, nil
 }
 
 // Update updates the number with the given fields.

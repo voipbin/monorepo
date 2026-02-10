@@ -54,6 +54,21 @@ func (mr *MockDBHandlerMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDBHandler)(nil).Close))
 }
 
+// NumberCountVirtualByCustomerID mocks base method.
+func (m *MockDBHandler) NumberCountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberCountVirtualByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberCountVirtualByCustomerID indicates an expected call of NumberCountVirtualByCustomerID.
+func (mr *MockDBHandlerMockRecorder) NumberCountVirtualByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCountVirtualByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).NumberCountVirtualByCustomerID), ctx, customerID)
+}
+
 // NumberCreate mocks base method.
 func (m *MockDBHandler) NumberCreate(ctx context.Context, n *number.Number) error {
 	m.ctrl.T.Helper()
@@ -95,6 +110,21 @@ func (m *MockDBHandler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Nu
 func (mr *MockDBHandlerMockRecorder) NumberGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGet", reflect.TypeOf((*MockDBHandler)(nil).NumberGet), ctx, id)
+}
+
+// NumberGetExistingNumbers mocks base method.
+func (m *MockDBHandler) NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetExistingNumbers", ctx, numbers)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetExistingNumbers indicates an expected call of NumberGetExistingNumbers.
+func (mr *MockDBHandlerMockRecorder) NumberGetExistingNumbers(ctx, numbers any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetExistingNumbers", reflect.TypeOf((*MockDBHandler)(nil).NumberGetExistingNumbers), ctx, numbers)
 }
 
 // NumberGetsByTMRenew mocks base method.

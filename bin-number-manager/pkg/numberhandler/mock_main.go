@@ -45,6 +45,21 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 	return m.recorder
 }
 
+// CountVirtualByCustomerID mocks base method.
+func (m *MockNumberHandler) CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountVirtualByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountVirtualByCustomerID indicates an expected call of CountVirtualByCustomerID.
+func (mr *MockNumberHandlerMockRecorder) CountVirtualByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountVirtualByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).CountVirtualByCustomerID), ctx, customerID)
+}
+
 // Create mocks base method.
 func (m *MockNumberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -58,6 +73,21 @@ func (m *MockNumberHandler) Create(ctx context.Context, customerID uuid.UUID, nu
 func (mr *MockNumberHandlerMockRecorder) Create(ctx, customerID, num, callFlowID, messageFlowID, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNumberHandler)(nil).Create), ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+}
+
+// CreateVirtual mocks base method.
+func (m *MockNumberHandler) CreateVirtual(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string, allowReserved bool) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVirtual", ctx, customerID, num, callFlowID, messageFlowID, name, detail, allowReserved)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateVirtual indicates an expected call of CreateVirtual.
+func (mr *MockNumberHandlerMockRecorder) CreateVirtual(ctx, customerID, num, callFlowID, messageFlowID, name, detail, allowReserved any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVirtual", reflect.TypeOf((*MockNumberHandler)(nil).CreateVirtual), ctx, customerID, num, callFlowID, messageFlowID, name, detail, allowReserved)
 }
 
 // Delete mocks base method.
@@ -133,6 +163,21 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
+// GetAvailableVirtualNumbers mocks base method.
+func (m *MockNumberHandler) GetAvailableVirtualNumbers(ctx context.Context, limit uint) ([]*availablenumber.AvailableNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAvailableVirtualNumbers", ctx, limit)
+	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAvailableVirtualNumbers indicates an expected call of GetAvailableVirtualNumbers.
+func (mr *MockNumberHandlerMockRecorder) GetAvailableVirtualNumbers(ctx, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableVirtualNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableVirtualNumbers), ctx, limit)
+}
+
 // List mocks base method.
 func (m *MockNumberHandler) List(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -149,18 +194,18 @@ func (mr *MockNumberHandlerMockRecorder) List(ctx, pageSize, pageToken, filters 
 }
 
 // Register mocks base method.
-func (m *MockNumberHandler) Register(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string, providerName number.ProviderName, providerReferenceID string, status number.Status, t38Enabled, emergencyEnabled bool) (*number.Number, error) {
+func (m *MockNumberHandler) Register(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string, numType number.Type, providerName number.ProviderName, providerReferenceID string, status number.Status, t38Enabled, emergencyEnabled bool) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
+	ret := m.ctrl.Call(m, "Register", ctx, customerID, num, callFlowID, messageFlowID, name, detail, numType, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockNumberHandlerMockRecorder) Register(ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled any) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) Register(ctx, customerID, num, callFlowID, messageFlowID, name, detail, numType, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockNumberHandler)(nil).Register), ctx, customerID, num, callFlowID, messageFlowID, name, detail, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockNumberHandler)(nil).Register), ctx, customerID, num, callFlowID, messageFlowID, name, detail, numType, providerName, providerReferenceID, status, t38Enabled, emergencyEnabled)
 }
 
 // RenewNumbers mocks base method.

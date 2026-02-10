@@ -170,6 +170,39 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid
 	return &res, nil
 }
 
+type virtualNumberCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type virtualNumberCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
+// NumberV1VirtualNumberCountByCustomerID sends a request to number-manager
+// to get the count of virtual numbers for the given customer.
+func (r *requestHandler) NumberV1VirtualNumberCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/numbers/count_virtual_by_customer"
+
+	m, err := json.Marshal(virtualNumberCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/numbers/count_virtual_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res virtualNumberCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
+}
+
 // NumberV1NumberRenewByTmRenew sends a request to the number-manager
 // to renew the numbers by tm_renew.
 // Returns renewed number info
