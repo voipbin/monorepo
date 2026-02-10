@@ -25,9 +25,9 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	})
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
-	// reject virtual number prefix for normal number creation
-	if strings.HasPrefix(num, number.VirtualNumberPrefix) {
-		return nil, fmt.Errorf("numbers starting with %s are reserved for virtual numbers", number.VirtualNumberPrefix)
+	// reject reserved virtual number range for normal number creation
+	if strings.HasPrefix(num, number.VirtualNumberReservedPrefix) {
+		return nil, fmt.Errorf("numbers starting with %s are reserved", number.VirtualNumberReservedPrefix)
 	}
 
 	// check the customer has enough balance
