@@ -36,17 +36,24 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 
+	numType := ""
+	if params.Type != nil {
+		numType = string(*params.Type)
+	}
+
 	countryCode := ""
 	if params.CountryCode != nil {
 		countryCode = *params.CountryCode
 	}
-	if countryCode == "" {
+
+	// country_code is required for non-virtual number queries
+	if numType != "virtual" && countryCode == "" {
 		log.Infof("Not acceptable country code. country_code: %s", countryCode)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), &a, pageSize, countryCode)
+	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), &a, pageSize, countryCode, numType)
 	if err != nil {
 		log.Errorf("Could not get available numbers. err: %v", err)
 		c.AbortWithStatus(500)

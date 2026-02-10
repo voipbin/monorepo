@@ -45,6 +45,21 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 	return m.recorder
 }
 
+// CountVirtualByCustomerID mocks base method.
+func (m *MockNumberHandler) CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountVirtualByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountVirtualByCustomerID indicates an expected call of CountVirtualByCustomerID.
+func (mr *MockNumberHandlerMockRecorder) CountVirtualByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountVirtualByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).CountVirtualByCustomerID), ctx, customerID)
+}
+
 // Create mocks base method.
 func (m *MockNumberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()

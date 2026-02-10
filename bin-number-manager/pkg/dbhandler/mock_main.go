@@ -54,6 +54,21 @@ func (mr *MockDBHandlerMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDBHandler)(nil).Close))
 }
 
+// NumberCountVirtualByCustomerID mocks base method.
+func (m *MockDBHandler) NumberCountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberCountVirtualByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberCountVirtualByCustomerID indicates an expected call of NumberCountVirtualByCustomerID.
+func (mr *MockDBHandlerMockRecorder) NumberCountVirtualByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCountVirtualByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).NumberCountVirtualByCustomerID), ctx, customerID)
+}
+
 // NumberCreate mocks base method.
 func (m *MockDBHandler) NumberCreate(ctx context.Context, n *number.Number) error {
 	m.ctrl.T.Helper()

@@ -2973,12 +2973,10 @@ components:
         - telnyx
         - twilio
         - messagebird
-        - none
       x-enum-varnames:
         - NumberManagerProviderNameTelnyx
         - NumberManagerProviderNameTwilio
         - NumberManagerProviderNameMessagebird
-        - NumberManagerProviderNameNone
     NumberManagerNumberStatus:
       type: string
       description: The status of the number.

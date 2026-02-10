@@ -53,7 +53,8 @@ var (
 	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
 	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
 	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
-	regV1NumbersRenew     = regexp.MustCompile(`/v1/numbers/renew$`)
+	regV1NumbersRenew                  = regexp.MustCompile(`/v1/numbers/renew$`)
+	regV1NumbersCountVirtualByCustomer = regexp.MustCompile(`/v1/numbers/count_virtual_by_customer$`)
 )
 
 var (
@@ -175,6 +176,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1NumbersRenew.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1NumbersRenewPost(ctx, m)
 		requestType = "/v1/numbers/renew"
+
+	// GET /numbers/count_virtual_by_customer
+	case regV1NumbersCountVirtualByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1NumbersCountVirtualByCustomerGet(ctx, m)
+		requestType = "/v1/numbers/count_virtual_by_customer"
 
 	// POST /numbers
 	case regV1Numbers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

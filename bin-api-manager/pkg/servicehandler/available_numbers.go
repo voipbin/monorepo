@@ -14,13 +14,14 @@ import (
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
+func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AvailableNumberGets",
 		"customer_id":  a.CustomerID,
 		"username":     a.Username,
 		"size":         size,
 		"country_code": countryCode,
+		"type":         numType,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -31,6 +32,9 @@ func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *amagent.Age
 	filters := map[string]any{
 		"customer_id":  a.CustomerID,
 		"country_code": countryCode,
+	}
+	if numType != "" {
+		filters["type"] = numType
 	}
 	tmps, err := h.reqHandler.NumberV1AvailableNumberList(ctx, size, filters)
 	if err != nil {

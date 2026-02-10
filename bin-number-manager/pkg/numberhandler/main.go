@@ -50,6 +50,8 @@ type NumberHandler interface {
 
 	Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error)
 
+	CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+
 	RenewNumbers(ctx context.Context, days int, hours int, tmRenew string) ([]*number.Number, error)
 
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error

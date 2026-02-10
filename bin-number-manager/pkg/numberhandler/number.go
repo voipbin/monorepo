@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -91,6 +92,17 @@ func (h *numberHandler) CreateVirtual(ctx context.Context, customerID uuid.UUID,
 	if err := number.ValidateVirtualNumber(num, allowReserved); err != nil {
 		log.Errorf("Invalid virtual number format. err: %v", err)
 		return nil, fmt.Errorf("invalid virtual number format: %w", err)
+	}
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeVirtualNumber)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
 	}
 
 	// register without provider
@@ -258,6 +270,23 @@ func (h *numberHandler) List(ctx context.Context, pageSize uint64, pageToken str
 	}
 
 	return res, nil
+}
+
+// CountVirtualByCustomerID returns the count of active virtual numbers for a customer.
+func (h *numberHandler) CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CountVirtualByCustomerID",
+		"customer_id": customerID,
+	})
+
+	count, err := h.db.NumberCountVirtualByCustomerID(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not get virtual number count. err: %v", err)
+		return 0, errors.Wrap(err, "could not get virtual number count")
+	}
+	log.Debugf("Virtual number count. customer_id: %s, count: %d", customerID, count)
+
+	return count, nil
 }
 
 // Update updates the number with the given fields.

@@ -144,7 +144,7 @@ type ServiceHandler interface {
 	AuthPasswordReset(ctx context.Context, token string, password string) error
 
 	// available numbers
-	AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
+	AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// billing accounts
 	BillingAccountCreate(ctx context.Context, a *amagent.Agent, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)

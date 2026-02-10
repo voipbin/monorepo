@@ -8,6 +8,7 @@ import (
 	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -593,6 +594,288 @@ func Test_Delete(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_Delete_virtual(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseNumber *number.Number
+
+		expectRes *number.Number
+	}{
+		{
+			"virtual number",
+
+			uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000005"),
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000005"),
+				},
+				Type:         number.TypeVirtual,
+				ProviderName: number.ProviderNameNone,
+			},
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000005"),
+				},
+				Type:         number.TypeVirtual,
+				ProviderName: number.ProviderNameNone,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := numberHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+
+			// no provider release for virtual numbers (ProviderNameNone)
+
+			mockDB.EXPECT().NumberDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseNumber.CustomerID, number.EventTypeNumberDeleted, tt.responseNumber)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CreateVirtual(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		number        string
+		numberName    string
+		detail        string
+
+		responseUUID   uuid.UUID
+		responseNumber *number.Number
+
+		expectNumber *number.Number
+	}{
+		{
+			name: "normal",
+
+			customerID:    uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			callFlowID:    uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000002"),
+			messageFlowID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000003"),
+			number:        "+999123456789",
+			numberName:    "virtual test",
+			detail:        "virtual detail",
+
+			responseUUID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000004"),
+			responseNumber: &number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000004"),
+					CustomerID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+				},
+				Number:       "+999123456789",
+				Type:         number.TypeVirtual,
+				ProviderName: number.ProviderNameNone,
+			},
+
+			expectNumber: &number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000004"),
+					CustomerID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+				},
+				Number:           "+999123456789",
+				Type:             number.TypeVirtual,
+				CallFlowID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000002"),
+				MessageFlowID:    uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000003"),
+				Name:             "virtual test",
+				Detail:           "virtual detail",
+				ProviderName:     number.ProviderNameNone,
+				Status:           number.StatusActive,
+				T38Enabled:       false,
+				EmergencyEnabled: false,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := numberHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeVirtualNumber).Return(true, nil)
+			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
+
+			res, err := h.CreateVirtual(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, false)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseNumber, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumber, res)
+			}
+		})
+	}
+}
+
+func Test_CreateVirtual_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		number     string
+
+		mockResourceLimitValid bool
+		mockResourceLimitErr   error
+		skipResourceLimitMock  bool
+	}{
+		{
+			name:                  "invalid format - wrong prefix",
+			customerID:            uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			number:                "+123456789012",
+			skipResourceLimitMock: true,
+		},
+		{
+			name:                  "invalid format - too short",
+			customerID:            uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			number:                "+99912345",
+			skipResourceLimitMock: true,
+		},
+		{
+			name:                  "reserved range rejected",
+			customerID:            uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			number:                "+999000123456",
+			skipResourceLimitMock: true,
+		},
+		{
+			name:                   "resource limit exceeded",
+			customerID:             uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			number:                 "+999123456789",
+			mockResourceLimitValid: false,
+		},
+		{
+			name:                 "resource limit error",
+			customerID:           uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			number:               "+999123456789",
+			mockResourceLimitErr: fmt.Errorf("resource limit check failed"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := numberHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if !tt.skipResourceLimitMock {
+				mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeVirtualNumber).Return(tt.mockResourceLimitValid, tt.mockResourceLimitErr)
+			}
+
+			_, err := h.CreateVirtual(ctx, tt.customerID, tt.number, uuid.Nil, uuid.Nil, "", "", false)
+			if err == nil {
+				t.Errorf("Wrong match. expect error, got nil")
+			}
+		})
+	}
+}
+
+func Test_CountVirtualByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name          string
+		customerID    uuid.UUID
+		responseCount int
+	}{
+		{
+			name:          "normal",
+			customerID:    uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000001"),
+			responseCount: 5,
+		},
+		{
+			name:          "zero count",
+			customerID:    uuid.FromStringOrNil("a1b2c3d4-e5f6-11ee-aaaa-000000000002"),
+			responseCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := numberHandler{
+				db: mockDB,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberCountVirtualByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
+
+			res, err := h.CountVirtualByCustomerID(ctx, tt.customerID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.responseCount {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.responseCount, res)
 			}
 		})
 	}

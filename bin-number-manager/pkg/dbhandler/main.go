@@ -30,6 +30,7 @@ type DBHandler interface {
 	NumberUpdate(ctx context.Context, id uuid.UUID, fields map[number.Field]any) error
 
 	NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error)
+	NumberCountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 }
 
 // handler database handler

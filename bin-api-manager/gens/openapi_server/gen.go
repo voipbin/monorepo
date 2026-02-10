@@ -562,7 +562,6 @@ const (
 // Defines values for NumberManagerNumberProviderName.
 const (
 	NumberManagerProviderNameMessagebird NumberManagerNumberProviderName = "messagebird"
-	NumberManagerProviderNameNone        NumberManagerNumberProviderName = "none"
 	NumberManagerProviderNameTelnyx      NumberManagerNumberProviderName = "telnyx"
 	NumberManagerProviderNameTwilio      NumberManagerNumberProviderName = "twilio"
 )

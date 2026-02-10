@@ -28,6 +28,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 		expectPageSize    uint64
 		expectCountryCode string
+		expectNumType     string
 		expectedRes       string
 	}
 
@@ -53,7 +54,31 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 			expectPageSize:    10,
 			expectCountryCode: "US",
+			expectNumType:     "",
 			expectedRes:       `{"result":[{"number":"+16188850188","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"]}]}`,
+		},
+		{
+			name: "virtual type without country code",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f111bf46-8df6-11ee-8b96-df7d1f63d9d2"),
+				},
+			},
+
+			reqQuery: "/available_numbers?page_size=10&type=virtual",
+
+			responseAvailableNumbers: []*nmavailablenumber.WebhookMessage{
+				{
+					Number:  "+999123456789",
+					Country: "",
+					Region:  "",
+				},
+			},
+
+			expectPageSize:    10,
+			expectCountryCode: "",
+			expectNumType:     "virtual",
+			expectedRes:       `{"result":[{"number":"+999123456789","country":"","region":"","postal_code":"","features":null}]}`,
 		},
 	}
 
@@ -77,7 +102,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AvailableNumberList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectCountryCode).Return(tt.responseAvailableNumbers, nil)
+			mockSvc.EXPECT().AvailableNumberList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectCountryCode, tt.expectNumType).Return(tt.responseAvailableNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
