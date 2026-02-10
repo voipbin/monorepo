@@ -20,6 +20,8 @@ type WebhookMessage struct {
 	Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
 	Password   string `json:"password"`
 
+	DirectHash string `json:"direct_hash"`
+
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete"`
@@ -38,6 +40,8 @@ func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
 		DomainName: h.DomainName,
 		Username:   h.Username,
 		Password:   h.Password,
+
+		DirectHash: h.DirectHash,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

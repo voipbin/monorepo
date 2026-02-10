@@ -2,7 +2,6 @@ package extensionhandler
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -15,6 +14,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
@@ -138,7 +138,17 @@ func (h *extensionHandler) Create(
 
 // Get gets a exists extension
 func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
-	return h.dbBin.ExtensionGet(ctx, id)
+	res, err := h.dbBin.ExtensionGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, res.ID)
+	if err == nil && direct != nil {
+		res.DirectHash = direct.Hash
+	}
+
+	return res, nil
 }
 
 // GetByExtension gets a exists extension of the given endpoint
@@ -157,6 +167,24 @@ func (h *extensionHandler) List(ctx context.Context, token string, limit uint64,
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err
+	}
+
+	// batch fetch direct records
+	extIDs := make([]uuid.UUID, len(res))
+	for i, ext := range res {
+		extIDs[i] = ext.ID
+	}
+
+	directs, _ := h.extensionDirectHandler.GetByExtensionIDs(ctx, extIDs)
+	directMap := make(map[uuid.UUID]string)
+	for _, d := range directs {
+		directMap[d.ExtensionID] = d.Hash
+	}
+
+	for _, ext := range res {
+		if hash, ok := directMap[ext.ID]; ok {
+			ext.DirectHash = hash
+		}
 	}
 
 	return res, nil
@@ -272,8 +300,52 @@ func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension
 		return nil, err
 	}
 
+	// delete extension direct if exists
+	direct, errDirect := h.extensionDirectHandler.GetByExtensionID(ctx, id)
+	if errDirect == nil && direct != nil {
+		if _, errDelete := h.extensionDirectHandler.Delete(ctx, direct.ID); errDelete != nil {
+			log.Errorf("Could not delete extension direct. err: %v", errDelete)
+		}
+	}
+
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
 	promExtensionDeleteTotal.Inc()
 
 	return res, nil
+}
+
+// DirectEnable enables direct extension access
+func (h *extensionHandler) DirectEnable(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	ext, err := h.dbBin.ExtensionGet(ctx, extensionID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get extension: %w", err)
+	}
+
+	return h.extensionDirectHandler.Create(ctx, ext.CustomerID, ext.ID)
+}
+
+// DirectDisable disables direct extension access
+func (h *extensionHandler) DirectDisable(ctx context.Context, extensionID uuid.UUID) error {
+	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, extensionID)
+	if err != nil {
+		return nil // already disabled, no-op
+	}
+
+	_, err = h.extensionDirectHandler.Delete(ctx, direct.ID)
+	return err
+}
+
+// DirectRegenerate regenerates the direct extension hash
+func (h *extensionHandler) DirectRegenerate(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, extensionID)
+	if err != nil {
+		return nil, fmt.Errorf("direct extension not enabled: %w", err)
+	}
+
+	return h.extensionDirectHandler.Regenerate(ctx, direct.ID)
+}
+
+// GetDirectByHash returns extension direct by hash
+func (h *extensionHandler) GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
+	return h.extensionDirectHandler.GetByHash(ctx, hash)
 }

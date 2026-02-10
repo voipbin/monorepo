@@ -27,6 +27,8 @@ type Extension struct {
 	Username string `json:"username" db:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	Password string `json:"password" db:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
+	DirectHash string `json:"direct_hash" db:"-"` // populated from registrar_directs table
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`

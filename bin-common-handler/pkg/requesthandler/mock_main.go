@@ -64,6 +64,7 @@ import (
 	raghandler "monorepo/bin-rag-manager/pkg/raghandler"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	extension "monorepo/bin-registrar-manager/models/extension"
+	extensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
@@ -4898,6 +4899,21 @@ func (m *MockRequestHandler) RegistrarV1ExtensionDelete(ctx context.Context, ext
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionDelete(ctx, extensionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionDelete", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionDelete), ctx, extensionID)
+}
+
+// RegistrarV1ExtensionDirectGetByHash mocks base method.
+func (m *MockRequestHandler) RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionDirectGetByHash", ctx, hash)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1ExtensionDirectGetByHash indicates an expected call of RegistrarV1ExtensionDirectGetByHash.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionDirectGetByHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionDirectGetByHash", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionDirectGetByHash), ctx, hash)
 }
 
 // RegistrarV1ExtensionGet mocks base method.

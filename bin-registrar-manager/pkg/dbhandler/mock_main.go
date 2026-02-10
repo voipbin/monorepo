@@ -16,6 +16,7 @@ import (
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	astendpoint "monorepo/bin-registrar-manager/models/astendpoint"
 	extension "monorepo/bin-registrar-manager/models/extension"
+	extensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	reflect "reflect"
@@ -290,6 +291,108 @@ func (m *MockDBHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) error
 func (mr *MockDBHandlerMockRecorder) ExtensionDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDelete), ctx, id)
+}
+
+// ExtensionDirectCreate mocks base method.
+func (m *MockDBHandler) ExtensionDirectCreate(ctx context.Context, ed *extensiondirect.ExtensionDirect) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectCreate", ctx, ed)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDirectCreate indicates an expected call of ExtensionDirectCreate.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectCreate(ctx, ed any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectCreate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectCreate), ctx, ed)
+}
+
+// ExtensionDirectDelete mocks base method.
+func (m *MockDBHandler) ExtensionDirectDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDirectDelete indicates an expected call of ExtensionDirectDelete.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectDelete", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectDelete), ctx, id)
+}
+
+// ExtensionDirectGet mocks base method.
+func (m *MockDBHandler) ExtensionDirectGet(ctx context.Context, id uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectGet", ctx, id)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionDirectGet indicates an expected call of ExtensionDirectGet.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectGet", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectGet), ctx, id)
+}
+
+// ExtensionDirectGetByExtensionID mocks base method.
+func (m *MockDBHandler) ExtensionDirectGetByExtensionID(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectGetByExtensionID", ctx, extensionID)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionDirectGetByExtensionID indicates an expected call of ExtensionDirectGetByExtensionID.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectGetByExtensionID(ctx, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectGetByExtensionID", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectGetByExtensionID), ctx, extensionID)
+}
+
+// ExtensionDirectGetByExtensionIDs mocks base method.
+func (m *MockDBHandler) ExtensionDirectGetByExtensionIDs(ctx context.Context, extensionIDs []uuid.UUID) ([]*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectGetByExtensionIDs", ctx, extensionIDs)
+	ret0, _ := ret[0].([]*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionDirectGetByExtensionIDs indicates an expected call of ExtensionDirectGetByExtensionIDs.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectGetByExtensionIDs(ctx, extensionIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectGetByExtensionIDs", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectGetByExtensionIDs), ctx, extensionIDs)
+}
+
+// ExtensionDirectGetByHash mocks base method.
+func (m *MockDBHandler) ExtensionDirectGetByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectGetByHash", ctx, hash)
+	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionDirectGetByHash indicates an expected call of ExtensionDirectGetByHash.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectGetByHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectGetByHash", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectGetByHash), ctx, hash)
+}
+
+// ExtensionDirectUpdate mocks base method.
+func (m *MockDBHandler) ExtensionDirectUpdate(ctx context.Context, id uuid.UUID, fields map[extensiondirect.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtensionDirectUpdate indicates an expected call of ExtensionDirectUpdate.
+func (mr *MockDBHandlerMockRecorder) ExtensionDirectUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectUpdate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionDirectUpdate), ctx, id, fields)
 }
 
 // ExtensionGet mocks base method.

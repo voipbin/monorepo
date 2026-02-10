@@ -56,6 +56,9 @@ var (
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
 	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `(\?.*)?$`)
 
+	// extension-directs
+	regV1ExtensionDirectsGet = regexp.MustCompile(`/v1/extension-directs\?`)
+
 	// trunks
 	regV1TrunksCountByCustomer = regexp.MustCompile("/v1/trunks/count_by_customer$")
 	regV1Trunks                = regexp.MustCompile("/v1/trunks$")
@@ -200,6 +203,13 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ExtensionsExtensionExtensionGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
 		requestType = "/v1/extensions/extension/<extension>"
+
+	/////////////////
+	// extension-directs
+	/////////////////
+	case regV1ExtensionDirectsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ExtensionDirectsGet(ctx, m)
+		requestType = "/v1/extension-directs"
 
 	/////////////
 	// trunks

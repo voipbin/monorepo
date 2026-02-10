@@ -2859,6 +2859,9 @@ type RegistrarManagerExtension struct {
 	CustomerId *string `json:"customer_id,omitempty"`
 	Detail     *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
 	DomainName *string `json:"domain_name,omitempty"`
 	Extension  *string `json:"extension,omitempty"`
@@ -4238,9 +4241,15 @@ type PostExtensionsJSONBody struct {
 
 // PutExtensionsIdJSONBody defines parameters for PutExtensionsId.
 type PutExtensionsIdJSONBody struct {
-	Detail   string `json:"detail"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	Detail string `json:"detail"`
+
+	// Direct Enable (true) or disable (false) direct extension access
+	Direct *bool `json:"direct,omitempty"`
+
+	// DirectRegenerate Regenerate the direct extension hash (only when direct is enabled)
+	DirectRegenerate *bool  `json:"direct_regenerate,omitempty"`
+	Name             string `json:"name"`
+	Password         string `json:"password"`
 }
 
 // GetFilesParams defines parameters for GetFiles.

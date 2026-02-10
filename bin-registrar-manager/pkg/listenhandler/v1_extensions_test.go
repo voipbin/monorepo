@@ -66,7 +66,7 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3f4bc63e-6ebf-11eb-b7de-df47266bf559","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","aor_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","auth_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","extension":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22","domain_name":"","realm":"","username":"","password":"4b1f7a6e-6ebf-11eb-a47e-5351700cd612","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"3f4bc63e-6ebf-11eb-b7de-df47266bf559","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","aor_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","auth_id":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22@test.sip.voipbin.net","extension":"45eb6bac-6ebf-11eb-bcf3-3b9157826d22","domain_name":"","realm":"","username":"","password":"4b1f7a6e-6ebf-11eb-a47e-5351700cd612","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -147,7 +147,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -248,7 +248,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6dc9dd22-6f4e-11eb-8059-2fe116db7a2b","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"update name","detail":"update detail","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"update password","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"6dc9dd22-6f4e-11eb-8059-2fe116db7a2b","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"update name","detail":"update detail","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"update password","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -269,6 +269,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 			}
 
 			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.resExt, nil)
+			mockExtension.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -309,7 +310,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"adeea2b0-6f4f-11eb-acb7-13291c18927b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"adeea2b0-6f4f-11eb-acb7-13291c18927b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -377,7 +378,7 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"922a32a2-5650-11ee-8341-cb03501d873e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"922a32a2-5650-11ee-8341-cb03501d873e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","endpoint_id":"","aor_id":"","auth_id":"","extension":"","domain_name":"","realm":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

@@ -8,6 +8,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
+	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -192,4 +193,22 @@ func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Conte
 	}
 
 	return res.Count, nil
+}
+
+// RegistrarV1ExtensionDirectGetByHash sends a request to registrar-manager
+// to get the extension direct by hash.
+func (r *requestHandler) RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*rmextensiondirect.ExtensionDirect, error) {
+	uri := fmt.Sprintf("/v1/extension-directs?hash=%s", url.QueryEscape(hash))
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension-direct", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmextensiondirect.ExtensionDirect
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }

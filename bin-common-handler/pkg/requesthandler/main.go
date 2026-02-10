@@ -63,6 +63,7 @@ import (
 
 	rmastcontact "monorepo/bin-registrar-manager/models/astcontact"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
+	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
@@ -1077,6 +1078,9 @@ type RequestHandler interface {
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+
+	// registrar-manager extension-direct
+	RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*rmextensiondirect.ExtensionDirect, error)
 
 	// registrar-manager trunk
 	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
