@@ -14,10 +14,10 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/metricshandler"
 )
 
 // pagination parameters
@@ -64,27 +64,8 @@ var (
 	regV1PasswordReset  = regexp.MustCompile("/v1/password-reset$")
 )
 
-var (
-	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameAgentManager)
-
-	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "receive_request_process_time",
-			Help:      "Process time of received request",
-			Buckets: []float64{
-				50, 100, 500, 1000, 3000,
-			},
-		},
-		[]string{"type", "method"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(
-		promReceivedRequestProcessTime,
-	)
-}
+// ensure metricshandler init() registers all metrics
+var _ = metricshandler.ReceivedRequestProcessTime
 
 // simpleResponse returns simple rabbitmq response
 func simpleResponse(code int) *sock.Response {
@@ -244,7 +225,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "notfound"
 	}
 	elapsed := time.Since(start)
-	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+	metricshandler.ReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
 		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)

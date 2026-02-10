@@ -15,10 +15,10 @@ import (
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/metricshandler"
 )
 
 // SubscribeHandler interface
@@ -35,27 +35,8 @@ type subscribeHandler struct {
 	agentHandler agenthandler.AgentHandler
 }
 
-var (
-	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameAgentManager)
-
-	promEventProcessTime = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "receive_subscribe_event_process_time",
-			Help:      "Process time of received subscribe event",
-			Buckets: []float64{
-				50, 100, 500, 1000, 3000,
-			},
-		},
-		[]string{"publisher", "type"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(
-		promEventProcessTime,
-	)
-}
+// ensure metricshandler init() registers all metrics
+var _ = metricshandler.ReceivedSubscribeEventProcessTime
 
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
@@ -151,7 +132,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 		return
 	}
 	elapsed := time.Since(start)
-	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
+	metricshandler.ReceivedSubscribeEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
 		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)

@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-agent-manager/internal/config"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
+	"monorepo/bin-agent-manager/pkg/metricshandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonbilling "monorepo/bin-common-handler/models/billing"
 
@@ -93,11 +94,15 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 	log.Debug("Creating a new user.")
 
 	// check resource limit
+	rpcStart := time.Now()
 	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeAgent)
+	metricshandler.RPCCallDuration.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit").Observe(float64(time.Since(rpcStart).Milliseconds()))
 	if err != nil {
+		metricshandler.RPCCallTotal.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit", "failure").Inc()
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)
 	}
+	metricshandler.RPCCallTotal.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit", "success").Inc()
 	if !valid {
 		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
 		return nil, fmt.Errorf("resource limit exceeded")
@@ -225,9 +230,11 @@ func (h *agentHandler) Login(ctx context.Context, username string, password stri
 
 	res, err := h.dbLogin(ctx, username, password)
 	if err != nil {
+		metricshandler.LoginTotal.WithLabelValues("failure").Inc()
 		log.Errorf("Could not logged in. err: %v", err)
 		return nil, errors.Wrap(err, "could not logged in")
 	}
+	metricshandler.LoginTotal.WithLabelValues("success").Inc()
 
 	return res, nil
 }
@@ -357,11 +364,15 @@ func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addres
 				return nil, errors.Errorf("invalid extension id")
 			}
 
+			rpcStart := time.Now()
 			tmp, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+			metricshandler.RPCCallDuration.WithLabelValues("registrar-manager", "ExtensionGet").Observe(float64(time.Since(rpcStart).Milliseconds()))
 			if err != nil {
+				metricshandler.RPCCallTotal.WithLabelValues("registrar-manager", "ExtensionGet", "failure").Inc()
 				log.Errorf("Could not get extension info. err: %v", err)
 				return nil, errors.Wrap(err, "could not get extension info")
 			}
+			metricshandler.RPCCallTotal.WithLabelValues("registrar-manager", "ExtensionGet", "success").Inc()
 
 			if tmp.CustomerID != a.CustomerID {
 				log.Errorf("Wrong customer info.")
@@ -478,10 +489,15 @@ func (h *agentHandler) PasswordForgot(ctx context.Context, username string, emai
 		},
 	}
 
-	if _, err := h.reqHandler.EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, destinations, subject, content, nil); err != nil {
+	rpcStart := time.Now()
+	_, err = h.reqHandler.EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, destinations, subject, content, nil)
+	metricshandler.RPCCallDuration.WithLabelValues("email-manager", "EmailSend").Observe(float64(time.Since(rpcStart).Milliseconds()))
+	if err != nil {
+		metricshandler.RPCCallTotal.WithLabelValues("email-manager", "EmailSend", "failure").Inc()
 		log.Errorf("Could not send password reset email. err: %v", err)
 		return errors.Wrap(err, "could not send password reset email")
 	}
+	metricshandler.RPCCallTotal.WithLabelValues("email-manager", "EmailSend", "success").Inc()
 
 	return nil
 }
@@ -494,31 +510,37 @@ func (h *agentHandler) PasswordReset(ctx context.Context, token string, password
 	log.Debug("Processing password reset request.")
 
 	if len(password) < 8 {
+		metricshandler.PasswordResetTotal.WithLabelValues("failure").Inc()
 		return fmt.Errorf("password must be at least 8 characters")
 	}
 
 	agentID, err := h.cache.PasswordResetTokenGet(ctx, token)
 	if err != nil {
+		metricshandler.PasswordResetTotal.WithLabelValues("failure").Inc()
 		log.Infof("Could not find password reset token. err: %v", err)
 		return fmt.Errorf("invalid or expired token")
 	}
 	log.WithField("agent_id", agentID).Debugf("Found agent for token. agent_id: %s", agentID)
 
 	if agentID == agent.GuestAgentID {
+		metricshandler.PasswordResetTotal.WithLabelValues("failure").Inc()
 		log.Infof("Attempted password reset for guest agent.")
 		return fmt.Errorf("cannot reset password for guest agent")
 	}
 
 	passHash, err := h.utilHandler.HashGenerate(password, defaultPasswordHashCost)
 	if err != nil {
+		metricshandler.PasswordResetTotal.WithLabelValues("failure").Inc()
 		log.Errorf("Could not generate password hash. err: %v", err)
 		return errors.Wrap(err, "could not generate password hash")
 	}
 
 	if err := h.db.AgentSetPasswordHash(ctx, agentID, passHash); err != nil {
+		metricshandler.PasswordResetTotal.WithLabelValues("failure").Inc()
 		log.Errorf("Could not update password. err: %v", err)
 		return errors.Wrap(err, "could not update password")
 	}
+	metricshandler.PasswordResetTotal.WithLabelValues("success").Inc()
 
 	if err := h.cache.PasswordResetTokenDelete(ctx, token); err != nil {
 		log.Errorf("Could not delete password reset token. err: %v", err)
@@ -530,6 +552,7 @@ func (h *agentHandler) PasswordReset(ctx context.Context, token string, password
 		return nil
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return nil
 }
