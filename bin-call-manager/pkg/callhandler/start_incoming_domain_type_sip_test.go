@@ -17,6 +17,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
@@ -112,6 +113,148 @@ func Test_startIncomingDomainTypeSIP(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+
+			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_startIncomingDomainTypeSIP_numberListError(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+
+		expectFilters map[nmnumber.Field]any
+	}{
+		{
+			name: "number list returns error",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.201",
+
+				DestinationNumber: "+821100000001",
+				SourceNumber:      "+821100000002",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "sip.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			responseDestination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+
+			expectFilters: map[nmnumber.Field]any{
+				nmnumber.FieldNumber:  "+821100000001",
+				nmnumber.FieldDeleted: false,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				reqHandler:     mockReq,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(nil, fmt.Errorf("number service error"))
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
+
+			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_startIncomingDomainTypeSIP_emptyNumbers(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+
+		expectFilters map[nmnumber.Field]any
+	}{
+		{
+			name: "no numbers found",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.202",
+
+				DestinationNumber: "+821199999999",
+				SourceNumber:      "+821100000002",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "sip.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			responseDestination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821199999999",
+			},
+
+			expectFilters: map[nmnumber.Field]any{
+				nmnumber.FieldNumber:  "+821199999999",
+				nmnumber.FieldDeleted: false,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				reqHandler:     mockReq,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return([]nmnumber.Number{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
