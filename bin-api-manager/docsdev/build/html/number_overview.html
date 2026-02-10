@@ -390,6 +390,10 @@
 <tr class="row-even"><td><p>mobile</p></td>
 <td><p>Mobile phone numbers (where available)</p></td>
 </tr>
+<tr class="row-odd"><td><p>virtual</p></td>
+<td><p>Virtual numbers with +999 prefix. No provider purchase required.
+Ideal for testing, development, and internal routing.</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Choosing Number Types</strong></p>
@@ -404,6 +408,10 @@
 
 <span class="o">+-----------------------------+</span>   <span class="o">+------------------+</span>
 <span class="o">|</span> <span class="n">SMS</span> <span class="n">marketing</span> <span class="n">campaigns</span>     <span class="o">|--&gt;|</span> <span class="n">mobile</span> <span class="ow">or</span> <span class="n">local</span>  <span class="o">|</span>
+<span class="o">+-----------------------------+</span>   <span class="o">+------------------+</span>
+
+<span class="o">+-----------------------------+</span>   <span class="o">+------------------+</span>
+<span class="o">|</span> <span class="n">Testing</span> <span class="ow">and</span> <span class="n">development</span>     <span class="o">|--&gt;|</span> <span class="n">virtual</span>          <span class="o">|</span>
 <span class="o">+-----------------------------+</span>   <span class="o">+------------------+</span>
 </pre></div>
 </div>
@@ -455,7 +463,26 @@ Result:
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
-<p><strong>Scenario 3: Multi-Purpose Number</strong></p>
+<p><strong>Scenario 3: Virtual Number for Testing</strong></p>
+<p>Create a virtual number for development and testing without purchasing from a provider.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Search for available virtual numbers
+   GET /available_numbers?type=virtual&amp;page_size=5
+
+2. Provision the virtual number
+   POST /numbers { &quot;number&quot;: &quot;+999100000001&quot; }
+
+3. Assign a call flow for testing
+   PUT /numbers/{id} { &quot;call_flow_id&quot;: &quot;...&quot; }
+
+Result:
++--------------------------------------------+
+| Virtual number +999100000001 is active    |
+| -&gt; No provider charges                     |
+| -&gt; Ready for development/testing           |
++--------------------------------------------+
+</pre></div>
+</div>
+<p><strong>Scenario 4: Multi-Purpose Number</strong></p>
 <p>Use one number for both calls and messages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span>
 <span class="o">+--------------------------------------------+</span>

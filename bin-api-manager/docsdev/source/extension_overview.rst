@@ -10,6 +10,7 @@ With the Extension API you can:
 - Configure authentication credentials
 - Manage multiple endpoints per customer
 - Route inbound calls to registered devices
+- Enable direct extension access via public SIP URI
 - Monitor registration status
 
 
@@ -245,6 +246,73 @@ Inbound calls reach registered devices via the extension address.
          |                               |                           |
          |      Call connected           |        Media flow         |
          |<------------------------------|<------------------------->|
+
+
+.. _extension-overview-direct:
+
+Direct Extension
+----------------
+Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer's registrar domain. When direct access is enabled for an extension, VoIPBIN generates a unique hash and exposes a simplified SIP address.
+
+**Direct SIP URI Format**
+
+::
+
+    Standard extension address (requires customer domain knowledge):
+    +-----------------------------------------------------------------------+
+    | sip:{extension}@{customer-id}.registrar.voipbin.net                   |
+    +-----------------------------------------------------------------------+
+
+    Direct extension address (public, simplified):
+    +-----------------------------------------------------------------------+
+    | sip:direct.{hash}@sip.voipbin.net                                     |
+    +-----------------------------------------------------------------------+
+
+    Example:
+    +-----------------------------------------------------------------------+
+    | sip:direct.a1b2c3d4e5f6@sip.voipbin.net                              |
+    +-----------------------------------------------------------------------+
+
+**How Direct Extensions Work**
+
+::
+
+    External Caller                    VoIPBIN                     SIP Device
+
+         |                                |                            |
+         | INVITE                         |                            |
+         | sip:direct.<hash>@sip.voipbin.net                           |
+         +------------------------------->|                            |
+         |                                |                            |
+         |                                | 1. Lookup hash             |
+         |                                | 2. Find extension          |
+         |                                | 3. Lookup registration     |
+         |                                |                            |
+         |                                | INVITE                     |
+         |                                +--------------------------->|
+         |                                |                            |
+         |                                |        180 Ringing         |
+         |                                |<---------------------------+
+         |                                |                            |
+         |      Ringback tone             |        200 OK              |
+         |<-------------------------------|<---------------------------+
+         |                                |                            |
+         |      Call connected            |        Media flow          |
+         |<-------------------------------|<-------------------------->|
+
+**Managing Direct Extensions**
+
+- **Enable**: Update the extension with ``"direct": true`` to generate a hash
+- **Disable**: Update the extension with ``"direct": false`` to remove the hash
+- **Regenerate**: Update the extension with ``"direct_regenerate": true`` to create a new hash (invalidates the old one)
+
+The ``direct_hash`` field in the extension response contains the current hash. An empty string indicates direct access is disabled.
+
+**Use Cases**
+
+- Share a simple SIP address with external partners or customers
+- Allow inbound calls from SIP trunks that cannot be configured with customer-specific domains
+- Provide a stable public contact point that can be regenerated if compromised
 
 
 Common Scenarios
