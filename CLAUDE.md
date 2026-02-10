@@ -382,6 +382,16 @@ Follow these standards:
 
 **For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
+### bin-common-handler Admission Rule
+
+**CRITICAL: A package may only live in `bin-common-handler` if it is used by 3 or more services.**
+
+- Single-consumer or dual-consumer packages belong in the consuming service(s).
+- If a package's usage later grows to 3+ services, it can be promoted to `bin-common-handler`.
+- Internal plumbing packages (e.g., `rabbitmqhandler` wrapped by `sockhandler`) are exempt since they serve the shared library itself.
+
+**Why:** `bin-common-handler` is a globally shared library — every change triggers verification across 30+ services. Keeping it lean reduces blast radius and maintenance burden.
+
 ### Database Handling Rules
 
 **CRITICAL: All database operations MUST follow these conventions. No exceptions.**
