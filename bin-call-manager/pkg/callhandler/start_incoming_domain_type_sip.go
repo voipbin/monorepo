@@ -7,6 +7,7 @@ import (
 
 	nmnumber "monorepo/bin-number-manager/models/number"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
@@ -48,6 +49,12 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 
 	numb := numbs[0]
 	log.WithField("number", numb).Infof("Found number info. number_id: %s", numb.ID)
+
+	if numb.CallFlowID == uuid.Nil {
+		log.Errorf("Number has no call flow configured. number_id: %s", numb.ID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
 
 	// start the call type flow
 	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)

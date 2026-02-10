@@ -262,3 +262,84 @@ func Test_startIncomingDomainTypeSIP_emptyNumbers(t *testing.T) {
 		})
 	}
 }
+
+func Test_startIncomingDomainTypeSIP_nilCallFlowID(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+		responseNumbers     []nmnumber.Number
+
+		expectFilters map[nmnumber.Field]any
+	}{
+		{
+			name: "number has no call flow configured",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.203",
+
+				DestinationNumber: "+821100000001",
+				SourceNumber:      "+821100000002",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "sip.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			responseDestination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			responseNumbers: []nmnumber.Number{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
+						CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
+					},
+					// CallFlowID is uuid.Nil (not configured)
+				},
+			},
+
+			expectFilters: map[nmnumber.Field]any{
+				nmnumber.FieldNumber:  "+821100000001",
+				nmnumber.FieldDeleted: false,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				reqHandler:     mockReq,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
+
+			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
