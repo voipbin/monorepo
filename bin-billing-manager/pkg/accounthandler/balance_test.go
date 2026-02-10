@@ -55,7 +55,7 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 			expectRes: true,
 		},
 		{
-			name: "account has no balance but the type is admin",
+			name: "account has no balance but the plan type is unlimited",
 
 			customerID:  uuid.FromStringOrNil("a0c6f8c4-09f5-11ee-8ad8-4f77e9290706"),
 			billingType: billing.ReferenceTypeNumber,
@@ -69,7 +69,7 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a0e702cc-09f5-11ee-a6d0-e77ef7485142"),
 				},
-				Type:     account.TypeAdmin,
+				PlanType: account.PlanTypeUnlimited,
 				TMDelete: nil,
 			},
 			expectRes: true,
@@ -141,7 +141,7 @@ func Test_IsValidBalance(t *testing.T) {
 			expectRes: true,
 		},
 		{
-			name: "account has no balance but the type is admin",
+			name: "account has no balance but the plan type is unlimited",
 
 			accountID:   uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
 			billingType: billing.ReferenceTypeNumber,
@@ -151,7 +151,7 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
 				},
-				Type:     account.TypeAdmin,
+				PlanType: account.PlanTypeUnlimited,
 				TMDelete: nil,
 			},
 			expectRes: true,

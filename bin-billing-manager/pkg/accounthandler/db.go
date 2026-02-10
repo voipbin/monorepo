@@ -26,7 +26,6 @@ func (h *accountHandler) dbCreate(ctx context.Context, customerID uuid.UUID, nam
 		},
 		Name:          name,
 		Detail:        detail,
-		Type:          account.TypeNormal,
 		Balance:       0,
 		PaymentType:   paymentType,
 		PaymentMethod: payemntMethod,
@@ -103,7 +102,7 @@ func (h *accountHandler) List(ctx context.Context, size uint64, token string, fi
 }
 
 // SubtractBalanceWithCheck atomically checks the balance and subtracts.
-// For admin accounts, the balance check is skipped.
+// For unlimited plan accounts, the balance check is skipped.
 func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "SubtractBalanceWithCheck",
@@ -111,19 +110,19 @@ func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID
 		"amount":     amount,
 	})
 
-	// get account to check type
+	// get account to check plan type
 	a, err := h.db.AccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get account. err: %v", err)
 		return nil, errors.Wrap(err, "could not get account info")
 	}
 
-	// admin accounts bypass balance check
-	if a.Type == account.TypeAdmin {
+	// unlimited plan accounts bypass balance check
+	if a.PlanType == account.PlanTypeUnlimited {
 		return h.SubtractBalance(ctx, accountID, amount)
 	}
 
-	// normal accounts use atomic check-and-subtract
+	// other accounts use atomic check-and-subtract
 	if errSub := h.db.AccountSubtractBalanceWithCheck(ctx, accountID, amount); errSub != nil {
 		log.Errorf("Could not subtract the balance with check. err: %v", errSub)
 		return nil, errors.Wrap(errSub, "could not subtract the balance")

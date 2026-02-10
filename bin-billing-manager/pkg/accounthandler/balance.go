@@ -56,7 +56,7 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 		return false, nil
 	}
 
-	if a.Type == account.TypeAdmin {
+	if a.PlanType == account.PlanTypeUnlimited {
 		return true, nil
 	}
 

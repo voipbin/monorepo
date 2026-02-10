@@ -14,7 +14,6 @@ func TestFieldConstants(t *testing.T) {
 		{"field_customer_id", FieldCustomerID, "customer_id"},
 		{"field_name", FieldName, "name"},
 		{"field_detail", FieldDetail, "detail"},
-		{"field_type", FieldType, "type"},
 		{"field_balance", FieldBalance, "balance"},
 		{"field_payment_type", FieldPaymentType, "payment_type"},
 		{"field_payment_method", FieldPaymentMethod, "payment_method"},
