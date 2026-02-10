@@ -54,6 +54,33 @@ VoIPBIN uses a prepaid billing model where services consume account balance.
 - **Rate**: Cost per unit for each service type
 
 
+Plan Tiers
+----------
+Each billing account is assigned a plan tier that determines resource creation limits. New accounts default to the **free** tier.
+
+**Available Tiers**
+
++----------------------+-------+-------+--------------+-----------+
+| Resource             | Free  | Basic | Professional | Unlimited |
++======================+=======+=======+==============+===========+
+| Extensions           |     5 |    50 |          500 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Agents               |     5 |    50 |          500 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Queues               |     2 |    10 |          100 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Flows                |     5 |    50 |          500 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Conferences          |     2 |    10 |          100 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Trunks               |     1 |     5 |           50 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+
+- When a resource limit is reached, further creation of that resource type is denied.
+- Only platform admins can change a customer's plan tier.
+- The current plan tier is returned in the ``plan_type`` field of the billing account.
+
+
 Rate Structure
 --------------
 VoIPBIN operates on a transparent fixed-rate system.
@@ -115,6 +142,7 @@ Check and manage your account balance.
     {
         "id": "billing-uuid-123",
         "customer_id": "customer-uuid-456",
+        "plan_type": "free",
         "balance": 150.50,
         "currency": "USD",
         "tm_create": "2024-01-01T00:00:00Z",

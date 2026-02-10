@@ -113,6 +113,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
 <li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
@@ -230,6 +231,64 @@ v                   v                   v                   v
 <li><p><strong>Rate</strong>: Cost per unit for each service type</p></li>
 </ul>
 </section>
+<section id="plan-tiers">
+<h2>Plan Tiers<a class="headerlink" href="#plan-tiers" title="Link to this heading"></a></h2>
+<p>Each billing account is assigned a plan tier that determines resource creation limits. New accounts default to the <strong>free</strong> tier.</p>
+<p><strong>Available Tiers</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource</p></th>
+<th class="head"><p>Free</p></th>
+<th class="head"><p>Basic</p></th>
+<th class="head"><p>Professional</p></th>
+<th class="head"><p>Unlimited</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Extensions</p></td>
+<td><p>5</p></td>
+<td><p>50</p></td>
+<td><p>500</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-odd"><td><p>Agents</p></td>
+<td><p>5</p></td>
+<td><p>50</p></td>
+<td><p>500</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-even"><td><p>Queues</p></td>
+<td><p>2</p></td>
+<td><p>10</p></td>
+<td><p>100</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-odd"><td><p>Flows</p></td>
+<td><p>5</p></td>
+<td><p>50</p></td>
+<td><p>500</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-even"><td><p>Conferences</p></td>
+<td><p>2</p></td>
+<td><p>10</p></td>
+<td><p>100</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-odd"><td><p>Trunks</p></td>
+<td><p>1</p></td>
+<td><p>5</p></td>
+<td><p>50</p></td>
+<td><p>unlimited</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>When a resource limit is reached, further creation of that resource type is denied.</p></li>
+<li><p>Only platform admins can change a customer’s plan tier.</p></li>
+<li><p>The current plan tier is returned in the <code class="docutils literal notranslate"><span class="pre">plan_type</span></code> field of the billing account.</p></li>
+</ul>
+</section>
 <section id="rate-structure">
 <h2>Rate Structure<a class="headerlink" href="#rate-structure" title="Link to this heading"></a></h2>
 <p>VoIPBIN operates on a transparent fixed-rate system.</p>
@@ -292,6 +351,7 @@ Number Provisioning (1 number):
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-uuid-123&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
     <span class="s2">&quot;balance&quot;</span><span class="p">:</span> <span class="mf">150.50</span><span class="p">,</span>
     <span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
@@ -524,6 +584,7 @@ special rates apply</p></td>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#how-billing-works">How Billing Works</a></li>
+<li><a class="reference internal" href="#plan-tiers">Plan Tiers</a></li>
 <li><a class="reference internal" href="#rate-structure">Rate Structure</a></li>
 <li><a class="reference internal" href="#managing-balance">Managing Balance</a></li>
 <li><a class="reference internal" href="#balance-lifecycle">Balance Lifecycle</a></li>

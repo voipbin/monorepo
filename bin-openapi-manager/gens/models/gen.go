@@ -121,6 +121,14 @@ const (
 	BillingManagerAccountPaymentTypePrepaid BillingManagerAccountPaymentType = "prepaid"
 )
 
+// Defines values for BillingManagerAccountPlanType.
+const (
+	BillingManagerAccountPlanTypeBasic        BillingManagerAccountPlanType = "basic"
+	BillingManagerAccountPlanTypeFree         BillingManagerAccountPlanType = "free"
+	BillingManagerAccountPlanTypeProfessional BillingManagerAccountPlanType = "professional"
+	BillingManagerAccountPlanTypeUnlimited    BillingManagerAccountPlanType = "unlimited"
+)
+
 // Defines values for BillingManagerBillingStatus.
 const (
 	BillingManagerBillingStatusEnd         BillingManagerBillingStatus = "end"
@@ -1082,6 +1090,9 @@ type BillingManagerAccount struct {
 	// PaymentType The type of payment associated with the account.
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
+	// PlanType The plan tier of the billing account. Determines resource creation limits.
+	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
+
 	// TmCreate The timestamp when the account was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
@@ -1097,6 +1108,9 @@ type BillingManagerAccountPaymentMethod string
 
 // BillingManagerAccountPaymentType The type of payment associated with the account.
 type BillingManagerAccountPaymentType string
+
+// BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
+type BillingManagerAccountPlanType string
 
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
