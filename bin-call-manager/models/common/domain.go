@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-common-handler/pkg/projectconfig"
+	"monorepo/bin-call-manager/pkg/projectconfig"
 )
 
 // Domain variables initialized once from project config

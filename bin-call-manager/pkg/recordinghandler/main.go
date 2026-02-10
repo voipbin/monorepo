@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/projectconfig"
+	"monorepo/bin-call-manager/pkg/projectconfig"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
