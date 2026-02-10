@@ -97,6 +97,21 @@ func (mr *MockDBHandlerMockRecorder) NumberGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGet", reflect.TypeOf((*MockDBHandler)(nil).NumberGet), ctx, id)
 }
 
+// NumberGetExistingNumbers mocks base method.
+func (m *MockDBHandler) NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetExistingNumbers", ctx, numbers)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetExistingNumbers indicates an expected call of NumberGetExistingNumbers.
+func (mr *MockDBHandlerMockRecorder) NumberGetExistingNumbers(ctx, numbers any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetExistingNumbers", reflect.TypeOf((*MockDBHandler)(nil).NumberGetExistingNumbers), ctx, numbers)
+}
+
 // NumberGetsByTMRenew mocks base method.
 func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
 	m.ctrl.T.Helper()

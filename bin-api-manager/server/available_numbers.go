@@ -36,7 +36,10 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 
-	countryCode := params.CountryCode
+	countryCode := ""
+	if params.CountryCode != nil {
+		countryCode = *params.CountryCode
+	}
 	if countryCode == "" {
 		log.Infof("Not acceptable country code. country_code: %s", countryCode)
 		c.AbortWithStatus(400)

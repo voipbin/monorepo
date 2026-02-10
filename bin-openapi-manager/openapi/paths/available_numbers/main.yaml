@@ -1,16 +1,20 @@
 get:
   summary: List available numbers
-  description: Get available phone numbers for the specified country.
+  description: Get available phone numbers for the specified country or virtual numbers.
   tags:
     - Number
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - name: country_code
       in: query
-      description: The ISO country code.
-      required: true
+      description: The ISO country code. Required when type is not virtual.
       schema:
         type: string
+    - name: type
+      in: query
+      description: The type of available numbers to retrieve (normal or virtual). Defaults to normal.
+      schema:
+        $ref: '#/components/schemas/NumberManagerNumberType'
   responses:
     '200':
       description: A list of available phone numbers.

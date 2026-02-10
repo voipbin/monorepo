@@ -3,6 +3,7 @@ package numberhandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 
@@ -22,6 +23,11 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		"target_number": num,
 	})
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
+
+	// reject virtual number prefix for normal number creation
+	if strings.HasPrefix(num, number.VirtualNumberPrefix) {
+		return nil, fmt.Errorf("numbers starting with %s are reserved for virtual numbers", number.VirtualNumberPrefix)
+	}
 
 	// check the customer has enough balance
 	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1)
@@ -50,6 +56,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		messageFlowID,
 		name,
 		detail,
+		number.TypeNormal,
 		number.ProviderNameTelnyx,
 		tmp.ID,
 		tmp.Status,
@@ -71,6 +78,46 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	return res, nil
 }
 
+// CreateVirtual creates a virtual number without provider purchase or billing.
+func (h *numberHandler) CreateVirtual(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string, allowReserved bool) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "CreateVirtual",
+		"customer_id":   customerID,
+		"target_number": num,
+	})
+	log.Debugf("Creating a virtual number. customer_id: %s, number: %v", customerID, num)
+
+	// validate virtual number format
+	if err := number.ValidateVirtualNumber(num, allowReserved); err != nil {
+		log.Errorf("Invalid virtual number format. err: %v", err)
+		return nil, fmt.Errorf("invalid virtual number format: %w", err)
+	}
+
+	// register without provider
+	res, err := h.Register(
+		ctx,
+		customerID,
+		num,
+		callFlowID,
+		messageFlowID,
+		name,
+		detail,
+		number.TypeVirtual,
+		number.ProviderNameNone,
+		"",
+		number.StatusActive,
+		false,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Could not create virtual number. err: %v", err)
+		return nil, errors.Wrap(err, "could not create virtual number")
+	}
+	log.WithField("number", res).Debugf("Created virtual number. number_id: %s", res.ID)
+
+	return res, nil
+}
+
 // Register adds a number record to the database without purchasing it from a provider.
 // Unlike Create, which purchases the number from a provider (e.g. Telnyx), Register is used for existing numbers.
 func (h *numberHandler) Register(
@@ -81,6 +128,7 @@ func (h *numberHandler) Register(
 	messageFlowID uuid.UUID,
 	name string,
 	detail string,
+	numType number.Type,
 	providerName number.ProviderName,
 	providerReferenceID string,
 	status number.Status,
@@ -116,6 +164,7 @@ func (h *numberHandler) Register(
 		messageFlowID,
 		name,
 		detail,
+		numType,
 		providerName,
 		providerReferenceID,
 		status,
@@ -153,6 +202,10 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 
 	case number.ProviderNameTwilio:
 		err = h.numberHandlerTwilio.ReleaseNumber(ctx, num)
+
+	case number.ProviderNameNone:
+		// virtual number or no provider — skip provider release
+		log.Debugf("No provider to release for number. number: %s", num.Number)
 
 	default:
 		err = fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)

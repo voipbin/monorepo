@@ -288,6 +288,52 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// NumberGetExistingNumbers returns which of the given numbers already exist (active, not deleted) in the database.
+func (h *handler) NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error) {
+	if len(numbers) == 0 {
+		return nil, nil
+	}
+
+	// build IN clause values
+	vals := make([]any, len(numbers))
+	for i, n := range numbers {
+		vals[i] = n
+	}
+
+	query, args, err := squirrel.
+		Select(string(number.FieldNumber)).
+		From(numbersTable).
+		Where(squirrel.Eq{string(number.FieldNumber): vals}).
+		Where(squirrel.Eq{string(number.FieldStatus): string(number.StatusActive)}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. NumberGetExistingNumbers. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGetExistingNumbers. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var res []string
+	for rows.Next() {
+		var num string
+		if err := rows.Scan(&num); err != nil {
+			return nil, fmt.Errorf("could not scan row. NumberGetExistingNumbers. err: %v", err)
+		}
+		res = append(res, num)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. NumberGetExistingNumbers. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // NumberGetsByTMRenew returns a list of numbers by tm_renew.
 func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
 	fields := commondatabasehandler.GetDBFields(&number.Number{})

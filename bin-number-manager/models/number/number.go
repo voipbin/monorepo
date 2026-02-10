@@ -8,11 +8,21 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// Type represents the number type
+type Type string
+
+// list of number types
+const (
+	TypeNormal  Type = "normal"
+	TypeVirtual Type = "virtual"
+)
+
 // Number struct represent number information
 type Number struct {
 	commonidentity.Identity
 
 	Number string `json:"number" db:"number"`
+	Type   Type   `json:"type" db:"type"`
 
 	CallFlowID    uuid.UUID `json:"call_flow_id" db:"call_flow_id,uuid"`
 	MessageFlowID uuid.UUID `json:"message_flow_id" db:"message_flow_id,uuid"`

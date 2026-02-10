@@ -1,17 +1,22 @@
 package request
 
-import "github.com/gofrs/uuid"
+import (
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-number-manager/models/number"
+)
 
 // V1DataNumbersPost is
 // v1 data type request struct for
 // /v1/numbers POST
 type V1DataNumbersPost struct {
-	CustomerID    uuid.UUID `json:"customer_id"`
-	Number        string    `json:"number"`
-	CallFlowID    uuid.UUID `json:"call_flow_id"`
-	MessageFlowID uuid.UUID `json:"message_flow_id"`
-	Name          string    `json:"name"`
-	Detail        string    `json:"detail"`
+	CustomerID    uuid.UUID   `json:"customer_id"`
+	Number        string      `json:"number"`
+	Type          number.Type `json:"type"`
+	CallFlowID    uuid.UUID   `json:"call_flow_id"`
+	MessageFlowID uuid.UUID   `json:"message_flow_id"`
+	Name          string      `json:"name"`
+	Detail        string      `json:"detail"`
 }
 
 // V1DataNumbersRenewPost is

@@ -73,6 +73,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
 				},
 				Number:              "+821021656521",
+				Type:                number.TypeNormal,
 				CallFlowID:          uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
 				MessageFlowID:       uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
 				Name:                "test name",
@@ -182,6 +183,7 @@ func Test_Register(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
 				},
 				Number:           "+821021656521",
+				Type:             number.TypeNormal,
 				CallFlowID:       uuid.FromStringOrNil("1b38eca6-a864-11ec-a2a1-6f2bb4ef8c7e"),
 				MessageFlowID:    uuid.FromStringOrNil("3ba45c68-8821-11ec-bc88-2367c938e4d5"),
 				Name:             "test name",
@@ -233,7 +235,7 @@ func Test_Register(t *testing.T) {
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
 
-			res, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
+			res, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.TypeNormal, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -299,7 +301,7 @@ func Test_Register_error(t *testing.T) {
 
 			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
 
-			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.ProviderNameNone, "", number.StatusActive, false, false)
+			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.TypeNormal, number.ProviderNameNone, "", number.StatusActive, false, false)
 			if err == nil {
 				t.Errorf("Wrong match. expect error, got nil")
 			}

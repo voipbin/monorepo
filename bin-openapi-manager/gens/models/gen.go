@@ -553,6 +553,7 @@ const (
 // Defines values for NumberManagerNumberProviderName.
 const (
 	NumberManagerProviderNameMessagebird NumberManagerNumberProviderName = "messagebird"
+	NumberManagerProviderNameNone        NumberManagerNumberProviderName = "none"
 	NumberManagerProviderNameTelnyx      NumberManagerNumberProviderName = "telnyx"
 	NumberManagerProviderNameTwilio      NumberManagerNumberProviderName = "twilio"
 )
@@ -561,6 +562,12 @@ const (
 const (
 	NumberManagerStatusActive  NumberManagerNumberStatus = "active"
 	NumberManagerStatusDeleted NumberManagerNumberStatus = "deleted"
+)
+
+// Defines values for NumberManagerNumberType.
+const (
+	NumberManagerNumberTypeNormal  NumberManagerNumberType = "normal"
+	NumberManagerNumberTypeVirtual NumberManagerNumberType = "virtual"
 )
 
 // Defines values for OutdialManagerOutdialtargetStatus.
@@ -2651,6 +2658,9 @@ type NumberManagerNumber struct {
 
 	// TmUpdate The timestamp of when the number was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type The type of the number.
+	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
 // NumberManagerNumberProviderName The provider name for the number.
@@ -2658,6 +2668,9 @@ type NumberManagerNumberProviderName string
 
 // NumberManagerNumberStatus The status of the number.
 type NumberManagerNumberStatus string
+
+// NumberManagerNumberType The type of the number.
+type NumberManagerNumberType string
 
 // OutdialManagerOutdial defines model for OutdialManagerOutdial.
 type OutdialManagerOutdial struct {
@@ -3647,8 +3660,11 @@ type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// CountryCode The ISO country code.
-	CountryCode string `form:"country_code" json:"country_code"`
+	// CountryCode The ISO country code. Required when type is not virtual.
+	CountryCode *string `form:"country_code,omitempty" json:"country_code,omitempty"`
+
+	// Type The type of available numbers to retrieve (normal or virtual). Defaults to normal.
+	Type *NumberManagerNumberType `form:"type,omitempty" json:"type,omitempty"`
 }
 
 // GetBillingAccountsParams defines parameters for GetBillingAccounts.
@@ -4389,6 +4405,9 @@ type PostNumbersJSONBody struct {
 
 	// Number The phone number.
 	Number string `json:"number"`
+
+	// Type The type of the number.
+	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
 // PostNumbersRenewJSONBody defines parameters for PostNumbersRenew.

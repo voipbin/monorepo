@@ -2957,6 +2957,15 @@ components:
             $ref: '#/components/schemas/NumberManagerAvailableNumberFeature'
           description: The list of features supported by the number.
 
+    NumberManagerNumberType:
+      type: string
+      description: The type of the number.
+      enum:
+        - normal
+        - virtual
+      x-enum-varnames:
+        - NumberManagerNumberTypeNormal
+        - NumberManagerNumberTypeVirtual
     NumberManagerNumberProviderName:
       type: string
       description: The provider name for the number.
@@ -2964,10 +2973,12 @@ components:
         - telnyx
         - twilio
         - messagebird
+        - none
       x-enum-varnames:
         - NumberManagerProviderNameTelnyx
         - NumberManagerProviderNameTwilio
         - NumberManagerProviderNameMessagebird
+        - NumberManagerProviderNameNone
     NumberManagerNumberStatus:
       type: string
       description: The status of the number.
@@ -2989,6 +3000,9 @@ components:
         number:
           type: string
           description: The phone number.
+        type:
+          $ref: '#/components/schemas/NumberManagerNumberType'
+          description: The type of the number (normal or virtual).
         call_flow_id:
           type: string
           description: The ID of the associated call flow.
