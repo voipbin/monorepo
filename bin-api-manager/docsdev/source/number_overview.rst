@@ -217,6 +217,9 @@ VoIPBIN supports various number types for different use cases.
 +------------+------------------------------------------------------------------+
 | mobile     | Mobile phone numbers (where available)                           |
 +------------+------------------------------------------------------------------+
+| virtual    | Virtual numbers with +999 prefix. No provider purchase required. |
+|            | Ideal for testing, development, and internal routing.            |
++------------+------------------------------------------------------------------+
 
 **Choosing Number Types**
 
@@ -233,6 +236,10 @@ VoIPBIN supports various number types for different use cases.
 
     +-----------------------------+   +------------------+
     | SMS marketing campaigns     |-->| mobile or local  |
+    +-----------------------------+   +------------------+
+
+    +-----------------------------+   +------------------+
+    | Testing and development     |-->| virtual          |
     +-----------------------------+   +------------------+
 
 
@@ -290,7 +297,29 @@ Configure automatic SMS responses.
     | -> Auto-reply: "We're open Mon-Fri 9-5"    |
     +--------------------------------------------+
 
-**Scenario 3: Multi-Purpose Number**
+**Scenario 3: Virtual Number for Testing**
+
+Create a virtual number for development and testing without purchasing from a provider.
+
+::
+
+    1. Search for available virtual numbers
+       GET /available_numbers?type=virtual&page_size=5
+
+    2. Provision the virtual number
+       POST /numbers { "number": "+999100000001" }
+
+    3. Assign a call flow for testing
+       PUT /numbers/{id} { "call_flow_id": "..." }
+
+    Result:
+    +--------------------------------------------+
+    | Virtual number +999100000001 is active    |
+    | -> No provider charges                     |
+    | -> Ready for development/testing           |
+    +--------------------------------------------+
+
+**Scenario 4: Multi-Purpose Number**
 
 Use one number for both calls and messages.
 
