@@ -15,6 +15,7 @@ Billing account
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "",
         "detail": "",
+        "plan_type": "free",
         "balance": 69.77263,
         "payment_type": "",
         "payment_method": "",
@@ -27,6 +28,7 @@ Billing account
 * customer_id: Customer's id.
 * name: Billing account's name.
 * detail: Billing account's detail.
+* plan_type: Plan tier of the account. Determines resource creation limits. Available values: ``free``, ``basic``, ``professional``, ``unlimited``.
 * balance: Left balance. USD.
 * payment_type: payment type. Reserved.
 * payment_method: payment method. Reserved.
