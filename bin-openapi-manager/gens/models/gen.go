@@ -3666,27 +3666,6 @@ type GetAvailableNumbersParams struct {
 	Type *NumberManagerNumberType `form:"type,omitempty" json:"type,omitempty"`
 }
 
-// GetBillingAccountsParams defines parameters for GetBillingAccounts.
-type GetBillingAccountsParams struct {
-	// PageSize The size of results.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken The token. tm_create
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostBillingAccountsJSONBody defines parameters for PostBillingAccounts.
-type PostBillingAccountsJSONBody struct {
-	Detail *string `json:"detail,omitempty"`
-	Name   *string `json:"name,omitempty"`
-
-	// PaymentMethod The method of payment used for the account.
-	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
-
-	// PaymentType The type of payment associated with the account.
-	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
-}
-
 // PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
 type PutBillingAccountsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
@@ -5237,9 +5216,6 @@ type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
 
 // PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
 type PostAuthSignupJSONRequestBody PostAuthSignupJSONBody
-
-// PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
-type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
 
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody

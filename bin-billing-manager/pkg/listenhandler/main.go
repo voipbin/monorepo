@@ -46,8 +46,6 @@ var (
 	// v1
 
 	// accounts
-	regV1Accounts                       = regexp.MustCompile("/v1/accounts$")
-	regV1AccountsGet                    = regexp.MustCompile(`/v1/accounts\?`)
 	regV1AccountsID                     = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 	regV1AccountsIDBalanceAddForce      = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add_force$")
 	regV1AccountsIDBalanceSubtractForce = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
@@ -149,16 +147,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	////////////////////
 	// accounts
 	////////////////////
-	// GET /accounts
-	case regV1AccountsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1AccountsGet(ctx, m)
-		requestType = "/v1/accounts"
-
-	// POST /accounts
-	case regV1Accounts.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1AccountsPost(ctx, m)
-		requestType = "/v1/accounts"
-
 	// GET /accounts/<account-id>
 	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AccountsIDGet(ctx, m)
@@ -167,11 +155,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// PUT /accounts/<account-id>
 	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AccountsIDPut(ctx, m)
-		requestType = "/v1/accounts/<account-id>"
-
-	// DELETE /accounts/<account-id>
-	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1AccountsIDDelete(ctx, m)
 		requestType = "/v1/accounts/<account-id>"
 
 	// POST /accounts/<account-id>/balance_add_force

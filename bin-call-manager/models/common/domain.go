@@ -6,13 +6,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-common-handler/pkg/projectconfig"
+	"monorepo/bin-call-manager/pkg/projectconfig"
 )
 
 // Domain variables initialized once from project config
 var (
 	DomainConference      = projectconfig.Get().DomainConference
 	DomainPSTN            = projectconfig.Get().DomainPSTN
+	DomainSIP             = projectconfig.Get().DomainSIP
 	DomainTrunkSuffix     = projectconfig.Get().DomainTrunkSuffix
 	DomainRegistrarSuffix = projectconfig.Get().DomainRegistrarSuffix
 )

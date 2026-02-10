@@ -18,26 +18,6 @@ get:
           schema:
             $ref: '#/components/schemas/BillingManagerAccount'
 
-delete:
-  summary: Delete billing account
-  description: Deletes the billing account associated with the given ID.
-  tags:
-    - Billing
-  parameters:
-    - name: id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The ID of the billing account.
-  responses:
-    200:
-      description: Successfully deleted billing account
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BillingManagerAccount'
-
 put:
   summary: Update billing account
   description: Updates the billing account information for the given ID.

@@ -251,6 +251,9 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	case domainTypePSTN:
 		return h.startIncomingDomainTypePSTN(ctx, cn)
 
+	case domainTypeSIP:
+		return h.startIncomingDomainTypeSIP(ctx, cn)
+
 	case domainTypeTrunk:
 		return h.startIncomingDomainTypeTrunk(ctx, cn)
 
@@ -410,6 +413,9 @@ func getDomainTypeIncomingCall(domain string) string {
 
 	case common.DomainPSTN:
 		return domainTypePSTN
+
+	case common.DomainSIP:
+		return domainTypeSIP
 	}
 
 	if strings.HasSuffix(domain, common.DomainRegistrarSuffix) {

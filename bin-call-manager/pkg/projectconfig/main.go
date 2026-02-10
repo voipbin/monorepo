@@ -24,6 +24,7 @@ type ProjectConfig struct {
 	// SIP Domains (derived from ProjectBaseDomain)
 	DomainConference      string // conference.{base}
 	DomainPSTN            string // pstn.{base}
+	DomainSIP             string // sip.{base}
 	DomainTrunkSuffix     string // .trunk.{base}
 	DomainRegistrarSuffix string // .registrar.{base}
 
@@ -51,6 +52,7 @@ func load() *ProjectConfig {
 		// SIP domains derived from base domain
 		DomainConference:      "conference." + baseDomain,
 		DomainPSTN:            "pstn." + baseDomain,
+		DomainSIP:             "sip." + baseDomain,
 		DomainTrunkSuffix:     ".trunk." + baseDomain,
 		DomainRegistrarSuffix: ".registrar." + baseDomain,
 

@@ -4012,8 +4012,6 @@ paths:
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'
 
-  /billing_accounts:
-    $ref: './paths/billing_accounts/main.yaml'
   /billing_accounts/{id}:
     $ref: './paths/billing_accounts/id.yaml'
   /billing_accounts/{id}/payment_info:

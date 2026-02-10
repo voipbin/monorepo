@@ -64,6 +64,7 @@ func Test_load(t *testing.T) {
 		expectedBaseDomain       string
 		expectedDomainConference string
 		expectedDomainPSTN       string
+		expectedDomainSIP        string
 		expectedDomainTrunk      string
 		expectedDomainRegistrar  string
 		expectedBucketName       string
@@ -75,6 +76,7 @@ func Test_load(t *testing.T) {
 			expectedBaseDomain:       "voipbin.net",
 			expectedDomainConference: "conference.voipbin.net",
 			expectedDomainPSTN:       "pstn.voipbin.net",
+			expectedDomainSIP:        "sip.voipbin.net",
 			expectedDomainTrunk:      ".trunk.voipbin.net",
 			expectedDomainRegistrar:  ".registrar.voipbin.net",
 			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
@@ -86,6 +88,7 @@ func Test_load(t *testing.T) {
 			expectedBaseDomain:       "example.com",
 			expectedDomainConference: "conference.example.com",
 			expectedDomainPSTN:       "pstn.example.com",
+			expectedDomainSIP:        "sip.example.com",
 			expectedDomainTrunk:      ".trunk.example.com",
 			expectedDomainRegistrar:  ".registrar.example.com",
 			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
@@ -97,6 +100,7 @@ func Test_load(t *testing.T) {
 			expectedBaseDomain:       "voipbin.net",
 			expectedDomainConference: "conference.voipbin.net",
 			expectedDomainPSTN:       "pstn.voipbin.net",
+			expectedDomainSIP:        "sip.voipbin.net",
 			expectedDomainTrunk:      ".trunk.voipbin.net",
 			expectedDomainRegistrar:  ".registrar.voipbin.net",
 			expectedBucketName:       "custom-bucket-name",
@@ -108,6 +112,7 @@ func Test_load(t *testing.T) {
 			expectedBaseDomain:       "localhost",
 			expectedDomainConference: "conference.localhost",
 			expectedDomainPSTN:       "pstn.localhost",
+			expectedDomainSIP:        "sip.localhost",
 			expectedDomainTrunk:      ".trunk.localhost",
 			expectedDomainRegistrar:  ".registrar.localhost",
 			expectedBucketName:       "local-bucket",
@@ -138,6 +143,9 @@ func Test_load(t *testing.T) {
 			}
 			if result.DomainPSTN != tt.expectedDomainPSTN {
 				t.Errorf("DomainPSTN = %v, want %v", result.DomainPSTN, tt.expectedDomainPSTN)
+			}
+			if result.DomainSIP != tt.expectedDomainSIP {
+				t.Errorf("DomainSIP = %v, want %v", result.DomainSIP, tt.expectedDomainSIP)
 			}
 			if result.DomainTrunkSuffix != tt.expectedDomainTrunk {
 				t.Errorf("DomainTrunkSuffix = %v, want %v", result.DomainTrunkSuffix, tt.expectedDomainTrunk)

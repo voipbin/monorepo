@@ -147,10 +147,7 @@ type ServiceHandler interface {
 	AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// billing accounts
-	BillingAccountCreate(ctx context.Context, a *amagent.Agent, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
 	BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
-	BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmaccount.WebhookMessage, error)
-	BillingAccountDelete(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
 	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
 	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
 	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)

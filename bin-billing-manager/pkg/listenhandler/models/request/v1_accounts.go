@@ -1,24 +1,8 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-
 	"monorepo/bin-billing-manager/models/account"
 )
-
-// V1DataAccountsPOST is rquest param define for POST /accounts
-type V1DataAccountsPOST struct {
-	CustomerID    uuid.UUID             `json:"customer_id"`
-	Name          string                `json:"name"`
-	Detail        string                `json:"detail"`
-	PaymentType   account.PaymentType   `json:"payment_type"`
-	PaymentMethod account.PaymentMethod `json:"payment_method"`
-}
-
-// V1DataAccountsGET is rquest param define for GET /accounts
-type V1DataAccountsGET struct {
-	Pagination
-}
 
 // V1DataAccountsIDPUT is rquest param define for PUT /accounts/<account-id>
 type V1DataAccountsIDPUT struct {
