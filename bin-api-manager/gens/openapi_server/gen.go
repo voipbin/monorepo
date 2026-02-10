@@ -3660,27 +3660,6 @@ type GetAvailableNumbersParams struct {
 	CountryCode string `form:"country_code" json:"country_code"`
 }
 
-// GetBillingAccountsParams defines parameters for GetBillingAccounts.
-type GetBillingAccountsParams struct {
-	// PageSize The size of results.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken The token. tm_create
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostBillingAccountsJSONBody defines parameters for PostBillingAccounts.
-type PostBillingAccountsJSONBody struct {
-	Detail *string `json:"detail,omitempty"`
-	Name   *string `json:"name,omitempty"`
-
-	// PaymentMethod The method of payment used for the account.
-	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
-
-	// PaymentType The type of payment associated with the account.
-	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
-}
-
 // PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
 type PutBillingAccountsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
@@ -5229,9 +5208,6 @@ type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
 // PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
 type PostAuthSignupJSONRequestBody PostAuthSignupJSONBody
 
-// PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
-type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
-
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody
 
@@ -5645,15 +5621,6 @@ type ServerInterface interface {
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
-	// Get list of billing accounts
-	// (GET /billing_accounts)
-	GetBillingAccounts(c *gin.Context, params GetBillingAccountsParams)
-	// Create a new billing account
-	// (POST /billing_accounts)
-	PostBillingAccounts(c *gin.Context)
-	// Delete billing account
-	// (DELETE /billing_accounts/{id})
-	DeleteBillingAccountsId(c *gin.Context, id string)
 	// Get detailed billing account info
 	// (GET /billing_accounts/{id})
 	GetBillingAccountsId(c *gin.Context, id string)
@@ -7482,77 +7449,6 @@ func (siw *ServerInterfaceWrapper) GetAvailableNumbers(c *gin.Context) {
 	}
 
 	siw.Handler.GetAvailableNumbers(c, params)
-}
-
-// GetBillingAccounts operation middleware
-func (siw *ServerInterfaceWrapper) GetBillingAccounts(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetBillingAccountsParams
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetBillingAccounts(c, params)
-}
-
-// PostBillingAccounts operation middleware
-func (siw *ServerInterfaceWrapper) PostBillingAccounts(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostBillingAccounts(c)
-}
-
-// DeleteBillingAccountsId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteBillingAccountsId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteBillingAccountsId(c, id)
 }
 
 // GetBillingAccountsId operation middleware
@@ -13742,9 +13638,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/auth/password-reset", wrapper.PostAuthPasswordReset)
 	router.POST(options.BaseURL+"/auth/signup", wrapper.PostAuthSignup)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
-	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
-	router.POST(options.BaseURL+"/billing_accounts", wrapper.PostBillingAccounts)
-	router.DELETE(options.BaseURL+"/billing_accounts/:id", wrapper.DeleteBillingAccountsId)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
 	router.PUT(options.BaseURL+"/billing_accounts/:id", wrapper.PutBillingAccountsId)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_add_force", wrapper.PostBillingAccountsIdBalanceAddForce)
@@ -14979,61 +14872,6 @@ type GetAvailableNumbers400Response struct {
 func (response GetAvailableNumbers400Response) VisitGetAvailableNumbersResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
-}
-
-type GetBillingAccountsRequestObject struct {
-	Params GetBillingAccountsParams
-}
-
-type GetBillingAccountsResponseObject interface {
-	VisitGetBillingAccountsResponse(w http.ResponseWriter) error
-}
-
-type GetBillingAccounts200JSONResponse struct {
-	// NextPageToken The token for next pagination.
-	NextPageToken *string                  `json:"next_page_token,omitempty"`
-	Result        *[]BillingManagerAccount `json:"result,omitempty"`
-}
-
-func (response GetBillingAccounts200JSONResponse) VisitGetBillingAccountsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostBillingAccountsRequestObject struct {
-	Body *PostBillingAccountsJSONRequestBody
-}
-
-type PostBillingAccountsResponseObject interface {
-	VisitPostBillingAccountsResponse(w http.ResponseWriter) error
-}
-
-type PostBillingAccounts200JSONResponse BillingManagerAccount
-
-func (response PostBillingAccounts200JSONResponse) VisitPostBillingAccountsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteBillingAccountsIdRequestObject struct {
-	Id string `json:"id"`
-}
-
-type DeleteBillingAccountsIdResponseObject interface {
-	VisitDeleteBillingAccountsIdResponse(w http.ResponseWriter) error
-}
-
-type DeleteBillingAccountsId200JSONResponse BillingManagerAccount
-
-func (response DeleteBillingAccountsId200JSONResponse) VisitDeleteBillingAccountsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
 }
 
 type GetBillingAccountsIdRequestObject struct {
@@ -19902,15 +19740,6 @@ type StrictServerInterface interface {
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
-	// Get list of billing accounts
-	// (GET /billing_accounts)
-	GetBillingAccounts(ctx context.Context, request GetBillingAccountsRequestObject) (GetBillingAccountsResponseObject, error)
-	// Create a new billing account
-	// (POST /billing_accounts)
-	PostBillingAccounts(ctx context.Context, request PostBillingAccountsRequestObject) (PostBillingAccountsResponseObject, error)
-	// Delete billing account
-	// (DELETE /billing_accounts/{id})
-	DeleteBillingAccountsId(ctx context.Context, request DeleteBillingAccountsIdRequestObject) (DeleteBillingAccountsIdResponseObject, error)
 	// Get detailed billing account info
 	// (GET /billing_accounts/{id})
 	GetBillingAccountsId(ctx context.Context, request GetBillingAccountsIdRequestObject) (GetBillingAccountsIdResponseObject, error)
@@ -22004,93 +21833,6 @@ func (sh *strictHandler) GetAvailableNumbers(ctx *gin.Context, params GetAvailab
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAvailableNumbersResponseObject); ok {
 		if err := validResponse.VisitGetAvailableNumbersResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetBillingAccounts operation middleware
-func (sh *strictHandler) GetBillingAccounts(ctx *gin.Context, params GetBillingAccountsParams) {
-	var request GetBillingAccountsRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetBillingAccounts(ctx, request.(GetBillingAccountsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetBillingAccounts")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetBillingAccountsResponseObject); ok {
-		if err := validResponse.VisitGetBillingAccountsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostBillingAccounts operation middleware
-func (sh *strictHandler) PostBillingAccounts(ctx *gin.Context) {
-	var request PostBillingAccountsRequestObject
-
-	var body PostBillingAccountsJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostBillingAccounts(ctx, request.(PostBillingAccountsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostBillingAccounts")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostBillingAccountsResponseObject); ok {
-		if err := validResponse.VisitPostBillingAccountsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteBillingAccountsId operation middleware
-func (sh *strictHandler) DeleteBillingAccountsId(ctx *gin.Context, id string) {
-	var request DeleteBillingAccountsIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteBillingAccountsId(ctx, request.(DeleteBillingAccountsIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteBillingAccountsId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteBillingAccountsIdResponseObject); ok {
-		if err := validResponse.VisitDeleteBillingAccountsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

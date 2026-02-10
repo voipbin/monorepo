@@ -1237,36 +1237,6 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAddBalanceForce(ctx, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAddBalanceForce", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAddBalanceForce), ctx, accountID, balance)
 }
 
-// BillingV1AccountCreate mocks base method.
-func (m *MockRequestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name, detail string, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountCreate", ctx, custoerID, name, detail, paymentType, paymentMethod)
-	ret0, _ := ret[0].(*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingV1AccountCreate indicates an expected call of BillingV1AccountCreate.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountCreate(ctx, custoerID, name, detail, paymentType, paymentMethod any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountCreate), ctx, custoerID, name, detail, paymentType, paymentMethod)
-}
-
-// BillingV1AccountDelete mocks base method.
-func (m *MockRequestHandler) BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountDelete", ctx, accountID)
-	ret0, _ := ret[0].(*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingV1AccountDelete indicates an expected call of BillingV1AccountDelete.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountDelete(ctx, accountID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountDelete", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountDelete), ctx, accountID)
-}
-
 // BillingV1AccountGet mocks base method.
 func (m *MockRequestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -1310,21 +1280,6 @@ func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Co
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidResourceLimit(ctx, accountID, resourceType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidResourceLimit", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidResourceLimit), ctx, accountID, resourceType)
-}
-
-// BillingV1AccountList mocks base method.
-func (m *MockRequestHandler) BillingV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountList", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingV1AccountList indicates an expected call of BillingV1AccountList.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountList(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountList", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountList), ctx, pageToken, pageSize, filters)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.

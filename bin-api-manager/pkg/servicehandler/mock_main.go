@@ -783,36 +783,6 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, a, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAddBalanceForce", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAddBalanceForce), ctx, a, billingAccountID, balance)
 }
 
-// BillingAccountCreate mocks base method.
-func (m *MockServiceHandler) BillingAccountCreate(ctx context.Context, a *agent.Agent, name, detail string, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingAccountCreate", ctx, a, name, detail, paymentType, paymentMethod)
-	ret0, _ := ret[0].(*account.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingAccountCreate indicates an expected call of BillingAccountCreate.
-func (mr *MockServiceHandlerMockRecorder) BillingAccountCreate(ctx, a, name, detail, paymentType, paymentMethod any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountCreate), ctx, a, name, detail, paymentType, paymentMethod)
-}
-
-// BillingAccountDelete mocks base method.
-func (m *MockServiceHandler) BillingAccountDelete(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*account.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingAccountDelete", ctx, a, billingAccountID)
-	ret0, _ := ret[0].(*account.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingAccountDelete indicates an expected call of BillingAccountDelete.
-func (mr *MockServiceHandlerMockRecorder) BillingAccountDelete(ctx, a, billingAccountID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountDelete", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountDelete), ctx, a, billingAccountID)
-}
-
 // BillingAccountGet mocks base method.
 func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -826,21 +796,6 @@ func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *agent.Age
 func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, a, billingAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGet), ctx, a, billingAccountID)
-}
-
-// BillingAccountList mocks base method.
-func (m *MockServiceHandler) BillingAccountList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingAccountList", ctx, a, size, token)
-	ret0, _ := ret[0].([]*account.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingAccountList indicates an expected call of BillingAccountList.
-func (mr *MockServiceHandlerMockRecorder) BillingAccountList(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountList", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountList), ctx, a, size, token)
 }
 
 // BillingAccountSubtractBalanceForce mocks base method.
