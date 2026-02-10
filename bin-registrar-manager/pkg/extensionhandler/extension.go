@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
@@ -36,7 +36,7 @@ func (h *extensionHandler) Create(
 	})
 
 	// check resource limit
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeExtension)
+	valid, err := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeExtension)
 	if err != nil {
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)

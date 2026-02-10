@@ -5,7 +5,6 @@ package accounthandler
 import (
 	"context"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -35,7 +34,9 @@ type AccountHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
 	IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)
-	IsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
+	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)
+	IsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType account.ResourceType) (bool, error)
+	IsValidResourceLimitByCustomerID(ctx context.Context, customerID uuid.UUID, resourceType account.ResourceType) (bool, error)
 
 	EventCUCustomerCreated(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error

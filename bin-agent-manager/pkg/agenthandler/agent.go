@@ -9,8 +9,8 @@ import (
 
 	"monorepo/bin-agent-manager/internal/config"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -93,7 +93,7 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 	log.Debug("Creating a new user.")
 
 	// check resource limit
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeAgent)
+	valid, err := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeAgent)
 	if err != nil {
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)

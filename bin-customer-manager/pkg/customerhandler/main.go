@@ -5,8 +5,6 @@ package customerhandler
 import (
 	"context"
 
-	bmbilling "monorepo/bin-billing-manager/models/billing"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -59,9 +57,6 @@ type CustomerHandler interface {
 	EmailVerify(ctx context.Context, token string) (*customer.Customer, error)
 
 	RunCleanupUnverified(ctx context.Context)
-
-	IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
-	IsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
 }
 
 type customerHandler struct {

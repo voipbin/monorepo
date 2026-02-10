@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -31,7 +31,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	}
 
 	// check the customer has enough balance
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1)
+	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1)
 	if err != nil {
 		log.Errorf("Could not validate the customer's balance. err: %v", err)
 		return nil, errors.Wrap(err, "could not validate the customer's balance")
@@ -95,7 +95,7 @@ func (h *numberHandler) CreateVirtual(ctx context.Context, customerID uuid.UUID,
 	}
 
 	// check resource limit
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeVirtualNumber)
+	valid, err := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeVirtualNumber)
 	if err != nil {
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)

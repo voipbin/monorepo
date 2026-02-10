@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	bmbilling "monorepo/bin-billing-manager/models/billing"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -376,74 +375,6 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
-		})
-	}
-}
-
-func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID    uuid.UUID
-		referenceType bmbilling.ReferenceType
-		country       string
-		count         int
-
-		response *sock.Response
-
-		expectTarget  string
-		expectRequest *sock.Request
-		expectRes     bool
-	}{
-		{
-			name: "normal",
-
-			customerID:    uuid.FromStringOrNil("57e0d56e-0f8e-11ee-a32d-4b65fba800d5"),
-			referenceType: bmbilling.ReferenceTypeCall,
-			country:       "us",
-			count:         3,
-
-			response: &sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"valid":true}`),
-			},
-
-			expectTarget: "bin-manager.customer-manager.request",
-			expectRequest: &sock.Request{
-				URI:      "/v1/customers/57e0d56e-0f8e-11ee-a32d-4b65fba800d5/is_valid_balance",
-				Method:   sock.RequestMethodPost,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
-			},
-			expectRes: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-
-			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID, tt.referenceType, tt.country, tt.count)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-
 		})
 	}
 }

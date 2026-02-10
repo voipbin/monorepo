@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -129,7 +129,7 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeTrunk).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeTrunk).Return(true, nil)
 			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)

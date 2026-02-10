@@ -11,8 +11,6 @@ package customerhandler
 
 import (
 	context "context"
-	billing "monorepo/bin-billing-manager/models/billing"
-	billing0 "monorepo/bin-common-handler/models/billing"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
@@ -102,36 +100,6 @@ func (m *MockCustomerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.
 func (mr *MockCustomerHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCustomerHandler)(nil).Get), ctx, id)
-}
-
-// IsValidBalance mocks base method.
-func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsValidBalance", ctx, customerID, billingType, country, count)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsValidBalance indicates an expected call of IsValidBalance.
-func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID, billingType, country, count any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID, billingType, country, count)
-}
-
-// IsValidResourceLimit mocks base method.
-func (m *MockCustomerHandler) IsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsValidResourceLimit", ctx, customerID, resourceType)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsValidResourceLimit indicates an expected call of IsValidResourceLimit.
-func (mr *MockCustomerHandlerMockRecorder) IsValidResourceLimit(ctx, customerID, resourceType any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidResourceLimit", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidResourceLimit), ctx, customerID, resourceType)
 }
 
 // List mocks base method.

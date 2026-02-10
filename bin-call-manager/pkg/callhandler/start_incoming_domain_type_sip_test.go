@@ -109,7 +109,7 @@ func Test_startIncomingDomainTypeSIP(t *testing.T) {
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)

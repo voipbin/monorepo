@@ -4,8 +4,6 @@ import (
 	reflect "reflect"
 	"testing"
 
-	bmbilling "monorepo/bin-billing-manager/models/billing"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -413,71 +411,6 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 	}
 }
 
-func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *sock.Request
-
-		id            uuid.UUID
-		referenceType bmbilling.ReferenceType
-		country       string
-		count         int
-
-		responseValid bool
-		expectRes     *sock.Response
-	}{
-		{
-			name: "normal",
-			request: &sock.Request{
-				URI:      "/v1/customers/dd74462c-0e88-11ee-a276-dbfe542e4ab0/is_valid_balance",
-				Method:   sock.RequestMethodPost,
-				DataType: requesthandler.ContentTypeJSON,
-				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
-			},
-
-			id:            uuid.FromStringOrNil("dd74462c-0e88-11ee-a276-dbfe542e4ab0"),
-			referenceType: bmbilling.ReferenceTypeCall,
-			country:       "us",
-			count:         3,
-
-			responseValid: true,
-			expectRes: &sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"valid":true}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-			h := &listenHandler{
-				sockHandler:     mockSock,
-				reqHandler:      mockReq,
-				customerHandler: mockCustomer,
-			}
-
-			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id, tt.referenceType, tt.country, tt.count).Return(tt.responseValid, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 
 	tests := []struct {
@@ -541,63 +474,3 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 	}
 }
 
-func Test_processV1CustomersIDIsValidResourceLimit(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *sock.Request
-
-		id           uuid.UUID
-		resourceType commonbilling.ResourceType
-
-		responseValid bool
-		expectRes     *sock.Response
-	}{
-		{
-			name: "normal",
-			request: &sock.Request{
-				URI:      "/v1/customers/ed84562c-0e88-11ee-b276-dbfe542e4ab0/is_valid_resource_limit",
-				Method:   sock.RequestMethodPost,
-				DataType: requesthandler.ContentTypeJSON,
-				Data:     []byte(`{"resource_type":"agent"}`),
-			},
-
-			id:           uuid.FromStringOrNil("ed84562c-0e88-11ee-b276-dbfe542e4ab0"),
-			resourceType: commonbilling.ResourceTypeAgent,
-
-			responseValid: true,
-			expectRes: &sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"valid":true}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-			h := &listenHandler{
-				sockHandler:     mockSock,
-				reqHandler:      mockReq,
-				customerHandler: mockCustomer,
-			}
-
-			mockCustomer.EXPECT().IsValidResourceLimit(gomock.Any(), tt.id, tt.resourceType).Return(tt.responseValid, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}

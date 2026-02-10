@@ -32,7 +32,6 @@ import (
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	outplan "monorepo/bin-campaign-manager/models/outplan"
 	address "monorepo/bin-common-handler/models/address"
-	billing0 "monorepo/bin-common-handler/models/billing"
 	outline "monorepo/bin-common-handler/models/outline"
 	service "monorepo/bin-common-handler/models/service"
 	sock "monorepo/bin-common-handler/models/sock"
@@ -1267,8 +1266,23 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, ac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country, count)
 }
 
+// BillingV1AccountIsValidBalanceByCustomerID mocks base method.
+func (m *MockRequestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalanceByCustomerID", ctx, customerID, billingType, country, count)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountIsValidBalanceByCustomerID indicates an expected call of BillingV1AccountIsValidBalanceByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, billingType, country, count any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalanceByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalanceByCustomerID), ctx, customerID, billingType, country, count)
+}
+
 // BillingV1AccountIsValidResourceLimit mocks base method.
-func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
+func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType account.ResourceType) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingV1AccountIsValidResourceLimit", ctx, accountID, resourceType)
 	ret0, _ := ret[0].(bool)
@@ -1280,6 +1294,21 @@ func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Co
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidResourceLimit(ctx, accountID, resourceType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidResourceLimit", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidResourceLimit), ctx, accountID, resourceType)
+}
+
+// BillingV1AccountIsValidResourceLimitByCustomerID mocks base method.
+func (m *MockRequestHandler) BillingV1AccountIsValidResourceLimitByCustomerID(ctx context.Context, customerID uuid.UUID, resourceType account.ResourceType) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidResourceLimitByCustomerID", ctx, customerID, resourceType)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountIsValidResourceLimitByCustomerID indicates an expected call of BillingV1AccountIsValidResourceLimitByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, resourceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidResourceLimitByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidResourceLimitByCustomerID), ctx, customerID, resourceType)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.
@@ -3427,36 +3456,6 @@ func (m *MockRequestHandler) CustomerV1CustomerGet(ctx context.Context, customer
 func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGet(ctx, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGet", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGet), ctx, customerID)
-}
-
-// CustomerV1CustomerIsValidBalance mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, country string, count int) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidBalance", ctx, customerID, referenceType, country, count)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1CustomerIsValidBalance indicates an expected call of CustomerV1CustomerIsValidBalance.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, customerID, referenceType, country, count any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID, referenceType, country, count)
-}
-
-// CustomerV1CustomerIsValidResourceLimit mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerIsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidResourceLimit", ctx, customerID, resourceType)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1CustomerIsValidResourceLimit indicates an expected call of CustomerV1CustomerIsValidResourceLimit.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidResourceLimit(ctx, customerID, resourceType any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidResourceLimit", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidResourceLimit), ctx, customerID, resourceType)
 }
 
 // CustomerV1CustomerList mocks base method.

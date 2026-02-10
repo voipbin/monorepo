@@ -10,10 +10,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 )
 
 // processV1AccountsIDGet handles GET /v1/accounts/<account-id> request
@@ -229,7 +229,83 @@ func (h *listenHandler) processV1AccountsIDIsValidResourceLimitPost(ctx context.
 		return nil, err
 	}
 
-	valid, err := h.accountHandler.IsValidResourceLimit(ctx, accountID, commonbilling.ResourceType(req.ResourceType))
+	valid, err := h.accountHandler.IsValidResourceLimit(ctx, accountID, account.ResourceType(req.ResourceType))
+	if err != nil {
+		log.Errorf("Could not validate the account's resource limit. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	tmp := &response.V1ResponseAccountsIDIsValidResourceLimit{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIsValidBalanceByCustomerIDPost handles POST /v1/accounts/is_valid_balance_by_customer_id request
+func (h *listenHandler) processV1AccountsIsValidBalanceByCustomerIDPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIsValidBalanceByCustomerIDPost",
+		"request": m,
+	})
+
+	var req request.V1DataAccountsIsValidBalanceByCustomerIDPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	customerID := uuid.FromStringOrNil(req.CustomerID)
+
+	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID, billing.ReferenceType(req.BillingType), req.Country, req.Count)
+	if err != nil {
+		log.Errorf("Could not validate the account's balance info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	tmp := &response.V1ResponseAccountsIDIsValidBalance{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIsValidResourceLimitByCustomerIDPost handles POST /v1/accounts/is_valid_resource_limit_by_customer_id request
+func (h *listenHandler) processV1AccountsIsValidResourceLimitByCustomerIDPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIsValidResourceLimitByCustomerIDPost",
+		"request": m,
+	})
+
+	var req request.V1DataAccountsIsValidResourceLimitByCustomerIDPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	customerID := uuid.FromStringOrNil(req.CustomerID)
+
+	valid, err := h.accountHandler.IsValidResourceLimitByCustomerID(ctx, customerID, account.ResourceType(req.ResourceType))
 	if err != nil {
 		log.Errorf("Could not validate the account's resource limit. err: %v", err)
 		return simpleResponse(404), nil

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -41,7 +41,7 @@ func (h *queueHandler) Create(
 	log.Debug("Creating a new queue.")
 
 	// check resource limit
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeQueue)
+	valid, err := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeQueue)
 	if err != nil {
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)
