@@ -43,11 +43,45 @@ var (
 		},
 		[]string{},
 	)
+
+	// speech_request_total counts batch TTS requests by result (cache_hit, created, error).
+	promSpeechRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "speech_request_total",
+			Help:      "Total number of batch TTS speech requests by result.",
+		},
+		[]string{"result"},
+	)
+
+	// speech_create_duration_seconds measures end-to-end audio creation latency (cache misses only).
+	promSpeechCreateDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "speech_create_duration_seconds",
+			Help:      "Duration of batch TTS audio creation in seconds (cache misses only).",
+			Buckets:   []float64{0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+		},
+		[]string{},
+	)
+
+	// speech_language_total counts batch TTS requests by language and gender.
+	promSpeechLanguageTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "speech_language_total",
+			Help:      "Total number of batch TTS requests by language and gender.",
+		},
+		[]string{"language", "gender"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promHashProcessTime,
+		promSpeechRequestTotal,
+		promSpeechCreateDurationSeconds,
+		promSpeechLanguageTotal,
 	)
 }
 

@@ -14,6 +14,7 @@ import (
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-tts-manager/models/streaming"
 )
@@ -67,6 +68,93 @@ type streamer interface {
 	SayStop(vendorConfig any) error
 	SayAdd(vendorConfig any, text string) error
 	SayFinish(vendorConfig any) error
+}
+
+var (
+	metricsNamespace = "tts_manager"
+
+	// streaming_created_total counts new streaming sessions by vendor.
+	promStreamingCreatedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_created_total",
+			Help:      "Total number of streaming sessions created by vendor.",
+		},
+		[]string{"vendor"},
+	)
+
+	// streaming_ended_total counts ended streaming sessions by vendor.
+	promStreamingEndedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_ended_total",
+			Help:      "Total number of streaming sessions ended by vendor.",
+		},
+		[]string{"vendor"},
+	)
+
+	// streaming_active tracks currently active streaming sessions by vendor.
+	// This resets to 0 on service restart and does not reflect persistent state.
+	promStreamingActive = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_active",
+			Help:      "Number of currently active streaming sessions by vendor.",
+		},
+		[]string{"vendor"},
+	)
+
+	// streaming_duration_seconds measures the duration of streaming sessions by vendor.
+	promStreamingDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_duration_seconds",
+			Help:      "Duration of streaming sessions in seconds by vendor.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 120, 300},
+		},
+		[]string{"vendor"},
+	)
+
+	// streaming_message_total counts Say messages (SayInit calls).
+	promStreamingMessageTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_message_total",
+			Help:      "Total number of streaming Say messages initiated.",
+		},
+	)
+
+	// streaming_error_total counts streaming errors by vendor.
+	promStreamingErrorTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_error_total",
+			Help:      "Total number of streaming errors by vendor.",
+		},
+		[]string{"vendor"},
+	)
+
+	// streaming_language_total counts streaming sessions by language and gender.
+	promStreamingLanguageTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "streaming_language_total",
+			Help:      "Total number of streaming sessions by language and gender.",
+		},
+		[]string{"language", "gender"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promStreamingCreatedTotal,
+		promStreamingEndedTotal,
+		promStreamingActive,
+		promStreamingDurationSeconds,
+		promStreamingMessageTotal,
+		promStreamingErrorTotal,
+		promStreamingLanguageTotal,
+	)
 }
 
 type streamingHandler struct {
