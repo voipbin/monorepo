@@ -261,6 +261,17 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	// call_duration_seconds measures total call duration from creation to hangup.
+	promCallDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_duration_seconds",
+			Help:      "Duration of calls in seconds from creation to hangup.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 300, 600, 1800, 3600},
+		},
+		[]string{"direction", "type"},
+	)
 )
 
 func init() {
@@ -270,6 +281,7 @@ func init() {
 		promCallActionTotal,
 		promCallActionProcessTime,
 		promConferenceLeaveTotal,
+		promCallDurationSeconds,
 	)
 }
 

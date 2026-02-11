@@ -24,6 +24,7 @@ func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UU
 	if err != nil {
 		return nil, fmt.Errorf("could not update external media status: %w", err)
 	}
+	promExternalMediaStopTotal.WithLabelValues(string(res.ReferenceType)).Inc()
 
 	// hangup the external media channel
 	if errHangup := h.channelHandler.HangingUpWithAsteriskID(ctx, res.AsteriskID, res.ChannelID, ari.ChannelCauseNormalClearing); errHangup != nil {

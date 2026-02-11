@@ -6,12 +6,16 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-call-manager/pkg/projectconfig"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -62,6 +66,37 @@ const (
 	variableRecordingRecordingName = "voipbin.recording.recording_name"
 	variableRecordingFilenames     = "voipbin.recording.filenames"
 )
+
+var (
+	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
+
+	// recording_start_total counts recording starts by reference type.
+	promRecordingStartTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "recording_start_total",
+			Help:      "Total number of recording starts by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+
+	// recording_end_total counts recording completions by reference type.
+	promRecordingEndTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "recording_end_total",
+			Help:      "Total number of recording completions by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promRecordingStartTotal,
+		promRecordingEndTotal,
+	)
+}
 
 // recordingHandler structure for service handle
 type recordingHandler struct {

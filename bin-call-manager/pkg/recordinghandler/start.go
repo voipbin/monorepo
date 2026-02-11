@@ -23,6 +23,8 @@ func (h *recordingHandler) Start(
 	onEndFlowID uuid.UUID,
 ) (*recording.Recording, error) {
 
+	promRecordingStartTotal.WithLabelValues(string(referenceType)).Inc()
+
 	switch referenceType {
 	case recording.ReferenceTypeCall:
 		return h.recordingReferenceTypeCall(ctx, activeflowID, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
