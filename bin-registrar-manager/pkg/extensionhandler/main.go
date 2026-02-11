@@ -41,6 +41,7 @@ type ExtensionHandler interface {
 	DirectDisable(ctx context.Context, extensionID uuid.UUID) error
 	DirectRegenerate(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error)
 	GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error)
+	GetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }

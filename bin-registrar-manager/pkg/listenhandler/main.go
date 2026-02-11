@@ -55,6 +55,7 @@ var (
 	regV1ExtensionsID  = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
 	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `(\?.*)?$`)
+	regV1ExtensionsByDirectHash          = regexp.MustCompile("/v1/extensions/by-direct-hash/" + regAny + "$")
 
 	// extension-directs
 	regV1ExtensionDirectsGet = regexp.MustCompile(`/v1/extension-directs\?`)
@@ -203,6 +204,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ExtensionsExtensionExtensionGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
 		requestType = "/v1/extensions/extension/<extension>"
+
+	case regV1ExtensionsByDirectHash.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ExtensionsByDirectHashGet(ctx, m)
+		requestType = "/v1/extensions/by-direct-hash/<hash>"
 
 	/////////////////
 	// extension-directs
