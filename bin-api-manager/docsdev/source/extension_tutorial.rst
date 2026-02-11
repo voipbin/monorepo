@@ -112,6 +112,87 @@ Update the existing extension with given info.
         "tm_delete": ""
     }
 
+Enable direct extension
+-----------------------
+
+Enable direct access for an extension. This generates a unique hash that allows external callers to reach the extension via a public SIP URI (``sip:direct.<hash>@sip.voipbin.net``) without needing to know the customer's registrar domain.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direct": true
+    }'
+
+    {
+        "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "update test extension name",
+        "detail": "update test extension detail",
+        "domain_id": "cc6a05eb-33a4-444b-bf8a-359de7d95499",
+        "extension": "test12",
+        "password": "5316382a-757c-11eb-9348-bb32547e99c4",
+        "direct_hash": "a1b2c3d4e5f6",
+        "tm_create": "2021-02-23 02:09:39.701458",
+        "tm_update": "2021-02-23 02:15:22.112345",
+        "tm_delete": ""
+    }
+
+Regenerate direct extension hash
+---------------------------------
+
+Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direct_regenerate": true
+    }'
+
+    {
+        "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "update test extension name",
+        "detail": "update test extension detail",
+        "domain_id": "cc6a05eb-33a4-444b-bf8a-359de7d95499",
+        "extension": "test12",
+        "password": "5316382a-757c-11eb-9348-bb32547e99c4",
+        "direct_hash": "f7e8d9c0b1a2",
+        "tm_create": "2021-02-23 02:09:39.701458",
+        "tm_update": "2021-02-23 02:18:45.334567",
+        "tm_delete": ""
+    }
+
+Disable direct extension
+------------------------
+
+Disable direct access for an extension. This removes the hash and the public SIP URI will no longer work.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direct": false
+    }'
+
+    {
+        "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "update test extension name",
+        "detail": "update test extension detail",
+        "domain_id": "cc6a05eb-33a4-444b-bf8a-359de7d95499",
+        "extension": "test12",
+        "password": "5316382a-757c-11eb-9348-bb32547e99c4",
+        "direct_hash": "",
+        "tm_create": "2021-02-23 02:09:39.701458",
+        "tm_update": "2021-02-23 02:20:10.556789",
+        "tm_delete": ""
+    }
+
 Delete the extension
 --------------------
 
