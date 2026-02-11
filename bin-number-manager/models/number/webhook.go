@@ -14,6 +14,7 @@ type WebhookMessage struct {
 	commonidentity.Identity
 
 	Number string `json:"number"`
+	Type   Type   `json:"type"`
 
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
@@ -40,6 +41,7 @@ func (h *Number) ConvertWebhookMessage() *WebhookMessage {
 		Identity: h.Identity,
 
 		Number: h.Number,
+		Type:   h.Type,
 
 		CallFlowID:    h.CallFlowID,
 		MessageFlowID: h.MessageFlowID,
