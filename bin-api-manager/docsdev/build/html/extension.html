@@ -195,7 +195,7 @@
 <li><p>Configure authentication credentials</p></li>
 <li><p>Manage multiple endpoints per customer</p></li>
 <li><p>Route inbound calls to registered devices</p></li>
-<li><p>Enable direct external access via hashed SIP URIs</p></li>
+<li><p>Enable direct extension access via public SIP URI</p></li>
 <li><p>Monitor registration status</p></li>
 </ul>
 <section id="how-extensions-work">
@@ -403,11 +403,16 @@
 </section>
 <section id="direct-extension">
 <span id="extension-overview-direct"></span><h3>Direct Extension<a class="headerlink" href="#direct-extension" title="Link to this heading"></a></h3>
-<p>Direct extension allows external callers to reach a registered extension without going through a flow or IVR. When enabled, the system generates a unique 12-character hash and the extension becomes reachable at a public SIP URI.</p>
-<p><strong>Direct Extension Address Format</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Direct</span> <span class="n">SIP</span> <span class="n">URI</span><span class="p">:</span>
+<p>Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer’s registrar domain. When direct access is enabled for an extension, VoIPBIN generates a unique hash and exposes a simplified SIP address.</p>
+<p><strong>Direct SIP URI Format</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span> <span class="n">extension</span> <span class="n">address</span> <span class="p">(</span><span class="n">requires</span> <span class="n">customer</span> <span class="n">domain</span> <span class="n">knowledge</span><span class="p">):</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">sip</span><span class="p">:{</span><span class="n">extension</span><span class="p">}</span><span class="o">@</span><span class="p">{</span><span class="n">customer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                   <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Direct</span> <span class="n">extension</span> <span class="n">address</span> <span class="p">(</span><span class="n">public</span><span class="p">,</span> <span class="n">simplified</span><span class="p">):</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.</span><span class="p">{</span><span class="nb">hash</span><span class="p">}</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                                     <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
 <span class="n">Example</span><span class="p">:</span>
@@ -416,45 +421,43 @@
 <span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
-<p><strong>How Direct Extension Works</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                  <span class="n">VoIPBIN</span>                    <span class="n">SIP</span> <span class="n">Device</span>
+<p><strong>How Direct Extensions Work</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                    <span class="n">VoIPBIN</span>                     <span class="n">SIP</span> <span class="n">Device</span>
 
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span> <span class="n">INVITE</span>                        <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.</span><span class="n">a1b2c3d4e5f6</span><span class="o">@...</span>  <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">Parse</span> <span class="s2">&quot;direct.&quot;</span> <span class="n">prefix</span>    <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">Lookup</span> <span class="nb">hash</span> <span class="ow">in</span>            <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">registrar_directs</span> <span class="n">table</span>   <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">Find</span> <span class="n">extension_id</span>         <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">Lookup</span> <span class="n">registration</span>       <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span> <span class="n">INVITE</span> <span class="n">to</span> <span class="n">device</span>          <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">+--------------------------&gt;|</span>
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|</span>        <span class="mi">180</span> <span class="n">Ringing</span>        <span class="o">|</span>
-     <span class="o">|</span>                               <span class="o">|&lt;--------------------------+</span>
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span>      <span class="n">Call</span> <span class="n">connected</span>           <span class="o">|</span>        <span class="mi">200</span> <span class="n">OK</span>             <span class="o">|</span>
-     <span class="o">|&lt;------------------------------|&lt;--------------------------+</span>
-     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
-     <span class="o">|</span>      <span class="n">Media</span> <span class="n">flow</span>               <span class="o">|</span>        <span class="n">Media</span> <span class="n">flow</span>         <span class="o">|</span>
-     <span class="o">|&lt;------------------------------|&lt;-------------------------&gt;|</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span> <span class="n">INVITE</span>                         <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                           <span class="o">|</span>
+     <span class="o">+-------------------------------&gt;|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span> <span class="mf">1.</span> <span class="n">Lookup</span> <span class="nb">hash</span>             <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span> <span class="mf">2.</span> <span class="n">Find</span> <span class="n">extension</span>          <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span> <span class="mf">3.</span> <span class="n">Lookup</span> <span class="n">registration</span>     <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span> <span class="n">INVITE</span>                     <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">+---------------------------&gt;|</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|</span>        <span class="mi">180</span> <span class="n">Ringing</span>         <span class="o">|</span>
+     <span class="o">|</span>                                <span class="o">|&lt;---------------------------+</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>      <span class="n">Ringback</span> <span class="n">tone</span>             <span class="o">|</span>        <span class="mi">200</span> <span class="n">OK</span>              <span class="o">|</span>
+     <span class="o">|&lt;-------------------------------|&lt;---------------------------+</span>
+     <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>      <span class="n">Call</span> <span class="n">connected</span>            <span class="o">|</span>        <span class="n">Media</span> <span class="n">flow</span>          <span class="o">|</span>
+     <span class="o">|&lt;-------------------------------|&lt;--------------------------&gt;|</span>
 </pre></div>
 </div>
-<p><strong>Managing Direct Extension</strong></p>
+<p><strong>Managing Direct Extensions</strong></p>
 <ul class="simple">
-<li><p><strong>Enable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">true</span></code>. A unique hash is generated and returned in the <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field.</p></li>
-<li><p><strong>Disable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">false</span></code>. The hash is removed and the direct URI stops working.</p></li>
-<li><p><strong>Regenerate</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct_regenerate&quot;:</span> <span class="pre">true</span></code>. The old hash is invalidated and a new hash is generated. Use this if the hash has been compromised.</p></li>
+<li><p><strong>Enable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">true</span></code> to generate a hash</p></li>
+<li><p><strong>Disable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">false</span></code> to remove the hash</p></li>
+<li><p><strong>Regenerate</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct_regenerate&quot;:</span> <span class="pre">true</span></code> to create a new hash (invalidates the old one)</p></li>
 </ul>
-<p><strong>Security Considerations</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field in the extension response contains the current hash. An empty string indicates direct access is disabled.</p>
+<p><strong>Use Cases</strong></p>
 <ul class="simple">
-<li><p>The hash is a 12-character hex string generated using cryptographically secure random bytes</p></li>
-<li><p>Each extension can have at most one active direct hash</p></li>
-<li><p>Regenerating a hash immediately invalidates the previous one</p></li>
-<li><p>Deleting an extension automatically cleans up its direct hash</p></li>
+<li><p>Share a simple SIP address with external partners or customers</p></li>
+<li><p>Allow inbound calls from SIP trunks that cannot be configured with customer-specific domains</p></li>
+<li><p>Provide a stable public contact point that can be regenerated if compromised</p></li>
 </ul>
 </section>
 <section id="common-scenarios">
@@ -640,18 +643,19 @@ extensions for each device</p></td>
 <span id="id2"></span><h3>Extension<a class="headerlink" href="#extension-struct-extension-extension" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e1491290-c61c-4349-a7ff-5890c796b61b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;office-phone-1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Main office IP phone&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secure-password-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4e5f6&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 10:30:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 11:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain creation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;domain_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;test12&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;test12&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-03-21 11:24:26.485161&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
+<span class="p">},</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -659,14 +663,15 @@ extensions for each device</p></td>
 <li><p>customer_id: Customer’s id.</p></li>
 <li><p>name: Extension’s name.</p></li>
 <li><p>detail: Extension’s detail description.</p></li>
-<li><p>extension: Extension number/identifier.</p></li>
-<li><p>domain_name: SIP domain for registration.</p></li>
+<li><p>domain_id: Domain’s id.</p></li>
+<li><p>extension: Extension name/number.</p></li>
+<li><p>domain_name: SIP registration domain.</p></li>
 <li><p>username: SIP authentication username.</p></li>
 <li><p>password: SIP authentication password.</p></li>
-<li><p>direct_hash: Hash for direct external access. Empty string if not enabled. When set, the extension is reachable at <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p></li>
-<li><p>tm_create: Creation timestamp.</p></li>
-<li><p>tm_update: Last update timestamp.</p></li>
-<li><p>tm_delete: Deletion timestamp.</p></li>
+<li><p>direct_hash: Hash for direct extension access. Empty string when direct is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p></li>
+<li><p>tm_create: Timestamp of creation.</p></li>
+<li><p>tm_update: Timestamp of last update.</p></li>
+<li><p>tm_delete: Timestamp of deletion.</p></li>
 </ul>
 </section>
 </section>
@@ -774,7 +779,7 @@ extensions for each device</p></td>
 </section>
 <section id="enable-direct-extension">
 <h3>Enable direct extension<a class="headerlink" href="#enable-direct-extension" title="Link to this heading"></a></h3>
-<p>Enable direct external access for an extension. This generates a unique hash that allows the extension to be reached at <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+<p>Enable direct access for an extension. This generates a unique hash that allows external callers to reach the extension via a public SIP URI (<code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>) without needing to know the customer’s registrar domain.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -783,16 +788,15 @@ extensions for each device</p></td>
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;a1b2c3d4e5f6&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:15:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:15:22.112345&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
@@ -800,7 +804,7 @@ extensions for each device</p></td>
 </section>
 <section id="regenerate-direct-extension-hash">
 <h3>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading"></a></h3>
-<p>Regenerate the direct hash for an extension that already has direct access enabled. The old hash is invalidated and a new one is assigned.</p>
+<p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -809,16 +813,15 @@ extensions for each device</p></td>
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
-    &quot;direct_hash&quot;: &quot;f6e5d4c3b2a1&quot;,
+    &quot;direct_hash&quot;: &quot;f7e8d9c0b1a2&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:20:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:18:45.334567&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
@@ -826,7 +829,7 @@ extensions for each device</p></td>
 </section>
 <section id="disable-direct-extension">
 <h3>Disable direct extension<a class="headerlink" href="#disable-direct-extension" title="Link to this heading"></a></h3>
-<p>Disable direct external access for an extension. The hash is removed and the extension is no longer reachable via the direct SIP URI.</p>
+<p>Disable direct access for an extension. This removes the hash and the public SIP URI will no longer work.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -835,16 +838,15 @@ extensions for each device</p></td>
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:25:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:20:10.556789&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>

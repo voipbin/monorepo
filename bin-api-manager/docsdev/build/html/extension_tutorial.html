@@ -286,7 +286,7 @@
 </section>
 <section id="enable-direct-extension">
 <h2>Enable direct extension<a class="headerlink" href="#enable-direct-extension" title="Link to this heading"></a></h2>
-<p>Enable direct external access for an extension. This generates a unique hash that allows the extension to be reached at <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+<p>Enable direct access for an extension. This generates a unique hash that allows external callers to reach the extension via a public SIP URI (<code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>) without needing to know the customer’s registrar domain.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -295,16 +295,15 @@
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;a1b2c3d4e5f6&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:15:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:15:22.112345&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
@@ -312,7 +311,7 @@
 </section>
 <section id="regenerate-direct-extension-hash">
 <h2>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading"></a></h2>
-<p>Regenerate the direct hash for an extension that already has direct access enabled. The old hash is invalidated and a new one is assigned.</p>
+<p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -321,16 +320,15 @@
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
-    &quot;direct_hash&quot;: &quot;f6e5d4c3b2a1&quot;,
+    &quot;direct_hash&quot;: &quot;f7e8d9c0b1a2&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:20:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:18:45.334567&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
@@ -338,7 +336,7 @@
 </section>
 <section id="disable-direct-extension">
 <h2>Disable direct extension<a class="headerlink" href="#disable-direct-extension" title="Link to this heading"></a></h2>
-<p>Disable direct external access for an extension. The hash is removed and the extension is no longer reachable via the direct SIP URI.</p>
+<p>Disable direct access for an extension. This removes the hash and the public SIP URI will no longer work.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -347,16 +345,15 @@
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
+    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:25:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-23 02:20:10.556789&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
