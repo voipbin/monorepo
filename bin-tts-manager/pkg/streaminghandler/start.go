@@ -57,6 +57,7 @@ func (h *streamingHandler) Start(
 	)
 	if err != nil {
 		log.Errorf("Could not create external media. err: %v", err)
+		promStreamingErrorTotal.WithLabelValues("unknown").Inc()
 		return nil, err
 	}
 	log.WithField("external_media", em).Debugf("Started external media. external_media_id: %s, host_addr: %s, media_ip: %s, media_port: %d", em.ID, h.listenAddress, em.LocalIP, em.LocalPort)

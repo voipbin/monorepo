@@ -93,7 +93,7 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)
 			}
 
-			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tt.expectRes)
+			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingDeleted, gomock.Any())
 			h.Delete(ctx, tt.responseID)
 			resDelete, err := h.Get(ctx, tt.responseID)
 			if err == nil {

@@ -26,10 +26,14 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	})
 	log.Debugf("Creating TTS. lang: %s, gender: %s, text: %s", lang, gender, text)
 
+	// track language usage
+	promSpeechLanguageTotal.WithLabelValues(lang, string(gender)).Inc()
+
 	// normalize text
 	normalizedText, err := h.normalizeText(ctx, text)
 	if err != nil {
 		log.Errorf("Could not normalize the text.")
+		promSpeechRequestTotal.WithLabelValues("error").Inc()
 		return nil, errors.Wrap(err, "could not normalize the text")
 	}
 	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized.")
@@ -55,14 +59,19 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	// check exists
 	if h.bucketHandler.OSFileExist(ctx, osFilepath) {
 		log.Infof("The target file is already exsits. target: %s", osFilepath)
+		promSpeechRequestTotal.WithLabelValues("cache_hit").Inc()
 		return res, nil
 	}
 
 	// create audio
+	start := time.Now()
 	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, gender, osFilepath); errCreate != nil {
 		log.Errorf("Could not create audio. err: %v", errCreate)
+		promSpeechRequestTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not create audio. err: %v", errCreate)
 	}
+	promSpeechCreateDurationSeconds.WithLabelValues().Observe(time.Since(start).Seconds())
+	promSpeechRequestTotal.WithLabelValues("created").Inc()
 	log.Debugf("Created tts wav file to the bucket correctly. target: %s", osFilepath)
 
 	return res, nil

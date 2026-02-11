@@ -1,9 +1,11 @@
 package streaming
 
 import (
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"net"
 	"sync"
+	"time"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -27,7 +29,8 @@ type Streaming struct {
 	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
 	VendorConfig any        `json:"-"`
 
-	ConnAst net.Conn `json:"-"` // Connection to the Asterisk for the streaming
+	ConnAst   net.Conn  `json:"-"` // Connection to the Asterisk for the streaming
+	CreatedAt time.Time `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 
 // // Direction represents the direction of the streaming in a call.

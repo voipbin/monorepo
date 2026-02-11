@@ -17,6 +17,8 @@ func (h *streamingHandler) SayInit(ctx context.Context, id uuid.UUID, messageID 
 		"streaming_id": id,
 	})
 
+	promStreamingMessageTotal.Inc()
+
 	res, err := h.UpdateMessageID(ctx, id, messageID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, messageID)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -44,6 +45,8 @@ func (h *streamingHandler) Create(
 		VendorName:   streaming.VendorNameNone,
 		VendorLock:   sync.Mutex{},
 		VendorConfig: nil,
+
+		CreatedAt: time.Now(),
 	}
 
 	_, ok := h.mapStreaming[id]
@@ -53,6 +56,11 @@ func (h *streamingHandler) Create(
 
 	h.mapStreaming[id] = res
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingCreated, res)
+
+	// metrics: track creation (vendor is not yet known at this point, use "unknown")
+	promStreamingCreatedTotal.WithLabelValues("unknown").Inc()
+	promStreamingActive.WithLabelValues("unknown").Inc()
+	promStreamingLanguageTotal.WithLabelValues(language, string(gender)).Inc()
 
 	return res, nil
 }
@@ -81,6 +89,15 @@ func (h *streamingHandler) Delete(ctx context.Context, streamingID uuid.UUID) {
 
 	delete(h.mapStreaming, streamingID)
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tmp)
+
+	// metrics: track session end
+	vendor := string(tmp.VendorName)
+	if vendor == "" {
+		vendor = "unknown"
+	}
+	promStreamingEndedTotal.WithLabelValues(vendor).Inc()
+	promStreamingActive.WithLabelValues("unknown").Dec()
+	promStreamingDurationSeconds.WithLabelValues(vendor).Observe(time.Since(tmp.CreatedAt).Seconds())
 }
 
 func (h *streamingHandler) UpdateMessageID(ctx context.Context, streamingID uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error) {
