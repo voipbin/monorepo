@@ -471,11 +471,17 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 
 		number *nmnumber.Number
 
-		responseAccount *account.Account
-		responseUUID    uuid.UUID
+		responseAccount   *account.Account
+		responseUUID      uuid.UUID
+		responseTimeNow   *time.Time
+		referenceIDExpect uuid.UUID
 
 		expectBilling *billing.Billing
 	}
+
+	now := time.Date(2026, 2, 12, 10, 0, 0, 0, time.UTC)
+	numberID := uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410")
+	expectedRefID := uuid.NewV5(uuid.Nil, numberID.String()+":renew:2026-02")
 
 	tests := []test{
 		{
@@ -483,7 +489,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 
 			number: &nmnumber.Number{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
+					ID:         numberID,
 					CustomerID: uuid.FromStringOrNil("e3537aa6-f54e-11ee-84fb-bb29ab77496c"),
 				},
 			},
@@ -493,7 +499,9 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 					ID: uuid.FromStringOrNil("e38e5c34-f54e-11ee-9f4c-bf30ab98b5c1"),
 				},
 			},
-			responseUUID: uuid.FromStringOrNil("e3c41b80-f54e-11ee-becf-33857841a543"),
+			responseUUID:      uuid.FromStringOrNil("e3c41b80-f54e-11ee-becf-33857841a543"),
+			responseTimeNow:   &now,
+			referenceIDExpect: expectedRefID,
 
 			expectBilling: &billing.Billing{
 				Identity: commonidentity.Identity{
@@ -502,7 +510,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 				AccountID:     uuid.FromStringOrNil("e38e5c34-f54e-11ee-9f4c-bf30ab98b5c1"),
 				Status:        billing.StatusProgressing,
 				ReferenceType: billing.ReferenceTypeNumberRenew,
-				ReferenceID:   uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
+				ReferenceID:   expectedRefID,
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
 				CostTotal:     billing.DefaultCostPerUnitReferenceTypeNumber,
 				TMBillingEnd:  nil,
@@ -528,8 +536,12 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// deterministic reference ID generation
+			mockUtil.EXPECT().TimeNow().Return(tt.responseTimeNow)
+			mockUtil.EXPECT().NewV5UUID(uuid.Nil, tt.number.ID.String()+":renew:"+tt.responseTimeNow.Format("2006-01")).Return(tt.referenceIDExpect)
+
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, tt.number.ID).Return(nil, dbhandler.ErrNotFound)
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, tt.referenceIDExpect).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)

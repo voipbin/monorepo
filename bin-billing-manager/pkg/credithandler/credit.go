@@ -21,10 +21,9 @@ func (h *handler) processAccount(ctx context.Context, acc *account.Account) erro
 	// All pods produce the same UUID for the same account and month,
 	// so the unique index on (reference_type, reference_id) prevents
 	// duplicate top-ups without expensive row-level locking.
-	currentYearMonth := h.utilHandler.TimeNow().Format("2006-01")
-	referenceID := h.utilHandler.NewV5UUID(uuid.Nil, acc.ID.String()+":"+currentYearMonth)
-
 	now := h.utilHandler.TimeNow()
+	currentYearMonth := now.Format("2006-01")
+	referenceID := h.utilHandler.NewV5UUID(uuid.Nil, acc.ID.String()+":"+currentYearMonth)
 	b := &billing.Billing{
 		Identity: commonidentity.Identity{
 			ID:         h.utilHandler.UUIDCreate(),

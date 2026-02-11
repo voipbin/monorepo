@@ -128,7 +128,13 @@ func (h *billingHandler) EventNMNumberRenewed(ctx context.Context, n *nmnumber.N
 		return nil
 	}
 
-	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumberRenew, n.ID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
+	// Generate a deterministic reference ID per (number, year-month) so each monthly
+	// renewal produces a unique billing record, while event redelivery within the same
+	// month remains idempotent.
+	currentYearMonth := h.utilHandler.TimeNow().Format("2006-01")
+	referenceID := h.utilHandler.NewV5UUID(uuid.Nil, n.ID.String()+":renew:"+currentYearMonth)
+
+	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumberRenew, referenceID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
 		log.Errorf("Could not create a billing. number_id: %s", n.ID)
 		return errors.Wrap(errBilling, "could not create a billing")
 	}

@@ -165,7 +165,7 @@ func Test_ProcessAll(t *testing.T) {
 			} else {
 				// set up page expectations
 				token := ""
-				for i, page := range tt.accountPages {
+				for _, page := range tt.accountPages {
 					currentToken := token
 					if len(page) > 0 {
 						// next token is the last account's TMCreate
@@ -177,7 +177,7 @@ func Test_ProcessAll(t *testing.T) {
 					// set up processAccount expectations for each account in this page
 					for _, acc := range page {
 						// processAccount calls: TimeNow (x2), NewV5UUID, UUIDCreate, BillingCreditTopUp
-						mockUtil.EXPECT().TimeNow().Return(&now).Times(2)
+						mockUtil.EXPECT().TimeNow().Return(&now)
 						mockUtil.EXPECT().NewV5UUID(uuid.Nil, acc.ID.String()+":"+now.Format("2006-01")).Return(uuid.NewV5(uuid.Nil, acc.ID.String()+":2026-02"))
 						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"))
 
@@ -195,7 +195,6 @@ func Test_ProcessAll(t *testing.T) {
 					if len(page) == 0 {
 						break
 					}
-					_ = i
 				}
 			}
 

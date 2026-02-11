@@ -112,8 +112,8 @@ func Test_processAccount(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// TimeNow is called twice: once for currentYearMonth, once for `now`
-			mockUtil.EXPECT().TimeNow().Return(tt.responseTimeNow).Times(2)
+			// TimeNow is called once: used for both currentYearMonth and billing timestamps
+			mockUtil.EXPECT().TimeNow().Return(tt.responseTimeNow)
 			mockUtil.EXPECT().NewV5UUID(uuid.Nil, tt.account.ID.String()+":"+tt.responseTimeNow.Format("2006-01")).Return(tt.referenceIDExpect)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
