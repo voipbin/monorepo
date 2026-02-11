@@ -15,6 +15,7 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -53,6 +54,37 @@ type summaryHandler struct {
 	db            dbhandler.DBHandler
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler
+}
+
+var (
+	metricsNamespace = "ai_manager"
+
+	// summary_start_total counts summary starts by reference type.
+	promSummaryStartTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "summary_start_total",
+			Help:      "Total number of summary starts by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+
+	// summary_done_total counts summary completions by reference type.
+	promSummaryDoneTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "summary_done_total",
+			Help:      "Total number of summary completions by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promSummaryStartTotal,
+		promSummaryDoneTotal,
+	)
 }
 
 func NewSummaryHandler(

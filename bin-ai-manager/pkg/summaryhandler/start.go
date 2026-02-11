@@ -32,6 +32,8 @@ func (h *summaryHandler) Start(
 		return tmp, nil
 	}
 
+	promSummaryStartTotal.WithLabelValues(string(referenceType)).Inc()
+
 	switch referenceType {
 	case summary.ReferenceTypeTranscribe:
 		return h.startReferenceTypeTranscribe(ctx, customerID, activeflowID, onEndFlowID, referenceID, language)

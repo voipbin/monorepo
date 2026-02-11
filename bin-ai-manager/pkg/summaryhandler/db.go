@@ -54,6 +54,10 @@ func (h *summaryHandler) Create(
 		return nil, errors.Wrapf(errSet, "could not set the variable")
 	}
 
+	if res.Status == summary.StatusDone {
+		promSummaryDoneTotal.WithLabelValues(string(res.ReferenceType)).Inc()
+	}
+
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeCreated, res)
 	return res, nil
 }
@@ -148,6 +152,7 @@ func (h *summaryHandler) UpdateStatusDone(ctx context.Context, id uuid.UUID, con
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated summary")
 	}
+	promSummaryDoneTotal.WithLabelValues(string(res.ReferenceType)).Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeUpdated, res)
 
 	return res, nil

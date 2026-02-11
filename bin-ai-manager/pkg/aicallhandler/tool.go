@@ -53,6 +53,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameStopService:       h.toolHandleServiceStop,
 	}
 
+	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
+
 	var tmpMessageContent *messageContent
 	if fn, exists := mapFunctions[tool.Function.Name]; exists {
 		tmpMessageContent = fn(ctx, c, tool)
