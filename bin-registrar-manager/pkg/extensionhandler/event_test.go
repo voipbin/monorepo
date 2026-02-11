@@ -2,6 +2,7 @@ package extensionhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -11,7 +12,9 @@ import (
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -63,17 +66,20 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			mockDBBin := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 
 			h := &extensionHandler{
-				reqHandler:    mockReq,
-				dbAst:         mockDBAst,
-				dbBin:         mockDBBin,
-				notifyHandler: mockNotify,
-				utilHandler:   mockUtil,
+				reqHandler:             mockReq,
+				dbAst:                  mockDBAst,
+				dbBin:                  mockDBBin,
+				notifyHandler:          mockNotify,
+				utilHandler:            mockUtil,
+				extensionDirectHandler: mockExtDirect,
 			}
 			ctx := context.Background()
 
 			mockDBBin.EXPECT().ExtensionList(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseExtensions, nil)
+			mockExtDirect.EXPECT().GetByExtensionIDs(gomock.Any(), gomock.Any()).Return([]*extensiondirect.ExtensionDirect{}, nil)
 
 			for _, e := range tt.responseExtensions {
 
@@ -84,6 +90,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				mockDBAst.EXPECT().AstAORDelete(ctx, e.AORID).Return(nil)
 				mockDBBin.EXPECT().ExtensionGet(ctx, e.ID).Return(e, nil)
 				mockDBBin.EXPECT().SIPAuthDelete(ctx, e.ID).Return(nil)
+				mockExtDirect.EXPECT().GetByExtensionID(ctx, e.ID).Return(nil, fmt.Errorf("not found"))
 				mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, e)
 			}
 

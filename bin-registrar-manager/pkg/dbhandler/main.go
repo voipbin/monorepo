@@ -16,11 +16,11 @@ import (
 	"monorepo/bin-registrar-manager/models/astcontact"
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
-
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
@@ -55,6 +55,15 @@ type DBHandler interface {
 	ExtensionGetByEndpointID(ctx context.Context, endpoint string) (*extension.Extension, error)
 	ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) error
+
+	// ExtensionDirect
+	ExtensionDirectCreate(ctx context.Context, ed *extensiondirect.ExtensionDirect) error
+	ExtensionDirectDelete(ctx context.Context, id uuid.UUID) error
+	ExtensionDirectGet(ctx context.Context, id uuid.UUID) (*extensiondirect.ExtensionDirect, error)
+	ExtensionDirectGetByExtensionID(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error)
+	ExtensionDirectGetByExtensionIDs(ctx context.Context, extensionIDs []uuid.UUID) ([]*extensiondirect.ExtensionDirect, error)
+	ExtensionDirectGetByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error)
+	ExtensionDirectUpdate(ctx context.Context, id uuid.UUID, fields map[extensiondirect.Field]any) error
 
 	// SIPAuth
 	SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error

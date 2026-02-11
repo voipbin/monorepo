@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -13,6 +14,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/pkg/metricshandler"
 )
 
 const (
@@ -40,6 +42,18 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 
 // AgentCountByCustomerID returns the count of active agents for the given customer.
 func (h *handler) AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("count", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("count", "agent", status).Inc()
+	}()
+
 	query, args, err := squirrel.
 		Select("COUNT(*)").
 		From(agentTable).
@@ -48,11 +62,13 @@ func (h *handler) AgentCountByCustomerID(ctx context.Context, customerID uuid.UU
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
+		dbErr = err
 		return 0, fmt.Errorf("AgentCountByCustomerID: could not build query. err: %v", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		dbErr = err
 		return 0, fmt.Errorf("AgentCountByCustomerID: could not query. err: %v", err)
 	}
 
@@ -61,6 +77,18 @@ func (h *handler) AgentCountByCustomerID(ctx context.Context, customerID uuid.UU
 
 // AgentCreate creates new agent record and returns the created agent record.
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("create", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("create", "agent", status).Inc()
+	}()
+
 	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
@@ -71,6 +99,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(a)
 	if err != nil {
+		dbErr = err
 		return fmt.Errorf("could not prepare fields. AgentCreate. err: %v", err)
 	}
 
@@ -82,10 +111,12 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
+		dbErr = err
 		return fmt.Errorf("could not build query. AgentCreate. err: %v", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		dbErr = err
 		return fmt.Errorf("could not execute query. AgentCreate. err: %v", err)
 	}
 
@@ -131,6 +162,20 @@ func (h *handler) agentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.A
 
 // agentGetFromDB returns agent from the DB.
 func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("get", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr == ErrNotFound {
+			status = "not_found"
+		} else if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("get", "agent", status).Inc()
+	}()
+
 	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
 
 	query, args, err := squirrel.
@@ -140,11 +185,13 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not build sql. agentGetFromDB. err: %v", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %v", err)
 	}
 	defer func() {
@@ -153,13 +200,16 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
+			dbErr = err
 			return nil, fmt.Errorf("row iteration error. agentGetFromDB. err: %v", err)
 		}
+		dbErr = ErrNotFound
 		return nil, ErrNotFound
 	}
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
+		dbErr = err
 		return nil, errors.Wrapf(err, "could not get data from row. agentGetFromDB. id: %s", id)
 	}
 
@@ -170,8 +220,10 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	res, err := h.agentGetFromCache(ctx, id)
 	if err == nil {
+		metricshandler.CacheOperationTotal.WithLabelValues("get", "agent", "hit").Inc()
 		return res, nil
 	}
+	metricshandler.CacheOperationTotal.WithLabelValues("get", "agent", "miss").Inc()
 
 	res, err = h.agentGetFromDB(ctx, id)
 	if err != nil {
@@ -186,6 +238,18 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 
 // AgentList returns agents.
 func (h *handler) AgentList(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("list", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("list", "agent", status).Inc()
+	}()
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -202,16 +266,19 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not apply filters. AgentList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not build query. AgentList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not query. AgentList. err: %v", err)
 	}
 	defer func() {
@@ -222,11 +289,13 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 	for rows.Next() {
 		u, err := h.agentGetFromRow(rows)
 		if err != nil {
+			dbErr = err
 			return nil, fmt.Errorf("could not get data. AgentList. err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("rows iteration error. AgentList. err: %v", err)
 	}
 
@@ -235,6 +304,20 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 
 // AgentGetByCustomerIDAndAddress returns agent of the given customerID and address.
 func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (*agent.Agent, error) {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("get_by_customer_id_address", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr == ErrNotFound {
+			status = "not_found"
+		} else if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("get_by_customer_id_address", "agent", status).Inc()
+	}()
+
 	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
 
 	query, args, err := squirrel.
@@ -246,11 +329,13 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not build sql. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not query. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 	defer func() {
@@ -258,11 +343,13 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 	}()
 
 	if !row.Next() {
+		dbErr = ErrNotFound
 		return nil, ErrNotFound
 	}
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
+		dbErr = err
 		return nil, fmt.Errorf("could not scan the row. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 
@@ -319,8 +406,21 @@ func (h *handler) agentUpdate(ctx context.Context, id uuid.UUID, fields map[agen
 		return nil
 	}
 
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("update", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("update", "agent", status).Inc()
+	}()
+
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
+		dbErr = err
 		return fmt.Errorf("agentUpdate: prepare fields failed: %w", err)
 	}
 
@@ -330,10 +430,12 @@ func (h *handler) agentUpdate(ctx context.Context, id uuid.UUID, fields map[agen
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
+		dbErr = err
 		return fmt.Errorf("agentUpdate: build SQL failed: %w", err)
 	}
 
 	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		dbErr = err
 		return fmt.Errorf("agentUpdate: exec failed: %w", err)
 	}
 

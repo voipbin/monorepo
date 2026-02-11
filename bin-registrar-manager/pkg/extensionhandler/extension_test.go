@@ -2,6 +2,7 @@ package extensionhandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -19,8 +20,10 @@ import (
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 )
 
 func Test_Create(t *testing.T) {
@@ -122,12 +125,14 @@ func Test_Create(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			utilHandler:   mockUtil,
-			reqHandler:    mockReq,
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
-			notifyHandler: mockNotify,
+			utilHandler:            mockUtil,
+			reqHandler:             mockReq,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			notifyHandler:          mockNotify,
+			extensionDirectHandler: mockExtDirect,
 		}
 		ctx := context.Background()
 
@@ -189,15 +194,18 @@ func Test_Get(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			utilHandler:   mockUtil,
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
-			notifyHandler: mockNotify,
+			utilHandler:            mockUtil,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			notifyHandler:          mockNotify,
+			extensionDirectHandler: mockExtDirect,
 		}
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
+		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.responseExtension.ID).Return(nil, fmt.Errorf("not found"))
 
 		res, err := h.Get(ctx, tt.id)
 		if err != nil {
@@ -277,10 +285,12 @@ func Test_Update(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
-			notifyHandler: mockNotify,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			notifyHandler:          mockNotify,
+			extensionDirectHandler: mockExtDirect,
 		}
 
 		ctx := context.Background()
@@ -348,10 +358,12 @@ func Test_ExtensionDelete(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
-			notifyHandler: mockNotify,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			notifyHandler:          mockNotify,
+			extensionDirectHandler: mockExtDirect,
 		}
 
 		ctx := context.Background()
@@ -363,6 +375,7 @@ func Test_ExtensionDelete(t *testing.T) {
 		mockDBAst.EXPECT().AstAORDelete(ctx, tt.responseExtension.AORID).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
 		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseExtension.ID).Return(nil)
+		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.responseExtension.ID).Return(nil, fmt.Errorf("not found"))
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.responseExtension)
 
 		res, err := h.Delete(ctx, tt.responseExtension.ID)
@@ -408,14 +421,17 @@ func Test_ExtensionGet(t *testing.T) {
 
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst: mockDBAst,
-			dbBin: mockDBBin,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			extensionDirectHandler: mockExtDirect,
 		}
 
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
+		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.ext.ID).Return(nil, fmt.Errorf("not found"))
 		res, err := h.Get(ctx, tt.ext.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -466,14 +482,17 @@ func Test_List(t *testing.T) {
 
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst: mockDBAst,
-			dbBin: mockDBBin,
+			dbAst:                  mockDBAst,
+			dbBin:                  mockDBBin,
+			extensionDirectHandler: mockExtDirect,
 		}
 
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionList(gomock.Any(), tt.limit, tt.token, tt.filters).Return(tt.exts, nil)
+		mockExtDirect.EXPECT().GetByExtensionIDs(gomock.Any(), gomock.Any()).Return([]*extensiondirect.ExtensionDirect{}, nil)
 		res, err := h.List(ctx, tt.token, tt.limit, tt.filters)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
