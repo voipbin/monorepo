@@ -338,6 +338,16 @@ Key points:
 - Shared MySQL database, Redis cache, RabbitMQ broker
 - Kubernetes deployment on GCP GKE
 
+## Grafana Dashboards
+
+**All Grafana dashboard JSON provisioning files MUST be placed in `monitoring/grafana/dashboards/`.**
+
+- File naming: `<service-name>.json` (e.g., `flow-manager.json`, `call-manager.json`)
+- One dashboard per service
+- Dashboards are importable JSON files (Grafana provisioning format)
+
+**Why:** Centralized location makes dashboards discoverable and maintainable as the number of services with dashboards grows.
+
 ## API Design Principles
 
 ### Atomic API Responses

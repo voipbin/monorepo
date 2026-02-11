@@ -102,6 +102,10 @@ func (h *activeflowHandler) Create(
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowCreated, res)
 
+	// metrics
+	promActiveflowCreatedTotal.WithLabelValues(string(referenceType)).Inc()
+	promActiveflowRunning.WithLabelValues(string(referenceType)).Inc()
+
 	return res, nil
 }
 

@@ -74,7 +74,17 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 	})
 	log.Debugf("Getting next action. activeflow_id: %s", activeflowID)
 
+	var iterations float64
+	var referenceType string
+	defer func() {
+		if referenceType != "" {
+			promActiveflowExecuteIterations.WithLabelValues(referenceType).Observe(iterations)
+		}
+	}()
+
 	for range maxNextActionLoopCount {
+		iterations++
+
 		// get next action from the activeflow
 		af, err := h.updateNextAction(ctx, activeflowID, caID)
 		if err != nil {
@@ -82,6 +92,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 			h.stopWithoutReturn(ctx, activeflowID)
 			return nil, errors.Wrapf(err, "could not get next action. activeflow_id: %s", activeflowID)
 		}
+		referenceType = string(af.ReferenceType)
 		log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %s", af.CurrentAction.Type)
 		caID = af.CurrentAction.ID
 
@@ -116,7 +127,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 
 // executeAction execute the active action.
 // some of active-actions are flow-manager need to run.
-func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Activeflow) (*action.Action, error) {
+func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Activeflow) (resultAction *action.Action, resultErr error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "executeAction",
 		"activeflow_id": af.ID,
@@ -137,6 +148,13 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	defer func() {
 		elapsed := time.Since(start)
 		promActionExecuteDuration.WithLabelValues(string(actionType)).Observe(float64(elapsed.Milliseconds()))
+		promActionExecutedTotal.WithLabelValues(string(actionType)).Inc()
+		if resultErr != nil {
+			promActionErrorTotal.WithLabelValues(string(actionType)).Inc()
+		}
+		if target, ok := actionDispatchTarget[actionType]; ok {
+			promActionDispatchTotal.WithLabelValues(target, string(actionType)).Inc()
+		}
 	}()
 
 	switch actionType {
@@ -305,9 +323,12 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 			log.Errorf("Could not handle the webhook_send. err: %v", err)
 		}
 		return &action.ActionNext, nil
-	}
 
-	return &af.CurrentAction, nil
+	default:
+		// action not handled by flow-manager, returned to caller (call-manager) for execution
+		promActionDispatchTotal.WithLabelValues("call-manager", string(af.CurrentAction.Type)).Inc()
+		return &af.CurrentAction, nil
+	}
 }
 
 // verifyActionType verifies the given activeflow's action is valid for the reference type.

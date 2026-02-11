@@ -86,11 +86,21 @@ var (
 		},
 		[]string{"type", "method"},
 	)
+
+	promFlowCRUDTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "flow_crud_total",
+			Help:      "Total number of flow template CRUD operations",
+		},
+		[]string{"operation"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promReceivedRequestProcessTime,
+		promFlowCRUDTotal,
 	)
 }
 
