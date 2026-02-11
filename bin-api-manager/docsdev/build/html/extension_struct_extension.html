@@ -188,22 +188,33 @@
 <span id="id1"></span><h2>Extension<a class="headerlink" href="#extension-struct-extension-extension" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e1491290-c61c-4349-a7ff-5890c796b61b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain creation&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;domain_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;test12&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-03-21 11:24:26.485161&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;office-phone-1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Main office IP phone&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;cc6a05eb-33a4-444b-bf8a-359de7d95499.registrar.voipbin.net&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secure-password-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4e5f6&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 11:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">},</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>id: Extension’s id.</p></li>
+<li><p>customer_id: Customer’s id.</p></li>
 <li><p>name: Extension’s name.</p></li>
-<li><p>detail: Extensions’s detail description.</p></li>
-<li><p>domain_id: Domain’s id.</p></li>
-<li><p>extension: Extension</p></li>
+<li><p>detail: Extension’s detail description.</p></li>
+<li><p>extension: Extension number/identifier.</p></li>
+<li><p>domain_name: SIP domain for registration.</p></li>
+<li><p>username: SIP authentication username.</p></li>
+<li><p>password: SIP authentication password.</p></li>
+<li><p>direct_hash: Hash for direct external access. Empty string if not enabled. When set, the extension is reachable at <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p></li>
+<li><p>tm_create: Creation timestamp.</p></li>
+<li><p>tm_update: Last update timestamp.</p></li>
+<li><p>tm_delete: Deletion timestamp.</p></li>
 </ul>
 </section>
 </section>

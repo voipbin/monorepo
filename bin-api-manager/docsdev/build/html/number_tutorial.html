@@ -185,7 +185,7 @@
     <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <section id="get-list-of-available-numbers">
-<h2>Get list of available-numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Link to this heading"></a></h2>
+<h2>Get list of available numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Link to this heading"></a></h2>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;country_code=US&amp;page_size=5&#39;
 
@@ -206,6 +206,53 @@
     },
     ...
 ]
+</pre></div>
+</div>
+</section>
+<section id="get-list-of-available-virtual-numbers">
+<h2>Get list of available virtual numbers<a class="headerlink" href="#get-list-of-available-virtual-numbers" title="Link to this heading"></a></h2>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;type=virtual&amp;page_size=5&#39;
+
+{
+&quot;result&quot;: [
+    {
+        &quot;number&quot;: &quot;+999100000001&quot;,
+        &quot;country&quot;: &quot;&quot;,
+        &quot;region&quot;: &quot;&quot;,
+        &quot;postal_code&quot;: &quot;&quot;,
+        &quot;features&quot;: []
+    },
+    ...
+]
+</pre></div>
+</div>
+</section>
+<section id="create-virtual-number">
+<h2>Create virtual number<a class="headerlink" href="#create-virtual-number" title="Link to this heading"></a></h2>
+<p>Virtual numbers use the +999 prefix and do not require a provider purchase.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;number&quot;: &quot;+999100000001&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;number&quot;: &quot;+999100000001&quot;,
+    &quot;type&quot;: &quot;virtual&quot;,
+    &quot;call_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;name&quot;: &quot;&quot;,
+    &quot;detail&quot;: &quot;&quot;,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;t38_enabled&quot;: false,
+    &quot;emergency_enabled&quot;: false,
+    &quot;tm_create&quot;: &quot;2024-01-15 10:30:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
+}
 </pre></div>
 </div>
 </section>
@@ -321,7 +368,9 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#get-list-of-available-numbers">Get list of available-numbers</a></li>
+<li><a class="reference internal" href="#get-list-of-available-numbers">Get list of available numbers</a></li>
+<li><a class="reference internal" href="#get-list-of-available-virtual-numbers">Get list of available virtual numbers</a></li>
+<li><a class="reference internal" href="#create-virtual-number">Create virtual number</a></li>
 <li><a class="reference internal" href="#get-list-of-numbers">Get list of numbers</a></li>
 <li><a class="reference internal" href="#get-detail-of-number">Get detail of number</a></li>
 <li><a class="reference internal" href="#delete-number">Delete number</a></li>

@@ -10,6 +10,7 @@ With the Extension API you can:
 - Configure authentication credentials
 - Manage multiple endpoints per customer
 - Route inbound calls to registered devices
+- Enable direct external access via hashed SIP URIs
 - Monitor registration status
 
 
@@ -245,6 +246,69 @@ Inbound calls reach registered devices via the extension address.
          |                               |                           |
          |      Call connected           |        Media flow         |
          |<------------------------------|<------------------------->|
+
+
+.. _extension-overview-direct:
+
+Direct Extension
+----------------
+Direct extension allows external callers to reach a registered extension without going through a flow or IVR. When enabled, the system generates a unique 12-character hash and the extension becomes reachable at a public SIP URI.
+
+**Direct Extension Address Format**
+
+::
+
+    Direct SIP URI:
+    +-----------------------------------------------------------------------+
+    | sip:direct.<hash>@sip.voipbin.net                                     |
+    +-----------------------------------------------------------------------+
+
+    Example:
+    +-----------------------------------------------------------------------+
+    | sip:direct.a1b2c3d4e5f6@sip.voipbin.net                              |
+    +-----------------------------------------------------------------------+
+
+**How Direct Extension Works**
+
+::
+
+    External Caller                  VoIPBIN                    SIP Device
+
+         |                               |                           |
+         | INVITE                        |                           |
+         | sip:direct.a1b2c3d4e5f6@...  |                           |
+         +------------------------------>|                           |
+         |                               |                           |
+         |                               | Parse "direct." prefix    |
+         |                               | Lookup hash in            |
+         |                               | registrar_directs table   |
+         |                               | Find extension_id         |
+         |                               | Lookup registration       |
+         |                               |                           |
+         |                               | INVITE to device          |
+         |                               +-------------------------->|
+         |                               |                           |
+         |                               |        180 Ringing        |
+         |                               |<--------------------------+
+         |                               |                           |
+         |      Call connected           |        200 OK             |
+         |<------------------------------|<--------------------------+
+         |                               |                           |
+         |      Media flow               |        Media flow         |
+         |<------------------------------|<------------------------->|
+
+**Managing Direct Extension**
+
+- **Enable**: Update the extension with ``"direct": true``. A unique hash is generated and returned in the ``direct_hash`` field.
+- **Disable**: Update the extension with ``"direct": false``. The hash is removed and the direct URI stops working.
+- **Regenerate**: Update the extension with ``"direct_regenerate": true``. The old hash is invalidated and a new hash is generated. Use this if the hash has been compromised.
+
+**Security Considerations**
+
+- The hash is a 12-character hex string generated using cryptographically secure random bytes
+- Each extension can have at most one active direct hash
+- Regenerating a hash immediately invalidates the previous one
+- Deleting an extension automatically cleans up its direct hash
 
 
 Common Scenarios
