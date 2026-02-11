@@ -61,12 +61,13 @@ func (r *requestHandler) NumberV1NumberList(ctx context.Context, pageToken strin
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, numType nmnumber.Type, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
 		CustomerID:    customerID,
 		Number:        num,
+		Type:          numType,
 		CallFlowID:    callFlowID,
 		MessageFlowID: messageFlowID,
 		Name:          name,

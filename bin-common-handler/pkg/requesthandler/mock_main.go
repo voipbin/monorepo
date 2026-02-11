@@ -4037,18 +4037,18 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1AvailableNumberList(ctx, pageS
 }
 
 // NumberV1NumberCreate mocks base method.
-func (m *MockRequestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
+func (m *MockRequestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, numType number.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1NumberCreate", ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+	ret := m.ctrl.Call(m, "NumberV1NumberCreate", ctx, customerID, num, numType, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberV1NumberCreate indicates an expected call of NumberV1NumberCreate.
-func (mr *MockRequestHandlerMockRecorder) NumberV1NumberCreate(ctx, customerID, num, callFlowID, messageFlowID, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberCreate(ctx, customerID, num, numType, callFlowID, messageFlowID, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberCreate), ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberCreate), ctx, customerID, num, numType, callFlowID, messageFlowID, name, detail)
 }
 
 // NumberV1NumberDelete mocks base method.

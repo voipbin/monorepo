@@ -231,6 +231,7 @@ func Test_NumberCreate(t *testing.T) {
 		agent *amagent.Agent
 
 		num           string
+		numType       nmnumber.Type
 		callFlowID    uuid.UUID
 		messageFlowID uuid.UUID
 		numberName    string
@@ -250,6 +251,7 @@ func Test_NumberCreate(t *testing.T) {
 			},
 
 			"+821021656521",
+			nmnumber.Type(""),
 			uuid.FromStringOrNil("c7301f68-88af-11ec-bb03-33d26b9b7e37"),
 			uuid.FromStringOrNil("4872b1e4-a881-11ec-b15b-efa630b95991"),
 			"test name",
@@ -282,8 +284,8 @@ func Test_NumberCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
-			res, err := h.NumberCreate(ctx, tt.agent, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.numType, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			res, err := h.NumberCreate(ctx, tt.agent, tt.num, tt.numType, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

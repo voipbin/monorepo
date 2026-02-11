@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -114,10 +115,15 @@ func (h *server) PostNumbers(c *gin.Context) {
 		return
 	}
 
+	var numType nmnumber.Type
+	if req.Type != nil {
+		numType = nmnumber.Type(*req.Type)
+	}
+
 	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
 	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
 
-	numb, err := h.serviceHandler.NumberCreate(c.Request.Context(), &a, req.Number, callFlowID, messageFlowID, req.Name, req.Detail)
+	numb, err := h.serviceHandler.NumberCreate(c.Request.Context(), &a, req.Number, numType, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
