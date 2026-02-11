@@ -117,6 +117,7 @@ func (h *queuecallHandler) Create(
 		log.Errorf("Could not get created queuecall. err: %v", err)
 		return nil, err
 	}
+	promQueuecallCreateTotal.Inc()
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallCreated, res)
 
 	if errSet := h.setVariables(ctx, q, res); errSet != nil {
@@ -206,6 +207,7 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
+	promQueuecallWaitingDurationSeconds.Observe(duration.Seconds())
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallServiced, res)
 
 	_, err = h.queueHandler.AddServiceQueuecallID(ctx, res.QueueID, res.ID)
@@ -244,6 +246,7 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
+	promQueuecallAbandonedTotal.Inc()
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
 	// remove the queuecall from the queue.
@@ -291,6 +294,7 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
+	promQueuecallDoneTotal.Inc()
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallDone, res)
 
 	// remove the queuecall from the queue.

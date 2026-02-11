@@ -14,6 +14,7 @@ import (
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	commonservice "monorepo/bin-common-handler/models/service"
@@ -22,6 +23,52 @@ import (
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
+
+var (
+	metricsNamespace = "queue_manager"
+
+	promQueuecallCreateTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_create_total",
+			Help:      "Total number of queuecalls created.",
+		},
+	)
+
+	promQueuecallDoneTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_done_total",
+			Help:      "Total number of queuecalls completed successfully.",
+		},
+	)
+
+	promQueuecallAbandonedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_abandoned_total",
+			Help:      "Total number of queuecalls abandoned.",
+		},
+	)
+
+	promQueuecallWaitingDurationSeconds = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_waiting_duration_seconds",
+			Help:      "Duration of queuecall waiting time in seconds before service.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 120, 300, 600},
+		},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promQueuecallCreateTotal,
+		promQueuecallDoneTotal,
+		promQueuecallAbandonedTotal,
+		promQueuecallWaitingDurationSeconds,
+	)
+}
 
 const (
 	defaultHealthCheckMaxRetryCount = 2
