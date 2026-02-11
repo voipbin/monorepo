@@ -2349,18 +2349,18 @@ func (mr *MockServiceHandlerMockRecorder) MessageSend(ctx, a, source, destinatio
 }
 
 // NumberCreate mocks base method.
-func (m *MockServiceHandler) NumberCreate(ctx context.Context, a *agent.Agent, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberCreate(ctx context.Context, a *agent.Agent, num string, numType number.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberCreate", ctx, a, num, callFlowID, messageFlowID, name, detail)
+	ret := m.ctrl.Call(m, "NumberCreate", ctx, a, num, numType, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberCreate indicates an expected call of NumberCreate.
-func (mr *MockServiceHandlerMockRecorder) NumberCreate(ctx, a, num, callFlowID, messageFlowID, name, detail any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) NumberCreate(ctx, a, num, numType, callFlowID, messageFlowID, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).NumberCreate), ctx, a, num, callFlowID, messageFlowID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).NumberCreate), ctx, a, num, numType, callFlowID, messageFlowID, name, detail)
 }
 
 // NumberDelete mocks base method.

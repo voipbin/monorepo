@@ -240,6 +240,7 @@ func TestNumbersPOST(t *testing.T) {
 		responseNumber *nmnumber.WebhookMessage
 
 		expectNumber        string
+		expectNumType       nmnumber.Type
 		expectCallFlowID    uuid.UUID
 		expectMessageFlowID uuid.UUID
 		expectName          string
@@ -266,6 +267,7 @@ func TestNumbersPOST(t *testing.T) {
 			},
 
 			expectNumber:        "+821021656521",
+			expectNumType:       nmnumber.Type(""),
 			expectCallFlowID:    uuid.FromStringOrNil("7762e356-88b1-11ec-bb0c-7f21b7cad172"),
 			expectMessageFlowID: uuid.FromStringOrNil("354120a2-d938-11ef-a7fa-a37e9ed87b6c"),
 			expectName:          "test name",
@@ -294,7 +296,7 @@ func TestNumbersPOST(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.agent, tt.expectNumber, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.agent, tt.expectNumber, tt.expectNumType, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail).Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

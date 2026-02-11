@@ -21,6 +21,7 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		numType       nmnumber.Type
 		callFlowID    uuid.UUID
 		messageFlowID uuid.UUID
 		num           string
@@ -37,6 +38,7 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+			nmnumber.Type(""),
 			uuid.FromStringOrNil("55b69e86-881c-11ec-8901-3b828e31a38d"),
 			uuid.FromStringOrNil("7cfce5fa-a873-11ec-b620-577094655392"),
 			"+821021656521",
@@ -76,7 +78,7 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NumberV1NumberCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			res, err := reqHandler.NumberV1NumberCreate(ctx, tt.customerID, tt.num, tt.numType, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

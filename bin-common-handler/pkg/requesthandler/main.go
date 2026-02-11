@@ -938,7 +938,7 @@ type RequestHandler interface {
 	NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
-	NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
+	NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, numType nmnumber.Type, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberList(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error)

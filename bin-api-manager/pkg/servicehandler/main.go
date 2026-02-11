@@ -531,7 +531,7 @@ type ServiceHandler interface {
 	MessageSend(ctx context.Context, a *amagent.Agent, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
-	NumberCreate(ctx context.Context, a *amagent.Agent, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
+	NumberCreate(ctx context.Context, a *amagent.Agent, num string, numType nmnumber.Type, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
 	NumberDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error)

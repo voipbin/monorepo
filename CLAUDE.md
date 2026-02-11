@@ -259,6 +259,15 @@ git push -u origin NOJIRA-descriptive-change-summary
 
 **NEVER merge any branch to `main` without explicit user permission.**
 
+**CRITICAL: Before creating a PR or merging, ALWAYS pull the latest `main` and check for conflicts.**
+
+This is mandatory — no exceptions. Follow this sequence:
+1. **Fetch latest main:** `git fetch origin main`
+2. **Check for conflicts:** `git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"`
+3. **Review what changed on main:** `git log --oneline HEAD..origin/main`
+4. **If conflicts exist:** Rebase or merge main into your branch, resolve conflicts, and re-run the full verification workflow before proceeding.
+5. **If no conflicts:** Proceed with PR creation or merge.
+
 **For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
 ### Design & Implementation Workflow

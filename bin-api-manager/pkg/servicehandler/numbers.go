@@ -88,7 +88,7 @@ func (h *serviceHandler) NumberList(ctx context.Context, a *amagent.Agent, size 
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num string, numType nmnumber.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberCreate",
 		"customer_id": a.CustomerID,
@@ -107,7 +107,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num
 	}
 
 	// create numbers
-	tmp, err := h.reqHandler.NumberV1NumberCreate(ctx, a.CustomerID, num, callFlowID, messageFlowID, name, detail)
+	tmp, err := h.reqHandler.NumberV1NumberCreate(ctx, a.CustomerID, num, numType, callFlowID, messageFlowID, name, detail)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err
