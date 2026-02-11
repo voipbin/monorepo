@@ -86,9 +86,11 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 	}
 
 	if a.Balance > expectCost {
+		promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 		return true, nil
 	}
 	log.Infof("The account has not enough balance. expect_cost: %f, balance: %f", expectCost, a.Balance)
 
+	promAccountBalanceCheckTotal.WithLabelValues("invalid").Inc()
 	return false, nil
 }

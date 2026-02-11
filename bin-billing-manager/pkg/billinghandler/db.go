@@ -145,6 +145,9 @@ func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, bill
 	}
 
 	promBillingEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
+	if res.TMBillingStart != nil && res.TMBillingEnd != nil {
+		promBillingDurationSeconds.WithLabelValues(string(res.ReferenceType)).Observe(res.TMBillingEnd.Sub(*res.TMBillingStart).Seconds())
+	}
 
 	return res, nil
 }
