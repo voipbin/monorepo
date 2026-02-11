@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -187,6 +188,10 @@ func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status a
 	case aicall.StatusTerminating:
 		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminating, res)
 	case aicall.StatusTerminated:
+		promAIcallEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
+		if res.TMCreate != nil {
+			promAIcallDurationSeconds.WithLabelValues(string(res.ReferenceType)).Observe(time.Since(*res.TMCreate).Seconds())
+		}
 		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusTerminated, res)
 	}
 

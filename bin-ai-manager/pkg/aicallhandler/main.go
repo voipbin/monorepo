@@ -135,6 +135,23 @@ var (
 		},
 		[]string{"reference_type"},
 	)
+	promAIcallEndTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_end_total",
+			Help:      "Total number of terminated aicalls by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+	promAIcallDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_duration_seconds",
+			Help:      "Duration of aicalls in seconds from creation to termination.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 300, 600, 1800, 3600},
+		},
+		[]string{"reference_type"},
+	)
 	promAIcallInitProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
@@ -157,13 +174,24 @@ var (
 		},
 		[]string{"engine_type"},
 	)
+	promAIcallToolExecuteTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_tool_execute_total",
+			Help:      "Total number of tool executions by tool name.",
+		},
+		[]string{"tool_name"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promAIcallCreateTotal,
+		promAIcallEndTotal,
+		promAIcallDurationSeconds,
 		promAIcallInitProcessTime,
 		promAIcallMessageProcessTime,
+		promAIcallToolExecuteTotal,
 	)
 }
 
