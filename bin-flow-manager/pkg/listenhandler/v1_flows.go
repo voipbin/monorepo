@@ -80,6 +80,7 @@ func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *sock.Request) (*soc
 		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
 	}
+	promFlowCRUDTotal.WithLabelValues("update").Inc()
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -116,6 +117,7 @@ func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *sock.Request) (*
 	if err != nil {
 		return nil, err
 	}
+	promFlowCRUDTotal.WithLabelValues("delete").Inc()
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -161,6 +163,7 @@ func (h *listenHandler) v1FlowsPost(ctx context.Context, m *sock.Request) (*sock
 		log.Errorf("Could not create anew flow. err: %v", err)
 		return nil, err
 	}
+	promFlowCRUDTotal.WithLabelValues("create").Inc()
 
 	data, err := json.Marshal(tmp)
 	if err != nil {

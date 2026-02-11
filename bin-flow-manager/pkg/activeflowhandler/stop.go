@@ -2,6 +2,7 @@ package activeflowhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -30,6 +31,13 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 	res, err := h.updateStatus(ctx, id, activeflow.StatusEnded)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update activeflow status. activeflow_id: %s, status: %s", id, activeflow.StatusEnded)
+	}
+
+	// metrics
+	promActiveflowEndedTotal.WithLabelValues(string(af.ReferenceType)).Inc()
+	promActiveflowRunning.WithLabelValues(string(af.ReferenceType)).Dec()
+	if af.TMCreate != nil {
+		promActiveflowDurationSeconds.WithLabelValues(string(af.ReferenceType)).Observe(time.Since(*af.TMCreate).Seconds())
 	}
 
 	// start on complete flow if configured
