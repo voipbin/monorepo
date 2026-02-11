@@ -444,6 +444,100 @@ func Test_ExtensionGet(t *testing.T) {
 	}
 }
 
+func Test_GetByDirectHash(t *testing.T) {
+
+	type test struct {
+		name string
+
+		hash string
+
+		responseDirect    *extensiondirect.ExtensionDirect
+		responseDirectErr error
+		responseExtension *extension.Extension
+
+		expectRes *extension.Extension
+		expectErr bool
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			hash: "abc123def456",
+
+			responseDirect: &extensiondirect.ExtensionDirect{
+				ExtensionID: uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+				Hash:        "abc123def456",
+			},
+			responseDirectErr: nil,
+			responseExtension: &extension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
+				Extension: "test-ext",
+			},
+
+			expectRes: &extension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
+				Extension:  "test-ext",
+				DirectHash: "abc123def456",
+			},
+			expectErr: false,
+		},
+		{
+			name: "hash not found",
+
+			hash: "nonexistent",
+
+			responseDirect:    nil,
+			responseDirectErr: fmt.Errorf("not found"),
+
+			expectRes: nil,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDBBin := dbhandler.NewMockDBHandler(mc)
+			mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
+			h := &extensionHandler{
+				dbBin:                  mockDBBin,
+				extensionDirectHandler: mockExtDirect,
+			}
+			ctx := context.Background()
+
+			mockExtDirect.EXPECT().GetByHash(ctx, tt.hash).Return(tt.responseDirect, tt.responseDirectErr)
+			if tt.responseDirectErr == nil {
+				mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseDirect.ExtensionID).Return(tt.responseExtension, nil)
+			}
+
+			res, err := h.GetByDirectHash(ctx, tt.hash)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_List(t *testing.T) {
 
 	type test struct {
