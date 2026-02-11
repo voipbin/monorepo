@@ -55,6 +55,7 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 		log.Errorf("Could not get updated campaign info. err: %v", err)
 		return nil, err
 	}
+	promCampaignStatusRunTotal.Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusRun, res)
 
 	// execute campaign handle with 1 second delay

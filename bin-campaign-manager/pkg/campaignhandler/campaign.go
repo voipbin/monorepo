@@ -93,6 +93,7 @@ func (h *campaignHandler) Create(
 		log.Errorf("Could not get created campaign. err: %v", err)
 		return nil, err
 	}
+	promCampaignCreateTotal.Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignCreated, res)
 
 	log.WithField("campaign", res).Debugf("Created a new campaign. campaign_id: %s", res.ID)

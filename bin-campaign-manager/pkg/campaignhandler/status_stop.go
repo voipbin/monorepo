@@ -119,6 +119,7 @@ func (h *campaignHandler) campaignStopNow(ctx context.Context, id uuid.UUID) (*c
 		log.Errorf("Could not get updated campaign info. err: %v", err)
 		return nil, err
 	}
+	promCampaignStatusStopTotal.Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignStatusStop, res)
 
 	return res, nil

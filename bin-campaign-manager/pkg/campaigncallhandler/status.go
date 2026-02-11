@@ -27,6 +27,7 @@ func (h *campaigncallHandler) Done(ctx context.Context, id uuid.UUID, result cam
 		log.Errorf("Could not update the campaigncall status to done. err: %v", err)
 		return nil, err
 	}
+	promCampaigncallDoneTotal.WithLabelValues(string(result)).Inc()
 
 	// calculate omoutdialtarget status
 	otStatus, err := calcDialtargetStatus(result)

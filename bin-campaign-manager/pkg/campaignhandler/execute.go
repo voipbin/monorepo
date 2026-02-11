@@ -27,6 +27,8 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		"campaign_id": id,
 	})
 
+	promCampaignExecuteTotal.Inc()
+
 	// get campaign
 	c, err := h.Get(ctx, id)
 	if err != nil {
