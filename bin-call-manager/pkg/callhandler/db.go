@@ -3,6 +3,7 @@ package callhandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -396,6 +397,16 @@ func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallHangup, res)
 	promCallHangupTotal.WithLabelValues(string(res.Direction), string(res.Type), string(reason)).Inc()
+
+	// track call duration
+	if res.TMCreate != nil {
+		tmEnd := res.TMHangup
+		if tmEnd == nil {
+			now := time.Now()
+			tmEnd = &now
+		}
+		promCallDurationSeconds.WithLabelValues(string(res.Direction), string(res.Type)).Observe(tmEnd.Sub(*res.TMCreate).Seconds())
+	}
 
 	return res, nil
 }

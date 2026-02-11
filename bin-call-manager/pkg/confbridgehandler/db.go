@@ -3,6 +3,7 @@ package confbridgehandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -261,6 +262,9 @@ func (h *confbridgeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, stat
 
 	case confbridge.StatusTerminated:
 		promConfbridgeCloseTotal.Inc()
+		if res.TMCreate != nil {
+			promConfbridgeDurationSeconds.WithLabelValues(string(res.Type)).Observe(time.Since(*res.TMCreate).Seconds())
+		}
 		h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminated, res)
 	}
 

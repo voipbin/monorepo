@@ -5,11 +5,15 @@ package externalmediahandler
 import (
 	"context"
 
+	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
@@ -55,6 +59,37 @@ const (
 	defaultDirection            = "both" //
 	defaultSilencePlaybackMedia = "sound:silence_slin16_8000_1m"
 )
+
+var (
+	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
+
+	// external_media_start_total counts external media starts by reference type and encapsulation.
+	promExternalMediaStartTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "external_media_start_total",
+			Help:      "Total number of external media starts by reference type and encapsulation.",
+		},
+		[]string{"reference_type", "encapsulation"},
+	)
+
+	// external_media_stop_total counts external media stops by reference type.
+	promExternalMediaStopTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "external_media_stop_total",
+			Help:      "Total number of external media stops by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promExternalMediaStartTotal,
+		promExternalMediaStopTotal,
+	)
+}
 
 type externalMediaHandler struct {
 	utilHandler   utilhandler.UtilHandler

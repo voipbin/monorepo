@@ -30,6 +30,7 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get recording info")
 	}
+	promRecordingEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingFinished, res)
 
 	// store the recording

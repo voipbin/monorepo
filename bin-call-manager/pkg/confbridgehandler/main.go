@@ -127,6 +127,17 @@ var (
 			Help:      "Total number of joined calls to the confbridge with type.",
 		},
 	)
+
+	// confbridge_duration_seconds measures total confbridge duration from creation to termination.
+	promConfbridgeDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "confbridge_duration_seconds",
+			Help:      "Duration of conference bridges in seconds from creation to termination.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 300, 600, 1800, 3600},
+		},
+		[]string{"type"},
+	)
 )
 
 func init() {
@@ -134,6 +145,7 @@ func init() {
 		promConfbridgeCreateTotal,
 		promConfbridgeCloseTotal,
 		promConfbridgeJoinTotal,
+		promConfbridgeDurationSeconds,
 	)
 }
 

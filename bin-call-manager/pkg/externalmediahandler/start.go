@@ -41,6 +41,8 @@ func (h *externalMediaHandler) Start(
 		id = h.utilHandler.UUIDCreate()
 	}
 
+	promExternalMediaStartTotal.WithLabelValues(string(referenceType), string(encapsulation)).Inc()
+
 	switch referenceType {
 	case externalmedia.ReferenceTypeCall:
 		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, format, directionListen, directionSpeak)
