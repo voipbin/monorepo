@@ -32,7 +32,6 @@ func Test_BillingCreate(t *testing.T) {
 	tmBillingEnd := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC)
 	tmCreate := time.Date(2023, 6, 7, 3, 22, 17, 995000000, time.UTC)
 	tmCreate2 := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
-	tmDeleteDefault := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []test{
 		{
@@ -71,7 +70,7 @@ func Test_BillingCreate(t *testing.T) {
 				TMBillingEnd:     &tmBillingEnd,
 				TMCreate:         &tmCreate,
 				TMUpdate:         nil,
-				TMDelete:         &tmDeleteDefault,
+				TMDelete:         nil,
 			},
 		},
 		{
@@ -94,7 +93,7 @@ func Test_BillingCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("a94849ce-07ae-11ee-a930-9b5e28e2ead9"),
 				TMCreate:      &tmCreate2,
 				TMUpdate:      nil,
-				TMDelete:      &tmDeleteDefault,
+				TMDelete:      nil,
 			},
 		},
 	}
@@ -158,7 +157,6 @@ func Test_BillingList(t *testing.T) {
 	}
 
 	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
-	tmDeleteDefault := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []test{
 		{
@@ -197,7 +195,7 @@ func Test_BillingList(t *testing.T) {
 					ReferenceID:   uuid.FromStringOrNil("a97bade6-07ae-11ee-8916-4f8af853ac9b"),
 					TMCreate:      &tmCreate,
 					TMUpdate:      nil,
-					TMDelete:      &tmDeleteDefault,
+					TMDelete:      nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -208,7 +206,7 @@ func Test_BillingList(t *testing.T) {
 					ReferenceID:   uuid.FromStringOrNil("a9ab7120-07ae-11ee-9a8d-6f3e025fae7a"),
 					TMCreate:      &tmCreate,
 					TMUpdate:      nil,
-					TMDelete:      &tmDeleteDefault,
+					TMDelete:      nil,
 				},
 			},
 		},
@@ -266,7 +264,6 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 
 	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 15, 995000000, time.UTC)
 	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
-	tmDeleteDefault := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []test{
 		{
@@ -302,7 +299,7 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 
 				TMCreate: &tmCreate,
 				TMUpdate: &tmCreate,
-				TMDelete: &tmDeleteDefault,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -363,7 +360,6 @@ func Test_BillingSetStatus(t *testing.T) {
 	}
 
 	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
-	tmDeleteDefault := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []test{
 		{
@@ -391,7 +387,7 @@ func Test_BillingSetStatus(t *testing.T) {
 
 				TMCreate: &tmCreate,
 				TMUpdate: &tmCreate,
-				TMDelete: &tmDeleteDefault,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -525,7 +521,6 @@ func Test_BillingDelete(t *testing.T) {
 func Test_BillingGetByReferenceTypeAndID(t *testing.T) {
 
 	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
-	tmDeleteDefault := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name string
@@ -558,7 +553,7 @@ func Test_BillingGetByReferenceTypeAndID(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("f2a2b3c4-d5e6-11ee-abcd-1234567890ab"),
 				TMCreate:      &tmCreate,
 				TMUpdate:      nil,
-				TMDelete:      &tmDeleteDefault,
+				TMDelete:      nil,
 			},
 		},
 	}

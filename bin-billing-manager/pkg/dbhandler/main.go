@@ -31,6 +31,7 @@ type DBHandler interface {
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	BillingCreate(ctx context.Context, c *billing.Billing) error
+	BillingCreditTopUp(ctx context.Context, b *billing.Billing, accountID uuid.UUID, targetAmount float32) (bool, error)
 	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceTypeAndID(ctx context.Context, referenceType billing.ReferenceType, referenceID uuid.UUID) (*billing.Billing, error)

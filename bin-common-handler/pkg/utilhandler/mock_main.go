@@ -99,6 +99,20 @@ func (mr *MockUtilHandlerMockRecorder) IsDeleted(t any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDeleted", reflect.TypeOf((*MockUtilHandler)(nil).IsDeleted), t)
 }
 
+// NewV5UUID mocks base method.
+func (m *MockUtilHandler) NewV5UUID(namespace uuid.UUID, data string) uuid.UUID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewV5UUID", namespace, data)
+	ret0, _ := ret[0].(uuid.UUID)
+	return ret0
+}
+
+// NewV5UUID indicates an expected call of NewV5UUID.
+func (mr *MockUtilHandlerMockRecorder) NewV5UUID(namespace, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewV5UUID", reflect.TypeOf((*MockUtilHandler)(nil).NewV5UUID), namespace, data)
+}
+
 // ParseFiltersFromRequestBody mocks base method.
 func (m *MockUtilHandler) ParseFiltersFromRequestBody(data []byte) (map[string]any, error) {
 	m.ctrl.T.Helper()

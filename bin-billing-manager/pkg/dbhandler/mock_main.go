@@ -188,6 +188,21 @@ func (mr *MockDBHandlerMockRecorder) BillingCreate(ctx, c any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingCreate", reflect.TypeOf((*MockDBHandler)(nil).BillingCreate), ctx, c)
 }
 
+// BillingCreditTopUp mocks base method.
+func (m *MockDBHandler) BillingCreditTopUp(ctx context.Context, b *billing.Billing, accountID uuid.UUID, targetAmount float32) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingCreditTopUp", ctx, b, accountID, targetAmount)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingCreditTopUp indicates an expected call of BillingCreditTopUp.
+func (mr *MockDBHandlerMockRecorder) BillingCreditTopUp(ctx, b, accountID, targetAmount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingCreditTopUp", reflect.TypeOf((*MockDBHandler)(nil).BillingCreditTopUp), ctx, b, accountID, targetAmount)
+}
+
 // BillingDelete mocks base method.
 func (m *MockDBHandler) BillingDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

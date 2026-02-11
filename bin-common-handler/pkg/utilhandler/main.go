@@ -20,6 +20,7 @@ type UtilHandler interface {
 
 	// uuid helpers
 	UUIDCreate() uuid.UUID
+	NewV5UUID(namespace uuid.UUID, data string) uuid.UUID
 
 	// string helpers
 	StringGenerateRandom(size int) (string, error)

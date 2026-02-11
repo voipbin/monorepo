@@ -23,6 +23,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
+	"monorepo/bin-billing-manager/pkg/credithandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 	"monorepo/bin-billing-manager/pkg/listenhandler"
@@ -30,7 +31,8 @@ import (
 )
 
 const (
-	serviceName = commonoutline.ServiceNameBillingManager
+	serviceName         = commonoutline.ServiceNameBillingManager
+	creditCheckInterval = 24 * time.Hour
 )
 
 // channels
@@ -107,6 +109,7 @@ func signalHandler() {
 
 // run runs the billing-manager
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithField("func", "run")
 
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
@@ -130,6 +133,28 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	if err := runSubscribe(db, sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
+
+	// run free tier credit top-up
+	creditHandler := credithandler.NewCreditHandler(db)
+	go func() {
+		// Run immediately on startup to catch up after deploys/restarts.
+		if err := creditHandler.ProcessAll(context.Background()); err != nil {
+			log.Errorf("Initial credit processing failed. err: %v", err)
+		}
+
+		ticker := time.NewTicker(creditCheckInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := creditHandler.ProcessAll(context.Background()); err != nil {
+					log.Errorf("Credit processing failed. err: %v", err)
+				}
+			case <-chDone:
+				return
+			}
+		}
+	}()
 
 	return nil
 }
