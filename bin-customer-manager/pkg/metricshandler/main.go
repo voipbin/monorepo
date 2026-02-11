@@ -49,16 +49,6 @@ var (
 		[]string{"operation", "entity", "result"},
 	)
 
-	// EventPublishTotal counts published events by type.
-	EventPublishTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "event_publish_total",
-			Help:      "Total number of published events",
-		},
-		[]string{"type"},
-	)
-
 	// RPCCallDuration tracks cross-service RPC call latency in milliseconds.
 	RPCCallDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -107,7 +97,6 @@ func init() {
 		DBOperationDuration,
 		DBOperationTotal,
 		CacheOperationTotal,
-		EventPublishTotal,
 		RPCCallDuration,
 		RPCCallTotal,
 		SignupTotal,

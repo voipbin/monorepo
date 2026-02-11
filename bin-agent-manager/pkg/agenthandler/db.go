@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-agent-manager/pkg/metricshandler"
 )
 
 // dbList returns agents
@@ -101,7 +100,6 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentCreated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentCreated)).Inc()
 
 	log.WithField("agent", res).Debug("Created a new agent.")
 
@@ -127,7 +125,6 @@ func (h *agentHandler) dbDelete(ctx context.Context, id uuid.UUID) (*agent.Agent
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentDeleted, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentDeleted)).Inc()
 
 	return res, nil
 }
@@ -175,7 +172,6 @@ func (h *agentHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, name stri
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return res, nil
 }
@@ -205,7 +201,6 @@ func (h *agentHandler) dbUpdatePassword(ctx context.Context, id uuid.UUID, passw
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return res, nil
 }
@@ -230,7 +225,6 @@ func (h *agentHandler) dbUpdatePermission(ctx context.Context, id uuid.UUID, per
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return res, nil
 }
@@ -255,7 +249,6 @@ func (h *agentHandler) dbUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs 
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return res, nil
 }
@@ -279,7 +272,6 @@ func (h *agentHandler) dbUpdateAddresses(ctx context.Context, id uuid.UUID, addr
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return res, nil
 }
@@ -304,7 +296,6 @@ func (h *agentHandler) dbUpdateStatus(ctx context.Context, id uuid.UUID, status 
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentStatusUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentStatusUpdated)).Inc()
 
 	return res, nil
 }

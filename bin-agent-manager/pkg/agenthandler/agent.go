@@ -552,7 +552,6 @@ func (h *agentHandler) PasswordReset(ctx context.Context, token string, password
 		return nil
 	}
 	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(string(agent.EventTypeAgentUpdated)).Inc()
 
 	return nil
 }

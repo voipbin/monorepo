@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-customer-manager/models/accesskey"
-	"monorepo/bin-customer-manager/pkg/metricshandler"
 )
 
 // List returns list of accesskeys
@@ -122,7 +121,6 @@ func (h *accesskeyHandler) Create(
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(accesskey.EventTypeAccesskeyCreated).Inc()
 
 	return res, nil
 }
@@ -162,7 +160,6 @@ func (h *accesskeyHandler) Delete(ctx context.Context, id uuid.UUID) (*accesskey
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyDeleted, res)
-	metricshandler.EventPublishTotal.WithLabelValues(accesskey.EventTypeAccesskeyDeleted).Inc()
 
 	return res, nil
 }
@@ -199,7 +196,6 @@ func (h *accesskeyHandler) UpdateBasicInfo(
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(accesskey.EventTypeAccesskeyUpdated).Inc()
 
 	return res, nil
 }
