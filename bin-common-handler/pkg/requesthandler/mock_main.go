@@ -4976,18 +4976,18 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionList(ctx, pageToke
 }
 
 // RegistrarV1ExtensionUpdate mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*extension.Extension, error) {
+func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string, direct, directRegenerate *bool) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionUpdate", ctx, id, name, detail, password)
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionUpdate", ctx, id, name, detail, password, direct, directRegenerate)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegistrarV1ExtensionUpdate indicates an expected call of RegistrarV1ExtensionUpdate.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionUpdate(ctx, id, name, detail, password any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionUpdate(ctx, id, name, detail, password, direct, directRegenerate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionUpdate), ctx, id, name, detail, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionUpdate), ctx, id, name, detail, password, direct, directRegenerate)
 }
 
 // RegistrarV1TrunkCountByCustomerID mocks base method.

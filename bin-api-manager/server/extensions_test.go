@@ -242,6 +242,10 @@ func Test_ExtensionsIDGET(t *testing.T) {
 	}
 }
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func TestExtensionsIDPUT(t *testing.T) {
 
 	type test struct {
@@ -253,11 +257,13 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 		responseExtension *rmextension.WebhookMessage
 
-		extensionID    uuid.UUID
-		expectName     string
-		expectDetail   string
-		expectPassword string
-		expectRes      string
+		extensionID            uuid.UUID
+		expectName             string
+		expectDetail           string
+		expectPassword         string
+		expectDirect           *bool
+		expectDirectRegenerate *bool
+		expectRes              string
 	}
 
 	tests := []test{
@@ -278,11 +284,113 @@ func TestExtensionsIDPUT(t *testing.T) {
 				},
 			},
 
-			extensionID:    uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
-			expectName:     "test name",
-			expectDetail:   "test detail",
-			expectPassword: "update password",
-			expectRes:      `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			extensionID:            uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			expectName:             "test name",
+			expectDetail:           "test detail",
+			expectPassword:         "update password",
+			expectDirect:           nil,
+			expectDirectRegenerate: nil,
+			expectRes:              `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with direct true",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/extensions/67492c7a-6fb0-11eb-8b3f-d7eb268910df",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password","direct":true}`),
+
+			responseExtension: &rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				},
+			},
+
+			extensionID:            uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			expectName:             "test name",
+			expectDetail:           "test detail",
+			expectPassword:         "update password",
+			expectDirect:           boolPtr(true),
+			expectDirectRegenerate: nil,
+			expectRes:              `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with direct false",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/extensions/67492c7a-6fb0-11eb-8b3f-d7eb268910df",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password","direct":false}`),
+
+			responseExtension: &rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				},
+			},
+
+			extensionID:            uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			expectName:             "test name",
+			expectDetail:           "test detail",
+			expectPassword:         "update password",
+			expectDirect:           boolPtr(false),
+			expectDirectRegenerate: nil,
+			expectRes:              `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with direct_regenerate",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/extensions/67492c7a-6fb0-11eb-8b3f-d7eb268910df",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password","direct_regenerate":true}`),
+
+			responseExtension: &rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				},
+			},
+
+			extensionID:            uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			expectName:             "test name",
+			expectDetail:           "test detail",
+			expectPassword:         "update password",
+			expectDirect:           nil,
+			expectDirectRegenerate: boolPtr(true),
+			expectRes:              `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with all fields",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/extensions/67492c7a-6fb0-11eb-8b3f-d7eb268910df",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password","direct":true,"direct_regenerate":true}`),
+
+			responseExtension: &rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+				},
+			},
+
+			extensionID:            uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
+			expectName:             "test name",
+			expectDetail:           "test detail",
+			expectPassword:         "update password",
+			expectDirect:           boolPtr(true),
+			expectDirectRegenerate: boolPtr(true),
+			expectRes:              `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -308,7 +416,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", "/extensions/"+tt.extensionID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword, tt.expectDirect, tt.expectDirectRegenerate).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

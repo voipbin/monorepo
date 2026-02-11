@@ -92,15 +92,21 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 	}
 }
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func Test_RegistrarExtensionUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		extensionName string
-		detail        string
-		password      string
+		id               uuid.UUID
+		extensionName    string
+		detail           string
+		password         string
+		direct           *bool
+		directRegenerate *bool
 
 		response *sock.Response
 
@@ -115,6 +121,8 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 			"update name",
 			"update detail",
 			"update password",
+			nil,
+			nil,
 
 			&sock.Response{
 				StatusCode: 200,
@@ -127,6 +135,134 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password"}`),
+			},
+			&rmextension.Extension{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
+			},
+		},
+		{
+			"with direct true",
+
+			uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(true),
+			nil,
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","name":"update name","detail":"update detail","password":"update password"}`),
+			},
+			"bin-manager.registrar-manager.request",
+			&sock.Request{
+				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password","direct":true}`),
+			},
+			&rmextension.Extension{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
+			},
+		},
+		{
+			"with direct false",
+
+			uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(false),
+			nil,
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","name":"update name","detail":"update detail","password":"update password"}`),
+			},
+			"bin-manager.registrar-manager.request",
+			&sock.Request{
+				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password","direct":false}`),
+			},
+			&rmextension.Extension{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
+			},
+		},
+		{
+			"with direct_regenerate true",
+
+			uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+			"update name",
+			"update detail",
+			"update password",
+			nil,
+			boolPtr(true),
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","name":"update name","detail":"update detail","password":"update password"}`),
+			},
+			"bin-manager.registrar-manager.request",
+			&sock.Request{
+				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password","direct_regenerate":true}`),
+			},
+			&rmextension.Extension{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
+				},
+				Name:     "update name",
+				Detail:   "update detail",
+				Password: "update password",
+			},
+		},
+		{
+			"with all optional fields",
+
+			uuid.FromStringOrNil("0be5298a-6f9f-11eb-bb77-f71f5b5f95f7"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(true),
+			boolPtr(true),
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","name":"update name","detail":"update detail","password":"update password"}`),
+			},
+			"bin-manager.registrar-manager.request",
+			&sock.Request{
+				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password","direct":true,"direct_regenerate":true}`),
 			},
 			&rmextension.Extension{
 				Identity: identity.Identity{
@@ -153,7 +289,7 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
+			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password, tt.direct, tt.directRegenerate)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
