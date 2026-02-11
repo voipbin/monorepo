@@ -60,7 +60,24 @@ var (
 			Help:      "Total number of created account.",
 		},
 	)
+
+	// account_balance_check_total tracks balance validation outcomes.
+	promAccountBalanceCheckTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "account_balance_check_total",
+			Help:      "Total number of balance validation checks by result.",
+		},
+		[]string{"result"},
+	)
 )
+
+func init() {
+	prometheus.MustRegister(
+		promAccountCreateTotal,
+		promAccountBalanceCheckTotal,
+	)
+}
 
 // NewAccountHandler returns a new AccountHandler
 func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AccountHandler {

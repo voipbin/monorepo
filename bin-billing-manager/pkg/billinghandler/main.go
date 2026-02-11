@@ -75,7 +75,26 @@ var (
 		},
 		[]string{"reference_type"},
 	)
+
+	// billing_duration_seconds tracks billing duration from start to end by reference type.
+	promBillingDurationSeconds = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "billing_duration_seconds",
+			Help:      "Duration of billing records in seconds from start to end.",
+			Buckets:   []float64{1, 5, 10, 30, 60, 300, 600, 1800, 3600},
+		},
+		[]string{"reference_type"},
+	)
 )
+
+func init() {
+	prometheus.MustRegister(
+		promBillingCreateTotal,
+		promBillingEndTotal,
+		promBillingDurationSeconds,
+	)
+}
 
 // NewBillingHandler create a new BillingHandler
 func NewBillingHandler(
