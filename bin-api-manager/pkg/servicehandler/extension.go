@@ -162,7 +162,7 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, si
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionUpdate",
 		"customer_id":  a.CustomerID,
@@ -181,7 +181,7 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password, direct, directRegenerate)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err

@@ -157,7 +157,7 @@ func (h *server) PutExtensionsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ExtensionUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Password)
+	res, err := h.serviceHandler.ExtensionUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Password, req.Direct, req.DirectRegenerate)
 	if err != nil {
 		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)

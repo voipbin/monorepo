@@ -95,13 +95,15 @@ func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensi
 // RegistrarV1ExtensionUpdate sends a request to registrar-manager
 // to update the detail extension info.
 // it returns updated extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string, direct *bool, directRegenerate *bool) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", id)
 
 	data := &rmrequest.V1DataExtensionsIDPut{
-		Name:     name,
-		Detail:   detail,
-		Password: password,
+		Name:             name,
+		Detail:           detail,
+		Password:         password,
+		Direct:           direct,
+		DirectRegenerate: directRegenerate,
 	}
 
 	m, err := json.Marshal(data)

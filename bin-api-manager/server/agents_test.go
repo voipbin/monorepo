@@ -490,3 +490,100 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 		})
 	}
 }
+
+func Test_PutAgentsId(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqBody []byte
+
+		responseAgent *amagent.WebhookMessage
+
+		expectedAgentID    uuid.UUID
+		expectedName       string
+		expectedDetail     string
+		expectedRingMethod amagent.RingMethod
+		expectedRes        string
+	}{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				},
+			},
+
+			reqBody: []byte(`{"name":"test name","detail":"test detail","ring_method":"ringall"}`),
+
+			responseAgent: &amagent.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+				},
+			},
+
+			expectedAgentID:    uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+			expectedName:       "test name",
+			expectedDetail:     "test detail",
+			expectedRingMethod: amagent.RingMethodRingAll,
+			expectedRes:        `{"id":"a8ba6662-540a-11ec-9a9f-b31de1a77615","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`,
+		},
+		{
+			name: "with nil fields",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				},
+			},
+
+			reqBody: []byte(`{}`),
+
+			responseAgent: &amagent.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+				},
+			},
+
+			expectedAgentID:    uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+			expectedName:       "",
+			expectedDetail:     "",
+			expectedRingMethod: amagent.RingMethodRingAll,
+			expectedRes:        `{"id":"a8ba6662-540a-11ec-9a9f-b31de1a77615","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", "/agents/"+tt.expectedAgentID.String(), bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().AgentUpdate(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod).Return(tt.responseAgent, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			}
+		})
+	}
+}

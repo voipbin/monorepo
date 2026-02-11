@@ -92,16 +92,22 @@ func Test_ExtensionCreate(t *testing.T) {
 	}
 }
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name  string
 		agent *amagent.Agent
 
-		id       uuid.UUID
-		extName  string
-		detail   string
-		password string
+		id               uuid.UUID
+		extName          string
+		detail           string
+		password         string
+		direct           *bool
+		directRegenerate *bool
 
 		responseExtension *rmextension.Extension
 		expectRes         *rmextension.WebhookMessage
@@ -122,6 +128,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 			"update name",
 			"update detail",
 			"update password",
+			nil,
+			nil,
 
 			&rmextension.Extension{
 				Identity: commonidentity.Identity{
@@ -145,7 +153,176 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Extension: "test",
 				Password:  "update password",
 				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
-				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z")},
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+		},
+		{
+			"with direct true",
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(true),
+			nil,
+
+			&rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+			&rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+		},
+		{
+			"with direct false",
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(false),
+			nil,
+
+			&rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+			&rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+		},
+		{
+			"with direct_regenerate",
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+			"update name",
+			"update detail",
+			"update password",
+			nil,
+			boolPtr(true),
+
+			&rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+			&rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+		},
+		{
+			"with all optional fields",
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+			"update name",
+			"update detail",
+			"update password",
+			boolPtr(true),
+			boolPtr(true),
+
+			&rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
+			&rmextension.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Name:      "update name",
+				Detail:    "update detail",
+				Extension: "test",
+				Password:  "update password",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
+			},
 		},
 	}
 
@@ -164,8 +341,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.responseExtension, nil)
-			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, tt.extName, tt.detail, tt.password)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password, tt.direct, tt.directRegenerate).Return(tt.responseExtension, nil)
+			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, tt.extName, tt.detail, tt.password, tt.direct, tt.directRegenerate)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
