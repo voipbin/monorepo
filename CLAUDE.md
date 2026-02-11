@@ -506,6 +506,40 @@ commonnotify.NewNotifyHandler(
 
 **Safe approach:** After any bin-common-handler signature change, run the full verification workflow on ALL 30+ services to catch any missed updates.
 
+#### Prometheus Metric Name Conflicts
+
+**CRITICAL: Service-level `metricshandler` metrics MUST NOT reuse metric names already registered by `bin-common-handler/pkg/requesthandler`.**
+
+The shared `requesthandler` registers these metrics (namespaced per service) via `initPrometheus()` when `NewRequestHandler()` is called:
+- `<namespace>_request_process_time` — histogram of RPC request processing time
+- `<namespace>_event_publish_total` — counter of published events by type
+
+If a service's `metricshandler` package registers a metric with the same fully-qualified name (same namespace + name) but different labels or help text, `prometheus.MustRegister` will **panic at startup**, causing a **CrashLoopBackOff**.
+
+```go
+// ❌ WRONG — conflicts with requesthandler's event_publish_total
+EventPublishTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Namespace: "agent_manager",
+        Name:      "event_publish_total",  // Already registered by requesthandler!
+        Help:      "Total number of published events",
+    },
+    []string{"type"},  // Different labels → panic
+)
+
+// ✅ CORRECT — use a unique name
+ServiceEventTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Namespace: "agent_manager",
+        Name:      "service_event_total",  // Unique name
+        Help:      "Total number of service-level events",
+    },
+    []string{"type"},
+)
+```
+
+**Before adding metrics to a service's `metricshandler`:** Check `bin-common-handler/pkg/requesthandler/main.go` `initPrometheus()` for existing metric names to avoid collisions.
+
 #### UUID Fields and DB Tags
 
 **CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**

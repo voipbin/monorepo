@@ -165,7 +165,6 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 
 	// publish customer_created event — triggers default agent creation + welcome email
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(customer.EventTypeCustomerCreated).Inc()
 
 	metricshandler.EmailVerificationTotal.WithLabelValues("success").Inc()
 

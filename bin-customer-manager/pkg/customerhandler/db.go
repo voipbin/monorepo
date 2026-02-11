@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-customer-manager/models/customer"
-	"monorepo/bin-customer-manager/pkg/metricshandler"
 )
 
 // List returns list of customers
@@ -98,7 +97,6 @@ func (h *customerHandler) Create(
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(customer.EventTypeCustomerCreated).Inc()
 
 	return res, nil
 }
@@ -126,7 +124,6 @@ func (h *customerHandler) dbDelete(ctx context.Context, id uuid.UUID) (*customer
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, res)
-	metricshandler.EventPublishTotal.WithLabelValues(customer.EventTypeCustomerDeleted).Inc()
 
 	return res, nil
 }
@@ -174,7 +171,6 @@ func (h *customerHandler) UpdateBasicInfo(
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(customer.EventTypeCustomerUpdated).Inc()
 
 	return res, nil
 }
@@ -205,7 +201,6 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-	metricshandler.EventPublishTotal.WithLabelValues(customer.EventTypeCustomerUpdated).Inc()
 
 	return res, nil
 }
