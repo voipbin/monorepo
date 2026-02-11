@@ -267,6 +267,52 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 	return res, nil
 }
 
+// processV1ExtensionsByDirectHashGet handles /v1/extensions/by-direct-hash/{hash} GET request
+func (h *listenHandler) processV1ExtensionsByDirectHashGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExtensionsByDirectHashGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/extensions/by-direct-hash/a3f8b2c1d4e5"
+	tmpVals := strings.Split(u.Path, "/")
+	if len(tmpVals) < 5 {
+		log.Debugf("Invalid URI format")
+		return simpleResponse(400), nil
+	}
+	hash := tmpVals[4]
+
+	if hash == "" {
+		log.Debugf("Missing hash parameter")
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.extensionHandler.GetByDirectHash(ctx, hash)
+	if err != nil {
+		log.Errorf("Could not get extension by direct hash. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1ExtensionsExtensionExtensionGet handles /v1/extensions/extension/{extension} GET request
 func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

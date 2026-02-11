@@ -4945,6 +4945,21 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extension
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGet), ctx, extensionID)
 }
 
+// RegistrarV1ExtensionGetByDirectHash mocks base method.
+func (m *MockRequestHandler) RegistrarV1ExtensionGetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGetByDirectHash", ctx, hash)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1ExtensionGetByDirectHash indicates an expected call of RegistrarV1ExtensionGetByDirectHash.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetByDirectHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetByDirectHash", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetByDirectHash), ctx, hash)
+}
+
 // RegistrarV1ExtensionList mocks base method.
 func (m *MockRequestHandler) RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[extension.Field]any) ([]extension.Extension, error) {
 	m.ctrl.T.Helper()

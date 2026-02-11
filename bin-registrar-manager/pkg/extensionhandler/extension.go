@@ -349,3 +349,30 @@ func (h *extensionHandler) DirectRegenerate(ctx context.Context, extensionID uui
 func (h *extensionHandler) GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
 	return h.extensionDirectHandler.GetByHash(ctx, hash)
 }
+
+// GetByDirectHash returns the extension corresponding to the given direct hash.
+// It resolves hash → ExtensionDirect → Extension and populates DirectHash.
+func (h *extensionHandler) GetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "GetByDirectHash",
+		"hash": hash,
+	})
+
+	direct, err := h.extensionDirectHandler.GetByHash(ctx, hash)
+	if err != nil {
+		log.Errorf("Could not get extension direct by hash. err: %v", err)
+		return nil, err
+	}
+	log.WithField("extension_direct", direct).Debugf("Retrieved extension direct. extension_id: %s", direct.ExtensionID)
+
+	res, err := h.dbBin.ExtensionGet(ctx, direct.ExtensionID)
+	if err != nil {
+		log.Errorf("Could not get extension. extension_id: %s, err: %v", direct.ExtensionID, err)
+		return nil, err
+	}
+	log.WithField("extension", res).Debugf("Retrieved extension info. extension_id: %s", res.ID)
+
+	res.DirectHash = direct.Hash
+
+	return res, nil
+}

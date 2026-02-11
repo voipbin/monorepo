@@ -162,6 +162,21 @@ func (mr *MockExtensionHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtensionHandler)(nil).Get), ctx, id)
 }
 
+// GetByDirectHash mocks base method.
+func (m *MockExtensionHandler) GetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByDirectHash", ctx, hash)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByDirectHash indicates an expected call of GetByDirectHash.
+func (mr *MockExtensionHandlerMockRecorder) GetByDirectHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByDirectHash", reflect.TypeOf((*MockExtensionHandler)(nil).GetByDirectHash), ctx, hash)
+}
+
 // GetByExtension mocks base method.
 func (m *MockExtensionHandler) GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
