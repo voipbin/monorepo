@@ -8,11 +8,29 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
 )
+
+// maxFlowCount is the hard limit on persisted flows per customer.
+//
+// This limit is enforced locally in flow-manager rather than through
+// billing-manager's per-tier resource limits. The original tier-based
+// limits (e.g. Free=5, Basic=50) blocked temporary flow creation that
+// is essential for call processing — temporary flows go through the
+// same creation path but are stored only in Redis and auto-expire.
+// Low per-tier limits caused all flow creation (including temporary)
+// to fail once the persisted count reached the tier cap.
+//
+// We use a single high hard cap (10,000) for all tiers instead.
+// This is an internal safety limit to prevent abuse, not a
+// customer-facing restriction, so it is not exposed in billing
+// tiers or public documentation.
+//
+// The count checks persisted (database) flows only. Temporary flows
+// are excluded because they auto-expire from Redis.
+const maxFlowCount = 10000
 
 // Get returns flow
 func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
@@ -52,14 +70,15 @@ func (h *flowHandler) Create(
 		"on_complete_flow_id": onCompleteFlowID,
 	})
 
-	// check resource limit
-	valid, errLimit := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeFlow)
-	if errLimit != nil {
-		log.Errorf("Could not validate resource limit. err: %v", errLimit)
-		return nil, fmt.Errorf("could not validate resource limit: %w", errLimit)
+	// Check the hard flow count limit locally instead of calling billing-manager's
+	// per-tier resource limit. See the maxFlowCount comment for rationale.
+	count, errCount := h.db.FlowCountByCustomerID(ctx, customerID)
+	if errCount != nil {
+		log.Errorf("Could not get flow count. err: %v", errCount)
+		return nil, fmt.Errorf("could not get flow count: %w", errCount)
 	}
-	if !valid {
-		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+	if count >= maxFlowCount {
+		log.Infof("Flow hard limit reached for customer. customer_id: %s, count: %d, limit: %d", customerID, count, maxFlowCount)
 		return nil, fmt.Errorf("resource limit exceeded")
 	}
 

@@ -2,10 +2,10 @@ package flowhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
-	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -33,8 +33,13 @@ func Test_Create(t *testing.T) {
 		actions          []action.Action
 		onCompleteFlowID uuid.UUID
 
+		flowCount    int
+		flowCountErr error
+
 		responseUUID uuid.UUID
 		responseFlow *flow.Flow
+
+		expectErr bool
 	}{
 		{
 			name: "normal",
@@ -51,6 +56,9 @@ func Test_Create(t *testing.T) {
 			},
 			onCompleteFlowID: uuid.FromStringOrNil("9ccfb956-ce18-11f0-bdeb-af04faf83ec2"),
 
+			flowCount:    0,
+			flowCountErr: nil,
+
 			responseUUID: uuid.FromStringOrNil("a29bcd2e-0295-11f0-a03b-bf8d2fff2101"),
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -58,6 +66,8 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 				},
 			},
+
+			expectErr: false,
 		},
 		{
 			name: "test empty",
@@ -70,6 +80,9 @@ func Test_Create(t *testing.T) {
 			actions:          []action.Action{},
 			onCompleteFlowID: uuid.Nil,
 
+			flowCount:    0,
+			flowCountErr: nil,
+
 			responseUUID: uuid.FromStringOrNil("a2c051d0-0295-11f0-897c-0ffe1f3c6359"),
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -77,6 +90,8 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 				},
 			},
+
+			expectErr: false,
 		},
 		{
 			name: "test empty with persist false",
@@ -89,6 +104,9 @@ func Test_Create(t *testing.T) {
 			actions:          []action.Action{},
 			onCompleteFlowID: uuid.Nil,
 
+			flowCount:    0,
+			flowCountErr: nil,
+
 			responseUUID: uuid.FromStringOrNil("a2e4a45e-0295-11f0-b0d2-9b991bf4aa3d"),
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -96,6 +114,80 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
 				},
 			},
+
+			expectErr: false,
+		},
+		{
+			name: "just under limit",
+
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "just under limit",
+			persist:          true,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
+
+			flowCount:    9999,
+			flowCountErr: nil,
+
+			responseUUID: uuid.FromStringOrNil("c1a2c3d4-0295-11f0-a03b-bf8d2fff2101"),
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1a2c3d4-e6e6-11ec-af5a-e70eb001a48b"),
+					CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+				},
+			},
+
+			expectErr: false,
+		},
+		{
+			name: "limit reached exactly",
+
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "limit reached",
+			persist:          true,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
+
+			flowCount:    10000,
+			flowCountErr: nil,
+
+			expectErr: true,
+		},
+		{
+			name: "limit exceeded",
+
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "over limit",
+			persist:          true,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
+
+			flowCount:    15000,
+			flowCountErr: nil,
+
+			expectErr: true,
+		},
+		{
+			name: "count query fails",
+
+			customerID:       uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			flowType:         flow.TypeFlow,
+			flowName:         "test",
+			detail:           "db error",
+			persist:          true,
+			actions:          []action.Action{},
+			onCompleteFlowID: uuid.Nil,
+
+			flowCount:    0,
+			flowCountErr: fmt.Errorf("database connection error"),
+
+			expectErr: true,
 		},
 	}
 
@@ -119,21 +211,30 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeFlow).Return(true, nil)
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().FlowCountByCustomerID(ctx, tt.customerID).Return(tt.flowCount, tt.flowCountErr)
 
-			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
-			if tt.persist == true {
-				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
+			if !tt.expectErr {
+				mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
+
+				if tt.persist {
+					mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
+				} else {
+					mockDB.EXPECT().FlowSetToCache(ctx, gomock.Any()).Return(nil)
+				}
 				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
-			} else {
-				mockDB.EXPECT().FlowSetToCache(ctx, gomock.Any()).Return(nil)
-				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 			}
-			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
 			res, err := h.Create(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions, tt.onCompleteFlowID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
+				return
+			}
+
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

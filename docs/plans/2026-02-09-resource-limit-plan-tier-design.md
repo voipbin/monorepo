@@ -17,7 +17,6 @@ Four tiers with the following resource limits:
 | Extensions     |    5 |    50 |          500 |  0 (none) |
 | Agents         |    5 |    50 |          500 |  0 (none) |
 | Queues         |    2 |    10 |          100 |  0 (none) |
-| Flows          |    5 |    50 |          500 |  0 (none) |
 | Conferences    |    2 |    10 |          100 |  0 (none) |
 | Trunks         |    1 |     5 |           50 |  0 (none) |
 
@@ -25,6 +24,8 @@ Four tiers with the following resource limits:
 - New customers default to `free`.
 - Only Free tier is active initially. Basic, Professional, and Unlimited are defined but reserved for future use.
 - Only platform admins can change a customer's plan.
+
+**Note on Flows:** Flow limits were removed from the tier system. The original per-tier limits (Free=5, Basic=50, Professional=500) blocked temporary flow creation that is essential for call processing. Temporary flows share the same creation path as persistent flows but are stored only in Redis and auto-expire. When the persisted flow count reached the tier cap, all flow creation — including temporary — was denied. Flows are now limited internally by flow-manager with a hard cap of 10,000 per customer, applied uniformly across all tiers. This is an internal safety limit, not exposed to customers.
 
 ## Resource Type Constants
 
@@ -73,9 +74,9 @@ type PlanLimits struct {
 }
 
 var PlanLimitMap = map[PlanType]PlanLimits{
-    PlanTypeFree:         {Extensions: 5, Agents: 5, Queues: 2, Flows: 5, Conferences: 2, Trunks: 1},
-    PlanTypeBasic:        {Extensions: 50, Agents: 50, Queues: 10, Flows: 50, Conferences: 10, Trunks: 5},
-    PlanTypeProfessional: {Extensions: 500, Agents: 500, Queues: 100, Flows: 500, Conferences: 100, Trunks: 50},
+    PlanTypeFree:         {Extensions: 5, Agents: 5, Queues: 2, Flows: 0, Conferences: 2, Trunks: 1},
+    PlanTypeBasic:        {Extensions: 50, Agents: 50, Queues: 10, Flows: 0, Conferences: 10, Trunks: 5},
+    PlanTypeProfessional: {Extensions: 500, Agents: 500, Queues: 100, Flows: 0, Conferences: 100, Trunks: 50},
     PlanTypeUnlimited:    {Extensions: 0, Agents: 0, Queues: 0, Flows: 0, Conferences: 0, Trunks: 0},
 }
 ```
