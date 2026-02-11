@@ -13,10 +13,40 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-campaign-manager/models/campaigncall"
 	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
+
+var (
+	metricsNamespace = "campaign_manager"
+
+	promCampaigncallCreateTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaigncall_create_total",
+			Help:      "Total number of campaigncalls created by reference type.",
+		},
+		[]string{"reference_type"},
+	)
+
+	promCampaigncallDoneTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaigncall_done_total",
+			Help:      "Total number of campaigncalls completed by result.",
+		},
+		[]string{"result"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promCampaigncallCreateTotal,
+		promCampaigncallDoneTotal,
+	)
+}
 
 // campaigncallHandler defines
 type campaigncallHandler struct {

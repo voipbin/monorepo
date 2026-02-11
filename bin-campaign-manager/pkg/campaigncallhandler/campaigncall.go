@@ -74,6 +74,7 @@ func (h *campaigncallHandler) Create(
 		log.Errorf("Could not get created campaigncall. err: %v", err)
 		return nil, err
 	}
+	promCampaigncallCreateTotal.WithLabelValues(string(referenceType)).Inc()
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaigncall.EventTypeCampaigncallCreated, res)
 
 	// set the outdial target status to progressing

@@ -12,12 +12,58 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-campaign-manager/models/campaign"
 	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
 	"monorepo/bin-campaign-manager/pkg/dbhandler"
 	"monorepo/bin-campaign-manager/pkg/outplanhandler"
 )
+
+var (
+	metricsNamespace = "campaign_manager"
+
+	promCampaignCreateTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_create_total",
+			Help:      "Total number of campaigns created.",
+		},
+	)
+
+	promCampaignStatusRunTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_status_run_total",
+			Help:      "Total number of campaigns set to run status.",
+		},
+	)
+
+	promCampaignStatusStopTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_status_stop_total",
+			Help:      "Total number of campaigns stopped.",
+		},
+	)
+
+	promCampaignExecuteTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_execute_total",
+			Help:      "Total number of campaign execution loops.",
+		},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promCampaignCreateTotal,
+		promCampaignStatusRunTotal,
+		promCampaignStatusStopTotal,
+		promCampaignExecuteTotal,
+	)
+}
 
 // campaignHandler defines
 type campaignHandler struct {
