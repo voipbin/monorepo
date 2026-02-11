@@ -52,7 +52,7 @@ func TestNumbersGET(t *testing.T) {
 			},
 			expectPageSize:  10,
 			expectPageToken: "2021-03-02T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"31ee638c-7b23-11eb-858a-33e73c4f82f7","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"31ee638c-7b23-11eb-858a-33e73c4f82f7","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -120,7 +120,7 @@ func Test_NumbersIDGET(t *testing.T) {
 			},
 
 			expectNumberID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
-			expectRes:      `{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -190,7 +190,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 			},
 
 			expectNumberID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
-			expectRes:      `{"id":"d905c26e-7be6-11eb-b92a-ab4802b4bde3","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"d905c26e-7be6-11eb-b92a-ab4802b4bde3","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -272,7 +272,7 @@ func TestNumbersPOST(t *testing.T) {
 			expectMessageFlowID: uuid.FromStringOrNil("354120a2-d938-11ef-a7fa-a37e9ed87b6c"),
 			expectName:          "test name",
 			expectDetail:        "test detail",
-			expectRes:           `{"id":"b244d2b6-d937-11ef-9ac7-2bcab0184b07","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"b244d2b6-d937-11ef-9ac7-2bcab0184b07","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -354,7 +354,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			expectMessageFlowID: uuid.FromStringOrNil("e26b0eb6-2ca3-11ee-b7ce-d36a5a962472"),
 			expectName:          "test name",
 			expectDetail:        "test detail",
-			expectRes:           `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -430,7 +430,7 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 			expectNumberID:      uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
 			expectCallFlowID:    uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
 			expectMessageFlowID: uuid.FromStringOrNil("6e7ecc24-a881-11ec-bb4f-4b5822260cbe"),
-			expectRes:           `{"id":"a440c6b8-94cd-11ec-a524-af82f0c3ee68","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"a440c6b8-94cd-11ec-a524-af82f0c3ee68","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -509,7 +509,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			},
 
 			expectTMRenew: "2023-04-06T14:54:24.652558Z",
-			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 		},
 	}
 
