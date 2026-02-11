@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -417,7 +416,7 @@ func Test_processV1AccountsIDIsValidResourceLimitPost(t *testing.T) {
 		responseValid bool
 
 		expectAccountID    uuid.UUID
-		expectResourceType commonbilling.ResourceType
+		expectResourceType account.ResourceType
 		expectRes          *sock.Response
 	}
 
@@ -434,7 +433,7 @@ func Test_processV1AccountsIDIsValidResourceLimitPost(t *testing.T) {
 			responseValid: true,
 
 			expectAccountID:    uuid.FromStringOrNil("6b8a1c20-133e-11ee-a1b2-3f0139f4ec84"),
-			expectResourceType: commonbilling.ResourceTypeAgent,
+			expectResourceType: account.ResourceTypeAgent,
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

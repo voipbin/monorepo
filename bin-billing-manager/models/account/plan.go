@@ -1,9 +1,5 @@
 package account
 
-import (
-	commonbilling "monorepo/bin-common-handler/models/billing"
-)
-
 // PlanType define
 type PlanType string
 
@@ -28,21 +24,21 @@ type PlanLimits struct {
 
 // GetLimit returns the limit for the given resource type.
 // Returns 0 if the resource type is unknown.
-func (p *PlanLimits) GetLimit(resourceType commonbilling.ResourceType) int {
+func (p *PlanLimits) GetLimit(resourceType ResourceType) int {
 	switch resourceType {
-	case commonbilling.ResourceTypeExtension:
+	case ResourceTypeExtension:
 		return p.Extensions
-	case commonbilling.ResourceTypeAgent:
+	case ResourceTypeAgent:
 		return p.Agents
-	case commonbilling.ResourceTypeQueue:
+	case ResourceTypeQueue:
 		return p.Queues
-	case commonbilling.ResourceTypeFlow:
+	case ResourceTypeFlow:
 		return p.Flows
-	case commonbilling.ResourceTypeConference:
+	case ResourceTypeConference:
 		return p.Conferences
-	case commonbilling.ResourceTypeTrunk:
+	case ResourceTypeTrunk:
 		return p.Trunks
-	case commonbilling.ResourceTypeVirtualNumber:
+	case ResourceTypeVirtualNumber:
 		return p.VirtualNumbers
 	default:
 		return 0

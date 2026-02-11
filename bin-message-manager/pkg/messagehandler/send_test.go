@@ -147,7 +147,7 @@ func Test_Send(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
 
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)

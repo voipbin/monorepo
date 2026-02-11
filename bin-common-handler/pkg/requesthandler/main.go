@@ -30,7 +30,7 @@ import (
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amtool "monorepo/bin-ai-manager/models/tool"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonbilling "monorepo/bin-common-handler/models/billing"
+
 	"monorepo/bin-common-handler/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -387,7 +387,9 @@ type RequestHandler interface {
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
-	BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
+	BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
+	BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType bmaccount.ResourceType) (bool, error)
+	BillingV1AccountIsValidResourceLimitByCustomerID(ctx context.Context, customerID uuid.UUID, resourceType bmaccount.ResourceType) (bool, error)
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 
@@ -678,8 +680,6 @@ type RequestHandler interface {
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 	) (*cscustomer.Customer, error)
-	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error)
-	CustomerV1CustomerIsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerSignup(
 		ctx context.Context,

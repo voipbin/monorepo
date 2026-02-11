@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -24,7 +23,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 		name string
 
 		accountID    uuid.UUID
-		resourceType commonbilling.ResourceType
+		resourceType account.ResourceType
 
 		responseAccount *account.Account
 		responseCount   int
@@ -41,7 +40,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 			name: "free plan - under limit",
 
 			accountID:    uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000001"),
-			resourceType: commonbilling.ResourceTypeAgent,
+			resourceType: account.ResourceTypeAgent,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -60,7 +59,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 			name: "free plan - at limit",
 
 			accountID:    uuid.FromStringOrNil("a1b2c3d4-0002-0001-0001-000000000001"),
-			resourceType: commonbilling.ResourceTypeAgent,
+			resourceType: account.ResourceTypeAgent,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -79,7 +78,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 			name: "unlimited plan",
 
 			accountID:    uuid.FromStringOrNil("a1b2c3d4-0003-0001-0001-000000000001"),
-			resourceType: commonbilling.ResourceTypeAgent,
+			resourceType: account.ResourceTypeAgent,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -97,7 +96,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 			name: "deleted account",
 
 			accountID:    uuid.FromStringOrNil("a1b2c3d4-0004-0001-0001-000000000001"),
-			resourceType: commonbilling.ResourceTypeAgent,
+			resourceType: account.ResourceTypeAgent,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -116,7 +115,7 @@ func Test_IsValidResourceLimit(t *testing.T) {
 			name: "unknown plan type",
 
 			accountID:    uuid.FromStringOrNil("a1b2c3d4-0005-0001-0001-000000000001"),
-			resourceType: commonbilling.ResourceTypeAgent,
+			resourceType: account.ResourceTypeAgent,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -181,7 +180,7 @@ func Test_getResourceCount(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		resourceType commonbilling.ResourceType
+		resourceType account.ResourceType
 
 		responseCount int
 
@@ -194,42 +193,42 @@ func Test_getResourceCount(t *testing.T) {
 		{
 			name:          "extension",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeExtension,
+			resourceType:  account.ResourceTypeExtension,
 			responseCount: 3,
 			expectRes:     3,
 		},
 		{
 			name:          "trunk",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeTrunk,
+			resourceType:  account.ResourceTypeTrunk,
 			responseCount: 2,
 			expectRes:     2,
 		},
 		{
 			name:          "agent",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeAgent,
+			resourceType:  account.ResourceTypeAgent,
 			responseCount: 5,
 			expectRes:     5,
 		},
 		{
 			name:          "queue",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeQueue,
+			resourceType:  account.ResourceTypeQueue,
 			responseCount: 1,
 			expectRes:     1,
 		},
 		{
 			name:          "flow",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeFlow,
+			resourceType:  account.ResourceTypeFlow,
 			responseCount: 4,
 			expectRes:     4,
 		},
 		{
 			name:          "conference",
 			customerID:    customerID,
-			resourceType:  commonbilling.ResourceTypeConference,
+			resourceType:  account.ResourceTypeConference,
 			responseCount: 2,
 			expectRes:     2,
 		},
@@ -254,17 +253,17 @@ func Test_getResourceCount(t *testing.T) {
 			ctx := context.Background()
 
 			switch tt.resourceType {
-			case commonbilling.ResourceTypeExtension:
+			case account.ResourceTypeExtension:
 				mockReq.EXPECT().RegistrarV1ExtensionCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
-			case commonbilling.ResourceTypeTrunk:
+			case account.ResourceTypeTrunk:
 				mockReq.EXPECT().RegistrarV1TrunkCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
-			case commonbilling.ResourceTypeAgent:
+			case account.ResourceTypeAgent:
 				mockReq.EXPECT().AgentV1AgentCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
-			case commonbilling.ResourceTypeQueue:
+			case account.ResourceTypeQueue:
 				mockReq.EXPECT().QueueV1QueueCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
-			case commonbilling.ResourceTypeFlow:
+			case account.ResourceTypeFlow:
 				mockReq.EXPECT().FlowV1FlowCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
-			case commonbilling.ResourceTypeConference:
+			case account.ResourceTypeConference:
 				mockReq.EXPECT().ConferenceV1ConferenceCountByCustomerID(ctx, tt.customerID).Return(tt.responseCount, nil)
 			}
 
@@ -298,7 +297,7 @@ func Test_getResourceCount_unsupported(t *testing.T) {
 	ctx := context.Background()
 
 	customerID := uuid.FromStringOrNil("b1c2d3e4-0002-0001-0001-000000000001")
-	_, err := h.getResourceCount(ctx, customerID, commonbilling.ResourceType("unsupported"))
+	_, err := h.getResourceCount(ctx, customerID, account.ResourceType("unsupported"))
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}

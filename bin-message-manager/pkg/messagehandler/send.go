@@ -38,7 +38,7 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 
 	// check the balance
 	count := len(targets)
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, bmbilling.ReferenceTypeSMS, "", count)
+	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeSMS, "", count)
 	if err != nil {
 		log.Errorf("Could not validate the customer's balance. err: %v", err)
 		return nil, errors.Wrap(err, "could not validate the customer's balance")

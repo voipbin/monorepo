@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -112,7 +112,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
 			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
 			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
@@ -745,7 +745,7 @@ func Test_CreateVirtual(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeVirtualNumber).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeVirtualNumber).Return(true, nil)
 			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
@@ -825,7 +825,7 @@ func Test_CreateVirtual_error(t *testing.T) {
 			ctx := context.Background()
 
 			if !tt.skipResourceLimitMock {
-				mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeVirtualNumber).Return(tt.mockResourceLimitValid, tt.mockResourceLimitErr)
+				mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeVirtualNumber).Return(tt.mockResourceLimitValid, tt.mockResourceLimitErr)
 			}
 
 			_, err := h.CreateVirtual(ctx, tt.customerID, tt.number, uuid.Nil, uuid.Nil, "", "", false)

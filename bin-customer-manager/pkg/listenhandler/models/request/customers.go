@@ -1,8 +1,6 @@
 package request
 
 import (
-	bmbilling "monorepo/bin-billing-manager/models/billing"
-
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-customer-manager/models/customer"
@@ -61,14 +59,3 @@ type V1DataCustomersEmailVerifyPost struct {
 	Token string `json:"token"`
 }
 
-// V1DataCustomersIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
-type V1DataCustomersIDIsValidBalancePost struct {
-	ReferenceType bmbilling.ReferenceType `json:"reference_type"`
-	Country       string                  `json:"country"`
-	Count         int                     `json:"count"`
-}
-
-// V1DataCustomersIDIsValidResourceLimitPost is rquest param define for POST /customers/<customer-id>/is_valid_resource_limit
-type V1DataCustomersIDIsValidResourceLimitPost struct {
-	ResourceType string `json:"resource_type"`
-}

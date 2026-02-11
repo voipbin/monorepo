@@ -53,6 +53,9 @@ var (
 	regV1AccountsIDIsValidResourceLimit = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_resource_limit$")
 	regV1AccountsIDIsValidPaymentInfo   = regexp.MustCompile("/v1/accounts/" + regUUID + "/payment_info$")
 
+	regV1AccountsIsValidBalanceByCustomerID       = regexp.MustCompile("/v1/accounts/is_valid_balance_by_customer_id$")
+	regV1AccountsIsValidResourceLimitByCustomerID = regexp.MustCompile("/v1/accounts/is_valid_resource_limit_by_customer_id$")
+
 	// billings
 	regV1BillingsGet = regexp.MustCompile(`/v1/billings\?`)
 	regV1BillingGet  = regexp.MustCompile("/v1/billings/" + regUUID + "$")
@@ -181,6 +184,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AccountsIDIsValidPaymentInfo.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AccountsIDPaymentInfoPut(ctx, m)
 		requestType = "/v1/accounts/<account-id>/payment_info"
+
+	// POST /accounts/is_valid_balance_by_customer_id
+	case regV1AccountsIsValidBalanceByCustomerID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccountsIsValidBalanceByCustomerIDPost(ctx, m)
+		requestType = "/v1/accounts/is_valid_balance_by_customer_id"
+
+	// POST /accounts/is_valid_resource_limit_by_customer_id
+	case regV1AccountsIsValidResourceLimitByCustomerID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccountsIsValidResourceLimitByCustomerIDPost(ctx, m)
+		requestType = "/v1/accounts/is_valid_resource_limit_by_customer_id"
 
 	////////////////////
 	// billings

@@ -10,8 +10,8 @@ import (
 	"monorepo/bin-agent-manager/internal/config"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 	"monorepo/bin-agent-manager/pkg/metricshandler"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -95,14 +95,14 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 
 	// check resource limit
 	rpcStart := time.Now()
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeAgent)
-	metricshandler.RPCCallDuration.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit").Observe(float64(time.Since(rpcStart).Milliseconds()))
+	valid, err := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeAgent)
+	metricshandler.RPCCallDuration.WithLabelValues("billing-manager", "AccountIsValidResourceLimitByCustomerID").Observe(float64(time.Since(rpcStart).Milliseconds()))
 	if err != nil {
-		metricshandler.RPCCallTotal.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit", "failure").Inc()
+		metricshandler.RPCCallTotal.WithLabelValues("billing-manager", "AccountIsValidResourceLimitByCustomerID", "failure").Inc()
 		log.Errorf("Could not validate resource limit. err: %v", err)
 		return nil, fmt.Errorf("could not validate resource limit: %w", err)
 	}
-	metricshandler.RPCCallTotal.WithLabelValues("customer-manager", "CustomerIsValidResourceLimit", "success").Inc()
+	metricshandler.RPCCallTotal.WithLabelValues("billing-manager", "AccountIsValidResourceLimitByCustomerID", "success").Inc()
 	if !valid {
 		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
 		return nil, fmt.Errorf("resource limit exceeded")

@@ -1,4 +1,4 @@
-package billing
+package account
 
 // ResourceType define
 type ResourceType string

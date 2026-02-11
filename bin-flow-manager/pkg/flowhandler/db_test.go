@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	commonbilling "monorepo/bin-common-handler/models/billing"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -119,7 +119,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeFlow).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeFlow).Return(true, nil)
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 

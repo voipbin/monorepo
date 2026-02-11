@@ -5,8 +5,8 @@ import (
 
 	"fmt"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -52,7 +52,7 @@ func (h *conferenceHandler) Create(
 	log.Debugf("Creating a new conference. conference_id: %s", id.String())
 
 	// check resource limit
-	valid, errLimit := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeConference)
+	valid, errLimit := h.reqHandler.BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeConference)
 	if errLimit != nil {
 		log.Errorf("Could not validate resource limit. err: %v", errLimit)
 		return nil, fmt.Errorf("could not validate resource limit: %w", errLimit)

@@ -40,7 +40,7 @@ func (h *callHandler) ValidateCustomerBalance(
 	} else {
 		country = h.getCountry(ctx, destination.Target)
 	}
-	validBalance, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, billing.ReferenceTypeCall, country, 1)
+	validBalance, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, billing.ReferenceTypeCall, country, 1)
 
 	if err != nil {
 		log.Errorf("Could not check the account balance. err: %v", err)

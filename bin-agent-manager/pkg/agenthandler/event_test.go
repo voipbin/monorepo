@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -274,7 +274,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 			ctx := context.Background()
 
 			// agent Create expectations
-			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customer.ID, commonbilling.ResourceTypeAgent).Return(true, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customer.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
 			mockUtil.EXPECT().EmailIsValid(tt.customer.Email).Return(true)
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return(tt.responseHash, nil)
@@ -331,7 +331,7 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 	}
 
 	// agent Create expectations
-	mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, customer.ID, commonbilling.ResourceTypeAgent).Return(true, nil)
+	mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customer.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
 	mockUtil.EXPECT().EmailIsValid(customer.Email).Return(true)
 	mockDB.EXPECT().AgentGetByUsername(ctx, customer.Email).Return(nil, fmt.Errorf(""))
 	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)

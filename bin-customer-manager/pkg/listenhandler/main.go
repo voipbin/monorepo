@@ -54,14 +54,11 @@ var (
 	regV1Customers                     = regexp.MustCompile("/v1/customers$")
 	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
-	regV1CustomersIDIsValidBalance        = regexp.MustCompile("/v1/customers/" + regUUID + "/is_valid_balance$")
-	regV1CustomersIDIsValidResourceLimit = regexp.MustCompile("/v1/customers/" + regUUID + "/is_valid_resource_limit$")
-	regV1CustomersIDIsBillingAccountID   = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
+	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
 
 	regV1CustomersSignup      = regexp.MustCompile("/v1/customers/signup$")
 	regV1CustomersEmailVerify = regexp.MustCompile("/v1/customers/email_verify$")
 )
-
 
 // simpleResponse returns simple rabbitmq response
 func simpleResponse(code int) *sock.Response {
@@ -195,16 +192,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CustomersIDIsBillingAccountID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1CustomersIDBillingAccountIDPut(ctx, m)
 		requestType = "/v1/customers/<customer_id>/billing_account_id"
-
-	// POST /customers/<customer-id>/is_valid_balance
-	case regV1CustomersIDIsValidBalance.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1CustomersIDIsValidBalance(ctx, m)
-		requestType = "/v1/customers/<customer_id>/is_valid_balance"
-
-	// POST /customers/<customer-id>/is_valid_resource_limit
-	case regV1CustomersIDIsValidResourceLimit.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1CustomersIDIsValidResourceLimit(ctx, m)
-		requestType = "/v1/customers/<customer_id>/is_valid_resource_limit"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

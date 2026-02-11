@@ -62,7 +62,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	var res []*number.Number
 	for _, n := range numbers {
 
-		valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
+		valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
 		if err != nil {
 			log.Errorf("Could not validate the customer balance. err: %v", err)
 			continue
