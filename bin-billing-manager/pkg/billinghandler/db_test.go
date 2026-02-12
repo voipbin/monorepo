@@ -2,6 +2,7 @@ package billinghandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -355,6 +356,426 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			if reflect.DeepEqual(tt.responseBilling, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseBilling, res)
+			}
+		})
+	}
+}
+
+func Test_Create_db_create_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		customerID     uuid.UUID
+		accountID      uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		costPerUnit    float32
+		tmBillingStart *time.Time
+
+		responseUUID uuid.UUID
+
+		expectBilling *billing.Billing
+	}
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []test{
+		{
+			name: "db create error",
+
+			customerID:     uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
+			accountID:      uuid.FromStringOrNil("22222222-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("33333333-0000-0000-0000-000000000001"),
+			costPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+			tmBillingStart: &tmBillingStart,
+
+			responseUUID: uuid.FromStringOrNil("44444444-0000-0000-0000-000000000001"),
+
+			expectBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("44444444-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("22222222-0000-0000-0000-000000000001"),
+				Status:         billing.StatusProgressing,
+				ReferenceType:  billing.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("33333333-0000-0000-0000-000000000001"),
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      0,
+				TMBillingStart: &tmBillingStart,
+				TMBillingEnd:   nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(fmt.Errorf("db connection lost"))
+
+			_, err := h.Create(ctx, tt.customerID, tt.accountID, tt.referenceType, tt.referenceID, tt.costPerUnit, tt.tmBillingStart)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_Create_db_get_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		customerID     uuid.UUID
+		accountID      uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		costPerUnit    float32
+		tmBillingStart *time.Time
+
+		responseUUID uuid.UUID
+
+		expectBilling *billing.Billing
+	}
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []test{
+		{
+			name: "db get error after create",
+
+			customerID:     uuid.FromStringOrNil("55555555-0000-0000-0000-000000000001"),
+			accountID:      uuid.FromStringOrNil("66666666-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("77777777-0000-0000-0000-000000000001"),
+			costPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+			tmBillingStart: &tmBillingStart,
+
+			responseUUID: uuid.FromStringOrNil("88888888-0000-0000-0000-000000000001"),
+
+			expectBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88888888-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("55555555-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("66666666-0000-0000-0000-000000000001"),
+				Status:         billing.StatusProgressing,
+				ReferenceType:  billing.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("77777777-0000-0000-0000-000000000001"),
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      0,
+				TMBillingStart: &tmBillingStart,
+				TMBillingEnd:   nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(nil, fmt.Errorf("connection timeout"))
+
+			_, err := h.Create(ctx, tt.customerID, tt.accountID, tt.referenceType, tt.referenceID, tt.costPerUnit, tt.tmBillingStart)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_Get_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id uuid.UUID
+	}
+
+	tests := []test{
+		{
+			name: "db error",
+
+			id: uuid.FromStringOrNil("99999999-0000-0000-0000-000000000001"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(nil, fmt.Errorf("connection timeout"))
+
+			_, err := h.Get(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_GetByReferenceID_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		referenceID uuid.UUID
+
+		responseBilling *billing.Billing
+	}
+
+	tests := []test{
+		{
+			name: "db error",
+
+			referenceID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001"),
+		},
+		{
+			name: "wrong reference type",
+
+			referenceID: uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000001"),
+
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cccccccc-0000-0000-0000-000000000001"),
+				},
+				ReferenceType: billing.ReferenceTypeSMS,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			if tt.responseBilling == nil {
+				mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf("connection timeout"))
+			} else {
+				mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.referenceID).Return(tt.responseBilling, nil)
+			}
+
+			_, err := h.GetByReferenceID(ctx, tt.referenceID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_List_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		size    uint64
+		token   string
+		filters map[billing.Field]any
+	}
+
+	tests := []test{
+		{
+			name: "db error",
+
+			size:  10,
+			token: "2023-06-08T03:22:17.995000Z",
+			filters: map[billing.Field]any{
+				billing.FieldCustomerID: uuid.FromStringOrNil("dddddddd-0000-0000-0000-000000000001"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().BillingList(ctx, tt.size, tt.token, tt.filters).Return(nil, fmt.Errorf("connection timeout"))
+
+			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusEnd_set_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id              uuid.UUID
+		billingDuration float32
+		tmBillingEnd    *time.Time
+	}
+
+	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []test{
+		{
+			name: "set status error",
+
+			id:              uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-000000000001"),
+			billingDuration: 10.32,
+			tmBillingEnd:    &tmBillingEnd,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd).Return(fmt.Errorf("connection timeout"))
+
+			_, err := h.UpdateStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusEnd_get_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id              uuid.UUID
+		billingDuration float32
+		tmBillingEnd    *time.Time
+	}
+
+	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []test{
+		{
+			name: "get error after set",
+
+			id:              uuid.FromStringOrNil("ffffffff-0000-0000-0000-000000000001"),
+			billingDuration: 10.32,
+			tmBillingEnd:    &tmBillingEnd,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(nil, fmt.Errorf("connection timeout"))
+
+			_, err := h.UpdateStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
 			}
 		})
 	}

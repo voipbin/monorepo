@@ -209,3 +209,60 @@ func Test_ProcessAll(t *testing.T) {
 		})
 	}
 }
+
+func Test_ProcessAll_account_list_error_on_page2(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{
+		db:          mockDB,
+		utilHandler: mockUtil,
+	}
+	ctx := context.Background()
+
+	now := time.Date(2026, 2, 12, 10, 0, 0, 0, time.UTC)
+	tmCreate := time.Date(2026, 2, 10, 8, 0, 0, 0, time.UTC)
+
+	account1 := &account.Account{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("a4000000-0000-0000-0000-000000000004"),
+			CustomerID: uuid.FromStringOrNil("c4000000-0000-0000-0000-000000000004"),
+		},
+		PlanType: account.PlanTypeFree,
+		TMCreate: &tmCreate,
+	}
+
+	expectedFilters := map[account.Field]any{
+		account.FieldPlanType: account.PlanTypeFree,
+		account.FieldDeleted:  false,
+	}
+
+	// Page 1: Returns [account1] successfully
+	mockDB.EXPECT().AccountList(ctx, uint64(100), "", expectedFilters).Return([]*account.Account{account1}, nil)
+
+	// processAccount mocks for account1
+	referenceID := uuid.NewV5(uuid.Nil, account1.ID.String()+":2026-02")
+	mockUtil.EXPECT().TimeNow().Return(&now)
+	mockUtil.EXPECT().NewV5UUID(uuid.Nil, account1.ID.String()+":"+now.Format("2006-01")).Return(referenceID)
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"))
+	mockDB.EXPECT().BillingCreditTopUp(ctx, gomock.Any(), account1.ID, FreeTierCreditAmount).
+		DoAndReturn(func(_ context.Context, b *billing.Billing, _ uuid.UUID, _ float32) (bool, error) {
+			if b.ReferenceType != billing.ReferenceTypeCreditFreeTier {
+				t.Errorf("wrong reference type. expect: %v, got: %v", billing.ReferenceTypeCreditFreeTier, b.ReferenceType)
+			}
+			return true, nil
+		})
+
+	// Page 2: Returns error (pagination token is account1.TMCreate formatted as ISO8601)
+	paginationToken := tmCreate.Format(utilhandler.ISO8601Layout)
+	mockDB.EXPECT().AccountList(ctx, uint64(100), paginationToken, expectedFilters).Return(nil, fmt.Errorf("database connection lost"))
+
+	// Expect ProcessAll to return error
+	err := h.ProcessAll(ctx)
+	if err == nil {
+		t.Errorf("Expected error but got nil")
+	}
+}
