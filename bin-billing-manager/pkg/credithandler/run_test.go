@@ -157,6 +157,7 @@ func Test_ProcessAll(t *testing.T) {
 
 			expectedFilters := map[account.Field]any{
 				account.FieldPlanType: account.PlanTypeFree,
+				account.FieldDeleted: false,
 			}
 
 			if tt.accountErr != nil {
@@ -176,7 +177,7 @@ func Test_ProcessAll(t *testing.T) {
 
 					// set up processAccount expectations for each account in this page
 					for _, acc := range page {
-						// processAccount calls: TimeNow (x2), NewV5UUID, UUIDCreate, BillingCreditTopUp
+						// processAccount calls: TimeNow, NewV5UUID, UUIDCreate, BillingCreditTopUp
 						mockUtil.EXPECT().TimeNow().Return(&now)
 						mockUtil.EXPECT().NewV5UUID(uuid.Nil, acc.ID.String()+":"+now.Format("2006-01")).Return(uuid.NewV5(uuid.Nil, acc.ID.String()+":2026-02"))
 						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"))

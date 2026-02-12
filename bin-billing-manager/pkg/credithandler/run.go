@@ -17,6 +17,7 @@ func (h *handler) ProcessAll(ctx context.Context) error {
 	token := ""
 	filters := map[account.Field]any{
 		account.FieldPlanType: account.PlanTypeFree,
+		account.FieldDeleted: false,
 	}
 
 	for {
