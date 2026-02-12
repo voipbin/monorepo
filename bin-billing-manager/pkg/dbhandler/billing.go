@@ -19,11 +19,6 @@ const (
 	billingsTable = "billing_billings"
 )
 
-// tmDeleteDefault is the sentinel value used for active (non-deleted) billing records.
-// This enables the unique index on (reference_type, reference_id, tm_delete) to work,
-// since MySQL treats NULL != NULL and would not prevent duplicates with NULL values.
-var tmDeleteDefault = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
-
 // billingGetFromRow gets the billing from the row.
 func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 	res := &billing.Billing{}
@@ -39,10 +34,7 @@ func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 	c.TMCreate = h.utilHandler.TimeNow()
 	c.TMUpdate = nil
-	// Use sentinel value (not nil) so the unique index on
-	// (reference_type, reference_id, tm_delete) can enforce uniqueness.
-	// MySQL treats NULL != NULL, so NULL values would bypass the constraint.
-	c.TMDelete = &tmDeleteDefault
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -67,6 +59,85 @@ func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 	_ = h.billingUpdateToCache(ctx, c.ID)
 
 	return nil
+}
+
+// BillingCreditTopUp atomically inserts a billing record and tops up the account balance
+// within a single transaction. The balance is read inside the transaction with FOR UPDATE
+// to prevent concurrent modifications from producing incorrect deltas.
+//
+// Returns (true, nil) if the record was inserted and balance updated.
+// Returns (false, nil) if the record already exists (duplicate key — already processed this month).
+// Returns (false, err) on any other error.
+func (h *handler) BillingCreditTopUp(ctx context.Context, b *billing.Billing, accountID uuid.UUID, targetAmount float32) (bool, error) {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("BillingCreditTopUp: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// 1. Insert billing record
+	b.TMCreate = h.utilHandler.TimeNow()
+	b.TMUpdate = nil
+	b.TMDelete = nil
+
+	fields, err := commondatabasehandler.PrepareFields(b)
+	if err != nil {
+		return false, fmt.Errorf("BillingCreditTopUp: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return false, fmt.Errorf("BillingCreditTopUp: could not build insert query. err: %v", err)
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		if isDuplicateKeyError(err) {
+			return false, nil // already processed this month
+		}
+		return false, fmt.Errorf("BillingCreditTopUp: could not insert billing. err: %v", err)
+	}
+
+	// 2. Lock account row and read current balance.
+	// Raw SQL: FOR UPDATE lock cannot be expressed via squirrel.
+	var balance float32
+	row := tx.QueryRowContext(ctx, "SELECT balance FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
+	if err := row.Scan(&balance); err != nil {
+		return false, fmt.Errorf("BillingCreditTopUp: could not read balance. err: %v", err)
+	}
+
+	// 3. Calculate delta inside transaction (accurate, no race condition).
+	// targetAmount is passed from the caller to avoid circular import
+	// (credithandler defines the constant, dbhandler must not import credithandler).
+	delta := targetAmount - balance
+	if delta > 0 {
+		now := h.utilHandler.TimeNow()
+		_, err = tx.ExecContext(ctx,
+			"UPDATE billing_accounts SET balance = balance + ?, tm_update = ? WHERE id = ?",
+			delta, now, accountID.Bytes())
+		if err != nil {
+			return false, fmt.Errorf("BillingCreditTopUp: could not update balance. err: %v", err)
+		}
+
+		// Update cost_total on the billing record we just inserted
+		_, err = tx.ExecContext(ctx,
+			"UPDATE billing_billings SET cost_total = ? WHERE id = ?",
+			delta, b.ID.Bytes())
+		if err != nil {
+			return false, fmt.Errorf("BillingCreditTopUp: could not update billing cost_total. err: %v", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("BillingCreditTopUp: could not commit. err: %v", err)
+	}
+
+	// Invalidate caches after successful commit.
+	// Without this, Redis would serve stale balance data until cache expires.
+	_ = h.accountUpdateToCache(ctx, accountID)
+	_ = h.billingUpdateToCache(ctx, b.ID)
+
+	return true, nil
 }
 
 // billingGetFromCache returns billing from the cache.
@@ -159,7 +230,7 @@ func (h *handler) billingGetByReferenceTypeAndIDFromDB(ctx context.Context, refe
 			"reference_type": string(referenceType),
 			"reference_id":   referenceID.Bytes(),
 		}).
-		Where(sq.Or{sq.Expr("tm_delete IS NULL"), sq.Eq{"tm_delete": tmDeleteDefault}}).
+		Where(sq.Expr("tm_delete IS NULL")).
 		Limit(1).
 		ToSql()
 	if err != nil {
