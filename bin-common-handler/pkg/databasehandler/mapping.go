@@ -429,6 +429,11 @@ func (t *scanTarget) copyPrimitive() error {
 
 // copyTimePtr parses a datetime string and sets it as *time.Time
 func (t *scanTarget) copyTimePtr(s string) error {
+	// Empty string means no value — leave the field as nil
+	if s == "" {
+		return nil
+	}
+
 	// Convert MySQL format to ISO 8601 if needed
 	isoStr := convertMySQLTimestampToISO8601(s)
 

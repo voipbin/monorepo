@@ -3,6 +3,7 @@ package databasehandler
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -653,6 +654,74 @@ func TestScanRow_Basic(t *testing.T) {
 			t.Errorf("ScanRow should reject non-pointer destination")
 		}
 	})
+}
+
+func TestCopyTimePtr(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		wantNil bool
+		wantErr bool
+	}{
+		{
+			name:    "empty string returns nil",
+			input:   "",
+			wantNil: true,
+			wantErr: false,
+		},
+		{
+			name:    "valid ISO 8601 with microseconds",
+			input:   "2024-01-15T10:30:45.123456Z",
+			wantNil: false,
+			wantErr: false,
+		},
+		{
+			name:    "valid MySQL datetime",
+			input:   "2024-01-15 10:30:45.123456",
+			wantNil: false,
+			wantErr: false,
+		},
+		{
+			name:    "valid RFC3339",
+			input:   "2024-01-15T10:30:45Z",
+			wantNil: false,
+			wantErr: false,
+		},
+		{
+			name:    "invalid time string",
+			input:   "not-a-time",
+			wantNil: true,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var timeField *time.Time
+			fieldVal := reflect.ValueOf(&timeField).Elem()
+
+			target := &scanTarget{
+				fieldVal: fieldVal,
+			}
+
+			err := target.copyTimePtr(tt.input)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("copyTimePtr(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
+				return
+			}
+
+			if tt.wantNil {
+				if fieldVal.Interface() != (*time.Time)(nil) {
+					t.Errorf("copyTimePtr(%q) = %v, want nil", tt.input, fieldVal.Interface())
+				}
+			} else {
+				if fieldVal.IsNil() {
+					t.Errorf("copyTimePtr(%q) = nil, want non-nil time", tt.input)
+				}
+			}
+		})
+	}
 }
 
 func TestConvertValueForDB(t *testing.T) {
