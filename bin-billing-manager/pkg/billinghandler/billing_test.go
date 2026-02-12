@@ -632,3 +632,666 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 		})
 	}
 }
+
+func Test_BillingStart_db_error_on_idempotency_check(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+	}{
+		{
+			name: "db error on idempotency check",
+
+			customerID:     uuid.FromStringOrNil("10000001-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("10000002-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check returns non-ErrNotFound error
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, fmt.Errorf("connection refused"))
+
+			// NO further calls expected — should return error immediately
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+
+		existingBilling *billing.Billing
+		responseBilling *billing.Billing
+		responseAccount *account.Account
+	}{
+		{
+			name: "existing progressing SMS billing - should retry end",
+
+			customerID:     uuid.FromStringOrNil("10000003-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeSMS,
+			referenceID:    uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+
+			existingBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000005-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("10000006-0000-0000-0000-000000000001"),
+				Status:         billing.StatusProgressing,
+				ReferenceType:  billing.ReferenceTypeSMS,
+				ReferenceID:    uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:      0,
+				TMBillingStart: &tmBillingStart,
+			},
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000005-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("10000006-0000-0000-0000-000000000001"),
+				Status:         billing.StatusEnd,
+				ReferenceType:  billing.ReferenceTypeSMS,
+				ReferenceID:    uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeSMS,
+				TMBillingStart: &tmBillingStart,
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000006-0000-0000-0000-000000000001"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - existing billing found with progressing status
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(tt.existingBilling, nil)
+
+			// BillingEnd should be called
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.existingBilling.ID, float32(1), tt.tmBillingStart).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.existingBilling.ID).Return(tt.responseBilling, nil)
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_BillingStart_idempotent_progressing_call(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+
+		existingBilling *billing.Billing
+	}{
+		{
+			name: "existing progressing Call billing - should return early",
+
+			customerID:     uuid.FromStringOrNil("10000007-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("10000008-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+
+			existingBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000009-0000-0000-0000-000000000001"),
+				},
+				Status:        billing.StatusProgressing,
+				ReferenceType: billing.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("10000008-0000-0000-0000-000000000001"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - existing billing found with progressing status
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(tt.existingBilling, nil)
+
+			// NO further calls expected - calls just return early without ending
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_BillingStart_unsupported_reference_type(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+
+		responseAccount *account.Account
+	}{
+		{
+			name: "unsupported reference type",
+
+			customerID:     uuid.FromStringOrNil("1000000a-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceType("unsupported"),
+			referenceID:    uuid.FromStringOrNil("1000000b-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1000000c-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("1000000a-0000-0000-0000-000000000001"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
+
+			// GetByCustomerID succeeds
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+
+			// Should return error "unsupported reference type" before attempting to create
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingStart_account_not_found(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+	}{
+		{
+			name: "account not found",
+
+			customerID:     uuid.FromStringOrNil("1000000d-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("1000000e-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
+
+			// GetByCustomerID returns error
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, fmt.Errorf("account not found"))
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingStart_create_error(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		referenceType  billing.ReferenceType
+		referenceID    uuid.UUID
+		tmBillingStart *time.Time
+		source         *commonaddress.Address
+		destination    *commonaddress.Address
+
+		responseAccount *account.Account
+		responseUUID    uuid.UUID
+	}{
+		{
+			name: "create error",
+
+			customerID:     uuid.FromStringOrNil("1000000f-0000-0000-0000-000000000001"),
+			referenceType:  billing.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("10000010-0000-0000-0000-000000000001"),
+			tmBillingStart: &tmBillingStart,
+			source:         &commonaddress.Address{Target: "+1234"},
+			destination:    &commonaddress.Address{Target: "+5678"},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10000011-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("1000000f-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("10000012-0000-0000-0000-000000000001"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, dbhandler.ErrNotFound)
+
+			// GetByCustomerID succeeds
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+
+			// Create fails
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(fmt.Errorf("db connection lost"))
+
+			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingEnd_nil_timestamps(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		billing      *billing.Billing
+		tmBillingEnd *time.Time
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+
+		responseBilling *billing.Billing
+	}{
+		{
+			name: "nil timestamps - should pass zero duration",
+
+			billing: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000013-0000-0000-0000-000000000001"),
+				},
+				AccountID:      uuid.FromStringOrNil("10000014-0000-0000-0000-000000000001"),
+				ReferenceType:  billing.ReferenceTypeCall,
+				TMBillingStart: nil,
+			},
+			tmBillingEnd: nil,
+			source:       &commonaddress.Address{},
+			destination:  &commonaddress.Address{},
+
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000013-0000-0000-0000-000000000001"),
+				},
+				AccountID:     uuid.FromStringOrNil("10000014-0000-0000-0000-000000000001"),
+				ReferenceType: billing.ReferenceTypeCall,
+				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:     0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// Should pass billingUnitCount=0 to BillingSetStatusEnd
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.billing.ID, float32(0), tt.tmBillingEnd).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.billing.ID).Return(tt.responseBilling, nil)
+
+			// Cost is zero, so SubtractBalanceWithCheck should NOT be called
+
+			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_BillingEnd_unsupported_reference_type(t *testing.T) {
+
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		billing      *billing.Billing
+		tmBillingEnd *time.Time
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+	}{
+		{
+			name: "unsupported reference type",
+
+			billing: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000015-0000-0000-0000-000000000001"),
+				},
+				ReferenceType: billing.ReferenceType("unknown"),
+			},
+			tmBillingEnd: &tmBillingEnd,
+			source:       &commonaddress.Address{},
+			destination:  &commonaddress.Address{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// NO DB calls expected - should return error immediately
+
+			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingEnd_set_status_end_error(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		billing      *billing.Billing
+		tmBillingEnd *time.Time
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+	}{
+		{
+			name: "set status end error",
+
+			billing: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000016-0000-0000-0000-000000000001"),
+				},
+				ReferenceType:  billing.ReferenceTypeCall,
+				TMBillingStart: &tmBillingStart,
+			},
+			tmBillingEnd: &tmBillingEnd,
+			source:       &commonaddress.Address{},
+			destination:  &commonaddress.Address{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// BillingSetStatusEnd returns error
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.billing.ID, gomock.Any(), tt.tmBillingEnd).Return(fmt.Errorf("connection timeout"))
+
+			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingEnd_get_error(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		billing      *billing.Billing
+		tmBillingEnd *time.Time
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+	}{
+		{
+			name: "get error after set status end",
+
+			billing: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("10000017-0000-0000-0000-000000000001"),
+				},
+				ReferenceType:  billing.ReferenceTypeCall,
+				TMBillingStart: &tmBillingStart,
+			},
+			tmBillingEnd: &tmBillingEnd,
+			source:       &commonaddress.Address{},
+			destination:  &commonaddress.Address{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// BillingSetStatusEnd succeeds
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.billing.ID, gomock.Any(), tt.tmBillingEnd).Return(nil)
+			// BillingGet returns error
+			mockDB.EXPECT().BillingGet(ctx, tt.billing.ID).Return(nil, fmt.Errorf("connection timeout"))
+
+			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}

@@ -683,3 +683,613 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 		})
 	}
 }
+
+func Test_dbUpdatePaymentInfo(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id            uuid.UUID
+		paymentType   account.PaymentType
+		paymentMethod account.PaymentMethod
+
+		expectFields     map[account.Field]any
+		responseAccounts *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:            uuid.FromStringOrNil("6a1b2c3d-5e6f-11ee-a7be-3c29338e8297"),
+			paymentType:   account.PaymentTypePrepaid,
+			paymentMethod: account.PaymentMethodCreditCard,
+
+			expectFields: map[account.Field]any{
+				account.FieldPaymentType:   account.PaymentTypePrepaid,
+				account.FieldPaymentMethod: account.PaymentMethodCreditCard,
+			},
+			responseAccounts: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6a1b2c3d-5e6f-11ee-a7be-3c29338e8297"),
+				},
+			},
+		},
+		{
+			name: "db update error",
+
+			id:            uuid.FromStringOrNil("7b2c3d4e-6f70-11ee-b8cf-4d3a449f9308"),
+			paymentType:   account.PaymentTypePrepaid,
+			paymentMethod: account.PaymentMethodCreditCard,
+
+			expectFields: map[account.Field]any{
+				account.FieldPaymentType:   account.PaymentTypePrepaid,
+				account.FieldPaymentMethod: account.PaymentMethodCreditCard,
+			},
+			responseAccounts: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db update error" {
+				mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(fmt.Errorf("update failed"))
+
+				_, err := h.dbUpdatePaymentInfo(ctx, tt.id, tt.paymentType, tt.paymentMethod)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccounts, nil)
+
+			res, err := h.dbUpdatePaymentInfo(ctx, tt.id, tt.paymentType, tt.paymentMethod)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccounts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccounts, res)
+			}
+		})
+	}
+}
+
+func Test_dbUpdatePaymentInfo_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("8c3d4e5f-7081-11ee-c9d0-5e4b55a0a419")
+	fields := map[account.Field]any{
+		account.FieldPaymentType:   account.PaymentTypePrepaid,
+		account.FieldPaymentMethod: account.PaymentMethodCreditCard,
+	}
+
+	mockDB.EXPECT().AccountUpdate(ctx, id, fields).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, id).Return(nil, fmt.Errorf("get failed"))
+
+	_, err := h.dbUpdatePaymentInfo(ctx, id, account.PaymentTypePrepaid, account.PaymentMethodCreditCard)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_dbUpdatePlanType(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id       uuid.UUID
+		planType account.PlanType
+
+		expectFields     map[account.Field]any
+		responseAccounts *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal - free to basic",
+
+			id:       uuid.FromStringOrNil("9d4e5f60-8192-11ee-dae1-6f5c66b1b520"),
+			planType: account.PlanTypeBasic,
+
+			expectFields: map[account.Field]any{
+				account.FieldPlanType: account.PlanTypeBasic,
+			},
+			responseAccounts: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9d4e5f60-8192-11ee-dae1-6f5c66b1b520"),
+				},
+			},
+		},
+		{
+			name: "normal - basic to professional",
+
+			id:       uuid.FromStringOrNil("ae5f6071-92a3-11ee-ebf2-7066776c631"),
+			planType: account.PlanTypeProfessional,
+
+			expectFields: map[account.Field]any{
+				account.FieldPlanType: account.PlanTypeProfessional,
+			},
+			responseAccounts: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ae5f6071-92a3-11ee-ebf2-7066776c631"),
+				},
+			},
+		},
+		{
+			name: "db update error",
+
+			id:       uuid.FromStringOrNil("bf607182-a3b4-11ee-fc03-8177887d742"),
+			planType: account.PlanTypeUnlimited,
+
+			expectFields: map[account.Field]any{
+				account.FieldPlanType: account.PlanTypeUnlimited,
+			},
+			responseAccounts: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db update error" {
+				mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(fmt.Errorf("update failed"))
+
+				_, err := h.dbUpdatePlanType(ctx, tt.id, tt.planType)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccounts, nil)
+
+			res, err := h.dbUpdatePlanType(ctx, tt.id, tt.planType)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccounts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccounts, res)
+			}
+		})
+	}
+}
+
+func Test_dbUpdatePlanType_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("c0718293-b4c5-11ee-0d14-9288998e853")
+	fields := map[account.Field]any{
+		account.FieldPlanType: account.PlanTypeBasic,
+	}
+
+	mockDB.EXPECT().AccountUpdate(ctx, id, fields).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, id).Return(nil, fmt.Errorf("get failed"))
+
+	_, err := h.dbUpdatePlanType(ctx, id, account.PlanTypeBasic)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("d18293a4-c5d6-11ee-1e25-a399aa9f964")
+
+	mockDB.EXPECT().AccountGet(ctx, id).Return(nil, fmt.Errorf("connection timeout"))
+
+	_, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_GetByCustomerID_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		customerID uuid.UUID
+
+		responseCustomer *cmcustomer.Customer
+		responseAccount  *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "customer not found",
+
+			customerID: uuid.FromStringOrNil("e293a4b5-d6e7-11ee-2f36-b4aabbe0a75"),
+
+			responseCustomer: nil,
+			responseAccount:  nil,
+		},
+		{
+			name: "account not found",
+
+			customerID: uuid.FromStringOrNil("f3a4b5c6-e7f8-11ee-3047-c5bbccf1b86"),
+
+			responseCustomer: &cmcustomer.Customer{
+				ID:               uuid.FromStringOrNil("f3a4b5c6-e7f8-11ee-3047-c5bbccf1b86"),
+				BillingAccountID: uuid.FromStringOrNil("04b5c6d7-f809-11ee-4158-d6ccdde2c97"),
+			},
+			responseAccount: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "customer not found" {
+				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(nil, fmt.Errorf("customer not found"))
+
+				_, err := h.GetByCustomerID(ctx, tt.customerID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "account not found" {
+				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(nil, fmt.Errorf("account not found"))
+
+				_, err := h.GetByCustomerID(ctx, tt.customerID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_List_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	size := uint64(10)
+	token := "2023-06-07T03:22:17.995000Z"
+	filters := map[account.Field]any{
+		account.FieldCustomerID: uuid.FromStringOrNil("15c6d7e8-091a-11ee-5269-e7ddeeef3da8"),
+	}
+
+	mockDB.EXPECT().AccountList(ctx, size, token, filters).Return(nil, fmt.Errorf("database error"))
+
+	_, err := h.List(ctx, size, token, filters)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_SubtractBalance_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		balance   float32
+	}
+
+	tests := []test{
+		{
+			name: "db subtract error",
+
+			accountID: uuid.FromStringOrNil("26d7e8f9-1a2b-11ee-637a-f8eeff04eb9"),
+			balance:   10.5,
+		},
+		{
+			name: "db get error",
+
+			accountID: uuid.FromStringOrNil("37e8f90a-2b3c-11ee-748b-09ff0015fca"),
+			balance:   20.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db subtract error" {
+				mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.balance).Return(fmt.Errorf("subtract failed"))
+
+				_, err := h.SubtractBalance(ctx, tt.accountID, tt.balance)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "db get error" {
+				mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.balance).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf("get failed"))
+
+				_, err := h.SubtractBalance(ctx, tt.accountID, tt.balance)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_AddBalance_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		balance   float32
+	}
+
+	tests := []test{
+		{
+			name: "db add error",
+
+			accountID: uuid.FromStringOrNil("48f90a1b-3c4d-11ee-859c-1a00112600db"),
+			balance:   15.5,
+		},
+		{
+			name: "db get error",
+
+			accountID: uuid.FromStringOrNil("590a1b2c-4d5e-11ee-96ad-2b11223711ec"),
+			balance:   25.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db add error" {
+				mockDB.EXPECT().AccountAddBalance(ctx, tt.accountID, tt.balance).Return(fmt.Errorf("add failed"))
+
+				_, err := h.AddBalance(ctx, tt.accountID, tt.balance)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "db get error" {
+				mockDB.EXPECT().AccountAddBalance(ctx, tt.accountID, tt.balance).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf("get failed"))
+
+				_, err := h.AddBalance(ctx, tt.accountID, tt.balance)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_Delete_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			name: "db delete error",
+
+			accountID: uuid.FromStringOrNil("6a1b2c3d-5e6f-11ee-a7be-3c22334822fd"),
+		},
+		{
+			name: "db get error",
+
+			accountID: uuid.FromStringOrNil("7b2c3d4e-6f70-11ee-b8cf-4d33445933ge"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db delete error" {
+				mockDB.EXPECT().AccountDelete(ctx, tt.accountID).Return(fmt.Errorf("delete failed"))
+
+				_, err := h.Delete(ctx, tt.accountID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "db get error" {
+				mockDB.EXPECT().AccountDelete(ctx, tt.accountID).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf("get failed"))
+
+				_, err := h.Delete(ctx, tt.accountID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_Create_db_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("8c3d4e5f-7081-11ee-c9d0-5e44556a44hf")
+	responseUUID := uuid.FromStringOrNil("9d4e5f60-8192-11ee-dae1-6f55667b55ig")
+
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, responseUUID).Return(nil, fmt.Errorf("get failed after create"))
+
+	_, err := h.Create(ctx, customerID, "test", "detail", account.PaymentTypePrepaid, account.PaymentMethodNone)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_SubtractBalanceWithCheck_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("ae5f6071-92a3-11ee-ebf2-7066778c66jh")
+
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(nil, fmt.Errorf("initial get failed"))
+
+	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50.0)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}

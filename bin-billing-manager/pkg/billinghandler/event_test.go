@@ -742,3 +742,332 @@ func Test_getReferenceTypeForCall(t *testing.T) {
 		})
 	}
 }
+
+func Test_EventCMCallHangup_nil_tmhangup(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call *cmcall.Call
+
+		responseBilling *billing.Billing
+	}{
+		{
+			name: "nil tm_hangup should error",
+
+			call: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20000001-0000-0000-0000-000000000001"),
+				},
+				TMHangup: nil,
+			},
+
+			responseBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20000002-0000-0000-0000-000000000001"),
+				},
+				ReferenceType: billing.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("20000001-0000-0000-0000-000000000001"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// BillingGetByReferenceID returns valid billing
+			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID).Return(tt.responseBilling, nil)
+
+			// NO further calls expected - should return error
+
+			err := h.EventCMCallHangup(ctx, tt.call)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EventCMCallHangup_billing_not_found(t *testing.T) {
+
+	tmHangup := time.Date(2023, 6, 8, 3, 23, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		call *cmcall.Call
+	}{
+		{
+			name: "billing not found - should return nil",
+
+			call: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20000003-0000-0000-0000-000000000001"),
+				},
+				TMHangup: &tmHangup,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// BillingGetByReferenceID returns error
+			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID).Return(nil, fmt.Errorf("not found"))
+
+			// Should return nil (silently ignores)
+
+			err := h.EventCMCallHangup(ctx, tt.call)
+			if err != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventMMMessageCreated_empty_targets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		message *mmmessage.Message
+	}{
+		{
+			name: "empty targets - should return nil",
+
+			message: &mmmessage.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20000004-0000-0000-0000-000000000001"),
+				},
+				Targets: []mmtarget.Target{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// NO DB or account calls expected
+
+			err := h.EventMMMessageCreated(ctx, tt.message)
+			if err != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventMMMessageCreated_error_on_first_target(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		message *mmmessage.Message
+	}{
+		{
+			name: "error on first target - should not process second",
+
+			message: &mmmessage.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20000005-0000-0000-0000-000000000001"),
+				},
+				Targets: []mmtarget.Target{
+					{
+						Destination: commonaddress.Address{},
+					},
+					{
+						Destination: commonaddress.Address{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// First target: idempotency check passes, but GetByCustomerID fails
+			targetRefID := uuid.NewV5(tt.message.ID, "target-0")
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, targetRefID).Return(nil, dbhandler.ErrNotFound)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(nil, fmt.Errorf("account not found"))
+
+			// Should return error immediately - second target NOT processed
+
+			err := h.EventMMMessageCreated(ctx, tt.message)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EventNMNumberCreated_billing_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		number *nmnumber.Number
+	}{
+		{
+			name: "non-virtual number with billing error",
+
+			number: &nmnumber.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20000006-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("20000007-0000-0000-0000-000000000001"),
+				},
+				Type: nmnumber.TypeNormal,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumber, tt.number.ID).Return(nil, dbhandler.ErrNotFound)
+
+			// GetByCustomerID returns error
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(nil, fmt.Errorf("account not found"))
+
+			err := h.EventNMNumberCreated(ctx, tt.number)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EventNMNumberRenewed_billing_error(t *testing.T) {
+
+	now := time.Date(2026, 2, 12, 10, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		number *nmnumber.Number
+	}{
+		{
+			name: "non-virtual number with billing error on renew",
+
+			number: &nmnumber.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20000008-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("20000009-0000-0000-0000-000000000001"),
+				},
+				Type: nmnumber.TypeNormal,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// deterministic reference ID generation
+			expectedRefID := uuid.NewV5(uuid.Nil, tt.number.ID.String()+":renew:"+now.Format("2006-01"))
+			mockUtil.EXPECT().TimeNow().Return(&now)
+			mockUtil.EXPECT().NewV5UUID(uuid.Nil, tt.number.ID.String()+":renew:"+now.Format("2006-01")).Return(expectedRefID)
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, expectedRefID).Return(nil, dbhandler.ErrNotFound)
+
+			// GetByCustomerID returns error
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(nil, fmt.Errorf("account not found"))
+
+			err := h.EventNMNumberRenewed(ctx, tt.number)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
