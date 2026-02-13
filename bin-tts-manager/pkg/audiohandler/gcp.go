@@ -2,8 +2,6 @@ package audiohandler
 
 import (
 	"context"
-	"fmt"
-	"monorepo/bin-tts-manager/models/tts"
 	"os"
 	"time"
 
@@ -46,22 +44,19 @@ func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 	return res, nil
 }
 
-// AudioCreate Creates tts audio
-func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filepath string) error {
+func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, voiceID string, filepath string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "gcpAudioCreate",
 		"call_id": callID,
 	})
-	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, gender: %s, filepath: %s", lang, gender, filepath)
+	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, voice_id: %s, filepath: %s", lang, voiceID, filepath)
 
-	voiceName := h.gcpGetVoiceName(lang, gender)
-	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
-	switch gender {
-	case tts.GenderMale:
-		ssmlGender = texttospeechpb.SsmlVoiceGender_MALE
-
-	case tts.GenderFemale:
-		ssmlGender = texttospeechpb.SsmlVoiceGender_FEMALE
+	voiceName := voiceID
+	if voiceName == "" {
+		voiceName = h.gcpGetDefaultVoiceName(lang)
+	}
+	if voiceName == "" {
+		log.Debugf("No default voice for language %q, using GCP auto-selection", lang)
 	}
 
 	// perform the text-to-speech request on the text input with the selected
@@ -75,12 +70,10 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 			},
 		},
 
-		// build the voice request, select the language code ("en-US") and the SSML
-		// voice gender ("neutral")
+		// build the voice request, select the language code and voice name
 		Voice: &texttospeechpb.VoiceSelectionParams{
 			LanguageCode: lang,
 			Name:         voiceName,
-			SsmlGender:   ssmlGender,
 		},
 
 		// select the type of audio file you want returned.
@@ -92,10 +85,10 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 
 	start := time.Now()
 
-	log.Debugf("Sending speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
+	log.Debugf("Sending speech request. language_code: %s, name: %s", req.Voice.LanguageCode, voiceName)
 	resp, err := h.gcpClient.SynthesizeSpeech(ctx, &req)
 	if err != nil {
-		log.Errorf("Could not get a correct response. text: %s, lang: %s, ssmlGender: %v, err: %v", text, lang, ssmlGender, err)
+		log.Errorf("Could not get a correct response. text: %s, lang: %s, voice_name: %s, err: %v", text, lang, voiceName, err)
 		return err
 	}
 
@@ -113,39 +106,23 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	return nil
 }
 
-// gcpGetVoiceName returns voicename of the given language and gender
-func (h *audioHandler) gcpGetVoiceName(lang string, gender tts.Gender) string {
-	mapVoiceName := map[string]string{
-		"en-US:" + string(tts.GenderFemale):  "en-US-Wavenet-F",
-		"en-US:" + string(tts.GenderMale):    "en-US-Wavenet-D",
-		"en-US:" + string(tts.GenderNeutral): "en-US-Wavenet-A",
-		"en-GB:" + string(tts.GenderFemale):  "en-GB-Wavenet-A",
-		"en-GB:" + string(tts.GenderMale):    "en-GB-Wavenet-B",
-		"en-GB:" + string(tts.GenderNeutral): "en-GB-Wavenet-D",
-		"de-DE:" + string(tts.GenderFemale):  "de-DE-Wavenet-F",
-		"de-DE:" + string(tts.GenderMale):    "de-DE-Wavenet-D",
-		"de-DE:" + string(tts.GenderNeutral): "de-DE-Wavenet-A",
-		"fr-FR:" + string(tts.GenderFemale):  "fr-FR-Wavenet-E",
-		"fr-FR:" + string(tts.GenderMale):    "fr-FR-Wavenet-B",
-		"fr-FR:" + string(tts.GenderNeutral): "fr-FR-Wavenet-A",
-		"es-ES:" + string(tts.GenderFemale):  "es-ES-Wavenet-E",
-		"es-ES:" + string(tts.GenderMale):    "es-ES-Wavenet-B",
-		"es-ES:" + string(tts.GenderNeutral): "es-ES-Wavenet-A",
-		"it-IT:" + string(tts.GenderFemale):  "it-IT-Wavenet-E",
-		"it-IT:" + string(tts.GenderMale):    "it-IT-Wavenet-B",
-		"it-IT:" + string(tts.GenderNeutral): "it-IT-Wavenet-A",
-		"ja-JP:" + string(tts.GenderFemale):  "ja-JP-Wavenet-C",
-		"ja-JP:" + string(tts.GenderMale):    "ja-JP-Wavenet-B",
-		"ko-KR:" + string(tts.GenderFemale):  "ko-KR-Wavenet-C",
-		"ko-KR:" + string(tts.GenderNeutral): "ko-KR-Wavenet-A",
+// gcpGetDefaultVoiceName returns default voice name for the given language
+func (h *audioHandler) gcpGetDefaultVoiceName(lang string) string {
+	defaultVoices := map[string]string{
+		"en-US": "en-US-Wavenet-F",
+		"en-GB": "en-GB-Wavenet-A",
+		"de-DE": "de-DE-Wavenet-F",
+		"fr-FR": "fr-FR-Wavenet-E",
+		"es-ES": "es-ES-Wavenet-E",
+		"it-IT": "it-IT-Wavenet-E",
+		"ja-JP": "ja-JP-Wavenet-C",
+		"ko-KR": "ko-KR-Wavenet-C",
 	}
 
-	tmp := fmt.Sprintf("%s:%s", lang, gender)
-	res, ok := mapVoiceName[tmp]
+	res, ok := defaultVoices[lang]
 	if !ok {
 		return ""
 	}
 
 	return res
-
 }

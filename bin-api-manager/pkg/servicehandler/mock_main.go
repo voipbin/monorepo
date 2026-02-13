@@ -1106,17 +1106,17 @@ func (mr *MockServiceHandlerMockRecorder) CallSilenceOn(ctx, a, callID any) *gom
 }
 
 // CallTalk mocks base method.
-func (m *MockServiceHandler) CallTalk(ctx context.Context, a *agent.Agent, callID uuid.UUID, text, gender, language string) error {
+func (m *MockServiceHandler) CallTalk(ctx context.Context, a *agent.Agent, callID uuid.UUID, text, language, provider, voiceID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallTalk", ctx, a, callID, text, gender, language)
+	ret := m.ctrl.Call(m, "CallTalk", ctx, a, callID, text, language, provider, voiceID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallTalk indicates an expected call of CallTalk.
-func (mr *MockServiceHandlerMockRecorder) CallTalk(ctx, a, callID, text, gender, language any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CallTalk(ctx, a, callID, text, language, provider, voiceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTalk", reflect.TypeOf((*MockServiceHandler)(nil).CallTalk), ctx, a, callID, text, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTalk", reflect.TypeOf((*MockServiceHandler)(nil).CallTalk), ctx, a, callID, text, language, provider, voiceID)
 }
 
 // CampaignCreate mocks base method.

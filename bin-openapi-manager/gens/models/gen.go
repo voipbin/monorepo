@@ -3762,9 +3762,14 @@ type PostCallsIdRecordingStartJSONBodyFormat string
 
 // PostCallsIdTalkJSONBody defines parameters for PostCallsIdTalk.
 type PostCallsIdTalkJSONBody struct {
-	Gender   *string `json:"gender,omitempty"`
 	Language *string `json:"language,omitempty"`
+
+	// Provider TTS provider to use (gcp or aws). If empty, auto-selects GCP first then AWS fallback.
+	Provider *string `json:"provider,omitempty"`
 	Text     *string `json:"text,omitempty"`
+
+	// VoiceId Provider-specific voice ID. If empty, uses the default voice for the given language.
+	VoiceId *string `json:"voice_id,omitempty"`
 }
 
 // GetCampaigncallsParams defines parameters for GetCampaigncalls.

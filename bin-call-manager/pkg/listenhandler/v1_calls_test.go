@@ -1450,8 +1450,9 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 
 		expectID       uuid.UUID
 		expectText     string
-		expectGender   string
 		expectLanguage string
+		expectProvider string
+		expectVoiceID  string
 		expectRes      *sock.Response
 	}
 
@@ -1462,13 +1463,14 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 				URI:      "/v1/calls/deb5c376-a4a2-11ed-b6d3-4f72b2fef2c1/talk",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"text":"hello world","language":"en-US","provider":"gcp","voice_id":"en-US-Wavenet-F"}`),
 			},
 
 			expectID:       uuid.FromStringOrNil("deb5c376-a4a2-11ed-b6d3-4f72b2fef2c1"),
 			expectText:     "hello world",
-			expectGender:   "female",
 			expectLanguage: "en-US",
+			expectProvider: "gcp",
+			expectVoiceID:  "en-US-Wavenet-F",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 			},
@@ -1488,7 +1490,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
+			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectLanguage, tt.expectProvider, tt.expectVoiceID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

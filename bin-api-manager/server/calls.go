@@ -266,17 +266,22 @@ func (h *server) PostCallsIdTalk(c *gin.Context, id string) {
 		text = *req.Text
 	}
 
-	gender := ""
-	if req.Gender != nil {
-		gender = *req.Gender
-	}
-
 	language := ""
 	if req.Language != nil {
 		language = *req.Language
 	}
 
-	if errTalk := h.serviceHandler.CallTalk(c.Request.Context(), &a, target, text, gender, language); errTalk != nil {
+	provider := ""
+	if req.Provider != nil {
+		provider = *req.Provider
+	}
+
+	voiceID := ""
+	if req.VoiceId != nil {
+		voiceID = *req.VoiceId
+	}
+
+	if errTalk := h.serviceHandler.CallTalk(c.Request.Context(), &a, target, text, language, provider, voiceID); errTalk != nil {
 		log.Errorf("Could not talk to the call. err: %v", errTalk)
 		c.AbortWithStatus(400)
 		return

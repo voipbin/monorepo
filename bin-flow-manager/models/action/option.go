@@ -292,8 +292,9 @@ type OptionStreamEcho struct {
 // OptionTalk defines action talk's option.
 type OptionTalk struct {
 	Text         string                 `json:"text,omitempty"`          // the text to read(SSML format or plain text)
-	Gender       string                 `json:"gender,omitempty"`        // gender(male/female/neutral)
 	Language     string                 `json:"language,omitempty"`      // IETF locale-name(ko-KR, en-US)
+	Provider     string                 `json:"provider,omitempty"`      // tts provider(gcp/aws)
+	VoiceID      string                 `json:"voice_id,omitempty"`      // provider-specific voice ID
 	DigitsHandle OptionTalkDigitsHandle `json:"digits_handle,omitempty"` // define action when it receives the digits.
 	Async        bool                   `json:"async,omitempty"`         // if true, the call flow continues immediately without waiting for talk to complete; if false, the call flow waits until talk is done.
 }

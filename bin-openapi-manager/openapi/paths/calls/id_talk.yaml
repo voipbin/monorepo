@@ -17,10 +17,14 @@ post:
           properties:
             text:
               type: string
-            gender:
-              type: string
             language:
               type: string
+            provider:
+              type: string
+              description: TTS provider to use (gcp or aws). If empty, auto-selects GCP first then AWS fallback.
+            voice_id:
+              type: string
+              description: Provider-specific voice ID. If empty, uses the default voice for the given language.
   responses:
     '200':
       description: The result of the talk action.

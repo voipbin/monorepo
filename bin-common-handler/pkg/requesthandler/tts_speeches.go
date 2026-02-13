@@ -12,15 +12,16 @@ import (
 )
 
 // TTSV1SpeecheCreate create speech-to-text.
-func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error) {
+func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, language string, provider tmtts.Provider, voiceID string, timeout int) (*tmtts.TTS, error) {
 
 	uri := "/v1/speeches"
 
 	m, err := json.Marshal(request.V1DataSpeechesPost{
 		CallID:   callID,
 		Text:     text,
-		Gender:   gender,
 		Language: language,
+		Provider: provider,
+		VoiceID:  voiceID,
 	})
 	if err != nil {
 		return nil, err

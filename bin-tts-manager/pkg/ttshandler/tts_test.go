@@ -20,8 +20,9 @@ func Test_Create(t *testing.T) {
 
 		callID   uuid.UUID
 		text     string
-		gender   tts.Gender
 		language string
+		provider tts.Provider
+		voiceID  string
 
 		responseFilePath      string
 		responseMediaFilepath string
@@ -36,18 +37,20 @@ func Test_Create(t *testing.T) {
 
 			callID:   uuid.FromStringOrNil("c1a8bfe6-9214-11ec-a013-1bbdbd87fc23"),
 			text:     "<speak>Hello world</speak>",
-			gender:   tts.GenderFemale,
 			language: "en-US",
+			provider: tts.ProviderGCP,
+			voiceID:  "en-US-Wavenet-F",
 
-			responseFilePath:      "/shared-data/766e587168455d862b8ef2a931341e7adaa106e1.wav",
-			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			responseFilePath:      "/shared-data/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
+			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
 
-			expectFilename: "766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			expectFilename: "d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
 			expectRes: &tts.TTS{
-				Gender:        tts.GenderFemale,
+				Provider:      tts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-F",
 				Text:          "<speak>Hello world</speak>",
 				Language:      "en-US",
-				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
 			},
 		},
 	}
@@ -69,9 +72,9 @@ func Test_Create(t *testing.T) {
 			mockBucket.EXPECT().OSGetFilepath(ctx, tt.expectFilename).Return(tt.responseFilePath)
 			mockBucket.EXPECT().OSGetMediaFilepath(ctx, tt.expectFilename).Return(tt.responseMediaFilepath)
 			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath).Return(false)
-			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.responseFilePath).Return(nil)
+			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, tt.responseFilePath).Return(nil)
 
-			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
+			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -89,8 +92,9 @@ func Test_filenameHashGenerator(t *testing.T) {
 		name string
 
 		text     string
-		gender   tts.Gender
 		language string
+		provider tts.Provider
+		voiceID  string
 
 		expectRes string
 	}
@@ -100,10 +104,11 @@ func Test_filenameHashGenerator(t *testing.T) {
 			name: "normal",
 
 			text:     "Hello, welcome to the voipbin! This is test message. Please feel free to enjoy the voipbin service.",
-			gender:   tts.GenderFemale,
 			language: "en-US",
+			provider: tts.ProviderGCP,
+			voiceID:  "en-US-Wavenet-F",
 
-			expectRes: "1e8561db13fe0f60473e9708cad94c339c018328.wav",
+			expectRes: "24195475b3e0012c9237b1a525abbcda22f89d6c.wav",
 		},
 	}
 
@@ -120,7 +125,7 @@ func Test_filenameHashGenerator(t *testing.T) {
 				bucketHandler: mockBucket,
 			}
 
-			res := h.filenameHashGenerator(tt.text, tt.language, tt.gender)
+			res := h.filenameHashGenerator(tt.text, tt.language, tt.provider, tt.voiceID)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)

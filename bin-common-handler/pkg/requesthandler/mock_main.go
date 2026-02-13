@@ -1778,17 +1778,17 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallSilenceOn(ctx, callID any) *
 }
 
 // CallV1CallTalk mocks base method.
-func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text, gender, language string, rqeuestTimeout int) error {
+func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text, language, provider, voiceID string, rqeuestTimeout int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallTalk", ctx, callID, text, gender, language, rqeuestTimeout)
+	ret := m.ctrl.Call(m, "CallV1CallTalk", ctx, callID, text, language, provider, voiceID, rqeuestTimeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallV1CallTalk indicates an expected call of CallV1CallTalk.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, gender, language, rqeuestTimeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, language, provider, voiceID, rqeuestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, gender, language, rqeuestTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, language, provider, voiceID, rqeuestTimeout)
 }
 
 // CallV1CallUpdateConfbridgeID mocks base method.
@@ -5454,18 +5454,18 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id, request
 }
 
 // TTSV1SpeecheCreate mocks base method.
-func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tts.Gender, language string, timeout int) (*tts.TTS, error) {
+func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, language string, provider tts.Provider, voiceID string, timeout int) (*tts.TTS, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSV1SpeecheCreate", ctx, callID, text, gender, language, timeout)
+	ret := m.ctrl.Call(m, "TTSV1SpeecheCreate", ctx, callID, text, language, provider, voiceID, timeout)
 	ret0, _ := ret[0].(*tts.TTS)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TTSV1SpeecheCreate indicates an expected call of TTSV1SpeecheCreate.
-func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, gender, language, timeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, language, provider, voiceID, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, language, provider, voiceID, timeout)
 }
 
 // TTSV1StreamingCreate mocks base method.

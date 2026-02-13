@@ -1,20 +1,20 @@
 package tts
 
+// Provider defines the TTS provider type
+type Provider string
+
+// list of provider types
+const (
+	ProviderGCP Provider = "gcp"
+	ProviderAWS Provider = "aws"
+)
+
 // TTS define
 type TTS struct {
-	Gender          Gender `json:"gender"`
-	Text            string `json:"text"`
-	Language        string `json:"language"`
-	MediaBucketName string `json:"media_bucket_name"`
-	MediaFilepath   string `json:"media_filepath"`
+	Provider        Provider `json:"provider,omitempty"`
+	VoiceID         string   `json:"voice_id,omitempty"`
+	Text            string   `json:"text,omitempty"`
+	Language        string   `json:"language,omitempty"`
+	MediaBucketName string   `json:"media_bucket_name,omitempty"`
+	MediaFilepath   string   `json:"media_filepath,omitempty"`
 }
-
-// Gender define
-type Gender string
-
-// list of gender types
-const (
-	GenderMale    = "male"
-	GenderFemale  = "female"
-	GenderNeutral = "neutral"
-)

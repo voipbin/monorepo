@@ -321,7 +321,7 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callI
 // CallTalk sends a request to call-manager
 // to talk to the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, gender string, language string) error {
+func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, language string, provider string, voiceID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallTalk",
 		"customer_id": a.CustomerID,
@@ -342,7 +342,7 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID 
 	}
 
 	// send request
-	if errReq := h.reqHandler.CallV1CallTalk(ctx, callID, text, gender, language, 10000); errReq != nil {
+	if errReq := h.reqHandler.CallV1CallTalk(ctx, callID, text, language, provider, voiceID, 10000); errReq != nil {
 		// no call info found
 		log.Infof("Could not talk to the call. err: %v", errReq)
 		return errReq

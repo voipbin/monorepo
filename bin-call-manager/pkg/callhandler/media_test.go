@@ -29,8 +29,9 @@ func Test_Talk(t *testing.T) {
 		callID   uuid.UUID
 		runNext  bool
 		text     string
-		gender   string
 		language string
+		provider string
+		voiceID  string
 
 		responseCall         *call.Call
 		responseTTS          *tmtts.TTS
@@ -45,8 +46,9 @@ func Test_Talk(t *testing.T) {
 			callID:   uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
 			runNext:  true,
 			text:     `hello world`,
-			gender:   "male",
 			language: "en-US",
+			provider: "",
+			voiceID:  "",
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -58,13 +60,11 @@ func Test_Talk(t *testing.T) {
 					Type: fmaction.TypeTalk,
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 					},
 				},
 			},
 			responseTTS: &tmtts.TTS{
-				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
@@ -80,8 +80,9 @@ func Test_Talk(t *testing.T) {
 			callID:   uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
 			runNext:  false,
 			text:     `hello world`,
-			gender:   "male",
 			language: "en-US",
+			provider: "",
+			voiceID:  "",
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -93,13 +94,11 @@ func Test_Talk(t *testing.T) {
 					Type: fmaction.TypeTalk,
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 					},
 				},
 			},
 			responseTTS: &tmtts.TTS{
-				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
@@ -137,13 +136,13 @@ func Test_Talk(t *testing.T) {
 				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID).Return(nil)
 			}
 
-			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000).Return(tt.responseTTS, nil)
+			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tt.language, tmtts.Provider(tt.provider), tt.voiceID, 10000).Return(tt.responseTTS, nil)
 			if !tt.runNext {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 			}
 			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
-			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.gender, tt.language); err != nil {
+			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.language, tt.provider, tt.voiceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

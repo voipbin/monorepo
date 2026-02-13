@@ -449,8 +449,9 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 
 		expectCallID   uuid.UUID
 		expectText     string
-		expectGender   string
 		expectLanguage string
+		expectProvider string
+		expectVoiceID  string
 	}
 
 	tests := []test{
@@ -463,12 +464,30 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			},
 
 			reqQuery: "/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
-			reqBody:  []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
+			reqBody:  []byte(`{"text":"hello world","language":"en-US"}`),
 
 			expectCallID:   uuid.FromStringOrNil("ed229366-a4b7-11ed-bfe7-b38647d68a3d"),
 			expectText:     "hello world",
-			expectGender:   "female",
 			expectLanguage: "en-US",
+			expectProvider: "",
+			expectVoiceID:  "",
+		},
+		{
+			name: "with provider and voice_id",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			},
+
+			reqQuery: "/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
+			reqBody:  []byte(`{"text":"hello world","language":"en-US","provider":"gcp","voice_id":"en-US-Wavenet-A"}`),
+
+			expectCallID:   uuid.FromStringOrNil("ed229366-a4b7-11ed-bfe7-b38647d68a3d"),
+			expectText:     "hello world",
+			expectLanguage: "en-US",
+			expectProvider: "gcp",
+			expectVoiceID:  "en-US-Wavenet-A",
 		},
 	}
 
@@ -494,7 +513,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
+			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectProvider, tt.expectVoiceID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

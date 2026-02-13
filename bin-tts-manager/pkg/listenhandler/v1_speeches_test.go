@@ -26,7 +26,8 @@ func Test_v1SpeechesPost(t *testing.T) {
 		expectCallID   uuid.UUID
 		expectText     string
 		expectLanguage string
-		expectGender   tts.Gender
+		expectProvider tts.Provider
+		expectVoiceID  string
 		expectRes      *sock.Response
 	}{
 		{
@@ -35,11 +36,10 @@ func Test_v1SpeechesPost(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/speeches",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "gender": "female", "language": "en-US"}`),
+				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "language": "en-US"}`),
 			},
 
 			responseTTS: &tts.TTS{
-				Gender:          tts.GenderFemale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "voipbin-tmp-bucket-europe-west4",
@@ -49,11 +49,41 @@ func Test_v1SpeechesPost(t *testing.T) {
 			expectCallID:   uuid.FromStringOrNil("107d1f0e-9665-11ed-b3f3-039937430300"),
 			expectText:     "hello world",
 			expectLanguage: "en-US",
-			expectGender:   tts.GenderFemale,
+			expectProvider: "",
+			expectVoiceID:  "",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),
+				Data:       []byte(`{"text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),
+			},
+		},
+		{
+			name: "with provider and voice_id",
+
+			request: &sock.Request{
+				URI:    "/v1/speeches",
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "language": "en-US", "provider": "gcp", "voice_id": "en-US-Wavenet-D"}`),
+			},
+
+			responseTTS: &tts.TTS{
+				Provider:        tts.ProviderGCP,
+				VoiceID:         "en-US-Wavenet-D",
+				Text:            "hello world",
+				Language:        "en-US",
+				MediaBucketName: "voipbin-tmp-bucket-europe-west4",
+				MediaFilepath:   "temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav",
+			},
+
+			expectCallID:   uuid.FromStringOrNil("107d1f0e-9665-11ed-b3f3-039937430300"),
+			expectText:     "hello world",
+			expectLanguage: "en-US",
+			expectProvider: tts.ProviderGCP,
+			expectVoiceID:  "en-US-Wavenet-D",
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"provider":"gcp","voice_id":"en-US-Wavenet-D","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),
 			},
 		},
 	}
@@ -71,7 +101,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 				ttsHandler:  mockTTS,
 			}
 
-			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectGender).Return(tt.responseTTS, nil)
+			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectProvider, tt.expectVoiceID).Return(tt.responseTTS, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

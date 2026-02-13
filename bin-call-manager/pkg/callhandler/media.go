@@ -16,7 +16,7 @@ import (
 
 // Talk plays the tts to the given call id.
 // runNext: if it true, the call will execute the next action after talk.
-func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, gender string, language string) error {
+func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, language string, provider string, voiceID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Talk",
 		"call_id":  callID,
@@ -38,7 +38,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 	}
 
 	// send request for create wav file
-	tts, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, text, tmtts.Gender(gender), language, 10000)
+	tts, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, text, language, tmtts.Provider(provider), voiceID, 10000)
 	if err != nil {
 		log.Errorf("Could not create speech file. err: %v", err)
 		return fmt.Errorf("could not create tts wav. err: %v", err)

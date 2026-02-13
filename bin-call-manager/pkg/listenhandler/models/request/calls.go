@@ -122,8 +122,9 @@ type V1DataCallsIDRecordingStartPost struct {
 // /v1/calls/<call-id>/talk POST
 type V1DataCallsIDTalkPost struct {
 	Text     string `json:"text,omitempty"`     // the text to read(SSML format or plain text)
-	Gender   string `json:"gender,omitempty"`   // gender(male/female/neutral)
 	Language string `json:"language,omitempty"` // IETF locale-name(ko-KR, en-US)
+	Provider string `json:"provider,omitempty"` // tts provider(gcp/aws)
+	VoiceID  string `json:"voice_id,omitempty"` // provider-specific voice ID
 }
 
 // V1DataCallsIDPlayPost is
