@@ -221,6 +221,75 @@ VoIPBIN supports various number types for different use cases.
 |            | Ideal for testing, development, and internal routing.            |
 +------------+------------------------------------------------------------------+
 
+**Normal vs Virtual Number Routing**
+
+Normal numbers are routed through an external provider (Telnyx/Twilio) from the PSTN, while virtual numbers are routed internally from your SIP client without any provider involvement.
+
+::
+
+    Normal Number (e.g. +15551234567)
+    ==================================
+
+      PSTN/Mobile                                                   Your Application
+           |                                                                |
+           | Outbound call from PSTN                                        |
+           | to +15551234567                                                |
+           +------------>  Telnyx/Twilio (provider)                         |
+                                |                                           |
+                                v                                           |
+                          +-----------+                                     |
+                          | Kamailio  |                                     |
+                          +-----+-----+                                     |
+                                |                                           |
+                                v                                           |
+                          +-----------+     +----------+     +-----------+  |
+                          | Asterisk  |---->| Number   |---->| Call Flow |--+-->
+                          +-----------+     | Lookup   |     | Execution |  |
+                                            +----------+     +-----------+  |
+                                            type: normal                    |
+                                            provider: telnyx                |
+
+
+      Virtual Number (e.g. +999123456789)
+      ====================================
+
+      Your SIP Client                                               Your Application
+           |                                                                |
+           | Outbound call from SIP Client                                  |
+           | to +999123456789                                               |
+           +--------------- No Provider needed                              |
+                                |                                           |
+                                v                                           |
+                          +-----------+                                     |
+                          | Kamailio  |                                     |
+                          +-----+-----+                                     |
+                                |                                           |
+                                v                                           |
+                          +-----------+     +----------+     +-----------+  |
+                          | Asterisk  |---->| Number   |---->| Call Flow |--+-->
+                          +-----------+     | Lookup   |     | Execution |  |
+                                            +----------+     +-----------+  |
+                                            type: virtual                   |
+                                            provider: none                  |
+
+**Comparison**
+
++-------------------+-------------------------------+-------------------------------+
+| Aspect            | Normal Number                 | Virtual Number                |
++===================+===============================+===============================+
+| Format            | E.164 (e.g. +15551234567)     | +999 prefix (+999XXXXXXXXX)   |
++-------------------+-------------------------------+-------------------------------+
+| Provider          | Telnyx or Twilio              | None (internal only)          |
++-------------------+-------------------------------+-------------------------------+
+| Inbound routing   | PSTN -> Provider -> VoIPBIN   | SIP Client -> VoIPBIN         |
++-------------------+-------------------------------+-------------------------------+
+| Flow execution    | Same (call_flow/message_flow) | Same (call_flow/message_flow) |
++-------------------+-------------------------------+-------------------------------+
+| Best for          | Production, external callers  | Testing, dev, internal routing|
++-------------------+-------------------------------+-------------------------------+
+
+For billing and cost details, see :ref:`Billing Account <billing_account_overview>`.
+
 **Virtual Number Tier Limits**
 
 Virtual numbers are free to create but subject to tier-based limits. The maximum number of virtual numbers you can provision depends on your billing account's plan tier.
