@@ -9,6 +9,7 @@
         <title>Billing Account &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -267,22 +268,22 @@ v                   v                   v                   v
 <td><p>100</p></td>
 <td><p>unlimited</p></td>
 </tr>
-<tr class="row-odd"><td><p>Flows</p></td>
-<td><p>5</p></td>
-<td><p>50</p></td>
-<td><p>500</p></td>
-<td><p>unlimited</p></td>
-</tr>
-<tr class="row-even"><td><p>Conferences</p></td>
+<tr class="row-odd"><td><p>Conferences</p></td>
 <td><p>2</p></td>
 <td><p>10</p></td>
 <td><p>100</p></td>
 <td><p>unlimited</p></td>
 </tr>
-<tr class="row-odd"><td><p>Trunks</p></td>
+<tr class="row-even"><td><p>Trunks</p></td>
 <td><p>1</p></td>
 <td><p>5</p></td>
 <td><p>50</p></td>
+<td><p>unlimited</p></td>
+</tr>
+<tr class="row-odd"><td><p>Virtual Numbers</p></td>
+<td><p>5</p></td>
+<td><p>50</p></td>
+<td><p>500</p></td>
 <td><p>unlimited</p></td>
 </tr>
 </tbody>
@@ -699,9 +700,9 @@ Total: $25.80
 <h3>Check Balance Before Call<a class="headerlink" href="#check-balance-before-call" title="Link to this heading"></a></h3>
 <p>Programmatically verify balance before initiating calls to ensure successful completion.</p>
 <p><strong>Python Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="k">def</span> <span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">call_duration_seconds</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">call_duration_seconds</span><span class="p">):</span>
     <span class="c1"># Get billing account</span>
     <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.voipbin.net/v1.0/billing_accounts/</span><span class="si">{</span><span class="n">billing_account_id</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">}</span>
@@ -845,15 +846,15 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 </div>
 <p><strong>Process Webhook with Low Balance Alert:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python Flask example</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<span class="kn">import</span> <span class="nn">smtplib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">smtplib</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">LOW_BALANCE_THRESHOLD</span> <span class="o">=</span> <span class="mf">20.00</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook/billing&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">billing_webhook</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">billing_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
 
@@ -875,7 +876,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
-<span class="k">def</span> <span class="nf">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
     <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Low Balance Alert: $</span><span class="si">{</span><span class="n">balance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    Your billing account balance is low.</span>
@@ -889,11 +890,11 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
     <span class="c1"># Send email implementation</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sending low balance alert: </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">store_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
     <span class="c1"># Store alert in database for tracking</span>
     <span class="k">pass</span>
 
-<span class="k">def</span> <span class="nf">pause_services_if_needed</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pause_services_if_needed</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
     <span class="c1"># Optionally pause campaigns if balance is critically low</span>
     <span class="n">CRITICAL_THRESHOLD</span> <span class="o">=</span> <span class="mf">5.00</span>
     <span class="k">if</span> <span class="n">balance</span> <span class="o">&lt;</span> <span class="n">CRITICAL_THRESHOLD</span><span class="p">:</span>
@@ -906,7 +907,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Pre-Call Balance Verification:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify balance before campaign</span>
-<span class="k">def</span> <span class="nf">verify_campaign_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">estimated_calls</span><span class="p">,</span> <span class="n">avg_duration</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_campaign_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">estimated_calls</span><span class="p">,</span> <span class="n">avg_duration</span><span class="p">):</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">get_billing_account</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
 
     <span class="c1"># Calculate estimated cost</span>
@@ -929,7 +930,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 </div>
 <p><strong>2. Real-Time Balance Tracking:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Track balance changes during campaign</span>
-<span class="k">def</span> <span class="nf">monitor_campaign_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">campaign_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">monitor_campaign_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">campaign_id</span><span class="p">):</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">get_billing_account</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
     <span class="n">initial_balance</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;balance&#39;</span><span class="p">]</span>
 
@@ -966,7 +967,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 </div>
 <p><strong>3. Multi-Service Cost Tracking:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate total cost for multiple services</span>
-<span class="k">def</span> <span class="nf">calculate_total_cost</span><span class="p">(</span><span class="n">phone_numbers</span><span class="p">,</span> <span class="n">call_seconds</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_total_cost</span><span class="p">(</span><span class="n">phone_numbers</span><span class="p">,</span> <span class="n">call_seconds</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
     <span class="n">costs</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;phone_numbers&#39;</span><span class="p">:</span> <span class="n">phone_numbers</span> <span class="o">*</span> <span class="mf">5.00</span><span class="p">,</span>
         <span class="s1">&#39;calls&#39;</span><span class="p">:</span> <span class="n">call_seconds</span> <span class="o">*</span> <span class="mf">0.020</span><span class="p">,</span>
@@ -992,7 +993,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 </div>
 <p><strong>4. Automated Balance Top-Up:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Automatically add balance when threshold is reached</span>
-<span class="k">def</span> <span class="nf">auto_topup_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">50.00</span><span class="p">,</span> <span class="n">topup_amount</span><span class="o">=</span><span class="mf">100.00</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">auto_topup_balance</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">50.00</span><span class="p">,</span> <span class="n">topup_amount</span><span class="o">=</span><span class="mf">100.00</span><span class="p">):</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">get_billing_account</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;balance&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
@@ -1020,7 +1021,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 600);
 </div>
 <p><strong>5. Cost Analysis and Reporting:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate cost report for billing period</span>
-<span class="k">def</span> <span class="nf">generate_cost_report</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_cost_report</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
     <span class="c1"># Fetch billing history (if available)</span>
     <span class="n">billings</span> <span class="o">=</span> <span class="n">get_billings_for_period</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
 
@@ -1282,7 +1283,7 @@ if burn_rate_too_high():
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -1290,11 +1291,11 @@ if burn_rate_too_high():
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

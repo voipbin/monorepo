@@ -9,6 +9,7 @@
         <title>Transcribe &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -996,10 +997,10 @@ conversation order</p></td>
 </pre></div>
 </div>
 <p><strong>Python WebSocket Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
-<span class="kn">import</span> <span class="nn">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
-<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
@@ -1014,7 +1015,7 @@ conversation order</p></td>
         <span class="c1"># - Run sentiment analysis</span>
         <span class="c1"># - Detect keywords</span>
 
-<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="c1"># Subscribe to transcription events</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
@@ -1075,12 +1076,12 @@ conversation order</p></td>
 </div>
 <p><strong>3. Process Webhook in Your Server:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python Flask example</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">transcription_webhook</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transcription_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
 
@@ -1131,7 +1132,7 @@ conversation order</p></td>
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Customer Service Quality Assurance:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor customer service calls</span>
-<span class="k">def</span> <span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
     <span class="c1"># Check for quality metrics</span>
     <span class="k">if</span> <span class="n">contains_greeting</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
         <span class="n">mark_greeting_present</span><span class="p">()</span>
@@ -1146,7 +1147,7 @@ conversation order</p></td>
 </div>
 <p><strong>2. Compliance and Record-Keeping:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Store all call transcripts for compliance</span>
-<span class="k">def</span> <span class="nf">store_for_compliance</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_for_compliance</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
     <span class="n">transcripts</span> <span class="o">=</span> <span class="n">get_transcripts</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
 
     <span class="c1"># Create formatted record</span>
@@ -1163,7 +1164,7 @@ conversation order</p></td>
 </div>
 <p><strong>3. Real-Time Agent Assistance:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Help agents during calls</span>
-<span class="k">def</span> <span class="nf">on_real_time_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_real_time_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
     <span class="c1"># Detect customer questions</span>
     <span class="k">if</span> <span class="n">is_question</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]):</span>
         <span class="c1"># Suggest answers to agent</span>
@@ -1177,7 +1178,7 @@ conversation order</p></td>
 </div>
 <p><strong>4. Automated Call Summarization:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate call summaries</span>
-<span class="k">def</span> <span class="nf">summarize_call</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize_call</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
     <span class="n">transcripts</span> <span class="o">=</span> <span class="n">get_all_transcripts</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
 
     <span class="c1"># Combine all transcripts</span>
@@ -1201,7 +1202,7 @@ conversation order</p></td>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor for important keywords</span>
 <span class="n">ALERT_KEYWORDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;urgent&#39;</span><span class="p">,</span> <span class="s1">&#39;emergency&#39;</span><span class="p">,</span> <span class="s1">&#39;cancel&#39;</span><span class="p">,</span> <span class="s1">&#39;complaint&#39;</span><span class="p">,</span> <span class="s1">&#39;lawsuit&#39;</span><span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">ALERT_KEYWORDS</span><span class="p">:</span>
@@ -1219,7 +1220,7 @@ conversation order</p></td>
 </div>
 <p><strong>6. Multi-Language Customer Support:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Auto-detect and transcribe in customer&#39;s language</span>
-<span class="k">def</span> <span class="nf">start_multilingual_transcription</span><span class="p">(</span><span class="n">call_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_multilingual_transcription</span><span class="p">(</span><span class="n">call_id</span><span class="p">):</span>
     <span class="c1"># Detect language from first few seconds</span>
     <span class="n">detected_language</span> <span class="o">=</span> <span class="n">detect_language</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>
 
@@ -1550,7 +1551,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -1558,11 +1559,11 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

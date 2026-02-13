@@ -69,11 +69,11 @@ Each billing account is assigned a plan tier that determines resource creation l
 +----------------------+-------+-------+--------------+-----------+
 | Queues               |     2 |    10 |          100 | unlimited |
 +----------------------+-------+-------+--------------+-----------+
-| Flows                |     5 |    50 |          500 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
 | Conferences          |     2 |    10 |          100 | unlimited |
 +----------------------+-------+-------+--------------+-----------+
 | Trunks               |     1 |     5 |           50 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+| Virtual Numbers      |     5 |    50 |          500 | unlimited |
 +----------------------+-------+-------+--------------+-----------+
 
 - When a resource limit is reached, further creation of that resource type is denied.
