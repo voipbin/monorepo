@@ -16,18 +16,19 @@ import (
 
 // Create creates audio and upload it to the bucket.
 // Returns downloadable link string
-func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender) (*tts.TTS, error) {
+func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, lang string, provider tts.Provider, voiceID string) (*tts.TTS, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Create",
 		"call_id":  callID,
 		"text":     text,
 		"language": lang,
-		"gender":   gender,
+		"provider": provider,
+		"voice_id": voiceID,
 	})
-	log.Debugf("Creating TTS. lang: %s, gender: %s, text: %s", lang, gender, text)
+	log.Debugf("Creating TTS. lang: %s, provider: %s, voice_id: %s, text: %s", lang, provider, voiceID, text)
 
 	// track language usage
-	promSpeechLanguageTotal.WithLabelValues(lang, string(gender)).Inc()
+	promSpeechLanguageTotal.WithLabelValues(lang, string(provider)).Inc()
 
 	// normalize text
 	normalizedText, err := h.normalizeText(ctx, text)
@@ -39,11 +40,12 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized.")
 
 	// create hash/target/result
-	filename := h.filenameHashGenerator(normalizedText, lang, gender)
+	filename := h.filenameHashGenerator(normalizedText, lang, provider, voiceID)
 	osFilepath := h.bucketHandler.OSGetFilepath(ctx, filename)
 	mediaFilepath := h.bucketHandler.OSGetMediaFilepath(ctx, filename)
 	res := &tts.TTS{
-		Gender:        gender,
+		Provider:      provider,
+		VoiceID:       voiceID,
 		Text:          normalizedText,
 		Language:      lang,
 		MediaFilepath: mediaFilepath,
@@ -65,7 +67,7 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 
 	// create audio
 	start := time.Now()
-	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, gender, osFilepath); errCreate != nil {
+	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, provider, voiceID, osFilepath); errCreate != nil {
 		log.Errorf("Could not create audio. err: %v", errCreate)
 		promSpeechRequestTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not create audio. err: %v", errCreate)
@@ -78,12 +80,12 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
-func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender tts.Gender) string {
+func (h *ttsHandler) filenameHashGenerator(text string, lang string, provider tts.Provider, voiceID string) string {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "filenameHashGenerator",
 	})
 
-	s := fmt.Sprintf("%s%s%s", text, lang, gender)
+	s := fmt.Sprintf("%s%s%s%s", text, lang, provider, voiceID)
 	start := time.Now()
 
 	sh1 := sha1.New()

@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"monorepo/bin-tts-manager/models/tts"
 	"os"
 	"strconv"
 	"time"
@@ -43,15 +42,21 @@ func awsGetClient(accessKey string, secretKey string) (*polly.Client, error) {
 	return res, nil
 }
 
-func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filepath string) error {
+func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, voiceID string, filepath string) error {
 	log := logrus.WithField("func", "awsAudioCreate")
 
-	voiceID := h.awsGetVoiceID(lang, gender)
+	voice := h.awsGetDefaultVoiceID(lang)
+	if voiceID != "" {
+		voice = types.VoiceId(voiceID)
+	}
+	if voice == "" {
+		return fmt.Errorf("no default voice available for language %q and no voice_id provided", lang)
+	}
 	input := &polly.SynthesizeSpeechInput{
 		Text:         aws.String(text),
 		TextType:     types.TextTypeSsml,
 		OutputFormat: types.OutputFormatPcm,
-		VoiceId:      voiceID,
+		VoiceId:      voice,
 		SampleRate:   aws.String(strconv.Itoa(int(defaultSampleRate))),
 	}
 
@@ -72,53 +77,23 @@ func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	return nil
 }
 
-func (h *audioHandler) awsGetVoiceID(lang string, gender tts.Gender) types.VoiceId {
-	mapVoiceName := map[string]types.VoiceId{
-		"en-US:" + string(tts.GenderFemale):  types.VoiceIdJoanna,
-		"en-US:" + string(tts.GenderMale):    types.VoiceIdMatthew,
-		"en-US:" + string(tts.GenderNeutral): types.VoiceIdJoey,
-
-		"en-GB:" + string(tts.GenderFemale):  types.VoiceIdAmy,
-		"en-GB:" + string(tts.GenderMale):    types.VoiceIdBrian,
-		"en-GB:" + string(tts.GenderNeutral): types.VoiceIdEmma,
-
-		"de-DE:" + string(tts.GenderFemale):  types.VoiceIdMarlene,
-		"de-DE:" + string(tts.GenderMale):    types.VoiceIdHans,
-		"de-DE:" + string(tts.GenderNeutral): types.VoiceIdVicki,
-
-		"fr-FR:" + string(tts.GenderFemale):  types.VoiceIdCeline,
-		"fr-FR:" + string(tts.GenderMale):    types.VoiceIdMathieu,
-		"fr-FR:" + string(tts.GenderNeutral): types.VoiceIdLea,
-
-		"es-ES:" + string(tts.GenderFemale):  types.VoiceIdConchita,
-		"es-ES:" + string(tts.GenderMale):    types.VoiceIdEnrique,
-		"es-ES:" + string(tts.GenderNeutral): types.VoiceIdLucia,
-
-		"it-IT:" + string(tts.GenderFemale):  types.VoiceIdCarla,
-		"it-IT:" + string(tts.GenderMale):    types.VoiceIdGiorgio,
-		"it-IT:" + string(tts.GenderNeutral): types.VoiceIdBianca,
-
-		"ja-JP:" + string(tts.GenderFemale): types.VoiceIdMizuki,
-		"ja-JP:" + string(tts.GenderMale):   types.VoiceIdTakumi,
-
-		"ko-KR:" + string(tts.GenderFemale):  types.VoiceIdSeoyeon,
-		"ko-KR:" + string(tts.GenderNeutral): types.VoiceIdJihye,
-
-		"pt-BR:" + string(tts.GenderFemale):  types.VoiceIdCamila,
-		"pt-BR:" + string(tts.GenderMale):    types.VoiceIdRicardo,
-		"pt-BR:" + string(tts.GenderNeutral): types.VoiceIdCamila,
-
-		"ru-RU:" + string(tts.GenderFemale):  types.VoiceIdTatyana,
-		"ru-RU:" + string(tts.GenderMale):    types.VoiceIdMaxim,
-		"ru-RU:" + string(tts.GenderNeutral): types.VoiceIdTatyana,
-
-		"zh-CN:" + string(tts.GenderFemale):  types.VoiceIdZhiyu,
-		"zh-CN:" + string(tts.GenderMale):    types.VoiceIdZhiyu,
-		"zh-CN:" + string(tts.GenderNeutral): types.VoiceIdZhiyu,
+// awsGetDefaultVoiceID returns default voice ID for the given language
+func (h *audioHandler) awsGetDefaultVoiceID(lang string) types.VoiceId {
+	defaultVoices := map[string]types.VoiceId{
+		"en-US": types.VoiceIdJoanna,
+		"en-GB": types.VoiceIdAmy,
+		"de-DE": types.VoiceIdMarlene,
+		"fr-FR": types.VoiceIdCeline,
+		"es-ES": types.VoiceIdConchita,
+		"it-IT": types.VoiceIdCarla,
+		"ja-JP": types.VoiceIdMizuki,
+		"ko-KR": types.VoiceIdSeoyeon,
+		"pt-BR": types.VoiceIdCamila,
+		"ru-RU": types.VoiceIdTatyana,
+		"zh-CN": types.VoiceIdZhiyu,
 	}
 
-	tmp := fmt.Sprintf("%s:%s", lang, gender)
-	res, ok := mapVoiceName[tmp]
+	res, ok := defaultVoices[lang]
 	if !ok {
 		return ""
 	}

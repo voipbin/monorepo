@@ -511,13 +511,14 @@ func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callI
 // to talk to the call directly.
 // it returns error if something went wrong.
 // rqeuestTimeout: timeout in milliseconds
-func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error {
+func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, language string, provider string, voiceID string, rqeuestTimeout int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/talk", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDTalkPost{
 		Text:     text,
-		Gender:   gender,
 		Language: language,
+		Provider: provider,
+		VoiceID:  voiceID,
 	})
 	if err != nil {
 		return err

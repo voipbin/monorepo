@@ -29,8 +29,9 @@ func Test_Talk(t *testing.T) {
 		callID   uuid.UUID
 		runNext  bool
 		text     string
-		gender   string
 		language string
+		provider string
+		voiceID  string
 
 		responseCall         *call.Call
 		responseTTS          *tmtts.TTS
@@ -45,8 +46,9 @@ func Test_Talk(t *testing.T) {
 			callID:   uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
 			runNext:  true,
 			text:     `hello world`,
-			gender:   "male",
 			language: "en-US",
+			provider: "",
+			voiceID:  "",
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -58,13 +60,11 @@ func Test_Talk(t *testing.T) {
 					Type: fmaction.TypeTalk,
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 					},
 				},
 			},
 			responseTTS: &tmtts.TTS{
-				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
@@ -75,13 +75,51 @@ func Test_Talk(t *testing.T) {
 			expectPlaybackID: playback.IDPrefixCall + "285a1c22-a49c-11ed-b48e-6f39f4fd59ff",
 		},
 		{
+			name: "with explicit provider and voice_id",
+
+			callID:   uuid.FromStringOrNil("f3a1b2c4-d5e6-7890-abcd-ef1234567890"),
+			runNext:  true,
+			text:     `hello world`,
+			language: "en-US",
+			provider: "gcp",
+			voiceID:  "en-US-Wavenet-D",
+
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3a1b2c4-d5e6-7890-abcd-ef1234567890"),
+				},
+				ChannelID: "f4b2c3d5-e6f7-8901-bcde-f12345678901",
+				Action: fmaction.Action{
+					ID:   uuid.FromStringOrNil("f5c3d4e6-f789-0123-cdef-123456789012"),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"text":     "hello world",
+						"language": "en-US",
+						"provider": "gcp",
+						"voice_id": "en-US-Wavenet-D",
+					},
+				},
+			},
+			responseTTS: &tmtts.TTS{
+				Provider:      tmtts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-D",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav",
+			},
+
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav"},
+			expectPlaybackID: playback.IDPrefixCall + "f5c3d4e6-f789-0123-cdef-123456789012",
+		},
+		{
 			name: "run next is false",
 
 			callID:   uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
 			runNext:  false,
 			text:     `hello world`,
-			gender:   "male",
 			language: "en-US",
+			provider: "",
+			voiceID:  "",
 
 			responseCall: &call.Call{
 				Identity: commonidentity.Identity{
@@ -93,13 +131,11 @@ func Test_Talk(t *testing.T) {
 					Type: fmaction.TypeTalk,
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 					},
 				},
 			},
 			responseTTS: &tmtts.TTS{
-				Gender:          tmtts.GenderMale,
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
@@ -137,13 +173,13 @@ func Test_Talk(t *testing.T) {
 				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID).Return(nil)
 			}
 
-			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000).Return(tt.responseTTS, nil)
+			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tt.language, tmtts.Provider(tt.provider), tt.voiceID, 10000).Return(tt.responseTTS, nil)
 			if !tt.runNext {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 			}
 			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
-			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.gender, tt.language); err != nil {
+			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.language, tt.provider, tt.voiceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

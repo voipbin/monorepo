@@ -1,234 +1,105 @@
 package audiohandler
 
 import (
+	"context"
 	"testing"
 
-	"monorepo/bin-tts-manager/models/tts"
-
 	"github.com/aws/aws-sdk-go-v2/service/polly/types"
+	"github.com/gofrs/uuid"
 )
 
-func Test_awsGetVoiceID(t *testing.T) {
+func Test_awsGetDefaultVoiceID(t *testing.T) {
 	handler := &audioHandler{}
 
 	tests := []struct {
 		name     string
 		lang     string
-		gender   tts.Gender
 		expected types.VoiceId
 	}{
 		{
-			name:     "US Female",
+			name:     "en-US",
 			lang:     "en-US",
-			gender:   tts.GenderFemale,
-			expected: "Joanna",
+			expected: types.VoiceIdJoanna,
 		},
 		{
-			name:     "US Male",
-			lang:     "en-US",
-			gender:   tts.GenderMale,
-			expected: "Matthew",
-		},
-		{
-			name:     "US Neutral",
-			lang:     "en-US",
-			gender:   tts.GenderNeutral,
-			expected: "Joey",
-		},
-		{
-			name:     "GB Female",
+			name:     "en-GB",
 			lang:     "en-GB",
-			gender:   tts.GenderFemale,
-			expected: "Amy",
+			expected: types.VoiceIdAmy,
 		},
 		{
-			name:     "GB Male",
-			lang:     "en-GB",
-			gender:   tts.GenderMale,
-			expected: "Brian",
-		},
-		{
-			name:     "GB Neutral",
-			lang:     "en-GB",
-			gender:   tts.GenderNeutral,
-			expected: "Emma",
-		},
-		{
-			name:     "DE Female",
+			name:     "de-DE",
 			lang:     "de-DE",
-			gender:   tts.GenderFemale,
-			expected: "Marlene",
+			expected: types.VoiceIdMarlene,
 		},
 		{
-			name:     "DE Male",
-			lang:     "de-DE",
-			gender:   tts.GenderMale,
-			expected: "Hans",
-		},
-		{
-			name:     "DE Neutral",
-			lang:     "de-DE",
-			gender:   tts.GenderNeutral,
-			expected: "Vicki",
-		},
-		{
-			name:     "FR Female",
+			name:     "fr-FR",
 			lang:     "fr-FR",
-			gender:   tts.GenderFemale,
-			expected: "Celine",
+			expected: types.VoiceIdCeline,
 		},
 		{
-			name:     "FR Male",
-			lang:     "fr-FR",
-			gender:   tts.GenderMale,
-			expected: "Mathieu",
-		},
-		{
-			name:     "FR Neutral",
-			lang:     "fr-FR",
-			gender:   tts.GenderNeutral,
-			expected: "Lea",
-		},
-		{
-			name:     "ES Female",
+			name:     "es-ES",
 			lang:     "es-ES",
-			gender:   tts.GenderFemale,
-			expected: "Conchita",
+			expected: types.VoiceIdConchita,
 		},
 		{
-			name:     "ES Male",
-			lang:     "es-ES",
-			gender:   tts.GenderMale,
-			expected: "Enrique",
-		},
-		{
-			name:     "ES Neutral",
-			lang:     "es-ES",
-			gender:   tts.GenderNeutral,
-			expected: "Lucia",
-		},
-		{
-			name:     "IT Female",
+			name:     "it-IT",
 			lang:     "it-IT",
-			gender:   tts.GenderFemale,
-			expected: "Carla",
+			expected: types.VoiceIdCarla,
 		},
 		{
-			name:     "IT Male",
-			lang:     "it-IT",
-			gender:   tts.GenderMale,
-			expected: "Giorgio",
-		},
-		{
-			name:     "IT Neutral",
-			lang:     "it-IT",
-			gender:   tts.GenderNeutral,
-			expected: "Bianca",
-		},
-		{
-			name:     "JP Female",
+			name:     "ja-JP",
 			lang:     "ja-JP",
-			gender:   tts.GenderFemale,
-			expected: "Mizuki",
+			expected: types.VoiceIdMizuki,
 		},
 		{
-			name:     "JP Male",
-			lang:     "ja-JP",
-			gender:   tts.GenderMale,
-			expected: "Takumi",
-		},
-		{
-			name:     "KR Female",
+			name:     "ko-KR",
 			lang:     "ko-KR",
-			gender:   tts.GenderFemale,
-			expected: "Seoyeon",
+			expected: types.VoiceIdSeoyeon,
 		},
 		{
-			name:     "KR Neutral",
-			lang:     "ko-KR",
-			gender:   tts.GenderNeutral,
-			expected: "Jihye",
-		},
-		{
-			name:     "BR Female",
+			name:     "pt-BR",
 			lang:     "pt-BR",
-			gender:   tts.GenderFemale,
-			expected: "Camila",
+			expected: types.VoiceIdCamila,
 		},
 		{
-			name:     "BR Male",
-			lang:     "pt-BR",
-			gender:   tts.GenderMale,
-			expected: "Ricardo",
-		},
-		{
-			name:     "BR Neutral",
-			lang:     "pt-BR",
-			gender:   tts.GenderNeutral,
-			expected: "Camila",
-		},
-		{
-			name:     "RU Female",
+			name:     "ru-RU",
 			lang:     "ru-RU",
-			gender:   tts.GenderFemale,
-			expected: "Tatyana",
+			expected: types.VoiceIdTatyana,
 		},
 		{
-			name:     "RU Male",
-			lang:     "ru-RU",
-			gender:   tts.GenderMale,
-			expected: "Maxim",
-		},
-		{
-			name:     "RU Neutral",
-			lang:     "ru-RU",
-			gender:   tts.GenderNeutral,
-			expected: "Tatyana",
-		},
-		{
-			name:     "CN Female",
+			name:     "zh-CN",
 			lang:     "zh-CN",
-			gender:   tts.GenderFemale,
-			expected: "Zhiyu",
-		},
-		{
-			name:     "CN Male",
-			lang:     "zh-CN",
-			gender:   tts.GenderMale,
-			expected: "Zhiyu",
-		},
-		{
-			name:     "CN Neutral",
-			lang:     "zh-CN",
-			gender:   tts.GenderNeutral,
-			expected: "Zhiyu",
+			expected: types.VoiceIdZhiyu,
 		},
 		{
 			name:     "Unknown Language",
 			lang:     "unknown",
-			gender:   tts.GenderFemale,
-			expected: "",
-		},
-		{
-			name:     "Unknown Gender",
-			lang:     "en-US",
-			gender:   tts.Gender("unknown"),
-			expected: "",
-		},
-		{
-			name:     "Unknown Language and Gender",
-			lang:     "unknown",
-			gender:   tts.Gender("unknown"),
 			expected: "",
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.lang+"_"+string(test.gender), func(t *testing.T) {
-			result := handler.awsGetVoiceID(test.lang, test.gender)
+		t.Run(test.name, func(t *testing.T) {
+			result := handler.awsGetDefaultVoiceID(test.lang)
 			if result != test.expected {
 				t.Errorf("expected %s, got %s", test.expected, result)
 			}
 		})
+	}
+}
+
+func Test_awsAudioCreate_unknownLangNoVoiceID(t *testing.T) {
+	h := &audioHandler{}
+	ctx := context.Background()
+	callID := uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+
+	err := h.awsAudioCreate(ctx, callID, "<speak>hello</speak>", "xx-XX", "", "/tmp/test.wav")
+	if err == nil {
+		t.Error("expected error for unknown language with no voice_id, got nil")
+	}
+
+	expectedMsg := `no default voice available for language "xx-XX" and no voice_id provided`
+	if err.Error() != expectedMsg {
+		t.Errorf("wrong error message.\nexpect: %s\ngot: %s", expectedMsg, err.Error())
 	}
 }

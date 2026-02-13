@@ -1282,8 +1282,9 @@ func Test_CallV1CallTalk(t *testing.T) {
 
 		callID         uuid.UUID
 		text           string
-		gender         string
 		language       string
+		provider       string
+		voiceID        string
 		requestTimeout int
 
 		expectTarget  string
@@ -1295,8 +1296,9 @@ func Test_CallV1CallTalk(t *testing.T) {
 
 			uuid.FromStringOrNil("966842b8-a4b3-11ed-afc1-cfd28f99c181"),
 			"hello world",
-			"female",
 			"en-US",
+			"gcp",
+			"en-US-Wavenet-F",
 			10000,
 
 			"bin-manager.call-manager.request",
@@ -1304,7 +1306,7 @@ func Test_CallV1CallTalk(t *testing.T) {
 				URI:      "/v1/calls/966842b8-a4b3-11ed-afc1-cfd28f99c181/talk",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"text":"hello world","language":"en-US","provider":"gcp","voice_id":"en-US-Wavenet-F"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -1325,7 +1327,7 @@ func Test_CallV1CallTalk(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, tt.requestTimeout); err != nil {
+			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, tt.requestTimeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

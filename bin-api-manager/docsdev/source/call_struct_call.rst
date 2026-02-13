@@ -93,7 +93,6 @@ Example
             "type": "talk",
             "option": {
                 "text": "Hello. Thank you for calling. How can I help you today?",
-                "gender": "female",
                 "language": "en-US"
             },
             "tm_execute": "2022-05-01 15:10:38.785510878"

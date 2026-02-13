@@ -112,7 +112,8 @@ func cmdCreate() *cobra.Command {
 	flags.String("call-id", "", "Call ID (required)")
 	flags.String("text", "", "Text to synthesize (required)")
 	flags.String("lang", "en-US", "Language code (default: en-US)")
-	flags.String("gender", string(tts.GenderFemale), "Voice gender: male, female, neutral (default: female)")
+	flags.String("provider", "", "TTS provider: gcp, aws (default: empty for auto)")
+	flags.String("voice-id", "", "Provider-specific voice ID (default: empty for default voice)")
 
 	return cmd
 }
@@ -133,16 +134,20 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		lang = "en-US"
 	}
 
-	genderStr := viper.GetString("gender")
-	gender := tts.Gender(genderStr)
+	providerStr := viper.GetString("provider")
+	provider := tts.Provider(providerStr)
 
-	// Validate gender
-	switch gender {
-	case tts.GenderMale, tts.GenderFemale, tts.GenderNeutral:
-		// Valid gender
-	default:
-		return fmt.Errorf("invalid gender: %s (must be male, female, or neutral)", genderStr)
+	// Validate provider if specified
+	if providerStr != "" {
+		switch provider {
+		case tts.ProviderGCP, tts.ProviderAWS:
+			// Valid provider
+		default:
+			return fmt.Errorf("invalid provider: %s (must be gcp or aws)", providerStr)
+		}
 	}
+
+	voiceID := viper.GetString("voice-id")
 
 	handler, err := initHandler()
 	if err != nil {
@@ -154,7 +159,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		callID,
 		text,
 		lang,
-		gender,
+		provider,
+		voiceID,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create TTS")

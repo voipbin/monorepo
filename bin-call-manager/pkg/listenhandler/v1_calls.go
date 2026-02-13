@@ -786,7 +786,7 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Re
 		return nil, err
 	}
 
-	if errTalk := h.callHandler.Talk(ctx, id, false, req.Text, req.Gender, req.Language); errTalk != nil {
+	if errTalk := h.callHandler.Talk(ctx, id, false, req.Text, req.Language, req.Provider, req.VoiceID); errTalk != nil {
 		log.Errorf("Could not talk to the call. err: %v", errTalk)
 		return simpleResponse(500), nil
 	}

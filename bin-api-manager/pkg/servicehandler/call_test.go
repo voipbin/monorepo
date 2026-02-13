@@ -545,8 +545,9 @@ func Test_CallTalk(t *testing.T) {
 		agent    *amagent.Agent
 		callID   uuid.UUID
 		text     string
-		gender   string
 		language string
+		provider string
+		voiceID  string
 
 		responseCall *cmcall.Call
 	}{
@@ -561,8 +562,9 @@ func Test_CallTalk(t *testing.T) {
 			},
 			uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
 			"hello world",
-			"female",
 			"en-US",
+			"gcp",
+			"en-US-Wavenet-F",
 
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -589,9 +591,9 @@ func Test_CallTalk(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, 10000).Return(nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, 10000).Return(nil)
 
-			if err := h.CallTalk(ctx, tt.agent, tt.callID, tt.text, tt.gender, tt.language); err != nil {
+			if err := h.CallTalk(ctx, tt.agent, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

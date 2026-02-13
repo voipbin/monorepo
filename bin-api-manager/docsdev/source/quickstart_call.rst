@@ -28,7 +28,6 @@ This example initiates a call and plays a text-to-speech message to the recipien
                     "type": "talk",
                     "option": {
                         "text": "Hello. This is a VoIPBin test call. Thank you, bye.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }

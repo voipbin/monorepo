@@ -4,81 +4,63 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-tts-manager/models/tts"
-
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_gcpGetVoiceName(t *testing.T) {
+func Test_gcpGetDefaultVoiceName(t *testing.T) {
 
 	type test struct {
 		name string
 
-		lang   string
-		gender tts.Gender
+		lang string
 
 		expectRes string
 	}
 
 	tests := []test{
 		{
-			name:      "en-US female",
+			name:      "en-US",
 			lang:      "en-US",
-			gender:    tts.GenderFemale,
 			expectRes: "en-US-Wavenet-F",
 		},
 		{
-			name:      "en-US male",
-			lang:      "en-US",
-			gender:    tts.GenderMale,
-			expectRes: "en-US-Wavenet-D",
-		},
-		{
-			name:      "en-GB neutral",
+			name:      "en-GB",
 			lang:      "en-GB",
-			gender:    tts.GenderNeutral,
-			expectRes: "en-GB-Wavenet-D",
+			expectRes: "en-GB-Wavenet-A",
 		},
 		{
-			name:      "de-DE female",
+			name:      "de-DE",
 			lang:      "de-DE",
-			gender:    tts.GenderFemale,
 			expectRes: "de-DE-Wavenet-F",
 		},
 		{
-			name:      "fr-FR male",
+			name:      "fr-FR",
 			lang:      "fr-FR",
-			gender:    tts.GenderMale,
-			expectRes: "fr-FR-Wavenet-B",
+			expectRes: "fr-FR-Wavenet-E",
 		},
 		{
-			name:      "es-ES neutral",
+			name:      "es-ES",
 			lang:      "es-ES",
-			gender:    tts.GenderNeutral,
-			expectRes: "es-ES-Wavenet-A",
+			expectRes: "es-ES-Wavenet-E",
 		},
 		{
-			name:      "it-IT female",
+			name:      "it-IT",
 			lang:      "it-IT",
-			gender:    tts.GenderFemale,
 			expectRes: "it-IT-Wavenet-E",
 		},
 		{
-			name:      "ja-JP male",
+			name:      "ja-JP",
 			lang:      "ja-JP",
-			gender:    tts.GenderMale,
-			expectRes: "ja-JP-Wavenet-B",
+			expectRes: "ja-JP-Wavenet-C",
 		},
 		{
-			name:      "ko-KR neutral",
+			name:      "ko-KR",
 			lang:      "ko-KR",
-			gender:    tts.GenderNeutral,
-			expectRes: "ko-KR-Wavenet-A",
+			expectRes: "ko-KR-Wavenet-C",
 		},
 		{
 			name:      "unknown language",
 			lang:      "unknown",
-			gender:    tts.GenderNeutral,
 			expectRes: "",
 		},
 	}
@@ -90,7 +72,7 @@ func Test_gcpGetVoiceName(t *testing.T) {
 
 			h := &audioHandler{}
 
-			res := h.gcpGetVoiceName(tt.lang, tt.gender)
+			res := h.gcpGetDefaultVoiceName(tt.lang)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
 			}

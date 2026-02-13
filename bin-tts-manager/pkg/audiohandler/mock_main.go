@@ -43,15 +43,15 @@ func (m *MockAudioHandler) EXPECT() *MockAudioHandlerMockRecorder {
 }
 
 // AudioCreate mocks base method.
-func (m *MockAudioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang string, gender tts.Gender, filename string) error {
+func (m *MockAudioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang string, provider tts.Provider, voiceID, filename string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AudioCreate", ctx, callID, text, lang, gender, filename)
+	ret := m.ctrl.Call(m, "AudioCreate", ctx, callID, text, lang, provider, voiceID, filename)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AudioCreate indicates an expected call of AudioCreate.
-func (mr *MockAudioHandlerMockRecorder) AudioCreate(ctx, callID, text, lang, gender, filename any) *gomock.Call {
+func (mr *MockAudioHandlerMockRecorder) AudioCreate(ctx, callID, text, lang, provider, voiceID, filename any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AudioCreate", reflect.TypeOf((*MockAudioHandler)(nil).AudioCreate), ctx, callID, text, lang, gender, filename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AudioCreate", reflect.TypeOf((*MockAudioHandler)(nil).AudioCreate), ctx, callID, text, lang, provider, voiceID, filename)
 }

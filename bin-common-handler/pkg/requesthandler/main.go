@@ -459,7 +459,7 @@ type RequestHandler interface {
 	) (*cmcall.Call, error)
 	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
-	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error
+	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, language string, provider string, voiceID string, rqeuestTimeout int) error
 	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHoldOn(ctx context.Context, callID uuid.UUID) error
@@ -1209,7 +1209,7 @@ type RequestHandler interface {
 	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
 
 	// tts-manager speeches
-	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
+	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, language string, provider tmtts.Provider, voiceID string, timeout int) (*tmtts.TTS, error)
 
 	// tts-manager streamings
 	TTSV1StreamingCreate(

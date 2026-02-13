@@ -1169,16 +1169,18 @@ func Test_marshal_OptionTalk(t *testing.T) {
 
 			option: []byte(`{
 				"text": "Hello, this is a test message.",
-				"gender": "female",
 				"language": "en-US",
+				"provider": "gcp",
+				"voice_id": "en-US-Wavenet-F",
 				"digits_handle": "next",
 				"async": true
 			}`),
 
 			expectedRes: OptionTalk{
 				Text:         "Hello, this is a test message.",
-				Gender:       "female",
 				Language:     "en-US",
+				Provider:     "gcp",
+				VoiceID:      "en-US-Wavenet-F",
 				DigitsHandle: OptionTalkDigitsHandleNext,
 				Async:        true,
 			},

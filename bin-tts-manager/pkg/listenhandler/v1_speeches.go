@@ -26,7 +26,7 @@ func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *sock.Request) (*s
 	log.WithField("request", req).Debugf("Processing v1SpeechesPost.")
 
 	// create tts
-	tmp, err := h.ttsHandler.Create(ctx, req.CallID, req.Text, req.Language, req.Gender)
+	tmp, err := h.ttsHandler.Create(ctx, req.CallID, req.Text, req.Language, req.Provider, req.VoiceID)
 	if err != nil {
 		log.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err

@@ -163,7 +163,7 @@ type ServiceHandler interface {
 	CallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallHangup(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
-	CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, gender string, language string) error
+	CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, language string, provider string, voiceID string) error
 	CallHoldOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error
 	CallHoldOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error
 	CallMediaStreamStart(ctx context.Context, a *amagent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error

@@ -256,8 +256,9 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 		responseTTS *tmtts.TTS
 
 		expectSSML       string
-		expectGender     string
 		expectLanguage   string
+		expectProvider   string
+		expectVoiceID    string
 		expectPlaybackID string
 		expectURI        []string
 		expectAsync      bool
@@ -275,24 +276,58 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 					ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 					},
 				},
 			},
 
 			responseTTS: &tmtts.TTS{
-				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
 				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
 			expectSSML:       `hello world`,
-			expectGender:     "male",
 			expectLanguage:   "en-US",
+			expectProvider:   "",
+			expectVoiceID:    "",
 			expectPlaybackID: playback.IDPrefixCall + "5c9cd6be-2195-11eb-a9c9-bfc91ac88411",
 			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
+		},
+		{
+			name: "with provider and voice_id",
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+				},
+				ChannelID: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+				Action: fmaction.Action{
+					Type: fmaction.TypeTalk,
+					ID:   uuid.FromStringOrNil("c3d4e5f6-a789-0123-cdef-123456789012"),
+					Option: map[string]any{
+						"text":     "hello world",
+						"language": "en-US",
+						"provider": "gcp",
+						"voice_id": "en-US-Wavenet-D",
+					},
+				},
+			},
+
+			responseTTS: &tmtts.TTS{
+				Provider:      tmtts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-D",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav",
+			},
+
+			expectSSML:       `hello world`,
+			expectLanguage:   "en-US",
+			expectProvider:   "gcp",
+			expectVoiceID:    "en-US-Wavenet-D",
+			expectPlaybackID: playback.IDPrefixCall + "c3d4e5f6-a789-0123-cdef-123456789012",
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav"},
 		},
 		{
 			name: "async talk",
@@ -307,7 +342,6 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 					ID:   uuid.FromStringOrNil("cddc2ea6-cb3b-11f0-ac41-d340351b406c"),
 					Option: map[string]any{
 						"text":     "hello world",
-						"gender":   "male",
 						"language": "en-US",
 						"async":    true,
 					},
@@ -315,15 +349,15 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			},
 
 			responseTTS: &tmtts.TTS{
-				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
 				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
 			expectSSML:       `hello world`,
-			expectGender:     "male",
 			expectLanguage:   "en-US",
+			expectProvider:   "",
+			expectVoiceID:    "",
 			expectPlaybackID: playback.IDPrefixCall + "cddc2ea6-cb3b-11f0-ac41-d340351b406c",
 			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 			expectAsync:      true,
@@ -353,7 +387,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			if tt.call.Status != call.StatusProgressing {
 				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			}
-			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
+			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tt.expectLanguage, tmtts.Provider(tt.expectProvider), tt.expectVoiceID, 10000).Return(tt.responseTTS, nil)
 			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if tt.expectAsync {

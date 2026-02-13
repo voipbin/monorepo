@@ -43,16 +43,16 @@ func (m *MockTTSHandler) EXPECT() *MockTTSHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTTSHandler) Create(ctx context.Context, callID uuid.UUID, text, lang string, gender tts.Gender) (*tts.TTS, error) {
+func (m *MockTTSHandler) Create(ctx context.Context, callID uuid.UUID, text, lang string, provider tts.Provider, voiceID string) (*tts.TTS, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, callID, text, lang, gender)
+	ret := m.ctrl.Call(m, "Create", ctx, callID, text, lang, provider, voiceID)
 	ret0, _ := ret[0].(*tts.TTS)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockTTSHandlerMockRecorder) Create(ctx, callID, text, lang, gender any) *gomock.Call {
+func (mr *MockTTSHandlerMockRecorder) Create(ctx, callID, text, lang, provider, voiceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTTSHandler)(nil).Create), ctx, callID, text, lang, gender)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTTSHandler)(nil).Create), ctx, callID, text, lang, provider, voiceID)
 }

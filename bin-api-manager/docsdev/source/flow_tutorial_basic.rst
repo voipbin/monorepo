@@ -121,7 +121,6 @@ When the call is incoming, this flow will answer the call first, then speak the 
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin'\''s service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }
@@ -142,7 +141,6 @@ When the call is incoming, this flow will answer the call first, then speak the 
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }
@@ -173,7 +171,6 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin'\''s service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -210,7 +207,6 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },

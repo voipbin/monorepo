@@ -97,7 +97,7 @@ type CallHandler interface {
 		onEndFlowID uuid.UUID,
 	) (*call.Call, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
-	Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, gender string, language string) error
+	Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, language string, provider string, voiceID string) error
 	MediaStop(ctx context.Context, callID uuid.UUID) error
 	HoldOn(ctx context.Context, id uuid.UUID) error
 	HoldOff(ctx context.Context, id uuid.UUID) error

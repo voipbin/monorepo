@@ -21,43 +21,131 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 
 		callID   uuid.UUID
 		text     string
-		gender   tmtts.Gender
 		language string
+		provider tmtts.Provider
+		voiceID  string
 		timeout  int
 
 		response *sock.Response
 
 		expectRequest *sock.Request
-		expectURL     string
 		expectRes     *tmtts.TTS
 	}{
 		{
-			name: "normal",
+			name: "auto provider no voice_id",
 
 			callID:   uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
 			text:     "hello world",
-			gender:   tmtts.GenderMale,
 			language: "en-US",
+			provider: "",
+			voiceID:  "",
 			timeout:  3000,
 
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"gender":"male","text":"hello world","language":"en-US","media_filepath":"tts/tmp_filename.wav"}`),
+				Data:       []byte(`{"text":"hello world","language":"en-US","media_filepath":"tts/tmp_filename.wav"}`),
 			},
 			expectRequest: &sock.Request{
 				URI:      "/v1/speeches",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","gender":"male","language":"en-US"}`),
+				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","language":"en-US"}`),
 			},
-			expectURL: "tts/tmp_filename.wav",
 
 			expectRes: &tmtts.TTS{
-				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
 				MediaFilepath: "tts/tmp_filename.wav",
+			},
+		},
+		{
+			name: "gcp provider with voice_id",
+
+			callID:   uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
+			text:     "hello world",
+			language: "en-US",
+			provider: tmtts.ProviderGCP,
+			voiceID:  "en-US-Wavenet-A",
+			timeout:  3000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"provider":"gcp","voice_id":"en-US-Wavenet-A","text":"hello world","language":"en-US","media_filepath":"tts/gcp_filename.wav"}`),
+			},
+			expectRequest: &sock.Request{
+				URI:      "/v1/speeches",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","language":"en-US","provider":"gcp","voice_id":"en-US-Wavenet-A"}`),
+			},
+
+			expectRes: &tmtts.TTS{
+				Provider:      tmtts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-A",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "tts/gcp_filename.wav",
+			},
+		},
+		{
+			name: "aws provider no voice_id",
+
+			callID:   uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
+			text:     "hallo welt",
+			language: "de-DE",
+			provider: tmtts.ProviderAWS,
+			voiceID:  "",
+			timeout:  3000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"provider":"aws","text":"hallo welt","language":"de-DE","media_filepath":"tts/aws_filename.wav"}`),
+			},
+			expectRequest: &sock.Request{
+				URI:      "/v1/speeches",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hallo welt","language":"de-DE","provider":"aws"}`),
+			},
+
+			expectRes: &tmtts.TTS{
+				Provider:      tmtts.ProviderAWS,
+				Text:          "hallo welt",
+				Language:      "de-DE",
+				MediaFilepath: "tts/aws_filename.wav",
+			},
+		},
+		{
+			name: "aws provider with voice_id",
+
+			callID:   uuid.FromStringOrNil("cf0413d8-921a-11ec-96ed-7f0948b70d4e"),
+			text:     "hello world",
+			language: "en-US",
+			provider: tmtts.ProviderAWS,
+			voiceID:  "Joanna",
+			timeout:  3000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"provider":"aws","voice_id":"Joanna","text":"hello world","language":"en-US","media_filepath":"tts/aws_voice_filename.wav"}`),
+			},
+			expectRequest: &sock.Request{
+				URI:      "/v1/speeches",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","language":"en-US","provider":"aws","voice_id":"Joanna"}`),
+			},
+
+			expectRes: &tmtts.TTS{
+				Provider:      tmtts.ProviderAWS,
+				VoiceID:       "Joanna",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "tts/aws_voice_filename.wav",
 			},
 		},
 	}
@@ -74,7 +162,7 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TTSV1SpeecheCreate(context.Background(), tt.callID, tt.text, tt.gender, tt.language, tt.timeout)
+			res, err := reqHandler.TTSV1SpeecheCreate(context.Background(), tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

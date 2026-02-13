@@ -77,7 +77,6 @@ Example
                 "type": "talk",
                 "option": {
                     "text": "Hello. Welcome to the test conference.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }
@@ -89,7 +88,6 @@ Example
                 "type": "talk",
                 "option": {
                     "text": "The conference has closed. Thank you. Good bye.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }

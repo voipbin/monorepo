@@ -505,7 +505,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		}
 	}
 
-	if errTalk := h.Talk(ctx, c.ID, true, option.Text, option.Gender, option.Language); errTalk != nil {
+	if errTalk := h.Talk(ctx, c.ID, true, option.Text, option.Language, option.Provider, option.VoiceID); errTalk != nil {
 		log.Errorf("Could not talk correctly. err: %v", errTalk)
 		return errors.Wrap(errTalk, "could not talk correctly")
 	}

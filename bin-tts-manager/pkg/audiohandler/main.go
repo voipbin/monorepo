@@ -17,7 +17,7 @@ import (
 
 // AudioHandler intreface for audio handler
 type AudioHandler interface {
-	AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filename string) error
+	AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, provider tts.Provider, voiceID string, filename string) error
 }
 
 type audioHandler struct {

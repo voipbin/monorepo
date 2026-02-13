@@ -18,7 +18,7 @@ import (
 
 // TTSHandler intreface for tts handler
 type TTSHandler interface {
-	Create(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender) (*tts.TTS, error)
+	Create(ctx context.Context, callID uuid.UUID, text string, lang string, provider tts.Provider, voiceID string) (*tts.TTS, error)
 }
 
 type ttsHandler struct {
@@ -65,14 +65,14 @@ var (
 		[]string{},
 	)
 
-	// speech_language_total counts batch TTS requests by language and gender.
+	// speech_language_total counts batch TTS requests by language and provider.
 	promSpeechLanguageTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "speech_language_total",
-			Help:      "Total number of batch TTS requests by language and gender.",
+			Help:      "Total number of batch TTS requests by language and provider.",
 		},
-		[]string{"language", "gender"},
+		[]string{"language", "provider"},
 	)
 )
 
