@@ -74,6 +74,16 @@ var (
 		},
 		[]string{"language", "provider"},
 	)
+
+	// speech_fallback_total counts how often fallback to an alternative provider occurs.
+	promSpeechFallbackTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "speech_fallback_total",
+			Help:      "Total number of batch TTS fallbacks by original provider.",
+		},
+		[]string{"from_provider"},
+	)
 )
 
 func init() {
@@ -82,6 +92,7 @@ func init() {
 		promSpeechRequestTotal,
 		promSpeechCreateDurationSeconds,
 		promSpeechLanguageTotal,
+		promSpeechFallbackTotal,
 	)
 }
 

@@ -373,11 +373,26 @@ TTS converts text to spoken audio:
 
     TTS Providers:
 
-    Google Cloud TTS:
+    Google Cloud TTS (default):
     +------------------------------------------+
     | Voices: 200+ in 40+ languages            |
     | Quality: Neural and Standard             |
     | SSML: Supported                          |
+    +------------------------------------------+
+
+    AWS Polly:
+    +------------------------------------------+
+    | Voices: 60+ in 30+ languages             |
+    | Quality: Neural and Standard             |
+    | SSML: Supported                          |
+    +------------------------------------------+
+
+    Provider Fallback:
+    +------------------------------------------+
+    | If the selected provider fails, the      |
+    | system falls back to the alternative     |
+    | provider with the default voice for the  |
+    | language.                                |
     +------------------------------------------+
 
     TTS Action Example:
