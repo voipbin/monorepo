@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -14,8 +15,38 @@ import (
 	"monorepo/bin-tts-manager/models/tts"
 )
 
-// Create creates audio and upload it to the bucket.
-// Returns downloadable link string
+// providerAttempt defines a single provider attempt with its voice configuration.
+type providerAttempt struct {
+	provider tts.Provider
+	voiceID  string
+}
+
+// buildAttempts returns the ordered list of provider attempts for fallback.
+// On fallback, voice_id is reset to empty so the alternative provider uses its own default.
+func buildAttempts(provider tts.Provider, voiceID string) []providerAttempt {
+	switch provider {
+	case tts.ProviderGCP:
+		return []providerAttempt{
+			{provider: tts.ProviderGCP, voiceID: voiceID},
+			{provider: tts.ProviderAWS, voiceID: ""},
+		}
+	case tts.ProviderAWS:
+		return []providerAttempt{
+			{provider: tts.ProviderAWS, voiceID: voiceID},
+			{provider: tts.ProviderGCP, voiceID: ""},
+		}
+	default:
+		// empty or unknown provider: default to GCP first, fallback to AWS
+		return []providerAttempt{
+			{provider: tts.ProviderGCP, voiceID: voiceID},
+			{provider: tts.ProviderAWS, voiceID: ""},
+		}
+	}
+}
+
+// Create creates audio and uploads it to the bucket.
+// It tries the primary provider first; on failure, falls back to an alternative provider
+// with an empty voice_id (provider default). Each attempt has its own cache key.
 func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, lang string, provider tts.Provider, voiceID string) (*tts.TTS, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Create",
@@ -27,10 +58,7 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	})
 	log.Debugf("Creating TTS. lang: %s, provider: %s, voice_id: %s, text: %s", lang, provider, voiceID, text)
 
-	// track language usage
-	promSpeechLanguageTotal.WithLabelValues(lang, string(provider)).Inc()
-
-	// normalize text
+	// normalize text once before the attempt loop
 	normalizedText, err := h.normalizeText(ctx, text)
 	if err != nil {
 		log.Errorf("Could not normalize the text.")
@@ -39,44 +67,61 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	}
 	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized.")
 
-	// create hash/target/result
-	filename := h.filenameHashGenerator(normalizedText, lang, provider, voiceID)
-	osFilepath := h.bucketHandler.OSGetFilepath(ctx, filename)
-	mediaFilepath := h.bucketHandler.OSGetMediaFilepath(ctx, filename)
-	res := &tts.TTS{
-		Provider:      provider,
-		VoiceID:       voiceID,
-		Text:          normalizedText,
-		Language:      lang,
-		MediaFilepath: mediaFilepath,
-	}
+	attempts := buildAttempts(provider, voiceID)
+	var errs []string
 
-	log = log.WithFields(logrus.Fields{
-		"filename": filename,
-		"filepath": osFilepath,
-		"tts":      res,
-	})
-	log.Debugf("Creating a new tts target. target: %s", osFilepath)
+	for i, attempt := range attempts {
+		attemptLog := log.WithFields(logrus.Fields{
+			"attempt_provider": attempt.provider,
+			"attempt_voice_id": attempt.voiceID,
+			"attempt_index":    i,
+		})
 
-	// check exists
-	if h.bucketHandler.OSFileExist(ctx, osFilepath) {
-		log.Infof("The target file is already exsits. target: %s", osFilepath)
-		promSpeechRequestTotal.WithLabelValues("cache_hit").Inc()
+		// compute per-attempt cache key
+		filename := h.filenameHashGenerator(normalizedText, lang, attempt.provider, attempt.voiceID)
+		osFilepath := h.bucketHandler.OSGetFilepath(ctx, filename)
+		mediaFilepath := h.bucketHandler.OSGetMediaFilepath(ctx, filename)
+
+		res := &tts.TTS{
+			Provider:      attempt.provider,
+			VoiceID:       attempt.voiceID,
+			Text:          normalizedText,
+			Language:      lang,
+			MediaFilepath: mediaFilepath,
+		}
+
+		// cache hit — return immediately
+		if h.bucketHandler.OSFileExist(ctx, osFilepath) {
+			attemptLog.Infof("Cache hit for provider %s. target: %s", attempt.provider, osFilepath)
+			promSpeechRequestTotal.WithLabelValues("cache_hit").Inc()
+			promSpeechLanguageTotal.WithLabelValues(lang, string(attempt.provider)).Inc()
+			return res, nil
+		}
+
+		// create audio
+		start := time.Now()
+		if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, attempt.provider, attempt.voiceID, osFilepath); errCreate != nil {
+			attemptLog.Warnf("Provider %s failed. err: %v", attempt.provider, errCreate)
+			errs = append(errs, fmt.Sprintf("%s: %v", attempt.provider, errCreate))
+
+			// track fallback if this is not the last attempt
+			if i < len(attempts)-1 {
+				promSpeechFallbackTotal.WithLabelValues(string(attempt.provider)).Inc()
+			}
+			continue
+		}
+
+		promSpeechCreateDurationSeconds.WithLabelValues().Observe(time.Since(start).Seconds())
+		promSpeechRequestTotal.WithLabelValues("created").Inc()
+		promSpeechLanguageTotal.WithLabelValues(lang, string(attempt.provider)).Inc()
+		attemptLog.Debugf("Created tts wav file to the bucket correctly. target: %s", osFilepath)
+
 		return res, nil
 	}
 
-	// create audio
-	start := time.Now()
-	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, provider, voiceID, osFilepath); errCreate != nil {
-		log.Errorf("Could not create audio. err: %v", errCreate)
-		promSpeechRequestTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not create audio. err: %v", errCreate)
-	}
-	promSpeechCreateDurationSeconds.WithLabelValues().Observe(time.Since(start).Seconds())
-	promSpeechRequestTotal.WithLabelValues("created").Inc()
-	log.Debugf("Created tts wav file to the bucket correctly. target: %s", osFilepath)
-
-	return res, nil
+	// all attempts failed
+	promSpeechRequestTotal.WithLabelValues("error").Inc()
+	return nil, fmt.Errorf("all providers failed: %s", strings.Join(errs, "; "))
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
