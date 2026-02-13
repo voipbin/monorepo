@@ -218,12 +218,13 @@ VoIPBIN supports various number types for different use cases.
 | mobile     | Mobile phone numbers (where available)                           |
 +------------+------------------------------------------------------------------+
 | virtual    | Virtual numbers with +999 prefix. No provider purchase required. |
-|            | Ideal for testing, development, and internal routing.            |
+|            | Designed for non-PSTN callers such as AI calls, WebRTC calls,   |
+|            | and internal routing.                                            |
 +------------+------------------------------------------------------------------+
 
 **Normal vs Virtual Number Routing**
 
-Normal numbers are routed through an external provider (Telnyx/Twilio) from the PSTN, while virtual numbers are routed internally from your SIP client without any provider involvement.
+Normal numbers are routed through an external provider (Telnyx/Twilio) from the PSTN, while virtual numbers are routed internally from non-PSTN callers (AI calls, WebRTC, SIP clients) without any provider involvement.
 
 ::
 
@@ -253,9 +254,10 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
       Virtual Number (e.g. +999123456789)
       ====================================
 
-      Your SIP Client                                               Your Application
+      Non-PSTN Caller                                                Your Application
+      (AI, WebRTC, SIP)                                                     |
            |                                                                |
-           | Outbound call from SIP Client                                  |
+           | Call from non-PSTN caller                                      |
            | to +999123456789                                               |
            +--------------- No Provider needed                              |
                                 |                                           |
@@ -281,47 +283,18 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
 +-------------------+-------------------------------+-------------------------------+
 | Provider          | Telnyx or Twilio              | None (internal only)          |
 +-------------------+-------------------------------+-------------------------------+
-| Inbound routing   | PSTN -> Provider -> VoIPBIN   | SIP Client -> VoIPBIN         |
+| Inbound routing   | PSTN -> Provider -> VoIPBIN   | Non-PSTN caller -> VoIPBIN    |
 +-------------------+-------------------------------+-------------------------------+
 | Flow execution    | Same (call_flow/message_flow) | Same (call_flow/message_flow) |
 +-------------------+-------------------------------+-------------------------------+
-| Best for          | Production, external callers  | Testing, dev, internal routing|
+| Best for          | Production, external callers  | AI, WebRTC, internal routing  |
 +-------------------+-------------------------------+-------------------------------+
 
 For billing and cost details, see :ref:`Billing Account <billing_account_overview>`.
 
 **Virtual Number Tier Limits**
 
-Virtual numbers are free to create but subject to tier-based limits. The maximum number of virtual numbers you can provision depends on your billing account's plan tier.
-
-+----------------------+-------+-------+--------------+-----------+
-| Resource             | Free  | Basic | Professional | Unlimited |
-+======================+=======+=======+==============+===========+
-| Virtual Numbers      |     5 |    50 |          500 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-
-When the limit is reached, further virtual number creation is denied. See :ref:`Plan Tiers <billing_account_overview>` for the full list of tier-based resource limits.
-
-**Choosing Number Types**
-
-::
-
-    Use Case                          Recommended Type
-    +-----------------------------+   +------------------+
-    | Local business presence     |-->| local            |
-    +-----------------------------+   +------------------+
-
-    +-----------------------------+   +------------------+
-    | National customer service   |-->| toll-free        |
-    +-----------------------------+   +------------------+
-
-    +-----------------------------+   +------------------+
-    | SMS marketing campaigns     |-->| mobile or local  |
-    +-----------------------------+   +------------------+
-
-    +-----------------------------+   +------------------+
-    | Testing and development     |-->| virtual          |
-    +-----------------------------+   +------------------+
+Virtual numbers are free to create but subject to tier-based limits. When the limit is reached, further virtual number creation is denied. See :ref:`Plan Tiers <billing_account_overview>` for tier limits and billing details.
 
 
 Common Scenarios
