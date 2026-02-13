@@ -1,9 +1,11 @@
 package audiohandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/polly/types"
+	"github.com/gofrs/uuid"
 )
 
 func Test_awsGetDefaultVoiceID(t *testing.T) {
@@ -83,5 +85,21 @@ func Test_awsGetDefaultVoiceID(t *testing.T) {
 				t.Errorf("expected %s, got %s", test.expected, result)
 			}
 		})
+	}
+}
+
+func Test_awsAudioCreate_unknownLangNoVoiceID(t *testing.T) {
+	h := &audioHandler{}
+	ctx := context.Background()
+	callID := uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+
+	err := h.awsAudioCreate(ctx, callID, "<speak>hello</speak>", "xx-XX", "", "/tmp/test.wav")
+	if err == nil {
+		t.Error("expected error for unknown language with no voice_id, got nil")
+	}
+
+	expectedMsg := `no default voice available for language "xx-XX" and no voice_id provided`
+	if err.Error() != expectedMsg {
+		t.Errorf("wrong error message.\nexpect: %s\ngot: %s", expectedMsg, err.Error())
 	}
 }

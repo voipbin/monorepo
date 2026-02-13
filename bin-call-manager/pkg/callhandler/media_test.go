@@ -75,6 +75,43 @@ func Test_Talk(t *testing.T) {
 			expectPlaybackID: playback.IDPrefixCall + "285a1c22-a49c-11ed-b48e-6f39f4fd59ff",
 		},
 		{
+			name: "with explicit provider and voice_id",
+
+			callID:   uuid.FromStringOrNil("f3a1b2c4-d5e6-7890-abcd-ef1234567890"),
+			runNext:  true,
+			text:     `hello world`,
+			language: "en-US",
+			provider: "gcp",
+			voiceID:  "en-US-Wavenet-D",
+
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3a1b2c4-d5e6-7890-abcd-ef1234567890"),
+				},
+				ChannelID: "f4b2c3d5-e6f7-8901-bcde-f12345678901",
+				Action: fmaction.Action{
+					ID:   uuid.FromStringOrNil("f5c3d4e6-f789-0123-cdef-123456789012"),
+					Type: fmaction.TypeTalk,
+					Option: map[string]any{
+						"text":     "hello world",
+						"language": "en-US",
+						"provider": "gcp",
+						"voice_id": "en-US-Wavenet-D",
+					},
+				},
+			},
+			responseTTS: &tmtts.TTS{
+				Provider:      tmtts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-D",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav",
+			},
+
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav"},
+			expectPlaybackID: playback.IDPrefixCall + "f5c3d4e6-f789-0123-cdef-123456789012",
+		},
+		{
 			name: "run next is false",
 
 			callID:   uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),

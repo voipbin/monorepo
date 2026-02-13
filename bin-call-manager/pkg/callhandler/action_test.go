@@ -295,6 +295,41 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 		},
 		{
+			name: "with provider and voice_id",
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+				},
+				ChannelID: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+				Action: fmaction.Action{
+					Type: fmaction.TypeTalk,
+					ID:   uuid.FromStringOrNil("c3d4e5f6-a789-0123-cdef-123456789012"),
+					Option: map[string]any{
+						"text":     "hello world",
+						"language": "en-US",
+						"provider": "gcp",
+						"voice_id": "en-US-Wavenet-D",
+					},
+				},
+			},
+
+			responseTTS: &tmtts.TTS{
+				Provider:      tmtts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-D",
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav",
+			},
+
+			expectSSML:       `hello world`,
+			expectLanguage:   "en-US",
+			expectProvider:   "gcp",
+			expectVoiceID:    "en-US-Wavenet-D",
+			expectPlaybackID: playback.IDPrefixCall + "c3d4e5f6-a789-0123-cdef-123456789012",
+			expectURI:        []string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/gcp_filename.wav"},
+		},
+		{
 			name: "async talk",
 
 			call: &call.Call{

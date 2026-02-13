@@ -24,6 +24,8 @@ func Test_Create(t *testing.T) {
 		provider tts.Provider
 		voiceID  string
 
+		cacheHit bool
+
 		responseFilePath      string
 		responseMediaFilepath string
 
@@ -40,6 +42,29 @@ func Test_Create(t *testing.T) {
 			language: "en-US",
 			provider: tts.ProviderGCP,
 			voiceID:  "en-US-Wavenet-F",
+
+			responseFilePath:      "/shared-data/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
+			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
+
+			expectFilename: "d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
+			expectRes: &tts.TTS{
+				Provider:      tts.ProviderGCP,
+				VoiceID:       "en-US-Wavenet-F",
+				Text:          "<speak>Hello world</speak>",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
+			},
+		},
+		{
+			name: "cache hit skips audio creation",
+
+			callID:   uuid.FromStringOrNil("c1a8bfe6-9214-11ec-a013-1bbdbd87fc23"),
+			text:     "<speak>Hello world</speak>",
+			language: "en-US",
+			provider: tts.ProviderGCP,
+			voiceID:  "en-US-Wavenet-F",
+
+			cacheHit: true,
 
 			responseFilePath:      "/shared-data/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
 			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/d27dff3751181a10e4fc7f216a936c9c3f33c339.wav",
@@ -71,8 +96,10 @@ func Test_Create(t *testing.T) {
 
 			mockBucket.EXPECT().OSGetFilepath(ctx, tt.expectFilename).Return(tt.responseFilePath)
 			mockBucket.EXPECT().OSGetMediaFilepath(ctx, tt.expectFilename).Return(tt.responseMediaFilepath)
-			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath).Return(false)
-			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, tt.responseFilePath).Return(nil)
+			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath).Return(tt.cacheHit)
+			if !tt.cacheHit {
+				mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID, tt.responseFilePath).Return(nil)
+			}
 
 			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.provider, tt.voiceID)
 			if err != nil {
@@ -129,6 +156,58 @@ func Test_filenameHashGenerator(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_filenameHashGenerator_differentInputs(t *testing.T) {
+	h := &ttsHandler{}
+
+	baseHash := h.filenameHashGenerator("hello", "en-US", tts.ProviderGCP, "en-US-Wavenet-F")
+
+	tests := []struct {
+		name     string
+		text     string
+		language string
+		provider tts.Provider
+		voiceID  string
+	}{
+		{
+			name:     "different provider produces different hash",
+			text:     "hello",
+			language: "en-US",
+			provider: tts.ProviderAWS,
+			voiceID:  "en-US-Wavenet-F",
+		},
+		{
+			name:     "different voice_id produces different hash",
+			text:     "hello",
+			language: "en-US",
+			provider: tts.ProviderGCP,
+			voiceID:  "en-US-Wavenet-A",
+		},
+		{
+			name:     "empty provider produces different hash",
+			text:     "hello",
+			language: "en-US",
+			provider: "",
+			voiceID:  "en-US-Wavenet-F",
+		},
+		{
+			name:     "empty voice_id produces different hash",
+			text:     "hello",
+			language: "en-US",
+			provider: tts.ProviderGCP,
+			voiceID:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hash := h.filenameHashGenerator(tt.text, tt.language, tt.provider, tt.voiceID)
+			if hash == baseHash {
+				t.Errorf("expected different hash, got same: %s", hash)
 			}
 		})
 	}
