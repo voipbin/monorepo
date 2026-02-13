@@ -221,6 +221,18 @@ VoIPBIN supports various number types for different use cases.
 |            | Ideal for testing, development, and internal routing.            |
 +------------+------------------------------------------------------------------+
 
+**Virtual Number Tier Limits**
+
+Virtual numbers are free to create but subject to tier-based limits. The maximum number of virtual numbers you can provision depends on your billing account's plan tier.
+
++----------------------+-------+-------+--------------+-----------+
+| Resource             | Free  | Basic | Professional | Unlimited |
++======================+=======+=======+==============+===========+
+| Virtual Numbers      |     5 |    50 |          500 | unlimited |
++----------------------+-------+-------+--------------+-----------+
+
+When the limit is reached, further virtual number creation is denied. See :ref:`Plan Tiers <billing_account_overview>` for the full list of tier-based resource limits.
+
 **Choosing Number Types**
 
 ::

@@ -73,6 +73,8 @@ Each billing account is assigned a plan tier that determines resource creation l
 +----------------------+-------+-------+--------------+-----------+
 | Trunks               |     1 |     5 |           50 | unlimited |
 +----------------------+-------+-------+--------------+-----------+
+| Virtual Numbers      |     5 |    50 |          500 | unlimited |
++----------------------+-------+-------+--------------+-----------+
 
 - When a resource limit is reached, further creation of that resource type is denied.
 - Only platform admins can change a customer's plan tier.
