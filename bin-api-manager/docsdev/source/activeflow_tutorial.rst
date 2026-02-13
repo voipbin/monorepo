@@ -60,7 +60,6 @@ Stop the activeflow.
             "type": "talk",
             "option": {
                 "text": "Hello. Welcome to the VoIPBIN service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.",
-                "gender": "female",
                 "language": "en-US",
                 "digits_handle": "next"
             }

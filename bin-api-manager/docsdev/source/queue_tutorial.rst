@@ -25,7 +25,6 @@ Create a new queue
                 "type": "talk",
                 "option": {
                     "text": "All of the agents are busy. Thank you for your waiting.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -66,7 +65,6 @@ Gets the list of created queues.
                         "type": "talk",
                         "option": {
                             "text": "Hello. This is test queue. Please wait.",
-                            "gender": "female",
                             "language": "en-US"
                         }
                     }
