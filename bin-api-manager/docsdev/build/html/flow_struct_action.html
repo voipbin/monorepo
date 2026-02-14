@@ -9,7 +9,6 @@
         <title>Action &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -556,7 +555,6 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
                 <span class="p">}</span>
             <span class="p">}</span>
@@ -1376,8 +1374,9 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;digits_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1385,8 +1384,9 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 <ul class="simple">
 <li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
-<li><p>gender: male/female/neutral.</p></li>
 <li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
+<li><p>provider: TTS provider. Optional. <code class="docutils literal notranslate"><span class="pre">gcp</span></code> (Google Cloud TTS) or <code class="docutils literal notranslate"><span class="pre">aws</span></code> (AWS Polly). If omitted, the system uses the default provider.</p></li>
+<li><p>voice_id: Provider-specific voice identifier. Optional. For example, <code class="docutils literal notranslate"><span class="pre">en-US-Wavenet-D</span></code> (GCP) or <code class="docutils literal notranslate"><span class="pre">Joanna</span></code> (AWS).</p></li>
 <li><p>digits_handle: See detail <a class="reference internal" href="#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
@@ -1411,7 +1411,6 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1810,7 +1809,7 @@ It checks the call’s status and if it matched with condition then move to the 
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -1818,11 +1817,11 @@ It checks the call’s status and if it matched with condition then move to the 
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

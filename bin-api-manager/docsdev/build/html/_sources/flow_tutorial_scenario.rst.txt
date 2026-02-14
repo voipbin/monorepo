@@ -79,7 +79,6 @@ Making a outgoing call for forwarding. If call not answered, leave a voicemail.
                 "type": "talk",
                 "option": {
                     "text": "Thank you for your calling. We are busy now. Please leave a message after tone.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -160,7 +159,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -187,7 +185,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -199,7 +196,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he's dead. Mama, life had just begun, But now I've gone and thrown it all away.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -211,7 +207,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "Steve walks warily down the street. With his brim pulled way down low. Ain't no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -223,7 +218,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "You didn't choose the correct number. Default selected.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -238,7 +232,6 @@ It will get the digits from the call and will execute the branch.
                 "type": "talk",
                 "option": {
                     "text": "Loop over. Hangup the call. Thank you, good bye.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -356,7 +349,6 @@ Send the message to the destination and start a new outbound call with talk acti
                                 "type": "talk",
                                 "option": {
                                     "text": "hello, this is test message.",
-                                    "gender": "female",
                                     "language": "en-US"
                                 }
                             }

@@ -44,7 +44,7 @@ Example
     {
     "result": [
         {
-            "number": "+999100000001",
+            "number": "+899100000001",
             "country": "",
             "region": "",
             "postal_code": "",
@@ -57,7 +57,7 @@ Example
 Create virtual number
 ---------------------
 
-Virtual numbers use the +999 prefix and do not require a provider purchase.
+Virtual numbers use the +899 prefix and do not require a provider purchase.
 
 Example
 
@@ -66,12 +66,12 @@ Example
     $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "number": "+999100000001"
+        "number": "+899100000001"
     }'
 
     {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "number": "+999100000001",
+        "number": "+899100000001",
         "type": "virtual",
         "call_flow_id": "00000000-0000-0000-0000-000000000000",
         "message_flow_id": "00000000-0000-0000-0000-000000000000",

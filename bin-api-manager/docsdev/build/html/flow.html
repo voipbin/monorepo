@@ -9,7 +9,6 @@
         <title>Flow &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -306,7 +305,7 @@
 <p>Examples: <code class="docutils literal notranslate"><span class="pre">block</span></code></p>
 <p><strong>Nested Actions (Push a Stack)</strong></p>
 <p>Some actions start a sub-flow that runs inside the main flow:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Flow</span><span class="p">:</span>                                <span class="n">Nested</span> <span class="n">Stack</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue_join</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Flow</span><span class="p">:</span>                                <span class="n">Nested</span> <span class="n">Stack</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">queue_join</span><span class="p">):</span>
 <span class="o">+--------+</span>  <span class="o">+------------+</span>               <span class="o">+-----------------------------+</span>
 <span class="o">|</span> <span class="n">answer</span> <span class="o">|-&gt;|</span> <span class="n">queue_join</span> <span class="o">|--------------&gt;|</span> <span class="n">wait_flow</span> <span class="n">actions</span><span class="o">...</span>        <span class="o">|</span>
 <span class="o">+--------+</span>  <span class="o">+------------+</span>               <span class="o">|</span> <span class="p">(</span><span class="n">talk</span><span class="p">,</span> <span class="n">play</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>          <span class="o">|</span>
@@ -459,7 +458,7 @@ Non-Linear Execution (with goto and branch):
 <span id="flow-overview-flow-fork"></span><h3>Flow fork<a class="headerlink" href="#flow-fork" title="Link to this heading"></a></h3>
 <p>Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.</p>
 <p>When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Flow</span>                         <span class="n">Forked</span> <span class="n">Flow</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue_join</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Flow</span>                         <span class="n">Forked</span> <span class="n">Flow</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">queue_join</span><span class="p">)</span>
 <span class="o">+---------+</span>                      <span class="o">+---------------------------------+</span>
 <span class="o">|</span> <span class="n">answer</span>  <span class="o">|</span>                      <span class="o">|</span>                                 <span class="o">|</span>
 <span class="o">+----+----+</span>                      <span class="o">|</span>  <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span> <span class="o">|</span>
@@ -1316,7 +1315,6 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
                 <span class="p">}</span>
             <span class="p">}</span>
@@ -2136,8 +2134,9 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;digits_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -2145,8 +2144,9 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 <ul class="simple">
 <li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
-<li><p>gender: male/female/neutral.</p></li>
 <li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
+<li><p>provider: TTS provider. Optional. <code class="docutils literal notranslate"><span class="pre">gcp</span></code> (Google Cloud TTS) or <code class="docutils literal notranslate"><span class="pre">aws</span></code> (AWS Polly). If omitted, the system uses the default provider.</p></li>
+<li><p>voice_id: Provider-specific voice identifier. Optional. For example, <code class="docutils literal notranslate"><span class="pre">en-US-Wavenet-D</span></code> (GCP) or <code class="docutils literal notranslate"><span class="pre">Joanna</span></code> (AWS).</p></li>
 <li><p>digits_handle: See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
@@ -2171,7 +2171,6 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -2441,7 +2440,6 @@ When the call is incoming, this flow will answer the call first, then speak the 
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
-                &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
         }
@@ -2462,7 +2460,6 @@ When the call is incoming, this flow will answer the call first, then speak the 
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
-                &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
         }
@@ -2491,7 +2488,6 @@ This doesn’t affect existing calls. Flow changes will only affect new calls.</
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
-                &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
         },
@@ -2528,7 +2524,6 @@ This doesn’t affect existing calls. Flow changes will only affect new calls.</
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
-                &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
         },
@@ -2638,7 +2633,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for your calling. We are busy now. Please leave a message after tone.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2714,7 +2708,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2741,7 +2734,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2753,7 +2745,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;s dead. Mama, life had just begun, But now I&#39;ve gone and thrown it all away.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2765,7 +2756,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2777,7 +2767,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t choose the correct number. Default selected.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2792,7 +2781,6 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Loop over. Hangup the call. Thank you, good bye.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
@@ -2900,7 +2888,6 @@ This doesn’t affect existing calls.</p>
                             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
                             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
                             <span class="p">}</span>
                         <span class="p">}</span>
@@ -2999,7 +2986,7 @@ This doesn’t affect existing calls.</p>
 <span class="mf">1.</span> <span class="n">Get</span> <span class="n">Next</span> <span class="n">Action</span>
 <span class="o">+-----------------+</span>
 <span class="o">|</span> <span class="n">Load</span> <span class="n">activeflow</span> <span class="o">|</span>
-<span class="o">|</span> <span class="kn">from</span><span class="w"> </span><span class="nn">database</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="kn">from</span> <span class="nn">database</span>   <span class="o">|</span>
 <span class="o">+--------+--------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -3327,7 +3314,7 @@ Variable Set Timing:
 <span class="o">|</span>                     <span class="n">Event</span> <span class="n">Processing</span>                             <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 
-<span class="n">Media</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">Asterisk</span> <span class="n">via</span> <span class="n">asterisk</span><span class="o">-</span><span class="n">proxy</span><span class="p">):</span>
+<span class="n">Media</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">Asterisk</span> <span class="n">via</span> <span class="n">asterisk</span><span class="o">-</span><span class="n">proxy</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -3336,7 +3323,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">RecordingFinished</span>    <span class="o">|</span> <span class="n">recording_stop</span> <span class="ow">or</span> <span class="n">silence</span><span class="o">/</span><span class="n">timeout</span>        <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">Call</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">call</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">Call</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">call</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -3345,7 +3332,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">BridgeDestroyed</span>      <span class="o">|</span> <span class="n">connect</span> <span class="n">completion</span> <span class="p">(</span><span class="n">party</span> <span class="n">disconnected</span><span class="p">)</span>  <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">Queue</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">Queue</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">queue</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -3354,7 +3341,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">QueueEmpty</span>           <span class="o">|</span> <span class="n">queue_join</span> <span class="n">completion</span> <span class="p">(</span><span class="n">no</span> <span class="n">agents</span><span class="p">)</span>        <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">AI</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">ai</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">AI</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">ai</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -5453,7 +5440,7 @@ Debug Tips:
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span>                     <span class="n">Total</span> <span class="n">Execution</span> <span class="n">Limit</span><span class="p">:</span> <span class="mi">100</span>                   <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">What</span> <span class="n">counts</span><span class="p">:</span> <span class="n">Each</span> <span class="n">time</span> <span class="n">flow</span> <span class="n">resumes</span> <span class="kn">from</span><span class="w"> </span><span class="nn">async</span> <span class="n">event</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">What</span> <span class="n">counts</span><span class="p">:</span> <span class="n">Each</span> <span class="n">time</span> <span class="n">flow</span> <span class="n">resumes</span> <span class="kn">from</span> <span class="nn">async</span> <span class="n">event</span>             <span class="o">|</span>
 <span class="o">|</span> <span class="n">Reset</span><span class="p">:</span> <span class="n">Never</span> <span class="p">(</span><span class="n">lifetime</span> <span class="n">of</span> <span class="n">activeflow</span><span class="p">)</span>                            <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
 <span class="o">|</span> <span class="n">Trigger</span> <span class="n">scenario</span><span class="p">:</span>                                                <span class="o">|</span>
@@ -5877,7 +5864,7 @@ Naming Convention:
 <span class="o">|</span> <span class="n">Flow</span> <span class="n">waits</span> <span class="k">for</span> <span class="n">response</span> <span class="n">before</span> <span class="n">continuing</span>                        <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
 <span class="o">|</span> <span class="n">Use</span> <span class="n">when</span><span class="p">:</span>                                                        <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">You</span> <span class="n">need</span> <span class="n">data</span> <span class="kn">from</span><span class="w"> </span><span class="nn">the</span> <span class="n">response</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">You</span> <span class="n">need</span> <span class="n">data</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">response</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Response</span> <span class="n">sets</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">branching</span>                          <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Order</span> <span class="n">of</span> <span class="n">operations</span> <span class="n">matters</span>                                    <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
@@ -6475,7 +6462,7 @@ The executed_actions history is preserved for review.</p></td>
 <span class="o">|</span>                       <span class="n">Stack</span><span class="o">-</span><span class="n">Based</span> <span class="n">Execution</span>                            <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">Main</span> <span class="n">Stack</span>                          <span class="n">Nested</span> <span class="n">Stack</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue_join</span><span class="p">)</span>
+<span class="n">Main</span> <span class="n">Stack</span>                          <span class="n">Nested</span> <span class="n">Stack</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">queue_join</span><span class="p">)</span>
 <span class="o">+---------------------+</span>            <span class="o">+---------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">answer</span>           <span class="o">|</span>            <span class="o">|</span>                                 <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">queue_join</span> <span class="o">======+============&gt;</span> <span class="n">wait_flow</span> <span class="n">actions</span><span class="p">:</span>              <span class="o">|</span>
@@ -7014,7 +7001,6 @@ The executed_actions history is preserved for review.</p></td>
         &quot;type&quot;: &quot;talk&quot;,
         &quot;option&quot;: {
             &quot;text&quot;: &quot;Hello. Welcome to the VoIPBIN service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.&quot;,
-            &quot;gender&quot;: &quot;female&quot;,
             &quot;language&quot;: &quot;en-US&quot;,
             &quot;digits_handle&quot;: &quot;next&quot;
         }
@@ -7453,7 +7439,7 @@ The executed_actions history is preserved for review.</p></td>
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -7461,11 +7447,11 @@ The executed_actions history is preserved for review.</p></td>
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

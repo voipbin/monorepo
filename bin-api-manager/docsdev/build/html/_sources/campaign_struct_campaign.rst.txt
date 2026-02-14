@@ -63,7 +63,6 @@ Example
                 "type": "talk",
                 "option": {
                     "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }
