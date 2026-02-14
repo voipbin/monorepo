@@ -2,6 +2,7 @@ package participanthandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"reflect"
 	"testing"
@@ -660,5 +661,210 @@ func Test_ParticipantRemove_error(t *testing.T) {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
 		})
+	}
+}
+
+func Test_ParticipantListWithFilters(t *testing.T) {
+	tests := []struct {
+		name string
+
+		filters map[participant.Field]any
+		token   string
+		size    uint64
+
+		responseParticipants []*participant.Participant
+	}{
+		{
+			name: "normal_filter_by_customer_and_chat",
+
+			filters: map[participant.Field]any{
+				participant.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				participant.FieldChatID:     uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			},
+			token: "",
+			size:  100,
+
+			responseParticipants: []*participant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					},
+					ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+					TMJoined: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				},
+			},
+		},
+		{
+			name: "normal_empty_result_with_filters",
+
+			filters: map[participant.Field]any{
+				participant.FieldCustomerID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+			},
+			token: "",
+			size:  100,
+
+			responseParticipants: []*participant.Participant{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
+
+			h := &participantHandler{
+				dbHandler:     mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+
+			// Mock database list call
+			mockDB.EXPECT().ParticipantList(ctx, tt.filters).Return(tt.responseParticipants, nil)
+
+			res, err := h.ParticipantListWithFilters(ctx, tt.filters, tt.token, tt.size)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseParticipants) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseParticipants, res)
+			}
+		})
+	}
+}
+
+func Test_ParticipantListWithFilters_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := commonutil.NewMockUtilHandler(mc)
+
+	h := &participantHandler{
+		dbHandler:     mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+
+	ctx := context.Background()
+	filters := map[participant.Field]any{
+		participant.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+	}
+
+	// Mock database error
+	mockDB.EXPECT().ParticipantList(ctx, filters).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.ParticipantListWithFilters(ctx, filters, "", 100)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok")
+	}
+
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil result, got: %v", res)
+	}
+}
+
+func Test_ParticipantRemove_idempotent(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		participantID uuid.UUID
+
+		getError error
+	}{
+		{
+			name: "idempotent_already_removed_get_not_found",
+
+			customerID:    uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+			participantID: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
+
+			getError: sql.ErrNoRows,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
+
+			h := &participantHandler{
+				dbHandler:     mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+
+			// Mock get returning ErrNoRows (already deleted)
+			mockDB.EXPECT().ParticipantGet(ctx, tt.participantID).Return(nil, tt.getError)
+
+			// Should succeed idempotently (no error)
+			err := h.ParticipantRemove(ctx, tt.customerID, tt.participantID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok (idempotent), got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ParticipantRemove_idempotent_delete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := commonutil.NewMockUtilHandler(mc)
+
+	h := &participantHandler{
+		dbHandler:     mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb")
+	participantID := uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba")
+
+	testParticipant := &participant.Participant{
+		Identity: commonidentity.Identity{
+			ID:         participantID,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: "agent",
+			OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+		},
+		ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+		TMJoined: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+	}
+
+	// Mock get succeeding
+	mockDB.EXPECT().ParticipantGet(ctx, participantID).Return(testParticipant, nil)
+
+	// Mock delete returning ErrNoRows (already deleted by another process)
+	mockDB.EXPECT().ParticipantDelete(ctx, participantID).Return(sql.ErrNoRows)
+
+	// Should succeed idempotently
+	err := h.ParticipantRemove(ctx, customerID, participantID)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok (idempotent), got: %v", err)
 	}
 }

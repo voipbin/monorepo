@@ -409,3 +409,40 @@ func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
 		})
 	}
 }
+
+func Test_Message_ConvertWebhookMessage_WithParentID(t *testing.T) {
+	parentID := uuid.FromStringOrNil("12345678-1234-1234-1234-123456789012")
+	message := &Message{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("c3d4e5f6-a7b8-9012-cdef-345678901234"),
+			CustomerID: uuid.FromStringOrNil("d4e5f6a7-b8c9-0123-def0-456789012345"),
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: "agent",
+			OwnerID:   uuid.FromStringOrNil("e5f6a7b8-c9d0-1234-ef01-567890123456"),
+		},
+		ChatID:   uuid.FromStringOrNil("f6a7b8c9-d0e1-2345-f012-678901234567"),
+		ParentID: &parentID,
+		Type:     TypeSystem,
+		Text:     "System message",
+		Medias:   []Media{},
+		Metadata: Metadata{Reactions: []Reaction{}},
+		TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+		TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+		TMDelete: timePtr(time.Date(2024, 1, 16, 10, 30, 0, 0, time.UTC)),
+	}
+
+	result, err := message.ConvertWebhookMessage()
+	if err != nil {
+		t.Errorf("Failed to convert message: %v", err)
+		return
+	}
+
+	if result.ParentID == nil || *result.ParentID != parentID {
+		t.Errorf("ParentID mismatch. expect: %v, got: %v", parentID, result.ParentID)
+	}
+
+	if result.TMDelete == nil || !result.TMDelete.Equal(*message.TMDelete) {
+		t.Errorf("TMDelete mismatch. expect: %v, got: %v", message.TMDelete, result.TMDelete)
+	}
+}

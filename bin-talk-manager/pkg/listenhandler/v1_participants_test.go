@@ -13,6 +13,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/pkg/chathandler"
@@ -398,3 +399,93 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func Test_v1ParticipantsGet(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseParticipants []*participant.Participant
+		expectRes            *sock.Response
+	}{
+		{
+			name: "normal_with_filters",
+			request: &sock.Request{
+				URI:      "/v1/participants?page_size=50",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
+			},
+
+			responseParticipants: []*participant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("bbef9d30-75fe-11ed-c3ea-f8e017af9700"),
+						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
+					},
+					ChatID:   uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+					TMJoined: timePtrPart(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				},
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"bbef9d30-75fe-11ed-c3ea-f8e017af9700","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23T17:55:39.712Z"}]`),
+			},
+		},
+		{
+			name: "empty_result",
+			request: &sock.Request{
+				URI:      "/v1/participants",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+
+			responseParticipants: []*participant.Participant{},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:        mockSock,
+				participantHandler: mockParticipant,
+				utilHandler:        mockUtil,
+			}
+
+			ctx := context.Background()
+
+			// Mock ParseFiltersFromRequestBody
+			mockUtil.EXPECT().ParseFiltersFromRequestBody(tt.request.Data).Return(map[string]any{}, nil)
+
+			// Mock ParticipantListWithFilters
+			mockParticipant.EXPECT().ParticipantListWithFilters(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseParticipants, nil)
+
+			res, err := h.v1ParticipantsGet(ctx, *tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
