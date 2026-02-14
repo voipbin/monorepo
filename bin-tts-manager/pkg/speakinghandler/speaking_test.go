@@ -537,6 +537,14 @@ func Test_Say(t *testing.T) {
 
 			expectErr: true,
 		},
+		{
+			name: "text too long",
+
+			id:   uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			text: string(make([]byte, maxTextLength+1)),
+
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -552,6 +560,15 @@ func Test_Say(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 			ctx := context.Background()
+
+			// Text length check happens before DB call
+			if len(tt.text) > maxTextLength {
+				_, err := h.Say(ctx, tt.id, tt.text)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: ok")
+				}
+				return
+			}
 
 			mockDB.EXPECT().SpeakingGet(ctx, tt.id).Return(tt.responseSpeaking, tt.responseGetErr)
 

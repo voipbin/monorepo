@@ -53,9 +53,9 @@ post:
               description: Provider-specific voice ID. If empty, uses default for language.
             direction:
               type: string
-              description: Audio injection direction (in, out, both). Defaults to out.
+              description: Audio injection direction (in, out, both). Defaults to none.
   responses:
-    '200':
+    '201':
       description: The created speaking session.
       content:
         application/json:

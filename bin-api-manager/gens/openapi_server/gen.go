@@ -5094,7 +5094,7 @@ type GetSpeakingsParams struct {
 
 // PostSpeakingsJSONBody defines parameters for PostSpeakings.
 type PostSpeakingsJSONBody struct {
-	// Direction Audio injection direction (in, out, both). Defaults to out.
+	// Direction Audio injection direction (in, out, both). Defaults to none.
 	Direction *string `json:"direction,omitempty"`
 
 	// Language TTS language (e.g. en-US)
@@ -19274,11 +19274,11 @@ type PostSpeakingsResponseObject interface {
 	VisitPostSpeakingsResponse(w http.ResponseWriter) error
 }
 
-type PostSpeakings200JSONResponse TtsManagerSpeaking
+type PostSpeakings201JSONResponse TtsManagerSpeaking
 
-func (response PostSpeakings200JSONResponse) VisitPostSpeakingsResponse(w http.ResponseWriter) error {
+func (response PostSpeakings201JSONResponse) VisitPostSpeakingsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }

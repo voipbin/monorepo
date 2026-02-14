@@ -14,7 +14,7 @@ import (
 func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakingsParams) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetSpeakings",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -32,7 +32,7 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
 	}
-	if pageSize <= 0 || pageSize > 100 {
+	if pageSize == 0 || pageSize > 100 {
 		pageSize = 100
 	}
 
@@ -61,7 +61,7 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 func (h *server) PostSpeakings(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostSpeakings",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -141,7 +141,7 @@ func (h *server) PostSpeakings(c *gin.Context) {
 func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteSpeakingsId",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -176,7 +176,7 @@ func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetSpeakingsId",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -211,7 +211,7 @@ func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostSpeakingsIdFlush",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -246,7 +246,7 @@ func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostSpeakingsIdSay",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")
@@ -300,7 +300,7 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 func (h *server) PostSpeakingsIdStop(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostSpeakingsIdStop",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	tmpAgent, exists := c.Get("agent")

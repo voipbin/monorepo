@@ -5085,7 +5085,7 @@ type GetSpeakingsParams struct {
 
 // PostSpeakingsJSONBody defines parameters for PostSpeakings.
 type PostSpeakingsJSONBody struct {
-	// Direction Audio injection direction (in, out, both). Defaults to out.
+	// Direction Audio injection direction (in, out, both). Defaults to none.
 	Direction *string `json:"direction,omitempty"`
 
 	// Language TTS language (e.g. en-US)

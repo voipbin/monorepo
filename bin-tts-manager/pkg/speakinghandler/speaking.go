@@ -161,12 +161,19 @@ func (h *speakingHandler) Gets(ctx context.Context, token string, size uint64, f
 	return res, nil
 }
 
+// maxTextLength is the maximum allowed text length for a single Say call.
+const maxTextLength = 5000
+
 // Say adds text to the speech queue.
 func (h *speakingHandler) Say(ctx context.Context, id uuid.UUID, text string) (*speaking.Speaking, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Say",
 		"speaking_id": id,
 	})
+
+	if len(text) > maxTextLength {
+		return nil, fmt.Errorf("text too long: %d characters (max %d)", len(text), maxTextLength)
+	}
 
 	spk, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
