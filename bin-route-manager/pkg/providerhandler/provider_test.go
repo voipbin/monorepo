@@ -2,10 +2,12 @@ package providerhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -303,5 +305,220 @@ func Test_Update(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseProvider, res)
 			}
 		})
+	}
+}
+
+func Test_Get_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("207afa0a-454a-11ed-9538-03743d74de6a")
+
+	mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Create_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+
+	mockDB.EXPECT().ProviderCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_List_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	filters := map[provider.Field]any{}
+
+	mockDB.EXPECT().ProviderList(ctx, "", uint64(10), filters).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.List(ctx, "", 10)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Delete_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("35ff4a68-454d-11ed-bf33-cbf62afa54f0")
+
+	mockDB.EXPECT().ProviderDelete(ctx, id).Return(fmt.Errorf("database error"))
+
+	res, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Update_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("eab70c18-4618-11ed-857f-234c1cd0b634")
+
+	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Create_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+
+	mockDB.EXPECT().ProviderCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Delete_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("35ff4a68-454d-11ed-bf33-cbf62afa54f0")
+
+	mockDB.EXPECT().ProviderDelete(ctx, id).Return(nil)
+	mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Update_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("eab70c18-4618-11ed-857f-234c1cd0b634")
+
+	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_NewProviderHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := NewProviderHandler(mockDB, mockReq, mockNotify)
+	if h == nil {
+		t.Errorf("Expected handler to be created, got nil")
 	}
 }

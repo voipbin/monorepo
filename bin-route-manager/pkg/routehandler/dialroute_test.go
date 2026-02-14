@@ -2,6 +2,7 @@ package routehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -134,5 +135,75 @@ func Test_DialrouteList(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_DialrouteList_CustomerRouteError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("ecfe86e4-e20f-4a06-890e-84b0e8ecfca4")
+
+	filtersTarget := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     "+82",
+	}
+
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersTarget).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.DialrouteList(ctx, customerID, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_DialrouteList_DefaultRouteError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("ecfe86e4-e20f-4a06-890e-84b0e8ecfca4")
+
+	filtersCustomerTarget := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     "+82",
+	}
+	filtersCustomerAll := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     route.TargetAll,
+	}
+	filtersDefaultTarget := map[route.Field]any{
+		route.FieldCustomerID: route.CustomerIDBasicRoute,
+		route.FieldTarget:     "+82",
+	}
+
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerTarget).Return([]*route.Route{}, nil)
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerAll).Return([]*route.Route{}, nil)
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultTarget).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.DialrouteList(ctx, customerID, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
 	}
 }
