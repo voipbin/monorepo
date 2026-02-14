@@ -323,3 +323,57 @@ func Test_UpdateData(t *testing.T) {
 		})
 	}
 }
+
+func Test_List(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		token   string
+		limit   uint64
+		filters map[outdial.Field]any
+	}{
+		{
+			"normal with filters",
+
+			"2020-10-10T03:30:17.000000Z",
+			100,
+			map[outdial.Field]any{
+				outdial.FieldCustomerID: uuid.FromStringOrNil("8777908a-b632-11ec-95d3-07799e382868"),
+				outdial.FieldDeleted:    false,
+			},
+		},
+		{
+			"empty filters",
+
+			"2020-10-10T03:30:17.000000Z",
+			50,
+			map[outdial.Field]any{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &outdialHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutdialList(ctx, tt.token, tt.limit, tt.filters).Return([]*outdial.Outdial{}, nil)
+
+			_, err := h.List(ctx, tt.token, tt.limit, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

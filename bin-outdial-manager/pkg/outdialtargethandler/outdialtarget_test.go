@@ -220,3 +220,152 @@ func Test_GetAvailable(t *testing.T) {
 		})
 	}
 }
+
+func Test_Get(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("a1b2c3d4-b561-11ec-bd35-fbc2e9bf73b8"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outdialTargetHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutdialTargetGet(ctx, tt.id).Return(&outdialtarget.OutdialTarget{}, nil)
+
+			_, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatus(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id     uuid.UUID
+		status outdialtarget.Status
+	}{
+		{
+			"update to progressing",
+			uuid.FromStringOrNil("b2c3d4e5-b561-11ec-bd35-fbc2e9bf73b8"),
+			outdialtarget.StatusProgressing,
+		},
+		{
+			"update to done",
+			uuid.FromStringOrNil("c3d4e5f6-b561-11ec-bd35-fbc2e9bf73b8"),
+			outdialtarget.StatusDone,
+		},
+		{
+			"update to idle",
+			uuid.FromStringOrNil("d4e5f6g7-b561-11ec-bd35-fbc2e9bf73b8"),
+			outdialtarget.StatusIdle,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outdialTargetHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutdialTargetUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().OutdialTargetGet(ctx, tt.id).Return(&outdialtarget.OutdialTarget{Status: tt.status}, nil)
+
+			result, err := h.UpdateStatus(ctx, tt.id, tt.status)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if result.Status != tt.status {
+				t.Errorf("Expected status %v, got %v", tt.status, result.Status)
+			}
+		})
+	}
+}
+
+func Test_UpdateProgressing(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id               uuid.UUID
+		destinationIndex int
+	}{
+		{
+			"update destination index 0",
+			uuid.FromStringOrNil("e5f6g7h8-b561-11ec-bd35-fbc2e9bf73b8"),
+			0,
+		},
+		{
+			"update destination index 1",
+			uuid.FromStringOrNil("f6g7h8i9-b561-11ec-bd35-fbc2e9bf73b8"),
+			1,
+		},
+		{
+			"update destination index 4",
+			uuid.FromStringOrNil("g7h8i9j0-b561-11ec-bd35-fbc2e9bf73b8"),
+			4,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := outdialTargetHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().OutdialTargetUpdateProgressing(ctx, tt.id, tt.destinationIndex).Return(nil)
+			mockDB.EXPECT().OutdialTargetGet(ctx, tt.id).Return(&outdialtarget.OutdialTarget{}, nil)
+
+			_, err := h.UpdateProgressing(ctx, tt.id, tt.destinationIndex)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

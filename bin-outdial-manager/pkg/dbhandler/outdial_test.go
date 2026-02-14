@@ -312,3 +312,64 @@ func Test_OutdialUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_OutdialDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	tests := []struct {
+		name      string
+		outdial   *outdial.Outdial
+		expectRes *outdial.Outdial
+	}{
+		{
+			"normal delete",
+			&outdial.Outdial{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-abfa-11ec-9e15-0b454feb2f7e"),
+				},
+				Name: "test outdial",
+			},
+			&outdial.Outdial{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-abfa-11ec-9e15-0b454feb2f7e"),
+				},
+				Name: "test outdial",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+
+			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
+			if err := h.OutdialCreate(context.Background(), tt.outdial); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
+			if err := h.OutdialDelete(context.Background(), tt.outdial.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
+			res, err := h.OutdialGet(context.Background(), tt.outdial.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMDelete == nil {
+				t.Error("Expected TMDelete to be set after deletion")
+			}
+			tt.expectRes.TMUpdate = res.TMUpdate
+			tt.expectRes.TMDelete = res.TMDelete
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
