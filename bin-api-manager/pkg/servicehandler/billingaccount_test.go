@@ -4,8 +4,10 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -276,6 +278,131 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance).Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountAddBalanceForce(ctx, tt.agent, tt.accountID, tt.balance)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountAllowancesGet(t *testing.T) {
+	cycleStart := time.Date(2026, 2, 15, 0, 0, 0, 0, time.UTC)
+	cycleEnd := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+	tmCreate := time.Date(2026, 2, 15, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		agent            *amagent.Agent
+		billingAccountID uuid.UUID
+		pageSize         uint64
+		pageToken        string
+
+		responseBillingAccount *bmaccount.Account
+		responseAllowances     []*bmallowance.Allowance
+
+		expectRes []*bmallowance.WebhookMessage
+	}{
+		{
+			name: "normal with results",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			billingAccountID: uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+			pageSize:         10,
+			pageToken:        "",
+
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: nil,
+			},
+			responseAllowances: []*bmallowance.Allowance{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a1b2c3d4-1234-5678-9abc-def012345678"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+					AccountID:   uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CycleStart:  &cycleStart,
+					CycleEnd:    &cycleEnd,
+					TokensTotal: 10000,
+					TokensUsed:  3500,
+					TMCreate:    &tmCreate,
+				},
+			},
+
+			expectRes: []*bmallowance.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a1b2c3d4-1234-5678-9abc-def012345678"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+					AccountID:   uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CycleStart:  &cycleStart,
+					CycleEnd:    &cycleEnd,
+					TokensTotal: 10000,
+					TokensUsed:  3500,
+					TMCreate:    &tmCreate,
+				},
+			},
+		},
+		{
+			name: "empty results",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			billingAccountID: uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+			pageSize:         10,
+			pageToken:        "",
+
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: nil,
+			},
+			responseAllowances: []*bmallowance.Allowance{},
+
+			expectRes: []*bmallowance.WebhookMessage{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountAllowancesGet(ctx, tt.billingAccountID, tt.pageSize, tt.pageToken).Return(tt.responseAllowances, nil)
+
+			res, err := h.BillingAccountAllowancesGet(ctx, tt.agent, tt.billingAccountID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

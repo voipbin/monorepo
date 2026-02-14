@@ -20,10 +20,12 @@ type WebhookMessage struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	CostPerUnit float32 `json:"cost_per_unit"`
-	CostTotal   float32 `json:"cost_total"`
-
-	BillingUnitCount float32 `json:"billing_unit_count"`
+	CostType          CostType `json:"cost_type"`
+	CostUnitCount     float32  `json:"cost_unit_count"`
+	CostTokenPerUnit  int      `json:"cost_token_per_unit"`
+	CostTokenTotal    int      `json:"cost_token_total"`
+	CostCreditPerUnit float32  `json:"cost_credit_per_unit"`
+	CostCreditTotal   float32  `json:"cost_credit_total"`
 
 	TMBillingStart *time.Time `json:"tm_billing_start"`
 	TMBillingEnd   *time.Time `json:"tm_billing_end"`
@@ -46,10 +48,12 @@ func (h *Billing) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		CostPerUnit: h.CostPerUnit,
-		CostTotal:   h.CostTotal,
-
-		BillingUnitCount: h.BillingUnitCount,
+		CostType:          h.CostType,
+		CostUnitCount:     h.CostUnitCount,
+		CostTokenPerUnit:  h.CostTokenPerUnit,
+		CostTokenTotal:    h.CostTokenTotal,
+		CostCreditPerUnit: h.CostCreditPerUnit,
+		CostCreditTotal:   h.CostCreditTotal,
 
 		TMBillingStart: h.TMBillingStart,
 		TMBillingEnd:   h.TMBillingEnd,

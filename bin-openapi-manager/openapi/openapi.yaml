@@ -416,12 +416,14 @@ components:
       enum:
         - ""
         - call
+        - call_extension
         - sms
         - number
         - number_renew
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
+        - BillingManagerBillingreferenceTypeCallExtension
         - BillingManagerBillingreferenceTypeSMS
         - BillingManagerBillingreferenceTypeNumber
         - BillingManagerBillingreferenceTypeNumberRenew
@@ -458,18 +460,27 @@ components:
         reference_id:
           type: string
           description: The ID of the reference related to this billing.
-        cost_per_unit:
+        cost_type:
+          type: string
+          description: The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
+        cost_unit_count:
           type: number
           format: float
-          description: The cost per billing unit.
-        cost_total:
+          description: The total count of billing units (e.g. minutes for calls, 1 for SMS/number).
+        cost_token_per_unit:
+          type: integer
+          description: The token cost per unit for token-eligible types.
+        cost_token_total:
+          type: integer
+          description: The total tokens consumed for this billing.
+        cost_credit_per_unit:
           type: number
           format: float
-          description: The total cost of this billing.
-        billing_unit_count:
+          description: The credit cost per unit.
+        cost_credit_total:
           type: number
           format: float
-          description: The total count of billing units.
+          description: The total credit charged for this billing.
         tm_billing_start:
           type: string
           description: The start timestamp of the billing period.
@@ -486,6 +497,40 @@ components:
           type: string
           description: The deletion timestamp, if applicable.
 
+
+    BillingManagerAllowance:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the allowance cycle.
+        customer_id:
+          type: string
+          description: The customer's unique identifier.
+        account_id:
+          type: string
+          description: The billing account ID.
+        cycle_start:
+          type: string
+          description: The start timestamp of the allowance cycle.
+        cycle_end:
+          type: string
+          description: The end timestamp of the allowance cycle.
+        tokens_total:
+          type: integer
+          description: The total number of tokens allocated for this cycle.
+        tokens_used:
+          type: integer
+          description: The number of tokens consumed in this cycle.
+        tm_create:
+          type: string
+          description: The creation timestamp.
+        tm_update:
+          type: string
+          description: The last update timestamp.
+        tm_delete:
+          type: string
+          description: The deletion timestamp, if applicable.
 
 #########################################
 # Call Manager
@@ -4073,6 +4118,8 @@ paths:
     $ref: './paths/billing_accounts/id_balance_add_force.yaml'
   /billing_accounts/{id}/balance_subtract_force:
     $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
+  /billing_accounts/{id}/allowances:
+    $ref: './paths/billing_accounts/id_allowances.yaml'
 
   /billings:
     $ref: './paths/billings/main.yaml'

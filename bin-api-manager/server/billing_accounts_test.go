@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"net/http"
@@ -379,6 +381,99 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_GetBillingAccountsIdAllowances(t *testing.T) {
+	tmCreate := time.Date(2026, 2, 15, 0, 0, 0, 0, time.UTC)
+	cycleStart := time.Date(2026, 2, 15, 0, 0, 0, 0, time.UTC)
+	cycleEnd := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery         string
+		billingAccountID uuid.UUID
+
+		responseAllowances []*bmallowance.WebhookMessage
+		expectRes          string
+	}
+
+	tests := []test{
+		{
+			name: "normal with results and pagination",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				},
+			},
+
+			reqQuery:         "/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4/allowances",
+			billingAccountID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
+
+			responseAllowances: []*bmallowance.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a1b2c3d4-1234-5678-9abc-def012345678"),
+						CustomerID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+					},
+					AccountID:   uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
+					CycleStart:  &cycleStart,
+					CycleEnd:    &cycleEnd,
+					TokensTotal: 10000,
+					TokensUsed:  3500,
+					TMCreate:    &tmCreate,
+				},
+			},
+			expectRes: `{"result":[{"id":"a1b2c3d4-1234-5678-9abc-def012345678","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","cycle_start":"2026-02-15T00:00:00Z","cycle_end":"2026-03-15T00:00:00Z","tokens_total":10000,"tokens_used":3500,"tm_create":"2026-02-15T00:00:00Z","tm_update":null,"tm_delete":null}],"next_page_token":"2026-02-15T00:00:00.000000Z"}`,
+		},
+		{
+			name: "empty results",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				},
+			},
+
+			reqQuery:         "/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4/allowances",
+			billingAccountID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
+
+			responseAllowances: []*bmallowance.WebhookMessage{},
+			expectRes:          `{"result":[],"next_page_token":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().BillingAccountAllowancesGet(req.Context(), &tt.agent, tt.billingAccountID, uint64(10), "").Return(tt.responseAllowances, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

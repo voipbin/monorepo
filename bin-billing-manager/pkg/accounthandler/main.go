@@ -15,6 +15,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -44,10 +45,11 @@ type AccountHandler interface {
 
 // accountHandler define
 type accountHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	db            dbhandler.DBHandler
-	notifyHandler notifyhandler.NotifyHandler
+	utilHandler      utilhandler.UtilHandler
+	reqHandler       requesthandler.RequestHandler
+	db               dbhandler.DBHandler
+	notifyHandler    notifyhandler.NotifyHandler
+	allowanceHandler allowancehandler.AllowanceHandler
 }
 
 var (
@@ -80,11 +82,12 @@ func init() {
 }
 
 // NewAccountHandler returns a new AccountHandler
-func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AccountHandler {
+func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, allowanceHandler allowancehandler.AllowanceHandler) AccountHandler {
 	return &accountHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		db:            db,
-		notifyHandler: notifyHandler,
+		utilHandler:      utilhandler.NewUtilHandler(),
+		reqHandler:       reqHandler,
+		db:               db,
+		notifyHandler:    notifyHandler,
+		allowanceHandler: allowanceHandler,
 	}
 }

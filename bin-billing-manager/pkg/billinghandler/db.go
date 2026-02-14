@@ -20,7 +20,7 @@ func (h *billingHandler) Create(
 	accountID uuid.UUID,
 	referenceType billing.ReferenceType,
 	referenceID uuid.UUID,
-	costPerUnit float32,
+	costType billing.CostType,
 	tmBillingStart *time.Time,
 ) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -29,9 +29,11 @@ func (h *billingHandler) Create(
 		"account_id":       accountID,
 		"reference_type":   referenceType,
 		"reference_id":     referenceID,
-		"cost_per_second":  costPerUnit,
+		"cost_type":        costType,
 		"tm_billing_start": tmBillingStart,
 	})
+
+	tokenPerUnit, creditPerUnit := billing.GetCostInfo(costType)
 
 	id := h.utilHandler.UUIDCreate()
 	c := &billing.Billing{
@@ -39,15 +41,18 @@ func (h *billingHandler) Create(
 			ID:         id,
 			CustomerID: customerID,
 		},
-		AccountID:        accountID,
-		Status:           billing.StatusProgressing,
-		ReferenceType:    referenceType,
-		ReferenceID:      referenceID,
-		CostPerUnit:      costPerUnit,
-		CostTotal:        0,
-		BillingUnitCount: 0,
-		TMBillingStart:   tmBillingStart,
-		TMBillingEnd:     nil,
+		AccountID:         accountID,
+		Status:            billing.StatusProgressing,
+		ReferenceType:     referenceType,
+		ReferenceID:       referenceID,
+		CostType:          costType,
+		CostUnitCount:     0,
+		CostTokenPerUnit:  tokenPerUnit,
+		CostTokenTotal:    0,
+		CostCreditPerUnit: creditPerUnit,
+		CostCreditTotal:   0,
+		TMBillingStart:    tmBillingStart,
+		TMBillingEnd:      nil,
 	}
 
 	if errCreate := h.db.BillingCreate(ctx, c); errCreate != nil {
@@ -95,8 +100,8 @@ func (h *billingHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 		return nil, errors.Wrap(err, "could not get billing")
 	}
 
-	if res.ReferenceType != billing.ReferenceTypeCall {
-		// if the billing's reference type is not the call type,
+	if res.ReferenceType != billing.ReferenceTypeCall && res.ReferenceType != billing.ReferenceTypeCallExtension {
+		// if the billing's reference type is not a call type,
 		// the result not valid.
 		// because it is possible to billing has more than 2 billings of that reference id.
 		// i.e. number type billing can have many of renewed billings.
@@ -124,16 +129,18 @@ func (h *billingHandler) List(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
-// UpdateStatusEnd creats a new billing and return the created billing.
-func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingUnitCount float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
+// UpdateStatusEnd updates the billing status to end with final cost breakdown.
+func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "UpdateStatusEnd",
 		"billing_id":       id,
-		"billing_duration": billingUnitCount,
+		"cost_unit_count":  costUnitCount,
+		"cost_token_total": costTokenTotal,
+		"cost_credit_total": costCreditTotal,
 		"tm_billing_end":   tmBillingEnd,
 	})
 
-	if errSet := h.db.BillingSetStatusEnd(ctx, id, billingUnitCount, tmBillingEnd); errSet != nil {
+	if errSet := h.db.BillingSetStatusEndWithCosts(ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd); errSet != nil {
 		log.Errorf("Could not set status to end. err: %v", errSet)
 		return nil, errors.Wrap(errSet, "could not set status to end")
 	}

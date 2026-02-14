@@ -1,0 +1,38 @@
+get:
+  summary: Get billing account allowances
+  description: Returns a paginated list of token allowance cycles for the given billing account.
+  tags:
+    - Billing
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the billing account.
+    - name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Maximum number of items to return.
+    - name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Pagination token for the next page.
+  responses:
+    200:
+      description: Successfully retrieved allowance cycles
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BillingManagerAllowance'

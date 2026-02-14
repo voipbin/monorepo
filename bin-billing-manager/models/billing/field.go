@@ -15,10 +15,12 @@ const (
 	FieldReferenceType Field = "reference_type"
 	FieldReferenceID   Field = "reference_id"
 
-	FieldCostPerUnit Field = "cost_per_unit"
-	FieldCostTotal   Field = "cost_total"
-
-	FieldBillingUnitCount Field = "billing_unit_count"
+	FieldCostType          Field = "cost_type"
+	FieldCostUnitCount     Field = "cost_unit_count"
+	FieldCostTokenPerUnit  Field = "cost_token_per_unit"
+	FieldCostTokenTotal    Field = "cost_token_total"
+	FieldCostCreditPerUnit Field = "cost_credit_per_unit"
+	FieldCostCreditTotal   Field = "cost_credit_total"
 
 	FieldTMBillingStart Field = "tm_billing_start"
 	FieldTMBillingEnd   Field = "tm_billing_end"

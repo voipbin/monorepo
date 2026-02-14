@@ -19,6 +19,7 @@ import (
 	summary "monorepo/bin-ai-manager/models/summary"
 	tool "monorepo/bin-ai-manager/models/tool"
 	account "monorepo/bin-billing-manager/models/account"
+	allowance "monorepo/bin-billing-manager/models/allowance"
 	billing "monorepo/bin-billing-manager/models/billing"
 	ari "monorepo/bin-call-manager/models/ari"
 	bridge "monorepo/bin-call-manager/models/bridge"
@@ -1236,6 +1237,21 @@ func (m *MockRequestHandler) BillingV1AccountAddBalanceForce(ctx context.Context
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAddBalanceForce(ctx, accountID, balance any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAddBalanceForce", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAddBalanceForce), ctx, accountID, balance)
+}
+
+// BillingV1AccountAllowancesGet mocks base method.
+func (m *MockRequestHandler) BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*allowance.Allowance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountAllowancesGet", ctx, accountID, pageSize, pageToken)
+	ret0, _ := ret[0].([]*allowance.Allowance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountAllowancesGet indicates an expected call of BillingV1AccountAllowancesGet.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAllowancesGet(ctx, accountID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAllowancesGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAllowancesGet), ctx, accountID, pageSize, pageToken)
 }
 
 // BillingV1AccountGet mocks base method.

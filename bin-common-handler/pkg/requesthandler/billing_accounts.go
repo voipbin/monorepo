@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	bmrequest "monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	bmresponse "monorepo/bin-billing-manager/pkg/listenhandler/models/response"
@@ -229,4 +231,21 @@ func (r *requestHandler) BillingV1AccountIsValidResourceLimitByCustomerID(ctx co
 	}
 
 	return res.Valid, nil
+}
+
+// BillingV1AccountAllowancesGet returns allowance cycles for the given billing account.
+func (r *requestHandler) BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.Allowance, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/allowances?page_size=%d&page_token=%s", accountID, pageSize, url.QueryEscape(pageToken))
+
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts/<account-id>/allowances", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []*bmallowance.Allowance
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }

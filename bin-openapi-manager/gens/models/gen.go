@@ -139,11 +139,12 @@ const (
 
 // Defines values for BillingManagerBillingreferenceType.
 const (
-	BillingManagerBillingreferenceTypeCall        BillingManagerBillingreferenceType = "call"
-	BillingManagerBillingreferenceTypeNone        BillingManagerBillingreferenceType = ""
-	BillingManagerBillingreferenceTypeNumber      BillingManagerBillingreferenceType = "number"
-	BillingManagerBillingreferenceTypeNumberRenew BillingManagerBillingreferenceType = "number_renew"
-	BillingManagerBillingreferenceTypeSMS         BillingManagerBillingreferenceType = "sms"
+	BillingManagerBillingreferenceTypeCall          BillingManagerBillingreferenceType = "call"
+	BillingManagerBillingreferenceTypeCallExtension BillingManagerBillingreferenceType = "call_extension"
+	BillingManagerBillingreferenceTypeNone          BillingManagerBillingreferenceType = ""
+	BillingManagerBillingreferenceTypeNumber        BillingManagerBillingreferenceType = "number"
+	BillingManagerBillingreferenceTypeNumberRenew   BillingManagerBillingreferenceType = "number_renew"
+	BillingManagerBillingreferenceTypeSMS           BillingManagerBillingreferenceType = "sms"
 )
 
 // Defines values for CallManagerCallDirection.
@@ -1118,19 +1119,61 @@ type BillingManagerAccountPaymentType string
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
 
+// BillingManagerAllowance defines model for BillingManagerAllowance.
+type BillingManagerAllowance struct {
+	// AccountId The billing account ID.
+	AccountId *string `json:"account_id,omitempty"`
+
+	// CustomerId The customer's unique identifier.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// CycleEnd The end timestamp of the allowance cycle.
+	CycleEnd *string `json:"cycle_end,omitempty"`
+
+	// CycleStart The start timestamp of the allowance cycle.
+	CycleStart *string `json:"cycle_start,omitempty"`
+
+	// Id The unique identifier of the allowance cycle.
+	Id *string `json:"id,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp, if applicable.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate The last update timestamp.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TokensTotal The total number of tokens allocated for this cycle.
+	TokensTotal *int `json:"tokens_total,omitempty"`
+
+	// TokensUsed The number of tokens consumed in this cycle.
+	TokensUsed *int `json:"tokens_used,omitempty"`
+}
+
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
 	// AccountId The billing account ID.
 	AccountId *string `json:"account_id,omitempty"`
 
-	// BillingUnitCount The total count of billing units.
-	BillingUnitCount *float32 `json:"billing_unit_count,omitempty"`
+	// CostCreditPerUnit The credit cost per unit.
+	CostCreditPerUnit *float32 `json:"cost_credit_per_unit,omitempty"`
 
-	// CostPerUnit The cost per billing unit.
-	CostPerUnit *float32 `json:"cost_per_unit,omitempty"`
+	// CostCreditTotal The total credit charged for this billing.
+	CostCreditTotal *float32 `json:"cost_credit_total,omitempty"`
 
-	// CostTotal The total cost of this billing.
-	CostTotal *float32 `json:"cost_total,omitempty"`
+	// CostTokenPerUnit The token cost per unit for token-eligible types.
+	CostTokenPerUnit *int `json:"cost_token_per_unit,omitempty"`
+
+	// CostTokenTotal The total tokens consumed for this billing.
+	CostTokenTotal *int `json:"cost_token_total,omitempty"`
+
+	// CostType The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
+	CostType *string `json:"cost_type,omitempty"`
+
+	// CostUnitCount The total count of billing units (e.g. minutes for calls, 1 for SMS/number).
+	CostUnitCount *float32 `json:"cost_unit_count,omitempty"`
 
 	// CustomerId The customer's unique identifier.
 	CustomerId *string `json:"customer_id,omitempty"`
@@ -3717,6 +3760,15 @@ type PutBillingAccountsIdJSONBody struct {
 	Name   *string `json:"name,omitempty"`
 }
 
+// GetBillingAccountsIdAllowancesParams defines parameters for GetBillingAccountsIdAllowances.
+type GetBillingAccountsIdAllowancesParams struct {
+	// PageSize Maximum number of items to return.
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Pagination token for the next page.
+	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // PostBillingAccountsIdBalanceAddForceJSONBody defines parameters for PostBillingAccountsIdBalanceAddForce.
 type PostBillingAccountsIdBalanceAddForceJSONBody struct {
 	Balance *float32 `json:"balance,omitempty"`
@@ -3806,11 +3858,11 @@ type PostCallsIdRecordingStartJSONBodyFormat string
 type PostCallsIdTalkJSONBody struct {
 	Language *string `json:"language,omitempty"`
 
-	// Provider TTS provider to use (gcp or aws). If empty, auto-selects GCP first then AWS fallback.
+	// Provider TTS provider to use (gcp or aws). If empty, defaults to GCP. If the selected provider fails, the system falls back to the alternative provider with the default voice for the language.
 	Provider *string `json:"provider,omitempty"`
 	Text     *string `json:"text,omitempty"`
 
-	// VoiceId Provider-specific voice ID. If empty, uses the default voice for the given language.
+	// VoiceId Provider-specific voice ID. If empty, uses the default voice for the given language. On fallback, the voice_id is reset to the alternative provider's default.
 	VoiceId *string `json:"voice_id,omitempty"`
 }
 

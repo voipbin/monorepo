@@ -61,85 +61,6 @@ func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 	return nil
 }
 
-// BillingCreditTopUp atomically inserts a billing record and tops up the account balance
-// within a single transaction. The balance is read inside the transaction with FOR UPDATE
-// to prevent concurrent modifications from producing incorrect deltas.
-//
-// Returns (true, nil) if the record was inserted and balance updated.
-// Returns (false, nil) if the record already exists (duplicate key — already processed this month).
-// Returns (false, err) on any other error.
-func (h *handler) BillingCreditTopUp(ctx context.Context, b *billing.Billing, accountID uuid.UUID, targetAmount float32) (bool, error) {
-	tx, err := h.db.BeginTx(ctx, nil)
-	if err != nil {
-		return false, fmt.Errorf("BillingCreditTopUp: could not begin transaction. err: %v", err)
-	}
-	defer func() { _ = tx.Rollback() }()
-
-	// 1. Insert billing record
-	b.TMCreate = h.utilHandler.TimeNow()
-	b.TMUpdate = nil
-	b.TMDelete = nil
-
-	fields, err := commondatabasehandler.PrepareFields(b)
-	if err != nil {
-		return false, fmt.Errorf("BillingCreditTopUp: could not prepare fields. err: %v", err)
-	}
-
-	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
-	if err != nil {
-		return false, fmt.Errorf("BillingCreditTopUp: could not build insert query. err: %v", err)
-	}
-
-	_, err = tx.ExecContext(ctx, query, args...)
-	if err != nil {
-		if isDuplicateKeyError(err) {
-			return false, nil // already processed this month
-		}
-		return false, fmt.Errorf("BillingCreditTopUp: could not insert billing. err: %v", err)
-	}
-
-	// 2. Lock account row and read current balance.
-	// Raw SQL: FOR UPDATE lock cannot be expressed via squirrel.
-	var balance float32
-	row := tx.QueryRowContext(ctx, "SELECT balance FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
-	if err := row.Scan(&balance); err != nil {
-		return false, fmt.Errorf("BillingCreditTopUp: could not read balance. err: %v", err)
-	}
-
-	// 3. Calculate delta inside transaction (accurate, no race condition).
-	// targetAmount is passed from the caller to avoid circular import
-	// (credithandler defines the constant, dbhandler must not import credithandler).
-	delta := targetAmount - balance
-	if delta > 0 {
-		now := h.utilHandler.TimeNow()
-		_, err = tx.ExecContext(ctx,
-			"UPDATE billing_accounts SET balance = balance + ?, tm_update = ? WHERE id = ?",
-			delta, now, accountID.Bytes())
-		if err != nil {
-			return false, fmt.Errorf("BillingCreditTopUp: could not update balance. err: %v", err)
-		}
-
-		// Update cost_total on the billing record we just inserted
-		_, err = tx.ExecContext(ctx,
-			"UPDATE billing_billings SET cost_total = ? WHERE id = ?",
-			delta, b.ID.Bytes())
-		if err != nil {
-			return false, fmt.Errorf("BillingCreditTopUp: could not update billing cost_total. err: %v", err)
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return false, fmt.Errorf("BillingCreditTopUp: could not commit. err: %v", err)
-	}
-
-	// Invalidate caches after successful commit.
-	// Without this, Redis would serve stale balance data until cache expires.
-	_ = h.accountUpdateToCache(ctx, accountID)
-	_ = h.billingUpdateToCache(ctx, b.ID)
-
-	return true, nil
-}
-
 // billingGetFromCache returns billing from the cache.
 func (h *handler) billingGetFromCache(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
 	res, err := h.cache.BillingGet(ctx, id)
@@ -400,25 +321,24 @@ func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[bi
 	return nil
 }
 
-// BillingSetStatusEnd sets the billing status to end
-func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error {
-	// prepare - using raw SQL for the formula
+// BillingSetStatusEndWithCosts sets the billing status to end with the final cost breakdown.
+func (h *handler) BillingSetStatusEndWithCosts(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) error {
 	q := `
-	update
-		billing_billings
-	set
+	UPDATE billing_billings
+	SET
 		status = ?,
-		cost_total = cost_per_unit * ?,
-		billing_unit_count = ?,
+		cost_unit_count = ?,
+		cost_token_total = ?,
+		cost_credit_total = ?,
 		tm_billing_end = ?,
 		tm_update = ?
-	where
+	WHERE
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, billing.StatusEnd, billingDuration, billingDuration, timestamp, h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.Exec(q, billing.StatusEnd, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. BillingSetStatusEnd. err: %v", err)
+		return fmt.Errorf("could not execute. BillingSetStatusEndWithCosts. err: %v", err)
 	}
 
 	// update the cache
