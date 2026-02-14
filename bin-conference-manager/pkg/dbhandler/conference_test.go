@@ -1014,3 +1014,77 @@ func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferenceCountByCustomerID(t *testing.T) {
+
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+	customerID := uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577")
+
+	tests := []struct {
+		name        string
+		conferences []*conference.Conference
+		customerID  uuid.UUID
+		expected    int
+	}{
+		{
+			name: "count two conferences",
+			conferences: []*conference.Conference{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
+						CustomerID: customerID,
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
+						CustomerID: customerID,
+					},
+				},
+			},
+			customerID: customerID,
+			expected:   2,
+		},
+		{
+			name:        "count zero conferences",
+			conferences: []*conference.Conference{},
+			customerID:  uuid.FromStringOrNil("9c61ef24-b396-465b-9705-44b420f2dc5d"),
+			expected:    0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			for _, cf := range tt.conferences {
+				mockUtil.EXPECT().TimeNow().Return(&curTime)
+				mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+				if err := h.ConferenceCreate(ctx, cf); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			count, err := h.ConferenceCountByCustomerID(ctx, tt.customerID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if count != tt.expected {
+				t.Errorf("Wrong count. expect: %d, got: %d", tt.expected, count)
+			}
+		})
+	}
+}

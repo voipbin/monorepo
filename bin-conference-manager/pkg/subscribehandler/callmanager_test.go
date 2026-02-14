@@ -127,3 +127,99 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 		})
 	}
 }
+
+func Test_processEventUnknown(t *testing.T) {
+	tests := []struct {
+		name  string
+		event *sock.Event
+	}{
+		{
+			"unknown event type",
+			&sock.Event{
+				Type:      "unknown_type",
+				Publisher: "unknown_publisher",
+				DataType:  "application/json",
+				Data:      []byte(`{}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+			mockConfCall := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+			h := &subscribeHandler{
+				sockHandler:           mockSock,
+				conferenceHandler:     mockConf,
+				conferencecallHandler: mockConfCall,
+			}
+
+			h.processEvent(tt.event)
+		})
+	}
+}
+
+func Test_processEventRun(t *testing.T) {
+	tests := []struct {
+		name  string
+		event *sock.Event
+	}{
+		{
+			"processEventRun",
+			&sock.Event{
+				Type:      "unknown_type",
+				Publisher: "unknown_publisher",
+				DataType:  "application/json",
+				Data:      []byte(`{}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+			mockConfCall := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+			h := &subscribeHandler{
+				sockHandler:           mockSock,
+				conferenceHandler:     mockConf,
+				conferencecallHandler: mockConfCall,
+			}
+
+			err := h.processEventRun(tt.event)
+			if err != nil {
+				t.Errorf("processEventRun() error = %v", err)
+			}
+		})
+	}
+}
+
+func TestNewSubscribeHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+	mockConfCall := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+	h := NewSubscribeHandler(
+		mockSock,
+		"test-queue",
+		[]string{"test-target"},
+		mockConf,
+		mockConfCall,
+	)
+
+	if h == nil {
+		t.Error("NewSubscribeHandler() returned nil")
+	}
+}
