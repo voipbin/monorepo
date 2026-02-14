@@ -11,6 +11,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -92,22 +93,13 @@ func runDaemon() error {
 	log := logrus.WithField("func", "runDaemon")
 	log.WithField("config", config.Get()).Info("Starting tts-manager...")
 
-	// database connection — opened here so defer Close runs after <-chDone blocks
-	db, err := sql.Open("mysql", config.Get().DatabaseDSN)
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		return fmt.Errorf("could not open database connection. err: %v", err)
+		return errors.Wrapf(err, "could not connect to the database")
 	}
-	defer func() {
-		if errClose := db.Close(); errClose != nil {
-			log.Errorf("Failed to close database connection: %v", errClose)
-		}
-	}()
+	defer commondatabasehandler.Close(sqlDB)
 
-	if err := db.Ping(); err != nil {
-		return fmt.Errorf("could not ping database. err: %v", err)
-	}
-
-	if errRun := run(db); errRun != nil {
+	if errRun := run(sqlDB); errRun != nil {
 		return errors.Wrapf(errRun, "could not run tts-manager")
 	}
 
