@@ -224,7 +224,7 @@ func (h *handler) EmailListByContactID(ctx context.Context, contactID uuid.UUID)
 		_ = rows.Close()
 	}()
 
-	var res []contact.Email
+	res := []contact.Email{}
 	for rows.Next() {
 		e, err := h.emailGetFromRow(rows)
 		if err != nil {

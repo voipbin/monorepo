@@ -77,7 +77,7 @@ func (h *handler) TagAssignmentListByContactID(ctx context.Context, contactID uu
 		_ = rows.Close()
 	}()
 
-	var res []uuid.UUID
+	res := []uuid.UUID{}
 	for rows.Next() {
 		var tagIDBytes []byte
 		if err := rows.Scan(&tagIDBytes); err != nil {
