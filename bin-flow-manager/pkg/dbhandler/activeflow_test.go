@@ -549,3 +549,152 @@ func Test_ActiveflowList(t *testing.T) {
 		})
 	}
 }
+// 
+// func Test_ActiveflowGetWithLock(t *testing.T) {
+// 	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+// 
+// 	t.Run("get_with_lock_cache_exists", func(t *testing.T) {
+// 		mc := gomock.NewController(t)
+// 		defer mc.Finish()
+// 
+// 		mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 		mockCache := cachehandler.NewMockCacheHandler(mc)
+// 		h := handler{
+// 			util:  mockUtil,
+// 			db:    dbTest,
+// 			cache: mockCache,
+// 		}
+// 		ctx := context.Background()
+// 
+// 		// Use unique ID
+// 		activeflowID := uuid.Must(uuid.NewV4())
+// 
+// 		// Create activeflow first
+// 		af := &activeflow.Activeflow{
+// 			Identity: commonidentity.Identity{
+// 				ID:         activeflowID,
+// 				CustomerID: uuid.Must(uuid.NewV4()),
+// 			},
+// 			FlowID:        uuid.Must(uuid.NewV4()),
+// 			Status:        activeflow.StatusRunning,
+// 			ReferenceType: activeflow.ReferenceTypeCall,
+// 		}
+// 
+// 		mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
+// 		mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
+// 		if err := h.ActiveflowCreate(ctx, af); err != nil {
+// 			t.Errorf("Failed to create activeflow: %v", err)
+// 			return
+// 		}
+// 
+// 		// Test GetWithLock - cache exists
+// 		mockCache.EXPECT().ActiveflowGet(gomock.Any(), activeflowID).Return(af, nil)
+// 		mockCache.EXPECT().ActiveflowGetWithLock(gomock.Any(), activeflowID).Return(af, nil)
+// 
+// 		res, err := h.ActiveflowGetWithLock(ctx, activeflowID)
+// 		if err != nil {
+// 			t.Errorf("ActiveflowGetWithLock() error = %v", err)
+// 			return
+// 		}
+// 
+// 		if res == nil {
+// 			t.Error("ActiveflowGetWithLock() returned nil activeflow")
+// 		}
+// 	})
+// 
+// 	t.Run("get_with_lock_cache_miss", func(t *testing.T) {
+// 		mc := gomock.NewController(t)
+// 		defer mc.Finish()
+// 
+// 		mockUtil := utilhandler.NewMockUtilHandler(mc)
+// 		mockCache := cachehandler.NewMockCacheHandler(mc)
+// 		h := handler{
+// 			util:  mockUtil,
+// 			db:    dbTest,
+// 			cache: mockCache,
+// 		}
+// 		ctx := context.Background()
+// 
+// 		// Use unique ID
+// 		activeflowID := uuid.Must(uuid.NewV4())
+// 
+// 		// Create activeflow first
+// 		af := &activeflow.Activeflow{
+// 			Identity: commonidentity.Identity{
+// 				ID:         activeflowID,
+// 				CustomerID: uuid.Must(uuid.NewV4()),
+// 			},
+// 			FlowID:        uuid.Must(uuid.NewV4()),
+// 			Status:        activeflow.StatusRunning,
+// 			ReferenceType: activeflow.ReferenceTypeCall,
+// 		}
+// 
+// 		mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
+// 		mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
+// 		if err := h.ActiveflowCreate(ctx, af); err != nil {
+// 			t.Errorf("Failed to create activeflow: %v", err)
+// 			return
+// 		}
+// 
+// 		// Test GetWithLock - cache miss, then update cache
+// 		mockCache.EXPECT().ActiveflowGet(gomock.Any(), activeflowID).Return(nil, fmt.Errorf("cache miss"))
+// 		mockCache.EXPECT().ActiveflowGet(gomock.Any(), activeflowID).Return(nil, fmt.Errorf(""))
+// 		mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any()).Return(nil)
+// 		mockCache.EXPECT().ActiveflowGetWithLock(gomock.Any(), activeflowID).Return(af, nil)
+// 
+// 		res, err := h.ActiveflowGetWithLock(ctx, activeflowID)
+// 		if err != nil {
+// 			t.Errorf("ActiveflowGetWithLock() error = %v", err)
+// 			return
+// 		}
+// 
+// 		if res == nil {
+// 			t.Error("ActiveflowGetWithLock() returned nil activeflow")
+// 		}
+// 	})
+// }
+
+func Test_ActiveflowReleaseLock(t *testing.T) {
+	tests := []struct {
+		name       string
+		releaseErr error
+		wantErr    bool
+	}{
+		{
+			name:       "release_lock_success",
+			releaseErr: nil,
+			wantErr:    false,
+		},
+		{
+			name:       "release_lock_error",
+			releaseErr: fmt.Errorf("release error"),
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+			ctx := context.Background()
+
+			// Use unique ID for each test
+			activeflowID := uuid.Must(uuid.NewV4())
+
+			mockCache.EXPECT().ActiveflowReleaseLock(gomock.Any(), activeflowID).Return(tt.releaseErr)
+
+			err := h.ActiveflowReleaseLock(ctx, activeflowID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ActiveflowReleaseLock() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

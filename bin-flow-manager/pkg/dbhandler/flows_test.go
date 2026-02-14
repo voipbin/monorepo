@@ -528,3 +528,76 @@ func Test_FlowDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowCountByCustomerID(t *testing.T) {
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name          string
+		flowCount     int
+		expectedCount int
+	}{
+		{
+			name:          "no_flows",
+			flowCount:     0,
+			expectedCount: 0,
+		},
+		{
+			name:          "single_flow",
+			flowCount:     1,
+			expectedCount: 1,
+		},
+		{
+			name:          "multiple_flows",
+			flowCount:     2,
+			expectedCount: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+			ctx := context.Background()
+
+			// Use unique customer ID for each test
+			customerID := uuid.Must(uuid.NewV4())
+
+			// Create flows
+			for i := 0; i < tt.flowCount; i++ {
+				f := &flow.Flow{
+					Identity: commonidentity.Identity{
+						ID:         uuid.Must(uuid.NewV4()),
+						CustomerID: customerID,
+					},
+					Name: fmt.Sprintf("test flow %d", i),
+				}
+				mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
+				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
+				if err := h.FlowCreate(ctx, f); err != nil {
+					t.Errorf("Failed to create flow: %v", err)
+					return
+				}
+			}
+
+			// Get count
+			count, err := h.FlowCountByCustomerID(ctx, customerID)
+			if err != nil {
+				t.Errorf("FlowCountByCustomerID() error = %v", err)
+				return
+			}
+
+			if count != tt.expectedCount {
+				t.Errorf("FlowCountByCustomerID() count = %v, expected %v", count, tt.expectedCount)
+			}
+		})
+	}
+}
