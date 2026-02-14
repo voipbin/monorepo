@@ -77,6 +77,7 @@ require (
 require (
 	cloud.google.com/go/texttospeech v1.16.0
 	github.com/CyCoreSystems/audiosocket v0.3.0
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
