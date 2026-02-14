@@ -452,6 +452,8 @@ func Test_Say(t *testing.T) {
 
 		responseSpeaking *speaking.Speaking
 		responseGetErr   error
+		responseInitStr  *streaming.Streaming
+		responseInitErr  error
 		responseSayErr   error
 
 		expectErr bool
@@ -468,6 +470,7 @@ func Test_Say(t *testing.T) {
 				},
 				Status: speaking.StatusActive,
 			},
+			responseInitStr: &streaming.Streaming{},
 
 			expectErr: false,
 		},
@@ -497,6 +500,22 @@ func Test_Say(t *testing.T) {
 			expectErr: true,
 		},
 		{
+			name: "SayInit error",
+
+			id:   uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			text: "hello world",
+
+			responseSpeaking: &speaking.Speaking{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+				},
+				Status: speaking.StatusActive,
+			},
+			responseInitErr: fmt.Errorf("vendor not ready"),
+
+			expectErr: true,
+		},
+		{
 			name: "streaming SayAdd error",
 
 			id:   uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
@@ -508,7 +527,8 @@ func Test_Say(t *testing.T) {
 				},
 				Status: speaking.StatusActive,
 			},
-			responseSayErr: fmt.Errorf("say error"),
+			responseInitStr: &streaming.Streaming{},
+			responseSayErr:  fmt.Errorf("say error"),
 
 			expectErr: true,
 		},
@@ -531,7 +551,11 @@ func Test_Say(t *testing.T) {
 			mockDB.EXPECT().SpeakingGet(ctx, tt.id).Return(tt.responseSpeaking, tt.responseGetErr)
 
 			if tt.responseGetErr == nil && tt.responseSpeaking.Status == speaking.StatusActive {
-				mockStreaming.EXPECT().SayAdd(ctx, tt.id, uuid.Nil, tt.text).Return(tt.responseSayErr)
+				mockStreaming.EXPECT().SayInit(ctx, tt.id, uuid.Nil).Return(tt.responseInitStr, tt.responseInitErr)
+
+				if tt.responseInitErr == nil {
+					mockStreaming.EXPECT().SayAdd(ctx, tt.id, uuid.Nil, tt.text).Return(tt.responseSayErr)
+				}
 			}
 
 			_, err := h.Say(ctx, tt.id, tt.text)

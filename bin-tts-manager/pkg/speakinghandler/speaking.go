@@ -154,6 +154,15 @@ func (h *speakingHandler) Say(ctx context.Context, id uuid.UUID, text string) (*
 		return nil, fmt.Errorf("session is no longer active. status: %s", spk.Status)
 	}
 
+	// SayInit ensures the vendor (ElevenLabs WebSocket) is initialized.
+	// In the normal case the vendor is already initialized by runStart() when
+	// the AudioSocket connection arrived, so this is a no-op. It guards against
+	// the race where Say() is called before the AudioSocket connects.
+	if _, errInit := h.streamingHandler.SayInit(ctx, id, uuid.Nil); errInit != nil {
+		log.Errorf("Could not initialize streaming vendor. err: %v", errInit)
+		return nil, fmt.Errorf("could not initialize streaming vendor: %v", errInit)
+	}
+
 	if errSay := h.streamingHandler.SayAdd(ctx, id, uuid.Nil, text); errSay != nil {
 		log.Errorf("Could not add text. err: %v", errSay)
 		return nil, fmt.Errorf("could not add text: %v", errSay)
