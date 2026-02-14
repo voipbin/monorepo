@@ -64,9 +64,7 @@ func (h *dbHandler) SpeakingGet(ctx context.Context, id uuid.UUID) (*speaking.Sp
 		return nil, fmt.Errorf("could not query. SpeakingGet. err: %v", err)
 	}
 	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			err = fmt.Errorf("could not close rows. SpeakingGet. err: %v", closeErr)
-		}
+		_ = rows.Close()
 	}()
 
 	if !rows.Next() {
@@ -109,9 +107,7 @@ func (h *dbHandler) SpeakingGets(ctx context.Context, token string, size uint64,
 		return nil, fmt.Errorf("could not query. SpeakingGets. err: %v", err)
 	}
 	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			err = fmt.Errorf("could not close rows. SpeakingGets. err: %v", closeErr)
-		}
+		_ = rows.Close()
 	}()
 
 	var res []*speaking.Speaking

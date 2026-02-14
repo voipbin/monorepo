@@ -33,7 +33,7 @@ func (h *speakingHandler) Create(
 		speaking.FieldReferenceID:   referenceID,
 		speaking.FieldDeleted:       false,
 	}
-	existing, err := h.db.SpeakingGets(ctx, "", 10, filters)
+	existing, err := h.db.SpeakingGets(ctx, "", 100, filters)
 	if err != nil {
 		log.Errorf("Could not check existing sessions. err: %v", err)
 		return nil, fmt.Errorf("could not check existing sessions: %v", err)
@@ -45,7 +45,7 @@ func (h *speakingHandler) Create(
 	}
 
 	if provider == "" {
-		provider = "elevenlabs"
+		provider = string(streaming.VendorNameElevenlabs)
 	}
 
 	id := uuid.Must(uuid.NewV4())

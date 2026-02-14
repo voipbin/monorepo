@@ -89,7 +89,10 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 	}
 }
 
-// SayFlush flushes the current streaming buffer
+// SayFlush flushes the current streaming buffer.
+// TODO: Implement stale audio discarding — currently ElevenLabs may still
+// deliver audio frames generated before the flush. An atomic counter or
+// sequence number could be used to discard stale frames on the AudioSocket side.
 func (h *streamingHandler) SayFlush(ctx context.Context, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "SayFlush",

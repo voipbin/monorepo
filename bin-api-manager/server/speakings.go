@@ -7,6 +7,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 )
 
 // GetSpeakings implements GET /v1/speakings
@@ -81,6 +82,17 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		return
 	}
 
+	// Validate reference_type
+	referenceType := tmstreaming.ReferenceType(req.ReferenceType)
+	switch referenceType {
+	case tmstreaming.ReferenceTypeCall, tmstreaming.ReferenceTypeConfbridge:
+		// valid
+	default:
+		log.Errorf("Invalid reference_type: %s", req.ReferenceType)
+		c.AbortWithStatus(400)
+		return
+	}
+
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 	if referenceID == uuid.Nil {
 		log.Errorf("Invalid reference_id")
@@ -100,12 +112,22 @@ func (h *server) PostSpeakings(c *gin.Context) {
 	if req.VoiceId != nil {
 		voiceID = *req.VoiceId
 	}
-	direction := ""
+	direction := tmstreaming.DirectionNone
 	if req.Direction != nil {
-		direction = *req.Direction
+		direction = tmstreaming.Direction(*req.Direction)
 	}
 
-	speaking, err := h.serviceHandler.SpeakingCreate(c.Request.Context(), &a, req.ReferenceType, referenceID, language, provider, voiceID, direction)
+	// Validate direction
+	switch direction {
+	case tmstreaming.DirectionNone, tmstreaming.DirectionIncoming, tmstreaming.DirectionOutgoing, tmstreaming.DirectionBoth:
+		// valid
+	default:
+		log.Errorf("Invalid direction: %s", direction)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	speaking, err := h.serviceHandler.SpeakingCreate(c.Request.Context(), &a, referenceType, referenceID, language, provider, voiceID, direction)
 	if err != nil {
 		log.Errorf("Could not create speaking: %v", err)
 		c.AbortWithStatus(400)
@@ -248,6 +270,12 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 	var req openapi_server.PostSpeakingsIdSayJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	if req.Text == "" {
+		log.Errorf("Text is empty")
 		c.AbortWithStatus(400)
 		return
 	}

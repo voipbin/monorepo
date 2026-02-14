@@ -26,12 +26,12 @@ func Test_SpeakingCreate(t *testing.T) {
 		name string
 
 		agent         *amagent.Agent
-		referenceType string
+		referenceType tmstreaming.ReferenceType
 		referenceID   uuid.UUID
 		language      string
 		provider      string
 		voiceID       string
-		direction     string
+		direction     tmstreaming.Direction
 
 		responseSpeaking *tmspeaking.Speaking
 
@@ -48,12 +48,12 @@ func Test_SpeakingCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			referenceType: "call",
+			referenceType: tmstreaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"),
 			language:      "en-US",
 			provider:      "elevenlabs",
 			voiceID:       "voice123",
-			direction:     "in",
+			direction:     tmstreaming.DirectionIncoming,
 
 			responseSpeaking: &tmspeaking.Speaking{
 				Identity: commonidentity.Identity{
@@ -82,12 +82,12 @@ func Test_SpeakingCreate(t *testing.T) {
 				},
 				Permission: 0,
 			},
-			referenceType: "call",
+			referenceType: tmstreaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"),
 			language:      "en-US",
 			provider:      "",
 			voiceID:       "",
-			direction:     "in",
+			direction:     tmstreaming.DirectionIncoming,
 
 			expectErr: true,
 		},
@@ -111,12 +111,12 @@ func Test_SpeakingCreate(t *testing.T) {
 				mockReq.EXPECT().TTSV1SpeakingCreate(
 					ctx,
 					tt.agent.CustomerID,
-					tmstreaming.ReferenceType(tt.referenceType),
+					tt.referenceType,
 					tt.referenceID,
 					tt.language,
 					tt.provider,
 					tt.voiceID,
-					tmstreaming.Direction(tt.direction),
+					tt.direction,
 				).Return(tt.responseSpeaking, nil)
 			}
 

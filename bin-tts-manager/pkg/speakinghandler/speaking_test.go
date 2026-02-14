@@ -214,7 +214,7 @@ func Test_Create(t *testing.T) {
 				speaking.FieldReferenceID:   tt.referenceID,
 				speaking.FieldDeleted:       false,
 			}
-			mockDB.EXPECT().SpeakingGets(ctx, "", uint64(10), expectFilters).Return(tt.responseExisting, tt.responseExistErr)
+			mockDB.EXPECT().SpeakingGets(ctx, "", uint64(100), expectFilters).Return(tt.responseExisting, tt.responseExistErr)
 
 			// Check for existing active session
 			hasActive := false
@@ -228,7 +228,7 @@ func Test_Create(t *testing.T) {
 			if tt.responseExistErr == nil && !hasActive {
 				expectProvider := tt.provider
 				if expectProvider == "" {
-					expectProvider = "elevenlabs"
+					expectProvider = string(streaming.VendorNameElevenlabs)
 				}
 				mockDB.EXPECT().SpeakingCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, s *speaking.Speaking) error {
 					if s.Provider != expectProvider {

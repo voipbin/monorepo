@@ -23,7 +23,7 @@ func (h *serviceHandler) speakingGet(ctx context.Context, speakingID uuid.UUID) 
 }
 
 // SpeakingCreate creates a new speaking session.
-func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType string, referenceID uuid.UUID, language string, provider string, voiceID string, direction string) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.Speaking, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingCreate",
 		"customer_id": a.CustomerID,
@@ -35,7 +35,7 @@ func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, r
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.TTSV1SpeakingCreate(ctx, a.CustomerID, tmstreaming.ReferenceType(referenceType), referenceID, language, provider, voiceID, tmstreaming.Direction(direction))
+	tmp, err := h.reqHandler.TTSV1SpeakingCreate(ctx, a.CustomerID, referenceType, referenceID, language, provider, voiceID, direction)
 	if err != nil {
 		log.Errorf("Could not create speaking. err: %v", err)
 		return nil, err

@@ -65,6 +65,7 @@ import (
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
 	speaking "monorepo/bin-tts-manager/models/speaking"
+	streaming "monorepo/bin-tts-manager/models/streaming"
 	http "net/http"
 	reflect "reflect"
 
@@ -3910,7 +3911,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantList(ctx, a
 }
 
 // SpeakingCreate mocks base method.
-func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType string, referenceID uuid.UUID, language, provider, voiceID, direction string) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.Speaking, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingCreate", ctx, a, referenceType, referenceID, language, provider, voiceID, direction)
 	ret0, _ := ret[0].(*speaking.Speaking)
