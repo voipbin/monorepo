@@ -23,7 +23,7 @@ func (h *dbHandler) speakingGetFromRow(row *sql.Rows) (*speaking.Speaking, error
 }
 
 func (h *dbHandler) SpeakingCreate(ctx context.Context, s *speaking.Speaking) error {
-	s.TMCreate = h.util.TimeGetCurTime()
+	s.TMCreate = h.util.TimeNow()
 
 	fields, err := commondatabasehandler.PrepareFields(s)
 	if err != nil {
@@ -130,7 +130,7 @@ func (h *dbHandler) SpeakingUpdate(ctx context.Context, id uuid.UUID, fields map
 		return nil
 	}
 
-	fields[speaking.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[speaking.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -155,7 +155,7 @@ func (h *dbHandler) SpeakingUpdate(ctx context.Context, id uuid.UUID, fields map
 }
 
 func (h *dbHandler) SpeakingDelete(ctx context.Context, id uuid.UUID) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 	fields := map[speaking.Field]any{
 		speaking.FieldTMDelete: now,
 		speaking.FieldTMUpdate: now,

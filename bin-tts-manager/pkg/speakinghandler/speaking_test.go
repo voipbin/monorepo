@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-tts-manager/models/speaking"
@@ -843,7 +844,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 				},
 				Status:   speaking.StatusActive,
-				TMDelete: "2024-01-01T00:00:00.000000Z",
+				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
 			expectErr: false,

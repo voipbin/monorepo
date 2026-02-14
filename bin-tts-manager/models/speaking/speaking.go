@@ -1,6 +1,8 @@
 package speaking
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-tts-manager/models/streaming"
 
@@ -20,7 +22,7 @@ type Speaking struct {
 	Status        Status                  `json:"status"          db:"status"`
 	PodID         string                  `json:"pod_id"          db:"pod_id"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }

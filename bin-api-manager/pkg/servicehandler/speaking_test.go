@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -758,7 +759,7 @@ func Test_SpeakingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: "2024-01-01T00:00:00.000000Z",
+				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
 			expectRes: &tmspeaking.Speaking{
@@ -766,7 +767,7 @@ func Test_SpeakingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: "2024-01-01T00:00:00.000000Z",
+				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 			expectErr: false,
 		},
@@ -795,7 +796,7 @@ func Test_SpeakingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: "2024-01-01T00:00:00.000000Z",
+				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
 			expectRes: &tmspeaking.Speaking{
@@ -803,7 +804,7 @@ func Test_SpeakingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: "2024-01-01T00:00:00.000000Z",
+				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 			expectErr: false,
 		},
