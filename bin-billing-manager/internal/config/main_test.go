@@ -82,3 +82,37 @@ func TestConfigStruct(t *testing.T) {
 		})
 	}
 }
+
+func TestInitPrometheus_DisabledWhenNotConfigured(t *testing.T) {
+	// Reset global config to empty state
+	globalConfig = Config{
+		PrometheusEndpoint:      "",
+		PrometheusListenAddress: "",
+	}
+
+	// Should not panic when endpoint/listen address not configured
+	InitPrometheus()
+}
+
+func TestInitPrometheus_DisabledWhenPartiallyConfigured(t *testing.T) {
+	tests := []struct {
+		name     string
+		endpoint string
+		listen   string
+	}{
+		{"missing endpoint", "", ":8080"},
+		{"missing listen address", "/metrics", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			globalConfig = Config{
+				PrometheusEndpoint:      tt.endpoint,
+				PrometheusListenAddress: tt.listen,
+			}
+
+			// Should not panic when partially configured
+			InitPrometheus()
+		})
+	}
+}
