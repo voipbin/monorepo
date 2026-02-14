@@ -302,7 +302,6 @@ Example
                     "type": "talk",
                     "option": {
                         "text": "hello, this is test message.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }
@@ -1156,15 +1155,17 @@ Parameters
         "type": "talk",
         "option": {
             "text": "<string>",
-            "gender": "<string>",
             "language": "<string>",
+            "provider": "<string>",
+            "voice_id": "<string>",
             "digits_handle": "<string>"
         }
     }
 
 * text: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
-* gender: male/female/neutral.
 * language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
+* provider: TTS provider. Optional. ``gcp`` (Google Cloud TTS) or ``aws`` (AWS Polly). If omitted, the system uses the default provider.
+* voice_id: Provider-specific voice identifier. Optional. For example, ``en-US-Wavenet-D`` (GCP) or ``Joanna`` (AWS).
 * digits_handle: See detail :ref:`here <flow-struct-action-talk-digits_handle>`.
 
 .. _flow-struct-action-talk-digits_handle:
@@ -1186,7 +1187,6 @@ Example
         "type": "talk",
         "option": {
             "text": "Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye",
-            "gender": "female",
             "language": "en-US"
         }
     }

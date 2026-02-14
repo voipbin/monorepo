@@ -29,7 +29,6 @@ When the destination answer the call, it will speak the given text message.
                     "type": "talk",
                     "option": {
                         "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }
@@ -130,7 +129,6 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -207,7 +205,6 @@ Making an outbound call. After answer the call, it will play the TTS and then se
                 "type": "talk",
                 "option": {
                     "text": "This is dtmf send test call. Please wait.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -223,7 +220,6 @@ Making an outbound call. After answer the call, it will play the TTS and then se
                 "type": "talk",
                 "option": {
                     "text": "Thank you. DTMF send test has done.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             }
@@ -324,7 +320,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -351,7 +346,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -363,7 +357,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he'\''s dead. Mama, life had just begun, But now I'\''ve gone and thrown it all away.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -375,7 +368,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "Steve walks warily down the street. With his brim pulled way down low. Ain'\''t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -387,7 +379,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "You didn'\''t choice correct number. Default selected.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -402,7 +393,6 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "talk",
                 "option": {
                     "text": "Loop over. Hangup the call. Thank you, good bye.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -570,7 +560,6 @@ Make a groupcall to the multiple destinations.
                     "type": "talk",
                     "option": {
                         "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }

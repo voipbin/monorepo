@@ -7,17 +7,20 @@ import (
 
 const (
 	// VirtualNumberPrefix is the required prefix for virtual numbers
-	VirtualNumberPrefix = "+999"
+	VirtualNumberPrefix = "+899"
 
 	// VirtualNumberLength is the required length for virtual numbers (+ followed by 12 digits)
 	VirtualNumberLength = 13
 
-	// VirtualNumberReservedPrefix is the prefix for reserved virtual numbers (+999000XXXXXX)
-	VirtualNumberReservedPrefix = "+999000"
+	// VirtualNumberReservedPrefix is the prefix for reserved virtual numbers (+899000XXXXXX)
+	VirtualNumberReservedPrefix = "+899000"
+
+	// VirtualNumberCountryCode is the country code used for virtual numbers in available number responses
+	VirtualNumberCountryCode = "899"
 )
 
 // ValidateVirtualNumber validates a virtual number string.
-// If allowReserved is false, numbers in the reserved range +999000XXXXXX are rejected.
+// If allowReserved is false, numbers in the reserved range +899000XXXXXX are rejected.
 func ValidateVirtualNumber(num string, allowReserved bool) error {
 	if !strings.HasPrefix(num, VirtualNumberPrefix) {
 		return fmt.Errorf("virtual number must start with %s", VirtualNumberPrefix)

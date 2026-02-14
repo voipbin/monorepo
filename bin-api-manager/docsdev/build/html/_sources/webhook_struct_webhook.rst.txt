@@ -52,7 +52,6 @@ Example
                     "type": "talk",
                     "option": {
                         "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }
@@ -112,7 +111,6 @@ Example
                     "type": "talk",
                     "option": {
                         "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }
@@ -160,7 +158,6 @@ Example
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 }
             },
@@ -177,7 +174,6 @@ Example
                     "type": "talk",
                     "option": {
                         "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 }
@@ -505,7 +501,6 @@ Example
                 "type": "talk",
                 "option": {
                     "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                    "gender": "female",
                     "language": "en-US"
                 },
                 "tm_execute": "2022-04-11 06:10:55.918010931"

@@ -69,7 +69,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 			responseAvailableNumbers: []*nmavailablenumber.WebhookMessage{
 				{
-					Number:  "+999123456789",
+					Number:  "+899123456789",
 					Country: "",
 					Region:  "",
 				},
@@ -78,7 +78,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 			expectPageSize:    10,
 			expectCountryCode: "",
 			expectNumType:     "virtual",
-			expectedRes:       `{"result":[{"number":"+999123456789","country":"","region":"","postal_code":"","features":null}]}`,
+			expectedRes:       `{"result":[{"number":"+899123456789","country":"","region":"","postal_code":"","features":null}]}`,
 		},
 	}
 

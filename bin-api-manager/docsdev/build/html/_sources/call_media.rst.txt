@@ -386,8 +386,8 @@ TTS converts text to spoken audio:
         "option": {
             "text": "Hello, welcome to our service.",
             "language": "en-US",
-            "gender": "female",
-            "voice": "en-US-Neural2-C"   // Optional specific voice
+            "provider": "gcp",                  // Optional: "gcp" or "aws"
+            "voice_id": "en-US-Neural2-C"       // Optional: provider-specific voice
         }
     }
 

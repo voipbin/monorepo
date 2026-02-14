@@ -22,7 +22,6 @@ This example creates a queue that routes calls randomly to agents matching a spe
                     "type": "talk",
                     "option": {
                         "text": "Thank you for calling. Please wait while we connect you to an agent.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 },
