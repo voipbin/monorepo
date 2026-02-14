@@ -19,6 +19,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_webhook_method", FieldWebhookMethod, "webhook_method"},
 		{"field_webhook_uri", FieldWebhookURI, "webhook_uri"},
 		{"field_billing_account_id", FieldBillingAccountID, "billing_account_id"},
+		{"field_email_verified", FieldEmailVerified, "email_verified"},
 		{"field_tm_create", FieldTMCreate, "tm_create"},
 		{"field_tm_update", FieldTMUpdate, "tm_update"},
 		{"field_tm_delete", FieldTMDelete, "tm_delete"},
