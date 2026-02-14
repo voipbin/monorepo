@@ -134,3 +134,119 @@ func Test_hookSendgrid(t *testing.T) {
 		})
 	}
 }
+
+func Test_hookMailgun(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+	}{
+		{
+			name: "handles_mailgun_webhook",
+			data: []byte(`{"event":"delivered"}`),
+		},
+		{
+			name: "handles_empty_data",
+			data: []byte(`{}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			// hookMailgun currently just logs and returns nil
+			err := h.hookMailgun(ctx, tt.data)
+			if err != nil {
+				t.Errorf("Unexpected error from hookMailgun: %v", err)
+			}
+		})
+	}
+}
+
+func Test_Hook_UnknownURI(t *testing.T) {
+	tests := []struct {
+		name string
+		uri  string
+	}{
+		{
+			name: "fails_on_unknown_hook_uri",
+			uri:  "hook.voipbin.net/v1.0/emails/unknown",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			err := h.Hook(ctx, tt.uri, []byte{})
+			if err == nil {
+				t.Errorf("Expected error for unknown URI")
+			}
+		})
+	}
+}
+
+func Test_hookSendgrid_InvalidJSON(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+	}{
+		{
+			name: "fails_on_invalid_json",
+			data: []byte(`invalid json`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			err := h.hookSendgrid(ctx, tt.data)
+			if err == nil {
+				t.Errorf("Expected error for invalid JSON")
+			}
+		})
+	}
+}
