@@ -444,6 +444,11 @@ All SQL queries MUST be built using the squirrel query builder (`sq.Select`, `sq
 - Each model MUST define a `Field` type in `models/<entity>/field.go`
 - Update methods accept `map[<entity>.Field]any` for type-safe field updates
 
+#### 6. Empty Slice Initialization for List Functions (MANDATORY)
+- List/Gets functions MUST initialize result slices as empty: `res := []*Type{}`
+- NEVER use `var res []*Type` — nil slices serialize to `null` in JSON instead of `[]`
+- This applies to ALL dbhandler functions that return slices
+
 ### Debug Logging for Retrieved Data
 
 **CRITICAL: Always add debug logs when retrieving data from other services or databases.**
