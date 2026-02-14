@@ -36,11 +36,11 @@ func (h *numberHandler) GetAvailableVirtualNumbers(ctx context.Context, limit ui
 	seen := make(map[string]bool)
 
 	for len(candidates) < candidateCount {
-		// generate random number in range +999001000000 to +999999999999
+		// generate random number in range +899001000000 to +899999999999
 		// area codes 001-999 (excluding 000 which is reserved)
 		areaCode := rand.Intn(999) + 1        // 1-999
 		subscriber := rand.Intn(1000000)       // 000000-999999
-		num := fmt.Sprintf("+999%03d%06d", areaCode, subscriber)
+		num := fmt.Sprintf("%s%03d%06d", number.VirtualNumberPrefix, areaCode, subscriber)
 
 		if seen[num] {
 			continue
@@ -71,7 +71,7 @@ func (h *numberHandler) GetAvailableVirtualNumbers(ctx context.Context, limit ui
 		res = append(res, &availablenumber.AvailableNumber{
 			Number:       num,
 			ProviderName: number.ProviderNameNone,
-			Country:      "999",
+			Country:      number.VirtualNumberCountryCode,
 			Features:     []availablenumber.Feature{availablenumber.FeatureVoice},
 		})
 

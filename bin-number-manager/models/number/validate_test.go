@@ -12,32 +12,32 @@ func TestValidateVirtualNumber(t *testing.T) {
 		expectErr    bool
 	}{
 		// valid cases
-		{"valid virtual number", "+999001000001", false, false},
-		{"valid virtual number max", "+999999999999", false, false},
-		{"valid virtual number mid", "+999500123456", false, false},
-		{"valid reserved with allow", "+999000000000", true, false},
-		{"valid reserved max with allow", "+999000999999", true, false},
+		{"valid virtual number", "+899001000001", false, false},
+		{"valid virtual number max", "+899999999999", false, false},
+		{"valid virtual number mid", "+899500123456", false, false},
+		{"valid reserved with allow", "+899000000000", true, false},
+		{"valid reserved max with allow", "+899000999999", true, false},
 
 		// invalid prefix
-		{"missing +999 prefix", "+15551234567", false, true},
-		{"missing + sign", "999001000001", false, true},
+		{"missing +899 prefix", "+15551234567", false, true},
+		{"missing + sign", "899001000001", false, true},
 		{"wrong prefix", "+998001000001", false, true},
 
 		// invalid length
-		{"too short", "+99900100000", false, true},
-		{"too long", "+9990010000001", false, true},
+		{"too short", "+89900100000", false, true},
+		{"too long", "+8990010000001", false, true},
 		{"empty string", "", false, true},
-		{"just prefix", "+999", false, true},
+		{"just prefix", "+899", false, true},
 
 		// invalid characters
-		{"contains letter", "+999001a00001", false, true},
-		{"contains space", "+999001 00001", false, true},
-		{"contains dash", "+999-01000001", false, true},
+		{"contains letter", "+899001a00001", false, true},
+		{"contains space", "+899001 00001", false, true},
+		{"contains dash", "+899-01000001", false, true},
 
 		// reserved range
-		{"reserved range rejected", "+999000000000", false, true},
-		{"reserved range max rejected", "+999000999999", false, true},
-		{"reserved range mid rejected", "+999000500000", false, true},
+		{"reserved range rejected", "+899000000000", false, true},
+		{"reserved range max rejected", "+899000999999", false, true},
+		{"reserved range mid rejected", "+899000500000", false, true},
 	}
 
 	for _, tt := range tests {

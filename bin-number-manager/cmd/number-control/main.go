@@ -185,7 +185,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	var res *number.Number
 	if viper.GetBool("virtual-number") {
-		// CLI allows reserved range (+999000XXXXXX)
+		// CLI allows reserved range (VirtualNumberReservedPrefix)
 		res, err = handler.CreateVirtual(
 			context.Background(),
 			customerID,
