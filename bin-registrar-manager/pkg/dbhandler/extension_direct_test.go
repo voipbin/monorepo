@@ -402,3 +402,88 @@ func Test_ExtensionDirectUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_ExtensionDirectGetByExtensionIDs(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
+	type test struct {
+		name string
+		eds  []*extensiondirect.ExtensionDirect
+
+		extensionIDs []uuid.UUID
+
+		responseCurTime *time.Time
+		expectCount     int
+	}
+
+	tests := []test{
+		{
+			"empty_list",
+			[]*extensiondirect.ExtensionDirect{},
+			[]uuid.UUID{},
+			curTime,
+			0,
+		},
+		{
+			"multiple_extension_directs",
+			[]*extensiondirect.ExtensionDirect{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f1b2c3d4-1111-1111-1111-000000000001"),
+						CustomerID: uuid.FromStringOrNil("f1b2c3d4-2222-2222-2222-000000000001"),
+					},
+					ExtensionID: uuid.FromStringOrNil("f1b2c3d4-3333-3333-3333-000000000001"),
+					Hash:        "fff123def456",
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f1b2c3d4-4444-4444-4444-000000000001"),
+						CustomerID: uuid.FromStringOrNil("f1b2c3d4-2222-2222-2222-000000000001"),
+					},
+					ExtensionID: uuid.FromStringOrNil("f1b2c3d4-5555-5555-5555-000000000001"),
+					Hash:        "fff456ghi789",
+				},
+			},
+			[]uuid.UUID{
+				uuid.FromStringOrNil("f1b2c3d4-3333-3333-3333-000000000001"),
+				uuid.FromStringOrNil("f1b2c3d4-5555-5555-5555-000000000001"),
+			},
+			curTime,
+			2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for _, ed := range tt.eds {
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+				if err := h.ExtensionDirectCreate(ctx, ed); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			res, err := h.ExtensionDirectGetByExtensionIDs(ctx, tt.extensionIDs)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != tt.expectCount {
+				t.Errorf("Wrong count. expect: %d, got: %d", tt.expectCount, len(res))
+			}
+		})
+	}
+}
