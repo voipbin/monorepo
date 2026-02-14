@@ -194,6 +194,10 @@ func Test_NumberList(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if res == nil {
+				t.Errorf("Expected non-nil slice, got nil")
+			}
+
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -900,5 +904,33 @@ func Test_NumberListByTMRenew(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_NumberGetExistingNumbers_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	res, err := h.NumberGetExistingNumbers(ctx, []string{"+19999999999", "+18888888888"})
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
 	}
 }

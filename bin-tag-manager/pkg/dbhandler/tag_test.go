@@ -187,6 +187,38 @@ func Test_TagList(t *testing.T) {
 	}
 }
 
+func Test_TagList_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	filters := map[tag.Field]any{
+		tag.FieldCustomerID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+		tag.FieldDeleted:    false,
+	}
+
+	res, err := h.TagList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
 func Test_TagSetBasicInfo(t *testing.T) {
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 

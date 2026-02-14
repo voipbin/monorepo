@@ -325,7 +325,7 @@ func (h *handler) NumberGetExistingNumbers(ctx context.Context, numbers []string
 
 	// Using manual rows.Scan here because this is a single-column string query;
 	// ScanRow is designed for scanning into model structs with db tags.
-	var res []string
+	res := []string{}
 	for rows.Next() {
 		var num string
 		if err := rows.Scan(&num); err != nil {

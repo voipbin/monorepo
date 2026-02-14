@@ -231,6 +231,64 @@ func Test_MessageList(t *testing.T) {
 	}
 }
 
+func Test_MessageList_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	filters := map[message.Field]any{
+		message.FieldConversationID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+	}
+
+	res, err := h.MessageList(ctx, "2099-01-01T00:00:00.000Z", 100, filters)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
+func Test_MessageGetsByTransactionID_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	res, err := h.MessageGetsByTransactionID(ctx, "nonexistent-txn-id", "2099-01-01T00:00:00.000Z", 100)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
 func Test_MessageUpdateStatus(t *testing.T) {
 
 	tests := []struct {

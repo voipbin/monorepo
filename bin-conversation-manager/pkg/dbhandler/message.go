@@ -230,7 +230,7 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 		_ = rows.Close()
 	}()
 
-	var res []*message.Message
+	res := []*message.Message{}
 	for rows.Next() {
 		u, err := h.messageGetFromRow(rows)
 		if err != nil {

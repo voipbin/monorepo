@@ -81,7 +81,7 @@ func (h *dbHandler) EventList(
 	}
 	defer func() { _ = rows.Close() }()
 
-	var result []*event.Event
+	result := []*event.Event{}
 	for rows.Next() {
 		var e event.Event
 		var publisherStr, data string

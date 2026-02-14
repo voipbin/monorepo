@@ -224,7 +224,7 @@ func (h *handler) PhoneNumberListByContactID(ctx context.Context, contactID uuid
 		_ = rows.Close()
 	}()
 
-	var res []contact.PhoneNumber
+	res := []contact.PhoneNumber{}
 	for rows.Next() {
 		p, err := h.phoneNumberGetFromRow(rows)
 		if err != nil {
