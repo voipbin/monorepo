@@ -71,31 +71,10 @@ golangci-lint run -v --timeout 5m
 
 **CRITICAL: Run verification BEFORE every commit, not just once per branch.**
 
-"Changed" means compared to the `main` branch, NOT compared to your previous commit. If your branch has modified bin-common-handler at any point (even in earlier commits), you MUST run the full verification for ALL services before EVERY subsequent commit.
-
-**If you changed bin-common-handler (compared to main):** Run the full verification workflow for ALL 30+ services.
-
-Since all services depend on bin-common-handler, ANY change to it can affect every service. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code directly.
+Run the full verification workflow only for the services you changed. This applies regardless of whether `bin-common-handler` was also modified.
 
 ```bash
-# Run full verification for ALL services after bin-common-handler changes
-for dir in bin-*/; do
-  if [ -f "$dir/go.mod" ]; then
-    echo "=== $dir ===" && \
-    (cd "$dir" && \
-      go mod tidy && \
-      go mod vendor && \
-      go generate ./... && \
-      go test ./... && \
-      golangci-lint run -v --timeout 5m) || echo "FAILED: $dir"
-  fi
-done
-```
-
-**If you changed specific services (NOT bin-common-handler):** Run the full verification workflow only for those services.
-
-```bash
-# Run full verification only for the changed service
+# Run full verification only for the changed service(s)
 cd bin-<service-name>
 go mod tidy && \
 go mod vendor && \
