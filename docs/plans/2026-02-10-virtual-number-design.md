@@ -6,27 +6,27 @@ Currently, all numbers in VoIPbin must be purchased from a provider (Telnyx/Twil
 
 ## Approach
 
-Add a `type` field to the Number model that distinguishes between `normal` (provider-backed) and `virtual` (no provider) numbers. Virtual numbers use the `+999` country code prefix, are free (no billing), and skip all provider interactions. Their creation is gated by plan-tier resource limits.
+Add a `type` field to the Number model that distinguishes between `normal` (provider-backed) and `virtual` (no provider) numbers. Virtual numbers use the `+899` country code prefix, are free (no billing), and skip all provider interactions. Their creation is gated by plan-tier resource limits.
 
 ## Virtual Number Format
 
 All virtual numbers must follow strict format rules:
 
-- **Prefix**: Must start with `+999`
+- **Prefix**: Must start with `+899`
 - **Length**: Exactly 13 characters (`+` followed by 12 digits)
 - **Characters**: Only digits after the `+` sign
-- **Format**: `+999 XXX YYYYYY` (conceptually three groups: country `999`, area `XXX`, subscriber `YYYYYY`)
+- **Format**: `+899 XXX YYYYYY` (conceptually three groups: country `899`, area `XXX`, subscriber `YYYYYY`)
 
 ### Reserved Range
 
-The range `+999000000000` through `+999000999999` (where the area code is `000`) is reserved for test and internal use:
+The range `+899000000000` through `+899000999999` (where the area code is `000`) is reserved for test and internal use:
 
 - **API** (`POST /v1/numbers`): Always rejects numbers in the reserved range. Returns 400 error.
 - **CLI** (`number-control number create --virtual-number`): Allows numbers in the reserved range. This is the only way to create reserved virtual numbers.
 
 ### Normal Number Validation
 
-Normal numbers (type `normal`) must NOT start with `+999`. The `+999` prefix is exclusively for virtual numbers.
+Normal numbers (type `normal`) must NOT start with `+899`. The `+899` prefix is exclusively for virtual numbers.
 
 ## Data Model Changes
 
@@ -87,8 +87,8 @@ The request body gains an optional `type` field (defaults to `"normal"`).
 
 **When `type` is `"virtual"`:**
 
-1. Validate virtual number format (`+999`, 13 chars, digits only)
-2. Reject if number is in reserved range `+999000XXXXXX`
+1. Validate virtual number format (`+899`, 13 chars, digits only)
+2. Reject if number is in reserved range `+899000XXXXXX`
 3. Check uniqueness (same as normal numbers)
 4. Check plan-tier resource limit via `CustomerV1CustomerIsValidResourceLimit(ctx, customerID, ResourceTypeVirtualNumber)`
 5. Skip balance check (no `CustomerV1CustomerIsValidBalance` call)
@@ -99,7 +99,7 @@ The request body gains an optional `type` field (defaults to `"normal"`).
 
 **When `type` is `"normal"` (default):**
 
-1. Reject if number starts with `+999` (reserved for virtual numbers)
+1. Reject if number starts with `+899` (reserved for virtual numbers)
 2. Existing flow unchanged
 
 ### CLI: `number-control number create`
@@ -108,8 +108,8 @@ Add `--virtual-number` boolean flag:
 
 **When `--virtual-number` is set:**
 
-1. Validate virtual number format (`+999`, 13 chars, digits only)
-2. Allow reserved range `+999000XXXXXX` (CLI-only privilege)
+1. Validate virtual number format (`+899`, 13 chars, digits only)
+2. Allow reserved range `+899000XXXXXX` (CLI-only privilege)
 3. Skip provider purchase and billing
 4. Call `numberHandler.CreateVirtual()` which calls `Register()` with `type: "virtual"`
 
@@ -159,13 +159,13 @@ Virtual numbers do not need renewal since they are not backed by a provider. The
 Add an optional `type` field to the available numbers request body. When `type` is `"virtual"`:
 
 1. Ignore `country_code` (not needed for virtual numbers)
-2. Generate random virtual numbers in the valid range `+999001000000` through `+999999999999` (excluding reserved `+999000XXXXXX`)
+2. Generate random virtual numbers in the valid range `+899001000000` through `+899999999999` (excluding reserved `+899000XXXXXX`)
 3. Check each generated number against the database to ensure it's not already registered
 4. Return up to `page_size` available numbers
 5. Return `AvailableNumber` objects with:
    - `number`: The generated virtual number
    - `provider_name`: `""` (no provider)
-   - `country`: `"999"`
+   - `country`: `"899"`
    - `region`: `""`
    - `postal_code`: `""`
    - `features`: `["voice"]` (virtual numbers support voice routing)
@@ -194,7 +194,7 @@ func (h *numberHandler) GetAvailableVirtualNumbers(limit uint) ([]*availablenumb
 
 The generation loop:
 - Generate a batch of random candidate numbers (e.g., 3x the limit to account for collisions)
-- Each candidate: random integer in range [999001000000, 999999999999], formatted as `+%012d`
+- Each candidate: random integer in range [899001000000, 899999999999], formatted as `+%012d`
 - Query DB with `WHERE number IN (candidates...) AND tm_delete = '9999-01-01'` to find taken ones
 - Remove taken numbers from candidates
 - Return first `limit` results
@@ -342,13 +342,13 @@ Shared validation function in `bin-number-manager/models/number/`:
 // number/validate.go
 
 const (
-    VirtualNumberPrefix        = "+999"
+    VirtualNumberPrefix        = "+899"
     VirtualNumberLength        = 13 // "+" plus 12 digits
-    VirtualNumberReservedPrefix = "+999000"
+    VirtualNumberReservedPrefix = "+899000"
 )
 
 // ValidateVirtualNumber validates a virtual number string.
-// If allowReserved is false, numbers in the reserved range +999000XXXXXX are rejected.
+// If allowReserved is false, numbers in the reserved range +899000XXXXXX are rejected.
 func ValidateVirtualNumber(num string, allowReserved bool) error {
     if !strings.HasPrefix(num, VirtualNumberPrefix) {
         return fmt.Errorf("virtual number must start with %s", VirtualNumberPrefix)
@@ -434,7 +434,7 @@ func (h *numberHandler) CreateVirtual(
 Update `processV1NumbersPost` in `bin-number-manager/pkg/listenhandler/v1_numbers.go` to:
 1. Parse the `type` field from the request
 2. If `type` is `"virtual"`, call `numberHandler.CreateVirtual()` with `allowReserved: false`
-3. If `type` is `"normal"` or empty, validate number does NOT start with `+999`, then call existing `numberHandler.Create()`
+3. If `type` is `"normal"` or empty, validate number does NOT start with `+899`, then call existing `numberHandler.Create()`
 
 ### Request Model
 
@@ -463,7 +463,7 @@ type V1DataNumbersPost struct {
 - `models/number/number.go` — Add `Type` field to struct
 - `models/number/field.go` — Add `FieldType` constant
 - `pkg/numberhandler/main.go` — Add `CreateVirtual()` and `GetAvailableVirtualNumbers()` to interface
-- `pkg/numberhandler/number.go` — Add `CreateVirtual()` implementation, update `Create()` to reject `+999`, update `Delete()` to handle `ProviderNameNone`
+- `pkg/numberhandler/number.go` — Add `CreateVirtual()` implementation, update `Create()` to reject `+899`, update `Delete()` to handle `ProviderNameNone`
 - `pkg/numberhandler/available_number.go` — Add `GetAvailableVirtualNumbers()`, update `GetAvailableNumbers()` to route by type
 - `pkg/numberhandler/db.go` — Update `dbCreate()` to accept and persist `type` field
 - `pkg/listenhandler/v1_numbers.go` — Parse `type` from request, route to `Create()` or `CreateVirtual()`
@@ -495,7 +495,7 @@ type V1DataNumbersPost struct {
 ## Trade-offs
 
 - **Single endpoint vs separate endpoints**: Using a single `POST /v1/numbers` with a `type` field keeps the API surface small and avoids duplicating CRUD logic. The trade-off is slightly more complex validation in the create handler.
-- **+999 prefix**: Not assigned by ITU-T but could theoretically be assigned in the future. Risk is minimal since virtual numbers never touch the telecom network.
+- **+899 prefix**: Spare/unassigned in the ITU-T E.164 numbering plan (Zone 8). No emergency number conflicts. Risk of future assignment is minimal since virtual numbers never touch the telecom network. Originally used +999, changed to +899 to avoid confusion with the 999 emergency number in Commonwealth countries.
 - **No billing for virtual numbers**: Simplifies implementation. If monetization is needed later, a new billing reference type can be added.
 - **Resource limits via plan tier**: Relies on the plan-tier system from `2026-02-09-resource-limit-plan-tier-design.md`. If that system is not yet implemented, resource limits would need to be deferred or implemented as part of this work.
 - **Reserved range only via CLI**: Keeps the API simple while providing admin flexibility. No API-level admin override is needed for now.
