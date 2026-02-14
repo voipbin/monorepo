@@ -217,7 +217,7 @@ VoIPBIN supports various number types for different use cases.
 +------------+------------------------------------------------------------------+
 | mobile     | Mobile phone numbers (where available)                           |
 +------------+------------------------------------------------------------------+
-| virtual    | Virtual numbers with +999 prefix. No provider purchase required. |
+| virtual    | Virtual numbers with +899 prefix. No provider purchase required. |
 |            | Designed for non-PSTN callers such as AI calls, WebRTC calls,   |
 |            | and internal routing.                                            |
 +------------+------------------------------------------------------------------+
@@ -251,14 +251,14 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
                                             provider: telnyx                |
 
 
-      Virtual Number (e.g. +999123456789)
+      Virtual Number (e.g. +899123456789)
       ====================================
 
       Non-PSTN Caller                                                Your Application
       (AI, WebRTC, SIP)                                                     |
            |                                                                |
            | Call from non-PSTN caller                                      |
-           | to +999123456789                                               |
+           | to +899123456789                                               |
            +--------------- No Provider needed                              |
                                 |                                           |
                                 v                                           |
@@ -279,7 +279,7 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
 +-------------------+-------------------------------+-------------------------------+
 | Aspect            | Normal Number                 | Virtual Number                |
 +===================+===============================+===============================+
-| Format            | E.164 (e.g. +15551234567)     | +999 prefix (+999XXXXXXXXX)   |
+| Format            | E.164 (e.g. +15551234567)     | +899 prefix (+899XXXXXXXXX)   |
 +-------------------+-------------------------------+-------------------------------+
 | Provider          | Telnyx or Twilio              | None (internal only)          |
 +-------------------+-------------------------------+-------------------------------+
@@ -361,14 +361,14 @@ Create a virtual number for development and testing without purchasing from a pr
        GET /available_numbers?type=virtual&page_size=5
 
     2. Provision the virtual number
-       POST /numbers { "number": "+999100000001" }
+       POST /numbers { "number": "+899100000001" }
 
     3. Assign a call flow for testing
        PUT /numbers/{id} { "call_flow_id": "..." }
 
     Result:
     +--------------------------------------------+
-    | Virtual number +999100000001 is active    |
+    | Virtual number +899100000001 is active    |
     | -> No provider charges                     |
     | -> Ready for development/testing           |
     +--------------------------------------------+

@@ -68,7 +68,7 @@ Type
 Type    Description
 ======= ===========
 normal  Normal number purchased from a provider.
-virtual Virtual number with +999 prefix. No provider purchase required.
+virtual Virtual number with +899 prefix. No provider purchase required.
 ======= ===========
 
 
