@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -255,5 +256,41 @@ func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 	}
 	if args[3] != 50 {
 		t.Errorf("Last arg should be pageSize (50), got %v", args[3])
+	}
+}
+
+func TestWaitForConnection_ContextCancelled(t *testing.T) {
+	handler := &dbHandler{
+		address:  "localhost:9000",
+		database: "test",
+		conn:     nil, // No connection
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately
+
+	err := handler.WaitForConnection(ctx)
+	if err != context.Canceled {
+		t.Errorf("WaitForConnection() error = %v, want context.Canceled", err)
+	}
+}
+
+func TestWaitForConnection_Timeout(t *testing.T) {
+	// Test timeout scenario - connection never established
+	handler := &dbHandler{
+		address:  "localhost:9000",
+		database: "test",
+		conn:     nil, // No connection
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	err := handler.WaitForConnection(ctx)
+	if err == nil {
+		t.Error("WaitForConnection() expected timeout error, got nil")
+	}
+	if err != context.DeadlineExceeded {
+		t.Errorf("WaitForConnection() error = %v, want context.DeadlineExceeded", err)
 	}
 }

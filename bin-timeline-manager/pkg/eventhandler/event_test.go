@@ -27,6 +27,11 @@ func TestNewEventHandler(t *testing.T) {
 	}
 }
 
+func TestEventHandler_Interface(t *testing.T) {
+	// Ensure eventHandler implements EventHandler interface
+	var _ EventHandler = (*eventHandler)(nil)
+}
+
 func TestList_Validation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
