@@ -19,6 +19,7 @@ import (
 	summary "monorepo/bin-ai-manager/models/summary"
 	tool "monorepo/bin-ai-manager/models/tool"
 	account "monorepo/bin-billing-manager/models/account"
+	allowance "monorepo/bin-billing-manager/models/allowance"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
@@ -783,6 +784,21 @@ func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, 
 func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, a, billingAccountID, balance any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAddBalanceForce", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAddBalanceForce), ctx, a, billingAccountID, balance)
+}
+
+// BillingAccountAllowancesGet mocks base method.
+func (m *MockServiceHandler) BillingAccountAllowancesGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*allowance.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountAllowancesGet", ctx, a, billingAccountID, pageSize, pageToken)
+	ret0, _ := ret[0].([]*allowance.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountAllowancesGet indicates an expected call of BillingAccountAllowancesGet.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountAllowancesGet(ctx, a, billingAccountID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAllowancesGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAllowancesGet), ctx, a, billingAccountID, pageSize, pageToken)
 }
 
 // BillingAccountGet mocks base method.

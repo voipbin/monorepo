@@ -28,7 +28,7 @@ Check your billing account balance before initiating calls or sending messages t
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-The ``balance`` field shows the remaining balance in USD.
+The ``balance`` field shows the remaining credit balance in USD.
 
 **List All Billing Accounts:**
 
@@ -53,6 +53,47 @@ The ``balance`` field shows the remaining balance in USD.
             }
         ]
     }
+
+Check Token Allowance
+----------------------
+
+View your current monthly token allowance and usage. Each plan tier includes a pool of tokens that cover VN calls and SMS messages.
+
+**Get Current Allowance:**
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/<billing-account-id>/allowances?token=<YOUR_AUTH_TOKEN>'
+
+    [
+        {
+            "id": "a1b2c3d4-1234-5678-abcd-ef1234567890",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "account_id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+            "cycle_start": "2024-01-01T00:00:00Z",
+            "cycle_end": "2024-02-01T00:00:00Z",
+            "tokens_total": 1000,
+            "tokens_used": 350,
+            "tm_create": "2024-01-01T00:00:00Z",
+            "tm_update": "2024-01-15T10:30:00Z"
+        }
+    ]
+
+- ``tokens_total``: Total tokens allocated for this billing cycle (determined by plan tier).
+- ``tokens_used``: Tokens consumed so far this cycle.
+- Remaining tokens: ``tokens_total - tokens_used`` = 650 in this example.
+- ``cycle_start`` / ``cycle_end``: The billing cycle period. Tokens reset when a new cycle starts.
+
+**Token Allowances by Plan:**
+
+=================== ======================
+Plan Tier           Monthly Tokens
+=================== ======================
+Free                1,000
+Basic               10,000
+Professional        100,000
+Unlimited           Unlimited (no limit)
+=================== ======================
 
 Add Balance (Admin Only)
 -------------------------
@@ -88,104 +129,156 @@ Only users with admin permissions can add balance to accounts. This ensures acco
 Understanding Service Rates
 ----------------------------
 
-VoIPBIN uses a fixed-rate pricing model for transparent and predictable costs.
+VoIPBIN uses a hybrid billing model: token-eligible services consume tokens first, then overflow to credits. Credit-only services always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
 
-**Current Rates:**
+**Token Rates:**
 
-=================== ======================
-Service Type        Cost (USD)
-=================== ======================
-Number buying       $5.00
-Calling per second  $0.020
-SMS per message     $0.008
-=================== ======================
+=================== ====================== ======================
+Service Type        Token Cost             Unit
+=================== ====================== ======================
+VN Calls            1 token                Per minute (ceiling)
+SMS Messages        10 tokens              Per message
+=================== ====================== ======================
 
-**Calculate Call Cost:**
+**Credit Rates (Overflow and Credit-Only):**
+
+========================= ====================== ======================
+Service Type              Cost (USD)             Unit
+========================= ====================== ======================
+VN Calls (overflow)       $0.0045                Per minute (ceiling)
+PSTN Outgoing Calls       $0.0060                Per minute (ceiling)
+PSTN Incoming Calls       $0.0045                Per minute (ceiling)
+SMS (overflow)            $0.008                 Per message
+Number Purchase           $5.00                  Per number
+Number Renewal            $5.00                  Per number
+Extension Calls           Free                   No charge
+========================= ====================== ======================
+
+**Calculate VN Call Cost (with tokens):**
 
 .. code::
 
-    # Example: 5 minute call
-    Duration: 300 seconds
-    Rate: $0.020 per second
-    Total Cost: 300 × $0.020 = $6.00
+    # Example: 5 minute VN call with tokens available
+    Duration: 5 minutes
+    Token cost: 5 x 1 = 5 tokens
+    Credit cost: $0.00 (covered by tokens)
 
-**Calculate SMS Cost:**
+**Calculate VN Call Cost (tokens exhausted):**
 
 .. code::
 
-    # Example: 10 messages
-    Messages: 10
-    Rate: $0.008 per message
-    Total Cost: 10 × $0.008 = $0.08
+    # Example: 5 minute VN call with no tokens remaining
+    Duration: 5 minutes
+    Credit cost: 5 x $0.0045 = $0.0225
+
+**Calculate PSTN Call Cost:**
+
+.. code::
+
+    # Example: 2 minute 30 second PSTN outgoing call
+    Duration: 2 min 30 sec -> 3 minutes (ceiling-rounded)
+    Credit cost: 3 x $0.0060 = $0.018
+
+**Calculate SMS Cost (with tokens):**
+
+.. code::
+
+    # Example: 10 messages with tokens available
+    Token cost: 10 x 10 = 100 tokens
+    Credit cost: $0.00 (covered by tokens)
+
+**Calculate SMS Cost (tokens exhausted):**
+
+.. code::
+
+    # Example: 10 messages with no tokens remaining
+    Credit cost: 10 x $0.008 = $0.08
 
 **Calculate Total Monthly Cost:**
 
 .. code::
 
-    Phone Numbers: 3 numbers × $5.00 = $15.00
-    Calls: 500 seconds × $0.020 = $10.00
-    SMS: 100 messages × $0.008 = $0.80
-    Total: $25.80
+    Token-eligible (with 1000 tokens available):
+      VN Calls: 200 min x 1 token = 200 tokens consumed
+      SMS: 50 messages x 10 tokens = 500 tokens consumed
+      Total tokens used: 700 / 1000 (within allowance)
+      Credit from overflow: $0.00
+
+    Credit-only:
+      PSTN Calls: 100 min x $0.006 = $0.60
+      Phone Numbers: 3 x $5.00 = $15.00
+
+    Total credit cost: $15.60
 
 Check Balance Before Call
 --------------------------
 
-Programmatically verify balance before initiating calls to ensure successful completion.
+Programmatically verify balance and token availability before initiating calls to ensure successful completion.
 
 **Python Example:**
 
 .. code::
 
     import requests
+    import math
 
-    def check_balance_and_call(billing_account_id, call_duration_seconds):
-        # Get billing account
-        url = f"https://api.voipbin.net/v1.0/billing_accounts/{billing_account_id}"
+    def check_balance_and_call(billing_account_id, call_duration_minutes, call_type="vn"):
+        base_url = "https://api.voipbin.net/v1.0"
         params = {"token": "<YOUR_AUTH_TOKEN>"}
 
-        response = requests.get(url, params=params)
-        account = response.json()
+        # Get billing account
+        account = requests.get(
+            f"{base_url}/billing_accounts/{billing_account_id}",
+            params=params
+        ).json()
 
-        # Check if balance is sufficient
-        estimated_cost = call_duration_seconds * 0.020
+        # Get current allowance
+        allowances = requests.get(
+            f"{base_url}/billing_accounts/{billing_account_id}/allowances",
+            params=params
+        ).json()
+
         current_balance = account['balance']
+        tokens_remaining = 0
+        if allowances:
+            current_allowance = allowances[0]
+            tokens_remaining = current_allowance['tokens_total'] - current_allowance['tokens_used']
 
-        if current_balance < estimated_cost:
+        duration = math.ceil(call_duration_minutes)  # ceiling-rounded
+
+        if call_type == "vn":
+            # VN call: check tokens first, then credit overflow
+            tokens_needed = duration * 1  # 1 token per minute
+            if tokens_remaining >= tokens_needed:
+                print(f"Covered by tokens: {tokens_needed} tokens")
+                print(f"Tokens remaining after call: {tokens_remaining - tokens_needed}")
+                can_proceed = True
+            else:
+                # Partial or full overflow to credit
+                overflow_minutes = duration - tokens_remaining
+                overflow_cost = overflow_minutes * 0.0045
+                print(f"Tokens available: {tokens_remaining}")
+                print(f"Overflow to credit: {overflow_minutes} min x $0.0045 = ${overflow_cost:.4f}")
+                can_proceed = current_balance >= overflow_cost
+
+        elif call_type == "pstn":
+            # PSTN call: always credit
+            estimated_cost = duration * 0.006
+            print(f"PSTN call cost: {duration} min x $0.006 = ${estimated_cost:.4f}")
+            can_proceed = current_balance >= estimated_cost
+
+        if not can_proceed:
             print(f"Insufficient balance: ${current_balance:.2f}")
-            print(f"Required: ${estimated_cost:.2f}")
             return False
 
-        # Balance is sufficient, proceed with call
         print(f"Balance OK: ${current_balance:.2f}")
-        print(f"Estimated cost: ${estimated_cost:.2f}")
+        return True
 
-        # Create call
-        call_data = {
-            "source": {
-                "type": "tel",
-                "target": "+15551234567"
-            },
-            "destinations": [
-                {
-                    "type": "tel",
-                    "target": "+15559876543"
-                }
-            ]
-        }
+    # Check for a 10 minute VN call
+    check_balance_and_call("62918cd8-0cd7-11ee-8571-b738bed3a5c4", 10, "vn")
 
-        call_response = requests.post(
-            "https://api.voipbin.net/v1.0/calls",
-            params=params,
-            json=call_data
-        )
-
-        return call_response.json()
-
-    # Check balance for 10 minute call (600 seconds)
-    result = check_balance_and_call(
-        "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
-        600
-    )
+    # Check for a 5 minute PSTN call
+    check_balance_and_call("62918cd8-0cd7-11ee-8571-b738bed3a5c4", 5, "pstn")
 
 **Node.js Example:**
 
@@ -193,49 +286,63 @@ Programmatically verify balance before initiating calls to ensure successful com
 
     const axios = require('axios');
 
-    async function checkBalanceAndCall(billingAccountId, callDurationSeconds) {
+    async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callType = 'vn') {
         try {
+            const baseUrl = 'https://api.voipbin.net/v1.0';
+            const params = { token: '<YOUR_AUTH_TOKEN>' };
+
             // Get billing account
             const accountResponse = await axios.get(
-                `https://api.voipbin.net/v1.0/billing_accounts/${billingAccountId}`,
-                { params: { token: '<YOUR_AUTH_TOKEN>' } }
+                `${baseUrl}/billing_accounts/${billingAccountId}`,
+                { params }
             );
-
             const account = accountResponse.data;
 
-            // Check if balance is sufficient
-            const estimatedCost = callDurationSeconds * 0.020;
-            const currentBalance = account.balance;
+            // Get current allowance
+            const allowanceResponse = await axios.get(
+                `${baseUrl}/billing_accounts/${billingAccountId}/allowances`,
+                { params }
+            );
+            const allowances = allowanceResponse.data;
 
-            if (currentBalance < estimatedCost) {
+            const currentBalance = account.balance;
+            let tokensRemaining = 0;
+            if (allowances && allowances.length > 0) {
+                const current = allowances[0];
+                tokensRemaining = current.tokens_total - current.tokens_used;
+            }
+
+            const duration = Math.ceil(callDurationMinutes);  // ceiling-rounded
+
+            let canProceed = false;
+
+            if (callType === 'vn') {
+                // VN call: check tokens first
+                const tokensNeeded = duration * 1;
+                if (tokensRemaining >= tokensNeeded) {
+                    console.log(`Covered by tokens: ${tokensNeeded} tokens`);
+                    canProceed = true;
+                } else {
+                    const overflowMinutes = duration - tokensRemaining;
+                    const overflowCost = overflowMinutes * 0.0045;
+                    console.log(`Tokens available: ${tokensRemaining}`);
+                    console.log(`Overflow cost: $${overflowCost.toFixed(4)}`);
+                    canProceed = currentBalance >= overflowCost;
+                }
+            } else if (callType === 'pstn') {
+                // PSTN call: always credit
+                const estimatedCost = duration * 0.006;
+                console.log(`PSTN call cost: $${estimatedCost.toFixed(4)}`);
+                canProceed = currentBalance >= estimatedCost;
+            }
+
+            if (!canProceed) {
                 console.log(`Insufficient balance: $${currentBalance.toFixed(2)}`);
-                console.log(`Required: $${estimatedCost.toFixed(2)}`);
                 return null;
             }
 
-            // Balance is sufficient, proceed with call
             console.log(`Balance OK: $${currentBalance.toFixed(2)}`);
-            console.log(`Estimated cost: $${estimatedCost.toFixed(2)}`);
-
-            // Create call
-            const callResponse = await axios.post(
-                'https://api.voipbin.net/v1.0/calls',
-                {
-                    source: {
-                        type: 'tel',
-                        target: '+15551234567'
-                    },
-                    destinations: [
-                        {
-                            type: 'tel',
-                            target: '+15559876543'
-                        }
-                    ]
-                },
-                { params: { token: '<YOUR_AUTH_TOKEN>' } }
-            );
-
-            return callResponse.data;
+            return true;
 
         } catch (error) {
             console.error('Error:', error.message);
@@ -243,8 +350,56 @@ Programmatically verify balance before initiating calls to ensure successful com
         }
     }
 
-    // Check balance for 10 minute call (600 seconds)
-    checkBalanceAndCall('62918cd8-0cd7-11ee-8571-b738bed3a5c4', 600);
+    // Check for a 10 minute VN call
+    checkBalanceAndCall('62918cd8-0cd7-11ee-8571-b738bed3a5c4', 10, 'vn');
+
+Monitor Token Usage
+--------------------
+
+Track token consumption during the billing cycle to plan usage and avoid unexpected overflow charges.
+
+**Python Example:**
+
+.. code::
+
+    import requests
+
+    def monitor_token_usage(billing_account_id):
+        base_url = "https://api.voipbin.net/v1.0"
+        params = {"token": "<YOUR_AUTH_TOKEN>"}
+
+        # Get current allowance
+        allowances = requests.get(
+            f"{base_url}/billing_accounts/{billing_account_id}/allowances",
+            params=params
+        ).json()
+
+        if not allowances:
+            print("No active allowance cycle found.")
+            return
+
+        current = allowances[0]
+        total = current['tokens_total']
+        used = current['tokens_used']
+        remaining = total - used
+        usage_pct = (used / total * 100) if total > 0 else 0
+
+        print(f"Billing Cycle: {current['cycle_start']} to {current['cycle_end']}")
+        print(f"Tokens: {used} / {total} used ({usage_pct:.1f}%)")
+        print(f"Remaining: {remaining} tokens")
+
+        # Estimate remaining capacity
+        vn_call_minutes = remaining  # 1 token per minute
+        sms_messages = remaining // 10  # 10 tokens per message
+        print(f"Remaining capacity:")
+        print(f"  - VN calls: ~{vn_call_minutes} minutes")
+        print(f"  - SMS: ~{sms_messages} messages")
+
+        # Warn if running low
+        if usage_pct > 80:
+            print("WARNING: Token usage above 80%. Consider upgrading plan tier.")
+
+    monitor_token_usage("62918cd8-0cd7-11ee-8571-b738bed3a5c4")
 
 Monitor Balance with Webhooks
 ------------------------------
@@ -292,7 +447,6 @@ Set up webhooks to receive notifications when balance changes or falls below a t
 
     # Python Flask example
     from flask import Flask, request, jsonify
-    import smtplib
 
     app = Flask(__name__)
 
@@ -310,228 +464,176 @@ Set up webhooks to receive notifications when balance changes or falls below a t
 
             # Check if balance is low
             if balance < LOW_BALANCE_THRESHOLD:
-                # Send alert email
                 send_low_balance_alert(account_id, balance)
-
-                # Store alert in database
-                store_balance_alert(account_id, balance)
-
-                # Optionally pause campaigns or services
-                pause_services_if_needed(account_id, balance)
 
         return jsonify({'status': 'received'}), 200
 
     def send_low_balance_alert(account_id, balance):
         subject = f"Low Balance Alert: ${balance:.2f}"
         body = f"""
-        Your billing account balance is low.
+        Your billing account credit balance is low.
 
         Account ID: {account_id}
         Current Balance: ${balance:.2f}
         Threshold: ${LOW_BALANCE_THRESHOLD:.2f}
 
-        Please add funds to continue using VoIPBIN services.
+        Note: Token-eligible services (VN calls, SMS) will continue
+        working as long as monthly tokens are available. Credit balance
+        is needed for PSTN calls, number purchases, and token overflow.
         """
-        # Send email implementation
         print(f"Sending low balance alert: {subject}")
-
-    def store_balance_alert(account_id, balance):
-        # Store alert in database for tracking
-        pass
-
-    def pause_services_if_needed(account_id, balance):
-        # Optionally pause campaigns if balance is critically low
-        CRITICAL_THRESHOLD = 5.00
-        if balance < CRITICAL_THRESHOLD:
-            # Pause campaigns or services
-            print(f"Pausing services for account {account_id}")
 
 Common Use Cases
 ----------------
 
-**1. Pre-Call Balance Verification:**
+**1. Pre-Campaign Cost Estimation:**
 
 .. code::
 
-    # Verify balance before campaign
-    def verify_campaign_balance(billing_account_id, estimated_calls, avg_duration):
-        account = get_billing_account(billing_account_id)
+    def estimate_campaign_cost(billing_account_id, vn_calls, vn_avg_minutes,
+                               pstn_calls, pstn_avg_minutes, sms_count):
+        """Estimate campaign cost considering tokens and credits."""
+        import math
 
-        # Calculate estimated cost
-        total_seconds = estimated_calls * avg_duration
-        estimated_cost = total_seconds * 0.020
+        # Get current token availability
+        allowances = get_allowances(billing_account_id)
+        tokens_remaining = 0
+        if allowances:
+            current = allowances[0]
+            tokens_remaining = current['tokens_total'] - current['tokens_used']
 
-        # Add 20% buffer for safety
-        required_balance = estimated_cost * 1.20
+        # VN calls: tokens first, then overflow
+        vn_total_minutes = vn_calls * math.ceil(vn_avg_minutes)
+        vn_tokens_needed = vn_total_minutes  # 1 token per minute
+        vn_tokens_consumed = min(vn_tokens_needed, tokens_remaining)
+        vn_overflow_minutes = vn_total_minutes - vn_tokens_consumed
+        vn_credit = vn_overflow_minutes * 0.0045
+        tokens_remaining -= vn_tokens_consumed
 
-        if account['balance'] < required_balance:
-            return {
-                'can_proceed': False,
-                'current_balance': account['balance'],
-                'required_balance': required_balance,
-                'shortfall': required_balance - account['balance']
-            }
+        # SMS: tokens first, then overflow
+        sms_tokens_needed = sms_count * 10  # 10 tokens per message
+        sms_tokens_consumed = min(sms_tokens_needed, tokens_remaining)
+        sms_overflow_count = (sms_tokens_needed - sms_tokens_consumed) // 10
+        sms_credit = sms_overflow_count * 0.008
+        tokens_remaining -= sms_tokens_consumed
 
-        return {'can_proceed': True}
+        # PSTN calls: always credit
+        pstn_total_minutes = pstn_calls * math.ceil(pstn_avg_minutes)
+        pstn_credit = pstn_total_minutes * 0.006
 
-**2. Real-Time Balance Tracking:**
+        total_credit = vn_credit + sms_credit + pstn_credit
 
-.. code::
-
-    # Track balance changes during campaign
-    def monitor_campaign_balance(billing_account_id, campaign_id):
-        account = get_billing_account(billing_account_id)
-        initial_balance = account['balance']
-
-        # Store initial balance
-        campaign_data = {
-            'campaign_id': campaign_id,
-            'initial_balance': initial_balance,
-            'start_time': datetime.now()
+        return {
+            'tokens_consumed': vn_tokens_consumed + sms_tokens_consumed,
+            'vn_overflow_credit': vn_credit,
+            'sms_overflow_credit': sms_credit,
+            'pstn_credit': pstn_credit,
+            'total_credit_needed': total_credit
         }
 
-        # Monitor balance every minute
-        while campaign_is_running(campaign_id):
-            current_account = get_billing_account(billing_account_id)
-            current_balance = current_account['balance']
-
-            # Calculate burn rate
-            elapsed_time = (datetime.now() - campaign_data['start_time']).seconds
-            spent = initial_balance - current_balance
-            burn_rate = spent / (elapsed_time / 60)  # USD per minute
-
-            # Estimate remaining runtime
-            remaining_minutes = current_balance / burn_rate if burn_rate > 0 else 0
-
-            print(f"Balance: ${current_balance:.2f}")
-            print(f"Burn rate: ${burn_rate:.2f}/min")
-            print(f"Est. remaining: {remaining_minutes:.0f} minutes")
-
-            # Check if balance is too low
-            if remaining_minutes < 10:
-                alert_low_balance(billing_account_id, current_balance)
-
-            time.sleep(60)  # Check every minute
-
-**3. Multi-Service Cost Tracking:**
-
-.. code::
-
-    # Calculate total cost for multiple services
-    def calculate_total_cost(phone_numbers, call_seconds, sms_count):
-        costs = {
-            'phone_numbers': phone_numbers * 5.00,
-            'calls': call_seconds * 0.020,
-            'sms': sms_count * 0.008
-        }
-
-        costs['total'] = sum(costs.values())
-
-        return costs
-
-    # Example usage
-    monthly_costs = calculate_total_cost(
-        phone_numbers=3,      # 3 phone numbers
-        call_seconds=15000,   # 250 minutes of calls
-        sms_count=500         # 500 SMS messages
+    # Example: mixed campaign
+    costs = estimate_campaign_cost(
+        "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+        vn_calls=100, vn_avg_minutes=3,
+        pstn_calls=50, pstn_avg_minutes=2,
+        sms_count=200
     )
+    print(f"Tokens consumed: {costs['tokens_consumed']}")
+    print(f"VN overflow credit: ${costs['vn_overflow_credit']:.2f}")
+    print(f"SMS overflow credit: ${costs['sms_overflow_credit']:.2f}")
+    print(f"PSTN credit: ${costs['pstn_credit']:.2f}")
+    print(f"Total credit needed: ${costs['total_credit_needed']:.2f}")
 
-    print(f"Phone Numbers: ${monthly_costs['phone_numbers']:.2f}")
-    print(f"Calls: ${monthly_costs['calls']:.2f}")
-    print(f"SMS: ${monthly_costs['sms']:.2f}")
-    print(f"Total: ${monthly_costs['total']:.2f}")
-
-**4. Automated Balance Top-Up:**
+**2. Monthly Cost Report:**
 
 .. code::
 
-    # Automatically add balance when threshold is reached
-    def auto_topup_balance(billing_account_id, threshold=50.00, topup_amount=100.00):
+    def generate_monthly_report(billing_account_id, start_date, end_date):
+        """Generate a cost breakdown for the billing period."""
         account = get_billing_account(billing_account_id)
-
-        if account['balance'] < threshold:
-            # Add balance (requires admin permissions)
-            response = requests.post(
-                f"https://api.voipbin.net/v1.0/billing_accounts/{billing_account_id}/balance",
-                params={'token': '<YOUR_ADMIN_TOKEN>'},
-                json={'amount': topup_amount}
-            )
-
-            if response.status_code == 200:
-                new_account = response.json()
-                print(f"Balance topped up: ${new_account['balance']:.2f}")
-
-                # Send notification
-                send_topup_notification(billing_account_id, topup_amount)
-
-                return new_account
-            else:
-                print(f"Top-up failed: {response.text}")
-                return None
-
-        return account
-
-**5. Cost Analysis and Reporting:**
-
-.. code::
-
-    # Generate cost report for billing period
-    def generate_cost_report(billing_account_id, start_date, end_date):
-        # Fetch billing history (if available)
-        billings = get_billings_for_period(billing_account_id, start_date, end_date)
+        allowances = get_allowances(billing_account_id)
 
         report = {
             'account_id': billing_account_id,
-            'period': {
-                'start': start_date,
-                'end': end_date
+            'plan_type': account['plan_type'],
+            'period': {'start': start_date, 'end': end_date},
+            'token_usage': {},
+            'credit_usage': {
+                'vn_overflow': 0.00,
+                'sms_overflow': 0.00,
+                'pstn_calls': 0.00,
+                'numbers': 0.00
             },
-            'costs': {
-                'calls': 0.00,
-                'sms': 0.00,
-                'phone_numbers': 0.00
-            },
-            'total_spent': 0.00
+            'total_credit_spent': 0.00
         }
 
-        # Aggregate costs by type
-        for billing in billings:
-            if billing['type'] == 'call':
-                report['costs']['calls'] += billing['amount']
-            elif billing['type'] == 'sms':
-                report['costs']['sms'] += billing['amount']
-            elif billing['type'] == 'number':
-                report['costs']['phone_numbers'] += billing['amount']
+        if allowances:
+            current = allowances[0]
+            report['token_usage'] = {
+                'total': current['tokens_total'],
+                'used': current['tokens_used'],
+                'remaining': current['tokens_total'] - current['tokens_used']
+            }
 
-        report['total_spent'] = sum(report['costs'].values())
-
+        report['total_credit_spent'] = sum(report['credit_usage'].values())
         return report
+
+**3. Plan Tier Comparison:**
+
+.. code::
+
+    def recommend_plan(monthly_vn_minutes, monthly_sms):
+        """Recommend the most cost-effective plan tier."""
+        plans = {
+            'free':         {'tokens': 1000,   'cost': 0},
+            'basic':        {'tokens': 10000,  'cost': 0},   # plan cost TBD
+            'professional': {'tokens': 100000, 'cost': 0},   # plan cost TBD
+        }
+
+        for plan_name, plan in plans.items():
+            vn_tokens = monthly_vn_minutes * 1
+            sms_tokens = monthly_sms * 10
+            total_tokens = vn_tokens + sms_tokens
+
+            if total_tokens <= plan['tokens']:
+                overflow_credit = 0.00
+            else:
+                overflow = total_tokens - plan['tokens']
+                # Simplified: assume overflow split proportionally
+                overflow_credit = overflow * 0.0045  # approximate
+
+            print(f"{plan_name}: {plan['tokens']} tokens, "
+                  f"need {total_tokens}, overflow credit: ${overflow_credit:.2f}")
+
+    recommend_plan(monthly_vn_minutes=500, monthly_sms=100)
 
 Best Practices
 --------------
 
-**1. Balance Verification:**
+**1. Balance and Token Verification:**
 
-- Always check balance before initiating high-cost operations
-- Add a buffer (10-20%) to estimated costs for safety
-- Implement automatic balance checks in your workflow
+- Always check both credit balance and token allowance before high-cost operations
+- For VN calls and SMS: check tokens first; if exhausted, ensure credit balance covers overflow
+- For PSTN calls and numbers: check credit balance directly
+- Add a buffer (10-20%) to estimated credit costs for safety
 
-**2. Monitoring:**
+**2. Token Management:**
+
+- Monitor token consumption weekly to predict month-end usage
+- Upgrade plan tier before tokens are consistently exhausted early
+- Track which services consume the most tokens (VN calls vs SMS)
+- Remember: unused tokens do not carry over to the next cycle
+
+**3. Monitoring:**
 
 - Set up webhooks for real-time balance updates
-- Monitor balance during long-running campaigns
-- Track burn rate to predict when balance will run out
-
-**3. Alerts:**
-
-- Configure low balance alerts (e.g., below $20)
-- Set up critical balance alerts (e.g., below $5)
-- Send notifications via email, SMS, or dashboard
+- Monitor both credit balance and token usage during campaigns
+- Track overflow charges to determine if a plan upgrade is worthwhile
 
 **4. Cost Management:**
 
-- Calculate estimated costs before starting campaigns
-- Track actual costs vs. estimated costs
+- Separate estimates into token-eligible and credit-only services
+- Calculate worst-case costs assuming full token overflow
 - Generate regular cost reports for analysis
 
 **5. Security:**
@@ -540,14 +642,8 @@ Best Practices
 - Implement role-based access for balance management
 - Audit balance changes regularly
 
-**6. Automation:**
-
-- Consider automated top-up for uninterrupted service
-- Pause services automatically if balance is critically low
-- Schedule regular balance checks
-
-Balance Management Workflow
-----------------------------
+Balance and Token Management Workflow
+---------------------------------------
 
 **1. Initial Setup:**
 
@@ -556,44 +652,54 @@ Balance Management Workflow
     # Check current balance
     GET /v1.0/billing_accounts/<account-id>
 
+    # Check current token allowance
+    GET /v1.0/billing_accounts/<account-id>/allowances
+
     # Set up webhook for balance monitoring
     POST /v1.0/webhooks
-    → Configure billing_account.updated events
+    -> Configure billing_account.updated events
 
 **2. Before Operations:**
 
 .. code::
 
-    # Calculate estimated cost
-    estimate = calculate_cost(operation_params)
+    # Determine service type
+    if service_type in ['vn_call', 'sms']:
+        # Check token allowance first
+        tokens_remaining = get_tokens_remaining()
+        if tokens_remaining > 0:
+            proceed()  # tokens will cover it
+        else:
+            check_credit_balance()  # need credit for overflow
 
-    # Verify sufficient balance
-    if current_balance < estimate:
-        alert_and_prevent_operation()
+    elif service_type in ['pstn_call', 'number']:
+        # Always check credit balance
+        check_credit_balance()
 
 **3. During Operations:**
 
 .. code::
 
-    # Monitor balance via webhooks
-    → Receive balance update events
+    # Monitor via webhooks
+    -> Receive balance update events
 
-    # Check burn rate
-    if burn_rate_too_high():
-        adjust_operations()
+    # Check token burn rate
+    if tokens_depleted_faster_than_expected():
+        alert_and_check_credit()
 
 **4. After Operations:**
 
 .. code::
 
-    # Review actual costs
-    actual_cost = get_operation_cost()
+    # Review token usage
+    GET /v1.0/billing_accounts/<account-id>/allowances
 
-    # Compare with estimate
-    variance = actual_cost - estimate
+    # Review credit charges
+    actual_credit = initial_balance - current_balance
 
-    # Adjust future estimates
-    update_cost_model(variance)
+    # Assess plan adequacy
+    if overflow_charges > plan_upgrade_cost:
+        consider_plan_upgrade()
 
 Troubleshooting
 ---------------
@@ -602,21 +708,22 @@ Troubleshooting
 
 **Insufficient balance error:**
 
-- Check current balance: ``GET /v1.0/billing_accounts/<account-id>``
-- Verify service rates are up to date
-- Add balance if needed (admin only)
+- Check credit balance: ``GET /v1.0/billing_accounts/<account-id>``
+- Check token allowance: ``GET /v1.0/billing_accounts/<account-id>/allowances``
+- VN calls and SMS may still work if tokens are available, even with low credit balance
+- PSTN calls and number purchases require credit balance
 
-**Balance not updating:**
+**Tokens exhausted mid-month:**
 
-- Check webhook configuration
-- Verify webhook endpoint is reachable
-- Review webhook logs for errors
+- Review token consumption patterns via the allowances endpoint
+- Consider upgrading to a higher plan tier for more monthly tokens
+- Budget for credit overflow charges until the next billing cycle
 
-**Unexpected costs:**
+**Unexpected credit charges:**
 
-- Review billing history
-- Verify rate calculations
-- Check for failed calls that still incur costs
+- Check if tokens were exhausted, causing VN calls or SMS to overflow to credits
+- Verify call durations are ceiling-rounded to the next whole minute
+- Review PSTN call history (always charged to credit)
 
 **Permission denied when adding balance:**
 

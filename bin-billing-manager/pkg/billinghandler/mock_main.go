@@ -47,18 +47,18 @@ func (m *MockBillingHandler) EXPECT() *MockBillingHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, costPerUnit float32, tmBillingStart *time.Time) (*billing.Billing, error) {
+func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, costType billing.CostType, tmBillingStart *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, accountID, referenceType, referenceID, costType, tmBillingStart)
 	ret0, _ := ret[0].(*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockBillingHandlerMockRecorder) Create(ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart any) *gomock.Call {
+func (mr *MockBillingHandlerMockRecorder) Create(ctx, customerID, accountID, referenceType, referenceID, costType, tmBillingStart any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBillingHandler)(nil).Create), ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBillingHandler)(nil).Create), ctx, customerID, accountID, referenceType, referenceID, costType, tmBillingStart)
 }
 
 // EventCMCallHangup mocks base method.
@@ -177,16 +177,16 @@ func (mr *MockBillingHandlerMockRecorder) List(ctx, size, token, filters any) *g
 }
 
 // UpdateStatusEnd mocks base method.
-func (m *MockBillingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
+func (m *MockBillingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusEnd", ctx, id, billingDuration, tmBillingEnd)
+	ret := m.ctrl.Call(m, "UpdateStatusEnd", ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd)
 	ret0, _ := ret[0].(*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateStatusEnd indicates an expected call of UpdateStatusEnd.
-func (mr *MockBillingHandlerMockRecorder) UpdateStatusEnd(ctx, id, billingDuration, tmBillingEnd any) *gomock.Call {
+func (mr *MockBillingHandlerMockRecorder) UpdateStatusEnd(ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusEnd", reflect.TypeOf((*MockBillingHandler)(nil).UpdateStatusEnd), ctx, id, billingDuration, tmBillingEnd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusEnd", reflect.TypeOf((*MockBillingHandler)(nil).UpdateStatusEnd), ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd)
 }

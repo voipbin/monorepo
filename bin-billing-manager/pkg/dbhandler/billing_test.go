@@ -42,15 +42,15 @@ func Test_BillingCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("012b0808-07ae-11ee-956e-a31693cf908b"),
 					CustomerID: uuid.FromStringOrNil("01845d18-07ae-11ee-b9ed-17e7ec2627df"),
 				},
-				AccountID:        uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
-				Status:           billing.StatusProgressing,
-				ReferenceType:    billing.ReferenceTypeCall,
-				ReferenceID:      uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
-				CostPerUnit:      2.02,
-				CostTotal:        0,
-				BillingUnitCount: 30.12,
-				TMBillingStart:   &tmBillingStart,
-				TMBillingEnd:     &tmBillingEnd,
+				AccountID:         uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
+				CostCreditPerUnit: 2.02,
+				CostCreditTotal:   0,
+				CostUnitCount:     30.12,
+				TMBillingStart:    &tmBillingStart,
+				TMBillingEnd:      &tmBillingEnd,
 			},
 
 			responseCurTime: &tmCreate,
@@ -59,18 +59,18 @@ func Test_BillingCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("012b0808-07ae-11ee-956e-a31693cf908b"),
 					CustomerID: uuid.FromStringOrNil("01845d18-07ae-11ee-b9ed-17e7ec2627df"),
 				},
-				AccountID:        uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
-				Status:           billing.StatusProgressing,
-				ReferenceType:    billing.ReferenceTypeCall,
-				ReferenceID:      uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
-				CostPerUnit:      2.02,
-				CostTotal:        0,
-				BillingUnitCount: 30.12,
-				TMBillingStart:   &tmBillingStart,
-				TMBillingEnd:     &tmBillingEnd,
-				TMCreate:         &tmCreate,
-				TMUpdate:         nil,
-				TMDelete:         nil,
+				AccountID:         uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
+				CostCreditPerUnit: 2.02,
+				CostCreditTotal:   0,
+				CostUnitCount:     30.12,
+				TMBillingStart:    &tmBillingStart,
+				TMBillingEnd:      &tmBillingEnd,
+				TMCreate:          &tmCreate,
+				TMUpdate:          nil,
+				TMDelete:          nil,
 			},
 		},
 		{
@@ -248,14 +248,16 @@ func Test_BillingList(t *testing.T) {
 	}
 }
 
-func Test_BillingSetStatusEnd(t *testing.T) {
+func Test_BillingSetStatusEndWithCosts(t *testing.T) {
 
 	type test struct {
 		name    string
 		billing *billing.Billing
 
 		id              uuid.UUID
-		billingDuration float32
+		costUnitCount   float32
+		costTokenTotal  int
+		costCreditTotal float32
 		timestamp       *time.Time
 
 		responseCurTime *time.Time
@@ -272,16 +274,18 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 				},
-				ReferenceType: billing.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
-				Status:        billing.StatusProgressing,
-				CostPerUnit:   10.12,
-				CostTotal:     0,
-				TMBillingEnd:  nil,
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
+				Status:            billing.StatusProgressing,
+				CostCreditPerUnit: 10.12,
+				CostCreditTotal:   0,
+				TMBillingEnd:      nil,
 			},
 
 			id:              uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
-			billingDuration: 10.12,
+			costUnitCount:   10.12,
+			costTokenTotal:  0,
+			costCreditTotal: 102.4144,
 			timestamp:       &tmBillingEnd,
 
 			responseCurTime: &tmCreate,
@@ -289,13 +293,13 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 				},
-				ReferenceType:    billing.ReferenceTypeCall,
-				ReferenceID:      uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
-				Status:           billing.StatusEnd,
-				CostPerUnit:      10.12,
-				CostTotal:        102.4144,
-				BillingUnitCount: 10.12,
-				TMBillingEnd:     &tmBillingEnd,
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
+				Status:            billing.StatusEnd,
+				CostCreditPerUnit: 10.12,
+				CostCreditTotal:   102.4144,
+				CostUnitCount:     10.12,
+				TMBillingEnd:      &tmBillingEnd,
 
 				TMCreate: &tmCreate,
 				TMUpdate: &tmCreate,
@@ -328,7 +332,7 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
-			if err := h.BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.timestamp); err != nil {
+			if err := h.BillingSetStatusEndWithCosts(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

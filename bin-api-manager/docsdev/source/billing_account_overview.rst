@@ -2,20 +2,23 @@
 
 Overview
 ========
-VoIPBIN's Billing Account API provides balance management and usage tracking for your account. With prepaid billing, customers maintain an account balance that is debited as services are used. The API enables you to check balances, add funds, and monitor consumption.
+VoIPBIN's Billing Account API provides balance management, token allowance tracking, and usage monitoring for your account. The billing system uses a hybrid model combining monthly token allowances with credit-based overflow. The API enables you to check balances, view allowance usage, add funds, and monitor consumption.
 
 With the Billing Account API you can:
 
-- Check current account balance
+- Check current account balance and token allowance
+- View monthly token usage and remaining allowance
 - Add funds to your account (admin only)
-- View rate information
+- View rate information for different service types
 - Monitor usage and charges
 - Track billing history
 
 
 How Billing Works
 -----------------
-VoIPBIN uses a prepaid billing model where services consume account balance.
+VoIPBIN uses a hybrid billing model with two cost mechanisms: **token allowances** and **credit balance**.
+
+Each plan tier includes a monthly pool of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.
 
 **Billing Architecture**
 
@@ -25,40 +28,52 @@ VoIPBIN uses a prepaid billing model where services consume account balance.
     |                         Billing System                                |
     +-----------------------------------------------------------------------+
 
-    +-------------------+
-    |  Billing Account  |
-    |    (balance)      |
-    +--------+----------+
-             |
-             | debited by
-             v
-    +--------+----------+--------+----------+--------+----------+
-    |                   |                   |                   |
-    v                   v                   v                   v
-    +----------+   +----------+   +----------+   +----------+
-    |  Calls   |   | Messages |   | Numbers  |   |  Other   |
-    | per sec  |   | per msg  |   | monthly  |   | services |
-    +----------+   +----------+   +----------+   +----------+
-         |              |              |              |
-         v              v              v              v
-    +---------+    +---------+    +---------+    +---------+
-    | $0.020  |    | $0.008  |    |  $5.00  |    |  varies |
-    | /second |    | /message|    | /number |    |         |
-    +---------+    +---------+    +---------+    +---------+
+    +-------------------+     +-------------------+
+    |  Token Allowance  |     |  Credit Balance   |
+    |  (monthly pool)   |     |  (prepaid USD)    |
+    +--------+----------+     +--------+----------+
+             |                         |
+             | covers                  | covers
+             v                         v
+    +--------+----------+     +--------+----------+--------+----------+
+    |                   |     |                   |                   |
+    v                   v     v                   v                   v
+    +----------+   +----------+   +----------+   +----------+   +----------+
+    | VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |   |  Other   |
+    | 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |   | services |
+    +----------+   +----------+   +----------+   +----------+   +----------+
+         |              |              |              |              |
+         | overflow     | overflow     |              |              |
+         v              v              v              v              v
+    +---------+    +---------+    +---------+    +---------+    +---------+
+    |$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |    |  varies |
+    | /minute |    | /message|    |$0.0045 in|   | /number |    |         |
+    +---------+    +---------+    +---------+    +---------+    +---------+
 
 **Key Components**
 
-- **Billing Account**: The prepaid balance for your customer account
-- **Balance**: Current available funds
-- **Charges**: Debits for services used
-- **Rate**: Cost per unit for each service type
+- **Token Allowance**: A monthly pool of tokens included with your plan tier. Tokens cover VN (virtual number) calls and SMS messages. Tokens reset each billing cycle.
+- **Credit Balance**: Prepaid USD balance used for PSTN calls, number purchases, and overflow when tokens are exhausted.
+- **Token-Eligible Services**: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.
+- **Credit-Only Services**: PSTN calls and number purchases always use credits directly.
+- **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
 
 
 Plan Tiers
 ----------
-Each billing account is assigned a plan tier that determines resource creation limits. New accounts default to the **free** tier.
+Each billing account is assigned a plan tier that determines both resource creation limits and monthly token allowances. New accounts default to the **free** tier.
 
-**Available Tiers**
+**Monthly Token Allowances**
+
++----------------------+---------+---------+--------------+-----------+
+| Plan                 | Free    | Basic   | Professional | Unlimited |
++======================+=========+=========+==============+===========+
+| Tokens per month     |   1,000 |  10,000 |      100,000 | unlimited |
++----------------------+---------+---------+--------------+-----------+
+
+Tokens reset at the start of each monthly billing cycle. Unused tokens do not carry over.
+
+**Resource Limits**
 
 +----------------------+-------+-------+--------------+-----------+
 | Resource             | Free  | Basic | Professional | Unlimited |
@@ -83,43 +98,88 @@ Each billing account is assigned a plan tier that determines resource creation l
 
 Rate Structure
 --------------
-VoIPBIN operates on a transparent fixed-rate system.
+VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) and per-unit billing for other services.
 
-**Current Rates**
+**Token Rates**
+
++----------------------+------------------+----------------------------------------+
+| Service              | Token Cost       | Unit                                   |
++======================+==================+========================================+
+| VN Calls             | 1 token          | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
+| SMS Messages         | 10 tokens        | Per message                            |
++----------------------+------------------+----------------------------------------+
+
+**Credit Rates (Overflow and Credit-Only)**
 
 +----------------------+------------------+----------------------------------------+
 | Service              | Rate (USD)       | Unit                                   |
 +======================+==================+========================================+
+| VN Calls (overflow)  | $0.0045          | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
+| PSTN Outgoing Calls  | $0.0060          | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
+| PSTN Incoming Calls  | $0.0045          | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
+| SMS (overflow)       | $0.008           | Per message                            |
++----------------------+------------------+----------------------------------------+
 | Number Purchase      | $5.00            | Per number                             |
 +----------------------+------------------+----------------------------------------+
-| Voice Calls          | $0.020           | Per second                             |
+| Number Renewal       | $5.00            | Per number                             |
 +----------------------+------------------+----------------------------------------+
-| SMS Messages         | $0.008           | Per message                            |
+| Extension Calls      | Free             | No charge                              |
 +----------------------+------------------+----------------------------------------+
+
+**How Token Consumption Works**
+
+When a token-eligible service is used (VN call or SMS):
+
+1. The system checks the current month's token allowance.
+2. If tokens are available, they are consumed first.
+3. If tokens are partially available, the available tokens are consumed and the remainder overflows to credits.
+4. If no tokens remain, the full cost is charged to credits.
 
 **Rate Calculation Examples**
 
 ::
 
-    Voice Call (2 minutes):
+    VN Call (2 minutes 15 seconds) with tokens available:
     +--------------------------------------------+
-    | Duration: 120 seconds                      |
-    | Rate: $0.020/second                        |
-    | Total: 120 x $0.020 = $2.40               |
+    | Duration: 2 min 15 sec -> 3 minutes        |
+    | (ceiling-rounded to next whole minute)      |
+    | Token cost: 3 x 1 = 3 tokens               |
+    | Credit cost: $0.00 (covered by tokens)      |
     +--------------------------------------------+
 
-    SMS Campaign (100 messages):
+    VN Call (5 minutes) with NO tokens remaining:
     +--------------------------------------------+
-    | Count: 100 messages                        |
-    | Rate: $0.008/message                       |
-    | Total: 100 x $0.008 = $0.80               |
+    | Duration: 5 minutes                         |
+    | Token cost: 0 (exhausted)                   |
+    | Credit cost: 5 x $0.0045 = $0.0225         |
+    +--------------------------------------------+
+
+    PSTN Outgoing Call (2 minutes 30 seconds):
+    +--------------------------------------------+
+    | Duration: 2 min 30 sec -> 3 minutes        |
+    | (ceiling-rounded to next whole minute)      |
+    | Credit cost: 3 x $0.0060 = $0.018          |
+    | (always credit-only, no token deduction)    |
+    +--------------------------------------------+
+
+    SMS Campaign (100 messages) with 500 tokens remaining:
+    +--------------------------------------------+
+    | Token cost per message: 10 tokens           |
+    | Total tokens needed: 100 x 10 = 1,000      |
+    | Tokens available: 500                       |
+    | Tokens consumed: 500 (50 messages)          |
+    | Overflow to credit: 50 x $0.008 = $0.40    |
     +--------------------------------------------+
 
     Number Provisioning (1 number):
     +--------------------------------------------+
     | Count: 1 number                            |
-    | Rate: $5.00/number                         |
-    | Total: 1 x $5.00 = $5.00                  |
+    | Credit cost: 1 x $5.00 = $5.00             |
+    | (always credit-only, no token deduction)    |
     +--------------------------------------------+
 
 Note: Rates are subject to change. Check the API for current pricing.
@@ -144,10 +204,35 @@ Check and manage your account balance.
         "customer_id": "customer-uuid-456",
         "plan_type": "free",
         "balance": 150.50,
-        "currency": "USD",
         "tm_create": "2024-01-01T00:00:00Z",
         "tm_update": "2024-01-15T10:30:00Z"
     }
+
+**Check Token Allowance**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowances?token=<token>'
+
+**Response:**
+
+.. code::
+
+    [
+        {
+            "id": "allowance-uuid-123",
+            "customer_id": "customer-uuid-456",
+            "account_id": "billing-uuid-123",
+            "cycle_start": "2024-01-01T00:00:00Z",
+            "cycle_end": "2024-02-01T00:00:00Z",
+            "tokens_total": 1000,
+            "tokens_used": 350,
+            "tm_create": "2024-01-01T00:00:00Z",
+            "tm_update": "2024-01-15T10:30:00Z"
+        }
+    ]
+
+The ``tokens_total - tokens_used`` gives you the remaining tokens for the current billing cycle.
 
 **Add Balance (Admin Only)**
 
@@ -164,42 +249,44 @@ Note: Balance addition is restricted to users with admin permissions for securit
 
 Balance Lifecycle
 -----------------
-Account balance changes through specific operations.
+Account balance changes through specific operations. Token allowances reset each billing cycle.
 
-**Balance Flow**
+**Balance and Token Flow**
 
 ::
 
+    +-------------------+     +-------------------+
+    | Add Balance       |     | Monthly Cycle     |
+    | (admin only)      |     | (automatic)       |
+    +--------+----------+     +--------+----------+
+             |                         |
+             v                         v
+    +-------------------+     +-------------------+
+    |  Credit Balance   |     |  Token Allowance  |
+    |     $150.50       |     |   650 / 1000      |
+    +--------+----------+     +--------+----------+
+             |                         |
+             | PSTN calls,             | VN calls,
+             | numbers,                | SMS
+             | overflow                |
+             v                         v
+    +-------------------+     +-------------------+
+    |   Credit Charges  |     |  Token Usage      |
+    | - $0.018 PSTN call|     | - 3 tokens call   |
+    | - $5.00 number    |     | - 10 tokens SMS   |
+    | - $0.40 overflow  |     |                   |
+    +--------+----------+     +--------+----------+
+             |                         |
+             v                         | exhausted
+    +-------------------+              |
+    |  Updated Balance  |<-------------+
+    |     $145.08       |   overflow charges
     +-------------------+
-    | Add Balance       |
-    | (admin only)      |
-    +--------+----------+
-             |
-             v
-    +-------------------+
-    |  Current Balance  |<-----------------+
-    |     $150.50       |                  |
-    +--------+----------+                  |
-             |                             |
-             | Use services                | Add more funds
-             v                             |
-    +-------------------+                  |
-    |   Charges         |                  |
-    | - $2.40 call      |                  |
-    | - $0.80 SMS       |                  |
-    | - $5.00 number    |                  |
-    +--------+----------+                  |
-             |                             |
-             v                             |
-    +-------------------+     Low          |
-    |  Updated Balance  |----------------->+
-    |     $142.30       |   balance
-    +-------------------+   alert
 
 
 Balance Monitoring
 ------------------
-Monitor balance to avoid service interruption.
+Monitor balance and token usage to avoid service interruption.
 
 **Balance Check Flow**
 
@@ -207,77 +294,97 @@ Monitor balance to avoid service interruption.
 
     Before Service Execution:
     +--------------------------------------------+
-    | 1. Check current balance                   |
-    | 2. Estimate service cost                   |
-    | 3. If balance >= cost -> proceed           |
-    | 4. If balance < cost -> deny service       |
+    | 1. Identify service type                   |
+    | 2. If token-eligible: check token balance  |
+    |    - If tokens available -> proceed         |
+    |    - If no tokens -> check credit balance   |
+    | 3. If credit-only: check credit balance    |
+    |    - If balance >= cost -> proceed          |
+    |    - If balance < cost -> deny service      |
     +--------------------------------------------+
 
 **Low Balance Handling**
 
 ::
 
-    +-------------------+
-    | Balance: $10.00   |
+    +-------------------+     +-------------------+
+    | Balance: $10.00   |     | Tokens: 0 / 1000  |
+    +--------+----------+     +--------+----------+
+             |                         |
+             | Attempt VN call         |
+             | (no tokens left)        |
+             v                         |
+    +-------------------+              |
+    | Check credit      |<-------------+
+    | for overflow      |  overflow
     +--------+----------+
              |
-             | Attempt 5-min call
-             | (estimated: $6.00)
-             v
-    +-------------------+     Sufficient
-    | Balance >= Cost?  |----------------------> Call proceeds
-    +--------+----------+
-             |
-             | Insufficient
+             | $10.00 >= $0.0045/min
              v
     +-------------------+
-    | Service denied    |
-    | or limited        |
+    | Call proceeds      |
+    | (credit charged)   |
     +-------------------+
 
 
 Common Scenarios
 ----------------
 
-**Scenario 1: Prepaid Balance Management**
+**Scenario 1: Token-Based Monthly Usage**
 
-Maintain adequate balance for operations.
-
-::
-
-    Daily Operations:
-    +--------------------------------------------+
-    | Morning: Check balance                     |
-    | GET /billing_accounts                      |
-    | Balance: $500.00                           |
-    |                                            |
-    | Throughout day:                            |
-    | - 50 calls (avg 3 min) = $180.00          |
-    | - 200 SMS = $1.60                          |
-    | - 2 numbers = $10.00                       |
-    |                                            |
-    | Evening: Check balance                     |
-    | Balance: $308.40                           |
-    +--------------------------------------------+
-
-**Scenario 2: Campaign Budget Planning**
-
-Estimate costs before running a campaign.
+Track token consumption throughout the month.
 
 ::
 
-    Campaign: Customer Survey
+    Monthly Usage (Free Plan, 1000 tokens):
     +--------------------------------------------+
-    | Targets: 1,000 customers                   |
-    | Method: Voice call (avg 45 seconds)        |
+    | Week 1:                                    |
+    | - 50 VN calls (avg 3 min) = 150 tokens     |
+    | - 20 SMS = 200 tokens                      |
+    | Tokens remaining: 650                      |
     |                                            |
-    | Cost estimate:                             |
-    | - Assumed answer rate: 50%                 |
-    | - Calls to complete: 500                   |
-    | - Cost per call: 45 x $0.020 = $0.90      |
-    | - Total: 500 x $0.90 = $450.00            |
+    | Week 2:                                    |
+    | - 40 VN calls (avg 2 min) = 80 tokens      |
+    | - 30 SMS = 300 tokens                      |
+    | Tokens remaining: 270                      |
     |                                            |
-    | Required balance: >= $450.00               |
+    | Week 3:                                    |
+    | - 30 VN calls (avg 3 min) = 90 tokens      |
+    | - 15 SMS = 150 tokens                      |
+    | Tokens remaining: 30                       |
+    |                                            |
+    | Week 4 (tokens nearly exhausted):          |
+    | - 10 VN calls (avg 3 min) = 30 tokens      |
+    |   (uses last tokens)                       |
+    | - 5 SMS = overflow to credit               |
+    |   5 x $0.008 = $0.04 credit charge         |
+    +--------------------------------------------+
+
+**Scenario 2: Mixed Token and Credit Usage**
+
+Plan for costs across token-eligible and credit-only services.
+
+::
+
+    Campaign: Customer Outreach
+    +--------------------------------------------+
+    | VN Calls: 200 calls (avg 3 min)            |
+    | - Tokens needed: 200 x 3 = 600             |
+    | - If 400 tokens available:                 |
+    |   - 400 tokens consumed                    |
+    |   - 200 overflow x 3 min x $0.0045 = $2.70|
+    |                                            |
+    | PSTN Calls: 50 calls (avg 2 min)           |
+    | - Credit: 50 x 2 x $0.006 = $0.60         |
+    | (always credit, no token deduction)         |
+    |                                            |
+    | SMS: 100 messages                          |
+    | - Tokens needed: 100 x 10 = 1,000          |
+    | - If 0 tokens remaining:                   |
+    |   - Credit: 100 x $0.008 = $0.80          |
+    |                                            |
+    | Total credit needed: $2.70 + $0.60 + $0.80 |
+    |                    = $4.10                  |
     +--------------------------------------------+
 
 **Scenario 3: Low Balance Alert**
@@ -290,6 +397,7 @@ Handle low balance situations.
        +--------------------------------------------+
        | Balance: $15.00                           |
        | Threshold: $50.00                         |
+       | Tokens: 0 / 1000 (exhausted)              |
        | Status: LOW BALANCE                       |
        +--------------------------------------------+
 
@@ -307,29 +415,35 @@ Handle low balance situations.
 Best Practices
 --------------
 
-**1. Balance Monitoring**
+**1. Token Monitoring**
 
-- Check balance regularly before operations
+- Check token usage regularly via the allowances endpoint
+- Plan upgrades to higher tiers if tokens are consistently exhausted early in the cycle
+- Track which services consume the most tokens
+
+**2. Balance Monitoring**
+
+- Maintain credit balance for PSTN calls, number purchases, and token overflow
 - Set up low balance alerts
 - Plan for buffer above minimum needed
 
-**2. Cost Estimation**
+**3. Cost Estimation**
 
-- Calculate expected costs before campaigns
+- Separate estimates into token-eligible and credit-only services
+- Account for token overflow in budget planning
 - Include retry costs in estimates
-- Account for peak usage periods
 
-**3. Security**
+**4. Security**
 
 - Restrict balance add permissions to admins
 - Monitor for unusual usage patterns
 - Review billing regularly for anomalies
 
-**4. Budget Planning**
+**5. Plan Selection**
 
-- Track monthly spending trends
-- Set usage budgets per department
-- Review rate changes periodically
+- Choose plan tier based on expected VN call and SMS volume
+- Compare token allowance cost vs. credit-only cost at each tier
+- Consider upgrading if monthly overflow charges are significant
 
 
 Troubleshooting
@@ -340,8 +454,8 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Services being denied     | Check balance is sufficient; add funds if      |
-|                           | needed; verify rate calculations               |
+| Services being denied     | Check credit balance and token allowance;      |
+|                           | add funds or upgrade plan if needed            |
 +---------------------------+------------------------------------------------+
 | Cannot add balance        | Verify admin permissions; check API token      |
 |                           | validity                                       |
@@ -350,16 +464,31 @@ Troubleshooting
 |                           | for API errors in response                     |
 +---------------------------+------------------------------------------------+
 
+**Token Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Tokens exhausted early    | Review usage patterns; consider upgrading       |
+|                           | plan tier for more tokens                      |
++---------------------------+------------------------------------------------+
+| Unexpected overflow       | Check token balance via allowances endpoint;   |
+|                           | VN calls and SMS consume tokens first          |
++---------------------------+------------------------------------------------+
+| Tokens not resetting      | Verify billing cycle dates; tokens reset       |
+|                           | at the start of each monthly cycle             |
++---------------------------+------------------------------------------------+
+
 **Billing Issues**
 
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Unexpected charges        | Review call/message logs; check for failed     |
-|                           | attempts that still incur charges              |
+| Unexpected charges        | Review call/message logs; check if tokens      |
+|                           | were exhausted causing credit overflow          |
 +---------------------------+------------------------------------------------+
-| Rate seems wrong          | Verify current rate structure; check if        |
-|                           | special rates apply                            |
+| Rate seems wrong          | Verify current rate structure; note calls are   |
+|                           | billed per minute (ceiling-rounded)            |
 +---------------------------+------------------------------------------------+
 
 
@@ -370,4 +499,3 @@ Related Documentation
 - :ref:`Call Overview <call-overview>` - Voice call costs
 - :ref:`Message Overview <message-overview>` - SMS costs
 - :ref:`Number Overview <number-overview>` - Number provisioning costs
-

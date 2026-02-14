@@ -63,6 +63,12 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 	}
 	log.WithField("billing_account", b).Debugf("Created a basic billing account. account_id: %s", b.ID)
 
+	// create initial allowance cycle
+	if _, err := h.allowanceHandler.EnsureCurrentCycle(ctx, b.ID, cu.ID, account.PlanTypeFree); err != nil {
+		log.Errorf("Could not create initial allowance cycle. err: %v", err)
+		// non-fatal: lazy creation will catch this
+	}
+
 	// set default billing account for customer
 	tmp, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, cu.ID, b.ID)
 	if err != nil {

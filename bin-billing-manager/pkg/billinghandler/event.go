@@ -3,6 +3,7 @@ package billinghandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 
@@ -20,8 +21,9 @@ import (
 // EventCMCallProgressing handles the call-manager's call_progressing event
 func (h *billingHandler) EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error {
 	refType := getReferenceTypeForCall(c)
+	costType := getCostTypeForCall(c)
 
-	if errBilling := h.BillingStart(ctx, c.CustomerID, refType, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
+	if errBilling := h.BillingStart(ctx, c.CustomerID, refType, c.ID, costType, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
 		return errors.Wrap(errBilling, "could not start a billing")
 	}
 
@@ -29,8 +31,6 @@ func (h *billingHandler) EventCMCallProgressing(ctx context.Context, c *cmcall.C
 }
 
 // getReferenceTypeForCall determines the billing reference type based on the call's direction and address type.
-// Incoming calls with a PSTN source (TypeTel) are charged; outgoing calls with a PSTN destination (TypeTel) are charged.
-// All other call types (extension, agent, sip, conference, line) are free (call_extension).
 func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
 	switch c.Direction {
 	case cmcall.DirectionIncoming:
@@ -48,6 +48,37 @@ func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
 	default:
 		// safe fallback: charge it
 		return billing.ReferenceTypeCall
+	}
+}
+
+// getCostTypeForCall determines the billing cost type based on the call's direction, source and destination.
+func getCostTypeForCall(c *cmcall.Call) billing.CostType {
+	switch c.Direction {
+	case cmcall.DirectionIncoming:
+		// Incoming PSTN: src=tel, dst=tel
+		if c.Source.Type == commonaddress.TypeTel && c.Destination.Type == commonaddress.TypeTel {
+			return billing.CostTypeCallPSTNIncoming
+		}
+		// Incoming to virtual number
+		if strings.HasPrefix(c.Destination.Target, nmnumber.VirtualNumberPrefix) {
+			return billing.CostTypeCallVN
+		}
+		// TODO: Add CostTypeCallDirectExt for incoming SIP-to-extension calls
+		// (src type=sip, dst type=extension). Currently classified as extension (free).
+
+		// All other incoming calls are extension (free)
+		return billing.CostTypeCallExtension
+
+	case cmcall.DirectionOutgoing:
+		// Outgoing to PSTN: dst=tel
+		if c.Destination.Type == commonaddress.TypeTel {
+			return billing.CostTypeCallPSTNOutgoing
+		}
+		return billing.CostTypeCallExtension
+
+	default:
+		// safe fallback: charge it as outgoing PSTN
+		return billing.CostTypeCallPSTNOutgoing
 	}
 }
 
@@ -85,7 +116,7 @@ func (h *billingHandler) EventMMMessageCreated(ctx context.Context, m *mmmessage
 		// billing record, while event redelivery still triggers idempotency protection.
 		targetRefID := uuid.NewV5(m.ID, fmt.Sprintf("target-%d", i))
 		log.WithField("target", target).Debugf("Creating billing for message. destination: %v, target_ref_id: %s", target.Destination, targetRefID)
-		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, targetRefID, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
+		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, targetRefID, billing.CostTypeSMS, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
 			return errors.Wrapf(errBilling, "could not create a billing. target: %v", target)
 		}
 	}
@@ -107,7 +138,7 @@ func (h *billingHandler) EventNMNumberCreated(ctx context.Context, n *nmnumber.N
 		return nil
 	}
 
-	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumber, n.ID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
+	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumber, n.ID, billing.CostTypeNumber, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
 		return errors.Wrapf(errBilling, "could not create a billing. number_id: %s", n.ID)
 	}
 
@@ -134,7 +165,7 @@ func (h *billingHandler) EventNMNumberRenewed(ctx context.Context, n *nmnumber.N
 	currentYearMonth := h.utilHandler.TimeNow().Format("2006-01")
 	referenceID := h.utilHandler.NewV5UUID(uuid.Nil, n.ID.String()+":renew:"+currentYearMonth)
 
-	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumberRenew, referenceID, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
+	if errBilling := h.BillingStart(ctx, n.CustomerID, billing.ReferenceTypeNumberRenew, referenceID, billing.CostTypeNumberRenew, n.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
 		log.Errorf("Could not create a billing. number_id: %s", n.ID)
 		return errors.Wrap(errBilling, "could not create a billing")
 	}

@@ -72,8 +72,8 @@ Incoming call to VN, routed to Extension (2 legs):
 
 | Direction | Source | Destination | Cost Type | Billing |
 |-----------|--------|-------------|-----------|---------|
-| Incoming  | Any    | VN (+999xxx)| `call_vn` | Tokens  |
-| Outgoing  | VN (+999xxx) | Extension | `call_extension` | Free |
+| Incoming  | Any    | VN (+899xxx)| `call_vn` | Tokens  |
+| Outgoing  | VN (+899xxx) | Extension | `call_extension` | Free |
 
 Incoming SIP to Extension, routed to Extension (2 legs, future):
 
@@ -91,7 +91,7 @@ Outbound call to PSTN (1 leg):
 **Classification rule (priority order):**
 1. Incoming + src type is `tel` + dst type is `tel` → `call_pstn_incoming` (credits, $0.0045/min)
 2. Outgoing + dst type is `tel` → `call_pstn_outgoing` (credits, $0.006/min)
-3. Incoming + dst starts with `+999` → `call_vn` (tokens)
+3. Incoming + dst starts with `+899` → `call_vn` (tokens)
 4. Incoming + src type is `sip` + dst type is extension → `call_direct_ext` (tokens, future)
 5. Everything else → `call_extension` (free)
 

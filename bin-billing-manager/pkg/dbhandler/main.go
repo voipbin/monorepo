@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/allowance"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/models/failedevent"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
@@ -30,14 +31,20 @@ type DBHandler interface {
 	AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
+	AllowanceCreate(ctx context.Context, c *allowance.Allowance) error
+	AllowanceGet(ctx context.Context, id uuid.UUID) (*allowance.Allowance, error)
+	AllowanceGetCurrentByAccountID(ctx context.Context, accountID uuid.UUID) (*allowance.Allowance, error)
+	AllowanceList(ctx context.Context, size uint64, token string, filters map[allowance.Field]any) ([]*allowance.Allowance, error)
+	AllowanceUpdate(ctx context.Context, id uuid.UUID, fields map[allowance.Field]any) error
+	AllowanceConsumeTokens(ctx context.Context, allowanceID uuid.UUID, accountID uuid.UUID, tokensNeeded int, creditPerUnit float32, tokenPerUnit int) (int, float32, error)
+
 	BillingCreate(ctx context.Context, c *billing.Billing) error
-	BillingCreditTopUp(ctx context.Context, b *billing.Billing, accountID uuid.UUID, targetAmount float32) (bool, error)
 	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceTypeAndID(ctx context.Context, referenceType billing.ReferenceType, referenceID uuid.UUID) (*billing.Billing, error)
 	BillingList(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
 	BillingUpdate(ctx context.Context, id uuid.UUID, fields map[billing.Field]any) error
-	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error
+	BillingSetStatusEndWithCosts(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) error
 	BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error
 	BillingDelete(ctx context.Context, id uuid.UUID) error
 
@@ -58,6 +65,7 @@ type handler struct {
 var (
 	ErrNotFound            = errors.New("record not found")
 	ErrInsufficientBalance = errors.New("insufficient balance")
+	ErrDuplicateKey        = errors.New("duplicate key")
 )
 
 

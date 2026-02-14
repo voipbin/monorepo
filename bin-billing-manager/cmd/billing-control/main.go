@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
@@ -550,8 +551,9 @@ func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accoun
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, "")
 
-	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
-	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler)
+	allowHandler := allowancehandler.NewAllowanceHandler(db)
+	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, allowHandler)
+	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler, allowHandler)
 
 	return accHandler, billHandler, nil
 }

@@ -15,8 +15,8 @@ type FieldStruct struct {
 	Status         Status        `filter:"status"`
 	ReferenceType  ReferenceType `filter:"reference_type"`
 	ReferenceID    uuid.UUID     `filter:"reference_id"`
-	CostPerUnit    float64       `filter:"cost_per_unit"`
-	CostTotal      float64       `filter:"cost_total"`
+	CostType          CostType `filter:"cost_type"`
+	CostCreditTotal   float32  `filter:"cost_credit_total"`
 	TMBillingStart *time.Time    `filter:"tm_billing_start"`
 	TMBillingEnd   *time.Time    `filter:"tm_billing_end"`
 	Deleted        bool          `filter:"deleted"`

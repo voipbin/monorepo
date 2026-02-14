@@ -18,18 +18,18 @@ func TestBillingStruct(t *testing.T) {
 	tmUpdate := time.Date(2024, 1, 1, 0, 20, 0, 0, time.UTC)
 
 	b := Billing{
-		AccountID:        accountID,
-		Status:           StatusProgressing,
-		ReferenceType:    ReferenceTypeCall,
-		ReferenceID:      referenceID,
-		CostPerUnit:      0.020,
-		CostTotal:        0.40,
-		BillingUnitCount: 20,
-		TMBillingStart:   &tmBillingStart,
-		TMBillingEnd:     &tmBillingEnd,
-		TMCreate:         &tmCreate,
-		TMUpdate:         &tmUpdate,
-		TMDelete:         nil,
+		AccountID:         accountID,
+		Status:            StatusProgressing,
+		ReferenceType:     ReferenceTypeCall,
+		ReferenceID:       referenceID,
+		CostCreditPerUnit: 0.020,
+		CostCreditTotal:   0.40,
+		CostUnitCount:     20,
+		TMBillingStart:    &tmBillingStart,
+		TMBillingEnd:      &tmBillingEnd,
+		TMCreate:          &tmCreate,
+		TMUpdate:          &tmUpdate,
+		TMDelete:          nil,
 	}
 	b.ID = id
 
@@ -96,9 +96,9 @@ func TestDefaultCostConstants(t *testing.T) {
 		constant float32
 		expected float32
 	}{
-		{"default_cost_call", DefaultCostPerUnitReferenceTypeCall, 0.020},
-		{"default_cost_sms", DefaultCostPerUnitReferenceTypeSMS, 0.008},
-		{"default_cost_number", DefaultCostPerUnitReferenceTypeNumber, 5},
+		{"default_cost_call", DefaultCreditPerUnitCallPSTNOutgoing, 0.006},
+		{"default_cost_sms", DefaultCreditPerUnitSMS, 0.008},
+		{"default_cost_number", DefaultCreditPerUnitNumber, 5},
 	}
 
 	for _, tt := range tests {

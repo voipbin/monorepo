@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -35,7 +36,9 @@ func Test_EventCMCallProgressing(t *testing.T) {
 		responseAccount *account.Account
 		responseUUID    uuid.UUID
 
-		expectBilling *billing.Billing
+		expectBilling    *billing.Billing
+		expectCostType   billing.CostType
+		expectRefType    billing.ReferenceType
 	}
 
 	tests := []test{
@@ -55,16 +58,19 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			},
 			responseUUID: uuid.FromStringOrNil("0a4ebb9a-f548-11ee-b96f-23e8b75fea2c"),
 
+			expectRefType:  billing.ReferenceTypeCall,
+			expectCostType: billing.CostTypeCallPSTNOutgoing,
 			expectBilling: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0a4ebb9a-f548-11ee-b96f-23e8b75fea2c"),
 				},
-				AccountID:     uuid.FromStringOrNil("e403a1da-f547-11ee-b4ac-43fc6e27a70b"),
-				Status:        billing.StatusProgressing,
-				ReferenceType: billing.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
-				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCall,
-				TMBillingEnd:  nil,
+				AccountID:         uuid.FromStringOrNil("e403a1da-f547-11ee-b4ac-43fc6e27a70b"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
+				CostType:          billing.CostTypeCallPSTNOutgoing,
+				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				TMBillingEnd:      nil,
 			},
 		},
 		{
@@ -88,6 +94,8 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			},
 			responseUUID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
 
+			expectRefType:  billing.ReferenceTypeCallExtension,
+			expectCostType: billing.CostTypeCallExtension,
 			expectBilling: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
@@ -96,7 +104,7 @@ func Test_EventCMCallProgressing(t *testing.T) {
 				Status:        billing.StatusProgressing,
 				ReferenceType: billing.ReferenceTypeCallExtension,
 				ReferenceID:   uuid.FromStringOrNil("fb111111-0000-0000-0000-000000000001"),
-				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCallExtension,
+				CostType:      billing.CostTypeCallExtension,
 				TMBillingEnd:  nil,
 			},
 		},
@@ -111,22 +119,24 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.expectBilling.ReferenceType, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.expectRefType, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
@@ -147,8 +157,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 		responseBilling *billing.Billing
 		responseAccount *account.Account
 
-		expectBilling         *billing.Billing
-		expectBillingDuration float32
+		expectCostUnitCount float32
 	}
 
 	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
@@ -169,11 +178,12 @@ func Test_EventCMCallHangup(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("39b65350-f54a-11ee-8c56-0b22b45c70b4"),
 				},
-				ReferenceType:  billing.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
-				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
-				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 60,
-				TMBillingStart: &tmBillingStart,
+				AccountID:         uuid.FromStringOrNil("d5cdedca-f54a-11ee-a551-97c7e626fb5f"),
+				ReferenceType:     billing.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
+				CostType:          billing.CostTypeCallPSTNOutgoing,
+				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				TMBillingStart:    &tmBillingStart,
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -181,18 +191,8 @@ func Test_EventCMCallHangup(t *testing.T) {
 				},
 			},
 
-			expectBilling: &billing.Billing{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0a4ebb9a-f548-11ee-b96f-23e8b75fea2c"),
-				},
-				AccountID:     uuid.FromStringOrNil("d5cdedca-f54a-11ee-a551-97c7e626fb5f"),
-				Status:        billing.StatusProgressing,
-				ReferenceType: billing.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
-				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCall,
-				TMBillingEnd:  nil,
-			},
-			expectBillingDuration: float32(60),
+			// ceil(60s/60) = 1 minute
+			expectCostUnitCount: 1,
 		},
 	}
 
@@ -205,22 +205,25 @@ func Test_EventCMCallHangup(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID).Return(tt.responseBilling, nil)
 
-			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingDuration, tt.call.TMHangup).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
+			// BillingEnd - credit-only path (PSTN outgoing)
+			costCreditTotal := tt.expectCostUnitCount * billing.DefaultCreditPerUnitCallPSTNOutgoing
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, costCreditTotal).Return(tt.responseAccount, nil)
 
-			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBilling.ID, tt.expectCostUnitCount, 0, costCreditTotal, tt.call.TMHangup).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
 			if err := h.EventCMCallHangup(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -238,8 +241,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 
 		responseAccount *account.Account
 		responseUUIDs   []uuid.UUID
-
-		expectBillings []*billing.Billing
+		responseBillings []*billing.Billing
 	}
 
 	tests := []test{
@@ -269,31 +271,28 @@ func Test_EventMMMessageCreated(t *testing.T) {
 				uuid.FromStringOrNil("a28315ec-f54c-11ee-ac34-df26f5ac5453"),
 				uuid.FromStringOrNil("a2e403d4-f54c-11ee-8880-73605142bc5d"),
 			},
-
-			expectBillings: []*billing.Billing{
+			responseBillings: []*billing.Billing{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("a28315ec-f54c-11ee-ac34-df26f5ac5453"),
 					},
-					AccountID:     uuid.FromStringOrNil("9435f36a-f54c-11ee-99ff-373fc575fdc9"),
-					Status:        billing.StatusProgressing,
-					ReferenceType: billing.ReferenceTypeSMS,
-					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
-					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
-					CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
-					TMBillingEnd:  nil,
+					AccountID:         uuid.FromStringOrNil("9435f36a-f54c-11ee-99ff-373fc575fdc9"),
+					Status:            billing.StatusProgressing,
+					ReferenceType:     billing.ReferenceTypeSMS,
+					CostType:          billing.CostTypeSMS,
+					CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+					CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("a2e403d4-f54c-11ee-8880-73605142bc5d"),
 					},
-					AccountID:     uuid.FromStringOrNil("9435f36a-f54c-11ee-99ff-373fc575fdc9"),
-					Status:        billing.StatusProgressing,
-					ReferenceType: billing.ReferenceTypeSMS,
-					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
-					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
-					CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
-					TMBillingEnd:  nil,
+					AccountID:         uuid.FromStringOrNil("9435f36a-f54c-11ee-99ff-373fc575fdc9"),
+					Status:            billing.StatusProgressing,
+					ReferenceType:     billing.ReferenceTypeSMS,
+					CostType:          billing.CostTypeSMS,
+					CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+					CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				},
 			},
 		},
@@ -308,12 +307,14 @@ func Test_EventMMMessageCreated(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -324,17 +325,19 @@ func Test_EventMMMessageCreated(t *testing.T) {
 				// idempotency check
 				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeSMS, targetRefID).Return(nil, dbhandler.ErrNotFound)
 
-				// BillingStart
+				// BillingStart -> Create
 				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(tt.responseAccount, nil)
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
 				mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
-				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i]).Return(tt.expectBillings[i], nil)
-				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBillings[i])
+				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i]).Return(tt.responseBillings[i], nil)
+				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBillings[i])
 
-				// BillingEnd
-				mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBillings[i].ID, float32(1), gomock.Any()).Return(nil)
-				mockDB.EXPECT().BillingGet(ctx, tt.expectBillings[i].ID).Return(tt.expectBillings[i], nil)
-				mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.expectBillings[i].AccountID, tt.expectBillings[i].CostTotal).Return(tt.responseAccount, nil)
+				// BillingEnd - SMS is token-eligible
+				tokensNeeded := 1 * billing.DefaultTokenPerUnitSMS
+				mockAllowance.EXPECT().ConsumeTokens(ctx, tt.responseBillings[i].AccountID, tokensNeeded, billing.DefaultCreditPerUnitSMS, billing.DefaultTokenPerUnitSMS).Return(tokensNeeded, float32(0), nil)
+
+				mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBillings[i].ID, float32(1), tokensNeeded, float32(0), gomock.Any()).Return(nil)
+				mockDB.EXPECT().BillingGet(ctx, tt.responseBillings[i].ID).Return(tt.responseBillings[i], nil)
 			}
 
 			if err := h.EventMMMessageCreated(ctx, tt.message); err != nil {
@@ -351,10 +354,9 @@ func Test_EventNMNumberCreated(t *testing.T) {
 
 		number *nmnumber.Number
 
-		responseAccount *account.Account
-		responseUUID    uuid.UUID
-
-		expectBilling *billing.Billing
+		responseAccount  *account.Account
+		responseUUID     uuid.UUID
+		responseBilling  *billing.Billing
 	}
 
 	tests := []test{
@@ -374,18 +376,16 @@ func Test_EventNMNumberCreated(t *testing.T) {
 				},
 			},
 			responseUUID: uuid.FromStringOrNil("73c8040e-f54e-11ee-a59f-2ba1b61918fd"),
-
-			expectBilling: &billing.Billing{
+			responseBilling: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("73c8040e-f54e-11ee-a59f-2ba1b61918fd"),
 				},
-				AccountID:     uuid.FromStringOrNil("74057276-f54e-11ee-b35b-cf292d0c7298"),
-				Status:        billing.StatusProgressing,
-				ReferenceType: billing.ReferenceTypeNumber,
-				ReferenceID:   uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
-				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
-				CostTotal:     billing.DefaultCostPerUnitReferenceTypeNumber,
-				TMBillingEnd:  nil,
+				AccountID:         uuid.FromStringOrNil("74057276-f54e-11ee-b35b-cf292d0c7298"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeNumber,
+				ReferenceID:       uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
+				CostType:          billing.CostTypeNumber,
+				CostCreditPerUnit: billing.DefaultCreditPerUnitNumber,
 			},
 		},
 	}
@@ -399,29 +399,33 @@ func Test_EventNMNumberCreated(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
 			// idempotency check
 			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumber, tt.number.ID).Return(nil, dbhandler.ErrNotFound)
 
-			// BillingStart
+			// BillingStart -> Create
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
-			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), gomock.Any()).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
-			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
+			// BillingEnd - number is credit-only
+			costCreditTotal := float32(1) * billing.DefaultCreditPerUnitNumber
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, costCreditTotal).Return(tt.responseAccount, nil)
+
+			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBilling.ID, float32(1), 0, costCreditTotal, gomock.Any()).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
 			if err := h.EventNMNumberCreated(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -440,12 +444,14 @@ func Test_EventNMNumberCreated_virtual(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
+	mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 	h := billingHandler{
-		utilHandler:    mockUtil,
-		db:             mockDB,
-		notifyHandler:  mockNotify,
-		accountHandler: mockAccount,
+		utilHandler:      mockUtil,
+		db:               mockDB,
+		notifyHandler:    mockNotify,
+		accountHandler:   mockAccount,
+		allowanceHandler: mockAllowance,
 	}
 	ctx := context.Background()
 
@@ -457,7 +463,7 @@ func Test_EventNMNumberCreated_virtual(t *testing.T) {
 		Type: nmnumber.TypeVirtual,
 	}
 
-	// no mock expectations — billing should be skipped entirely
+	// no mock expectations -- billing should be skipped entirely
 
 	if err := h.EventNMNumberCreated(ctx, n); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -475,8 +481,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 		responseUUID      uuid.UUID
 		responseTimeNow   *time.Time
 		referenceIDExpect uuid.UUID
-
-		expectBilling *billing.Billing
+		responseBilling   *billing.Billing
 	}
 
 	now := time.Date(2026, 2, 12, 10, 0, 0, 0, time.UTC)
@@ -502,18 +507,16 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			responseUUID:      uuid.FromStringOrNil("e3c41b80-f54e-11ee-becf-33857841a543"),
 			responseTimeNow:   &now,
 			referenceIDExpect: expectedRefID,
-
-			expectBilling: &billing.Billing{
+			responseBilling: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e3c41b80-f54e-11ee-becf-33857841a543"),
 				},
-				AccountID:     uuid.FromStringOrNil("e38e5c34-f54e-11ee-9f4c-bf30ab98b5c1"),
-				Status:        billing.StatusProgressing,
-				ReferenceType: billing.ReferenceTypeNumberRenew,
-				ReferenceID:   expectedRefID,
-				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
-				CostTotal:     billing.DefaultCostPerUnitReferenceTypeNumber,
-				TMBillingEnd:  nil,
+				AccountID:         uuid.FromStringOrNil("e38e5c34-f54e-11ee-9f4c-bf30ab98b5c1"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeNumberRenew,
+				ReferenceID:       expectedRefID,
+				CostType:          billing.CostTypeNumberRenew,
+				CostCreditPerUnit: billing.DefaultCreditPerUnitNumber,
 			},
 		},
 	}
@@ -527,12 +530,14 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -543,17 +548,19 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			// idempotency check
 			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeNumberRenew, tt.referenceIDExpect).Return(nil, dbhandler.ErrNotFound)
 
-			// BillingStart
+			// BillingStart -> Create
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
-			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), gomock.Any()).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
-			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
+			// BillingEnd - number renew is credit-only
+			costCreditTotal := float32(1) * billing.DefaultCreditPerUnitNumber
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, costCreditTotal).Return(tt.responseAccount, nil)
+
+			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBilling.ID, float32(1), 0, costCreditTotal, gomock.Any()).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
 			if err := h.EventNMNumberRenewed(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -571,12 +578,14 @@ func Test_EventNMNumberRenewed_virtual(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
+	mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 	h := billingHandler{
-		utilHandler:    mockUtil,
-		db:             mockDB,
-		notifyHandler:  mockNotify,
-		accountHandler: mockAccount,
+		utilHandler:      mockUtil,
+		db:               mockDB,
+		notifyHandler:    mockNotify,
+		accountHandler:   mockAccount,
+		allowanceHandler: mockAllowance,
 	}
 	ctx := context.Background()
 
@@ -588,7 +597,7 @@ func Test_EventNMNumberRenewed_virtual(t *testing.T) {
 		Type: nmnumber.TypeVirtual,
 	}
 
-	// no mock expectations — billing should be skipped entirely
+	// no mock expectations -- billing should be skipped entirely
 
 	if err := h.EventNMNumberRenewed(ctx, n); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -743,6 +752,156 @@ func Test_getReferenceTypeForCall(t *testing.T) {
 	}
 }
 
+func Test_getCostTypeForCall(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call *cmcall.Call
+
+		expectCostType billing.CostType
+	}{
+		{
+			name: "incoming PSTN call (src=tel, dst=tel)",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			expectCostType: billing.CostTypeCallPSTNIncoming,
+		},
+		{
+			name: "incoming call to virtual number",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:user@example.com",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: nmnumber.VirtualNumberPrefix + "1234567",
+				},
+			},
+			expectCostType: billing.CostTypeCallVN,
+		},
+		{
+			name: "incoming call from extension - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeExtension,
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "1001",
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "incoming call from agent - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "1002",
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "outgoing call to PSTN",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+14155551234",
+				},
+			},
+			expectCostType: billing.CostTypeCallPSTNOutgoing,
+		},
+		{
+			name: "outgoing call to extension - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "1003",
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "outgoing call to agent - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "outgoing call to SIP - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeSIP,
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "outgoing call to conference - free",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeConference,
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "unknown direction defaults to PSTN outgoing",
+			call: &cmcall.Call{
+				Direction: "",
+			},
+			expectCostType: billing.CostTypeCallPSTNOutgoing,
+		},
+		{
+			name: "incoming PSTN to tel - classified as PSTN incoming",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+14155551234",
+				},
+			},
+			expectCostType: billing.CostTypeCallPSTNIncoming,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := getCostTypeForCall(tt.call)
+			if res != tt.expectCostType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectCostType, res)
+			}
+		})
+	}
+}
+
 func Test_EventCMCallHangup_nil_tmhangup(t *testing.T) {
 
 	tests := []struct {
@@ -781,12 +940,14 @@ func Test_EventCMCallHangup_nil_tmhangup(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -833,12 +994,14 @@ func Test_EventCMCallHangup_billing_not_found(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -883,12 +1046,14 @@ func Test_EventMMMessageCreated_empty_targets(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -937,12 +1102,14 @@ func Test_EventMMMessageCreated_error_on_first_target(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -990,12 +1157,14 @@ func Test_EventNMNumberCreated_billing_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 
@@ -1044,12 +1213,14 @@ func Test_EventNMNumberRenewed_billing_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
+				utilHandler:      mockUtil,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				accountHandler:   mockAccount,
+				allowanceHandler: mockAllowance,
 			}
 			ctx := context.Background()
 

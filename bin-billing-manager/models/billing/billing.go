@@ -19,10 +19,12 @@ type Billing struct {
 	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"`
 
-	CostPerUnit float32 `json:"cost_per_unit" db:"cost_per_unit"`
-	CostTotal   float32 `json:"cost_total" db:"cost_total"`
-
-	BillingUnitCount float32 `json:"billing_unit_count" db:"billing_unit_count"`
+	CostType          CostType `json:"cost_type" db:"cost_type"`
+	CostUnitCount     float32  `json:"cost_unit_count" db:"cost_unit_count"`
+	CostTokenPerUnit  int      `json:"cost_token_per_unit" db:"cost_token_per_unit"`
+	CostTokenTotal    int      `json:"cost_token_total" db:"cost_token_total"`
+	CostCreditPerUnit float32  `json:"cost_credit_per_unit" db:"cost_credit_per_unit"`
+	CostCreditTotal   float32  `json:"cost_credit_total" db:"cost_credit_total"`
 
 	TMBillingStart *time.Time `json:"tm_billing_start" db:"tm_billing_start"`
 	TMBillingEnd   *time.Time `json:"tm_billing_end" db:"tm_billing_end"`
@@ -58,10 +60,3 @@ const (
 	StatusFinished    Status = "finished"
 )
 
-// list of default billing info
-const (
-	DefaultCostPerUnitReferenceTypeCall          float32 = 0.020
-	DefaultCostPerUnitReferenceTypeCallExtension float32 = 0
-	DefaultCostPerUnitReferenceTypeSMS           float32 = 0.008
-	DefaultCostPerUnitReferenceTypeNumber        float32 = 5
-)

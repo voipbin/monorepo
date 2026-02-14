@@ -21,9 +21,9 @@ import (
 
 	"monorepo/bin-billing-manager/internal/config"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
-	"monorepo/bin-billing-manager/pkg/credithandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 	"monorepo/bin-billing-manager/pkg/listenhandler"
@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	serviceName         = commonoutline.ServiceNameBillingManager
-	creditCheckInterval = 24 * time.Hour
+	serviceName        = commonoutline.ServiceNameBillingManager
+	cycleCheckInterval = 24 * time.Hour
 )
 
 // channels
@@ -121,11 +121,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, "")
 
-	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
-	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
+	allowanceHandler := allowancehandler.NewAllowanceHandler(db)
+	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, allowanceHandler)
+	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler, allowanceHandler)
 
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler, allowanceHandler); err != nil {
 		return err
 	}
 
@@ -134,21 +135,20 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return err
 	}
 
-	// run free tier credit top-up
-	creditHandler := credithandler.NewCreditHandler(db)
+	// run allowance cycle processing
 	go func() {
 		// Run immediately on startup to catch up after deploys/restarts.
-		if err := creditHandler.ProcessAll(context.Background()); err != nil {
-			log.Errorf("Initial credit processing failed. err: %v", err)
+		if err := allowanceHandler.ProcessAllCycles(context.Background()); err != nil {
+			log.Errorf("Initial cycle processing failed. err: %v", err)
 		}
 
-		ticker := time.NewTicker(creditCheckInterval)
+		ticker := time.NewTicker(cycleCheckInterval)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				if err := creditHandler.ProcessAll(context.Background()); err != nil {
-					log.Errorf("Credit processing failed. err: %v", err)
+				if err := allowanceHandler.ProcessAllCycles(context.Background()); err != nil {
+					log.Errorf("Cycle processing failed. err: %v", err)
 				}
 			case <-chDone:
 				return
@@ -219,12 +219,12 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, allowanceHandler allowancehandler.AllowanceHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, allowanceHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {

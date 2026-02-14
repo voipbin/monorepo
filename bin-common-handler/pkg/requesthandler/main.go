@@ -17,6 +17,7 @@ import (
 	ememail "monorepo/bin-email-manager/models/email"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -393,6 +394,7 @@ type RequestHandler interface {
 	BillingV1AccountIsValidResourceLimitByCustomerID(ctx context.Context, customerID uuid.UUID, resourceType bmaccount.ResourceType) (bool, error)
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
+	BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.Allowance, error)
 
 	// billing-manager billing
 	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)

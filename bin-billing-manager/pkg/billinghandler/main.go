@@ -20,6 +20,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -31,13 +32,13 @@ type BillingHandler interface {
 		accountID uuid.UUID,
 		referenceType billing.ReferenceType,
 		referenceID uuid.UUID,
-		costPerUnit float32,
+		costType billing.CostType,
 		tmBillingStart *time.Time,
 	) (*billing.Billing, error)
 	Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
 	List(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
-	UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd *time.Time) (*billing.Billing, error)
+	UpdateStatusEnd(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) (*billing.Billing, error)
 
 	EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call) error
@@ -52,7 +53,8 @@ type billingHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	accountHandler accounthandler.AccountHandler
+	accountHandler   accounthandler.AccountHandler
+	allowanceHandler allowancehandler.AllowanceHandler
 }
 
 var (
@@ -102,6 +104,7 @@ func NewBillingHandler(
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	accountHandler accounthandler.AccountHandler,
+	allowanceHandler allowancehandler.AllowanceHandler,
 ) BillingHandler {
 	h := &billingHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -109,7 +112,8 @@ func NewBillingHandler(
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		accountHandler: accountHandler,
+		accountHandler:   accountHandler,
+		allowanceHandler: allowanceHandler,
 	}
 
 	return h

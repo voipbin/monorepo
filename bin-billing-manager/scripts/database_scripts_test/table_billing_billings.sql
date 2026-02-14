@@ -8,10 +8,12 @@ create table billing_billings(
   reference_type  varchar(32),
   reference_id    binary(16),
 
-  cost_per_unit float,
-  cost_total    float,
-
-  billing_unit_count  float,
+  cost_type             varchar(64),
+  cost_unit_count       float,
+  cost_token_per_unit   integer,
+  cost_token_total      integer,
+  cost_credit_per_unit  float,
+  cost_credit_total     float,
 
   -- timestamps
   tm_billing_start  datetime(6),

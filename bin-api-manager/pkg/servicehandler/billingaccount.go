@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmallowance "monorepo/bin-billing-manager/models/allowance"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -176,5 +177,40 @@ func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context,
 	}
 
 	res := b.ConvertWebhookMessage()
+	return res, nil
+}
+
+// BillingAccountAllowancesGet returns allowance cycles for the given billing account.
+func (h *serviceHandler) BillingAccountAllowancesGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "BillingAccountAllowancesGet",
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
+		"billing_account_id": billingAccountID,
+	})
+
+	// get billing account to validate ownership
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
+	if err != nil {
+		log.Infof("Could not get billing account info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmps, err := h.reqHandler.BillingV1AccountAllowancesGet(ctx, billingAccountID, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get allowances. err: %v", err)
+		return nil, errors.Wrap(err, "could not get allowances")
+	}
+	log.WithField("allowances", tmps).Debugf("Retrieved allowances. count: %d", len(tmps))
+
+	res := make([]*bmallowance.WebhookMessage, 0, len(tmps))
+	for _, tmp := range tmps {
+		res = append(res, tmp.ConvertWebhookMessage())
+	}
+
 	return res, nil
 }
