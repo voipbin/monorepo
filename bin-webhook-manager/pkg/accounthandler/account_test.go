@@ -221,3 +221,108 @@ func Test_UpdateByCustomer(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetErrorCustomer(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+	}{
+		{
+			"error_getting_customer",
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf("not found"))
+			mockReq.EXPECT().CustomerV1CustomerGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf("customer not found"))
+
+			res, err := h.Get(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_GetErrorDBWithUpdateError(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+
+		responseGet *cscustomer.Customer
+	}{
+		{
+			"error_updating_account",
+			uuid.FromStringOrNil("cccccccc-dddd-eeee-ffff-000000000000"),
+			&cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("cccccccc-dddd-eeee-ffff-000000000000"),
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf("not found"))
+			mockReq.EXPECT().CustomerV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+
+			tmp := account.CreateAccountFromCustomer(tt.responseGet)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(fmt.Errorf("update error"))
+
+			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tmp) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tmp, res)
+			}
+		})
+	}
+}
+
+func Test_NewAccountHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := NewAccountHandler(mockDB, mockReq)
+	if h == nil {
+		t.Errorf("Wrong match. expect: handler, got: nil")
+	}
+}

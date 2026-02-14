@@ -3,6 +3,7 @@ package webhookhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -169,5 +170,118 @@ func Test_SendWebhookToURI(t *testing.T) {
 
 			time.Sleep(400 * time.Millisecond)
 		})
+	}
+}
+
+func Test_SendWebhookToCustomerError(t *testing.T) {
+	tests := []struct {
+		name       string
+		customerID uuid.UUID
+		dataType   webhook.DataType
+		data       json.RawMessage
+	}{
+		{
+			"account_get_error",
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+			"application/json",
+			[]byte(`{"test":"value"}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &webhookHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				accoutHandler: mockMessageTargethandler,
+			}
+
+			ctx := context.Background()
+
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(nil, fmt.Errorf("account not found"))
+
+			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
+func Test_SendWebhookToCustomerEmptyWebhookURI(t *testing.T) {
+	tests := []struct {
+		name            string
+		customerID      uuid.UUID
+		dataType        webhook.DataType
+		data            json.RawMessage
+		responseAccount *account.Account
+		expectWebhook   *webhook.Webhook
+	}{
+		{
+			"empty_webhook_uri",
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+			"application/json",
+			[]byte(`{"test":"value"}`),
+			&account.Account{
+				ID:            uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				WebhookMethod: "POST",
+				WebhookURI:    "",
+			},
+			&webhook.Webhook{
+				CustomerID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				DataType:   "application/json",
+				Data:       json.RawMessage([]byte(`{"test":"value"}`)),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &webhookHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				accoutHandler: mockMessageTargethandler,
+			}
+
+			ctx := context.Background()
+
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
+
+			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(100 * time.Millisecond)
+		})
+	}
+}
+
+func Test_NewWebhookHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+	h := NewWebhookHandler(mockDB, mockNotify, mockAccount)
+	if h == nil {
+		t.Errorf("Wrong match. expect: handler, got: nil")
 	}
 }

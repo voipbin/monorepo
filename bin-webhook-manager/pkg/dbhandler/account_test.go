@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -88,5 +89,86 @@ func Test_AccountGet(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func Test_AccountGetError(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+	}{
+		{
+			"cache_error",
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, ErrNotFound)
+
+			res, err := h.AccountGet(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_AccountSetError(t *testing.T) {
+	tests := []struct {
+		name    string
+		message *account.Account
+	}{
+		{
+			"cache_error",
+			&account.Account{
+				ID:            uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any()).Return(fmt.Errorf("cache error"))
+
+			if err := h.AccountSet(ctx, tt.message); err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
+func Test_NewHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	if h == nil {
+		t.Errorf("Wrong match. expect: handler, got: nil")
 	}
 }

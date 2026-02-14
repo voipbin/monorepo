@@ -1,7 +1,9 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -131,6 +133,377 @@ func Test_processV1WebhookDestinationsPost(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhooksPostInvalidURI(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			"invalid_uri_too_short",
+			&sock.Request{
+				URI:      "/v1",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			&sock.Response{
+				StatusCode: 400,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			res, err := h.processV1WebhooksPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhooksPostInvalidJSON(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			"invalid_json",
+			&sock.Request{
+				URI:      "/v1/webhooks",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`invalid json`),
+			},
+			&sock.Response{
+				StatusCode: 400,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			res, err := h.processV1WebhooksPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhooksPostWebhookError(t *testing.T) {
+	tests := []struct {
+		name       string
+		request    *sock.Request
+		customerID uuid.UUID
+		dataType   webhook.DataType
+		expectRes  *sock.Response
+	}{
+		{
+			"webhook_error",
+			&sock.Request{
+				URI:      "/v1/webhooks",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee","data_type":"application/json","data":{"test":"value"}}`),
+			},
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+			"application/json",
+			&sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			mockWeb.EXPECT().SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, gomock.Any()).Return(fmt.Errorf("webhook error"))
+
+			res, err := h.processV1WebhooksPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhookDestinationsPostInvalidURI(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			"invalid_uri_too_short",
+			&sock.Request{
+				URI:      "/v1",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			&sock.Response{
+				StatusCode: 400,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			res, err := h.processV1WebhookDestinationsPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhookDestinationsPostInvalidJSON(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			"invalid_json",
+			&sock.Request{
+				URI:      "/v1/webhook_destinations",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`invalid json`),
+			},
+			&sock.Response{
+				StatusCode: 400,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			res, err := h.processV1WebhookDestinationsPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1WebhookDestinationsPostWebhookError(t *testing.T) {
+	tests := []struct {
+		name       string
+		request    *sock.Request
+		customerID uuid.UUID
+		uri        string
+		method     webhook.MethodType
+		dataType   webhook.DataType
+		expectRes  *sock.Response
+	}{
+		{
+			"webhook_error",
+			&sock.Request{
+				URI:      "/v1/webhook_destinations",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee","uri":"test.com","method":"POST","data_type":"application/json","data":"test"}`),
+			},
+			uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+			"test.com",
+			webhook.MethodTypePOST,
+			"application/json",
+			&sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			ctx := context.Background()
+			mockWeb.EXPECT().SendWebhookToURI(ctx, tt.customerID, tt.uri, tt.method, tt.dataType, gomock.Any()).Return(fmt.Errorf("webhook error"))
+
+			res, err := h.processV1WebhookDestinationsPost(ctx, tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processRequestNotFound(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			"not_found",
+			&sock.Request{
+				URI:      "/v1/unknown",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			&sock.Response{
+				StatusCode: 404,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
+			}
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_NewListenHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockWeb := webhookhandler.NewMockWebhookHandler(mc)
+
+	h := NewListenHandler(mockSock, mockWeb)
+	if h == nil {
+		t.Errorf("Wrong match. expect: handler, got: nil")
+	}
+}
+
+func Test_simpleResponse(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+	}{
+		{"status_200", 200},
+		{"status_400", 400},
+		{"status_404", 404},
+		{"status_500", 500},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := simpleResponse(tt.statusCode)
+			if res.StatusCode != tt.statusCode {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.statusCode, res.StatusCode)
 			}
 		})
 	}
