@@ -42,7 +42,7 @@ var (
 	regV1Speeches = regexp.MustCompile("/v1/speeches")
 
 	// speakings
-	resV1Speakings        = regexp.MustCompile("/v1/speakings$")
+	resV1Speakings        = regexp.MustCompile(`/v1/speakings(\?|$)`)
 	resV1SpeakingsID      = regexp.MustCompile("/v1/speakings/" + regUUID + "$")
 	resV1SpeakingsIDSay   = regexp.MustCompile("/v1/speakings/" + regUUID + "/say$")
 	resV1SpeakingsIDFlush = regexp.MustCompile("/v1/speakings/" + regUUID + "/flush$")
