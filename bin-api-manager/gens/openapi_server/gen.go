@@ -3346,6 +3346,48 @@ type TransferManagerTransfer struct {
 // TransferManagerTransferType defines model for TransferManagerTransferType.
 type TransferManagerTransferType string
 
+// TtsManagerSpeaking defines model for TtsManagerSpeaking.
+type TtsManagerSpeaking struct {
+	// CustomerId Customer identifier
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Direction Audio injection direction (in, out, both)
+	Direction *string `json:"direction,omitempty"`
+
+	// Id Speaking session identifier
+	Id *string `json:"id,omitempty"`
+
+	// Language TTS language (e.g. en-US)
+	Language *string `json:"language,omitempty"`
+
+	// PodId Kubernetes pod hosting this session
+	PodId *string `json:"pod_id,omitempty"`
+
+	// Provider TTS provider (elevenlabs)
+	Provider *string `json:"provider,omitempty"`
+
+	// ReferenceId ID of the referenced entity
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of the referenced entity (call, confbridge)
+	ReferenceType *string `json:"reference_type,omitempty"`
+
+	// Status Session status (initiating, active, stopped)
+	Status *string `json:"status,omitempty"`
+
+	// TmCreate Creation timestamp
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Soft-delete timestamp
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Last update timestamp
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// VoiceId Provider-specific voice ID
+	VoiceId *string `json:"voice_id,omitempty"`
+}
+
 // PageSize defines model for PageSize.
 type PageSize = int
 
@@ -5044,6 +5086,39 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetSpeakingsParams defines parameters for GetSpeakings.
+type GetSpeakingsParams struct {
+	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
+	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostSpeakingsJSONBody defines parameters for PostSpeakings.
+type PostSpeakingsJSONBody struct {
+	// Direction Audio injection direction (in, out, both). Defaults to none.
+	Direction *string `json:"direction,omitempty"`
+
+	// Language TTS language (e.g. en-US)
+	Language *string `json:"language,omitempty"`
+
+	// Provider TTS provider. Defaults to elevenlabs.
+	Provider *string `json:"provider,omitempty"`
+
+	// ReferenceId ID of the referenced entity
+	ReferenceId string `json:"reference_id"`
+
+	// ReferenceType Type of the referenced entity (call, confbridge)
+	ReferenceType string `json:"reference_type"`
+
+	// VoiceId Provider-specific voice ID. If empty, uses default for language.
+	VoiceId *string `json:"voice_id,omitempty"`
+}
+
+// PostSpeakingsIdSayJSONBody defines parameters for PostSpeakingsIdSay.
+type PostSpeakingsIdSayJSONBody struct {
+	// Text Text to be spoken.
+	Text string `json:"text"`
+}
+
 // GetStorageAccountsParams defines parameters for GetStorageAccounts.
 type GetStorageAccountsParams struct {
 	// PageSize The size of results.
@@ -5491,6 +5566,12 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
+type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody
+
+// PostSpeakingsIdSayJSONRequestBody defines body for PostSpeakingsIdSay for application/json ContentType.
+type PostSpeakingsIdSayJSONRequestBody PostSpeakingsIdSayJSONBody
 
 // PostStorageAccountsJSONRequestBody defines body for PostStorageAccounts for application/json ContentType.
 type PostStorageAccountsJSONRequestBody PostStorageAccountsJSONBody
@@ -6298,6 +6379,27 @@ type ServerInterface interface {
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(c *gin.Context)
+	// List speaking sessions
+	// (GET /speakings)
+	GetSpeakings(c *gin.Context, params GetSpeakingsParams)
+	// Create a speaking session
+	// (POST /speakings)
+	PostSpeakings(c *gin.Context)
+	// Delete a speaking session
+	// (DELETE /speakings/{id})
+	DeleteSpeakingsId(c *gin.Context, id string)
+	// Get a speaking session
+	// (GET /speakings/{id})
+	GetSpeakingsId(c *gin.Context, id string)
+	// Flush a speaking session
+	// (POST /speakings/{id}/flush)
+	PostSpeakingsIdFlush(c *gin.Context, id string)
+	// Send text to a speaking session
+	// (POST /speakings/{id}/say)
+	PostSpeakingsIdSay(c *gin.Context, id string)
+	// Stop a speaking session
+	// (POST /speakings/{id}/stop)
+	PostSpeakingsIdStop(c *gin.Context, id string)
 	// Get details of a given account's storage account
 	// (GET /storage_account)
 	GetStorageAccount(c *gin.Context)
@@ -12864,6 +12966,173 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsWs(c *gin.Context) {
 	siw.Handler.GetServiceAgentsWs(c)
 }
 
+// GetSpeakings operation middleware
+func (siw *ServerInterfaceWrapper) GetSpeakings(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSpeakingsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetSpeakings(c, params)
+}
+
+// PostSpeakings operation middleware
+func (siw *ServerInterfaceWrapper) PostSpeakings(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostSpeakings(c)
+}
+
+// DeleteSpeakingsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSpeakingsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteSpeakingsId(c, id)
+}
+
+// GetSpeakingsId operation middleware
+func (siw *ServerInterfaceWrapper) GetSpeakingsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetSpeakingsId(c, id)
+}
+
+// PostSpeakingsIdFlush operation middleware
+func (siw *ServerInterfaceWrapper) PostSpeakingsIdFlush(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostSpeakingsIdFlush(c, id)
+}
+
+// PostSpeakingsIdSay operation middleware
+func (siw *ServerInterfaceWrapper) PostSpeakingsIdSay(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostSpeakingsIdSay(c, id)
+}
+
+// PostSpeakingsIdStop operation middleware
+func (siw *ServerInterfaceWrapper) PostSpeakingsIdStop(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostSpeakingsIdStop(c, id)
+}
+
 // GetStorageAccount operation middleware
 func (siw *ServerInterfaceWrapper) GetStorageAccount(c *gin.Context) {
 
@@ -13886,6 +14155,13 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.GetServiceAgentsTalkMessagesId)
 	router.POST(options.BaseURL+"/service_agents/talk_messages/:id/reactions", wrapper.PostServiceAgentsTalkMessagesIdReactions)
 	router.GET(options.BaseURL+"/service_agents/ws", wrapper.GetServiceAgentsWs)
+	router.GET(options.BaseURL+"/speakings", wrapper.GetSpeakings)
+	router.POST(options.BaseURL+"/speakings", wrapper.PostSpeakings)
+	router.DELETE(options.BaseURL+"/speakings/:id", wrapper.DeleteSpeakingsId)
+	router.GET(options.BaseURL+"/speakings/:id", wrapper.GetSpeakingsId)
+	router.POST(options.BaseURL+"/speakings/:id/flush", wrapper.PostSpeakingsIdFlush)
+	router.POST(options.BaseURL+"/speakings/:id/say", wrapper.PostSpeakingsIdSay)
+	router.POST(options.BaseURL+"/speakings/:id/stop", wrapper.PostSpeakingsIdStop)
 	router.GET(options.BaseURL+"/storage_account", wrapper.GetStorageAccount)
 	router.GET(options.BaseURL+"/storage_accounts", wrapper.GetStorageAccounts)
 	router.POST(options.BaseURL+"/storage_accounts", wrapper.PostStorageAccounts)
@@ -18973,6 +19249,126 @@ type GetServiceAgentsWsResponseObject interface {
 	VisitGetServiceAgentsWsResponse(w http.ResponseWriter) error
 }
 
+type GetSpeakingsRequestObject struct {
+	Params GetSpeakingsParams
+}
+
+type GetSpeakingsResponseObject interface {
+	VisitGetSpeakingsResponse(w http.ResponseWriter) error
+}
+
+type GetSpeakings200JSONResponse []TtsManagerSpeaking
+
+func (response GetSpeakings200JSONResponse) VisitGetSpeakingsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostSpeakingsRequestObject struct {
+	Body *PostSpeakingsJSONRequestBody
+}
+
+type PostSpeakingsResponseObject interface {
+	VisitPostSpeakingsResponse(w http.ResponseWriter) error
+}
+
+type PostSpeakings201JSONResponse TtsManagerSpeaking
+
+func (response PostSpeakings201JSONResponse) VisitPostSpeakingsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteSpeakingsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteSpeakingsIdResponseObject interface {
+	VisitDeleteSpeakingsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteSpeakingsId200JSONResponse TtsManagerSpeaking
+
+func (response DeleteSpeakingsId200JSONResponse) VisitDeleteSpeakingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpeakingsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetSpeakingsIdResponseObject interface {
+	VisitGetSpeakingsIdResponse(w http.ResponseWriter) error
+}
+
+type GetSpeakingsId200JSONResponse TtsManagerSpeaking
+
+func (response GetSpeakingsId200JSONResponse) VisitGetSpeakingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostSpeakingsIdFlushRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostSpeakingsIdFlushResponseObject interface {
+	VisitPostSpeakingsIdFlushResponse(w http.ResponseWriter) error
+}
+
+type PostSpeakingsIdFlush200JSONResponse TtsManagerSpeaking
+
+func (response PostSpeakingsIdFlush200JSONResponse) VisitPostSpeakingsIdFlushResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostSpeakingsIdSayRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostSpeakingsIdSayJSONRequestBody
+}
+
+type PostSpeakingsIdSayResponseObject interface {
+	VisitPostSpeakingsIdSayResponse(w http.ResponseWriter) error
+}
+
+type PostSpeakingsIdSay200JSONResponse TtsManagerSpeaking
+
+func (response PostSpeakingsIdSay200JSONResponse) VisitPostSpeakingsIdSayResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostSpeakingsIdStopRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostSpeakingsIdStopResponseObject interface {
+	VisitPostSpeakingsIdStopResponse(w http.ResponseWriter) error
+}
+
+type PostSpeakingsIdStop200JSONResponse TtsManagerSpeaking
+
+func (response PostSpeakingsIdStop200JSONResponse) VisitPostSpeakingsIdStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetStorageAccountRequestObject struct {
 }
 
@@ -20418,6 +20814,27 @@ type StrictServerInterface interface {
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(ctx context.Context, request GetServiceAgentsWsRequestObject) (GetServiceAgentsWsResponseObject, error)
+	// List speaking sessions
+	// (GET /speakings)
+	GetSpeakings(ctx context.Context, request GetSpeakingsRequestObject) (GetSpeakingsResponseObject, error)
+	// Create a speaking session
+	// (POST /speakings)
+	PostSpeakings(ctx context.Context, request PostSpeakingsRequestObject) (PostSpeakingsResponseObject, error)
+	// Delete a speaking session
+	// (DELETE /speakings/{id})
+	DeleteSpeakingsId(ctx context.Context, request DeleteSpeakingsIdRequestObject) (DeleteSpeakingsIdResponseObject, error)
+	// Get a speaking session
+	// (GET /speakings/{id})
+	GetSpeakingsId(ctx context.Context, request GetSpeakingsIdRequestObject) (GetSpeakingsIdResponseObject, error)
+	// Flush a speaking session
+	// (POST /speakings/{id}/flush)
+	PostSpeakingsIdFlush(ctx context.Context, request PostSpeakingsIdFlushRequestObject) (PostSpeakingsIdFlushResponseObject, error)
+	// Send text to a speaking session
+	// (POST /speakings/{id}/say)
+	PostSpeakingsIdSay(ctx context.Context, request PostSpeakingsIdSayRequestObject) (PostSpeakingsIdSayResponseObject, error)
+	// Stop a speaking session
+	// (POST /speakings/{id}/stop)
+	PostSpeakingsIdStop(ctx context.Context, request PostSpeakingsIdStopRequestObject) (PostSpeakingsIdStopResponseObject, error)
 	// Get details of a given account's storage account
 	// (GET /storage_account)
 	GetStorageAccount(ctx context.Context, request GetStorageAccountRequestObject) (GetStorageAccountResponseObject, error)
@@ -28290,6 +28707,209 @@ func (sh *strictHandler) GetServiceAgentsWs(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetServiceAgentsWsResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsWsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSpeakings operation middleware
+func (sh *strictHandler) GetSpeakings(ctx *gin.Context, params GetSpeakingsParams) {
+	var request GetSpeakingsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSpeakings(ctx, request.(GetSpeakingsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSpeakings")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetSpeakingsResponseObject); ok {
+		if err := validResponse.VisitGetSpeakingsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostSpeakings operation middleware
+func (sh *strictHandler) PostSpeakings(ctx *gin.Context) {
+	var request PostSpeakingsRequestObject
+
+	var body PostSpeakingsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostSpeakings(ctx, request.(PostSpeakingsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostSpeakings")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostSpeakingsResponseObject); ok {
+		if err := validResponse.VisitPostSpeakingsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteSpeakingsId operation middleware
+func (sh *strictHandler) DeleteSpeakingsId(ctx *gin.Context, id string) {
+	var request DeleteSpeakingsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteSpeakingsId(ctx, request.(DeleteSpeakingsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteSpeakingsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteSpeakingsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteSpeakingsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSpeakingsId operation middleware
+func (sh *strictHandler) GetSpeakingsId(ctx *gin.Context, id string) {
+	var request GetSpeakingsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSpeakingsId(ctx, request.(GetSpeakingsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSpeakingsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetSpeakingsIdResponseObject); ok {
+		if err := validResponse.VisitGetSpeakingsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostSpeakingsIdFlush operation middleware
+func (sh *strictHandler) PostSpeakingsIdFlush(ctx *gin.Context, id string) {
+	var request PostSpeakingsIdFlushRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostSpeakingsIdFlush(ctx, request.(PostSpeakingsIdFlushRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostSpeakingsIdFlush")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostSpeakingsIdFlushResponseObject); ok {
+		if err := validResponse.VisitPostSpeakingsIdFlushResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostSpeakingsIdSay operation middleware
+func (sh *strictHandler) PostSpeakingsIdSay(ctx *gin.Context, id string) {
+	var request PostSpeakingsIdSayRequestObject
+
+	request.Id = id
+
+	var body PostSpeakingsIdSayJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostSpeakingsIdSay(ctx, request.(PostSpeakingsIdSayRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostSpeakingsIdSay")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostSpeakingsIdSayResponseObject); ok {
+		if err := validResponse.VisitPostSpeakingsIdSayResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostSpeakingsIdStop operation middleware
+func (sh *strictHandler) PostSpeakingsIdStop(ctx *gin.Context, id string) {
+	var request PostSpeakingsIdStopRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostSpeakingsIdStop(ctx, request.(PostSpeakingsIdStopRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostSpeakingsIdStop")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostSpeakingsIdStopResponseObject); ok {
+		if err := validResponse.VisitPostSpeakingsIdStopResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

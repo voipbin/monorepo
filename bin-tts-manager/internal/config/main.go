@@ -24,6 +24,10 @@ type Config struct {
 	AWSAccessKey            string // AWSAccessKey is the AWS access key for AWS services.
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
 	ElevenlabsAPIKey        string // ElevenlabsAPIKey is the API key for ElevenLabs TTS service.
+	DatabaseDSN             string // DatabaseDSN is the MySQL database connection string.
+	RedisAddress            string // RedisAddress is the Redis server address.
+	RedisPassword           string // RedisPassword is the Redis server password.
+	RedisDB                 int    // RedisDB is the Redis database number.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -47,6 +51,10 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("aws_access_key", "", "AWS access key")
 	f.String("aws_secret_key", "", "AWS secret key")
 	f.String("elevenlabs_api_key", "", "ElevenLabs API key")
+	f.String("database_dsn", "", "MySQL database connection string")
+	f.String("redis_address", "", "Redis server address")
+	f.String("redis_password", "", "Redis server password")
+	f.Int("redis_db", 0, "Redis database number")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -55,6 +63,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"aws_access_key":            "AWS_ACCESS_KEY",
 		"aws_secret_key":            "AWS_SECRET_KEY",
 		"elevenlabs_api_key":        "ELEVENLABS_API_KEY",
+		"database_dsn":              "DATABASE_DSN",
+		"redis_address":             "REDIS_ADDRESS",
+		"redis_password":            "REDIS_PASSWORD",
+		"redis_db":                  "REDIS_DB",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -86,6 +98,10 @@ func LoadGlobalConfig() {
 			AWSAccessKey:            viper.GetString("aws_access_key"),
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			ElevenlabsAPIKey:        viper.GetString("elevenlabs_api_key"),
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisPassword:           viper.GetString("redis_password"),
+			RedisDB:                 viper.GetInt("redis_db"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

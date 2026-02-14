@@ -74,6 +74,8 @@ import (
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
+	tmspeaking "monorepo/bin-tts-manager/models/speaking"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
 	rmrag "monorepo/bin-rag-manager/pkg/raghandler"
 
@@ -842,6 +844,15 @@ type ServiceHandler interface {
 	) (*tmtranscribe.WebhookMessage, error)
 	TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
+
+	// speaking handlers
+	SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.Speaking, error)
+	SpeakingGet(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error)
+	SpeakingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmspeaking.Speaking, error)
+	SpeakingSay(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID, text string) (*tmspeaking.Speaking, error)
+	SpeakingFlush(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error)
+	SpeakingStop(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error)
+	SpeakingDelete(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error)
 
 	// transcript handlers
 	TranscriptList(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)

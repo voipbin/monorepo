@@ -3337,6 +3337,48 @@ type TransferManagerTransfer struct {
 // TransferManagerTransferType defines model for TransferManagerTransferType.
 type TransferManagerTransferType string
 
+// TtsManagerSpeaking defines model for TtsManagerSpeaking.
+type TtsManagerSpeaking struct {
+	// CustomerId Customer identifier
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Direction Audio injection direction (in, out, both)
+	Direction *string `json:"direction,omitempty"`
+
+	// Id Speaking session identifier
+	Id *string `json:"id,omitempty"`
+
+	// Language TTS language (e.g. en-US)
+	Language *string `json:"language,omitempty"`
+
+	// PodId Kubernetes pod hosting this session
+	PodId *string `json:"pod_id,omitempty"`
+
+	// Provider TTS provider (elevenlabs)
+	Provider *string `json:"provider,omitempty"`
+
+	// ReferenceId ID of the referenced entity
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of the referenced entity (call, confbridge)
+	ReferenceType *string `json:"reference_type,omitempty"`
+
+	// Status Session status (initiating, active, stopped)
+	Status *string `json:"status,omitempty"`
+
+	// TmCreate Creation timestamp
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Soft-delete timestamp
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Last update timestamp
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// VoiceId Provider-specific voice ID
+	VoiceId *string `json:"voice_id,omitempty"`
+}
+
 // PageSize defines model for PageSize.
 type PageSize = int
 
@@ -5035,6 +5077,39 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetSpeakingsParams defines parameters for GetSpeakings.
+type GetSpeakingsParams struct {
+	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
+	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostSpeakingsJSONBody defines parameters for PostSpeakings.
+type PostSpeakingsJSONBody struct {
+	// Direction Audio injection direction (in, out, both). Defaults to none.
+	Direction *string `json:"direction,omitempty"`
+
+	// Language TTS language (e.g. en-US)
+	Language *string `json:"language,omitempty"`
+
+	// Provider TTS provider. Defaults to elevenlabs.
+	Provider *string `json:"provider,omitempty"`
+
+	// ReferenceId ID of the referenced entity
+	ReferenceId string `json:"reference_id"`
+
+	// ReferenceType Type of the referenced entity (call, confbridge)
+	ReferenceType string `json:"reference_type"`
+
+	// VoiceId Provider-specific voice ID. If empty, uses default for language.
+	VoiceId *string `json:"voice_id,omitempty"`
+}
+
+// PostSpeakingsIdSayJSONBody defines parameters for PostSpeakingsIdSay.
+type PostSpeakingsIdSayJSONBody struct {
+	// Text Text to be spoken.
+	Text string `json:"text"`
+}
+
 // GetStorageAccountsParams defines parameters for GetStorageAccounts.
 type GetStorageAccountsParams struct {
 	// PageSize The size of results.
@@ -5482,6 +5557,12 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
+type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody
+
+// PostSpeakingsIdSayJSONRequestBody defines body for PostSpeakingsIdSay for application/json ContentType.
+type PostSpeakingsIdSayJSONRequestBody PostSpeakingsIdSayJSONBody
 
 // PostStorageAccountsJSONRequestBody defines body for PostStorageAccounts for application/json ContentType.
 type PostStorageAccountsJSONRequestBody PostStorageAccountsJSONBody

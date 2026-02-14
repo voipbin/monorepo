@@ -364,7 +364,7 @@ func (h *elevenlabsHandler) readConnWebsock(ctx context.Context, messageID uuid.
 }
 
 func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming) (*websocket.Conn, error) {
-	voiceID := h.getVoiceID(ctx, st.ActiveflowID, st.Language, st.Gender)
+	voiceID := h.getVoiceID(ctx, st)
 
 	// Construct the WebSocket URL for ElevenLabs.
 	u := url.URL{
@@ -418,6 +418,23 @@ func (h *elevenlabsHandler) SayAdd(vendorConfig any, text string) error {
 	cf.Message.TotalCount++
 
 	return nil
+}
+
+func (h *elevenlabsHandler) SayFlush(vendorConfig any) error {
+	cf, ok := vendorConfig.(*ElevenlabsConfig)
+	if !ok || cf == nil {
+		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
+	}
+
+	cf.muConnWebsock.Lock()
+	defer cf.muConnWebsock.Unlock()
+
+	if cf.ConnWebsock == nil {
+		return fmt.Errorf("the ConnWebsock is nil")
+	}
+
+	msg := ElevenlabsMessage{Text: "", Flush: true}
+	return cf.ConnWebsock.WriteJSON(msg)
 }
 
 func (h *elevenlabsHandler) SayStop(vendorConfig any) error {
@@ -477,15 +494,22 @@ func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byt
 }
 
 // getVoiceID returns the ElevenLabs voice ID for the tts.
-// if the given activeflow has valid elevenlab voice id as a activeflow variable,
-// it is returned.
-func (h *elevenlabsHandler) getVoiceID(ctx context.Context, activeflowID uuid.UUID, language string, gender streaming.Gender) string {
+// Priority order:
+// 1. If VoiceID is explicitly set on the streaming, use it directly
+// 2. If the activeflow has a valid elevenlabs voice id variable, use it
+// 3. Use language+gender lookup
+// 4. Fall back to default voice ID
+func (h *elevenlabsHandler) getVoiceID(ctx context.Context, st *streaming.Streaming) string {
+	// If VoiceID is explicitly set on the streaming, use it directly
+	if st.VoiceID != "" {
+		return st.VoiceID
+	}
 
-	if tmpID := h.getVoiceIDByVariable(ctx, activeflowID); tmpID != "" {
+	if tmpID := h.getVoiceIDByVariable(ctx, st.ActiveflowID); tmpID != "" {
 		return tmpID
 	}
 
-	if tmpID := h.getVoiceIDByLangGender(ctx, language, gender); tmpID != "" {
+	if tmpID := h.getVoiceIDByLangGender(ctx, st.Language, st.Gender); tmpID != "" {
 		return tmpID
 	}
 

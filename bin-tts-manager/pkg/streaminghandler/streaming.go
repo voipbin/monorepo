@@ -23,10 +23,27 @@ func (h *streamingHandler) Create(
 	gender streaming.Gender,
 	direction streaming.Direction,
 ) (*streaming.Streaming, error) {
+	id := h.utilHandler.UUIDCreate()
+	return h.createWithID(ctx, id, customerID, activeflowID, referenceType, referenceID, language, gender, "", "", direction)
+}
+
+// createWithID creates a streaming record with a pre-determined ID, provider, and voiceID.
+func (h *streamingHandler) createWithID(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceType streaming.ReferenceType,
+	referenceID uuid.UUID,
+	language string,
+	gender streaming.Gender,
+	provider string,
+	voiceID string,
+	direction streaming.Direction,
+) (*streaming.Streaming, error) {
 	h.muStreaming.Lock()
 	defer h.muStreaming.Unlock()
 
-	id := h.utilHandler.UUIDCreate()
 	res := &streaming.Streaming{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -40,6 +57,8 @@ func (h *streamingHandler) Create(
 
 		Language:  language,
 		Gender:    gender,
+		Provider:  provider,
+		VoiceID:   voiceID,
 		Direction: direction,
 
 		VendorName:   streaming.VendorNameNone,

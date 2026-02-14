@@ -77,11 +77,13 @@ require (
 require (
 	cloud.google.com/go/texttospeech v1.16.0
 	github.com/CyCoreSystems/audiosocket v0.3.0
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.7
 	github.com/aws/aws-sdk-go-v2/service/polly v1.54.10
 	github.com/go-redsync/redsync/v4 v4.15.0
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/pkg/errors v0.9.1
@@ -101,7 +103,6 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/ClickHouse/ch-go v0.71.0 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.43.0 // indirect
-	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.17 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.17 // indirect
@@ -124,7 +125,6 @@ require (
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect

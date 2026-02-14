@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,17 +11,22 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-tts-manager/internal/config"
+	"monorepo/bin-tts-manager/pkg/cachehandler"
+	"monorepo/bin-tts-manager/pkg/dbhandler"
 	"monorepo/bin-tts-manager/pkg/listenhandler"
+	"monorepo/bin-tts-manager/pkg/speakinghandler"
 	"monorepo/bin-tts-manager/pkg/streaminghandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
 )
@@ -87,7 +93,13 @@ func runDaemon() error {
 	log := logrus.WithField("func", "runDaemon")
 	log.WithField("config", config.Get()).Info("Starting tts-manager...")
 
-	if errRun := run(); errRun != nil {
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return errors.Wrapf(err, "could not connect to the database")
+	}
+	defer commondatabasehandler.Close(sqlDB)
+
+	if errRun := run(sqlDB); errRun != nil {
 		return errors.Wrapf(errRun, "could not run tts-manager")
 	}
 
@@ -97,7 +109,7 @@ func runDaemon() error {
 }
 
 // Run the services
-func run() error {
+func run(db *sql.DB) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "run",
 	})
@@ -117,8 +129,16 @@ func run() error {
 	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, config.Get().ElevenlabsAPIKey)
 
+	// initialize cache and db handlers
+	cacheHandler := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDB)
+	if err := cacheHandler.Connect(); err != nil {
+		logrus.Fatalf("Could not connect to cache. err: %v", err)
+	}
+	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
+	speakingHandler := speakinghandler.NewSpeakingHandler(dbHandler, streamingHandler, podID)
+
 	// run listener
-	go runListen(sockHandler, ttsHandler, streamingHandler, podID)
+	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID)
 	go runStreaming(streamingHandler)
 
 	log.Debug("All handlers started successfully")
@@ -126,20 +146,20 @@ func run() error {
 }
 
 // runListen run the listener
-func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, podID string) {
+func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) {
 
-	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler); errRun != nil {
+	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler, speakingHandler); errRun != nil {
 		panic(errors.Wrapf(errRun, "could not run listen handler in normal mode"))
 	}
 
-	if errRun := runListenPod(sockHandler, ttsHandler, streamingHandler, podID); errRun != nil {
+	if errRun := runListenPod(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID); errRun != nil {
 		panic(errors.Wrapf(errRun, "could not run listen handler in pod mode"))
 	}
 }
 
-func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler) error {
+func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler) error {
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
@@ -150,8 +170,8 @@ func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.
 }
 
 // runListen run the listener
-func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, podID string) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler)
+func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
 
 	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 	if err := listenHandler.Run(queueName, string(commonoutline.QueueNameDelay)); err != nil {

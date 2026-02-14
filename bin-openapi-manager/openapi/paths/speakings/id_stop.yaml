@@ -1,0 +1,18 @@
+post:
+  summary: Stop a speaking session
+  description: Terminates the session. Closes AudioSocket and ElevenLabs connections.
+  tags:
+    - Speaking
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The stopped speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'

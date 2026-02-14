@@ -1,0 +1,29 @@
+post:
+  summary: Send text to a speaking session
+  description: Adds text to the speech queue. Can be called multiple times.
+  tags:
+    - Speaking
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - text
+          properties:
+            text:
+              type: string
+              description: Text to be spoken.
+  responses:
+    '200':
+      description: The speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'

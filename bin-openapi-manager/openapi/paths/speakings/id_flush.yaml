@@ -1,0 +1,18 @@
+post:
+  summary: Flush a speaking session
+  description: Cancels current speech and clears all queued messages. Session stays open.
+  tags:
+    - Speaking
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'

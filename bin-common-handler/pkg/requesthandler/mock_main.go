@@ -81,6 +81,7 @@ import (
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
+	speaking "monorepo/bin-tts-manager/models/speaking"
 	streaming "monorepo/bin-tts-manager/models/streaming"
 	tts "monorepo/bin-tts-manager/models/tts"
 	webhook "monorepo/bin-webhook-manager/models/webhook"
@@ -5451,6 +5452,111 @@ func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.
 func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id, requestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingGet), ctx, id, requestTimeout)
+}
+
+// TTSV1SpeakingCreate mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingCreate(ctx context.Context, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingCreate", ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingCreate indicates an expected call of TTSV1SpeakingCreate.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingCreate(ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingCreate), ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction)
+}
+
+// TTSV1SpeakingDelete mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingDelete(ctx context.Context, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingDelete", ctx, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingDelete indicates an expected call of TTSV1SpeakingDelete.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingDelete(ctx, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingDelete", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingDelete), ctx, speakingID)
+}
+
+// TTSV1SpeakingFlush mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingFlush(ctx context.Context, podID string, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingFlush", ctx, podID, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingFlush indicates an expected call of TTSV1SpeakingFlush.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingFlush(ctx, podID, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingFlush", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingFlush), ctx, podID, speakingID)
+}
+
+// TTSV1SpeakingGet mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingGet(ctx context.Context, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingGet", ctx, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingGet indicates an expected call of TTSV1SpeakingGet.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingGet(ctx, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingGet", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingGet), ctx, speakingID)
+}
+
+// TTSV1SpeakingGets mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[speaking.Field]any) ([]*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingGets indicates an expected call of TTSV1SpeakingGets.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingGets", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingGets), ctx, pageToken, pageSize, filters)
+}
+
+// TTSV1SpeakingSay mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingSay(ctx context.Context, podID string, speakingID uuid.UUID, text string) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingSay", ctx, podID, speakingID, text)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingSay indicates an expected call of TTSV1SpeakingSay.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingSay(ctx, podID, speakingID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingSay", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingSay), ctx, podID, speakingID, text)
+}
+
+// TTSV1SpeakingStop mocks base method.
+func (m *MockRequestHandler) TTSV1SpeakingStop(ctx context.Context, podID string, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1SpeakingStop", ctx, podID, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1SpeakingStop indicates an expected call of TTSV1SpeakingStop.
+func (mr *MockRequestHandlerMockRecorder) TTSV1SpeakingStop(ctx, podID, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeakingStop", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeakingStop), ctx, podID, speakingID)
 }
 
 // TTSV1SpeecheCreate mocks base method.

@@ -89,6 +89,40 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 	}
 }
 
+// SayFlush flushes the current streaming buffer.
+// TODO: Implement stale audio discarding — currently ElevenLabs may still
+// deliver audio frames generated before the flush. An atomic counter or
+// sequence number could be used to discard stale frames on the AudioSocket side.
+func (h *streamingHandler) SayFlush(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "SayFlush",
+		"streaming_id": id,
+	})
+
+	st, err := h.Get(ctx, id)
+	if err != nil {
+		log.Infof("Could not get streaming. err: %v", err)
+		return err
+	}
+
+	st.VendorLock.Lock()
+	defer st.VendorLock.Unlock()
+
+	switch st.VendorName {
+	case streaming.VendorNameElevenlabs:
+		if errFlush := h.elevenlabsHandler.SayFlush(st.VendorConfig); errFlush != nil {
+			log.Errorf("Could not flush the say streaming. err: %v", errFlush)
+			return errFlush
+		}
+
+	default:
+		log.Errorf("Unsupported vendor. vendor_name: %s", st.VendorName)
+		return fmt.Errorf("unsupported vendor: %s", st.VendorName)
+	}
+
+	return nil
+}
+
 // SayFinish set finish flag to true for the current message being synthesized
 func (h *streamingHandler) SayFinish(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error) {
 	st, err := h.Get(ctx, id)
