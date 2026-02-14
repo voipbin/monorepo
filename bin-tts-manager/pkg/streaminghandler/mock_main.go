@@ -85,6 +85,20 @@ func (mr *MockStreamingHandlerMockRecorder) SayFinish(ctx, id, messageID any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFinish", reflect.TypeOf((*MockStreamingHandler)(nil).SayFinish), ctx, id, messageID)
 }
 
+// SayFlush mocks base method.
+func (m *MockStreamingHandler) SayFlush(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayFlush", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SayFlush indicates an expected call of SayFlush.
+func (mr *MockStreamingHandlerMockRecorder) SayFlush(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFlush", reflect.TypeOf((*MockStreamingHandler)(nil).SayFlush), ctx, id)
+}
+
 // SayInit mocks base method.
 func (m *MockStreamingHandler) SayInit(ctx context.Context, id, messageID uuid.UUID) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
@@ -127,6 +141,21 @@ func (m *MockStreamingHandler) Start(ctx context.Context, customerID, activeflow
 func (mr *MockStreamingHandlerMockRecorder) Start(ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockStreamingHandler)(nil).Start), ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction)
+}
+
+// StartWithID mocks base method.
+func (m *MockStreamingHandler) StartWithID(ctx context.Context, id, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartWithID", ctx, id, customerID, referenceType, referenceID, language, provider, voiceID, direction)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartWithID indicates an expected call of StartWithID.
+func (mr *MockStreamingHandlerMockRecorder) StartWithID(ctx, id, customerID, referenceType, referenceID, language, provider, voiceID, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartWithID", reflect.TypeOf((*MockStreamingHandler)(nil).StartWithID), ctx, id, customerID, referenceType, referenceID, language, provider, voiceID, direction)
 }
 
 // Stop mocks base method.
@@ -223,6 +252,20 @@ func (m *Mockstreamer) SayFinish(vendorConfig any) error {
 func (mr *MockstreamerMockRecorder) SayFinish(vendorConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFinish", reflect.TypeOf((*Mockstreamer)(nil).SayFinish), vendorConfig)
+}
+
+// SayFlush mocks base method.
+func (m *Mockstreamer) SayFlush(vendorConfig any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SayFlush", vendorConfig)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SayFlush indicates an expected call of SayFlush.
+func (mr *MockstreamerMockRecorder) SayFlush(vendorConfig any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SayFlush", reflect.TypeOf((*Mockstreamer)(nil).SayFlush), vendorConfig)
 }
 
 // SayStop mocks base method.

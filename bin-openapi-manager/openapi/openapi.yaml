@@ -152,6 +152,9 @@ tags:
   - name: Service Agent
     description: Operations related to individual agent service
 
+  - name: Speaking
+    description: Operations related to real-time streaming TTS sessions
+
   - name: Storage
     description: Operations related to storage
     externalDocs:
@@ -3755,6 +3758,53 @@ components:
 
 
 #########################################
+# TTS Manager
+#########################################
+    TtsManagerSpeaking:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Speaking session identifier
+        customer_id:
+          type: string
+          description: Customer identifier
+        reference_type:
+          type: string
+          description: Type of the referenced entity (call, confbridge)
+        reference_id:
+          type: string
+          description: ID of the referenced entity
+        language:
+          type: string
+          description: TTS language (e.g. en-US)
+        provider:
+          type: string
+          description: TTS provider (elevenlabs)
+        voice_id:
+          type: string
+          description: Provider-specific voice ID
+        direction:
+          type: string
+          description: Audio injection direction (in, out, both)
+        status:
+          type: string
+          description: Session status (initiating, active, stopped)
+        pod_id:
+          type: string
+          description: Kubernetes pod hosting this session
+        tm_create:
+          type: string
+          description: Creation timestamp
+        tm_update:
+          type: string
+          description: Last update timestamp
+        tm_delete:
+          type: string
+          description: Soft-delete timestamp
+
+
+#########################################
 # Transcribe Manager
 #########################################
     TranscribeManagerTranscribeDirection:
@@ -4321,6 +4371,17 @@ paths:
     $ref: './paths/service_agents/tags_id.yaml'
   /service_agents/tags:
     $ref: './paths/service_agents/tags.yaml'
+
+  /speakings:
+    $ref: './paths/speakings/main.yaml'
+  /speakings/{id}:
+    $ref: './paths/speakings/id.yaml'
+  /speakings/{id}/say:
+    $ref: './paths/speakings/id_say.yaml'
+  /speakings/{id}/flush:
+    $ref: './paths/speakings/id_flush.yaml'
+  /speakings/{id}/stop:
+    $ref: './paths/speakings/id_stop.yaml'
 
   /storage_account:
     $ref: './paths/storage_account/main.yaml'

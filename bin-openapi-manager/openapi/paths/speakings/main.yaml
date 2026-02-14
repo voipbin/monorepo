@@ -1,0 +1,63 @@
+get:
+  summary: List speaking sessions
+  description: Returns a list of speaking sessions for the authenticated customer.
+  tags:
+    - Speaking
+  parameters:
+    - name: page_size
+      in: query
+      schema:
+        type: integer
+    - name: page_token
+      in: query
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of speaking sessions.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TtsManagerSpeaking'
+
+post:
+  summary: Create a speaking session
+  description: Creates a new streaming TTS session on a call or conference.
+  tags:
+    - Speaking
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - reference_type
+            - reference_id
+          properties:
+            reference_type:
+              type: string
+              description: Type of the referenced entity (call, confbridge)
+            reference_id:
+              type: string
+              description: ID of the referenced entity
+            language:
+              type: string
+              description: TTS language (e.g. en-US)
+            provider:
+              type: string
+              description: TTS provider. Defaults to elevenlabs.
+            voice_id:
+              type: string
+              description: Provider-specific voice ID. If empty, uses default for language.
+            direction:
+              type: string
+              description: Audio injection direction (in, out, both). Defaults to out.
+  responses:
+    '200':
+      description: The created speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'

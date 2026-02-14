@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-tts-manager/pkg/speakinghandler"
 	"monorepo/bin-tts-manager/pkg/streaminghandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
 )
@@ -31,6 +32,7 @@ type listenHandler struct {
 	sockHandler      sockhandler.SockHandler
 	ttsHandler       ttshandler.TTSHandler
 	streamingHandler streaminghandler.StreamingHandler
+	speakingHandler  speakinghandler.SpeakingHandler
 }
 
 var (
@@ -38,6 +40,13 @@ var (
 
 	// speeches
 	regV1Speeches = regexp.MustCompile("/v1/speeches")
+
+	// speakings
+	resV1Speakings        = regexp.MustCompile("/v1/speakings$")
+	resV1SpeakingsID      = regexp.MustCompile("/v1/speakings/" + regUUID + "$")
+	resV1SpeakingsIDSay   = regexp.MustCompile("/v1/speakings/" + regUUID + "/say$")
+	resV1SpeakingsIDFlush = regexp.MustCompile("/v1/speakings/" + regUUID + "/flush$")
+	resV1SpeakingsIDStop  = regexp.MustCompile("/v1/speakings/" + regUUID + "/stop$")
 
 	// streamings
 	resV1Streamings            = regexp.MustCompile("/v1/streamings$")
@@ -82,11 +91,13 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	ttsHandler ttshandler.TTSHandler,
 	streamingHandler streaminghandler.StreamingHandler,
+	speakingHandler speakinghandler.SpeakingHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:      sockHandler,
 		ttsHandler:       ttsHandler,
 		streamingHandler: streamingHandler,
+		speakingHandler:  speakingHandler,
 	}
 
 	return h
@@ -133,6 +144,41 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Speeches.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/speeches"
 		response, err = h.v1SpeechesPost(ctx, m)
+
+	// /speakings POST
+	case resV1Speakings.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/speakings"
+		response, err = h.v1SpeakingsPost(ctx, m)
+
+	// /speakings GET
+	case resV1Speakings.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/speakings"
+		response, err = h.v1SpeakingsGet(ctx, m)
+
+	// /speakings/<id> GET
+	case resV1SpeakingsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/speakings/<speaking-id>"
+		response, err = h.v1SpeakingsIDGet(ctx, m)
+
+	// /speakings/<id> DELETE
+	case resV1SpeakingsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		requestType = "/speakings/<speaking-id>"
+		response, err = h.v1SpeakingsIDDelete(ctx, m)
+
+	// /speakings/<id>/say POST
+	case resV1SpeakingsIDSay.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/speakings/<speaking-id>/say"
+		response, err = h.v1SpeakingsIDSayPost(ctx, m)
+
+	// /speakings/<id>/flush POST
+	case resV1SpeakingsIDFlush.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/speakings/<speaking-id>/flush"
+		response, err = h.v1SpeakingsIDFlushPost(ctx, m)
+
+	// /speakings/<id>/stop POST
+	case resV1SpeakingsIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/speakings/<speaking-id>/stop"
+		response, err = h.v1SpeakingsIDStopPost(ctx, m)
 
 	// /streamings
 	case resV1Streamings.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

@@ -1,0 +1,37 @@
+get:
+  summary: Get a speaking session
+  description: Returns details of a speaking session.
+  tags:
+    - Speaking
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'
+
+delete:
+  summary: Delete a speaking session
+  description: Soft-deletes a speaking session. Stops the session if still active.
+  tags:
+    - Speaking
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted speaking session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TtsManagerSpeaking'

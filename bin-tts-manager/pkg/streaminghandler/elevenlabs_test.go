@@ -150,7 +150,12 @@ func Test_getVoiceID_getVoiceIDByLangGender(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			result := h.getVoiceID(ctx, uuid.Nil, tt.language, tt.gender)
+			st := &streaming.Streaming{
+				Language: tt.language,
+				Gender:   tt.gender,
+			}
+
+			result := h.getVoiceID(ctx, st)
 			if result != tt.expected {
 				t.Errorf("got %s, expected %s", result, tt.expected)
 			}
@@ -196,7 +201,11 @@ func Test_getVoiceID_getVoiceIDByVariable(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
-			result := h.getVoiceID(ctx, tt.activeflowID, "", "")
+			st := &streaming.Streaming{
+				ActiveflowID: tt.activeflowID,
+			}
+
+			result := h.getVoiceID(ctx, st)
 			if result != tt.expectedRes {
 				t.Errorf("Wrong match. got: %s, expected: %s", result, tt.expectedRes)
 			}

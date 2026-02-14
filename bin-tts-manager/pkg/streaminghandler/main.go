@@ -33,10 +33,22 @@ type StreamingHandler interface {
 		gender streaming.Gender,
 		direction streaming.Direction,
 	) (*streaming.Streaming, error)
+	StartWithID(
+		ctx context.Context,
+		id uuid.UUID,
+		customerID uuid.UUID,
+		referenceType streaming.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+		provider string,
+		voiceID string,
+		direction streaming.Direction,
+	) (*streaming.Streaming, error)
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 
 	SayInit(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error)
 	SayAdd(ctx context.Context, id uuid.UUID, messageID uuid.UUID, text string) error
+	SayFlush(ctx context.Context, id uuid.UUID) error
 	SayStop(ctx context.Context, id uuid.UUID) error
 	SayFinish(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error)
 }
@@ -67,6 +79,7 @@ type streamer interface {
 
 	SayStop(vendorConfig any) error
 	SayAdd(vendorConfig any, text string) error
+	SayFlush(vendorConfig any) error
 	SayFinish(vendorConfig any) error
 }
 

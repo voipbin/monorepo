@@ -21,6 +21,8 @@ type Streaming struct {
 
 	Language  string    `json:"language,omitempty"` // Language of the streaming
 	Gender    Gender    `json:"gender,omitempty"`
+	Provider  string    `json:"provider,omitempty"`  // e.g. "elevenlabs"
+	VoiceID   string    `json:"voice_id,omitempty"`  // provider-specific voice ID
 	Direction Direction `json:"direction,omitempty"` // Direction of the streaming
 
 	MessageID uuid.UUID `json:"message_id,omitempty"` // ID of the message associated with the streaming

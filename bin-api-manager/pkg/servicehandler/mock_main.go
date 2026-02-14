@@ -64,6 +64,7 @@ import (
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
+	speaking "monorepo/bin-tts-manager/models/speaking"
 	http "net/http"
 	reflect "reflect"
 
@@ -3906,6 +3907,111 @@ func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantList(ctx, a, chatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkParticipantList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkParticipantList), ctx, a, chatID)
+}
+
+// SpeakingCreate mocks base method.
+func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType string, referenceID uuid.UUID, language, provider, voiceID, direction string) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingCreate", ctx, a, referenceType, referenceID, language, provider, voiceID, direction)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingCreate indicates an expected call of SpeakingCreate.
+func (mr *MockServiceHandlerMockRecorder) SpeakingCreate(ctx, a, referenceType, referenceID, language, provider, voiceID, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingCreate", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingCreate), ctx, a, referenceType, referenceID, language, provider, voiceID, direction)
+}
+
+// SpeakingDelete mocks base method.
+func (m *MockServiceHandler) SpeakingDelete(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingDelete", ctx, a, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingDelete indicates an expected call of SpeakingDelete.
+func (mr *MockServiceHandlerMockRecorder) SpeakingDelete(ctx, a, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingDelete", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingDelete), ctx, a, speakingID)
+}
+
+// SpeakingFlush mocks base method.
+func (m *MockServiceHandler) SpeakingFlush(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingFlush", ctx, a, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingFlush indicates an expected call of SpeakingFlush.
+func (mr *MockServiceHandlerMockRecorder) SpeakingFlush(ctx, a, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingFlush", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingFlush), ctx, a, speakingID)
+}
+
+// SpeakingGet mocks base method.
+func (m *MockServiceHandler) SpeakingGet(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingGet", ctx, a, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingGet indicates an expected call of SpeakingGet.
+func (mr *MockServiceHandlerMockRecorder) SpeakingGet(ctx, a, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingGet", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingGet), ctx, a, speakingID)
+}
+
+// SpeakingList mocks base method.
+func (m *MockServiceHandler) SpeakingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingList indicates an expected call of SpeakingList.
+func (mr *MockServiceHandlerMockRecorder) SpeakingList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingList", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingList), ctx, a, size, token)
+}
+
+// SpeakingSay mocks base method.
+func (m *MockServiceHandler) SpeakingSay(ctx context.Context, a *agent.Agent, speakingID uuid.UUID, text string) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingSay", ctx, a, speakingID, text)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingSay indicates an expected call of SpeakingSay.
+func (mr *MockServiceHandlerMockRecorder) SpeakingSay(ctx, a, speakingID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingSay", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingSay), ctx, a, speakingID, text)
+}
+
+// SpeakingStop mocks base method.
+func (m *MockServiceHandler) SpeakingStop(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpeakingStop", ctx, a, speakingID)
+	ret0, _ := ret[0].(*speaking.Speaking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpeakingStop indicates an expected call of SpeakingStop.
+func (mr *MockServiceHandlerMockRecorder) SpeakingStop(ctx, a, speakingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpeakingStop", reflect.TypeOf((*MockServiceHandler)(nil).SpeakingStop), ctx, a, speakingID)
 }
 
 // StorageAccountCreate mocks base method.
