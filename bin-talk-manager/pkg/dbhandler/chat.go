@@ -166,7 +166,7 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 		}
 	}()
 
-	var talks []*chat.Chat
+	talks := []*chat.Chat{}
 	for rows.Next() {
 		var t chat.Chat
 		err = commondb.ScanRow(rows, &t)

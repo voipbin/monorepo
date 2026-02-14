@@ -133,7 +133,7 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 		}
 	}()
 
-	var messages []*message.Message
+	messages := []*message.Message{}
 	for rows.Next() {
 		var m message.Message
 		err = commondb.ScanRow(rows, &m)

@@ -110,7 +110,7 @@ func (h *dbHandler) SpeakingGets(ctx context.Context, token string, size uint64,
 		_ = rows.Close()
 	}()
 
-	var res []*speaking.Speaking
+	res := []*speaking.Speaking{}
 	for rows.Next() {
 		s, err := h.speakingGetFromRow(rows)
 		if err != nil {

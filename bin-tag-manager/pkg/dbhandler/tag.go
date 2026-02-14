@@ -169,7 +169,7 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 		_ = rows.Close()
 	}()
 
-	var res []*tag.Tag
+	res := []*tag.Tag{}
 	for rows.Next() {
 		t, err := h.tagGetFromRow(rows)
 		if err != nil {

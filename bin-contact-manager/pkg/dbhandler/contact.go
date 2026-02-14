@@ -181,7 +181,7 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 		_ = rows.Close()
 	}()
 
-	var res []*contact.Contact
+	res := []*contact.Contact{}
 	for rows.Next() {
 		c, err := h.contactGetFromRow(rows)
 		if err != nil {

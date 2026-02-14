@@ -158,7 +158,7 @@ func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant
 		}
 	}()
 
-	var participants []*participant.Participant
+	participants := []*participant.Participant{}
 	for rows.Next() {
 		var p participant.Participant
 		err = commondb.ScanRow(rows, &p)
@@ -220,7 +220,7 @@ func (h *dbHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid
 		}
 	}()
 
-	var participants []*participant.Participant
+	participants := []*participant.Participant{}
 	for rows.Next() {
 		var p participant.Participant
 		err = commondb.ScanRow(rows, &p)

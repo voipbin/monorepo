@@ -71,7 +71,7 @@ func (h *handler) FailedEventListPendingRetry(ctx context.Context, now time.Time
 	}
 	defer func() { _ = rows.Close() }()
 
-	var res []*failedevent.FailedEvent
+	res := []*failedevent.FailedEvent{}
 	for rows.Next() {
 		fe, err := h.failedEventGetFromRow(rows)
 		if err != nil {
