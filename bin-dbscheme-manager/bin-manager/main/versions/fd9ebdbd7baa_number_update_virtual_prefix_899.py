@@ -1,7 +1,7 @@
 """number_update_virtual_prefix_899
 
 Revision ID: fd9ebdbd7baa
-Revises: f1a2b3c4d5e6
+Revises: c3d4e5f6a7b8
 Create Date: 2026-02-14 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'fd9ebdbd7baa'
-down_revision = 'f1a2b3c4d5e6'
+down_revision = 'c3d4e5f6a7b8'
 branch_labels = None
 depends_on = None
 
