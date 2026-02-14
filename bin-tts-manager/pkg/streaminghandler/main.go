@@ -64,9 +64,7 @@ const (
 )
 
 const (
-	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
-	defaultMaxRetryAttempts  = 3
-	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
+	defaultSilenceFeedInterval = 20 * time.Millisecond // 20ms matches Asterisk's media loop timing
 )
 
 const (
