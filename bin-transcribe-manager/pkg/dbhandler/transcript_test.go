@@ -318,3 +318,89 @@ func Test_TranscriptDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscriptUpdate(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
+	type test struct {
+		name string
+
+		transcript *transcript.Transcript
+
+		id     uuid.UUID
+		fields map[transcript.Field]any
+
+		responseCurTime *time.Time
+
+		expectRes *transcript.Transcript
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			transcript: &transcript.Transcript{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				},
+			},
+
+			id: uuid.FromStringOrNil("ee3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+			fields: map[transcript.Field]any{
+				transcript.FieldMessage: "updated message",
+			},
+			responseCurTime: curTime,
+
+			expectRes: &transcript.Transcript{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				},
+				Message:  "updated message",
+				TMCreate: curTime,
+				TMDelete: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
+			if err := h.TranscriptCreate(ctx, tt.transcript); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
+			if err := h.TranscriptUpdate(ctx, tt.id, tt.fields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().TranscriptGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
+			res, err := h.TranscriptGet(ctx, tt.transcript.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
