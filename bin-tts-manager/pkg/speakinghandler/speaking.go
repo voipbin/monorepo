@@ -11,6 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO: Add orphaned session cleanup on pod restart. When a pod restarts,
+// any sessions with status=active/initiating and pod_id matching the old pod
+// should be marked as stopped.
+
 // Create creates a new speaking session.
 func (h *speakingHandler) Create(
 	ctx context.Context,
@@ -29,6 +33,7 @@ func (h *speakingHandler) Create(
 
 	// Check for existing active/initiating session on same reference
 	filters := map[speaking.Field]any{
+		speaking.FieldCustomerID:    customerID,
 		speaking.FieldReferenceType: string(referenceType),
 		speaking.FieldReferenceID:   referenceID,
 		speaking.FieldDeleted:       false,
@@ -68,6 +73,26 @@ func (h *speakingHandler) Create(
 		return nil, fmt.Errorf("could not create speaking record: %v", errCreate)
 	}
 	log.WithField("speaking", spk).Debugf("Created speaking record. speaking_id: %s", id)
+
+	// Post-create recheck: guard against concurrent session creation.
+	// If two requests raced past the pre-check, the lower UUID wins.
+	recheck, errRecheck := h.db.SpeakingGets(ctx, "", 100, filters)
+	if errRecheck != nil {
+		log.Errorf("Could not recheck sessions. err: %v", errRecheck)
+	} else {
+		for _, s := range recheck {
+			if s.ID == id {
+				continue
+			}
+			if (s.Status == speaking.StatusActive || s.Status == speaking.StatusInitiating) && s.ID.String() < id.String() {
+				log.Infof("Concurrent session detected, backing off. winner: %s, loser: %s", s.ID, id)
+				_ = h.db.SpeakingUpdate(ctx, id, map[speaking.Field]any{
+					speaking.FieldStatus: speaking.StatusStopped,
+				})
+				return nil, fmt.Errorf("concurrent session creation detected. speaking_id: %s already exists", s.ID)
+			}
+		}
+	}
 
 	// Start streaming session with the same ID as the speaking record
 	_, errStart := h.streamingHandler.StartWithID(

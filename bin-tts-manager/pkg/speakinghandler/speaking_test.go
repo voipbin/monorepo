@@ -210,11 +210,12 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			expectFilters := map[speaking.Field]any{
+				speaking.FieldCustomerID:    tt.customerID,
 				speaking.FieldReferenceType: string(tt.referenceType),
 				speaking.FieldReferenceID:   tt.referenceID,
 				speaking.FieldDeleted:       false,
 			}
-			mockDB.EXPECT().SpeakingGets(ctx, "", uint64(100), expectFilters).Return(tt.responseExisting, tt.responseExistErr)
+			preCheck := mockDB.EXPECT().SpeakingGets(ctx, "", uint64(100), expectFilters).Return(tt.responseExisting, tt.responseExistErr)
 
 			// Check for existing active session
 			hasActive := false
@@ -225,6 +226,7 @@ func Test_Create(t *testing.T) {
 				}
 			}
 
+			_ = preCheck
 			if tt.responseExistErr == nil && !hasActive {
 				expectProvider := tt.provider
 				if expectProvider == "" {
@@ -241,6 +243,9 @@ func Test_Create(t *testing.T) {
 				})
 
 				if tt.responseCreateErr == nil {
+					// Post-create recheck for race condition (returns no competing sessions)
+					mockDB.EXPECT().SpeakingGets(ctx, "", uint64(100), expectFilters).Return([]*speaking.Speaking{}, nil).After(preCheck)
+
 					mockStreaming.EXPECT().StartWithID(
 						ctx,
 						gomock.Any(),

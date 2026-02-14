@@ -246,7 +246,7 @@ New methods in `bin-common-handler/pkg/requesthandler/tts_speakings.go`:
 
 Pod-targeted routing: The API layer reads `pod_id` from the speaking DB record and routes `/say`, `/flush`, `/stop` to `bin-manager.tts-manager.request.{pod_id}`.
 
-The existing unused streaming RPC methods (`TTSV1StreamingCreate`, `SayInit`, `SayAdd`, `SayStop`, `SayFinish`, `StreamingDelete`) and their listen handler routes in `v1_streamings.go` should be deleted.
+The existing streaming RPC methods (`TTSV1StreamingCreate`, `SayInit`, `SayAdd`, `SayStop`, `SayFinish`, `StreamingDelete`) and their listen handler routes in `v1_streamings.go` are still used by the internal flow path and must be retained.
 
 ### Edge Cases
 

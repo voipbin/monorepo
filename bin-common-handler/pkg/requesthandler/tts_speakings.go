@@ -86,6 +86,9 @@ func (r *requestHandler) TTSV1SpeakingGets(ctx context.Context, pageToken string
 	if v, ok := filters[tmspeaking.FieldStatus]; ok {
 		uri += fmt.Sprintf("&status=%s", v)
 	}
+	if v, ok := filters[tmspeaking.FieldDeleted]; ok {
+		uri += fmt.Sprintf("&deleted=%v", v)
+	}
 
 	tmp, err := r.sendRequestTTS(ctx, uri, sock.RequestMethodGet, "tts/speakings", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
@@ -111,7 +114,7 @@ func (r *requestHandler) TTSV1SpeakingSay(ctx context.Context, podID string, spe
 		return nil, err
 	}
 
-	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 
 	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/speakings/<speaking-id>/say", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
@@ -130,7 +133,7 @@ func (r *requestHandler) TTSV1SpeakingSay(ctx context.Context, podID string, spe
 func (r *requestHandler) TTSV1SpeakingFlush(ctx context.Context, podID string, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
 	uri := fmt.Sprintf("/v1/speakings/%s/flush", speakingID)
 
-	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 
 	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/speakings/<speaking-id>/flush", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
@@ -149,7 +152,7 @@ func (r *requestHandler) TTSV1SpeakingFlush(ctx context.Context, podID string, s
 func (r *requestHandler) TTSV1SpeakingStop(ctx context.Context, podID string, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
 	uri := fmt.Sprintf("/v1/speakings/%s/stop", speakingID)
 
-	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 
 	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/speakings/<speaking-id>/stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {

@@ -134,7 +134,7 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, speaking)
+	c.JSON(201, speaking)
 }
 
 // DeleteSpeakingsId implements DELETE /v1/speakings/{id}
@@ -276,6 +276,12 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 
 	if req.Text == "" {
 		log.Errorf("Text is empty")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	if len(req.Text) > 5000 {
+		log.Errorf("Text too long: %d characters (max 5000)", len(req.Text))
 		c.AbortWithStatus(400)
 		return
 	}

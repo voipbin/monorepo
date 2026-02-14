@@ -70,6 +70,9 @@ func (h *listenHandler) v1SpeakingsGet(ctx context.Context, m *sock.Request) (*s
 			pageSize = parsed
 		}
 	}
+	if pageSize == 0 || pageSize > 100 {
+		pageSize = 100
+	}
 
 	// Build filters
 	filters := map[speaking.Field]any{
