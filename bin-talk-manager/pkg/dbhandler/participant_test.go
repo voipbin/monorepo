@@ -429,6 +429,56 @@ func Test_ParticipantList(t *testing.T) {
 	}
 }
 
+func Test_ParticipantList_Empty(t *testing.T) {
+	h := &dbHandler{
+		db:          dbTest,
+		redis:       nil,
+		utilHandler: commonutil.NewUtilHandler(),
+	}
+	ctx := context.Background()
+
+	filters := map[participant.Field]any{
+		participant.FieldChatID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+	}
+
+	res, err := h.ParticipantList(ctx, filters)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
+func Test_ParticipantListByChatIDs_Empty(t *testing.T) {
+	h := &dbHandler{
+		db:          dbTest,
+		redis:       nil,
+		utilHandler: commonutil.NewUtilHandler(),
+	}
+	ctx := context.Background()
+
+	res, err := h.ParticipantListByChatIDs(ctx, []uuid.UUID{
+		uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+	})
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
 func Test_ParticipantDelete(t *testing.T) {
 	tests := []struct {
 		name              string

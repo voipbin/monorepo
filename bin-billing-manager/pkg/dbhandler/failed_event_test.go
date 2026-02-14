@@ -276,6 +276,36 @@ func Test_FailedEventListPendingRetry(t *testing.T) {
 	}
 }
 
+func Test_FailedEventListPendingRetry_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	// Query with a far-past time so nothing matches
+	pastTime := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := h.FailedEventListPendingRetry(ctx, pastTime)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
 func Test_FailedEventUpdate(t *testing.T) {
 
 	type test struct {

@@ -109,6 +109,38 @@ func Test_ContactCreate(t *testing.T) {
 // Skip Test_ContactList due to SQLite nested query issues during iteration
 // This functionality is tested via contacthandler tests using proper mocks
 
+func Test_ContactList_Empty(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	filters := map[contact.Field]any{
+		contact.FieldCustomerID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+		contact.FieldDeleted:    false,
+	}
+
+	res, err := h.ContactList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
+	if len(res) != 0 {
+		t.Errorf("Expected empty slice, got %d items", len(res))
+	}
+}
+
 func Test_ContactUpdate(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -1004,6 +1036,10 @@ func Test_PhoneNumberListByContactID_Empty(t *testing.T) {
 		t.Errorf("PhoneNumberListByContactID() error = %v", err)
 	}
 
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
 	if len(res) != 0 {
 		t.Errorf("PhoneNumberListByContactID() count = %d, want 0", len(res))
 	}
@@ -1115,6 +1151,10 @@ func Test_EmailListByContactID_Empty(t *testing.T) {
 		t.Errorf("EmailListByContactID() error = %v", err)
 	}
 
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
+	}
+
 	if len(res) != 0 {
 		t.Errorf("EmailListByContactID() count = %d, want 0", len(res))
 	}
@@ -1210,6 +1250,10 @@ func Test_TagAssignmentListByContactID_Empty(t *testing.T) {
 	res, err := h.TagAssignmentListByContactID(ctx, uuid.FromStringOrNil("fbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"))
 	if err != nil {
 		t.Errorf("TagAssignmentListByContactID() error = %v", err)
+	}
+
+	if res == nil {
+		t.Errorf("Expected non-nil empty slice, got nil")
 	}
 
 	if len(res) != 0 {
