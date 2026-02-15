@@ -144,11 +144,19 @@ func TestCalculateBillableUnits(t *testing.T) {
 	}{
 		{"zero seconds", 0, 0},
 		{"negative seconds", -5, 0},
+		{"large negative", -1000, 0},
 		{"one second", 1, 1},
+		{"thirty seconds", 30, 1},
+		{"fifty-nine seconds", 59, 1},
 		{"exactly one minute", 60, 1},
 		{"sixty-one seconds", 61, 2},
+		{"ninety seconds", 90, 2},
 		{"exactly two minutes", 120, 2},
 		{"two minutes one second", 121, 3},
+		{"exactly five minutes", 300, 5},
+		{"ten minutes one second", 601, 11},
+		{"one hour", 3600, 60},
+		{"one hour one second", 3601, 61},
 	}
 
 	for _, tt := range tests {

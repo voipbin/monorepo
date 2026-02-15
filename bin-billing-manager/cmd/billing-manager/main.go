@@ -257,7 +257,7 @@ func runMonthlyTopUp(ctx context.Context, db dbhandler.DBHandler) error {
 				continue
 			}
 
-			if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, int64(tokenAmount), string(a.PlanType)); err != nil {
+			if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, tokenAmount, string(a.PlanType)); err != nil {
 				log.Errorf("Could not top up tokens for account. account_id: %s, err: %v", a.ID, err)
 				continue
 			}

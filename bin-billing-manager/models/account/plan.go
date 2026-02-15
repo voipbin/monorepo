@@ -47,7 +47,7 @@ func (p *PlanLimits) GetLimit(resourceType ResourceType) int {
 
 // PlanTokenMap maps plan types to their monthly token allowances.
 // A value of 0 for Unlimited means bypass — unlimited tokens (no enforcement).
-var PlanTokenMap = map[PlanType]int{
+var PlanTokenMap = map[PlanType]int64{
 	PlanTypeFree:         1000,
 	PlanTypeBasic:        10000,
 	PlanTypeProfessional: 100000,

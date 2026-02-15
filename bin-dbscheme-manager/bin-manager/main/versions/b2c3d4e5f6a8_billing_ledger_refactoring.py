@@ -46,7 +46,7 @@ def upgrade():
     # =========================================================================
     op.execute("""
         UPDATE billing_billings SET
-            billable_units = CEIL(cost_unit_count),
+            billable_units = CEIL(COALESCE(cost_unit_count, 0)),
             usage_duration = COALESCE(
                 TIMESTAMPDIFF(SECOND, tm_billing_start, tm_billing_end), 0
             ),

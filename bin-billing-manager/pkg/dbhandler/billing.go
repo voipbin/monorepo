@@ -346,6 +346,37 @@ func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billabl
 	return nil
 }
 
+// DeductionResult holds the calculated token and credit deductions for a billing operation.
+type DeductionResult struct {
+	TokenDeducted  int64
+	CreditDeducted int64
+}
+
+// CalculateTokenCreditDeduction computes how many tokens and credits to deduct
+// for a given billing operation. Tokens are consumed first (whole units only);
+// any remaining units overflow to credits.
+func CalculateTokenCreditDeduction(balanceToken int64, billableUnits int, rateTokenPerUnit int64, rateCreditPerUnit int64) DeductionResult {
+	if billableUnits <= 0 {
+		return DeductionResult{}
+	}
+
+	totalTokenCost := int64(billableUnits) * rateTokenPerUnit
+	totalCreditCost := int64(billableUnits) * rateCreditPerUnit
+
+	if totalTokenCost > 0 && balanceToken > 0 {
+		if balanceToken >= totalTokenCost {
+			return DeductionResult{TokenDeducted: totalTokenCost, CreditDeducted: 0}
+		}
+		fullUnitsInTokens := balanceToken / rateTokenPerUnit
+		tokenDeducted := fullUnitsInTokens * rateTokenPerUnit
+		remainingUnits := int64(billableUnits) - fullUnitsInTokens
+		creditDeducted := remainingUnits * rateCreditPerUnit
+		return DeductionResult{TokenDeducted: tokenDeducted, CreditDeducted: creditDeducted}
+	}
+
+	return DeductionResult{TokenDeducted: 0, CreditDeducted: totalCreditCost}
+}
+
 // BillingConsumeAndRecord atomically deducts from account and records in billing ledger.
 func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, rateTokenPerUnit int64, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
@@ -367,28 +398,9 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 	}
 
 	// Calculate token and credit deductions
-	totalTokenCost := int64(billableUnits) * rateTokenPerUnit
-	totalCreditCost := int64(billableUnits) * rateCreditPerUnit
-
-	var tokenDeducted, creditDeducted int64
-
-	if totalTokenCost > 0 {
-		if balanceToken >= totalTokenCost {
-			// Enough tokens to cover entirely
-			tokenDeducted = totalTokenCost
-			creditDeducted = 0
-		} else {
-			// Partial tokens: cover as many whole units as possible, overflow rest to credit
-			fullUnitsInTokens := balanceToken / rateTokenPerUnit
-			tokenDeducted = fullUnitsInTokens * rateTokenPerUnit
-			remainingUnits := int64(billableUnits) - fullUnitsInTokens
-			creditDeducted = remainingUnits * rateCreditPerUnit
-		}
-	} else {
-		// Credit-only cost type (PSTN, number)
-		tokenDeducted = 0
-		creditDeducted = totalCreditCost
-	}
+	d := CalculateTokenCreditDeduction(balanceToken, billableUnits, rateTokenPerUnit, rateCreditPerUnit)
+	tokenDeducted := d.TokenDeducted
+	creditDeducted := d.CreditDeducted
 
 	// Calculate new balances.
 	// Note: newBalanceCredit may go negative for concurrent calls. This is intentional —

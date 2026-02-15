@@ -615,7 +615,7 @@ func runTopUpRun(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		if err := db.AccountTopUpTokens(context.Background(), a.ID, a.CustomerID, int64(tokenAmount), string(a.PlanType)); err != nil {
+		if err := db.AccountTopUpTokens(context.Background(), a.ID, a.CustomerID, tokenAmount, string(a.PlanType)); err != nil {
 			fmt.Printf("ERROR: account_id=%s err=%v\n", a.ID, err)
 			continue
 		}

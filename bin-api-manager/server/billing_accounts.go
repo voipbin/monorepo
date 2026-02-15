@@ -1,6 +1,8 @@
 package server
 
 import (
+	"math"
+
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
@@ -179,11 +181,12 @@ func (h *server) PostBillingAccountsIdBalanceAddForce(c *gin.Context, id string)
 
 	balance := int64(0)
 	if req.Balance != nil {
-		balance = int64(*req.Balance * 1000000)
+		balance = int64(math.Round(float64(*req.Balance) * 1000000))
 	}
 	if balance < 0 {
 		log.Error("Invalid balance.")
 		c.AbortWithStatus(400)
+		return
 	}
 
 	res, err := h.serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), &a, target, balance)
@@ -229,11 +232,12 @@ func (h *server) PostBillingAccountsIdBalanceSubtractForce(c *gin.Context, id st
 
 	balance := int64(0)
 	if req.Balance != nil {
-		balance = int64(*req.Balance * 1000000)
+		balance = int64(math.Round(float64(*req.Balance) * 1000000))
 	}
 	if balance < 0 {
 		log.Error("Invalid balance.")
 		c.AbortWithStatus(400)
+		return
 	}
 
 	res, err := h.serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), &a, target, balance)
