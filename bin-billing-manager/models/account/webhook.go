@@ -16,10 +16,14 @@ type WebhookMessage struct {
 
 	PlanType PlanType `json:"plan_type"`
 
-	Balance float32 `json:"balance"` // USD
+	BalanceCredit int64 `json:"balance_credit"`
+	BalanceToken  int64 `json:"balance_token"`
 
 	PaymentType   PaymentType   `json:"payment_type"`
 	PaymentMethod PaymentMethod `json:"payment_method"`
+
+	TmLastTopUp *time.Time `json:"tm_last_topup"`
+	TmNextTopUp *time.Time `json:"tm_next_topup"`
 
 	// timestamp
 	TMCreate *time.Time `json:"tm_create"`
@@ -37,10 +41,14 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		PlanType: h.PlanType,
 
-		Balance: h.Balance,
+		BalanceCredit: h.BalanceCredit,
+		BalanceToken:  h.BalanceToken,
 
 		PaymentType:   h.PaymentType,
 		PaymentMethod: h.PaymentMethod,
+
+		TmLastTopUp: h.TmLastTopUp,
+		TmNextTopUp: h.TmNextTopUp,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

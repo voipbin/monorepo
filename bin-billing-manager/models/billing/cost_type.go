@@ -15,23 +15,23 @@ const (
 	CostTypeNumberRenew      CostType = "number_renew"
 )
 
-// Default credit rates per unit (per-minute for calls, per-message for SMS, per-number for numbers).
+// Default credit rates per unit in micros (1 dollar = 1,000,000 micros).
 const (
-	DefaultCreditPerUnitCallPSTNOutgoing float32 = 0.006
-	DefaultCreditPerUnitCallPSTNIncoming float32 = 0.0045
-	DefaultCreditPerUnitCallVN           float32 = 0.0045
-	DefaultCreditPerUnitSMS              float32 = 0.008
-	DefaultCreditPerUnitNumber           float32 = 5.0
+	DefaultCreditPerUnitCallPSTNOutgoing int64 = 6000    // $0.006/min
+	DefaultCreditPerUnitCallPSTNIncoming int64 = 4500    // $0.0045/min
+	DefaultCreditPerUnitCallVN           int64 = 4500    // $0.0045/min
+	DefaultCreditPerUnitSMS              int64 = 8000    // $0.008/msg
+	DefaultCreditPerUnitNumber           int64 = 5000000 // $5.00/number
 )
 
-// Default token rates per unit.
+// Default token rates per unit (plain integers).
 const (
-	DefaultTokenPerUnitCallVN int = 1
-	DefaultTokenPerUnitSMS    int = 10
+	DefaultTokenPerUnitCallVN int64 = 1
+	DefaultTokenPerUnitSMS    int64 = 10
 )
 
 // GetCostInfo returns the token rate and credit rate for a given cost type.
-func GetCostInfo(ct CostType) (tokenPerUnit int, creditPerUnit float32) {
+func GetCostInfo(ct CostType) (tokenPerUnit int64, creditPerUnit int64) {
 	switch ct {
 	case CostTypeCallPSTNOutgoing:
 		return 0, DefaultCreditPerUnitCallPSTNOutgoing

@@ -13,10 +13,14 @@ const (
 
 	FieldPlanType Field = "plan_type"
 
-	FieldBalance Field = "balance"
+	FieldBalanceCredit Field = "balance_credit"
+	FieldBalanceToken  Field = "balance_token"
 
 	FieldPaymentType   Field = "payment_type"
 	FieldPaymentMethod Field = "payment_method"
+
+	FieldTmLastTopUp Field = "tm_last_topup"
+	FieldTmNextTopUp Field = "tm_next_topup"
 
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
