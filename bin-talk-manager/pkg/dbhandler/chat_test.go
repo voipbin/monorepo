@@ -417,3 +417,44 @@ func Test_ChatDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChatMemberCountIncrement(t *testing.T) {
+	h := &dbHandler{
+		db:          dbTest,
+		redis:       nil,
+		utilHandler: commonutil.NewUtilHandler(),
+	}
+	ctx := context.Background()
+
+	// Create chat
+	testChat := &chat.Chat{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea126"),
+			CustomerID: uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
+		},
+		Type:        chat.TypeDirect,
+		MemberCount: 0,
+	}
+
+	if err := h.ChatCreate(ctx, testChat); err != nil {
+		t.Errorf("Failed to create chat: %v", err)
+	}
+
+	// Increment member count
+	if err := h.ChatMemberCountIncrement(ctx, testChat.ID); err != nil {
+		t.Errorf("Failed to increment member count: %v", err)
+	}
+
+	// Verify increment
+	res, err := h.ChatGet(ctx, testChat.ID)
+	if err != nil {
+		t.Errorf("Failed to get chat: %v", err)
+	}
+
+	if res.MemberCount != 1 {
+		t.Errorf("Wrong member count. expect: 1, got: %d", res.MemberCount)
+	}
+}
+
+
+
