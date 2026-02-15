@@ -433,6 +433,7 @@ components:
         - credit_free_tier
         - monthly_allowance
         - credit_adjustment
+        - token_adjustment
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
@@ -443,6 +444,7 @@ components:
         - BillingManagerBillingreferenceTypeCreditFreeTier
         - BillingManagerBillingreferenceTypeMonthlyAllowance
         - BillingManagerBillingreferenceTypeCreditAdjustment
+        - BillingManagerBillingreferenceTypeTokenAdjustment
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.

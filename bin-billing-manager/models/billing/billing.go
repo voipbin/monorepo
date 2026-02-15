@@ -75,6 +75,7 @@ const (
 	ReferenceTypeCreditFreeTier    ReferenceType = "credit_free_tier"
 	ReferenceTypeMonthlyAllowance  ReferenceType = "monthly_allowance"
 	ReferenceTypeCreditAdjustment  ReferenceType = "credit_adjustment"
+	ReferenceTypeTokenAdjustment   ReferenceType = "token_adjustment"
 )
 
 // Status define

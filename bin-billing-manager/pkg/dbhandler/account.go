@@ -322,6 +322,107 @@ func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUI
 	return h.accountAdjustCreditWithLedger(ctx, accountID, -amount, false)
 }
 
+// accountAdjustTokenWithLedger atomically adjusts the account token balance and creates a ledger entry.
+// signedAmount is positive for additions and negative for subtractions.
+// If checkBalance is true, returns ErrInsufficientBalance when the current balance is insufficient.
+func (h *handler) accountAdjustTokenWithLedger(ctx context.Context, accountID uuid.UUID, signedAmount int64, checkBalance bool) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Lock account row and read current balances + customer_id
+	var customerID []byte
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&customerID, &currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not read account. err: %v", err)
+	}
+
+	// Balance check for subtract-with-check
+	if checkBalance && signedAmount < 0 && currentToken < -signedAmount {
+		return ErrInsufficientBalance
+	}
+
+	now := h.utilHandler.TimeNow()
+	newBalance := currentToken + signedAmount
+
+	// Update balance
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance_token = ?, tm_update = ? WHERE id = ?",
+		newBalance, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not update balance. err: %v", err)
+	}
+
+	// Parse customer_id from raw bytes
+	parsedCustomerID, err := uuid.FromBytes(customerID)
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not parse customer_id. err: %v", err)
+	}
+
+	// Insert ledger entry
+	ledgerEntry := &billing.Billing{}
+	ledgerEntry.ID = h.utilHandler.UUIDCreate()
+	ledgerEntry.CustomerID = parsedCustomerID
+	ledgerEntry.AccountID = accountID
+	ledgerEntry.TransactionType = billing.TransactionTypeAdjustment
+	ledgerEntry.Status = billing.StatusEnd
+	ledgerEntry.ReferenceType = billing.ReferenceTypeTokenAdjustment
+	ledgerEntry.ReferenceID = ledgerEntry.ID
+	ledgerEntry.AmountToken = signedAmount
+	ledgerEntry.AmountCredit = 0
+	ledgerEntry.BalanceTokenSnapshot = newBalance
+	ledgerEntry.BalanceCreditSnapshot = currentCredit
+	ledgerEntry.TMBillingStart = now
+	ledgerEntry.TMBillingEnd = now
+	ledgerEntry.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(ledgerEntry)
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not prepare billing fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not build billing insert query. err: %v", err)
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not commit. err: %v", err)
+	}
+
+	_ = h.accountUpdateToCache(ctx, accountID)
+	return nil
+}
+
+// AccountAddTokens adds the value to the account token balance and creates a ledger entry.
+func (h *handler) AccountAddTokens(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	return h.accountAdjustTokenWithLedger(ctx, accountID, amount, false)
+}
+
+// AccountSubtractTokensWithCheck atomically checks the token balance is sufficient and subtracts the amount.
+// Returns ErrInsufficientBalance if the account token balance is less than the amount.
+func (h *handler) AccountSubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	return h.accountAdjustTokenWithLedger(ctx, accountID, -amount, true)
+}
+
+// AccountSubtractTokens subtracts the value from the account token balance and creates a ledger entry.
+func (h *handler) AccountSubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	return h.accountAdjustTokenWithLedger(ctx, accountID, -amount, false)
+}
+
 // AccountDelete deletes the account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.utilHandler.TimeNow()
