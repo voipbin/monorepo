@@ -72,8 +72,9 @@ const (
 	ReferenceTypeSMS              ReferenceType = "sms"
 	ReferenceTypeNumber           ReferenceType = "number"
 	ReferenceTypeNumberRenew      ReferenceType = "number_renew"
-	ReferenceTypeCreditFreeTier   ReferenceType = "credit_free_tier"
-	ReferenceTypeMonthlyAllowance ReferenceType = "monthly_allowance"
+	ReferenceTypeCreditFreeTier    ReferenceType = "credit_free_tier"
+	ReferenceTypeMonthlyAllowance  ReferenceType = "monthly_allowance"
+	ReferenceTypeCreditAdjustment  ReferenceType = "credit_adjustment"
 )
 
 // Status define
