@@ -95,7 +95,7 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer, false).Return(nil)
 
 			h.processEvent(tt.event)
 		})

@@ -91,17 +91,17 @@ func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 }
 
 // EventCustomerCreated mocks base method.
-func (m *MockAgentHandler) EventCustomerCreated(ctx context.Context, cu *customer.Customer) error {
+func (m *MockAgentHandler) EventCustomerCreated(ctx context.Context, cu *customer.Customer, headless bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventCustomerCreated", ctx, cu)
+	ret := m.ctrl.Call(m, "EventCustomerCreated", ctx, cu, headless)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EventCustomerCreated indicates an expected call of EventCustomerCreated.
-func (mr *MockAgentHandlerMockRecorder) EventCustomerCreated(ctx, cu any) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) EventCustomerCreated(ctx, cu, headless any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventCustomerCreated), ctx, cu)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventCustomerCreated), ctx, cu, headless)
 }
 
 // EventCustomerDeleted mocks base method.

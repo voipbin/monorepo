@@ -290,7 +290,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 				{Type: commonaddress.TypeEmail, Target: tt.customer.Email},
 			}, "Welcome to VoIPBin - Set Your Password", gomock.Any(), gomock.Nil()).Return(nil, nil)
 
-			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {
+			if err := h.EventCustomerCreated(ctx, tt.customer, false); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -344,7 +344,7 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 	mockDB.EXPECT().AgentGetByUsername(ctx, customer.Email).Return(nil, fmt.Errorf("not found"))
 
 	// EventCustomerCreated should still succeed even though PasswordForgot failed
-	if err := h.EventCustomerCreated(ctx, customer); err != nil {
+	if err := h.EventCustomerCreated(ctx, customer, false); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }

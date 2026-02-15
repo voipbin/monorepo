@@ -39,15 +39,20 @@ func (h *subscribeHandler) processEventCMCustomerCreated(ctx context.Context, m 
 		"event": m,
 	})
 
-	cu := &cmcustomer.Customer{}
-	if err := json.Unmarshal([]byte(m.Data), &cu); err != nil {
+	// Parse with headless field
+	var event struct {
+		cmcustomer.Customer
+		Headless bool `json:"headless"`
+	}
+	if err := json.Unmarshal([]byte(m.Data), &event); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	if errEvent := h.agentHandler.EventCustomerCreated(ctx, cu); errEvent != nil {
-		log.Errorf("Could not handle the customer deleted event. err: %v", errEvent)
-		return errors.Wrap(errEvent, "Could not handle the customer deleted event.")
+	cu := &event.Customer
+	if errEvent := h.agentHandler.EventCustomerCreated(ctx, cu, event.Headless); errEvent != nil {
+		log.Errorf("Could not handle the customer created event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the customer created event.")
 	}
 
 	return nil

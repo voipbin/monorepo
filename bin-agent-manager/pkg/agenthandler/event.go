@@ -135,7 +135,7 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 }
 
 // EventCustomerCreated handles the customer-manager's customer_created event
-func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer) error {
+func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer, headless bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "EventCustomerCreated",
 		"customer": cu,
@@ -168,10 +168,14 @@ func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.
 	}
 	log.WithField("agent", a).Debugf("Created basic admin agent for new customer. agent_id: %s", a.ID)
 
-	// send welcome email with password reset link
-	if err := h.PasswordForgot(ctx, cu.Email, PasswordResetEmailTypeWelcome); err != nil {
-		log.Errorf("Could not send welcome email. err: %v", err)
-		// don't fail the event - the agent was created successfully
+	// send welcome email with password reset link — only for non-headless signups
+	if !headless {
+		if err := h.PasswordForgot(ctx, cu.Email, PasswordResetEmailTypeWelcome); err != nil {
+			log.Errorf("Could not send welcome email. err: %v", err)
+			// don't fail the event - the agent was created successfully
+		}
+	} else {
+		log.Debugf("Skipping welcome email for headless signup. customer_id: %s", cu.ID)
 	}
 
 	return nil

@@ -106,7 +106,7 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 			ctx := context.Background()
 
 			if !tt.expectErr {
-				mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), gomock.Any()).Return(nil)
+				mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			}
 
 			err := h.processEventCMCustomerCreated(ctx, tt.event)
