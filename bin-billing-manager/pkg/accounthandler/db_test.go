@@ -1725,3 +1725,116 @@ func Test_SubtractBalanceWithCheck_get_error(t *testing.T) {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
+
+// Edge case: SubtractTokensWithCheck succeeds the check-and-subtract but subsequent AccountGet fails.
+func Test_SubtractTokensWithCheck_post_subtract_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("ac000000-0000-0000-0000-000000000001")
+
+	// first get to check plan type
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity:     commonidentity.Identity{ID: accountID},
+		PlanType:     account.PlanTypeFree,
+		BalanceToken: 1000,
+	}, nil)
+	// atomic subtract succeeds
+	mockDB.EXPECT().AccountSubtractTokensWithCheck(ctx, accountID, int64(500)).Return(nil)
+	// final get fails
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(nil, fmt.Errorf("get after subtract failed"))
+
+	_, err := h.SubtractTokensWithCheck(ctx, accountID, 500)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+// Edge case: SubtractTokensWithCheck with exact balance boundary (balance == amount).
+func Test_SubtractTokensWithCheck_exact_balance(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("ad000000-0000-0000-0000-000000000001")
+
+	// first get to check plan type
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity:     commonidentity.Identity{ID: accountID},
+		PlanType:     account.PlanTypeFree,
+		BalanceToken: 500,
+	}, nil)
+	// atomic subtract with check (exact boundary should succeed)
+	mockDB.EXPECT().AccountSubtractTokensWithCheck(ctx, accountID, int64(500)).Return(nil)
+	// get updated account
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity:     commonidentity.Identity{ID: accountID},
+		PlanType:     account.PlanTypeFree,
+		BalanceToken: 0,
+	}, nil)
+
+	res, err := h.SubtractTokensWithCheck(ctx, accountID, 500)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.BalanceToken != 0 {
+		t.Errorf("Wrong match. expect balance_token: 0, got: %d", res.BalanceToken)
+	}
+}
+
+// Edge case: SubtractBalanceWithCheck succeeds the check-and-subtract but subsequent AccountGet fails.
+func Test_SubtractBalanceWithCheck_post_subtract_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("ae000000-0000-0000-0000-000000000001")
+
+	// first get to check plan type
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity:      commonidentity.Identity{ID: accountID},
+		PlanType:      account.PlanTypeFree,
+		BalanceCredit: 100000000,
+	}, nil)
+	// atomic subtract succeeds
+	mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, accountID, int64(50000000)).Return(nil)
+	// final get fails
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(nil, fmt.Errorf("get after subtract failed"))
+
+	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50000000)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
