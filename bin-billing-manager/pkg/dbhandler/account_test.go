@@ -781,3 +781,222 @@ func Test_accountAdjustCreditWithLedger_account_not_found(t *testing.T) {
 		t.Errorf("unfulfilled expectations: %v", err)
 	}
 }
+
+// sqlmock-based tests for accountAdjustTokenWithLedger.
+// These mirror the credit adjustment tests above but verify token balance operations.
+
+func Test_accountAdjustTokenWithLedger_add_tokens(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{db: db, cache: mockCache, utilHandler: mockUtil}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	billingID := uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-111111111111")
+	now := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+
+	var currentToken int64 = 1000
+	var currentCredit int64 = 5000000
+	var signedAmount int64 = 500
+
+	mockUtil.EXPECT().TimeNow().Return(&now)
+	mockUtil.EXPECT().UUIDCreate().Return(billingID)
+
+	mock.ExpectBegin()
+	mock.ExpectQuery("SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE").
+		WithArgs(accountID.Bytes()).
+		WillReturnRows(sqlmock.NewRows([]string{"customer_id", "balance_token", "balance_credit"}).
+			AddRow(customerID.Bytes(), currentToken, currentCredit))
+	mock.ExpectExec("UPDATE billing_accounts SET").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec("INSERT INTO billing_billings").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = h.accountAdjustTokenWithLedger(ctx, accountID, signedAmount, false)
+	if err != nil {
+		t.Errorf("expected no error, got: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unfulfilled expectations: %v", err)
+	}
+}
+
+func Test_accountAdjustTokenWithLedger_subtract_tokens(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{db: db, cache: mockCache, utilHandler: mockUtil}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	billingID := uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-111111111112")
+	now := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+
+	var currentToken int64 = 1000
+	var currentCredit int64 = 5000000
+	var signedAmount int64 = -300
+
+	mockUtil.EXPECT().TimeNow().Return(&now)
+	mockUtil.EXPECT().UUIDCreate().Return(billingID)
+
+	mock.ExpectBegin()
+	mock.ExpectQuery("SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE").
+		WithArgs(accountID.Bytes()).
+		WillReturnRows(sqlmock.NewRows([]string{"customer_id", "balance_token", "balance_credit"}).
+			AddRow(customerID.Bytes(), currentToken, currentCredit))
+	mock.ExpectExec("UPDATE billing_accounts SET").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec("INSERT INTO billing_billings").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = h.accountAdjustTokenWithLedger(ctx, accountID, signedAmount, false)
+	if err != nil {
+		t.Errorf("expected no error, got: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unfulfilled expectations: %v", err)
+	}
+}
+
+func Test_accountAdjustTokenWithLedger_subtract_with_check_sufficient(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{db: db, cache: mockCache, utilHandler: mockUtil}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	billingID := uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222")
+	now := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+
+	var currentToken int64 = 1000
+	var currentCredit int64 = 5000000
+	var signedAmount int64 = -500
+
+	mockUtil.EXPECT().TimeNow().Return(&now)
+	mockUtil.EXPECT().UUIDCreate().Return(billingID)
+
+	mock.ExpectBegin()
+	mock.ExpectQuery("SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE").
+		WithArgs(accountID.Bytes()).
+		WillReturnRows(sqlmock.NewRows([]string{"customer_id", "balance_token", "balance_credit"}).
+			AddRow(customerID.Bytes(), currentToken, currentCredit))
+	mock.ExpectExec("UPDATE billing_accounts SET").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec("INSERT INTO billing_billings").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = h.accountAdjustTokenWithLedger(ctx, accountID, signedAmount, true)
+	if err != nil {
+		t.Errorf("expected no error, got: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unfulfilled expectations: %v", err)
+	}
+}
+
+func Test_accountAdjustTokenWithLedger_subtract_with_check_insufficient(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{db: db, cache: mockCache, utilHandler: mockUtil}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+	var currentToken int64 = 1000
+	var currentCredit int64 = 5000000
+	var signedAmount int64 = -2000
+
+	mock.ExpectBegin()
+	mock.ExpectQuery("SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE").
+		WithArgs(accountID.Bytes()).
+		WillReturnRows(sqlmock.NewRows([]string{"customer_id", "balance_token", "balance_credit"}).
+			AddRow(customerID.Bytes(), currentToken, currentCredit))
+	mock.ExpectRollback()
+
+	err = h.accountAdjustTokenWithLedger(ctx, accountID, signedAmount, true)
+	if err != ErrInsufficientBalance {
+		t.Errorf("expected ErrInsufficientBalance, got: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unfulfilled expectations: %v", err)
+	}
+}
+
+func Test_accountAdjustTokenWithLedger_account_not_found(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &handler{db: db, cache: mockCache, utilHandler: mockUtil}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+
+	mock.ExpectBegin()
+	mock.ExpectQuery("SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE").
+		WithArgs(accountID.Bytes()).
+		WillReturnError(sql.ErrNoRows)
+	mock.ExpectRollback()
+
+	err = h.accountAdjustTokenWithLedger(ctx, accountID, 500, false)
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound, got: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("unfulfilled expectations: %v", err)
+	}
+}
