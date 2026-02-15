@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 	"github.com/smotes/purse"
@@ -48,4 +50,66 @@ func TestMain(m *testing.M) {
 	}()
 
 	os.Exit(m.Run())
+}
+
+func Test_parseDestination(t *testing.T) {
+	tests := []struct {
+		name      string
+		jsonStr   string
+		expectErr bool
+		expectNil bool
+	}{
+		{
+			name:      "parse valid JSON",
+			jsonStr:   `{"type":"phone","target":"+12345678900"}`,
+			expectErr: false,
+			expectNil: false,
+		},
+		{
+			name:      "parse empty string",
+			jsonStr:   "",
+			expectErr: false,
+			expectNil: true,
+		},
+		{
+			name:      "parse invalid JSON",
+			jsonStr:   `{invalid json}`,
+			expectErr: true,
+			expectNil: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var dest *commonaddress.Address
+			err := parseDestination(tt.jsonStr, &dest)
+
+			if tt.expectErr {
+				if err == nil {
+					t.Error("Expected error but got nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+				if tt.expectNil && dest != nil {
+					t.Error("Expected nil destination but got non-nil")
+				}
+				if !tt.expectNil && !tt.expectErr && tt.jsonStr != "" && dest == nil {
+					t.Error("Expected non-nil destination but got nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_GetCurTime(t *testing.T) {
+	result := GetCurTime()
+	if result == "" {
+		t.Error("Expected non-empty time string")
+	}
+	// Verify it's in the expected format (basic check)
+	if len(result) < 10 {
+		t.Errorf("Time string seems too short: %s", result)
+	}
 }

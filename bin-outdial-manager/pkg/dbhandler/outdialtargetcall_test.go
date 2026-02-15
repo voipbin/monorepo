@@ -520,3 +520,88 @@ func Test_OutdialTargetCallList(t *testing.T) {
 	}
 }
 
+func Test_OutdialTargetCallUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	curTime := func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }()
+
+	tests := []struct {
+		name              string
+		outdialTargetCall *outdialtargetcall.OutdialTargetCall
+		fields            map[outdialtargetcall.Field]any
+		expectRes         *outdialtargetcall.OutdialTargetCall
+	}{
+		{
+			"update status",
+			&outdialtargetcall.OutdialTargetCall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1d2e3f4-b1bb-11ec-91c0-1b8448615480"),
+					CustomerID: uuid.FromStringOrNil("c2d3e4f5-b1bb-11ec-9c75-fbb8e010e73f"),
+				},
+				Status:   outdialtargetcall.StatusProgressing,
+				TMCreate: curTime,
+			},
+			map[outdialtargetcall.Field]any{
+				outdialtargetcall.FieldStatus: outdialtargetcall.StatusDone,
+			},
+			&outdialtargetcall.OutdialTargetCall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1d2e3f4-b1bb-11ec-91c0-1b8448615480"),
+					CustomerID: uuid.FromStringOrNil("c2d3e4f5-b1bb-11ec-9c75-fbb8e010e73f"),
+				},
+				Status: outdialtargetcall.StatusDone,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
+
+			mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall).Return(nil)
+			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall).Return(nil)
+			}
+			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall).Return(nil)
+			}
+			if err := h.OutdialTargetCallCreate(ctx, tt.outdialTargetCall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().OutdialTargetCallSet(gomock.Any(), gomock.Any())
+			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, gomock.Any()).Return(nil)
+			}
+			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, gomock.Any()).Return(nil)
+			}
+			if err := h.OutdialTargetCallUpdate(ctx, tt.outdialTargetCall.ID, tt.fields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().OutdialTargetCallGet(gomock.Any(), tt.outdialTargetCall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetCallSet(gomock.Any(), gomock.Any())
+			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, gomock.Any()).Return(nil)
+			}
+			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, gomock.Any()).Return(nil)
+			}
+			res, err := h.OutdialTargetCallGet(ctx, tt.outdialTargetCall.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			tt.expectRes.TMCreate = res.TMCreate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
