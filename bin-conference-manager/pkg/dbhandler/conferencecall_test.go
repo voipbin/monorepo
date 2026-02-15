@@ -368,3 +368,108 @@ func Test_ConferencecallDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferencecallUpdate(t *testing.T) {
+
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
+	tests := []struct {
+		name           string
+		conferencecall *conferencecall.Conferencecall
+
+		id     uuid.UUID
+		fields map[conferencecall.Field]any
+
+		responseCurTime *time.Time
+		expectRes       *conferencecall.Conferencecall
+	}{
+		{
+			name: "update status",
+			conferencecall: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+				Status: conferencecall.StatusJoining,
+			},
+
+			id: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+			fields: map[conferencecall.Field]any{
+				conferencecall.FieldStatus: conferencecall.StatusJoined,
+			},
+
+			responseCurTime: &curTime,
+			expectRes: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+				Status:   conferencecall.StatusJoined,
+				TMCreate: &curTime,
+				TMUpdate: &curTime,
+				TMDelete: nil,
+			},
+		},
+		{
+			name: "empty fields",
+			conferencecall: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+			},
+
+			id:              uuid.FromStringOrNil("a0d83f46-1e0b-11f0-881e-db8cc51c453b"),
+			fields:          map[conferencecall.Field]any{},
+			responseCurTime: &curTime,
+			expectRes: &conferencecall.Conferencecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0d83f46-1e0b-11f0-881e-db8cc51c453b"),
+				},
+				TMCreate: &curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
+			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(tt.fields) > 0 {
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+				mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
+			}
+			if err := h.ConferencecallUpdate(ctx, tt.conferencecall.ID, tt.fields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
+			res, err := h.ConferencecallGet(ctx, tt.conferencecall.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -96,3 +96,15 @@ func TestDefaultConstants(t *testing.T) {
 		})
 	}
 }
+
+func TestBootstrap(t *testing.T) {
+	cmd := &cobra.Command{
+		Use:   "test",
+		Short: "Test command",
+	}
+
+	err := Bootstrap(cmd)
+	if err != nil {
+		t.Errorf("Bootstrap failed: %v", err)
+	}
+}
