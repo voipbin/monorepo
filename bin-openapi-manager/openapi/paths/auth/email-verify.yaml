@@ -62,6 +62,11 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            type: object
+            properties:
+              customer:
+                $ref: '#/components/schemas/CustomerManagerCustomer'
+              accesskey:
+                $ref: '#/components/schemas/CustomerManagerAccesskey'
     '400':
       description: Bad request - invalid or expired token
