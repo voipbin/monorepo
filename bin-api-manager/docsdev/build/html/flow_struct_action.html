@@ -1385,8 +1385,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
 <li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
-<li><p>provider: TTS provider. Optional. <code class="docutils literal notranslate"><span class="pre">gcp</span></code> (Google Cloud TTS) or <code class="docutils literal notranslate"><span class="pre">aws</span></code> (AWS Polly). If omitted, the system uses the default provider.</p></li>
-<li><p>voice_id: Provider-specific voice identifier. Optional. For example, <code class="docutils literal notranslate"><span class="pre">en-US-Wavenet-D</span></code> (GCP) or <code class="docutils literal notranslate"><span class="pre">Joanna</span></code> (AWS).</p></li>
+<li><p>provider: TTS provider. Optional. <code class="docutils literal notranslate"><span class="pre">gcp</span></code> (Google Cloud TTS) or <code class="docutils literal notranslate"><span class="pre">aws</span></code> (AWS Polly). If omitted, defaults to GCP. If the selected provider fails, the system automatically falls back to the alternative provider with the default voice for the language.</p></li>
+<li><p>voice_id: Provider-specific voice identifier. Optional. For example, <code class="docutils literal notranslate"><span class="pre">en-US-Wavenet-D</span></code> (GCP) or <code class="docutils literal notranslate"><span class="pre">Joanna</span></code> (AWS). On fallback, the voice_id is reset to the alternative provider’s default voice.</p></li>
 <li><p>digits_handle: See detail <a class="reference internal" href="#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>

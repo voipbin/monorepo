@@ -522,11 +522,26 @@
 <p>TTS converts text to spoken audio:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TTS</span> <span class="n">Providers</span><span class="p">:</span>
 
-<span class="n">Google</span> <span class="n">Cloud</span> <span class="n">TTS</span><span class="p">:</span>
+<span class="n">Google</span> <span class="n">Cloud</span> <span class="n">TTS</span> <span class="p">(</span><span class="n">default</span><span class="p">):</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Voices</span><span class="p">:</span> <span class="mi">200</span><span class="o">+</span> <span class="ow">in</span> <span class="mi">40</span><span class="o">+</span> <span class="n">languages</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Neural</span> <span class="ow">and</span> <span class="n">Standard</span>             <span class="o">|</span>
 <span class="o">|</span> <span class="n">SSML</span><span class="p">:</span> <span class="n">Supported</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">AWS</span> <span class="n">Polly</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Voices</span><span class="p">:</span> <span class="mi">60</span><span class="o">+</span> <span class="ow">in</span> <span class="mi">30</span><span class="o">+</span> <span class="n">languages</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Neural</span> <span class="ow">and</span> <span class="n">Standard</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">SSML</span><span class="p">:</span> <span class="n">Supported</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Provider</span> <span class="n">Fallback</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">If</span> <span class="n">the</span> <span class="n">selected</span> <span class="n">provider</span> <span class="n">fails</span><span class="p">,</span> <span class="n">the</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">system</span> <span class="n">falls</span> <span class="n">back</span> <span class="n">to</span> <span class="n">the</span> <span class="n">alternative</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">provider</span> <span class="k">with</span> <span class="n">the</span> <span class="n">default</span> <span class="n">voice</span> <span class="k">for</span> <span class="n">the</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">language</span><span class="o">.</span>                                <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
 <span class="n">TTS</span> <span class="n">Action</span> <span class="n">Example</span><span class="p">:</span>
