@@ -231,32 +231,43 @@ func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler
 func runMonthlyTopUp(ctx context.Context, db dbhandler.DBHandler) error {
 	log := logrus.WithField("func", "runMonthlyTopUp")
 
-	// Get accounts where tm_next_topup <= now
 	now := time.Now()
 	filters := map[account.Field]any{
 		account.FieldDeleted: false,
 	}
 
-	accounts, err := db.AccountList(ctx, 1000, "", filters)
-	if err != nil {
-		return fmt.Errorf("could not list accounts. err: %v", err)
-	}
-
-	for _, a := range accounts {
-		if a.TmNextTopUp == nil || a.TmNextTopUp.After(now) {
-			continue
+	// Paginate through all accounts
+	var pageToken string
+	for {
+		accounts, err := db.AccountList(ctx, 500, pageToken, filters)
+		if err != nil {
+			return fmt.Errorf("could not list accounts. err: %v", err)
+		}
+		if len(accounts) == 0 {
+			break
 		}
 
-		tokenAmount, ok := account.PlanTokenMap[a.PlanType]
-		if !ok || tokenAmount <= 0 {
-			continue
+		for _, a := range accounts {
+			if a.TmNextTopUp == nil || a.TmNextTopUp.After(now) {
+				continue
+			}
+
+			tokenAmount, ok := account.PlanTokenMap[a.PlanType]
+			if !ok || tokenAmount <= 0 {
+				continue
+			}
+
+			if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, int64(tokenAmount), string(a.PlanType)); err != nil {
+				log.Errorf("Could not top up tokens for account. account_id: %s, err: %v", a.ID, err)
+				continue
+			}
+			log.Infof("Topped up tokens for account. account_id: %s, tokens: %d", a.ID, tokenAmount)
 		}
 
-		if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, int64(tokenAmount), string(a.PlanType)); err != nil {
-			log.Errorf("Could not top up tokens for account. account_id: %s, err: %v", a.ID, err)
-			continue
+		if len(accounts) < 500 {
+			break
 		}
-		log.Infof("Topped up tokens for account. account_id: %s, tokens: %d", a.ID, tokenAmount)
+		pageToken = accounts[len(accounts)-1].TMCreate.Format(time.RFC3339Nano)
 	}
 
 	return nil

@@ -60,7 +60,6 @@ func Test_Create(t *testing.T) {
 				},
 				Name:          "test name",
 				Detail:        "test detail",
-				Balance:       0,
 				PaymentType:   account.PaymentTypePrepaid,
 				PaymentMethod: account.PaymentMethodNone,
 			},
@@ -289,7 +288,7 @@ func Test_SubtractBalance(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		responseAccount *account.Account
 	}
@@ -299,7 +298,7 @@ func Test_SubtractBalance(t *testing.T) {
 			name: "normal",
 
 			accountID: uuid.FromStringOrNil("287f9762-09f6-11ee-a305-2f57be32e59c"),
-			balance:   20.1,
+			balance:   20100000,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -346,7 +345,7 @@ func Test_AddBalance(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		responseAccount *account.Account
 	}
@@ -356,7 +355,7 @@ func Test_AddBalance(t *testing.T) {
 			name: "normal",
 
 			accountID: uuid.FromStringOrNil("28c90ab4-09f6-11ee-97f3-6b2314b71a97"),
-			balance:   20.1,
+			balance:   20100000,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -458,7 +457,7 @@ func Test_SubtractBalanceWithCheck_normal(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		amount    float32
+		amount    int64
 
 		responseAccount        *account.Account
 		responseUpdatedAccount *account.Account
@@ -467,21 +466,21 @@ func Test_SubtractBalanceWithCheck_normal(t *testing.T) {
 			name: "normal account uses atomic check",
 
 			accountID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
-			amount:    15.5,
+			amount:    15500000,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
 				},
-				PlanType: account.PlanTypeFree,
-				Balance:  100.0,
+				PlanType:      account.PlanTypeFree,
+				BalanceCredit: 100000000,
 			},
 			responseUpdatedAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bb111111-0000-0000-0000-000000000001"),
 				},
-				PlanType: account.PlanTypeFree,
-				Balance:  84.5,
+				PlanType:      account.PlanTypeFree,
+				BalanceCredit: 84500000,
 			},
 		},
 	}
@@ -527,7 +526,7 @@ func Test_SubtractBalanceWithCheck_unlimited(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		amount    float32
+		amount    int64
 
 		responseAccount        *account.Account
 		responseUpdatedAccount *account.Account
@@ -536,21 +535,21 @@ func Test_SubtractBalanceWithCheck_unlimited(t *testing.T) {
 			name: "unlimited plan account bypasses check",
 
 			accountID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
-			amount:    50.0,
+			amount:    50000000,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
 				},
-				PlanType: account.PlanTypeUnlimited,
-				Balance:  10.0,
+				PlanType:      account.PlanTypeUnlimited,
+				BalanceCredit: 10000000,
 			},
 			responseUpdatedAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc111111-0000-0000-0000-000000000001"),
 				},
-				PlanType: account.PlanTypeUnlimited,
-				Balance:  -40.0,
+				PlanType:      account.PlanTypeUnlimited,
+				BalanceCredit: -40000000,
 			},
 		},
 	}
@@ -608,13 +607,13 @@ func Test_SubtractBalanceWithCheck_insufficient(t *testing.T) {
 	accountID := uuid.FromStringOrNil("dd111111-0000-0000-0000-000000000001")
 
 	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
-		Identity: commonidentity.Identity{ID: accountID},
-		PlanType: account.PlanTypeFree,
-		Balance:  5.0,
+		Identity:      commonidentity.Identity{ID: accountID},
+		PlanType:      account.PlanTypeFree,
+		BalanceCredit: 5000000,
 	}, nil)
-	mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, accountID, float32(50.0)).Return(fmt.Errorf("insufficient balance"))
+	mockDB.EXPECT().AccountSubtractBalanceWithCheck(ctx, accountID, int64(50000000)).Return(fmt.Errorf("insufficient balance"))
 
-	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50.0)
+	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50000000)
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -1061,7 +1060,7 @@ func Test_SubtractBalance_error(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 	}
 
 	tests := []test{
@@ -1069,13 +1068,13 @@ func Test_SubtractBalance_error(t *testing.T) {
 			name: "db subtract error",
 
 			accountID: uuid.FromStringOrNil("26d7e8f9-1a2b-11ee-637a-f8eeff04eb9"),
-			balance:   10.5,
+			balance:   10500000,
 		},
 		{
 			name: "db get error",
 
 			accountID: uuid.FromStringOrNil("37e8f90a-2b3c-11ee-748b-09ff0015fca"),
-			balance:   20.0,
+			balance:   20000000,
 		},
 	}
 
@@ -1124,7 +1123,7 @@ func Test_AddBalance_error(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 	}
 
 	tests := []test{
@@ -1132,13 +1131,13 @@ func Test_AddBalance_error(t *testing.T) {
 			name: "db add error",
 
 			accountID: uuid.FromStringOrNil("48f90a1b-3c4d-11ee-859c-1a00112600db"),
-			balance:   15.5,
+			balance:   15500000,
 		},
 		{
 			name: "db get error",
 
 			accountID: uuid.FromStringOrNil("590a1b2c-4d5e-11ee-96ad-2b11223711ec"),
-			balance:   25.0,
+			balance:   25000000,
 		},
 	}
 
@@ -1288,7 +1287,7 @@ func Test_SubtractBalanceWithCheck_get_error(t *testing.T) {
 
 	mockDB.EXPECT().AccountGet(ctx, accountID).Return(nil, fmt.Errorf("initial get failed"))
 
-	_, err := h.SubtractBalanceWithCheck(ctx, accountID, 50.0)
+	_, err := h.SubtractBalanceWithCheck(ctx, accountID, int64(50000000))
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}

@@ -17,7 +17,6 @@ import (
 	ememail "monorepo/bin-email-manager/models/email"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
-	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -386,16 +385,14 @@ type RequestHandler interface {
 
 	// billing-manager account
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
-	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
-	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
+	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance int64) (*bmaccount.Account, error)
+	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance int64) (*bmaccount.Account, error)
 	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
 	BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
 	BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType bmaccount.ResourceType) (bool, error)
 	BillingV1AccountIsValidResourceLimitByCustomerID(ctx context.Context, customerID uuid.UUID, resourceType bmaccount.ResourceType) (bool, error)
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
-	BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.Allowance, error)
-	BillingV1AccountAllowanceGet(ctx context.Context, accountID uuid.UUID) (*bmallowance.Allowance, error)
 
 	// billing-manager billing
 	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)

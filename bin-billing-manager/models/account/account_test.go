@@ -15,7 +15,8 @@ func TestAccountStruct(t *testing.T) {
 	a := Account{
 		Name:          "Test Account",
 		Detail:        "Test account details",
-		Balance:       100.50,
+		BalanceCredit: 10050000,
+		BalanceToken:  100,
 		PaymentType:   PaymentTypePrepaid,
 		PaymentMethod: PaymentMethodCreditCard,
 		TMCreate:      &tmCreate,
@@ -30,8 +31,11 @@ func TestAccountStruct(t *testing.T) {
 	if a.Name != "Test Account" {
 		t.Errorf("Account.Name = %v, expected %v", a.Name, "Test Account")
 	}
-	if a.Balance != 100.50 {
-		t.Errorf("Account.Balance = %v, expected %v", a.Balance, 100.50)
+	if a.BalanceCredit != 10050000 {
+		t.Errorf("Account.BalanceCredit = %v, expected %v", a.BalanceCredit, 10050000)
+	}
+	if a.BalanceToken != 100 {
+		t.Errorf("Account.BalanceToken = %v, expected %v", a.BalanceToken, 100)
 	}
 }
 

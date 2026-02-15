@@ -12,7 +12,6 @@ package dbhandler
 import (
 	context "context"
 	account "monorepo/bin-billing-manager/models/account"
-	allowance "monorepo/bin-billing-manager/models/allowance"
 	billing "monorepo/bin-billing-manager/models/billing"
 	failedevent "monorepo/bin-billing-manager/models/failedevent"
 	reflect "reflect"
@@ -47,17 +46,17 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // AccountAddBalance mocks base method.
-func (m *MockDBHandler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
+func (m *MockDBHandler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountAddBalance", ctx, accountID, balance)
+	ret := m.ctrl.Call(m, "AccountAddBalance", ctx, accountID, amount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AccountAddBalance indicates an expected call of AccountAddBalance.
-func (mr *MockDBHandlerMockRecorder) AccountAddBalance(ctx, accountID, balance any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AccountAddBalance(ctx, accountID, amount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountAddBalance), ctx, accountID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountAddBalance), ctx, accountID, amount)
 }
 
 // AccountCreate mocks base method.
@@ -134,21 +133,21 @@ func (mr *MockDBHandlerMockRecorder) AccountListByCustomerID(ctx, customerID, si
 }
 
 // AccountSubtractBalance mocks base method.
-func (m *MockDBHandler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
+func (m *MockDBHandler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountSubtractBalance", ctx, accountID, balance)
+	ret := m.ctrl.Call(m, "AccountSubtractBalance", ctx, accountID, amount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AccountSubtractBalance indicates an expected call of AccountSubtractBalance.
-func (mr *MockDBHandlerMockRecorder) AccountSubtractBalance(ctx, accountID, balance any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AccountSubtractBalance(ctx, accountID, amount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalance), ctx, accountID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalance), ctx, accountID, amount)
 }
 
 // AccountSubtractBalanceWithCheck mocks base method.
-func (m *MockDBHandler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) error {
+func (m *MockDBHandler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccountSubtractBalanceWithCheck", ctx, accountID, amount)
 	ret0, _ := ret[0].(error)
@@ -159,6 +158,20 @@ func (m *MockDBHandler) AccountSubtractBalanceWithCheck(ctx context.Context, acc
 func (mr *MockDBHandlerMockRecorder) AccountSubtractBalanceWithCheck(ctx, accountID, amount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalanceWithCheck", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalanceWithCheck), ctx, accountID, amount)
+}
+
+// AccountTopUpTokens mocks base method.
+func (m *MockDBHandler) AccountTopUpTokens(ctx context.Context, accountID, customerID uuid.UUID, tokenAmount int64, planType string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountTopUpTokens", ctx, accountID, customerID, tokenAmount, planType)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountTopUpTokens indicates an expected call of AccountTopUpTokens.
+func (mr *MockDBHandlerMockRecorder) AccountTopUpTokens(ctx, accountID, customerID, tokenAmount, planType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountTopUpTokens", reflect.TypeOf((*MockDBHandler)(nil).AccountTopUpTokens), ctx, accountID, customerID, tokenAmount, planType)
 }
 
 // AccountUpdate mocks base method.
@@ -175,93 +188,19 @@ func (mr *MockDBHandlerMockRecorder) AccountUpdate(ctx, id, fields any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccountUpdate), ctx, id, fields)
 }
 
-// AllowanceConsumeTokens mocks base method.
-func (m *MockDBHandler) AllowanceConsumeTokens(ctx context.Context, allowanceID, accountID uuid.UUID, tokensNeeded int, creditPerUnit float32, tokenPerUnit int) (int, float32, error) {
+// BillingConsumeAndRecord mocks base method.
+func (m *MockDBHandler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits, usageDuration int, rateTokenPerUnit, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceConsumeTokens", ctx, allowanceID, accountID, tokensNeeded, creditPerUnit, tokenPerUnit)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(float32)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// AllowanceConsumeTokens indicates an expected call of AllowanceConsumeTokens.
-func (mr *MockDBHandlerMockRecorder) AllowanceConsumeTokens(ctx, allowanceID, accountID, tokensNeeded, creditPerUnit, tokenPerUnit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceConsumeTokens", reflect.TypeOf((*MockDBHandler)(nil).AllowanceConsumeTokens), ctx, allowanceID, accountID, tokensNeeded, creditPerUnit, tokenPerUnit)
-}
-
-// AllowanceCreate mocks base method.
-func (m *MockDBHandler) AllowanceCreate(ctx context.Context, c *allowance.Allowance) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceCreate", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AllowanceCreate indicates an expected call of AllowanceCreate.
-func (mr *MockDBHandlerMockRecorder) AllowanceCreate(ctx, c any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceCreate", reflect.TypeOf((*MockDBHandler)(nil).AllowanceCreate), ctx, c)
-}
-
-// AllowanceGet mocks base method.
-func (m *MockDBHandler) AllowanceGet(ctx context.Context, id uuid.UUID) (*allowance.Allowance, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceGet", ctx, id)
-	ret0, _ := ret[0].(*allowance.Allowance)
+	ret := m.ctrl.Call(m, "BillingConsumeAndRecord", ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd)
+	ret0, _ := ret[0].(*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AllowanceGet indicates an expected call of AllowanceGet.
-func (mr *MockDBHandlerMockRecorder) AllowanceGet(ctx, id any) *gomock.Call {
+// BillingConsumeAndRecord indicates an expected call of BillingConsumeAndRecord.
+func (mr *MockDBHandlerMockRecorder) BillingConsumeAndRecord(ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceGet", reflect.TypeOf((*MockDBHandler)(nil).AllowanceGet), ctx, id)
-}
-
-// AllowanceGetCurrentByAccountID mocks base method.
-func (m *MockDBHandler) AllowanceGetCurrentByAccountID(ctx context.Context, accountID uuid.UUID) (*allowance.Allowance, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceGetCurrentByAccountID", ctx, accountID)
-	ret0, _ := ret[0].(*allowance.Allowance)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AllowanceGetCurrentByAccountID indicates an expected call of AllowanceGetCurrentByAccountID.
-func (mr *MockDBHandlerMockRecorder) AllowanceGetCurrentByAccountID(ctx, accountID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceGetCurrentByAccountID", reflect.TypeOf((*MockDBHandler)(nil).AllowanceGetCurrentByAccountID), ctx, accountID)
-}
-
-// AllowanceList mocks base method.
-func (m *MockDBHandler) AllowanceList(ctx context.Context, size uint64, token string, filters map[allowance.Field]any) ([]*allowance.Allowance, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceList", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*allowance.Allowance)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AllowanceList indicates an expected call of AllowanceList.
-func (mr *MockDBHandlerMockRecorder) AllowanceList(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceList", reflect.TypeOf((*MockDBHandler)(nil).AllowanceList), ctx, size, token, filters)
-}
-
-// AllowanceUpdate mocks base method.
-func (m *MockDBHandler) AllowanceUpdate(ctx context.Context, id uuid.UUID, fields map[allowance.Field]any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AllowanceUpdate", ctx, id, fields)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AllowanceUpdate indicates an expected call of AllowanceUpdate.
-func (mr *MockDBHandlerMockRecorder) AllowanceUpdate(ctx, id, fields any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllowanceUpdate", reflect.TypeOf((*MockDBHandler)(nil).AllowanceUpdate), ctx, id, fields)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingConsumeAndRecord", reflect.TypeOf((*MockDBHandler)(nil).BillingConsumeAndRecord), ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd)
 }
 
 // BillingCreate mocks base method.
@@ -366,18 +305,18 @@ func (mr *MockDBHandlerMockRecorder) BillingSetStatus(ctx, id, status any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).BillingSetStatus), ctx, id, status)
 }
 
-// BillingSetStatusEndWithCosts mocks base method.
-func (m *MockDBHandler) BillingSetStatusEndWithCosts(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) error {
+// BillingSetStatusEnd mocks base method.
+func (m *MockDBHandler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billableUnits, usageDuration int, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot int64, tmBillingEnd *time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingSetStatusEndWithCosts", ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd)
+	ret := m.ctrl.Call(m, "BillingSetStatusEnd", ctx, id, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// BillingSetStatusEndWithCosts indicates an expected call of BillingSetStatusEndWithCosts.
-func (mr *MockDBHandlerMockRecorder) BillingSetStatusEndWithCosts(ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd any) *gomock.Call {
+// BillingSetStatusEnd indicates an expected call of BillingSetStatusEnd.
+func (mr *MockDBHandlerMockRecorder) BillingSetStatusEnd(ctx, id, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingSetStatusEndWithCosts", reflect.TypeOf((*MockDBHandler)(nil).BillingSetStatusEndWithCosts), ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingSetStatusEnd", reflect.TypeOf((*MockDBHandler)(nil).BillingSetStatusEnd), ctx, id, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd)
 }
 
 // BillingUpdate mocks base method.

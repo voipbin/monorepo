@@ -41,7 +41,7 @@ func Test_AccountCreate(t *testing.T) {
 				},
 				Name:          "test name",
 				Detail:        "test detail",
-				Balance:       99.99,
+				BalanceCredit: 9999000,
 				PaymentType:   account.PaymentTypeNone,
 				PaymentMethod: account.PaymentMethodNone,
 			},
@@ -54,7 +54,7 @@ func Test_AccountCreate(t *testing.T) {
 				},
 				Name:          "test name",
 				Detail:        "test detail",
-				Balance:       99.99,
+				BalanceCredit: 9999000,
 				PaymentType:   account.PaymentTypeNone,
 				PaymentMethod: account.PaymentMethodNone,
 				TMCreate:      &tmCreate1,
@@ -396,7 +396,7 @@ func Test_AccountAddBalance(t *testing.T) {
 		account *account.Account
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		responseCurTime *time.Time
 		expectRes       *account.Account
@@ -412,11 +412,11 @@ func Test_AccountAddBalance(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
 					CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
 				},
-				Balance: 20.0,
+				BalanceCredit: 20000000,
 			},
 
 			accountID: uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
-			balance:   888.88,
+			balance:   888880000,
 
 			responseCurTime: &tmCreate,
 			expectRes: &account.Account{
@@ -424,10 +424,10 @@ func Test_AccountAddBalance(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
 					CustomerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
 				},
-				Balance:  908.88,
-				TMCreate: &tmCreate,
-				TMUpdate: &tmCreate,
-				TMDelete: nil,
+				BalanceCredit: 908880000,
+				TMCreate:      &tmCreate,
+				TMUpdate:      &tmCreate,
+				TMDelete:      nil,
 			},
 		},
 	}
@@ -480,7 +480,7 @@ func Test_AccountSubtractBalance(t *testing.T) {
 		account *account.Account
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		responseCurTime *time.Time
 		expectRes       *account.Account
@@ -496,11 +496,11 @@ func Test_AccountSubtractBalance(t *testing.T) {
 					ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
 					CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
 				},
-				Balance: 20.0,
+				BalanceCredit: 20000000,
 			},
 
 			accountID: uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
-			balance:   8.88,
+			balance:   8880000,
 
 			responseCurTime: &tmCreate,
 			expectRes: &account.Account{
@@ -508,10 +508,10 @@ func Test_AccountSubtractBalance(t *testing.T) {
 					ID:         uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
 					CustomerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
 				},
-				Balance:  11.12,
-				TMCreate: &tmCreate,
-				TMUpdate: &tmCreate,
-				TMDelete: nil,
+				BalanceCredit: 11120000,
+				TMCreate:      &tmCreate,
+				TMUpdate:      &tmCreate,
+				TMDelete:      nil,
 			},
 		},
 	}

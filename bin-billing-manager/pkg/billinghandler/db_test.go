@@ -16,7 +16,6 @@ import (
 
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -64,15 +63,12 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("9727c0a0-08fb-11ee-b990-6ba2967f21c4"),
 				},
 				AccountID:         uuid.FromStringOrNil("975d1a8e-08fb-11ee-abea-539ff7bc4054"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("978512dc-08fb-11ee-953a-cb7160fb1372"),
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
-				CostCreditTotal:   0,
-				CostTokenPerUnit:  0,
-				CostTokenTotal:    0,
-				CostUnitCount:     0,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -301,77 +297,6 @@ func Test_List(t *testing.T) {
 	}
 }
 
-func Test_UpdateStatusEnd(t *testing.T) {
-
-	type test struct {
-		name string
-
-		id              uuid.UUID
-		costUnitCount   float32
-		costTokenTotal  int
-		costCreditTotal float32
-		tmBillingEnd    *time.Time
-
-		responseBilling *billing.Billing
-	}
-
-	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
-
-	tests := []test{
-		{
-			name: "normal",
-
-			id:              uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
-			costUnitCount:   10.32,
-			costTokenTotal:  0,
-			costCreditTotal: 0.06192,
-			tmBillingEnd:    &tmBillingEnd,
-
-			responseBilling: &billing.Billing{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
-
-			h := billingHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(tt.responseBilling, nil)
-
-			res, err := h.UpdateStatusEnd(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.responseBilling, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseBilling, res)
-			}
-		})
-	}
-}
-
 func Test_Create_db_create_error(t *testing.T) {
 
 	type test struct {
@@ -410,15 +335,12 @@ func Test_Create_db_create_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
 				},
 				AccountID:         uuid.FromStringOrNil("22222222-0000-0000-0000-000000000001"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("33333333-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
-				CostCreditTotal:   0,
-				CostTokenPerUnit:  0,
-				CostTokenTotal:    0,
-				CostUnitCount:     0,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -490,15 +412,12 @@ func Test_Create_db_get_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("55555555-0000-0000-0000-000000000001"),
 				},
 				AccountID:         uuid.FromStringOrNil("66666666-0000-0000-0000-000000000001"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("77777777-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
-				CostCreditTotal:   0,
-				CostTokenPerUnit:  0,
-				CostTokenTotal:    0,
-				CostUnitCount:     0,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -688,123 +607,6 @@ func Test_List_error(t *testing.T) {
 			mockDB.EXPECT().BillingList(ctx, tt.size, tt.token, tt.filters).Return(nil, fmt.Errorf("connection timeout"))
 
 			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
-			}
-		})
-	}
-}
-
-func Test_UpdateStatusEnd_set_error(t *testing.T) {
-
-	type test struct {
-		name string
-
-		id              uuid.UUID
-		costUnitCount   float32
-		costTokenTotal  int
-		costCreditTotal float32
-		tmBillingEnd    *time.Time
-	}
-
-	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
-
-	tests := []test{
-		{
-			name: "set status error",
-
-			id:              uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-000000000001"),
-			costUnitCount:   10.32,
-			costTokenTotal:  0,
-			costCreditTotal: 0.06192,
-			tmBillingEnd:    &tmBillingEnd,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
-
-			h := billingHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd).Return(fmt.Errorf("connection timeout"))
-
-			_, err := h.UpdateStatusEnd(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd)
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
-			}
-		})
-	}
-}
-
-func Test_UpdateStatusEnd_get_error(t *testing.T) {
-
-	type test struct {
-		name string
-
-		id              uuid.UUID
-		costUnitCount   float32
-		costTokenTotal  int
-		costCreditTotal float32
-		tmBillingEnd    *time.Time
-	}
-
-	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
-
-	tests := []test{
-		{
-			name: "get error after set",
-
-			id:              uuid.FromStringOrNil("ffffffff-0000-0000-0000-000000000001"),
-			costUnitCount:   10.32,
-			costTokenTotal:  0,
-			costCreditTotal: 0.06192,
-			tmBillingEnd:    &tmBillingEnd,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
-
-			h := billingHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(nil, fmt.Errorf("connection timeout"))
-
-			_, err := h.UpdateStatusEnd(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.tmBillingEnd)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: nil")
 			}

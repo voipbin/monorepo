@@ -137,14 +137,24 @@ const (
 	BillingManagerBillingStatusProgressing BillingManagerBillingStatus = "progressing"
 )
 
+// Defines values for BillingManagerBillingTransactionType.
+const (
+	BillingManagerBillingTransactionTypeAdjustment BillingManagerBillingTransactionType = "adjustment"
+	BillingManagerBillingTransactionTypeRefund     BillingManagerBillingTransactionType = "refund"
+	BillingManagerBillingTransactionTypeTopUp      BillingManagerBillingTransactionType = "top_up"
+	BillingManagerBillingTransactionTypeUsage      BillingManagerBillingTransactionType = "usage"
+)
+
 // Defines values for BillingManagerBillingreferenceType.
 const (
-	BillingManagerBillingreferenceTypeCall          BillingManagerBillingreferenceType = "call"
-	BillingManagerBillingreferenceTypeCallExtension BillingManagerBillingreferenceType = "call_extension"
-	BillingManagerBillingreferenceTypeNone          BillingManagerBillingreferenceType = ""
-	BillingManagerBillingreferenceTypeNumber        BillingManagerBillingreferenceType = "number"
-	BillingManagerBillingreferenceTypeNumberRenew   BillingManagerBillingreferenceType = "number_renew"
-	BillingManagerBillingreferenceTypeSMS           BillingManagerBillingreferenceType = "sms"
+	BillingManagerBillingreferenceTypeCall             BillingManagerBillingreferenceType = "call"
+	BillingManagerBillingreferenceTypeCallExtension    BillingManagerBillingreferenceType = "call_extension"
+	BillingManagerBillingreferenceTypeCreditFreeTier   BillingManagerBillingreferenceType = "credit_free_tier"
+	BillingManagerBillingreferenceTypeMonthlyAllowance BillingManagerBillingreferenceType = "monthly_allowance"
+	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""
+	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
+	BillingManagerBillingreferenceTypeNumberRenew      BillingManagerBillingreferenceType = "number_renew"
+	BillingManagerBillingreferenceTypeSMS              BillingManagerBillingreferenceType = "sms"
 )
 
 // Defines values for CallManagerCallDirection.
@@ -1076,8 +1086,11 @@ type AuthLoginResponse struct {
 
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
-	// Balance The balance of the account in USD.
-	Balance *float32 `json:"balance,omitempty"`
+	// BalanceCredit The credit balance of the account in micros (1 USD = 1,000,000).
+	BalanceCredit *int64 `json:"balance_credit,omitempty"`
+
+	// BalanceToken The token balance of the account.
+	BalanceToken *int64 `json:"balance_token,omitempty"`
 
 	// CustomerId The unique identifier of the associated customer.
 	CustomerId *string `json:"customer_id,omitempty"`
@@ -1106,6 +1119,12 @@ type BillingManagerAccount struct {
 	// TmDelete The timestamp when the account was deleted, if applicable.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
+	// TmLastTopup The timestamp of the last token top-up.
+	TmLastTopup *string `json:"tm_last_topup,omitempty"`
+
+	// TmNextTopup The timestamp of the next scheduled token top-up.
+	TmNextTopup *string `json:"tm_next_topup,omitempty"`
+
 	// TmUpdate The timestamp when the account was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
@@ -1119,67 +1138,43 @@ type BillingManagerAccountPaymentType string
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
 
-// BillingManagerAllowance defines model for BillingManagerAllowance.
-type BillingManagerAllowance struct {
-	// AccountId The billing account ID.
-	AccountId *string `json:"account_id,omitempty"`
-
-	// CustomerId The customer's unique identifier.
-	CustomerId *string `json:"customer_id,omitempty"`
-
-	// CycleEnd The end timestamp of the allowance cycle.
-	CycleEnd *string `json:"cycle_end,omitempty"`
-
-	// CycleStart The start timestamp of the allowance cycle.
-	CycleStart *string `json:"cycle_start,omitempty"`
-
-	// Id The unique identifier of the allowance cycle.
-	Id *string `json:"id,omitempty"`
-
-	// TmCreate The creation timestamp.
-	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmDelete The deletion timestamp, if applicable.
-	TmDelete *string `json:"tm_delete,omitempty"`
-
-	// TmUpdate The last update timestamp.
-	TmUpdate *string `json:"tm_update,omitempty"`
-
-	// TokensTotal The total number of tokens allocated for this cycle.
-	TokensTotal *int `json:"tokens_total,omitempty"`
-
-	// TokensUsed The number of tokens consumed in this cycle.
-	TokensUsed *int `json:"tokens_used,omitempty"`
-}
-
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
 	// AccountId The billing account ID.
 	AccountId *string `json:"account_id,omitempty"`
 
-	// CostCreditPerUnit The credit cost per unit.
-	CostCreditPerUnit *float32 `json:"cost_credit_per_unit,omitempty"`
+	// AmountCredit The credit delta for this transaction in micros (negative for usage, positive for top-up).
+	AmountCredit *int64 `json:"amount_credit,omitempty"`
 
-	// CostCreditTotal The total credit charged for this billing.
-	CostCreditTotal *float32 `json:"cost_credit_total,omitempty"`
+	// AmountToken The token delta for this transaction (negative for usage, positive for top-up).
+	AmountToken *int64 `json:"amount_token,omitempty"`
 
-	// CostTokenPerUnit The token cost per unit for token-eligible types.
-	CostTokenPerUnit *int `json:"cost_token_per_unit,omitempty"`
+	// BalanceCreditSnapshot The credit balance after this transaction in micros.
+	BalanceCreditSnapshot *int64 `json:"balance_credit_snapshot,omitempty"`
 
-	// CostTokenTotal The total tokens consumed for this billing.
-	CostTokenTotal *int `json:"cost_token_total,omitempty"`
+	// BalanceTokenSnapshot The token balance after this transaction.
+	BalanceTokenSnapshot *int64 `json:"balance_token_snapshot,omitempty"`
+
+	// BillableUnits The number of billable units (e.g. minutes, rounded up).
+	BillableUnits *int `json:"billable_units,omitempty"`
 
 	// CostType The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
 	CostType *string `json:"cost_type,omitempty"`
-
-	// CostUnitCount The total count of billing units (e.g. minutes for calls, 1 for SMS/number).
-	CostUnitCount *float32 `json:"cost_unit_count,omitempty"`
 
 	// CustomerId The customer's unique identifier.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Id The unique identifier of the billing.
 	Id *string `json:"id,omitempty"`
+
+	// IdempotencyKey A unique key to prevent duplicate transactions.
+	IdempotencyKey *string `json:"idempotency_key,omitempty"`
+
+	// RateCreditPerUnit The credit rate per billable unit in micros.
+	RateCreditPerUnit *int64 `json:"rate_credit_per_unit,omitempty"`
+
+	// RateTokenPerUnit The token rate per billable unit.
+	RateTokenPerUnit *int64 `json:"rate_token_per_unit,omitempty"`
 
 	// ReferenceId The ID of the reference related to this billing.
 	ReferenceId *string `json:"reference_id,omitempty"`
@@ -1204,10 +1199,19 @@ type BillingManagerBilling struct {
 
 	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TransactionType The nature of the ledger entry.
+	TransactionType *BillingManagerBillingTransactionType `json:"transaction_type,omitempty"`
+
+	// UsageDuration The actual usage duration in seconds.
+	UsageDuration *int `json:"usage_duration,omitempty"`
 }
 
 // BillingManagerBillingStatus Status of the billing.
 type BillingManagerBillingStatus string
+
+// BillingManagerBillingTransactionType The nature of the ledger entry.
+type BillingManagerBillingTransactionType string
 
 // BillingManagerBillingreferenceType The type of reference associated with this billing.
 type BillingManagerBillingreferenceType string
@@ -3758,15 +3762,6 @@ type GetAvailableNumbersParams struct {
 type PutBillingAccountsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
 	Name   *string `json:"name,omitempty"`
-}
-
-// GetBillingAccountsIdAllowancesParams defines parameters for GetBillingAccountsIdAllowances.
-type GetBillingAccountsIdAllowancesParams struct {
-	// PageSize Maximum number of items to return.
-	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Pagination token for the next page.
-	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // PostBillingAccountsIdBalanceAddForceJSONBody defines parameters for PostBillingAccountsIdBalanceAddForce.

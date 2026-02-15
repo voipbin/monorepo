@@ -378,12 +378,10 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 			tokenDeducted = totalTokenCost
 			creditDeducted = 0
 		} else {
-			// Partial tokens: use what we have, overflow to credit
-			tokenDeducted = balanceToken
-			remainingUnits := int64(billableUnits) - (tokenDeducted / rateTokenPerUnit)
-			if rateTokenPerUnit > 0 && tokenDeducted%rateTokenPerUnit != 0 {
-				remainingUnits = int64(billableUnits) - (tokenDeducted / rateTokenPerUnit)
-			}
+			// Partial tokens: cover as many whole units as possible, overflow rest to credit
+			fullUnitsInTokens := balanceToken / rateTokenPerUnit
+			tokenDeducted = fullUnitsInTokens * rateTokenPerUnit
+			remainingUnits := int64(billableUnits) - fullUnitsInTokens
 			creditDeducted = remainingUnits * rateCreditPerUnit
 		}
 	} else {
@@ -392,7 +390,10 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 		creditDeducted = totalCreditCost
 	}
 
-	// Calculate new balances
+	// Calculate new balances.
+	// Note: newBalanceCredit may go negative for concurrent calls. This is intentional —
+	// the pre-flight IsValidBalance check is optimistic, and credit reservations (LockedCredit)
+	// are deferred to future work.
 	newBalanceToken := balanceToken - tokenDeducted
 	newBalanceCredit := balanceCredit - creditDeducted
 
@@ -537,7 +538,9 @@ func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, c
 	topupBilling.TransactionType = billing.TransactionTypeTopUp
 	topupBilling.Status = billing.StatusEnd
 	topupBilling.ReferenceType = billing.ReferenceTypeMonthlyAllowance
-	topupBilling.ReferenceID = h.utilHandler.UUIDCreate()
+	// Deterministic reference ID per (account, year-month) for idempotency
+	yearMonth := now.Format("2006-01")
+	topupBilling.ReferenceID = uuid.NewV5(accountID, "topup:"+yearMonth)
 	topupBilling.AmountToken = tokenAmount // positive: top-up adds
 	topupBilling.AmountCredit = 0
 	topupBilling.BalanceTokenSnapshot = newBalanceToken

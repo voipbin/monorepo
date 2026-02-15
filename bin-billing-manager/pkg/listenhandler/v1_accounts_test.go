@@ -47,7 +47,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"922907b6-0942-11ee-960e-f31d2cc10daa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"922907b6-0942-11ee-960e-f31d2cc10daa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -114,7 +114,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3a952284-4ccf-11ee-bd5e-03a7d7220fad","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"3a952284-4ccf-11ee-bd5e-03a7d7220fad","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -154,7 +154,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
-		expectBalance   float32
+		expectBalance   int64
 		expectRes       *sock.Response
 	}
 
@@ -179,7 +179,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"42d34adc-0dbb-11ee-a41b-eb337ba453c8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"42d34adc-0dbb-11ee-a41b-eb337ba453c8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -219,7 +219,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
-		expectBalance   float32
+		expectBalance   int64
 		expectRes       *sock.Response
 	}
 
@@ -244,7 +244,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"43180e06-0dbb-11ee-8124-17d122da2950","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"43180e06-0dbb-11ee-8124-17d122da2950","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -376,7 +376,7 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"512ab538-4cd2-11ee-91be-7779c29dd4f8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"512ab538-4cd2-11ee-91be-7779c29dd4f8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

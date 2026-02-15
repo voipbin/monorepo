@@ -43,12 +43,11 @@ func Test_BillingCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("01845d18-07ae-11ee-b9ed-17e7ec2627df"),
 				},
 				AccountID:         uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
-				CostCreditPerUnit: 2.02,
-				CostCreditTotal:   0,
-				CostUnitCount:     30.12,
+				RateCreditPerUnit: 6000,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      &tmBillingEnd,
 			},
@@ -60,12 +59,11 @@ func Test_BillingCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("01845d18-07ae-11ee-b9ed-17e7ec2627df"),
 				},
 				AccountID:         uuid.FromStringOrNil("01eaf474-07ae-11ee-b506-b75479a482cc"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("023c6296-07ae-11ee-8674-9f2a42cd114e"),
-				CostCreditPerUnit: 2.02,
-				CostCreditTotal:   0,
-				CostUnitCount:     30.12,
+				RateCreditPerUnit: 6000,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      &tmBillingEnd,
 				TMCreate:          &tmCreate,
@@ -248,17 +246,20 @@ func Test_BillingList(t *testing.T) {
 	}
 }
 
-func Test_BillingSetStatusEndWithCosts(t *testing.T) {
+func Test_BillingSetStatusEnd(t *testing.T) {
 
 	type test struct {
 		name    string
 		billing *billing.Billing
 
-		id              uuid.UUID
-		costUnitCount   float32
-		costTokenTotal  int
-		costCreditTotal float32
-		timestamp       *time.Time
+		id                    uuid.UUID
+		billableUnits         int
+		usageDuration         int
+		amountToken           int64
+		amountCredit          int64
+		balanceTokenSnapshot  int64
+		balanceCreditSnapshot int64
+		timestamp             *time.Time
 
 		responseCurTime *time.Time
 		expectRes       *billing.Billing
@@ -277,29 +278,35 @@ func Test_BillingSetStatusEndWithCosts(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 				Status:            billing.StatusProgressing,
-				CostCreditPerUnit: 10.12,
-				CostCreditTotal:   0,
+				RateCreditPerUnit: 6000,
 				TMBillingEnd:      nil,
 			},
 
-			id:              uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
-			costUnitCount:   10.12,
-			costTokenTotal:  0,
-			costCreditTotal: 102.4144,
-			timestamp:       &tmBillingEnd,
+			id:                    uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
+			billableUnits:         2,
+			usageDuration:         65,
+			amountToken:           0,
+			amountCredit:          -12000,
+			balanceTokenSnapshot:  0,
+			balanceCreditSnapshot: 9988000,
+			timestamp:             &tmBillingEnd,
 
 			responseCurTime: &tmCreate,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 				},
-				ReferenceType:     billing.ReferenceTypeCall,
-				ReferenceID:       uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
-				Status:            billing.StatusEnd,
-				CostCreditPerUnit: 10.12,
-				CostCreditTotal:   102.4144,
-				CostUnitCount:     10.12,
-				TMBillingEnd:      &tmBillingEnd,
+				ReferenceType:         billing.ReferenceTypeCall,
+				ReferenceID:           uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
+				Status:                billing.StatusEnd,
+				RateCreditPerUnit:     6000,
+				BillableUnits:         2,
+				UsageDuration:         65,
+				AmountToken:           0,
+				AmountCredit:          -12000,
+				BalanceTokenSnapshot:  0,
+				BalanceCreditSnapshot: 9988000,
+				TMBillingEnd:          &tmBillingEnd,
 
 				TMCreate: &tmCreate,
 				TMUpdate: &tmCreate,
@@ -332,7 +339,7 @@ func Test_BillingSetStatusEndWithCosts(t *testing.T) {
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
-			if err := h.BillingSetStatusEndWithCosts(ctx, tt.id, tt.costUnitCount, tt.costTokenTotal, tt.costCreditTotal, tt.timestamp); err != nil {
+			if err := h.BillingSetStatusEnd(ctx, tt.id, tt.billableUnits, tt.usageDuration, tt.amountToken, tt.amountCredit, tt.balanceTokenSnapshot, tt.balanceCreditSnapshot, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

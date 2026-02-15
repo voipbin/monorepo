@@ -392,14 +392,24 @@ components:
           description: Additional details about the account.
         plan_type:
           $ref: '#/components/schemas/BillingManagerAccountPlanType'
-        balance:
-          type: number
-          format: float
-          description: The balance of the account in USD.
+        balance_credit:
+          type: integer
+          format: int64
+          description: The credit balance of the account in micros (1 USD = 1,000,000).
+        balance_token:
+          type: integer
+          format: int64
+          description: The token balance of the account.
         payment_type:
           $ref: '#/components/schemas/BillingManagerAccountPaymentType'
         payment_method:
           $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+        tm_last_topup:
+          type: string
+          description: The timestamp of the last token top-up.
+        tm_next_topup:
+          type: string
+          description: The timestamp of the next scheduled token top-up.
         tm_create:
           type: string
           description: The timestamp when the account was created.
@@ -420,6 +430,8 @@ components:
         - sms
         - number
         - number_renew
+        - credit_free_tier
+        - monthly_allowance
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
@@ -427,6 +439,8 @@ components:
         - BillingManagerBillingreferenceTypeSMS
         - BillingManagerBillingreferenceTypeNumber
         - BillingManagerBillingreferenceTypeNumberRenew
+        - BillingManagerBillingreferenceTypeCreditFreeTier
+        - BillingManagerBillingreferenceTypeMonthlyAllowance
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.
@@ -441,6 +455,20 @@ components:
         - BillingManagerBillingStatusPending
         - BillingManagerBillingStatusFinished
 
+    BillingManagerBillingTransactionType:
+      type: string
+      description: The nature of the ledger entry.
+      enum:
+        - usage
+        - top_up
+        - adjustment
+        - refund
+      x-enum-varnames:
+        - BillingManagerBillingTransactionTypeUsage
+        - BillingManagerBillingTransactionTypeTopUp
+        - BillingManagerBillingTransactionTypeAdjustment
+        - BillingManagerBillingTransactionTypeRefund
+
     BillingManagerBilling:
       type: object
       properties:
@@ -453,6 +481,8 @@ components:
         account_id:
           type: string
           description: The billing account ID.
+        transaction_type:
+          $ref: '#/components/schemas/BillingManagerBillingTransactionType'
         status:
           $ref: '#/components/schemas/BillingManagerBillingStatus'
         reference_type:
@@ -463,24 +493,39 @@ components:
         cost_type:
           type: string
           description: The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
-        cost_unit_count:
-          type: number
-          format: float
-          description: The total count of billing units (e.g. minutes for calls, 1 for SMS/number).
-        cost_token_per_unit:
+        usage_duration:
           type: integer
-          description: The token cost per unit for token-eligible types.
-        cost_token_total:
+          description: The actual usage duration in seconds.
+        billable_units:
           type: integer
-          description: The total tokens consumed for this billing.
-        cost_credit_per_unit:
-          type: number
-          format: float
-          description: The credit cost per unit.
-        cost_credit_total:
-          type: number
-          format: float
-          description: The total credit charged for this billing.
+          description: The number of billable units (e.g. minutes, rounded up).
+        rate_token_per_unit:
+          type: integer
+          format: int64
+          description: The token rate per billable unit.
+        rate_credit_per_unit:
+          type: integer
+          format: int64
+          description: The credit rate per billable unit in micros.
+        amount_token:
+          type: integer
+          format: int64
+          description: The token delta for this transaction (negative for usage, positive for top-up).
+        amount_credit:
+          type: integer
+          format: int64
+          description: The credit delta for this transaction in micros (negative for usage, positive for top-up).
+        balance_token_snapshot:
+          type: integer
+          format: int64
+          description: The token balance after this transaction.
+        balance_credit_snapshot:
+          type: integer
+          format: int64
+          description: The credit balance after this transaction in micros.
+        idempotency_key:
+          type: string
+          description: A unique key to prevent duplicate transactions.
         tm_billing_start:
           type: string
           description: The start timestamp of the billing period.
@@ -497,40 +542,6 @@ components:
           type: string
           description: The deletion timestamp, if applicable.
 
-
-    BillingManagerAllowance:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The unique identifier of the allowance cycle.
-        customer_id:
-          type: string
-          description: The customer's unique identifier.
-        account_id:
-          type: string
-          description: The billing account ID.
-        cycle_start:
-          type: string
-          description: The start timestamp of the allowance cycle.
-        cycle_end:
-          type: string
-          description: The end timestamp of the allowance cycle.
-        tokens_total:
-          type: integer
-          description: The total number of tokens allocated for this cycle.
-        tokens_used:
-          type: integer
-          description: The number of tokens consumed in this cycle.
-        tm_create:
-          type: string
-          description: The creation timestamp.
-        tm_update:
-          type: string
-          description: The last update timestamp.
-        tm_delete:
-          type: string
-          description: The deletion timestamp, if applicable.
 
 #########################################
 # Call Manager
@@ -4118,10 +4129,6 @@ paths:
     $ref: './paths/billing_accounts/id_balance_add_force.yaml'
   /billing_accounts/{id}/balance_subtract_force:
     $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
-  /billing_accounts/{id}/allowances:
-    $ref: './paths/billing_accounts/id_allowances.yaml'
-  /billing_accounts/{id}/allowance:
-    $ref: './paths/billing_accounts/id_allowance.yaml'
 
   /billings:
     $ref: './paths/billings/main.yaml'
