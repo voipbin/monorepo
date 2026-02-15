@@ -2,10 +2,12 @@ package routehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -427,5 +429,294 @@ func Test_Update(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseRoute, res)
 			}
 		})
+	}
+}
+
+func Test_Get_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("a5ca3dc4-4658-11ed-8ecc-e35285c03d5c")
+
+	mockDB.EXPECT().RouteGet(ctx, id).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Create_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("502369f4-4662-11ed-8f0a-aff10c31ed97")
+	providerID := uuid.FromStringOrNil("505e0a96-4662-11ed-90ea-6b19829a782d")
+
+	mockDB.EXPECT().RouteCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	res, err := h.Create(ctx, customerID, "name", "detail", providerID, 1, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_ListByCustomerID_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("b4ff0a22-4662-11ed-bba2-dfe5060382ff")
+	filters := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+	}
+
+	mockDB.EXPECT().RouteList(ctx, "", uint64(10), filters).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.ListByCustomerID(ctx, customerID, "", 10)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_ListByTarget_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("dea3392a-4662-11ed-a613-efc9ea475e11")
+
+	filtersTarget := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     "+82",
+	}
+
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersTarget).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.ListByTarget(ctx, customerID, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Delete_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("52c2a598-4663-11ed-b6a2-93dcd490c49c")
+
+	mockDB.EXPECT().RouteDelete(ctx, id).Return(fmt.Errorf("database error"))
+
+	res, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Update_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("76eec186-4663-11ed-b7b4-57471964d4f5")
+	providerID := uuid.FromStringOrNil("771ba87c-4663-11ed-bc0e-2ba6cb69d485")
+
+	mockDB.EXPECT().RouteUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	res, err := h.Update(ctx, id, "name", "detail", providerID, 1, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Create_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("502369f4-4662-11ed-8f0a-aff10c31ed97")
+	providerID := uuid.FromStringOrNil("505e0a96-4662-11ed-90ea-6b19829a782d")
+
+	mockDB.EXPECT().RouteCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().RouteGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Create(ctx, customerID, "name", "detail", providerID, 1, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Delete_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("52c2a598-4663-11ed-b6a2-93dcd490c49c")
+
+	mockDB.EXPECT().RouteDelete(ctx, id).Return(nil)
+	mockDB.EXPECT().RouteGet(ctx, id).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_Update_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("76eec186-4663-11ed-b7b4-57471964d4f5")
+	providerID := uuid.FromStringOrNil("771ba87c-4663-11ed-bc0e-2ba6cb69d485")
+
+	mockDB.EXPECT().RouteUpdate(ctx, id, gomock.Any()).Return(nil)
+	mockDB.EXPECT().RouteGet(ctx, id).Return(nil, fmt.Errorf("get error"))
+
+	res, err := h.Update(ctx, id, "name", "detail", providerID, 1, "+82")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if res != nil {
+		t.Errorf("Expected nil result, got %v", res)
+	}
+}
+
+func Test_ListByTarget_AllRoutesError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &routeHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("dea3392a-4662-11ed-a613-efc9ea475e11")
+
+	filtersTarget := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     "+82",
+	}
+	filtersAll := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     route.TargetAll,
+	}
+
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersTarget).Return([]*route.Route{}, nil)
+	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersAll).Return(nil, fmt.Errorf("database error"))
+
+	res, err := h.ListByTarget(ctx, customerID, "+82")
+	if err != nil {
+		t.Errorf("Expected no error (error is ignored), got %v", err)
+	}
+	if len(res) != 0 {
+		t.Errorf("Expected empty result, got %v items", len(res))
+	}
+}
+
+func Test_NewRouteHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := NewRouteHandler(mockDB, mockReq, mockNotify)
+	if h == nil {
+		t.Errorf("Expected handler to be created, got nil")
 	}
 }

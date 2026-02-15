@@ -318,3 +318,67 @@ func Test_ProviderUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_ProviderUpdate_EmptyFields(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9")
+
+	// Empty fields should return nil without error
+	err := h.ProviderUpdate(ctx, id, map[provider.Field]any{})
+	if err != nil {
+		t.Errorf("Expected nil error for empty fields, got: %v", err)
+	}
+}
+
+func Test_ProviderDelete_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff")
+
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Now()))
+	err := h.ProviderDelete(ctx, id)
+	if err != ErrNotFound {
+		t.Errorf("Expected ErrNotFound, got: %v", err)
+	}
+}
+
+func Test_ProviderGet_CacheHit(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("12345678-1234-1234-1234-123456789abc")
+	expected := &provider.Provider{
+		ID:   id,
+		Name: "test",
+	}
+
+	mockCache.EXPECT().ProviderGet(ctx, id).Return(expected, nil)
+
+	res, err := h.ProviderGet(ctx, id)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+	if res.ID != expected.ID {
+		t.Errorf("Expected ID %v, got %v", expected.ID, res.ID)
+	}
+}
