@@ -14,6 +14,15 @@ import (
 )
 
 const emailVerifyKeyPrefix = "email_verify:"
+const signupSessionKeyPrefix = "signup_session:"
+const signupAttemptsKeyPrefix = "signup_attempts:"
+
+// SignupSession stores the headless signup session data in Redis.
+type SignupSession struct {
+	CustomerID  uuid.UUID `json:"customer_id"`
+	OTPCode     string    `json:"otp_code"`
+	VerifyToken string    `json:"verify_token"`
+}
 
 // getSerialize returns cached serialized info.
 func (h *handler) getSerialize(ctx context.Context, key string, data interface{}) error {
@@ -117,6 +126,72 @@ func (h *handler) EmailVerifyTokenGet(ctx context.Context, token string) (uuid.U
 // EmailVerifyTokenDelete removes an email verification token from Redis.
 func (h *handler) EmailVerifyTokenDelete(ctx context.Context, token string) error {
 	key := emailVerifyKeyPrefix + token
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SignupSessionSet stores a signup session in Redis with a TTL.
+func (h *handler) SignupSessionSet(ctx context.Context, tempToken string, session *SignupSession, ttl time.Duration) error {
+	key := signupSessionKeyPrefix + tempToken
+	tmp, err := json.Marshal(session)
+	if err != nil {
+		return err
+	}
+	if err := h.Cache.Set(ctx, key, tmp, ttl).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SignupSessionGet retrieves a signup session from Redis.
+func (h *handler) SignupSessionGet(ctx context.Context, tempToken string) (*SignupSession, error) {
+	key := signupSessionKeyPrefix + tempToken
+	val, err := h.Cache.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("signup session not found or expired")
+		}
+		return nil, err
+	}
+
+	var session SignupSession
+	if err := json.Unmarshal([]byte(val), &session); err != nil {
+		return nil, err
+	}
+	return &session, nil
+}
+
+// SignupSessionDelete removes a signup session from Redis.
+func (h *handler) SignupSessionDelete(ctx context.Context, tempToken string) error {
+	key := signupSessionKeyPrefix + tempToken
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SignupAttemptIncrement increments the signup attempt counter for the given tempToken.
+// On the first increment (count == 1), the TTL is set. Returns the current count.
+func (h *handler) SignupAttemptIncrement(ctx context.Context, tempToken string, ttl time.Duration) (int64, error) {
+	key := signupAttemptsKeyPrefix + tempToken
+	count, err := h.Cache.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	if count == 1 {
+		if err := h.Cache.Expire(ctx, key, ttl).Err(); err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
+// SignupAttemptDelete removes the signup attempt counter from Redis.
+func (h *handler) SignupAttemptDelete(ctx context.Context, tempToken string) error {
+	key := signupAttemptsKeyPrefix + tempToken
 	if err := h.Cache.Del(ctx, key).Err(); err != nil {
 		return err
 	}
