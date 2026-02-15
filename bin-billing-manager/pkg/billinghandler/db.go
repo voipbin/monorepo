@@ -42,17 +42,14 @@ func (h *billingHandler) Create(
 			CustomerID: customerID,
 		},
 		AccountID:         accountID,
+		TransactionType:   billing.TransactionTypeUsage,
 		Status:            billing.StatusProgressing,
 		ReferenceType:     referenceType,
 		ReferenceID:       referenceID,
 		CostType:          costType,
-		CostUnitCount:     0,
-		CostTokenPerUnit:  tokenPerUnit,
-		CostTokenTotal:    0,
-		CostCreditPerUnit: creditPerUnit,
-		CostCreditTotal:   0,
+		RateTokenPerUnit:  tokenPerUnit,
+		RateCreditPerUnit: creditPerUnit,
 		TMBillingStart:    tmBillingStart,
-		TMBillingEnd:      nil,
 	}
 
 	if errCreate := h.db.BillingCreate(ctx, c); errCreate != nil {
@@ -124,36 +121,6 @@ func (h *billingHandler) List(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		log.Errorf("Could not get billings. err: %v", err)
 		return nil, errors.Wrap(err, "could not get billings")
-	}
-
-	return res, nil
-}
-
-// UpdateStatusEnd updates the billing status to end with final cost breakdown.
-func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":             "UpdateStatusEnd",
-		"billing_id":       id,
-		"cost_unit_count":  costUnitCount,
-		"cost_token_total": costTokenTotal,
-		"cost_credit_total": costCreditTotal,
-		"tm_billing_end":   tmBillingEnd,
-	})
-
-	if errSet := h.db.BillingSetStatusEndWithCosts(ctx, id, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd); errSet != nil {
-		log.Errorf("Could not set status to end. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "could not set status to end")
-	}
-
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated billing info. err: %v", err)
-		return nil, errors.Wrap(err, "could not get updated billing info")
-	}
-
-	promBillingEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
-	if res.TMBillingStart != nil && res.TMBillingEnd != nil {
-		promBillingDurationSeconds.WithLabelValues(string(res.ReferenceType)).Observe(res.TMBillingEnd.Sub(*res.TMBillingStart).Seconds())
 	}
 
 	return res, nil

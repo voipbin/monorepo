@@ -14,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/pkg/accounthandler"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 )
 
@@ -36,10 +35,9 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	utilHandler      utilhandler.UtilHandler
-	accountHandler   accounthandler.AccountHandler
-	billingHandler   billinghandler.BillingHandler
-	allowanceHandler allowancehandler.AllowanceHandler
+	utilHandler    utilhandler.UtilHandler
+	accountHandler accounthandler.AccountHandler
+	billingHandler billinghandler.BillingHandler
 }
 
 var (
@@ -57,10 +55,6 @@ var (
 
 	regV1AccountsIsValidBalanceByCustomerID       = regexp.MustCompile("/v1/accounts/is_valid_balance_by_customer_id$")
 	regV1AccountsIsValidResourceLimitByCustomerID = regexp.MustCompile("/v1/accounts/is_valid_resource_limit_by_customer_id$")
-
-	// allowances
-	regV1AccountsIDAllowance  = regexp.MustCompile(`/v1/accounts/` + regUUID + `/allowance$`)
-	regV1AccountsIDAllowances = regexp.MustCompile(`/v1/accounts/` + regUUID + `/allowances(\?|$)`)
 
 	// billings
 	regV1BillingsGet = regexp.MustCompile(`/v1/billings\?`)
@@ -101,14 +95,12 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	accountHandler accounthandler.AccountHandler,
 	billingHandler billinghandler.BillingHandler,
-	allowanceHandler allowancehandler.AllowanceHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:      sockHandler,
-		utilHandler:      utilhandler.NewUtilHandler(),
-		accountHandler:   accountHandler,
-		billingHandler:   billingHandler,
-		allowanceHandler: allowanceHandler,
+		sockHandler:    sockHandler,
+		utilHandler:    utilhandler.NewUtilHandler(),
+		accountHandler: accountHandler,
+		billingHandler: billingHandler,
 	}
 
 	return h
@@ -202,19 +194,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AccountsIsValidResourceLimitByCustomerID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AccountsIsValidResourceLimitByCustomerIDPost(ctx, m)
 		requestType = "/v1/accounts/is_valid_resource_limit_by_customer_id"
-
-	////////////////////
-	// allowances
-	////////////////////
-	// GET /accounts/<account-id>/allowances
-	case regV1AccountsIDAllowances.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1AccountsIDAllowancesGet(ctx, m)
-		requestType = "/v1/accounts/<account-id>/allowances"
-
-	// GET /accounts/<account-id>/allowance
-	case regV1AccountsIDAllowance.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1AccountsIDAllowanceGet(ctx, m)
-		requestType = "/v1/accounts/<account-id>/allowance"
 
 	////////////////////
 	// billings

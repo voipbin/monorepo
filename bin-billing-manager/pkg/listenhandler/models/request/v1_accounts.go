@@ -12,12 +12,12 @@ type V1DataAccountsIDPUT struct {
 
 // V1DataAccountsIDBalanceAddForcePOST is rquest param define for POST /accounts/<account-id>/balance_add
 type V1DataAccountsIDBalanceAddForcePOST struct {
-	Balance float32 `json:"balance"`
+	Balance int64 `json:"balance"`
 }
 
 // V1DataAccountsIDBalanceSubtractForcePOST is rquest param define for POST /accounts/<account-id>/balance_subtract
 type V1DataAccountsIDBalanceSubtractForcePOST struct {
-	Balance float32 `json:"balance"`
+	Balance int64 `json:"balance"`
 }
 
 // V1DataAccountsIDIsValidBalancePOST is rquest param define for POST /accounts/<account-id>/is_valid_balance

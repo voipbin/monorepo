@@ -26,7 +26,7 @@ func (h *accountHandler) dbCreate(ctx context.Context, customerID uuid.UUID, nam
 		},
 		Name:          name,
 		Detail:        detail,
-		Balance:       0,
+		BalanceCredit: 0,
 		PaymentType:   paymentType,
 		PaymentMethod: payemntMethod,
 	}
@@ -103,7 +103,7 @@ func (h *accountHandler) List(ctx context.Context, size uint64, token string, fi
 
 // SubtractBalanceWithCheck atomically checks the balance and subtracts.
 // For unlimited plan accounts, the balance check is skipped.
-func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error) {
+func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "SubtractBalanceWithCheck",
 		"account_id": accountID,
@@ -138,7 +138,7 @@ func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID
 }
 
 // SubtractBalance substracts the balance of the given customer id.
-func (h *accountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+func (h *accountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SubtractBalance",
 		"customer_id": accountID,
@@ -160,7 +160,7 @@ func (h *accountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUI
 }
 
 // AddBalance adds the balance of the given customer id.
-func (h *accountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+func (h *accountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AddBalance",
 		"customer_id": accountID,
