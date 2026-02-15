@@ -274,6 +274,7 @@ func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID u
 	ledgerEntry.TransactionType = billing.TransactionTypeAdjustment
 	ledgerEntry.Status = billing.StatusEnd
 	ledgerEntry.ReferenceType = billing.ReferenceTypeCreditAdjustment
+	ledgerEntry.ReferenceID = ledgerEntry.ID
 	ledgerEntry.AmountToken = 0
 	ledgerEntry.AmountCredit = signedAmount
 	ledgerEntry.BalanceTokenSnapshot = currentToken
