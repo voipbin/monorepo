@@ -448,3 +448,133 @@ func Test_MessageList(t *testing.T) {
 		})
 	}
 }
+
+func TestNewHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := NewHandler(dbTest, mockCache)
+
+	if h == nil {
+		t.Error("Expected non-nil handler")
+	}
+}
+
+func Test_MessageUpdate(t *testing.T) {
+	responseCurTime := timePtr(time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC))
+
+	tests := []struct {
+		name            string
+		message         *message.Message
+		updateFields    map[message.Field]any
+		responseCurTime *time.Time
+		expectRes       *message.Message
+	}{
+		{
+			name: "update_text",
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-4444-5555-6666-dddddddddddd"),
+				},
+				Type: message.TypeSMS,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Targets: []target.Target{
+					{
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
+							Target: "+821100000002",
+						},
+						Status: target.StatusQueued,
+					},
+				},
+				ProviderName:        message.ProviderNameTelnyx,
+				ProviderReferenceID: "ref-123",
+				Text:                "Original message",
+				Medias:              []string{},
+				Direction:           message.DirectionOutbound,
+			},
+			updateFields: map[message.Field]any{
+				message.FieldText: "Updated message",
+			},
+			responseCurTime: responseCurTime,
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-4444-5555-6666-dddddddddddd"),
+				},
+				Type: message.TypeSMS,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Targets: []target.Target{
+					{
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
+							Target: "+821100000002",
+						},
+						Status: target.StatusQueued,
+					},
+				},
+				ProviderName:        message.ProviderNameTelnyx,
+				ProviderReferenceID: "ref-123",
+				Text:                "Updated message",
+				Medias:              []string{},
+				Direction:           message.DirectionOutbound,
+				TMCreate:            responseCurTime,
+				TMUpdate:            responseCurTime,
+				TMDelete:            nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			// Create the message
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			if err := h.MessageCreate(ctx, tt.message); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// Update the message
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any()).Return(nil)
+			if err := h.MessageUpdate(ctx, tt.message.ID, tt.updateFields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// Get and verify
+			mockCache.EXPECT().MessageGet(ctx, tt.message.ID).Return(nil, fmt.Errorf("not in cache"))
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any()).Return(nil)
+			res, err := h.MessageGet(ctx, tt.message.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

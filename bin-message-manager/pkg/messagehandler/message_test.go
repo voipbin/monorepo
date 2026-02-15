@@ -8,6 +8,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,6 +18,7 @@ import (
 	"monorepo/bin-message-manager/models/target"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
+	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
 func Test_Create(t *testing.T) {
@@ -126,5 +128,21 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseMessage, res)
 			}
 		})
+	}
+}
+
+func TestNewMessageHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockExternal := requestexternal.NewMockRequestExternal(mc)
+
+	h := NewMessageHandler(mockReq, mockNotify, mockDB, mockExternal)
+
+	if h == nil {
+		t.Error("Expected non-nil handler")
 	}
 }
