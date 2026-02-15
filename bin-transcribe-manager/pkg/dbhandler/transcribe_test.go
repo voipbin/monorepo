@@ -433,3 +433,86 @@ func Test_TranscribeDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscribeGetByReferenceIDAndLanguage(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
+	type test struct {
+		name       string
+		transcribe *transcribe.Transcribe
+
+		referenceID uuid.UUID
+		language    string
+
+		responseCurTime *time.Time
+		expectRes       *transcribe.Transcribe
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			transcribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+					CustomerID: uuid.FromStringOrNil("bb3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				},
+				ReferenceID: uuid.FromStringOrNil("cc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				Language:    "en-US",
+			},
+
+			referenceID: uuid.FromStringOrNil("cc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+			language:    "en-US",
+
+			responseCurTime: curTime,
+
+			expectRes: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+					CustomerID: uuid.FromStringOrNil("bb3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				},
+				ReferenceID:  uuid.FromStringOrNil("cc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				Language:     "en-US",
+				StreamingIDs: []uuid.UUID{},
+
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
+			if err := h.TranscribeCreate(ctx, tt.transcribe); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.TranscribeGetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

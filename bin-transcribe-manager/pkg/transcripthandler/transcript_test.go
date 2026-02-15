@@ -162,6 +162,8 @@ func Test_List(t *testing.T) {
 
 func Test_Delete(t *testing.T) {
 
+	tmDelete := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	tests := []struct {
 		name string
 
@@ -179,6 +181,18 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
 				},
 				TMDelete: nil,
+			},
+		},
+		{
+			"already_deleted",
+
+			uuid.FromStringOrNil("99cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+
+			&transcript.Transcript{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("99cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+				},
+				TMDelete: &tmDelete,
 			},
 		},
 	}
@@ -201,10 +215,13 @@ func Test_Delete(t *testing.T) {
 
 			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
 
-			// dbDelete
-			mockDB.EXPECT().TranscriptDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
+			// Only expect dbDelete if not already deleted
+			if tt.responseTranscript.TMDelete == nil {
+				// dbDelete
+				mockDB.EXPECT().TranscriptDelete(ctx, tt.id).Return(nil)
+				mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
+			}
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
