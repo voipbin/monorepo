@@ -181,6 +181,86 @@ func (h *accountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, ba
 	return res, nil
 }
 
+// AddTokens adds tokens to the account balance.
+func (h *accountHandler) AddTokens(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "AddTokens",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	if errAdd := h.db.AccountAddTokens(ctx, accountID, amount); errAdd != nil {
+		log.Errorf("Could not add tokens. err: %v", errAdd)
+		return nil, errors.Wrap(errAdd, "could not add tokens")
+	}
+
+	res, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account info")
+	}
+
+	return res, nil
+}
+
+// SubtractTokens subtracts tokens from the account balance.
+func (h *accountHandler) SubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SubtractTokens",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	if errSub := h.db.AccountSubtractTokens(ctx, accountID, amount); errSub != nil {
+		log.Errorf("Could not subtract tokens. err: %v", errSub)
+		return nil, errors.Wrap(errSub, "could not subtract tokens")
+	}
+
+	res, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account info")
+	}
+
+	return res, nil
+}
+
+// SubtractTokensWithCheck atomically checks the token balance and subtracts.
+// For unlimited plan accounts, the balance check is skipped.
+func (h *accountHandler) SubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SubtractTokensWithCheck",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	// get account to check plan type
+	a, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get account info")
+	}
+
+	// unlimited plan accounts bypass balance check
+	if a.PlanType == account.PlanTypeUnlimited {
+		return h.SubtractTokens(ctx, accountID, amount)
+	}
+
+	// other accounts use atomic check-and-subtract
+	if errSub := h.db.AccountSubtractTokensWithCheck(ctx, accountID, amount); errSub != nil {
+		log.Errorf("Could not subtract tokens with check. err: %v", errSub)
+		return nil, errors.Wrap(errSub, "could not subtract tokens")
+	}
+
+	res, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account info")
+	}
+
+	return res, nil
+}
+
 // Delete deletes the given account
 func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
