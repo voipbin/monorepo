@@ -318,6 +318,213 @@ func Test_EmailVerify_alreadyVerified(t *testing.T) {
 	}
 }
 
+func Test_Signup_customerCreateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// validateCreate passes
+	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
+	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
+
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001"))
+	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(fmt.Errorf("db create error"))
+
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	responseUUID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000002")
+	h := &customerHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// validateCreate passes
+	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
+	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
+
+	// create customer succeeds
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
+
+	// Redis EmailVerifyTokenSet fails
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(fmt.Errorf("redis error"))
+
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Signup_signupSessionSetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	responseUUID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000003")
+	h := &customerHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// validateCreate passes
+	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
+	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
+
+	// create customer succeeds
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
+
+	// token + OTP generation succeeds
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)
+
+	// Redis SignupSessionSet fails
+	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("redis session error"))
+
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	responseUUID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000004")
+	responseCustomer := &customer.Customer{
+		ID:    responseUUID,
+		Email: "test@voipbin.net",
+	}
+	h := &customerHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// validateCreate passes
+	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
+	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
+
+	// create customer succeeds
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(responseCustomer, nil)
+
+	// token + session storage succeeds
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)
+	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	// email send FAILS — should be non-fatal
+	mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("email service down"))
+
+	res, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok (email failure non-fatal), got: %v", err)
+	}
+	if res == nil {
+		t.Fatalf("Wrong match. expect: result, got: nil")
+	}
+	if res.Customer == nil {
+		t.Errorf("Wrong match. expect: customer in result, got: nil")
+	}
+	if res.TempToken == "" {
+		t.Errorf("Wrong match. expect: temp_token in result, got: empty")
+	}
+}
+
+func Test_EmailVerify_customerGetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000010")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// token lookup succeeds
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_get_err").Return(customerID, nil)
+	// first CustomerGet fails
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db get error"))
+
+	_, err := h.EmailVerify(ctx, "token_get_err")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_cleanupUnverified(t *testing.T) {
 
 	tests := []struct {

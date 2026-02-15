@@ -361,6 +361,57 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 	}
 }
 
+func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000006")
+	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_get_fail", gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_get_fail").Return(&cachehandler.SignupSession{
+		CustomerID:  customerID,
+		OTPCode:     "123456",
+		VerifyToken: "vt",
+	}, nil)
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
+		ID: accesskeyID,
+	}, nil)
+	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_get_fail").Return(nil)
+	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_get_fail").Return(nil)
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
+
+	// CustomerGet fails — event should NOT be published, but result should still be returned
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db get error"))
+
+	res, err := h.CompleteSignup(ctx, "tmp_get_fail", "123456")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok (CustomerGet failure is non-fatal), got: %v", err)
+	}
+	if res == nil {
+		t.Fatalf("Wrong match. expect: result, got: nil")
+	}
+	if res.Accesskey == nil {
+		t.Errorf("Wrong match. expect: accesskey in result, got: nil")
+	}
+	if res.CustomerID != customerID.String() {
+		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
+	}
+}
+
 func Test_EmailVerify_accesskeyCreateError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
