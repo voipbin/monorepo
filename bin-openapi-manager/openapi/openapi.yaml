@@ -4120,6 +4120,8 @@ paths:
     $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
   /billing_accounts/{id}/allowances:
     $ref: './paths/billing_accounts/id_allowances.yaml'
+  /billing_accounts/{id}/allowance:
+    $ref: './paths/billing_accounts/id_allowance.yaml'
 
   /billings:
     $ref: './paths/billings/main.yaml'
