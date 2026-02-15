@@ -1,6 +1,7 @@
 package trunk
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -69,6 +70,56 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 			res := tt.trunk.ConvertWebhookMessage()
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CreateWebhookEvent(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	now := time.Now()
+
+	tests := []struct {
+		name    string
+		trunk   *Trunk
+		wantErr bool
+	}{
+		{
+			name: "valid_trunk",
+			trunk: &Trunk{
+				Identity: commonidentity.Identity{
+					ID:         id,
+					CustomerID: customerID,
+				},
+				Name:       "Test",
+				DomainName: "test.trunk.voipbin.net",
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
+				Username:   "user",
+				Password:   "pass",
+				AllowedIPs: []string{"1.2.3.4"},
+				TMCreate:   &now,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, err := tt.trunk.CreateWebhookEvent()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateWebhookEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && data == nil {
+				t.Error("CreateWebhookEvent() returned nil data")
+			}
+			if !tt.wantErr {
+				// Verify it's valid JSON
+				var wm WebhookMessage
+				if err := json.Unmarshal(data, &wm); err != nil {
+					t.Errorf("Failed to unmarshal webhook event: %v", err)
+				}
 			}
 		})
 	}
