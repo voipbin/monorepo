@@ -11,7 +11,7 @@ import (
 	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
-func Test_Email(t *testing.T) {
+func Test_Conversation(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -23,23 +23,23 @@ func Test_Email(t *testing.T) {
 		{
 			name: "normal",
 
-			uri:     "hook.voipbin.net/v1.0/emails",
+			uri:     "hook.voipbin.net/v1.0/conversation",
 			message: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails",
+				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
 		{
-			name: "sendgrid",
+			name: "conversation with path",
 
-			uri:     "hook.voipbin.net/v1.0/emails/sendgrid",
-			message: []byte(`{"key1":"val1"}`),
+			uri:     "hook.voipbin.net/v1.0/conversation/customers/id/line",
+			message: []byte(`{"test":"data"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails/sendgrid",
-				ReceivedData: []byte(`{"key1":"val1"}`),
+				ReceviedURI:  "hook.voipbin.net/v1.0/conversation/customers/id/line",
+				ReceivedData: []byte(`{"test":"data"}`),
 			},
 		},
 	}
@@ -56,17 +56,16 @@ func Test_Email(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1Hooks(ctx, tt.expectReq).Return(nil)
+			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(nil)
 
-			if err := h.Email(ctx, tt.uri, tt.message); err != nil {
+			if err := h.Conversation(ctx, tt.uri, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
-
 }
 
-func Test_Email_Error(t *testing.T) {
+func Test_Conversation_Error(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -79,14 +78,14 @@ func Test_Email_Error(t *testing.T) {
 		{
 			name: "request handler error",
 
-			uri:     "hook.voipbin.net/v1.0/emails",
+			uri:     "hook.voipbin.net/v1.0/conversation",
 			message: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails",
+				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
-			expectError: fmt.Errorf("could not send hook"),
+			expectError: fmt.Errorf("request handler error"),
 		},
 	}
 
@@ -102,9 +101,9 @@ func Test_Email_Error(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1Hooks(ctx, tt.expectReq).Return(tt.expectError)
+			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(tt.expectError)
 
-			if err := h.Email(ctx, tt.uri, tt.message); err == nil {
+			if err := h.Conversation(ctx, tt.uri, tt.message); err == nil {
 				t.Error("Expected error, got nil")
 			}
 		})

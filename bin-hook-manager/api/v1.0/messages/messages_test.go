@@ -135,3 +135,38 @@ func Test_MessagesPOST_Error(t *testing.T) {
 		})
 	}
 }
+
+func Test_MessagesPOST_ReadBodyError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set(common.OBJServiceHandler, mockSvc)
+	})
+	setupServer(r)
+
+	// Create request with error body reader
+	req, _ := http.NewRequest("POST", "/v1.0/messages/telnyx", &errorReader{})
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+// errorReader is a test helper that always returns an error on Read
+type errorReader struct{}
+
+func (e *errorReader) Read(p []byte) (n int, err error) {
+	return 0, fmt.Errorf("read error")
+}
+
+func (e *errorReader) Close() error {
+	return nil
+}
