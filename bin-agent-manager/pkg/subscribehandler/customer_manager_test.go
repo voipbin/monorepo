@@ -65,9 +65,10 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 		event *sock.Event
 
 		expectCustomer *cmcustomer.Customer
+		expectHeadless bool
 	}{
 		{
-			name: "normal",
+			name: "normal - no headless field",
 
 			event: &sock.Event{
 				Publisher: "customer-manager",
@@ -79,6 +80,22 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 			expectCustomer: &cmcustomer.Customer{
 				ID: uuid.FromStringOrNil("063c6a4c-c8e8-11ef-b591-cf37812bd95a"),
 			},
+			expectHeadless: false,
+		},
+		{
+			name: "headless true",
+
+			event: &sock.Event{
+				Publisher: "customer-manager",
+				Type:      cmcustomer.EventTypeCustomerCreated,
+				DataType:  "application/json",
+				Data:      []byte(`{"id":"063c6a4c-c8e8-11ef-b591-cf37812bd95a","headless":true}`),
+			},
+
+			expectCustomer: &cmcustomer.Customer{
+				ID: uuid.FromStringOrNil("063c6a4c-c8e8-11ef-b591-cf37812bd95a"),
+			},
+			expectHeadless: true,
 		},
 	}
 
@@ -95,7 +112,7 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer, false).Return(nil)
+			mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer, tt.expectHeadless).Return(nil)
 
 			h.processEvent(tt.event)
 		})

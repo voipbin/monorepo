@@ -70,17 +70,41 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 
 		event *sock.Event
 
-		expectErr bool
+		expectHeadless bool
+		expectErr      bool
 	}{
 		{
-			name: "normal",
+			name: "normal - no headless field defaults to false",
 
 			event: &sock.Event{
 				Type: "customer_created",
 				Data: []byte(`{"id":"69434cfa-79a4-11ec-a7b1-6ba5b7016d83","name":"test customer"}`),
 			},
 
-			expectErr: false,
+			expectHeadless: false,
+			expectErr:      false,
+		},
+		{
+			name: "headless true",
+
+			event: &sock.Event{
+				Type: "customer_created",
+				Data: []byte(`{"id":"69434cfa-79a4-11ec-a7b1-6ba5b7016d83","name":"test customer","headless":true}`),
+			},
+
+			expectHeadless: true,
+			expectErr:      false,
+		},
+		{
+			name: "headless false explicitly",
+
+			event: &sock.Event{
+				Type: "customer_created",
+				Data: []byte(`{"id":"69434cfa-79a4-11ec-a7b1-6ba5b7016d83","name":"test customer","headless":false}`),
+			},
+
+			expectHeadless: false,
+			expectErr:      false,
 		},
 		{
 			name: "unmarshal error",
@@ -106,7 +130,7 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 			ctx := context.Background()
 
 			if !tt.expectErr {
-				mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), gomock.Any(), tt.expectHeadless).Return(nil)
 			}
 
 			err := h.processEventCMCustomerCreated(ctx, tt.event)
