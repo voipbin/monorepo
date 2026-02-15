@@ -158,6 +158,7 @@ const (
 const (
 	BillingManagerBillingreferenceTypeCall             BillingManagerBillingreferenceType = "call"
 	BillingManagerBillingreferenceTypeCallExtension    BillingManagerBillingreferenceType = "call_extension"
+	BillingManagerBillingreferenceTypeCreditAdjustment BillingManagerBillingreferenceType = "credit_adjustment"
 	BillingManagerBillingreferenceTypeCreditFreeTier   BillingManagerBillingreferenceType = "credit_free_tier"
 	BillingManagerBillingreferenceTypeMonthlyAllowance BillingManagerBillingreferenceType = "monthly_allowance"
 	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""

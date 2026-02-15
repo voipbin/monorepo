@@ -11,6 +11,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
 )
 
 const (
@@ -220,71 +221,104 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 	return nil
 }
 
-// AccountAddBalance add the value to the account balance
-func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
-	q := `
-	update billing_accounts
-	set balance_credit = balance_credit + ?, tm_update = ?
-	where id = ?
-	`
-	_, err := h.db.Exec(q, amount, h.utilHandler.TimeNow(), accountID.Bytes())
+// accountAdjustCreditWithLedger atomically adjusts the account credit balance and creates a ledger entry.
+// signedAmount is positive for additions and negative for subtractions.
+// If checkBalance is true, returns ErrInsufficientBalance when the current balance is insufficient.
+func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID uuid.UUID, signedAmount int64, checkBalance bool) error {
+	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountAddBalance. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not begin transaction. err: %v", err)
 	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Lock account row and read current balances + customer_id
+	var customerID []byte
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT customer_id, balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&customerID, &currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not read account. err: %v", err)
+	}
+
+	// Balance check for subtract-with-check
+	if checkBalance && signedAmount < 0 && currentCredit < -signedAmount {
+		return ErrInsufficientBalance
+	}
+
+	now := h.utilHandler.TimeNow()
+	newBalance := currentCredit + signedAmount
+
+	// Update balance
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
+		newBalance, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not update balance. err: %v", err)
+	}
+
+	// Parse customer_id from raw bytes
+	parsedCustomerID, err := uuid.FromBytes(customerID)
+	if err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not parse customer_id. err: %v", err)
+	}
+
+	// Insert ledger entry
+	ledgerEntry := &billing.Billing{}
+	ledgerEntry.ID = h.utilHandler.UUIDCreate()
+	ledgerEntry.CustomerID = parsedCustomerID
+	ledgerEntry.AccountID = accountID
+	ledgerEntry.TransactionType = billing.TransactionTypeAdjustment
+	ledgerEntry.Status = billing.StatusEnd
+	ledgerEntry.ReferenceType = billing.ReferenceTypeCreditAdjustment
+	ledgerEntry.AmountToken = 0
+	ledgerEntry.AmountCredit = signedAmount
+	ledgerEntry.BalanceTokenSnapshot = currentToken
+	ledgerEntry.BalanceCreditSnapshot = newBalance
+	ledgerEntry.TMBillingStart = now
+	ledgerEntry.TMBillingEnd = now
+	ledgerEntry.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(ledgerEntry)
+	if err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not prepare billing fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not build billing insert query. err: %v", err)
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not commit. err: %v", err)
+	}
+
 	_ = h.accountUpdateToCache(ctx, accountID)
 	return nil
+}
+
+// AccountAddBalance adds the value to the account balance and creates a ledger entry.
+func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	return h.accountAdjustCreditWithLedger(ctx, accountID, amount, false)
 }
 
 // AccountSubtractBalanceWithCheck atomically checks the balance is sufficient and subtracts the amount.
 // Returns ErrInsufficientBalance if the account balance is less than the amount.
 func (h *handler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error {
-	tx, err := h.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not begin transaction. err: %v", err)
-	}
-	defer func() { _ = tx.Rollback() }()
-
-	var balanceCredit int64
-	row := tx.QueryRowContext(ctx, "SELECT balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
-	if err := row.Scan(&balanceCredit); err != nil {
-		if err == sql.ErrNoRows {
-			return ErrNotFound
-		}
-		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not read balance. err: %v", err)
-	}
-
-	if balanceCredit < amount {
-		return ErrInsufficientBalance
-	}
-
-	_, err = tx.ExecContext(ctx,
-		"UPDATE billing_accounts SET balance_credit = balance_credit - ?, tm_update = ? WHERE id = ?",
-		amount, h.utilHandler.TimeNow(), accountID.Bytes())
-	if err != nil {
-		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not subtract balance. err: %v", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not commit. err: %v", err)
-	}
-
-	_ = h.accountUpdateToCache(ctx, accountID)
-	return nil
+	return h.accountAdjustCreditWithLedger(ctx, accountID, -amount, true)
 }
 
-// AccountSubtractBalance substract the value from the account balance
+// AccountSubtractBalance subtracts the value from the account balance and creates a ledger entry.
 func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
-	q := `
-	update billing_accounts
-	set balance_credit = balance_credit - ?, tm_update = ?
-	where id = ?
-	`
-	_, err := h.db.Exec(q, amount, h.utilHandler.TimeNow(), accountID.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AccountSubtractBalance. err: %v", err)
-	}
-	_ = h.accountUpdateToCache(ctx, accountID)
-	return nil
+	return h.accountAdjustCreditWithLedger(ctx, accountID, -amount, false)
 }
 
 // AccountDelete deletes the account
