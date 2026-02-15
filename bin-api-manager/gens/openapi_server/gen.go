@@ -5792,6 +5792,9 @@ type ServerInterface interface {
 	// Update billing account
 	// (PUT /billing_accounts/{id})
 	PutBillingAccountsId(c *gin.Context, id string)
+	// Get current billing account allowance
+	// (GET /billing_accounts/{id}/allowance)
+	GetBillingAccountsIdAllowance(c *gin.Context, id string)
 	// Get billing account allowances
 	// (GET /billing_accounts/{id}/allowances)
 	GetBillingAccountsIdAllowances(c *gin.Context, id string, params GetBillingAccountsIdAllowancesParams)
@@ -7687,6 +7690,30 @@ func (siw *ServerInterfaceWrapper) PutBillingAccountsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutBillingAccountsId(c, id)
+}
+
+// GetBillingAccountsIdAllowance operation middleware
+func (siw *ServerInterfaceWrapper) GetBillingAccountsIdAllowance(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetBillingAccountsIdAllowance(c, id)
 }
 
 // GetBillingAccountsIdAllowances operation middleware
@@ -14040,6 +14067,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
 	router.PUT(options.BaseURL+"/billing_accounts/:id", wrapper.PutBillingAccountsId)
+	router.GET(options.BaseURL+"/billing_accounts/:id/allowance", wrapper.GetBillingAccountsIdAllowance)
 	router.GET(options.BaseURL+"/billing_accounts/:id/allowances", wrapper.GetBillingAccountsIdAllowances)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_add_force", wrapper.PostBillingAccountsIdBalanceAddForce)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_subtract_force", wrapper.PostBillingAccountsIdBalanceSubtractForce)
@@ -15315,6 +15343,31 @@ func (response PutBillingAccountsId200JSONResponse) VisitPutBillingAccountsIdRes
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingAccountsIdAllowanceRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetBillingAccountsIdAllowanceResponseObject interface {
+	VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error
+}
+
+type GetBillingAccountsIdAllowance200JSONResponse BillingManagerAllowance
+
+func (response GetBillingAccountsIdAllowance200JSONResponse) VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingAccountsIdAllowance404Response struct {
+}
+
+func (response GetBillingAccountsIdAllowance404Response) VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
 }
 
 type GetBillingAccountsIdAllowancesRequestObject struct {
@@ -20296,6 +20349,9 @@ type StrictServerInterface interface {
 	// Update billing account
 	// (PUT /billing_accounts/{id})
 	PutBillingAccountsId(ctx context.Context, request PutBillingAccountsIdRequestObject) (PutBillingAccountsIdResponseObject, error)
+	// Get current billing account allowance
+	// (GET /billing_accounts/{id}/allowance)
+	GetBillingAccountsIdAllowance(ctx context.Context, request GetBillingAccountsIdAllowanceRequestObject) (GetBillingAccountsIdAllowanceResponseObject, error)
 	// Get billing account allowances
 	// (GET /billing_accounts/{id}/allowances)
 	GetBillingAccountsIdAllowances(ctx context.Context, request GetBillingAccountsIdAllowancesRequestObject) (GetBillingAccountsIdAllowancesResponseObject, error)
@@ -22469,6 +22525,33 @@ func (sh *strictHandler) PutBillingAccountsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutBillingAccountsIdResponseObject); ok {
 		if err := validResponse.VisitPutBillingAccountsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetBillingAccountsIdAllowance operation middleware
+func (sh *strictHandler) GetBillingAccountsIdAllowance(ctx *gin.Context, id string) {
+	var request GetBillingAccountsIdAllowanceRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetBillingAccountsIdAllowance(ctx, request.(GetBillingAccountsIdAllowanceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetBillingAccountsIdAllowance")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetBillingAccountsIdAllowanceResponseObject); ok {
+		if err := validResponse.VisitGetBillingAccountsIdAllowanceResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

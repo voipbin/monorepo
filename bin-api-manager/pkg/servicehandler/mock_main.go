@@ -786,6 +786,21 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, a, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAddBalanceForce", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAddBalanceForce), ctx, a, billingAccountID, balance)
 }
 
+// BillingAccountAllowanceGet mocks base method.
+func (m *MockServiceHandler) BillingAccountAllowanceGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*allowance.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountAllowanceGet", ctx, a, billingAccountID)
+	ret0, _ := ret[0].(*allowance.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountAllowanceGet indicates an expected call of BillingAccountAllowanceGet.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountAllowanceGet(ctx, a, billingAccountID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAllowanceGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAllowanceGet), ctx, a, billingAccountID)
+}
+
 // BillingAccountAllowancesGet mocks base method.
 func (m *MockServiceHandler) BillingAccountAllowancesGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*allowance.WebhookMessage, error) {
 	m.ctrl.T.Helper()

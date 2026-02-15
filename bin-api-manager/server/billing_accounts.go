@@ -65,6 +65,40 @@ func (h *server) GetBillingAccountsIdAllowances(c *gin.Context, id string, param
 	c.JSON(200, res)
 }
 
+func (h *server) GetBillingAccountsIdAllowance(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetBillingAccountsIdAllowance",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.BillingAccountAllowanceGet(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not get current allowance. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) GetBillingAccountsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetBillingAccountsId",

@@ -156,6 +156,7 @@ type ServiceHandler interface {
 	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)
 	BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
 	BillingAccountAllowancesGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.WebhookMessage, error)
+	BillingAccountAllowanceGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmallowance.WebhookMessage, error)
 
 	// billings
 	BillingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error)
