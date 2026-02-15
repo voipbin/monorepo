@@ -90,12 +90,11 @@ func (h *handler) AllowanceGet(ctx context.Context, id uuid.UUID) (*allowance.Al
 func (h *handler) AllowanceGetCurrentByAccountID(ctx context.Context, accountID uuid.UUID) (*allowance.Allowance, error) {
 	cols := commondatabasehandler.GetDBFields(allowance.Allowance{})
 
-	// Raw SQL: squirrel cannot express NOW() comparisons cleanly.
 	query, args, err := sq.Select(cols...).
 		From(allowancesTable).
 		Where(sq.Eq{"account_id": accountID.Bytes()}).
-		Where(sq.LtOrEq{"cycle_start": sq.Expr("NOW()")}).
-		Where(sq.Gt{"cycle_end": sq.Expr("NOW()")}).
+		Where("cycle_start <= NOW()").
+		Where("cycle_end > NOW()").
 		Where(sq.Eq{"tm_delete": nil}).
 		Limit(1).
 		ToSql()
