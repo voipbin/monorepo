@@ -20,6 +20,8 @@ type AllowanceHandler interface {
 	ConsumeTokens(ctx context.Context, accountID uuid.UUID, tokensNeeded int, creditPerUnit float32, tokenPerUnit int) (tokensConsumed int, creditCharged float32, err error)
 	ListByAccountID(ctx context.Context, accountID uuid.UUID, size uint64, token string) ([]*allowance.Allowance, error)
 	ProcessAllCycles(ctx context.Context) error
+	AddTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error)
+	SubtractTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error)
 }
 
 type allowanceHandler struct {

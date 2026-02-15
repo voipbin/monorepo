@@ -111,6 +111,58 @@ func (h *allowanceHandler) ListByAccountID(ctx context.Context, accountID uuid.U
 	return h.db.AllowanceList(ctx, size, token, filters)
 }
 
+// AddTokens adds tokens to the current cycle's total allocation.
+func (h *allowanceHandler) AddTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "AddTokens",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	cycle, err := h.db.AllowanceGetCurrentByAccountID(ctx, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get current cycle. err: %v", err)
+	}
+
+	newTotal := cycle.TokensTotal + amount
+	if err := h.db.AllowanceUpdate(ctx, cycle.ID, map[allowance.Field]any{
+		allowance.FieldTokensTotal: newTotal,
+	}); err != nil {
+		return nil, fmt.Errorf("could not update tokens_total. err: %v", err)
+	}
+	log.Debugf("Added tokens. allowance_id: %s, old_total: %d, new_total: %d", cycle.ID, cycle.TokensTotal, newTotal)
+
+	return h.db.AllowanceGet(ctx, cycle.ID)
+}
+
+// SubtractTokens subtracts tokens from the current cycle's total allocation.
+func (h *allowanceHandler) SubtractTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SubtractTokens",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	cycle, err := h.db.AllowanceGetCurrentByAccountID(ctx, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get current cycle. err: %v", err)
+	}
+
+	newTotal := cycle.TokensTotal - amount
+	if newTotal < 0 {
+		return nil, fmt.Errorf("cannot subtract %d tokens: current total is %d", amount, cycle.TokensTotal)
+	}
+
+	if err := h.db.AllowanceUpdate(ctx, cycle.ID, map[allowance.Field]any{
+		allowance.FieldTokensTotal: newTotal,
+	}); err != nil {
+		return nil, fmt.Errorf("could not update tokens_total. err: %v", err)
+	}
+	log.Debugf("Subtracted tokens. allowance_id: %s, old_total: %d, new_total: %d", cycle.ID, cycle.TokensTotal, newTotal)
+
+	return h.db.AllowanceGet(ctx, cycle.ID)
+}
+
 // computeCycleDates calculates the cycle start (beginning of current month) and
 // cycle end (beginning of next month) from the given time.
 func computeCycleDates(now time.Time) (time.Time, time.Time) {
