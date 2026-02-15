@@ -395,6 +395,7 @@ type RequestHandler interface {
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 	BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.Allowance, error)
+	BillingV1AccountAllowanceGet(ctx context.Context, accountID uuid.UUID) (*bmallowance.Allowance, error)
 
 	// billing-manager billing
 	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)
