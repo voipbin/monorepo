@@ -195,11 +195,16 @@ xdg-open build/html/index.html  # Linux
 
 #### Documentation Maintenance
 
-**When updating:**
+**CRITICAL: When modifying any RST file in `docsdev/source/`, you MUST rebuild the HTML and commit both the RST sources and the built HTML together.**
+
+The built HTML in `docsdev/build/` is tracked in git and deployed to production. If you commit RST changes without rebuilding, the live docs will be out of sync.
+
+**Required steps when updating docs:**
 1. Edit RST files in `source/`
-2. Rebuild HTML: `make html`
+2. Rebuild HTML: `cd docsdev && python3 -m sphinx -M html source build`
 3. Verify changes locally in `build/html/`
-4. Commit both RST source files and `build/` directory
+4. Stage built files: `git add -f bin-api-manager/docsdev/build/` (force-add required because root `.gitignore` contains `build/`)
+5. Commit both RST source files and `build/` directory together
 
 **Recent improvements:**
 - Fixed empty `common_overview.rst` (was only "Common used.")

@@ -395,6 +395,233 @@ func Test_computeCycleDates(t *testing.T) {
 	}
 }
 
+func Test_AddTokens(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int
+
+		responseCycle     *allowance.Allowance
+		responseCycleErr  error
+		responseUpdated   *allowance.Allowance
+		responseUpdateErr error
+		responseGetErr    error
+
+		expectErr bool
+	}{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("aa000001-0000-0000-0000-000000000001"),
+			amount:    500,
+
+			responseCycle: &allowance.Allowance{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aa000002-0000-0000-0000-000000000001"),
+				},
+				AccountID:   uuid.FromStringOrNil("aa000001-0000-0000-0000-000000000001"),
+				TokensTotal: 1000,
+				TokensUsed:  200,
+			},
+			responseCycleErr:  nil,
+			responseUpdateErr: nil,
+			responseUpdated: &allowance.Allowance{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aa000002-0000-0000-0000-000000000001"),
+				},
+				AccountID:   uuid.FromStringOrNil("aa000001-0000-0000-0000-000000000001"),
+				TokensTotal: 1500,
+				TokensUsed:  200,
+			},
+			responseGetErr: nil,
+
+			expectErr: false,
+		},
+		{
+			name: "no current cycle",
+
+			accountID: uuid.FromStringOrNil("aa000001-0000-0000-0000-000000000002"),
+			amount:    500,
+
+			responseCycle:    nil,
+			responseCycleErr: dbhandler.ErrNotFound,
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &allowanceHandler{
+				db:          mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AllowanceGetCurrentByAccountID(ctx, tt.accountID).Return(tt.responseCycle, tt.responseCycleErr)
+
+			if tt.responseCycleErr == nil {
+				mockDB.EXPECT().AllowanceUpdate(ctx, tt.responseCycle.ID, map[allowance.Field]any{
+					allowance.FieldTokensTotal: tt.responseCycle.TokensTotal + tt.amount,
+				}).Return(tt.responseUpdateErr)
+
+				if tt.responseUpdateErr == nil {
+					mockDB.EXPECT().AllowanceGet(ctx, tt.responseCycle.ID).Return(tt.responseUpdated, tt.responseGetErr)
+				}
+			}
+
+			res, err := h.AddTokens(ctx, tt.accountID, tt.amount)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				return
+			}
+
+			if res.TokensTotal != tt.responseUpdated.TokensTotal {
+				t.Errorf("Wrong TokensTotal. expect: %d, got: %d", tt.responseUpdated.TokensTotal, res.TokensTotal)
+			}
+		})
+	}
+}
+
+func Test_SubtractTokens(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int
+
+		responseCycle     *allowance.Allowance
+		responseCycleErr  error
+		responseUpdated   *allowance.Allowance
+		responseUpdateErr error
+		responseGetErr    error
+
+		expectErr bool
+	}{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000001"),
+			amount:    300,
+
+			responseCycle: &allowance.Allowance{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab000002-0000-0000-0000-000000000001"),
+				},
+				AccountID:   uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000001"),
+				TokensTotal: 1000,
+				TokensUsed:  200,
+			},
+			responseCycleErr:  nil,
+			responseUpdateErr: nil,
+			responseUpdated: &allowance.Allowance{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab000002-0000-0000-0000-000000000001"),
+				},
+				AccountID:   uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000001"),
+				TokensTotal: 700,
+				TokensUsed:  200,
+			},
+			responseGetErr: nil,
+
+			expectErr: false,
+		},
+		{
+			name: "would go negative",
+
+			accountID: uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000002"),
+			amount:    1500,
+
+			responseCycle: &allowance.Allowance{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab000002-0000-0000-0000-000000000002"),
+				},
+				AccountID:   uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000002"),
+				TokensTotal: 1000,
+				TokensUsed:  200,
+			},
+			responseCycleErr: nil,
+
+			expectErr: true,
+		},
+		{
+			name: "no current cycle",
+
+			accountID: uuid.FromStringOrNil("ab000001-0000-0000-0000-000000000003"),
+			amount:    300,
+
+			responseCycle:    nil,
+			responseCycleErr: dbhandler.ErrNotFound,
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &allowanceHandler{
+				db:          mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AllowanceGetCurrentByAccountID(ctx, tt.accountID).Return(tt.responseCycle, tt.responseCycleErr)
+
+			if tt.responseCycleErr == nil {
+				newTotal := tt.responseCycle.TokensTotal - tt.amount
+				if newTotal >= 0 {
+					mockDB.EXPECT().AllowanceUpdate(ctx, tt.responseCycle.ID, map[allowance.Field]any{
+						allowance.FieldTokensTotal: newTotal,
+					}).Return(tt.responseUpdateErr)
+
+					if tt.responseUpdateErr == nil {
+						mockDB.EXPECT().AllowanceGet(ctx, tt.responseCycle.ID).Return(tt.responseUpdated, tt.responseGetErr)
+					}
+				}
+			}
+
+			res, err := h.SubtractTokens(ctx, tt.accountID, tt.amount)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				return
+			}
+
+			if res.TokensTotal != tt.responseUpdated.TokensTotal {
+				t.Errorf("Wrong TokensTotal. expect: %d, got: %d", tt.responseUpdated.TokensTotal, res.TokensTotal)
+			}
+		})
+	}
+}
+
 func Test_ListByAccountID(t *testing.T) {
 
 	mc := gomock.NewController(t)

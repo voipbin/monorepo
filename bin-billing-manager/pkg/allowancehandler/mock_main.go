@@ -43,6 +43,21 @@ func (m *MockAllowanceHandler) EXPECT() *MockAllowanceHandlerMockRecorder {
 	return m.recorder
 }
 
+// AddTokens mocks base method.
+func (m *MockAllowanceHandler) AddTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTokens", ctx, accountID, amount)
+	ret0, _ := ret[0].(*allowance.Allowance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTokens indicates an expected call of AddTokens.
+func (mr *MockAllowanceHandlerMockRecorder) AddTokens(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTokens", reflect.TypeOf((*MockAllowanceHandler)(nil).AddTokens), ctx, accountID, amount)
+}
+
 // ConsumeTokens mocks base method.
 func (m *MockAllowanceHandler) ConsumeTokens(ctx context.Context, accountID uuid.UUID, tokensNeeded int, creditPerUnit float32, tokenPerUnit int) (int, float32, error) {
 	m.ctrl.T.Helper()
@@ -116,4 +131,19 @@ func (m *MockAllowanceHandler) ProcessAllCycles(ctx context.Context) error {
 func (mr *MockAllowanceHandlerMockRecorder) ProcessAllCycles(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessAllCycles", reflect.TypeOf((*MockAllowanceHandler)(nil).ProcessAllCycles), ctx)
+}
+
+// SubtractTokens mocks base method.
+func (m *MockAllowanceHandler) SubtractTokens(ctx context.Context, accountID uuid.UUID, amount int) (*allowance.Allowance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubtractTokens", ctx, accountID, amount)
+	ret0, _ := ret[0].(*allowance.Allowance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubtractTokens indicates an expected call of SubtractTokens.
+func (mr *MockAllowanceHandlerMockRecorder) SubtractTokens(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractTokens", reflect.TypeOf((*MockAllowanceHandler)(nil).SubtractTokens), ctx, accountID, amount)
 }
