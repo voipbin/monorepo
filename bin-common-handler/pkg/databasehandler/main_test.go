@@ -302,3 +302,53 @@ func Test_ConvertMapToTypedMap_EmbeddedStructs(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetQuerySelectField(t *testing.T) {
+	type Field string
+
+	tests := []struct {
+		name   string
+		fields []Field
+		want   string
+	}{
+		{
+			name:   "empty slice returns empty string",
+			fields: []Field{},
+			want:   "",
+		},
+		{
+			name:   "nil slice returns empty string",
+			fields: nil,
+			want:   "",
+		},
+		{
+			name:   "single field",
+			fields: []Field{"id"},
+			want:   "id",
+		},
+		{
+			name:   "multiple fields",
+			fields: []Field{"id", "name", "email"},
+			want:   "id, name, email",
+		},
+		{
+			name:   "filters empty strings",
+			fields: []Field{"id", "", "name"},
+			want:   "id, name",
+		},
+		{
+			name:   "all empty strings returns empty",
+			fields: []Field{"", "", ""},
+			want:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetQuerySelectField(tt.fields)
+			if got != tt.want {
+				t.Errorf("GetQuerySelectField() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
