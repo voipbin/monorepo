@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,8 +21,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-billing-manager/internal/config"
+	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
@@ -31,8 +32,7 @@ import (
 )
 
 const (
-	serviceName        = commonoutline.ServiceNameBillingManager
-	cycleCheckInterval = 24 * time.Hour
+	serviceName = commonoutline.ServiceNameBillingManager
 )
 
 // channels
@@ -121,12 +121,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, "")
 
-	allowanceHandler := allowancehandler.NewAllowanceHandler(db)
-	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, allowanceHandler)
-	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler, allowanceHandler)
+	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
+	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
 
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler, allowanceHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
@@ -135,20 +134,15 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return err
 	}
 
-	// run allowance cycle processing
+	// run monthly token top-up cron
 	go func() {
-		// Run immediately on startup to catch up after deploys/restarts.
-		if err := allowanceHandler.ProcessAllCycles(context.Background()); err != nil {
-			log.Errorf("Initial cycle processing failed. err: %v", err)
-		}
-
-		ticker := time.NewTicker(cycleCheckInterval)
+		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				if err := allowanceHandler.ProcessAllCycles(context.Background()); err != nil {
-					log.Errorf("Cycle processing failed. err: %v", err)
+				if err := runMonthlyTopUp(context.Background(), db); err != nil {
+					log.Errorf("Monthly top-up failed. err: %v", err)
 				}
 			case <-chDone:
 				return
@@ -219,17 +213,50 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, allowanceHandler allowancehandler.AllowanceHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, allowanceHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler)
 
-	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 		return err
+	}
+
+	return nil
+}
+
+func runMonthlyTopUp(ctx context.Context, db dbhandler.DBHandler) error {
+	log := logrus.WithField("func", "runMonthlyTopUp")
+
+	// Get accounts where tm_next_topup <= now
+	now := time.Now()
+	filters := map[account.Field]any{
+		account.FieldDeleted: false,
+	}
+
+	accounts, err := db.AccountList(ctx, 1000, "", filters)
+	if err != nil {
+		return fmt.Errorf("could not list accounts. err: %v", err)
+	}
+
+	for _, a := range accounts {
+		if a.TmNextTopUp == nil || a.TmNextTopUp.After(now) {
+			continue
+		}
+
+		tokenAmount, ok := account.PlanTokenMap[a.PlanType]
+		if !ok || tokenAmount <= 0 {
+			continue
+		}
+
+		if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, int64(tokenAmount), string(a.PlanType)); err != nil {
+			log.Errorf("Could not top up tokens for account. account_id: %s, err: %v", a.ID, err)
+			continue
+		}
+		log.Infof("Topped up tokens for account. account_id: %s, tokens: %d", a.ID, tokenAmount)
 	}
 
 	return nil
