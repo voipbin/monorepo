@@ -69,6 +69,8 @@ func initCommand() *cobra.Command {
 	cmdAccount.AddCommand(cmdAccountDelete())
 	cmdAccount.AddCommand(cmdAccountAddBalance())
 	cmdAccount.AddCommand(cmdAccountSubtractBalance())
+	cmdAccount.AddCommand(cmdAccountAddTokens())
+	cmdAccount.AddCommand(cmdAccountSubtractTokens())
 
 	// Billing subcommands
 	cmdBilling := &cobra.Command{Use: "billing", Short: "Billing operations"}
@@ -435,6 +437,82 @@ func runAccountSubtractBalance(cmd *cobra.Command, args []string) error {
 	res, err := accountHandler.SubtractBalance(context.Background(), targetID, amount)
 	if err != nil {
 		return errors.Wrap(err, "failed to subtract balance")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccountAddTokens() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-tokens",
+		Short: "Add tokens to an account",
+		RunE:  runAccountAddTokens,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.Int64("amount", 0, "Amount of tokens to add (required)")
+
+	return cmd
+}
+
+func cmdAccountSubtractTokens() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "subtract-tokens",
+		Short: "Subtract tokens from an account",
+		RunE:  runAccountSubtractTokens,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.Int64("amount", 0, "Amount of tokens to subtract (required)")
+
+	return cmd
+}
+
+func runAccountAddTokens(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	amount := viper.GetInt64("amount")
+	if amount <= 0 {
+		return fmt.Errorf("amount must be positive")
+	}
+
+	res, err := accountHandler.AddTokens(context.Background(), targetID, amount)
+	if err != nil {
+		return errors.Wrap(err, "failed to add tokens")
+	}
+
+	return printJSON(res)
+}
+
+func runAccountSubtractTokens(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	amount := viper.GetInt64("amount")
+	if amount <= 0 {
+		return fmt.Errorf("amount must be positive")
+	}
+
+	res, err := accountHandler.SubtractTokens(context.Background(), targetID, amount)
+	if err != nil {
+		return errors.Wrap(err, "failed to subtract tokens")
 	}
 
 	return printJSON(res)

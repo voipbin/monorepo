@@ -165,6 +165,7 @@ const (
 	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
 	BillingManagerBillingreferenceTypeNumberRenew      BillingManagerBillingreferenceType = "number_renew"
 	BillingManagerBillingreferenceTypeSMS              BillingManagerBillingreferenceType = "sms"
+	BillingManagerBillingreferenceTypeTokenAdjustment  BillingManagerBillingreferenceType = "token_adjustment"
 )
 
 // Defines values for CallManagerCallDirection.

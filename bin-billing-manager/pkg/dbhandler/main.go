@@ -29,6 +29,9 @@ type DBHandler interface {
 	AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) error
+	AccountAddTokens(ctx context.Context, accountID uuid.UUID, amount int64) error
+	AccountSubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) error
+	AccountSubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	BillingCreate(ctx context.Context, c *billing.Billing) error

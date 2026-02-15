@@ -59,6 +59,20 @@ func (mr *MockDBHandlerMockRecorder) AccountAddBalance(ctx, accountID, amount an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountAddBalance), ctx, accountID, amount)
 }
 
+// AccountAddTokens mocks base method.
+func (m *MockDBHandler) AccountAddTokens(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountAddTokens", ctx, accountID, amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountAddTokens indicates an expected call of AccountAddTokens.
+func (mr *MockDBHandlerMockRecorder) AccountAddTokens(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddTokens", reflect.TypeOf((*MockDBHandler)(nil).AccountAddTokens), ctx, accountID, amount)
+}
+
 // AccountCreate mocks base method.
 func (m *MockDBHandler) AccountCreate(ctx context.Context, c *account.Account) error {
 	m.ctrl.T.Helper()
@@ -158,6 +172,34 @@ func (m *MockDBHandler) AccountSubtractBalanceWithCheck(ctx context.Context, acc
 func (mr *MockDBHandlerMockRecorder) AccountSubtractBalanceWithCheck(ctx, accountID, amount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalanceWithCheck", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalanceWithCheck), ctx, accountID, amount)
+}
+
+// AccountSubtractTokens mocks base method.
+func (m *MockDBHandler) AccountSubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSubtractTokens", ctx, accountID, amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSubtractTokens indicates an expected call of AccountSubtractTokens.
+func (mr *MockDBHandlerMockRecorder) AccountSubtractTokens(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractTokens", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractTokens), ctx, accountID, amount)
+}
+
+// AccountSubtractTokensWithCheck mocks base method.
+func (m *MockDBHandler) AccountSubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSubtractTokensWithCheck", ctx, accountID, amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSubtractTokensWithCheck indicates an expected call of AccountSubtractTokensWithCheck.
+func (mr *MockDBHandlerMockRecorder) AccountSubtractTokensWithCheck(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractTokensWithCheck", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractTokensWithCheck), ctx, accountID, amount)
 }
 
 // AccountTopUpTokens mocks base method.
