@@ -59,6 +59,7 @@ var (
 	regV1AccountsIsValidResourceLimitByCustomerID = regexp.MustCompile("/v1/accounts/is_valid_resource_limit_by_customer_id$")
 
 	// allowances
+	regV1AccountsIDAllowance  = regexp.MustCompile(`/v1/accounts/` + regUUID + `/allowance$`)
 	regV1AccountsIDAllowances = regexp.MustCompile(`/v1/accounts/` + regUUID + `/allowances(\?|$)`)
 
 	// billings
@@ -209,6 +210,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AccountsIDAllowances.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AccountsIDAllowancesGet(ctx, m)
 		requestType = "/v1/accounts/<account-id>/allowances"
+
+	// GET /accounts/<account-id>/allowance
+	case regV1AccountsIDAllowance.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AccountsIDAllowanceGet(ctx, m)
+		requestType = "/v1/accounts/<account-id>/allowance"
 
 	////////////////////
 	// billings
