@@ -622,3 +622,161 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1NumbersPost_VirtualType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	customerID := uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258")
+	callFlowID := uuid.FromStringOrNil("7051e796-8821-11ec-9b7d-d322b1036e7d")
+	messageFlowID := uuid.FromStringOrNil("c5f1dffc-a866-11ec-be0a-a3c412cba4dc")
+	num := "+999123456789"
+
+	createdNumber := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("3a379dce-792a-11eb-a8e1-9f51cab620f8"),
+			CustomerID: customerID,
+		},
+		Number:       num,
+		Type:         number.TypeVirtual,
+		CallFlowID:   callFlowID,
+		Status:       number.StatusActive,
+		ProviderName: number.ProviderNameNone,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"customer_id": "72f3b054-7ff4-11ec-9af9-0b8c5dbee258", "call_flow_id": "7051e796-8821-11ec-9b7d-d322b1036e7d", "message_flow_id": "c5f1dffc-a866-11ec-be0a-a3c412cba4dc", "number": "+999123456789", "name": "", "detail": "", "type": "virtual"}`),
+	}
+
+	mockNumber.EXPECT().CreateVirtual(gomock.Any(), customerID, num, callFlowID, messageFlowID, "", "", false).Return(createdNumber, nil)
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Errorf("Expected status 200, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersPost_InvalidJSON(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{invalid json`),
+	}
+
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersIDPut_InvalidJSON(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
+		Method:   sock.RequestMethodPut,
+		DataType: "application/json",
+		Data:     []byte(`{invalid`),
+	}
+
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersIDFlowIDsPut_InvalidJSON(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_ids",
+		Method:   sock.RequestMethodPut,
+		DataType: "application/json",
+		Data:     []byte(`{invalid`),
+	}
+
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersRenewPost_InvalidJSON(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers/renew",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{invalid`),
+	}
+
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}

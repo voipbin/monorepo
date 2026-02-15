@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"reflect"
 	"testing"
@@ -933,4 +934,282 @@ func Test_NumberGetExistingNumbers_Empty(t *testing.T) {
 	if len(res) != 0 {
 		t.Errorf("Expected empty slice, got %d items", len(res))
 	}
+}
+
+func Test_NumberGetExistingNumbers_WithExisting(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// Create a test number
+	testNum := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("aa111111-1111-1111-1111-111111111111"),
+			CustomerID: uuid.FromStringOrNil("bb222222-2222-2222-2222-222222222222"),
+		},
+		Number: "+15551112222",
+		Status: number.StatusActive,
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+	mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+	if err := h.NumberCreate(ctx, testNum); err != nil {
+		t.Errorf("Failed to create test number: %v", err)
+	}
+
+	// Test with existing and non-existing numbers
+	res, err := h.NumberGetExistingNumbers(ctx, []string{"+15551112222", "+19999999999"})
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(res) != 1 {
+		t.Errorf("Expected 1 existing number, got %d", len(res))
+	}
+
+	if len(res) > 0 && res[0] != "+15551112222" {
+		t.Errorf("Expected +15551112222, got %s", res[0])
+	}
+}
+
+func Test_NumberGetExistingNumbers_NilInput(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	res, err := h.NumberGetExistingNumbers(ctx, []string{})
+	if err != nil {
+		t.Errorf("Expected no error for empty input, got %v", err)
+	}
+
+	if res != nil {
+		t.Errorf("Expected nil for empty input, got %v", res)
+	}
+}
+
+func Test_NumberCountVirtualByCustomerID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	customerID := uuid.FromStringOrNil("cc333333-3333-3333-3333-333333333333")
+
+	// Create two virtual numbers
+	for i := 0; i < 2; i++ {
+		testNum := &number.Number{
+			Identity: commonidentity.Identity{
+				ID:         uuid.Must(uuid.NewV4()),
+				CustomerID: customerID,
+			},
+			Number: fmt.Sprintf("+1555000000%d", i),
+			Type:   number.TypeVirtual,
+			Status: number.StatusActive,
+		}
+
+		mockUtil.EXPECT().TimeNow().Return(&curTime)
+		mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+		if err := h.NumberCreate(ctx, testNum); err != nil {
+			t.Errorf("Failed to create test number: %v", err)
+		}
+	}
+
+	// Create one normal number (should not be counted)
+	normalNum := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: customerID,
+		},
+		Number: "+15550001111",
+		Type:   number.TypeNormal,
+		Status: number.StatusActive,
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+	mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+	if err := h.NumberCreate(ctx, normalNum); err != nil {
+		t.Errorf("Failed to create normal number: %v", err)
+	}
+
+	count, err := h.NumberCountVirtualByCustomerID(ctx, customerID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if count != 2 {
+		t.Errorf("Expected count to be 2, got %d", count)
+	}
+}
+
+func Test_NumberDelete_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	nonExistentID := uuid.FromStringOrNil("dd444444-4444-4444-4444-444444444444")
+
+	curTime := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+
+	err := h.NumberDelete(ctx, nonExistentID)
+	if err != ErrNotFound {
+		t.Errorf("Expected ErrNotFound, got %v", err)
+	}
+}
+
+func Test_NumberUpdate_EmptyFields(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	testID := uuid.FromStringOrNil("ee555555-5555-5555-5555-555555555555")
+
+	// Update with empty fields should return immediately
+	err := h.NumberUpdate(ctx, testID, map[number.Field]any{})
+	if err != nil {
+		t.Errorf("Expected no error for empty fields, got %v", err)
+	}
+}
+
+func Test_NumberGet_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	nonExistentID := uuid.FromStringOrNil("ff666666-6666-6666-6666-666666666666")
+
+	mockCache.EXPECT().NumberGet(ctx, nonExistentID).Return(nil, fmt.Errorf("not in cache"))
+
+	_, err := h.NumberGet(ctx, nonExistentID)
+	if err != ErrNotFound {
+		t.Errorf("Expected ErrNotFound, got %v", err)
+	}
+}
+
+func Test_NumberCreate_VirtualType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	virtualNum := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("gg777777-7777-7777-7777-777777777777"),
+			CustomerID: uuid.FromStringOrNil("hh888888-8888-8888-8888-888888888888"),
+		},
+		Number: "+15550002222",
+		Type:   number.TypeVirtual,
+		Status: number.StatusActive,
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+	mockCache.EXPECT().NumberSet(ctx, gomock.Any())
+
+	if err := h.NumberCreate(ctx, virtualNum); err != nil {
+		t.Errorf("Failed to create virtual number: %v", err)
+	}
+
+	// Verify virtual numbers don't have TMPurchase or TMRenew set
+	mockCache.EXPECT().NumberGet(ctx, virtualNum.ID).Return(nil, fmt.Errorf("not in cache"))
+	mockCache.EXPECT().NumberSet(ctx, gomock.Any())
+
+	res, err := h.NumberGet(ctx, virtualNum.ID)
+	if err != nil {
+		t.Errorf("Failed to get virtual number: %v", err)
+	}
+
+	if res.TMPurchase != nil {
+		t.Error("Expected TMPurchase to be nil for virtual number")
+	}
+	if res.TMRenew != nil {
+		t.Error("Expected TMRenew to be nil for virtual number")
+	}
+}
+
+func Test_Close(t *testing.T) {
+	// Create a new in-memory database for this test
+	db, err := sql.Open("sqlite3", `file::memory:?cache=shared`)
+	if err != nil {
+		t.Fatalf("Failed to create test database: %v", err)
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := &handler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       mockCache,
+	}
+
+	// Close should not panic
+	h.Close()
 }
