@@ -1268,6 +1268,439 @@ func Test_Create_db_error(t *testing.T) {
 	}
 }
 
+func Test_AddTokens(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+
+		responseAccount *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("a1111111-0000-0000-0000-000000000001"),
+			amount:    500,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1111111-0000-0000-0000-000000000001"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountAddTokens(ctx, tt.accountID, tt.amount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+
+			res, err := h.AddTokens(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccount, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractTokens(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+
+		responseAccount *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("a2222222-0000-0000-0000-000000000001"),
+			amount:    300,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a2222222-0000-0000-0000-000000000001"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountSubtractTokens(ctx, tt.accountID, tt.amount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+
+			res, err := h.SubtractTokens(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccount, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractTokensWithCheck_normal(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+
+		responseAccount        *account.Account
+		responseUpdatedAccount *account.Account
+	}{
+		{
+			name: "normal account uses atomic check",
+
+			accountID: uuid.FromStringOrNil("a3333333-0000-0000-0000-000000000001"),
+			amount:    500,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a3333333-0000-0000-0000-000000000001"),
+				},
+				PlanType:     account.PlanTypeFree,
+				BalanceToken: 1000,
+			},
+			responseUpdatedAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a3333333-0000-0000-0000-000000000001"),
+				},
+				PlanType:     account.PlanTypeFree,
+				BalanceToken: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			// get account to check type
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+			// atomic check-and-subtract
+			mockDB.EXPECT().AccountSubtractTokensWithCheck(ctx, tt.accountID, tt.amount).Return(nil)
+			// get updated account
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseUpdatedAccount, nil)
+
+			res, err := h.SubtractTokensWithCheck(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseUpdatedAccount, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseUpdatedAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractTokensWithCheck_unlimited(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+
+		responseAccount        *account.Account
+		responseUpdatedAccount *account.Account
+	}{
+		{
+			name: "unlimited plan account bypasses check",
+
+			accountID: uuid.FromStringOrNil("a4444444-0000-0000-0000-000000000001"),
+			amount:    2000,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4444444-0000-0000-0000-000000000001"),
+				},
+				PlanType:     account.PlanTypeUnlimited,
+				BalanceToken: 100,
+			},
+			responseUpdatedAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4444444-0000-0000-0000-000000000001"),
+				},
+				PlanType:     account.PlanTypeUnlimited,
+				BalanceToken: -1900,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			// get account to check plan type — unlimited
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+			// unlimited bypasses to SubtractTokens (no check)
+			mockDB.EXPECT().AccountSubtractTokens(ctx, tt.accountID, tt.amount).Return(nil)
+			// get updated account
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseUpdatedAccount, nil)
+
+			res, err := h.SubtractTokensWithCheck(ctx, tt.accountID, tt.amount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseUpdatedAccount, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseUpdatedAccount, res)
+			}
+		})
+	}
+}
+
+func Test_SubtractTokensWithCheck_insufficient(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("a5555555-0000-0000-0000-000000000001")
+
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(&account.Account{
+		Identity:     commonidentity.Identity{ID: accountID},
+		PlanType:     account.PlanTypeFree,
+		BalanceToken: 100,
+	}, nil)
+	mockDB.EXPECT().AccountSubtractTokensWithCheck(ctx, accountID, int64(2000)).Return(fmt.Errorf("insufficient balance"))
+
+	_, err := h.SubtractTokensWithCheck(ctx, accountID, 2000)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_AddTokens_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+	}
+
+	tests := []test{
+		{
+			name: "db add error",
+
+			accountID: uuid.FromStringOrNil("a6666666-0000-0000-0000-000000000001"),
+			amount:    500,
+		},
+		{
+			name: "db get error",
+
+			accountID: uuid.FromStringOrNil("a7777777-0000-0000-0000-000000000001"),
+			amount:    500,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db add error" {
+				mockDB.EXPECT().AccountAddTokens(ctx, tt.accountID, tt.amount).Return(fmt.Errorf("add failed"))
+
+				_, err := h.AddTokens(ctx, tt.accountID, tt.amount)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "db get error" {
+				mockDB.EXPECT().AccountAddTokens(ctx, tt.accountID, tt.amount).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf("get failed"))
+
+				_, err := h.AddTokens(ctx, tt.accountID, tt.amount)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_SubtractTokens_error(t *testing.T) {
+
+	type test struct {
+		name string
+
+		accountID uuid.UUID
+		amount    int64
+	}
+
+	tests := []test{
+		{
+			name: "db subtract error",
+
+			accountID: uuid.FromStringOrNil("a8888888-0000-0000-0000-000000000001"),
+			amount:    300,
+		},
+		{
+			name: "db get error",
+
+			accountID: uuid.FromStringOrNil("a9999999-0000-0000-0000-000000000001"),
+			amount:    300,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			if tt.name == "db subtract error" {
+				mockDB.EXPECT().AccountSubtractTokens(ctx, tt.accountID, tt.amount).Return(fmt.Errorf("subtract failed"))
+
+				_, err := h.SubtractTokens(ctx, tt.accountID, tt.amount)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if tt.name == "db get error" {
+				mockDB.EXPECT().AccountSubtractTokens(ctx, tt.accountID, tt.amount).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf("get failed"))
+
+				_, err := h.SubtractTokens(ctx, tt.accountID, tt.amount)
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			}
+		})
+	}
+}
+
+func Test_SubtractTokensWithCheck_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	accountID := uuid.FromStringOrNil("ab000000-0000-0000-0000-000000000001")
+
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(nil, fmt.Errorf("initial get failed"))
+
+	_, err := h.SubtractTokensWithCheck(ctx, accountID, int64(500))
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_SubtractBalanceWithCheck_get_error(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
