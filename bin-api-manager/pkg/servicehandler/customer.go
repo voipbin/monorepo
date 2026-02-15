@@ -265,38 +265,53 @@ func (h *serviceHandler) CustomerSignup(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-) (*cscustomer.WebhookMessage, error) {
+) (*cscustomer.SignupResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "CustomerSignup",
 		"email": email,
 	})
 	log.Debug("Processing customer signup.")
 
-	cu, err := h.reqHandler.CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	res, err := h.reqHandler.CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not signup customer. err: %v", err)
 		return nil, err
 	}
 
-	res := cu.ConvertWebhookMessage()
 	return res, nil
 }
 
 // CustomerEmailVerify validates a verification token and activates the customer.
 // This is a public endpoint — no authentication required.
-func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "CustomerEmailVerify",
 	})
 	log.Debug("Processing customer email verification.")
 
-	cu, err := h.reqHandler.CustomerV1CustomerEmailVerify(ctx, token)
+	res, err := h.reqHandler.CustomerV1CustomerEmailVerify(ctx, token)
 	if err != nil {
 		log.Errorf("Could not verify customer email. err: %v", err)
 		return nil, err
 	}
 
-	res := cu.ConvertWebhookMessage()
+	return res, nil
+}
+
+// CustomerCompleteSignup validates OTP and returns an auto-provisioned AccessKey.
+// This is a public endpoint — no authentication required.
+func (h *serviceHandler) CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "CustomerCompleteSignup",
+	})
+	log.Debug("Processing customer complete signup.")
+
+	res, err := h.reqHandler.CustomerV1CustomerCompleteSignup(ctx, tempToken, code)
+	if err != nil {
+		log.Errorf("Could not complete signup. err: %v", err)
+		return nil, err
+	}
+
 	return res, nil
 }
 

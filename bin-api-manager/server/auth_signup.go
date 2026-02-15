@@ -154,9 +154,16 @@ const emailVerifyHTML = `<!DOCTYPE html>
       body: JSON.stringify({ token: token })
     }).then(function(resp) {
       if (resp.ok) {
-        msgEl.textContent = 'Email verified successfully! Check your inbox for a welcome email with instructions to set your password.';
-        msgEl.className = 'message success';
-        btn.style.display = 'none';
+        resp.json().then(function(data) {
+          var msg = 'Email verified successfully!';
+          if (data.accesskey && data.accesskey.token) {
+            msg += ' Your API Key: ' + data.accesskey.token + ' (save this - it will not be shown again).';
+          }
+          msg += ' Check your inbox for a welcome email with instructions to set your password.';
+          msgEl.textContent = msg;
+          msgEl.className = 'message success';
+          btn.style.display = 'none';
+        });
       } else {
         msgEl.textContent = 'Invalid or expired verification link. Please sign up again.';
         msgEl.className = 'message error';
