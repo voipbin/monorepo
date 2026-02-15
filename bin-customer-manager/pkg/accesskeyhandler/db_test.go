@@ -2,6 +2,7 @@ package accesskeyhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -424,5 +425,154 @@ func Test_UpdateBasicInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 		})
+	}
+}
+
+func Test_Delete_AlreadyDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("b5be1332-a75d-11ef-8871-ef7e4ff7506a")
+	tmDelete := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	responseAccesskey := &accesskey.Accesskey{
+		ID:       id,
+		TMDelete: &tmDelete,
+	}
+
+	mockDB.EXPECT().AccesskeyGet(ctx, id).Return(responseAccesskey, nil)
+
+	res, err := h.Delete(ctx, id)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.TMDelete == nil {
+		t.Errorf("Wrong match. expect: already deleted accesskey, got: %v", res)
+	}
+}
+
+func Test_List_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	filters := map[accesskey.Field]any{
+		accesskey.FieldDeleted: false,
+	}
+
+	mockDB.EXPECT().AccesskeyList(ctx, uint64(10), "", filters).Return(nil, fmt.Errorf("database error"))
+	_, err := h.List(ctx, 10, "", filters)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Get_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("invalid-id")
+
+	mockDB.EXPECT().AccesskeyGet(ctx, id).Return(nil, fmt.Errorf("not found"))
+	_, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Create_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("test-customer-id")
+	id := uuid.FromStringOrNil("test-id")
+
+	mockUtil.EXPECT().UUIDCreate().Return(id)
+	mockUtil.EXPECT().TimeNowAdd(gomock.Any()).Return(nil)
+	mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return("", nil)
+
+	mockDB.EXPECT().AccesskeyCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	_, err := h.Create(ctx, customerID, "test", "detail", time.Hour)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Delete_GetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("test-id")
+
+	mockDB.EXPECT().AccesskeyGet(ctx, id).Return(nil, fmt.Errorf("not found"))
+
+	_, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_UpdateBasicInfo_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("test-id")
+
+	mockDB.EXPECT().AccesskeyUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	_, err := h.UpdateBasicInfo(ctx, id, "new name", "new detail")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }

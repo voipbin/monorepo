@@ -66,3 +66,39 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 		})
 	}
 }
+
+func Test_CreateWebhookEvent(t *testing.T) {
+	tmCreate := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name     string
+		customer Customer
+	}{
+		{
+			name: "normal",
+			customer: Customer{
+				ID:            uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+				Name:          "test name",
+				Detail:        "test detail",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "Copenhagen, Denmark",
+				WebhookMethod: WebhookMethodPost,
+				WebhookURI:    "test.com",
+				TMCreate:      &tmCreate,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.customer.CreateWebhookEvent()
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res == nil {
+				t.Errorf("Wrong match. expect: webhook event, got: nil")
+			}
+		})
+	}
+}

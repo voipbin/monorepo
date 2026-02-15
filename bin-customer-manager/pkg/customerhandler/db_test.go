@@ -2,7 +2,9 @@ package customerhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -15,6 +17,51 @@ import (
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
+
+func Test_Get(t *testing.T) {
+	tests := []struct {
+		name             string
+		id               uuid.UUID
+		responseCustomer *customer.Customer
+	}{
+		{
+			name: "normal",
+			id:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+			responseCustomer: &customer.Customer{
+				ID:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+				Name: "Test Customer",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
+			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.ID != tt.id {
+				t.Errorf("Wrong customer ID. expect: %v, got: %v", tt.id, res.ID)
+			}
+		})
+	}
+}
 
 func Test_List(t *testing.T) {
 
@@ -299,5 +346,98 @@ func Test_UpdateBillingAccountID(t *testing.T) {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 		})
+	}
+}
+
+func Test_List_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	filters := map[customer.Field]any{
+		customer.FieldDeleted: false,
+	}
+
+	mockDB.EXPECT().CustomerList(ctx, uint64(10), "", filters).Return(nil, fmt.Errorf("database error"))
+
+	_, err := h.List(ctx, 10, "", filters)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Get_Error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("test-id")
+
+	mockDB.EXPECT().CustomerGet(ctx, id).Return(nil, fmt.Errorf("not found"))
+
+	_, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Create_InvalidEmail(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().EmailIsValid("invalid-email").Return(false)
+
+	_, err := h.Create(ctx, "test", "detail", "invalid-email", "", "", "", "")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_Delete_AlreadyDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("test-id")
+	tmDelete := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	mockDB.EXPECT().CustomerGet(ctx, id).Return(&customer.Customer{
+		ID:       id,
+		TMDelete: &tmDelete,
+	}, nil)
+
+	res, err := h.Delete(ctx, id)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.TMDelete == nil {
+		t.Errorf("Wrong match. expect: already deleted customer, got: %v", res)
 	}
 }
