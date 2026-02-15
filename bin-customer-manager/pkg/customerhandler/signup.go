@@ -25,9 +25,12 @@ const (
 	maxSignupAttempts   = 5
 )
 
-func cryptoRandInt(min, max int) int {
-	n, _ := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
-	return int(n.Int64()) + min
+func cryptoRandInt(min, max int) (int, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
+	if err != nil {
+		return 0, fmt.Errorf("could not generate random number: %w", err)
+	}
+	return int(n.Int64()) + min, nil
 }
 
 // Signup creates an unverified customer and sends a verification email.
@@ -103,8 +106,14 @@ func (h *customerHandler) Signup(
 		return nil, fmt.Errorf("could not store verification token")
 	}
 
-	// generate OTP code
-	otpCode := fmt.Sprintf("%06d", cryptoRandInt(100000, 999999))
+	// generate OTP code (100000..999999 inclusive)
+	otpNum, err := cryptoRandInt(100000, 1000000)
+	if err != nil {
+		log.Errorf("Could not generate OTP code. err: %v", err)
+		metricshandler.SignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("could not generate verification code")
+	}
+	otpCode := fmt.Sprintf("%06d", otpNum)
 
 	// generate temp_token
 	tempTokenBytes := make([]byte, tempTokenLen)
@@ -228,10 +237,12 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	count, err := h.cache.SignupAttemptIncrement(ctx, tempToken, emailVerifyTokenTTL)
 	if err != nil {
 		log.Errorf("Could not increment attempt counter. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("internal error")
 	}
 	if count > maxSignupAttempts {
 		log.Infof("Too many attempts for temp_token.")
+		metricshandler.CompleteSignupTotal.WithLabelValues("rate_limited").Inc()
 		return nil, fmt.Errorf("too many attempts")
 	}
 
@@ -239,6 +250,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	session, err := h.cache.SignupSessionGet(ctx, tempToken)
 	if err != nil {
 		log.Errorf("Could not get signup session. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_token").Inc()
 		return nil, fmt.Errorf("invalid or expired temp_token")
 	}
 	log.Debugf("Found signup session. customer_id: %s", session.CustomerID)
@@ -246,6 +258,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	// Validate OTP
 	if session.OTPCode != code {
 		log.Infof("Invalid OTP code.")
+		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_code").Inc()
 		return nil, fmt.Errorf("invalid verification code")
 	}
 
@@ -255,20 +268,23 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	}
 	if err := h.db.CustomerUpdate(ctx, session.CustomerID, fields); err != nil {
 		log.Errorf("Could not update customer. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not verify customer")
+	}
+
+	// Create AccessKey BEFORE cleaning up Redis keys, so if this fails
+	// the user can retry with the same temp_token and OTP code.
+	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
+	if err != nil {
+		log.Errorf("Could not create access key. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("could not create access key")
 	}
 
 	// Delete all Redis keys (session + attempts + email verify token)
 	_ = h.cache.SignupSessionDelete(ctx, tempToken)
 	_ = h.cache.SignupAttemptDelete(ctx, tempToken)
 	_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
-
-	// Create AccessKey
-	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
-	if err != nil {
-		log.Errorf("Could not create access key. err: %v", err)
-		return nil, fmt.Errorf("could not create access key")
-	}
 	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
 
 	// Get verified customer for event publishing
@@ -284,6 +300,8 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 			Headless: true,
 		})
 	}
+
+	metricshandler.CompleteSignupTotal.WithLabelValues("success").Inc()
 
 	return &customer.CompleteSignupResult{
 		CustomerID: session.CustomerID.String(),

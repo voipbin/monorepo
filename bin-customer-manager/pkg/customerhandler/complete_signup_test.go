@@ -83,15 +83,15 @@ func Test_CompleteSignup(t *testing.T) {
 			// customer update
 			mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 
-			// cleanup Redis keys
-			mockCache.EXPECT().SignupSessionDelete(ctx, tt.tempToken).Return(nil)
-			mockCache.EXPECT().SignupAttemptDelete(ctx, tt.tempToken).Return(nil)
-			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.responseSession.VerifyToken).Return(nil)
-
-			// create access key
+			// create access key (now before Redis cleanup)
 			mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
 				ID: accesskeyID,
 			}, nil)
+
+			// cleanup Redis keys (now after access key creation)
+			mockCache.EXPECT().SignupSessionDelete(ctx, tt.tempToken).Return(nil)
+			mockCache.EXPECT().SignupAttemptDelete(ctx, tt.tempToken).Return(nil)
+			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.responseSession.VerifyToken).Return(nil)
 
 			// get customer for event
 			responseCustomer := &customer.Customer{
@@ -185,10 +185,10 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 		VerifyToken: "vt",
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{}, nil)
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{}, nil)
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{ID: customerID}, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
@@ -349,9 +349,7 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 		VerifyToken: "vt",
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_ak_err").Return(nil)
-	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_ak_err").Return(nil)
-	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
+	// AccessKey creation fails — Redis keys should NOT be cleaned up (user can retry)
 	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(nil, fmt.Errorf("accesskey creation failed"))
 
 	_, err := h.CompleteSignup(ctx, "tmp_ak_err", "123456")
