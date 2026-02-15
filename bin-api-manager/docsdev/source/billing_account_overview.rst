@@ -208,31 +208,37 @@ Check and manage your account balance.
         "tm_update": "2024-01-15T10:30:00Z"
     }
 
-**Check Token Allowance**
+**Check Current Token Allowance**
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowances?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowance?token=<token>'
 
 **Response:**
 
 .. code::
 
-    [
-        {
-            "id": "allowance-uuid-123",
-            "customer_id": "customer-uuid-456",
-            "account_id": "billing-uuid-123",
-            "cycle_start": "2024-01-01T00:00:00Z",
-            "cycle_end": "2024-02-01T00:00:00Z",
-            "tokens_total": 1000,
-            "tokens_used": 350,
-            "tm_create": "2024-01-01T00:00:00Z",
-            "tm_update": "2024-01-15T10:30:00Z"
-        }
-    ]
+    {
+        "id": "allowance-uuid-123",
+        "customer_id": "customer-uuid-456",
+        "account_id": "billing-uuid-123",
+        "cycle_start": "2024-01-01T00:00:00Z",
+        "cycle_end": "2024-02-01T00:00:00Z",
+        "tokens_total": 1000,
+        "tokens_used": 350,
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:30:00Z"
+    }
 
 The ``tokens_total - tokens_used`` gives you the remaining tokens for the current billing cycle.
+
+**List All Allowance Cycles**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowances?token=<token>'
+
+Returns a paginated list of all allowance cycles (current and past) for the account.
 
 **Add Balance (Admin Only)**
 

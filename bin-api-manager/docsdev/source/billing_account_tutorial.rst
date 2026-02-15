@@ -59,7 +59,25 @@ Check Token Allowance
 
 View your current monthly token allowance and usage. Each plan tier includes a pool of tokens that cover VN calls and SMS messages.
 
-**Get Current Allowance:**
+**Get Current Active Allowance Cycle:**
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/<billing-account-id>/allowance?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "a1b2c3d4-1234-5678-abcd-ef1234567890",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "account_id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+        "cycle_start": "2024-01-01T00:00:00Z",
+        "cycle_end": "2024-02-01T00:00:00Z",
+        "tokens_total": 1000,
+        "tokens_used": 350,
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:30:00Z"
+    }
+
+**List All Allowance Cycles:**
 
 .. code::
 
