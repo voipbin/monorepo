@@ -5,11 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-customer-manager/internal/config"
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/metricshandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +21,14 @@ import (
 const (
 	emailVerifyTokenTTL = time.Hour
 	emailVerifyTokenLen = 32 // 32 bytes = 64 hex chars
+	tempTokenLen        = 16 // 16 bytes = 32 hex chars
+	maxSignupAttempts   = 5
 )
+
+func cryptoRandInt(min, max int) int {
+	n, _ := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
+	return int(n.Int64()) + min
+}
 
 // Signup creates an unverified customer and sends a verification email.
 func (h *customerHandler) Signup(
@@ -31,7 +40,7 @@ func (h *customerHandler) Signup(
 	address string,
 	webhookMethod customer.WebhookMethod,
 	webhookURI string,
-) (*customer.Customer, error) {
+) (*customer.SignupResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Signup",
 		"email": email,
@@ -94,8 +103,32 @@ func (h *customerHandler) Signup(
 		return nil, fmt.Errorf("could not store verification token")
 	}
 
+	// generate OTP code
+	otpCode := fmt.Sprintf("%06d", cryptoRandInt(100000, 999999))
+
+	// generate temp_token
+	tempTokenBytes := make([]byte, tempTokenLen)
+	if _, err := rand.Read(tempTokenBytes); err != nil {
+		log.Errorf("Could not generate temp token. err: %v", err)
+		metricshandler.SignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("could not generate temp token")
+	}
+	tempToken := hex.EncodeToString(tempTokenBytes)
+
+	// store signup session in Redis
+	session := &cachehandler.SignupSession{
+		CustomerID:  id,
+		OTPCode:     otpCode,
+		VerifyToken: token,
+	}
+	if err := h.cache.SignupSessionSet(ctx, tempToken, session, emailVerifyTokenTTL); err != nil {
+		log.Errorf("Could not store signup session. err: %v", err)
+		metricshandler.SignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("could not store signup session")
+	}
+
 	// send verification email
-	if err := h.sendVerificationEmail(ctx, email, token); err != nil {
+	if err := h.sendVerificationEmail(ctx, email, token, otpCode); err != nil {
 		log.Errorf("Could not send verification email. err: %v", err)
 		// still return the customer even if email sending fails
 	}
@@ -104,11 +137,11 @@ func (h *customerHandler) Signup(
 
 	metricshandler.SignupTotal.WithLabelValues("success").Inc()
 
-	return res, nil
+	return &customer.SignupResult{Customer: res, TempToken: tempToken}, nil
 }
 
 // EmailVerify validates a verification token and activates the customer.
-func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*customer.Customer, error) {
+func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "EmailVerify",
 	})
@@ -135,7 +168,7 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	if c.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", c.ID)
 		metricshandler.EmailVerificationTotal.WithLabelValues("already_verified").Inc()
-		return c, nil
+		return &customer.EmailVerifyResult{Customer: c}, nil
 	}
 
 	// mark as verified
@@ -163,16 +196,103 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 	log.WithField("customer", res).Debugf("Customer verified. customer_id: %s", res.ID)
 
-	// publish customer_created event — triggers default agent creation + welcome email
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
+	// Create AccessKey (auto-provisioning)
+	ak, err := h.accesskeyHandler.Create(ctx, customerID, "default", "Auto-provisioned API key", 0)
+	if err != nil {
+		log.Errorf("Could not create access key during email verify. err: %v", err)
+		// Non-fatal — customer is verified but key creation failed
+	}
+
+	// publish customer_created event with headless=false
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
+		Customer: res,
+		Headless: false,
+	})
 
 	metricshandler.EmailVerificationTotal.WithLabelValues("success").Inc()
 
-	return res, nil
+	return &customer.EmailVerifyResult{
+		Customer:  res,
+		Accesskey: ak,
+	}, nil
+}
+
+// CompleteSignup validates an OTP code and completes the headless signup flow.
+func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "CompleteSignup",
+	})
+	log.Debug("Processing headless signup completion.")
+
+	// Rate limit check
+	count, err := h.cache.SignupAttemptIncrement(ctx, tempToken, emailVerifyTokenTTL)
+	if err != nil {
+		log.Errorf("Could not increment attempt counter. err: %v", err)
+		return nil, fmt.Errorf("internal error")
+	}
+	if count > maxSignupAttempts {
+		log.Infof("Too many attempts for temp_token.")
+		return nil, fmt.Errorf("too many attempts")
+	}
+
+	// Get signup session from Redis
+	session, err := h.cache.SignupSessionGet(ctx, tempToken)
+	if err != nil {
+		log.Errorf("Could not get signup session. err: %v", err)
+		return nil, fmt.Errorf("invalid or expired temp_token")
+	}
+	log.Debugf("Found signup session. customer_id: %s", session.CustomerID)
+
+	// Validate OTP
+	if session.OTPCode != code {
+		log.Infof("Invalid OTP code.")
+		return nil, fmt.Errorf("invalid verification code")
+	}
+
+	// Mark customer as verified
+	fields := map[customer.Field]any{
+		customer.FieldEmailVerified: true,
+	}
+	if err := h.db.CustomerUpdate(ctx, session.CustomerID, fields); err != nil {
+		log.Errorf("Could not update customer. err: %v", err)
+		return nil, fmt.Errorf("could not verify customer")
+	}
+
+	// Delete all Redis keys (session + attempts + email verify token)
+	_ = h.cache.SignupSessionDelete(ctx, tempToken)
+	_ = h.cache.SignupAttemptDelete(ctx, tempToken)
+	_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
+
+	// Create AccessKey
+	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
+	if err != nil {
+		log.Errorf("Could not create access key. err: %v", err)
+		return nil, fmt.Errorf("could not create access key")
+	}
+	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
+
+	// Get verified customer for event publishing
+	cu, err := h.db.CustomerGet(ctx, session.CustomerID)
+	if err != nil {
+		log.Errorf("Could not get verified customer. err: %v", err)
+	}
+
+	// Publish customer_created event with headless=true
+	if cu != nil {
+		h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
+			Customer: cu,
+			Headless: true,
+		})
+	}
+
+	return &customer.CompleteSignupResult{
+		CustomerID: session.CustomerID.String(),
+		Accesskey:  ak,
+	}, nil
 }
 
 // sendVerificationEmail sends a verification email to the customer.
-func (h *customerHandler) sendVerificationEmail(ctx context.Context, email string, token string) error {
+func (h *customerHandler) sendVerificationEmail(ctx context.Context, email string, token string, otpCode string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "sendVerificationEmail",
 		"email": email,
@@ -181,12 +301,15 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	cfg := config.Get()
 	verifyLink := cfg.EmailVerifyBaseURL + "/auth/email-verify?token=" + token
 
-	subject := "VoIPBin - Verify Your Email"
+	subject := fmt.Sprintf("VoIPBin - Verify Your Email (Code: %s)", otpCode)
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
-			"Click the link below to verify your email address. This link expires in 1 hour.\n\n"+
+			"Your verification code is: %s\n\n"+
+			"API Users: POST this code with your temp_token to /v1/auth/complete-signup\n\n"+
+			"Or click the link below to verify via browser (expires in 1 hour):\n\n"+
 			"%s\n\n"+
 			"If you did not create this account, you can safely ignore this email.",
+		otpCode,
 		verifyLink,
 	)
 

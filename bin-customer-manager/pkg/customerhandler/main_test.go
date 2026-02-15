@@ -5,6 +5,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 
@@ -19,8 +20,9 @@ func TestNewCustomerHandler(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
 
-	h := NewCustomerHandler(mockReq, mockDB, mockCache, mockNotify)
+	h := NewCustomerHandler(mockReq, mockDB, mockCache, mockNotify, mockAccesskey)
 	if h == nil {
 		t.Error("NewCustomerHandler returned nil")
 	}

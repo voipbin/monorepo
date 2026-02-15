@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
@@ -53,27 +54,30 @@ type CustomerHandler interface {
 		address string,
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
-	) (*customer.Customer, error)
-	EmailVerify(ctx context.Context, token string) (*customer.Customer, error)
+	) (*customer.SignupResult, error)
+	EmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error)
+	CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error)
 
 	RunCleanupUnverified(ctx context.Context)
 }
 
 type customerHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	db            dbhandler.DBHandler
-	cache         cachehandler.CacheHandler
-	notifyHandler notifyhandler.NotifyHandler
+	utilHandler      utilhandler.UtilHandler
+	reqHandler       requesthandler.RequestHandler
+	db               dbhandler.DBHandler
+	cache            cachehandler.CacheHandler
+	notifyHandler    notifyhandler.NotifyHandler
+	accesskeyHandler accesskeyhandler.AccesskeyHandler
 }
 
 // NewCustomerHandler return UserHandler interface
-func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, cache cachehandler.CacheHandler, notifyHandler notifyhandler.NotifyHandler) CustomerHandler {
+func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, cache cachehandler.CacheHandler, notifyHandler notifyhandler.NotifyHandler, accesskeyHandler accesskeyhandler.AccesskeyHandler) CustomerHandler {
 	return &customerHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		db:            dbHandler,
-		cache:         cache,
-		notifyHandler: notifyHandler,
+		utilHandler:      utilhandler.NewUtilHandler(),
+		reqHandler:       reqHandler,
+		db:               dbHandler,
+		cache:            cache,
+		notifyHandler:    notifyHandler,
+		accesskeyHandler: accesskeyHandler,
 	}
 }
