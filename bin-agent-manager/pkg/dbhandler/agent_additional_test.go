@@ -26,22 +26,22 @@ func Test_AgentCountByCustomerID(t *testing.T) {
 	}{
 		{
 			name:       "normal",
-			customerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+			customerID: uuid.FromStringOrNil("e1f20001-7fde-11ec-80e1-33e6bbba4dac"),
 			agents: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+						ID:         uuid.FromStringOrNil("e1f20002-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("e1f20001-7fde-11ec-80e1-33e6bbba4dac"),
 					},
-					Username:     "test1",
+					Username:     "counttest1",
 					PasswordHash: "hash",
 				},
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+						ID:         uuid.FromStringOrNil("e1f20003-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("e1f20001-7fde-11ec-80e1-33e6bbba4dac"),
 					},
-					Username:     "test2",
+					Username:     "counttest2",
 					PasswordHash: "hash",
 				},
 			},
@@ -49,7 +49,7 @@ func Test_AgentCountByCustomerID(t *testing.T) {
 		},
 		{
 			name:       "no agents",
-			customerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+			customerID: uuid.FromStringOrNil("e1f20004-7fde-11ec-80e1-33e6bbba4dac"),
 			agents:     []*agent.Agent{},
 			expectRes:  0,
 		},
@@ -100,23 +100,23 @@ func Test_AgentGetByUsername(t *testing.T) {
 			name: "normal",
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
-					CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					ID:         uuid.FromStringOrNil("f1a20001-cbb7-11ee-b58c-9b64857cf4b2"),
+					CustomerID: uuid.FromStringOrNil("f1a20002-7fde-11ec-80e1-33e6bbba4dac"),
 				},
-				Username:     "test@voipbin.net",
+				Username:     "testadditional@voipbin.net",
 				PasswordHash: "hash",
 			},
-			username:  "test@voipbin.net",
+			username:  "testadditional@voipbin.net",
 			expectErr: false,
 		},
 		{
 			name: "not found",
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
-					CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					ID:         uuid.FromStringOrNil("f1a20003-cbb7-11ee-b58c-9b64857cf4b2"),
+					CustomerID: uuid.FromStringOrNil("f1a20002-7fde-11ec-80e1-33e6bbba4dac"),
 				},
-				Username:     "test@voipbin.net",
+				Username:     "testadditional2@voipbin.net",
 				PasswordHash: "hash",
 			},
 			username:  "notfound@voipbin.net",
@@ -174,14 +174,14 @@ func Test_AgentSetBasicInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			id:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:         uuid.FromStringOrNil("d1a10001-4c6b-11ec-922d-27336e407864"),
 			agentName:  "updated name",
 			detail:     "updated detail",
 			ringMethod: agent.RingMethodLinear,
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10001-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username:     "test1",
@@ -197,7 +197,7 @@ func Test_AgentSetBasicInfo(t *testing.T) {
 			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10001-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username:     "test1",
@@ -276,12 +276,12 @@ func Test_AgentSetPasswordHash(t *testing.T) {
 		{
 			name: "normal",
 
-			id:           uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:           uuid.FromStringOrNil("d1a10002-4c6b-11ec-922d-27336e407864"),
 			passwordHash: "new_hash",
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10002-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username:     "test1",
@@ -347,12 +347,12 @@ func Test_AgentSetStatus(t *testing.T) {
 		{
 			name: "normal",
 
-			id:     uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:     uuid.FromStringOrNil("d1a10003-4c6b-11ec-922d-27336e407864"),
 			status: agent.StatusAvailable,
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10003-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username: "test1",
@@ -418,12 +418,12 @@ func Test_AgentSetPermission(t *testing.T) {
 		{
 			name: "normal",
 
-			id:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:         uuid.FromStringOrNil("d1a10004-4c6b-11ec-922d-27336e407864"),
 			permission: agent.PermissionCustomerAdmin,
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10004-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username:   "test1",
@@ -489,12 +489,12 @@ func Test_AgentSetTagIDs(t *testing.T) {
 		{
 			name: "normal",
 
-			id:     uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:     uuid.FromStringOrNil("d1a10005-4c6b-11ec-922d-27336e407864"),
 			tagIDs: []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10005-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username: "test1",
@@ -560,14 +560,14 @@ func Test_AgentUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			id: uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id: uuid.FromStringOrNil("d1a10006-4c6b-11ec-922d-27336e407864"),
 			fields: map[agent.Field]any{
 				agent.FieldName: "updated name",
 			},
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10006-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username: "test1",
@@ -579,12 +579,12 @@ func Test_AgentUpdate(t *testing.T) {
 		{
 			name: "empty fields",
 
-			id:     uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+			id:     uuid.FromStringOrNil("d1a10007-4c6b-11ec-922d-27336e407864"),
 			fields: map[agent.Field]any{},
 
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					ID:         uuid.FromStringOrNil("d1a10007-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
 				},
 				Username: "test1",

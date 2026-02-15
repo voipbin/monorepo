@@ -120,7 +120,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			mockDB.EXPECT().AgentSetBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentUpdated, tt.responseAgent)
+			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -196,7 +196,7 @@ func Test_UpdatePassword(t *testing.T) {
 				mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
 				mockDB.EXPECT().AgentSetPasswordHash(ctx, tt.id, tt.responseHash).Return(nil)
 				mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentUpdated, tt.responseAgent)
+				mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 			}
 
 			res, err := h.UpdatePassword(ctx, tt.id, tt.password)
