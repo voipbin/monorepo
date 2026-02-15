@@ -330,6 +330,80 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 	}
 }
 
+func Test_AccountUpdate(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		account *account.Account
+
+		updateFields map[account.Field]any
+
+		expectRes *account.Account
+	}{
+		{
+			"test normal",
+			&account.Account{
+				ID:             uuid.FromStringOrNil("ca4a3c52-198f-11ef-aef8-436d1fc7ffca"),
+				TotalFileCount: 10,
+				TotalFileSize:  1024,
+			},
+
+			map[account.Field]any{
+				account.FieldTotalFileCount: int64(20),
+				account.FieldTotalFileSize:  int64(2048),
+			},
+
+			&account.Account{
+				ID:             uuid.FromStringOrNil("ca4a3c52-198f-11ef-aef8-436d1fc7ffca"),
+				TotalFileCount: 20,
+				TotalFileSize:  2048,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow()).AnyTimes()
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountCreate(ctx, tt.account); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountUpdate(ctx, tt.account.ID, tt.updateFields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			res, err := h.AccountGet(ctx, tt.account.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = nil
+			res.TMCreate = nil
+			res.TMDelete = nil
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_AccountDelete(t *testing.T) {
 
 	tests := []struct {
