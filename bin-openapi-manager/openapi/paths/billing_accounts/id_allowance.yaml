@@ -1,0 +1,21 @@
+get:
+  summary: Get current billing account allowance
+  description: Returns the current active token allowance cycle for the given billing account. Returns 404 if no cycle exists.
+  tags:
+    - Billing
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the billing account.
+  responses:
+    200:
+      description: Successfully retrieved current allowance cycle
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerAllowance'
+    404:
+      description: No active allowance cycle found

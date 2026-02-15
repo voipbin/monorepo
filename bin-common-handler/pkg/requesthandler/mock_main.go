@@ -1239,6 +1239,21 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAddBalanceForce(ctx, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAddBalanceForce", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAddBalanceForce), ctx, accountID, balance)
 }
 
+// BillingV1AccountAllowanceGet mocks base method.
+func (m *MockRequestHandler) BillingV1AccountAllowanceGet(ctx context.Context, accountID uuid.UUID) (*allowance.Allowance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountAllowanceGet", ctx, accountID)
+	ret0, _ := ret[0].(*allowance.Allowance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountAllowanceGet indicates an expected call of BillingV1AccountAllowanceGet.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAllowanceGet(ctx, accountID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAllowanceGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAllowanceGet), ctx, accountID)
+}
+
 // BillingV1AccountAllowancesGet mocks base method.
 func (m *MockRequestHandler) BillingV1AccountAllowancesGet(ctx context.Context, accountID uuid.UUID, pageSize uint64, pageToken string) ([]*allowance.Allowance, error) {
 	m.ctrl.T.Helper()

@@ -87,9 +87,6 @@ func (h *handler) AllowanceGet(ctx context.Context, id uuid.UUID) (*allowance.Al
 }
 
 // AllowanceGetCurrentByAccountID returns the active allowance cycle for the account.
-// NOTE: The billing_allowances table uses a sentinel value ('9999-01-01 00:00:00.000000')
-// for tm_delete (NOT NULL with DEFAULT), unlike billing_billings which uses NULL.
-// This difference comes from the table schema — query patterns must match each table's design.
 func (h *handler) AllowanceGetCurrentByAccountID(ctx context.Context, accountID uuid.UUID) (*allowance.Allowance, error) {
 	cols := commondatabasehandler.GetDBFields(allowance.Allowance{})
 
@@ -99,7 +96,7 @@ func (h *handler) AllowanceGetCurrentByAccountID(ctx context.Context, accountID 
 		Where(sq.Eq{"account_id": accountID.Bytes()}).
 		Where(sq.LtOrEq{"cycle_start": sq.Expr("NOW()")}).
 		Where(sq.Gt{"cycle_end": sq.Expr("NOW()")}).
-		Where(sq.Eq{"tm_delete": "9999-01-01 00:00:00.000000"}).
+		Where(sq.Eq{"tm_delete": nil}).
 		Limit(1).
 		ToSql()
 	if err != nil {

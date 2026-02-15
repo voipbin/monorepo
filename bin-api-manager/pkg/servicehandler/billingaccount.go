@@ -214,3 +214,33 @@ func (h *serviceHandler) BillingAccountAllowancesGet(ctx context.Context, a *ama
 
 	return res, nil
 }
+
+// BillingAccountAllowanceGet returns the current allowance cycle for the given billing account.
+func (h *serviceHandler) BillingAccountAllowanceGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmallowance.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "BillingAccountAllowanceGet",
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
+		"billing_account_id": billingAccountID,
+	})
+
+	// get billing account to validate ownership
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
+	if err != nil {
+		log.Infof("Could not get billing account info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.BillingV1AccountAllowanceGet(ctx, billingAccountID)
+	if err != nil {
+		log.Errorf("Could not get current allowance. err: %v", err)
+		return nil, errors.Wrap(err, "could not get current allowance")
+	}
+	log.WithField("allowance", tmp).Debugf("Retrieved current allowance. allowance_id: %s", tmp.ID)
+
+	return tmp.ConvertWebhookMessage(), nil
+}
