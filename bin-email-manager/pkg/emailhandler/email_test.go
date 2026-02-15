@@ -2,6 +2,7 @@ package emailhandler
 
 import (
 	"context"
+	"errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -621,6 +622,258 @@ func Test_UpdateStatus(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseEmail) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseEmail, res)
+			}
+		})
+	}
+}
+
+func Test_Create_InvalidEmail(t *testing.T) {
+	tests := []struct {
+		name         string
+		destinations []commonaddress.Address
+	}{
+		{
+			name: "fails_with_invalid_email",
+			destinations: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeEmail,
+					Target: "invalid-email",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			customerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+			activeflowID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+
+			_, err := h.Create(ctx, customerID, activeflowID, tt.destinations, "subject", "content", []email.Attachment{})
+			if err == nil {
+				t.Errorf("Expected error for invalid email")
+			}
+		})
+	}
+}
+
+func Test_List_DBError(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "fails_when_db_fails",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			dbErr := errors.New("db error")
+
+			mockDB.EXPECT().EmailList(ctx, "", uint64(10), gomock.Any()).Return(nil, dbErr)
+
+			_, err := h.List(ctx, "", 10, map[email.Field]any{})
+			if err == nil {
+				t.Errorf("Expected error when DB fails")
+			}
+		})
+	}
+}
+
+func Test_Delete_DBError(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+	}{
+		{
+			name: "fails_when_delete_fails",
+			id:   uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			dbErr := errors.New("db error")
+
+			mockDB.EXPECT().EmailDelete(ctx, tt.id).Return(dbErr)
+
+			_, err := h.Delete(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Expected error when delete fails")
+			}
+		})
+	}
+}
+
+func Test_Get_DBError(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+	}{
+		{
+			name: "fails_when_get_fails",
+			id:   uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			dbErr := errors.New("db error")
+
+			mockDB.EXPECT().EmailGet(ctx, tt.id).Return(nil, dbErr)
+
+			_, err := h.Get(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Expected error when get fails")
+			}
+		})
+	}
+}
+
+func Test_UpdateProviderReferenceID_DBError(t *testing.T) {
+	tests := []struct {
+		name                string
+		id                  uuid.UUID
+		providerReferenceID string
+	}{
+		{
+			name:                "fails_when_update_fails",
+			id:                  uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+			providerReferenceID: "test-ref-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			dbErr := errors.New("db error")
+
+			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID).Return(dbErr)
+
+			err := h.UpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID)
+			if err == nil {
+				t.Errorf("Expected error when update fails")
+			}
+		})
+	}
+}
+
+func Test_UpdateStatus_DBError(t *testing.T) {
+	tests := []struct {
+		name   string
+		id     uuid.UUID
+		status email.Status
+	}{
+		{
+			name:   "fails_when_update_status_fails",
+			id:     uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
+			status: email.StatusDelivered,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+			dbErr := errors.New("db error")
+
+			mockDB.EXPECT().EmailUpdateStatus(ctx, tt.id, tt.status).Return(dbErr)
+
+			_, err := h.UpdateStatus(ctx, tt.id, tt.status)
+			if err == nil {
+				t.Errorf("Expected error when update status fails")
 			}
 		})
 	}

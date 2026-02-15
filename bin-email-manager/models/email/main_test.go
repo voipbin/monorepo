@@ -1,7 +1,11 @@
 package email
 
 import (
+	"encoding/json"
 	"testing"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -236,6 +240,140 @@ func TestAttachmentReferenceTypeConstants(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if string(tt.constant) != tt.expected {
 				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
+	}
+}
+
+func TestConvertWebhookMessage(t *testing.T) {
+	tests := []struct {
+		name  string
+		email *Email
+	}{
+		{
+			name: "converts_email_to_webhook_message",
+			email: &Email{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
+				},
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "test@voipbin.net",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "dest@voipbin.net",
+					},
+				},
+				Status:  StatusDelivered,
+				Subject: "Test Subject",
+				Content: "Test Content",
+				Attachments: []Attachment{
+					{
+						ReferenceType: AttachmentReferenceTypeRecording,
+						ReferenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003"),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.email.ConvertWebhookMessage()
+
+			if result == nil {
+				t.Fatal("Expected non-nil webhook message")
+			}
+
+			if result.ID != tt.email.ID {
+				t.Errorf("Wrong ID. expect: %s, got: %s", tt.email.ID, result.ID)
+			}
+			if result.CustomerID != tt.email.CustomerID {
+				t.Errorf("Wrong CustomerID. expect: %s, got: %s", tt.email.CustomerID, result.CustomerID)
+			}
+			if result.Status != tt.email.Status {
+				t.Errorf("Wrong Status. expect: %s, got: %s", tt.email.Status, result.Status)
+			}
+			if result.Subject != tt.email.Subject {
+				t.Errorf("Wrong Subject. expect: %s, got: %s", tt.email.Subject, result.Subject)
+			}
+			if result.Content != tt.email.Content {
+				t.Errorf("Wrong Content. expect: %s, got: %s", tt.email.Content, result.Content)
+			}
+			if len(result.Attachments) != len(tt.email.Attachments) {
+				t.Errorf("Wrong Attachments length. expect: %d, got: %d", len(tt.email.Attachments), len(result.Attachments))
+			}
+		})
+	}
+}
+
+func TestCreateWebhookEvent(t *testing.T) {
+	tests := []struct {
+		name  string
+		email *Email
+	}{
+		{
+			name: "creates_webhook_event_json",
+			email: &Email{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
+				},
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "test@voipbin.net",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "dest@voipbin.net",
+					},
+				},
+				Status:  StatusDelivered,
+				Subject: "Test Subject",
+				Content: "Test Content",
+				Attachments: []Attachment{
+					{
+						ReferenceType: AttachmentReferenceTypeRecording,
+						ReferenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003"),
+					},
+				},
+			},
+		},
+		{
+			name: "creates_webhook_event_with_empty_email",
+			email: &Email{
+				Identity: commonidentity.Identity{
+					ID:         uuid.Nil,
+					CustomerID: uuid.Nil,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tt.email.CreateWebhookEvent()
+
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			if result == nil {
+				t.Fatal("Expected non-nil webhook event")
+			}
+
+			if len(result) == 0 {
+				t.Fatal("Expected non-empty webhook event")
+			}
+
+			// Verify it's valid JSON
+			var parsed map[string]interface{}
+			if err := json.Unmarshal(result, &parsed); err != nil {
+				t.Errorf("Result is not valid JSON: %v", err)
 			}
 		})
 	}
