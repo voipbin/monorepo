@@ -321,30 +321,136 @@ func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[bi
 	return nil
 }
 
-// BillingSetStatusEndWithCosts sets the billing status to end with the final cost breakdown.
-func (h *handler) BillingSetStatusEndWithCosts(ctx context.Context, id uuid.UUID, costUnitCount float32, costTokenTotal int, costCreditTotal float32, tmBillingEnd *time.Time) error {
+// BillingSetStatusEnd sets the billing status to end with ledger columns.
+func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billableUnits int, usageDuration int, amountToken int64, amountCredit int64, balanceTokenSnapshot int64, balanceCreditSnapshot int64, tmBillingEnd *time.Time) error {
 	q := `
 	UPDATE billing_billings
 	SET
 		status = ?,
-		cost_unit_count = ?,
-		cost_token_total = ?,
-		cost_credit_total = ?,
+		billable_units = ?,
+		usage_duration = ?,
+		amount_token = ?,
+		amount_credit = ?,
+		balance_token_snapshot = ?,
+		balance_credit_snapshot = ?,
 		tm_billing_end = ?,
 		tm_update = ?
 	WHERE
 		id = ?
 	`
-
-	_, err := h.db.Exec(q, billing.StatusEnd, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd, h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.Exec(q, billing.StatusEnd, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. BillingSetStatusEndWithCosts. err: %v", err)
+		return fmt.Errorf("could not execute. BillingSetStatusEnd. err: %v", err)
+	}
+	_ = h.billingUpdateToCache(ctx, id)
+	return nil
+}
+
+// BillingConsumeAndRecord atomically deducts from account and records in billing ledger.
+func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, rateTokenPerUnit int64, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error) {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Lock account row and read current balances
+	var balanceToken, balanceCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&balanceToken, &balanceCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not read account. err: %v", err)
 	}
 
-	// update the cache
-	_ = h.billingUpdateToCache(ctx, id)
+	// Calculate token and credit deductions
+	totalTokenCost := int64(billableUnits) * rateTokenPerUnit
+	totalCreditCost := int64(billableUnits) * rateCreditPerUnit
 
-	return nil
+	var tokenDeducted, creditDeducted int64
+
+	if totalTokenCost > 0 {
+		if balanceToken >= totalTokenCost {
+			// Enough tokens to cover entirely
+			tokenDeducted = totalTokenCost
+			creditDeducted = 0
+		} else {
+			// Partial tokens: use what we have, overflow to credit
+			tokenDeducted = balanceToken
+			remainingUnits := int64(billableUnits) - (tokenDeducted / rateTokenPerUnit)
+			if rateTokenPerUnit > 0 && tokenDeducted%rateTokenPerUnit != 0 {
+				remainingUnits = int64(billableUnits) - (tokenDeducted / rateTokenPerUnit)
+			}
+			creditDeducted = remainingUnits * rateCreditPerUnit
+		}
+	} else {
+		// Credit-only cost type (PSTN, number)
+		tokenDeducted = 0
+		creditDeducted = totalCreditCost
+	}
+
+	// Calculate new balances
+	newBalanceToken := balanceToken - tokenDeducted
+	newBalanceCredit := balanceCredit - creditDeducted
+
+	// Update account balances
+	now := h.utilHandler.TimeNow()
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance_token = ?, balance_credit = ?, tm_update = ? WHERE id = ?",
+		newBalanceToken, newBalanceCredit, now, accountID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not update account balances. err: %v", err)
+	}
+
+	// Update billing record with final amounts and snapshots
+	_, err = tx.ExecContext(ctx,
+		`UPDATE billing_billings SET
+			status = ?,
+			usage_duration = ?,
+			billable_units = ?,
+			rate_token_per_unit = ?,
+			rate_credit_per_unit = ?,
+			amount_token = ?,
+			amount_credit = ?,
+			balance_token_snapshot = ?,
+			balance_credit_snapshot = ?,
+			tm_billing_end = ?,
+			tm_update = ?
+		WHERE id = ?`,
+		billing.StatusEnd,
+		usageDuration,
+		billableUnits,
+		rateTokenPerUnit,
+		rateCreditPerUnit,
+		-tokenDeducted,   // Negative: usage deducts
+		-creditDeducted,  // Negative: usage deducts
+		newBalanceToken,
+		newBalanceCredit,
+		tmBillingEnd,
+		now,
+		bill.ID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not update billing. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not commit. err: %v", err)
+	}
+
+	// Update caches
+	_ = h.accountUpdateToCache(ctx, accountID)
+	_ = h.billingUpdateToCache(ctx, bill.ID)
+
+	// Return updated billing
+	updated, err := h.BillingGet(ctx, bill.ID)
+	if err != nil {
+		return nil, fmt.Errorf("BillingConsumeAndRecord: could not re-read billing. err: %v", err)
+	}
+
+	return updated, nil
 }
 
 // BillingSetStatus sets the billing status
@@ -378,6 +484,89 @@ func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
 
 	// update the cache
 	_ = h.billingUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// AccountTopUpTokens resets the account token balance and creates a ledger entry.
+func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Lock account row
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("AccountTopUpTokens: could not read account. err: %v", err)
+	}
+
+	now := h.utilHandler.TimeNow()
+
+	// Reset balance_token to the plan limit (no rollover)
+	newBalanceToken := tokenAmount
+
+	// Calculate next top-up date (first of next month)
+	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+
+	// Update account
+	_, err = tx.ExecContext(ctx,
+		`UPDATE billing_accounts SET
+			balance_token = ?,
+			tm_last_topup = ?,
+			tm_next_topup = ?,
+			tm_update = ?
+		WHERE id = ?`,
+		newBalanceToken, now, nextMonth, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not update account. err: %v", err)
+	}
+
+	// Insert ledger entry for the top-up
+	topupBilling := &billing.Billing{}
+	topupBilling.ID = h.utilHandler.UUIDCreate()
+	topupBilling.CustomerID = customerID
+	topupBilling.AccountID = accountID
+	topupBilling.TransactionType = billing.TransactionTypeTopUp
+	topupBilling.Status = billing.StatusEnd
+	topupBilling.ReferenceType = billing.ReferenceTypeMonthlyAllowance
+	topupBilling.ReferenceID = h.utilHandler.UUIDCreate()
+	topupBilling.AmountToken = tokenAmount // positive: top-up adds
+	topupBilling.AmountCredit = 0
+	topupBilling.BalanceTokenSnapshot = newBalanceToken
+	topupBilling.BalanceCreditSnapshot = currentCredit
+	topupBilling.TMBillingStart = now
+	topupBilling.TMBillingEnd = now
+	topupBilling.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(topupBilling)
+	if err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not prepare billing fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not build billing insert query. err: %v", err)
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AccountTopUpTokens: could not commit. err: %v", err)
+	}
+
+	// Invalidate caches
+	_ = h.accountUpdateToCache(ctx, accountID)
 
 	return nil
 }

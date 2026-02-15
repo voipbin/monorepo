@@ -221,58 +221,45 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 }
 
 // AccountAddBalance add the value to the account balance
-func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
-	// prepare
+func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	q := `
-	update
-		billing_accounts
-	set
-		balance = balance + ?,
-		tm_update = ?
-	where
-		id = ?
+	update billing_accounts
+	set balance_credit = balance_credit + ?, tm_update = ?
+	where id = ?
 	`
-
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeNow(), accountID.Bytes())
+	_, err := h.db.Exec(q, amount, h.utilHandler.TimeNow(), accountID.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountAddBalance. err: %v", err)
 	}
-
-	// update the cache
 	_ = h.accountUpdateToCache(ctx, accountID)
-
 	return nil
 }
 
 // AccountSubtractBalanceWithCheck atomically checks the balance is sufficient and subtracts the amount.
 // Returns ErrInsufficientBalance if the account balance is less than the amount.
-func (h *handler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) error {
+func (h *handler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not begin transaction. err: %v", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	// lock the row and read current balance
-	var balance float32
-	row := tx.QueryRowContext(ctx, "SELECT balance FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
-	if err := row.Scan(&balance); err != nil {
+	var balanceCredit int64
+	row := tx.QueryRowContext(ctx, "SELECT balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE", accountID.Bytes())
+	if err := row.Scan(&balanceCredit); err != nil {
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
 		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not read balance. err: %v", err)
 	}
 
-	// check sufficient balance
-	if balance < amount {
+	if balanceCredit < amount {
 		return ErrInsufficientBalance
 	}
 
-	// deduct
 	_, err = tx.ExecContext(ctx,
-		"UPDATE billing_accounts SET balance = balance - ?, tm_update = ? WHERE id = ?",
-		amount, h.utilHandler.TimeNow(), accountID.Bytes(),
-	)
+		"UPDATE billing_accounts SET balance_credit = balance_credit - ?, tm_update = ? WHERE id = ?",
+		amount, h.utilHandler.TimeNow(), accountID.Bytes())
 	if err != nil {
 		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not subtract balance. err: %v", err)
 	}
@@ -281,33 +268,22 @@ func (h *handler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID
 		return fmt.Errorf("AccountSubtractBalanceWithCheck: could not commit. err: %v", err)
 	}
 
-	// update the cache
 	_ = h.accountUpdateToCache(ctx, accountID)
-
 	return nil
 }
 
 // AccountSubtractBalance substract the value from the account balance
-func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
-	// prepare
+func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	q := `
-	update
-		billing_accounts
-	set
-		balance = balance - ?,
-		tm_update = ?
-	where
-		id = ?
+	update billing_accounts
+	set balance_credit = balance_credit - ?, tm_update = ?
+	where id = ?
 	`
-
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeNow(), accountID.Bytes())
+	_, err := h.db.Exec(q, amount, h.utilHandler.TimeNow(), accountID.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountSubtractBalance. err: %v", err)
 	}
-
-	// update the cache
 	_ = h.accountUpdateToCache(ctx, accountID)
-
 	return nil
 }
 
