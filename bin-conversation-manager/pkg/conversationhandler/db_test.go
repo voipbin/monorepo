@@ -280,3 +280,112 @@ func Test_Update(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetOrCreateBySelfAndPeer_Existing(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &conversationHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
+	conversationType := conversation.TypeMessage
+	dialogID := ""
+	self := commonaddress.Address{
+		Type:   commonaddress.TypeTel,
+		Target: "+1234567890",
+	}
+	peer := commonaddress.Address{
+		Type:       commonaddress.TypeTel,
+		Target:     "+0987654321",
+		TargetName: "Peer Name",
+	}
+
+	expectedConv := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
+			CustomerID: customerID,
+		},
+		Type:     conversationType,
+		DialogID: dialogID,
+		Self:     self,
+		Peer:     peer,
+	}
+
+	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, self, peer).Return(expectedConv, nil)
+
+	res, err := h.GetOrCreateBySelfAndPeer(ctx, customerID, conversationType, dialogID, self, peer)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	if res.ID != expectedConv.ID {
+		t.Errorf("Wrong ID. expect: %s, got: %s", expectedConv.ID, res.ID)
+	}
+}
+
+func Test_GetOrCreateBySelfAndPeer_Create(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &conversationHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
+	conversationType := conversation.TypeMessage
+	dialogID := ""
+	self := commonaddress.Address{
+		Type:   commonaddress.TypeTel,
+		Target: "+1234567890",
+	}
+	peer := commonaddress.Address{
+		Type:       commonaddress.TypeTel,
+		Target:     "+0987654321",
+		TargetName: "Peer Name",
+	}
+
+	newID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003")
+	createdConv := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         newID,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
+		Name:     "conversation with Peer Name",
+		Detail:   "conversation with Peer Name",
+		Type:     conversationType,
+		DialogID: dialogID,
+		Self:     self,
+		Peer:     peer,
+	}
+
+	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, self, peer).Return(nil, dbhandler.ErrNotFound)
+	mockUtil.EXPECT().UUIDCreate().Return(newID)
+	mockDB.EXPECT().ConversationCreate(ctx, createdConv).Return(nil)
+	mockDB.EXPECT().ConversationGet(ctx, newID).Return(createdConv, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, conversation.EventTypeConversationCreated, createdConv)
+
+	res, err := h.GetOrCreateBySelfAndPeer(ctx, customerID, conversationType, dialogID, self, peer)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	if res.ID != newID {
+		t.Errorf("Wrong ID. expect: %s, got: %s", newID, res.ID)
+	}
+}
