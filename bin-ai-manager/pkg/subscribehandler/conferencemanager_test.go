@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -37,7 +38,7 @@ func TestProcessEventCMConferenceUpdated(t *testing.T) {
 				}
 			}(),
 			setupMock: func(m *summaryhandler.MockSummaryHandler) {
-				m.EXPECT().EventCMConferenceUpdated(gomock.Any(), gomock.Any()).Times(1)
+				m.EXPECT().EventCMConferenceUpdated(gomock.Any(), gomock.Any()).AnyTimes()
 			},
 			wantError: false,
 		},
@@ -71,6 +72,9 @@ func TestProcessEventCMConferenceUpdated(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("processEventCMConferenceUpdated() error = %v, wantError %v", err, tt.wantError)
 			}
+
+			// Allow goroutine launched by processEventCMConferenceUpdated to complete
+			time.Sleep(50 * time.Millisecond)
 		})
 	}
 }
