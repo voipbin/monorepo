@@ -173,7 +173,7 @@ func (r *requestHandler) CustomerV1CustomerSignup(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-) (*cscustomer.Customer, error) {
+) (*cscustomer.SignupResult, error) {
 	uri := "/v1/customers/signup"
 
 	reqData := csrequest.V1DataCustomersSignupPost{
@@ -196,7 +196,7 @@ func (r *requestHandler) CustomerV1CustomerSignup(
 		return nil, err
 	}
 
-	var res cscustomer.Customer
+	var res cscustomer.SignupResult
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
@@ -205,7 +205,7 @@ func (r *requestHandler) CustomerV1CustomerSignup(
 }
 
 // CustomerV1CustomerEmailVerify sends an email verification request to customer-manager.
-func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.Customer, error) {
+func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error) {
 	uri := "/v1/customers/email_verify"
 
 	reqData := csrequest.V1DataCustomersEmailVerifyPost{
@@ -222,7 +222,34 @@ func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, toke
 		return nil, err
 	}
 
-	var res cscustomer.Customer
+	var res cscustomer.EmailVerifyResult
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// CustomerV1CustomerCompleteSignup sends a complete-signup request to customer-manager.
+func (r *requestHandler) CustomerV1CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error) {
+	uri := "/v1/customers/complete_signup"
+
+	reqData := csrequest.V1DataCustomersCompleteSignupPost{
+		TempToken: tempToken,
+		Code:      code,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/complete_signup", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.CompleteSignupResult
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
