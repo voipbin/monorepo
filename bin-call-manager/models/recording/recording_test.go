@@ -1,7 +1,11 @@
 package recording
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -116,5 +120,110 @@ func TestFormatConstants(t *testing.T) {
 				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
 			}
 		})
+	}
+}
+
+func TestConvertWebhookMessage(t *testing.T) {
+	now := time.Now()
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	ownerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+	onEndFlowID := uuid.Must(uuid.NewV4())
+
+	r := &Recording{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeAgent,
+			OwnerID:   ownerID,
+		},
+		ActiveflowID:  activeflowID,
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   referenceID,
+		Status:        StatusRecording,
+		Format:        FormatWAV,
+		OnEndFlowID:   onEndFlowID,
+		TMStart:       &now,
+		TMCreate:      &now,
+		TMUpdate:      &now,
+	}
+
+	webhook := r.ConvertWebhookMessage()
+
+	if webhook.ID != id {
+		t.Errorf("ConvertWebhookMessage ID = %v, expected %v", webhook.ID, id)
+	}
+	if webhook.CustomerID != customerID {
+		t.Errorf("ConvertWebhookMessage CustomerID = %v, expected %v", webhook.CustomerID, customerID)
+	}
+	if webhook.ActiveflowID != activeflowID {
+		t.Errorf("ConvertWebhookMessage ActiveflowID = %v, expected %v", webhook.ActiveflowID, activeflowID)
+	}
+	if webhook.ReferenceType != ReferenceTypeCall {
+		t.Errorf("ConvertWebhookMessage ReferenceType = %v, expected %v", webhook.ReferenceType, ReferenceTypeCall)
+	}
+	if webhook.ReferenceID != referenceID {
+		t.Errorf("ConvertWebhookMessage ReferenceID = %v, expected %v", webhook.ReferenceID, referenceID)
+	}
+	if webhook.Status != StatusRecording {
+		t.Errorf("ConvertWebhookMessage Status = %v, expected %v", webhook.Status, StatusRecording)
+	}
+	if webhook.Format != FormatWAV {
+		t.Errorf("ConvertWebhookMessage Format = %v, expected %v", webhook.Format, FormatWAV)
+	}
+	if webhook.OnEndFlowID != onEndFlowID {
+		t.Errorf("ConvertWebhookMessage OnEndFlowID = %v, expected %v", webhook.OnEndFlowID, onEndFlowID)
+	}
+	if webhook.TMStart == nil || !webhook.TMStart.Equal(now) {
+		t.Errorf("ConvertWebhookMessage TMStart mismatch")
+	}
+}
+
+func TestCreateWebhookEvent(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+
+	r := &Recording{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{},
+		ActiveflowID:  activeflowID,
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   referenceID,
+		Status:        StatusRecording,
+		Format:        FormatWAV,
+	}
+
+	data, err := r.CreateWebhookEvent()
+	if err != nil {
+		t.Fatalf("CreateWebhookEvent returned error: %v", err)
+	}
+
+	if len(data) == 0 {
+		t.Error("CreateWebhookEvent returned empty data")
+	}
+
+	// Verify it's valid JSON
+	var webhook WebhookMessage
+	if err := json.Unmarshal(data, &webhook); err != nil {
+		t.Errorf("CreateWebhookEvent returned invalid JSON: %v", err)
+	}
+
+	if webhook.ID != id {
+		t.Errorf("Unmarshalled webhook ID = %v, expected %v", webhook.ID, id)
+	}
+	if webhook.Status != StatusRecording {
+		t.Errorf("Unmarshalled webhook Status = %v, expected %v", webhook.Status, StatusRecording)
+	}
+	if webhook.Format != FormatWAV {
+		t.Errorf("Unmarshalled webhook Format = %v, expected %v", webhook.Format, FormatWAV)
 	}
 }
