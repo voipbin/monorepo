@@ -3,25 +3,34 @@ create table billing_billings(
   customer_id   binary(16),
   account_id    binary(16),
 
-  status varchar(32),
+  transaction_type varchar(32),
+  status           varchar(32),
 
   reference_type  varchar(32),
   reference_id    binary(16),
 
   cost_type             varchar(64),
-  cost_unit_count       float,
-  cost_token_per_unit   integer,
-  cost_token_total      integer,
-  cost_credit_per_unit  float,
-  cost_credit_total     float,
+  usage_duration        integer default 0,
+  billable_units        integer default 0,
+
+  rate_token_per_unit   bigint default 0,
+  rate_credit_per_unit  bigint default 0,
+
+  amount_token          bigint default 0,
+  amount_credit         bigint default 0,
+
+  balance_token_snapshot  bigint default 0,
+  balance_credit_snapshot bigint default 0,
+
+  idempotency_key binary(16),
 
   -- timestamps
   tm_billing_start  datetime(6),
   tm_billing_end    datetime(6),
 
-  tm_create datetime(6),  --
-  tm_update datetime(6),  --
-  tm_delete datetime(6),  --
+  tm_create datetime(6),
+  tm_update datetime(6),
+  tm_delete datetime(6),
 
   primary key(id)
 );
