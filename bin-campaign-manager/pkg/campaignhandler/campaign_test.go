@@ -227,6 +227,48 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
+func Test_List(t *testing.T) {
+	tests := []struct {
+		name    string
+		token   string
+		limit   uint64
+		filters map[campaign.Field]any
+	}{
+		{
+			"test normal",
+			"2020-10-10T03:30:17.000000Z",
+			10,
+			map[campaign.Field]any{
+				campaign.FieldDeleted: false,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+			mockDB.EXPECT().CampaignList(ctx, tt.token, tt.limit, tt.filters).Return([]*campaign.Campaign{}, nil)
+
+			_, err := h.List(ctx, tt.token, tt.limit, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
