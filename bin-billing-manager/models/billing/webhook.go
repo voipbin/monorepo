@@ -13,24 +13,32 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	AccountID uuid.UUID `json:"account_id"` // billing account
+	AccountID uuid.UUID `json:"account_id"`
 
-	Status Status `json:"status"`
+	TransactionType TransactionType `json:"transaction_type"`
+	Status          Status          `json:"status"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	CostType          CostType `json:"cost_type"`
-	CostUnitCount     float32  `json:"cost_unit_count"`
-	CostTokenPerUnit  int      `json:"cost_token_per_unit"`
-	CostTokenTotal    int      `json:"cost_token_total"`
-	CostCreditPerUnit float32  `json:"cost_credit_per_unit"`
-	CostCreditTotal   float32  `json:"cost_credit_total"`
+	CostType      CostType `json:"cost_type"`
+	UsageDuration int      `json:"usage_duration"`
+	BillableUnits int      `json:"billable_units"`
+
+	RateTokenPerUnit  int64 `json:"rate_token_per_unit"`
+	RateCreditPerUnit int64 `json:"rate_credit_per_unit"`
+
+	AmountToken  int64 `json:"amount_token"`
+	AmountCredit int64 `json:"amount_credit"`
+
+	BalanceTokenSnapshot  int64 `json:"balance_token_snapshot"`
+	BalanceCreditSnapshot int64 `json:"balance_credit_snapshot"`
+
+	IdempotencyKey uuid.UUID `json:"idempotency_key"`
 
 	TMBillingStart *time.Time `json:"tm_billing_start"`
 	TMBillingEnd   *time.Time `json:"tm_billing_end"`
 
-	// timestamp
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete"`
@@ -43,17 +51,26 @@ func (h *Billing) ConvertWebhookMessage() *WebhookMessage {
 
 		AccountID: h.AccountID,
 
-		Status: h.Status,
+		TransactionType: h.TransactionType,
+		Status:          h.Status,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		CostType:          h.CostType,
-		CostUnitCount:     h.CostUnitCount,
-		CostTokenPerUnit:  h.CostTokenPerUnit,
-		CostTokenTotal:    h.CostTokenTotal,
-		CostCreditPerUnit: h.CostCreditPerUnit,
-		CostCreditTotal:   h.CostCreditTotal,
+		CostType:      h.CostType,
+		UsageDuration: h.UsageDuration,
+		BillableUnits: h.BillableUnits,
+
+		RateTokenPerUnit:  h.RateTokenPerUnit,
+		RateCreditPerUnit: h.RateCreditPerUnit,
+
+		AmountToken:  h.AmountToken,
+		AmountCredit: h.AmountCredit,
+
+		BalanceTokenSnapshot:  h.BalanceTokenSnapshot,
+		BalanceCreditSnapshot: h.BalanceCreditSnapshot,
+
+		IdempotencyKey: h.IdempotencyKey,
 
 		TMBillingStart: h.TMBillingStart,
 		TMBillingEnd:   h.TMBillingEnd,

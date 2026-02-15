@@ -9,7 +9,8 @@ type FieldStruct struct {
 	CustomerID    uuid.UUID     `filter:"customer_id"`
 	Name          string        `filter:"name"`
 	PlanType      PlanType      `filter:"plan_type"`
-	Balance       float64       `filter:"balance"`
+	BalanceCredit int64         `filter:"balance_credit"`
+	BalanceToken  int64         `filter:"balance_token"`
 	PaymentType   PaymentType   `filter:"payment_type"`
 	PaymentMethod PaymentMethod `filter:"payment_method"`
 	Deleted       bool          `filter:"deleted"`

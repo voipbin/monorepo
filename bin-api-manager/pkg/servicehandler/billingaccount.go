@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
-	bmallowance "monorepo/bin-billing-manager/models/allowance"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -130,7 +129,7 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 
 // BillingAccountAddBalanceForce sends a request to billing-manager
 // to add the given billing account's balance.
-func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountAddBalanceForce",
 		"customer_id":        a.CustomerID,
@@ -156,7 +155,7 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *a
 
 // BillingAccountSubtractBalanceForce sends a request to billing-manager
 // to subtract the given billing account's balance.
-func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountSubtractBalanceForce",
 		"customer_id":        a.CustomerID,
@@ -180,67 +179,3 @@ func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context,
 	return res, nil
 }
 
-// BillingAccountAllowancesGet returns allowance cycles for the given billing account.
-func (h *serviceHandler) BillingAccountAllowancesGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":               "BillingAccountAllowancesGet",
-		"customer_id":        a.CustomerID,
-		"username":           a.Username,
-		"billing_account_id": billingAccountID,
-	})
-
-	// get billing account to validate ownership
-	ba, err := h.billingAccountGet(ctx, billingAccountID)
-	if err != nil {
-		log.Infof("Could not get billing account info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	tmps, err := h.reqHandler.BillingV1AccountAllowancesGet(ctx, billingAccountID, pageSize, pageToken)
-	if err != nil {
-		log.Errorf("Could not get allowances. err: %v", err)
-		return nil, errors.Wrap(err, "could not get allowances")
-	}
-	log.WithField("allowances", tmps).Debugf("Retrieved allowances. count: %d", len(tmps))
-
-	res := make([]*bmallowance.WebhookMessage, 0, len(tmps))
-	for _, tmp := range tmps {
-		res = append(res, tmp.ConvertWebhookMessage())
-	}
-
-	return res, nil
-}
-
-// BillingAccountAllowanceGet returns the current allowance cycle for the given billing account.
-func (h *serviceHandler) BillingAccountAllowanceGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmallowance.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":               "BillingAccountAllowanceGet",
-		"customer_id":        a.CustomerID,
-		"username":           a.Username,
-		"billing_account_id": billingAccountID,
-	})
-
-	// get billing account to validate ownership
-	ba, err := h.billingAccountGet(ctx, billingAccountID)
-	if err != nil {
-		log.Infof("Could not get billing account info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	tmp, err := h.reqHandler.BillingV1AccountAllowanceGet(ctx, billingAccountID)
-	if err != nil {
-		log.Errorf("Could not get current allowance. err: %v", err)
-		return nil, errors.Wrap(err, "could not get current allowance")
-	}
-	log.WithField("allowance", tmp).Debugf("Retrieved current allowance. allowance_id: %s", tmp.ID)
-
-	return tmp.ConvertWebhookMessage(), nil
-}

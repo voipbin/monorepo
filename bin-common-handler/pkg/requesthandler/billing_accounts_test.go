@@ -84,7 +84,7 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -150,7 +150,7 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 		name string
 
 		accountID uuid.UUID
-		balance   float32
+		balance   int64
 
 		expectTarget  string
 		expectRequest *sock.Request

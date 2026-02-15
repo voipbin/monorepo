@@ -1,6 +1,8 @@
 package server
 
 import (
+	"math"
+
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
@@ -9,95 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
-
-func (h *server) GetBillingAccountsIdAllowances(c *gin.Context, id string, params openapi_server.GetBillingAccountsIdAllowancesParams) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetBillingAccountsIdAllowances",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	pageSize := uint64(10)
-	if params.PageSize != nil {
-		pageSize = uint64(*params.PageSize)
-	}
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 10
-	}
-
-	pageToken := ""
-	if params.PageToken != nil {
-		pageToken = *params.PageToken
-	}
-
-	tmps, err := h.serviceHandler.BillingAccountAllowancesGet(c.Request.Context(), &a, target, pageSize, pageToken)
-	if err != nil {
-		log.Errorf("Could not get allowances. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	nextToken := ""
-	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil {
-			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
-		}
-	}
-
-	res := GenerateListResponse(tmps, nextToken)
-	c.JSON(200, res)
-}
-
-func (h *server) GetBillingAccountsIdAllowance(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetBillingAccountsIdAllowance",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.BillingAccountAllowanceGet(c.Request.Context(), &a, target)
-	if err != nil {
-		log.Errorf("Could not get current allowance. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
 
 func (h *server) GetBillingAccountsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
@@ -266,13 +179,14 @@ func (h *server) PostBillingAccountsIdBalanceAddForce(c *gin.Context, id string)
 		return
 	}
 
-	balance := float32(0)
+	balance := int64(0)
 	if req.Balance != nil {
-		balance = *req.Balance
+		balance = int64(math.Round(float64(*req.Balance) * 1000000))
 	}
 	if balance < 0 {
 		log.Error("Invalid balance.")
 		c.AbortWithStatus(400)
+		return
 	}
 
 	res, err := h.serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), &a, target, balance)
@@ -316,13 +230,14 @@ func (h *server) PostBillingAccountsIdBalanceSubtractForce(c *gin.Context, id st
 		return
 	}
 
-	balance := float32(0)
+	balance := int64(0)
 	if req.Balance != nil {
-		balance = *req.Balance
+		balance = int64(math.Round(float64(*req.Balance) * 1000000))
 	}
 	if balance < 0 {
 		log.Error("Invalid balance.")
 		c.AbortWithStatus(400)
+		return
 	}
 
 	res, err := h.serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), &a, target, balance)

@@ -2,79 +2,84 @@
 
 Overview
 ========
-VoIPBIN's Billing Account API provides balance management, token allowance tracking, and usage monitoring for your account. The billing system uses a hybrid model combining monthly token allowances with credit-based overflow. The API enables you to check balances, view allowance usage, add funds, and monitor consumption.
+VoIPBIN's Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the **account** holds the live state (current balance and tokens) and the **billings** table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.
 
 With the Billing Account API you can:
 
-- Check current account balance and token allowance
-- View monthly token usage and remaining allowance
+- Check current credit balance and token balance
+- View billing history as a ledger of transactions
 - Add funds to your account (admin only)
 - View rate information for different service types
 - Monitor usage and charges
-- Track billing history
+- Track all transactions via the immutable billing ledger
 
 
 How Billing Works
 -----------------
-VoIPBIN uses a hybrid billing model with two cost mechanisms: **token allowances** and **credit balance**.
+VoIPBIN uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
 
-Each plan tier includes a monthly pool of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.
+Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.
+
+All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.
 
 **Billing Architecture**
 
 ::
 
     +-----------------------------------------------------------------------+
-    |                         Billing System                                |
+    |                     State + Ledger Architecture                       |
     +-----------------------------------------------------------------------+
 
     +-------------------+     +-------------------+
-    |  Token Allowance  |     |  Credit Balance   |
-    |  (monthly pool)   |     |  (prepaid USD)    |
-    +--------+----------+     +--------+----------+
+    |  Account (State)  |     |  Billings (Ledger)|
+    |  balance_token    |     |  Immutable entries |
+    |  balance_credit   |     |  with deltas and   |
+    +--------+----------+     |  snapshots         |
+             |                +--------+----------+
              |                         |
-             | covers                  | covers
+             | live state              | transaction history
              v                         v
-    +--------+----------+     +--------+----------+--------+----------+
-    |                   |     |                   |                   |
-    v                   v     v                   v                   v
-    +----------+   +----------+   +----------+   +----------+   +----------+
-    | VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |   |  Other   |
-    | 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |   | services |
-    +----------+   +----------+   +----------+   +----------+   +----------+
-         |              |              |              |              |
-         | overflow     | overflow     |              |              |
-         v              v              v              v              v
-    +---------+    +---------+    +---------+    +---------+    +---------+
-    |$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |    |  varies |
-    | /minute |    | /message|    |$0.0045 in|   | /number |    |         |
-    +---------+    +---------+    +---------+    +---------+    +---------+
+    +--------+----------+     +--------+----------+
+    |                   |     |                   |
+    v                   v     v                   v
+    +----------+   +----------+   +----------+   +----------+
+    | VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |
+    | 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |
+    +----------+   +----------+   +----------+   +----------+
+         |              |              |              |
+         | token first  | token first  |              |
+         | then credit  | then credit  | credit only  | credit only
+         v              v              v              v
+    +---------+    +---------+    +---------+    +---------+
+    |$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |
+    | /minute |    | /message|    |$0.0045 in|   | /number |
+    +---------+    +---------+    +---------+    +---------+
 
 **Key Components**
 
-- **Token Allowance**: A monthly pool of tokens included with your plan tier. Tokens cover VN (virtual number) calls and SMS messages. Each billing cycle is represented by an **allowance** record that tracks the token allocation and consumption for that month.
-- **Credit Balance**: Prepaid USD balance used for PSTN calls, number purchases, and overflow when tokens are exhausted.
+- **Account State**: The ``billing_accounts`` table holds the live ``balance_credit`` (int64 micros) and ``balance_token`` (int64). This is the single source of truth for current balances.
+- **Billing Ledger**: The ``billing_billings`` table records every transaction as an immutable entry with signed deltas (``amount_token``, ``amount_credit``) and post-transaction snapshots (``balance_token_snapshot``, ``balance_credit_snapshot``).
+- **Monthly Token Top-Up**: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a ``top_up`` transaction in the ledger.
 - **Token-Eligible Services**: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.
 - **Credit-Only Services**: PSTN calls and number purchases always use credits directly.
 - **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
 
-**Allowance Cycle Lifecycle**
+**Token Top-Up Process**
 
-Each billing account has one active allowance cycle at a time. The cycle follows this lifecycle:
+Token replenishment happens via an automated monthly cron process:
 
-1. **Creation**: A new allowance cycle is created on the 1st of each month (or when the account is first used). The ``tokens_total`` is set based on the account's current plan tier.
-2. **Consumption**: As token-eligible services are used, ``tokens_used`` increments atomically. The system checks the allowance before each service call.
-3. **Overflow**: When ``tokens_used`` reaches ``tokens_total``, further token-eligible usage is charged to the credit balance at the overflow rate.
-4. **Expiry**: When the cycle end date passes, the cycle becomes inactive. A new cycle is created for the next month with a fresh token allocation.
+1. **Selection**: The system selects accounts where ``tm_next_topup <= NOW()``.
+2. **State Update**: The account's ``balance_token`` is set to the plan's allocation. ``tm_last_topup`` and ``tm_next_topup`` are updated.
+3. **Ledger Entry**: A billing record is inserted with ``transaction_type: top_up`` and ``reference_type: monthly_allowance``, recording the positive token delta and the resulting balance snapshot.
 
-Unused tokens do **not** carry over between cycles. Each month starts with the full allocation defined by the plan tier.
+The ``tm_next_topup`` field on the account indicates when the next top-up is scheduled.
 
 
 Plan Tiers
 ----------
-Each billing account is assigned a plan tier that determines both resource creation limits and monthly token allowances. New accounts default to the **free** tier.
+Each billing account is assigned a plan tier that determines both resource creation limits and monthly token allocations. New accounts default to the **free** tier.
 
-**Monthly Token Allowances**
+**Monthly Token Allocations**
 
 +----------------------+---------+---------+--------------+-----------+
 | Plan                 | Free    | Basic   | Professional | Unlimited |
@@ -82,7 +87,7 @@ Each billing account is assigned a plan tier that determines both resource creat
 | Tokens per month     |   1,000 |  10,000 |      100,000 | unlimited |
 +----------------------+---------+---------+--------------+-----------+
 
-Tokens reset at the start of each monthly billing cycle. Unused tokens do not carry over.
+Tokens are replenished at the scheduled top-up date. The current token balance is available in the ``balance_token`` field of the account.
 
 **Resource Limits**
 
@@ -123,32 +128,36 @@ VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) 
 
 **Credit Rates (Overflow and Credit-Only)**
 
-+----------------------+------------------+----------------------------------------+
-| Service              | Rate (USD)       | Unit                                   |
-+======================+==================+========================================+
-| VN Calls (overflow)  | $0.0045          | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
-| PSTN Outgoing Calls  | $0.0060          | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
-| PSTN Incoming Calls  | $0.0045          | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
-| SMS (overflow)       | $0.008           | Per message                            |
-+----------------------+------------------+----------------------------------------+
-| Number Purchase      | $5.00            | Per number                             |
-+----------------------+------------------+----------------------------------------+
-| Number Renewal       | $5.00            | Per number                             |
-+----------------------+------------------+----------------------------------------+
-| Extension Calls      | Free             | No charge                              |
-+----------------------+------------------+----------------------------------------+
+All credit rates are stored internally as int64 micros.
+
++----------------------+------------------+------------------+-------------------------+
+| Service              | Rate (USD)       | Rate (micros)    | Unit                    |
++======================+==================+==================+=========================+
+| VN Calls (overflow)  | $0.0045          | 4,500            | Per minute              |
++----------------------+------------------+------------------+-------------------------+
+| PSTN Outgoing Calls  | $0.0060          | 6,000            | Per minute              |
++----------------------+------------------+------------------+-------------------------+
+| PSTN Incoming Calls  | $0.0045          | 4,500            | Per minute              |
++----------------------+------------------+------------------+-------------------------+
+| SMS (overflow)       | $0.008           | 8,000            | Per message             |
++----------------------+------------------+------------------+-------------------------+
+| Number Purchase      | $5.00            | 5,000,000        | Per number              |
++----------------------+------------------+------------------+-------------------------+
+| Number Renewal       | $5.00            | 5,000,000        | Per number              |
++----------------------+------------------+------------------+-------------------------+
+| Extension Calls      | Free             | 0                | No charge               |
++----------------------+------------------+------------------+-------------------------+
 
 **How Token Consumption Works**
 
 When a token-eligible service is used (VN call or SMS):
 
-1. The system checks the current month's token allowance.
+1. The system checks the account's ``balance_token``.
 2. If tokens are available, they are consumed first.
 3. If tokens are partially available, the available tokens are consumed and the remainder overflows to credits.
 4. If no tokens remain, the full cost is charged to credits.
+
+Each transaction is recorded in the billing ledger with the token and credit amounts as signed deltas.
 
 **Rate Calculation Examples**
 
@@ -159,38 +168,40 @@ When a token-eligible service is used (VN call or SMS):
     | Duration: 2 min 15 sec -> 3 minutes        |
     | (ceiling-rounded to next whole minute)      |
     | Token cost: 3 x 1 = 3 tokens               |
-    | Credit cost: $0.00 (covered by tokens)      |
+    | Credit cost: 0 micros (covered by tokens)   |
+    | Ledger entry:                               |
+    |   amount_token: -3                          |
+    |   amount_credit: 0                          |
     +--------------------------------------------+
 
     VN Call (5 minutes) with NO tokens remaining:
     +--------------------------------------------+
     | Duration: 5 minutes                         |
     | Token cost: 0 (exhausted)                   |
-    | Credit cost: 5 x $0.0045 = $0.0225         |
+    | Credit cost: 5 x 4,500 = 22,500 micros     |
+    | Ledger entry:                               |
+    |   amount_token: 0                           |
+    |   amount_credit: -22500                     |
     +--------------------------------------------+
 
     PSTN Outgoing Call (2 minutes 30 seconds):
     +--------------------------------------------+
     | Duration: 2 min 30 sec -> 3 minutes        |
     | (ceiling-rounded to next whole minute)      |
-    | Credit cost: 3 x $0.0060 = $0.018          |
-    | (always credit-only, no token deduction)    |
+    | Credit cost: 3 x 6,000 = 18,000 micros     |
+    | Ledger entry:                               |
+    |   amount_token: 0                           |
+    |   amount_credit: -18000                     |
     +--------------------------------------------+
 
-    SMS Campaign (100 messages) with 500 tokens remaining:
+    Monthly Token Top-Up (Free plan):
     +--------------------------------------------+
-    | Token cost per message: 10 tokens           |
-    | Total tokens needed: 100 x 10 = 1,000      |
-    | Tokens available: 500                       |
-    | Tokens consumed: 500 (50 messages)          |
-    | Overflow to credit: 50 x $0.008 = $0.40    |
-    +--------------------------------------------+
-
-    Number Provisioning (1 number):
-    +--------------------------------------------+
-    | Count: 1 number                            |
-    | Credit cost: 1 x $5.00 = $5.00             |
-    | (always credit-only, no token deduction)    |
+    | Transaction type: top_up                    |
+    | Reference type: monthly_allowance           |
+    | Ledger entry:                               |
+    |   amount_token: +1000                       |
+    |   amount_credit: 0                          |
+    |   balance_token_snapshot: 1000              |
     +--------------------------------------------+
 
 Note: Rates are subject to change. Check the API for current pricing.
@@ -214,51 +225,32 @@ Check and manage your account balance.
         "id": "billing-uuid-123",
         "customer_id": "customer-uuid-456",
         "plan_type": "free",
-        "balance": 150.50,
+        "balance_credit": 150500000,
+        "balance_token": 650,
+        "tm_last_topup": "2024-01-01T00:00:00Z",
+        "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
         "tm_update": "2024-01-15T10:30:00Z"
     }
 
-**Check Current Token Allowance**
+The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token`` is the current token count.
+
+**View Billing Ledger**
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowance?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billings?token=<token>&page_size=10'
 
-**Response:**
-
-.. code::
-
-    {
-        "id": "allowance-uuid-123",
-        "customer_id": "customer-uuid-456",
-        "account_id": "billing-uuid-123",
-        "cycle_start": "2024-01-01T00:00:00Z",
-        "cycle_end": "2024-02-01T00:00:00Z",
-        "tokens_total": 1000,
-        "tokens_used": 350,
-        "tm_create": "2024-01-01T00:00:00Z",
-        "tm_update": "2024-01-15T10:30:00Z"
-    }
-
-The ``tokens_total - tokens_used`` gives you the remaining tokens for the current billing cycle.
-
-**List All Allowance Cycles**
-
-.. code::
-
-    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/allowances?token=<token>'
-
-Returns a paginated list of all allowance cycles (current and past) for the account.
+Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).
 
 **Add Balance (Admin Only)**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/balance?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/balance_add_force?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "amount": 100.00
+            "balance": 100.00
         }'
 
 Note: Balance addition is restricted to users with admin permissions for security.
@@ -266,21 +258,21 @@ Note: Balance addition is restricted to users with admin permissions for securit
 
 Balance Lifecycle
 -----------------
-Account balance changes through specific operations. Token allowances reset each billing cycle.
+Account balance changes through specific operations. Token balances are replenished monthly via the automated top-up process.
 
 **Balance and Token Flow**
 
 ::
 
     +-------------------+     +-------------------+
-    | Add Balance       |     | Monthly Cycle     |
-    | (admin only)      |     | (automatic)       |
+    | Add Balance       |     | Monthly Top-Up    |
+    | (admin only)      |     | (automated cron)  |
     +--------+----------+     +--------+----------+
              |                         |
              v                         v
     +-------------------+     +-------------------+
-    |  Credit Balance   |     |  Token Allowance  |
-    |     $150.50       |     |   650 / 1000      |
+    |  balance_credit   |     |  balance_token    |
+    |  150,500,000      |     |    1,000          |
     +--------+----------+     +--------+----------+
              |                         |
              | PSTN calls,             | VN calls,
@@ -289,16 +281,18 @@ Account balance changes through specific operations. Token allowances reset each
              v                         v
     +-------------------+     +-------------------+
     |   Credit Charges  |     |  Token Usage      |
-    | - $0.018 PSTN call|     | - 3 tokens call   |
-    | - $5.00 number    |     | - 10 tokens SMS   |
-    | - $0.40 overflow  |     |                   |
+    | - 18000 PSTN call |     | - 3 tokens call   |
+    | - 5000000 number  |     | - 10 tokens SMS   |
     +--------+----------+     +--------+----------+
              |                         |
              v                         | exhausted
     +-------------------+              |
     |  Updated Balance  |<-------------+
-    |     $145.08       |   overflow charges
+    |  145,082,000      |   overflow charges
     +-------------------+
+
+    All transactions recorded in billing ledger
+    with signed deltas and balance snapshots.
 
 
 Balance Monitoring
@@ -312,36 +306,13 @@ Monitor balance and token usage to avoid service interruption.
     Before Service Execution:
     +--------------------------------------------+
     | 1. Identify service type                   |
-    | 2. If token-eligible: check token balance  |
+    | 2. If token-eligible: check balance_token  |
     |    - If tokens available -> proceed         |
-    |    - If no tokens -> check credit balance   |
-    | 3. If credit-only: check credit balance    |
+    |    - If no tokens -> check balance_credit   |
+    | 3. If credit-only: check balance_credit    |
     |    - If balance >= cost -> proceed          |
     |    - If balance < cost -> deny service      |
     +--------------------------------------------+
-
-**Low Balance Handling**
-
-::
-
-    +-------------------+     +-------------------+
-    | Balance: $10.00   |     | Tokens: 0 / 1000  |
-    +--------+----------+     +--------+----------+
-             |                         |
-             | Attempt VN call         |
-             | (no tokens left)        |
-             v                         |
-    +-------------------+              |
-    | Check credit      |<-------------+
-    | for overflow      |  overflow
-    +--------+----------+
-             |
-             | $10.00 >= $0.0045/min
-             v
-    +-------------------+
-    | Call proceeds      |
-    | (credit charged)   |
-    +-------------------+
 
 
 Common Scenarios
@@ -349,7 +320,7 @@ Common Scenarios
 
 **Scenario 1: Token-Based Monthly Usage**
 
-Track token consumption throughout the month.
+Track token consumption via the billing ledger.
 
 ::
 
@@ -358,23 +329,23 @@ Track token consumption throughout the month.
     | Week 1:                                    |
     | - 50 VN calls (avg 3 min) = 150 tokens     |
     | - 20 SMS = 200 tokens                      |
-    | Tokens remaining: 650                      |
+    | balance_token: 650                         |
     |                                            |
     | Week 2:                                    |
     | - 40 VN calls (avg 2 min) = 80 tokens      |
     | - 30 SMS = 300 tokens                      |
-    | Tokens remaining: 270                      |
+    | balance_token: 270                         |
     |                                            |
     | Week 3:                                    |
     | - 30 VN calls (avg 3 min) = 90 tokens      |
     | - 15 SMS = 150 tokens                      |
-    | Tokens remaining: 30                       |
+    | balance_token: 30                          |
     |                                            |
     | Week 4 (tokens nearly exhausted):          |
     | - 10 VN calls (avg 3 min) = 30 tokens      |
     |   (uses last tokens)                       |
     | - 5 SMS = overflow to credit               |
-    |   5 x $0.008 = $0.04 credit charge         |
+    |   5 x 8,000 = 40,000 micros credit charge  |
     +--------------------------------------------+
 
 **Scenario 2: Mixed Token and Credit Usage**
@@ -389,44 +360,19 @@ Plan for costs across token-eligible and credit-only services.
     | - Tokens needed: 200 x 3 = 600             |
     | - If 400 tokens available:                 |
     |   - 400 tokens consumed                    |
-    |   - 200 overflow x 3 min x $0.0045 = $2.70|
+    |   - 200 overflow x 3 min x 4,500 micros    |
+    |     = 2,700,000 micros ($2.70)             |
     |                                            |
     | PSTN Calls: 50 calls (avg 2 min)           |
-    | - Credit: 50 x 2 x $0.006 = $0.60         |
-    | (always credit, no token deduction)         |
+    | - Credit: 50 x 2 x 6,000 = 600,000 micros |
+    |   ($0.60)                                  |
     |                                            |
-    | SMS: 100 messages                          |
-    | - Tokens needed: 100 x 10 = 1,000          |
-    | - If 0 tokens remaining:                   |
-    |   - Credit: 100 x $0.008 = $0.80          |
+    | SMS: 100 messages (no tokens remaining)    |
+    | - Credit: 100 x 8,000 = 800,000 micros    |
+    |   ($0.80)                                  |
     |                                            |
-    | Total credit needed: $2.70 + $0.60 + $0.80 |
-    |                    = $4.10                  |
+    | Total credit: 4,100,000 micros ($4.10)     |
     +--------------------------------------------+
-
-**Scenario 3: Low Balance Alert**
-
-Handle low balance situations.
-
-::
-
-    1. Balance drops below threshold
-       +--------------------------------------------+
-       | Balance: $15.00                           |
-       | Threshold: $50.00                         |
-       | Tokens: 0 / 1000 (exhausted)              |
-       | Status: LOW BALANCE                       |
-       +--------------------------------------------+
-
-    2. Add funds (admin action)
-       POST /billing_accounts/{id}/balance
-       { "amount": 200.00 }
-
-    3. Balance restored
-       +--------------------------------------------+
-       | Balance: $215.00                          |
-       | Status: OK                                |
-       +--------------------------------------------+
 
 
 Best Practices
@@ -434,9 +380,9 @@ Best Practices
 
 **1. Token Monitoring**
 
-- Check token usage regularly via the allowance endpoint
-- Plan upgrades to higher tiers if tokens are consistently exhausted early in the cycle
-- Track which services consume the most tokens
+- Check ``balance_token`` on the account regularly
+- Plan upgrades to higher tiers if tokens are consistently exhausted before the next top-up
+- Review billing ledger entries to understand consumption patterns
 
 **2. Balance Monitoring**
 
@@ -449,17 +395,18 @@ Best Practices
 - Separate estimates into token-eligible and credit-only services
 - Account for token overflow in budget planning
 - Include retry costs in estimates
+- Note all credit amounts are in micros (divide by 1,000,000 for USD)
 
 **4. Security**
 
 - Restrict balance add permissions to admins
-- Monitor for unusual usage patterns
-- Review billing regularly for anomalies
+- Monitor for unusual usage patterns via the billing ledger
+- Review billing history regularly for anomalies
 
 **5. Plan Selection**
 
 - Choose plan tier based on expected VN call and SMS volume
-- Compare token allowance cost vs. credit-only cost at each tier
+- Compare token allocation cost vs. credit-only cost at each tier
 - Consider upgrading if monthly overflow charges are significant
 
 
@@ -471,14 +418,15 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Services being denied     | Check credit balance and token allowance;      |
+| Services being denied     | Check ``balance_credit`` and                   |
+|                           | ``balance_token`` on the account;              |
 |                           | add funds or upgrade plan if needed            |
 +---------------------------+------------------------------------------------+
-| Cannot add balance        | Verify admin permissions; check API token      |
+| Cannot add balance        | Verify admin permissions; check API token       |
 |                           | validity                                       |
 +---------------------------+------------------------------------------------+
-| Balance not updating      | Allow time for transaction processing; check   |
-|                           | for API errors in response                     |
+| Balance not updating      | Allow time for transaction processing; check    |
+|                           | billing ledger for recent entries               |
 +---------------------------+------------------------------------------------+
 
 **Token Issues**
@@ -486,14 +434,14 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Tokens exhausted early    | Review usage patterns via allowance endpoint;   |
+| Tokens exhausted early    | Review billing ledger for usage patterns;       |
 |                           | consider upgrading plan tier for more tokens    |
 +---------------------------+------------------------------------------------+
-| Unexpected overflow       | Check token balance via allowance endpoint;     |
-|                           | VN calls and SMS consume tokens first          |
+| Unexpected overflow       | Check ``balance_token`` on account; VN calls    |
+|                           | and SMS consume tokens first                   |
 +---------------------------+------------------------------------------------+
-| Tokens not resetting      | Verify billing cycle dates; tokens reset       |
-|                           | at the start of each monthly cycle             |
+| Tokens not replenishing   | Check ``tm_next_topup`` on the account;         |
+|                           | tokens are replenished by the automated cron    |
 +---------------------------+------------------------------------------------+
 
 **Billing Issues**
@@ -501,11 +449,11 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Unexpected charges        | Review call/message logs; check if tokens      |
+| Unexpected charges        | Review billing ledger entries; check if tokens  |
 |                           | were exhausted causing credit overflow          |
 +---------------------------+------------------------------------------------+
-| Rate seems wrong          | Verify current rate structure; note calls are   |
-|                           | billed per minute (ceiling-rounded)            |
+| Rate seems wrong          | Verify current rate structure; note all credit  |
+|                           | amounts are in micros (divide by 1,000,000)    |
 +---------------------------+------------------------------------------------+
 
 

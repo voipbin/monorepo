@@ -15,7 +15,6 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -25,9 +24,9 @@ type AccountHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
 	List(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error)
-	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
-	SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error)
-	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
+	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error)
+	SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error)
+	AddBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error)
 	UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error)
 	UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error)
@@ -45,11 +44,10 @@ type AccountHandler interface {
 
 // accountHandler define
 type accountHandler struct {
-	utilHandler      utilhandler.UtilHandler
-	reqHandler       requesthandler.RequestHandler
-	db               dbhandler.DBHandler
-	notifyHandler    notifyhandler.NotifyHandler
-	allowanceHandler allowancehandler.AllowanceHandler
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	notifyHandler notifyhandler.NotifyHandler
 }
 
 var (
@@ -82,12 +80,11 @@ func init() {
 }
 
 // NewAccountHandler returns a new AccountHandler
-func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, allowanceHandler allowancehandler.AllowanceHandler) AccountHandler {
+func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AccountHandler {
 	return &accountHandler{
-		utilHandler:      utilhandler.NewUtilHandler(),
-		reqHandler:       reqHandler,
-		db:               db,
-		notifyHandler:    notifyHandler,
-		allowanceHandler: allowanceHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		db:            db,
+		notifyHandler: notifyHandler,
 	}
 }

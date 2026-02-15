@@ -45,7 +45,7 @@ func (m *MockAccountHandler) EXPECT() *MockAccountHandlerMockRecorder {
 }
 
 // AddBalance mocks base method.
-func (m *MockAccountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+func (m *MockAccountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(*account.Account)
@@ -223,7 +223,7 @@ func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *g
 }
 
 // SubtractBalance mocks base method.
-func (m *MockAccountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+func (m *MockAccountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SubtractBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(*account.Account)
@@ -238,7 +238,7 @@ func (mr *MockAccountHandlerMockRecorder) SubtractBalance(ctx, accountID, balanc
 }
 
 // SubtractBalanceWithCheck mocks base method.
-func (m *MockAccountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error) {
+func (m *MockAccountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SubtractBalanceWithCheck", ctx, accountID, amount)
 	ret0, _ := ret[0].(*account.Account)

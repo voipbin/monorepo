@@ -17,7 +17,6 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -52,8 +51,8 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8802cee4-09f5-11ee-9491-378bbbda7e50"),
 				},
-				Balance:  10.0,
-				TMDelete: nil,
+				BalanceCredit: 10000000,
+				TMDelete:      nil,
 			},
 			expectRes: true,
 		},
@@ -99,14 +98,12 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := accountHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				reqHandler:       mockReq,
-				allowanceHandler: mockAllowance,
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -125,12 +122,6 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 
 			// IsValidBalance will call AccountGet again
 			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
-
-			// For "account has enough balance" test, IsValidBalance checks allowance then credit
-			if tt.name == "account has enough balance" {
-				// Call type: check allowance first, then fall back to credit
-				mockAllowance.EXPECT().GetCurrentCycle(ctx, tt.responseAccount.ID).Return(nil, dbhandler.ErrNotFound)
-			}
 
 			res, err := h.IsValidBalanceByCustomerID(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
 			if err != nil {
@@ -163,18 +154,34 @@ func Test_IsValidBalance(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "account has enough balance",
+			name: "account has enough credit balance",
 
-			accountID:   uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
+			accountID:   uuid.FromStringOrNil("53d1e596-1342-11ee-86c6-23afd019902d"),
 			billingType: billing.ReferenceTypeCall,
 			count:       1,
 
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
+					ID: uuid.FromStringOrNil("53d1e596-1342-11ee-86c6-23afd019902d"),
 				},
-				Balance:  10.0,
-				TMDelete: nil,
+				BalanceCredit: 10000000,
+				TMDelete:      nil,
+			},
+			expectRes: true,
+		},
+		{
+			name: "account has enough token balance",
+
+			accountID:   uuid.FromStringOrNil("54d2e697-1342-11ee-86c6-23afd019902d"),
+			billingType: billing.ReferenceTypeCall,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("54d2e697-1342-11ee-86c6-23afd019902d"),
+				},
+				BalanceToken: 100,
+				TMDelete:     nil,
 			},
 			expectRes: true,
 		},
@@ -205,8 +212,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a1b1c1d1-1111-11ee-86c6-111111111111"),
 				},
-				Balance:  10.0,
-				TMDelete: &tmDelete,
+				BalanceCredit: 10000000,
+				TMDelete:      &tmDelete,
 			},
 			expectRes: false,
 		},
@@ -221,8 +228,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a2b2c2d2-2222-11ee-86c6-222222222222"),
 				},
-				Balance:  0.001,
-				TMDelete: nil,
+				BalanceCredit: 1,
+				TMDelete:      nil,
 			},
 			expectRes: false,
 		},
@@ -237,8 +244,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a3b3c3d3-3333-11ee-86c6-333333333333"),
 				},
-				Balance:  4.99,
-				TMDelete: nil,
+				BalanceCredit: 100,
+				TMDelete:      nil,
 			},
 			expectRes: false,
 		},
@@ -253,8 +260,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a4b4c4d4-4444-11ee-86c6-444444444444"),
 				},
-				Balance:  0,
-				TMDelete: nil,
+				BalanceCredit: 0,
+				TMDelete:      nil,
 			},
 			expectRes: true,
 		},
@@ -269,8 +276,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a5b5c5d5-5555-11ee-86c6-555555555555"),
 				},
-				Balance:  1.0,
-				TMDelete: nil,
+				BalanceCredit: 1000000,
+				TMDelete:      nil,
 			},
 			expectRes: true,
 		},
@@ -285,8 +292,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6b6c6d6-6666-11ee-86c6-666666666666"),
 				},
-				Balance:  10.0,
-				TMDelete: nil,
+				BalanceCredit: 10000000,
+				TMDelete:      nil,
 			},
 			expectRes: true,
 		},
@@ -301,8 +308,8 @@ func Test_IsValidBalance(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a7b7c7d7-7777-11ee-86c6-777777777777"),
 				},
-				Balance:  10.0,
-				TMDelete: nil,
+				BalanceCredit: 10000000,
+				TMDelete:      nil,
 			},
 			expectRes: false,
 			expectErr: true,
@@ -318,30 +325,16 @@ func Test_IsValidBalance(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := accountHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				reqHandler:       mockReq,
-				allowanceHandler: mockAllowance,
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
-
-			// Set up allowance mocks for types that check allowance
-			if tt.responseAccount.TMDelete == nil && tt.responseAccount.PlanType != account.PlanTypeUnlimited && tt.billingType != billing.ReferenceTypeCallExtension && !tt.expectErr {
-				switch tt.billingType {
-				case billing.ReferenceTypeCall:
-					// Call checks allowance first
-					mockAllowance.EXPECT().GetCurrentCycle(ctx, tt.accountID).Return(nil, dbhandler.ErrNotFound)
-				case billing.ReferenceTypeSMS:
-					// SMS checks allowance first
-					mockAllowance.EXPECT().GetCurrentCycle(ctx, tt.accountID).Return(nil, dbhandler.ErrNotFound)
-				}
-			}
 
 			res, err := h.IsValidBalance(ctx, tt.accountID, tt.billingType, tt.country, tt.count)
 			if tt.expectErr {

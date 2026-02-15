@@ -11,8 +11,8 @@ func Test_GetCostInfo(t *testing.T) {
 
 		costType CostType
 
-		expectTokenPerUnit  int
-		expectCreditPerUnit float32
+		expectTokenPerUnit  int64
+		expectCreditPerUnit int64
 	}{
 		{
 			name:                "call_pstn_outgoing - credit only",
@@ -83,7 +83,7 @@ func Test_GetCostInfo(t *testing.T) {
 				t.Errorf("Wrong tokenPerUnit. expect: %d, got: %d", tt.expectTokenPerUnit, gotTokenPerUnit)
 			}
 			if gotCreditPerUnit != tt.expectCreditPerUnit {
-				t.Errorf("Wrong creditPerUnit. expect: %f, got: %f", tt.expectCreditPerUnit, gotCreditPerUnit)
+				t.Errorf("Wrong creditPerUnit. expect: %d, got: %d", tt.expectCreditPerUnit, gotCreditPerUnit)
 			}
 		})
 	}

@@ -3,7 +3,6 @@ package billinghandler
 import (
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -98,19 +97,7 @@ func (h *billingHandler) BillingStart(
 }
 
 // BillingEnd finalises a billing record by calculating costs, consuming tokens/credits,
-// and updating the billing record.
-//
-// NOTE: Token consumption (via AllowanceConsumeTokens) and the billing record update
-// (via UpdateStatusEnd) are NOT in a single database transaction. This is a deliberate
-// trade-off: AllowanceConsumeTokens locks both the allowance and account rows in one
-// transaction, and the billing record update is a separate write. If the billing update
-// fails after tokens are consumed, the tokens are "lost" for that cycle. This is
-// acceptable because:
-//   - The event will be retried by the message broker (RabbitMQ redelivery), which will
-//     see the billing record still in progressing status and re-run BillingEnd.
-//   - The idempotency check in BillingStart prevents duplicate billing creation.
-//   - In the worst case, a small number of tokens are consumed without a matching billing
-//     record — this is preferable to holding long-lived locks across two tables.
+// and updating the billing record atomically using BillingConsumeAndRecord.
 func (h *billingHandler) BillingEnd(
 	ctx context.Context,
 	bill *billing.Billing,
@@ -125,72 +112,58 @@ func (h *billingHandler) BillingEnd(
 		"tm_billing_end": tmBillingEnd,
 	})
 
-	// calculate cost unit count (minutes for calls, 1 for SMS/number)
-	var costUnitCount float32
+	// Extension calls are free — no billing needed
+	if bill.CostType == billing.CostTypeCallExtension || bill.CostType == billing.CostTypeCallDirectExt {
+		// Just mark as end with zero costs
+		if err := h.db.BillingSetStatusEnd(ctx, bill.ID, 0, 0, 0, 0, 0, 0, tmBillingEnd); err != nil {
+			log.Errorf("Could not set status to end for free call. err: %v", err)
+			return fmt.Errorf("could not end free billing. err: %v", err)
+		}
+
+		res, err := h.db.BillingGet(ctx, bill.ID)
+		if err != nil {
+			log.Errorf("Could not get updated billing. err: %v", err)
+			return err
+		}
+
+		promBillingEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
+		if res.TMBillingStart != nil && res.TMBillingEnd != nil {
+			promBillingDurationSeconds.WithLabelValues(string(res.ReferenceType)).Observe(res.TMBillingEnd.Sub(*res.TMBillingStart).Seconds())
+		}
+		h.notifyHandler.PublishEvent(ctx, billing.EventTypeBillingUpdated, res)
+		return nil
+	}
+
+	// Calculate usage duration and billable units
+	var usageDuration int
+	var billableUnits int
 	switch bill.ReferenceType {
 	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension:
 		if bill.TMBillingStart != nil && tmBillingEnd != nil {
-			durationSec := tmBillingEnd.Sub(*bill.TMBillingStart).Seconds()
-			costUnitCount = float32(math.Ceil(durationSec / 60.0))
+			usageDuration = int(tmBillingEnd.Sub(*bill.TMBillingStart).Seconds())
+			billableUnits = billing.CalculateBillableUnits(usageDuration)
 		}
-
 	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
-		costUnitCount = 1
-
+		usageDuration = 0
+		billableUnits = 1
 	default:
-		log.WithField("billing", bill).Errorf("Unsupported billing reference type. reference_type: %s", bill.ReferenceType)
+		log.Errorf("Unsupported billing reference type. reference_type: %s", bill.ReferenceType)
 		return fmt.Errorf("unsupported billing reference type. reference_type: %s", bill.ReferenceType)
 	}
 
-	var costTokenTotal int
-	var costCreditTotal float32
-
-	tokenPerUnit := bill.CostTokenPerUnit
-	creditPerUnit := bill.CostCreditPerUnit
-
-	switch {
-	case bill.CostType == billing.CostTypeCallExtension:
-		// Free — no tokens, no credits
-		costTokenTotal = 0
-		costCreditTotal = 0
-
-	case tokenPerUnit > 0:
-		// Token-eligible (VN call, SMS)
-		tokensNeeded := int(costUnitCount) * tokenPerUnit
-
-		tokensConsumed, creditCharged, err := h.allowanceHandler.ConsumeTokens(ctx, bill.AccountID, tokensNeeded, creditPerUnit, tokenPerUnit)
-		if err != nil {
-			log.Errorf("Could not consume tokens. Reverting billing status. err: %v", err)
-			if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
-				log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
-			}
-			return errors.Wrap(err, "could not consume tokens")
-		}
-		costTokenTotal = tokensConsumed
-		costCreditTotal = creditCharged
-
-	case creditPerUnit > 0:
-		// Credit-only (PSTN calls, number purchases)
-		costCreditTotal = costUnitCount * creditPerUnit
-
-		if costCreditTotal > 0 {
-			if _, err := h.accountHandler.SubtractBalanceWithCheck(ctx, bill.AccountID, costCreditTotal); err != nil {
-				log.Errorf("Could not subtract the balance from the account. Reverting billing status. err: %v", err)
-				if revertErr := h.db.BillingSetStatus(ctx, bill.ID, billing.StatusProgressing); revertErr != nil {
-					log.Errorf("Could not revert billing status to progressing. billing_id: %s, err: %v", bill.ID, revertErr)
-				}
-				return errors.Wrap(err, "could not subtract the account balance from the account")
-			}
-		}
-		costTokenTotal = 0
-	}
-
-	tmp, err := h.UpdateStatusEnd(ctx, bill.ID, costUnitCount, costTokenTotal, costCreditTotal, tmBillingEnd)
+	// Use atomic consume-and-record transaction
+	res, err := h.db.BillingConsumeAndRecord(ctx, bill, bill.AccountID, billableUnits, usageDuration, bill.RateTokenPerUnit, bill.RateCreditPerUnit, tmBillingEnd)
 	if err != nil {
-		log.Errorf("Could not update billing status end. err: %v", err)
-		return errors.Wrap(err, "could not update billing status end")
+		log.Errorf("Could not consume and record billing. err: %v", err)
+		return fmt.Errorf("could not consume and record billing. err: %v", err)
 	}
-	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
+	log.WithField("billing", res).Debugf("Billing consumed and recorded. billing_id: %s", res.ID)
+
+	promBillingEndTotal.WithLabelValues(string(res.ReferenceType)).Inc()
+	if res.TMBillingStart != nil && res.TMBillingEnd != nil {
+		promBillingDurationSeconds.WithLabelValues(string(res.ReferenceType)).Observe(res.TMBillingEnd.Sub(*res.TMBillingStart).Seconds())
+	}
+	h.notifyHandler.PublishEvent(ctx, billing.EventTypeBillingUpdated, res)
 
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -18,7 +19,6 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
@@ -78,16 +78,11 @@ func initCommand() *cobra.Command {
 	cmdRoot.AddCommand(cmdAccount)
 	cmdRoot.AddCommand(cmdBilling)
 
-	// Allowance subcommands
-	cmdAllowance := &cobra.Command{Use: "allowance", Short: "Allowance operations"}
-	cmdAllowance.AddCommand(cmdAllowanceGet())
-	cmdAllowance.AddCommand(cmdAllowanceList())
-	cmdAllowance.AddCommand(cmdAllowanceProcessAll())
-	cmdAllowance.AddCommand(cmdAllowanceEnsure())
-	cmdAllowance.AddCommand(cmdAllowanceAddTokens())
-	cmdAllowance.AddCommand(cmdAllowanceSubtractTokens())
+	// Top-up subcommands
+	cmdTopUp := &cobra.Command{Use: "topup", Short: "Top-up operations"}
+	cmdTopUp.AddCommand(cmdTopUpRun())
+	cmdRoot.AddCommand(cmdTopUp)
 
-	cmdRoot.AddCommand(cmdAllowance)
 	return cmdRoot
 }
 
@@ -154,7 +149,7 @@ func cmdAccountUpdate() *cobra.Command {
 }
 
 func runAccountUpdate(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -193,7 +188,7 @@ func cmdAccountUpdatePaymentInfo() *cobra.Command {
 }
 
 func runAccountUpdatePaymentInfo(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -241,7 +236,7 @@ func cmdAccountUpdatePlanType() *cobra.Command {
 }
 
 func runAccountUpdatePlanType(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -283,13 +278,13 @@ func cmdAccountDelete() *cobra.Command {
 func cmdAccountAddBalance() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-balance",
-		Short: "Add balance to an account",
+		Short: "Add balance (credit micros) to an account",
 		RunE:  runAccountAddBalance,
 	}
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Account ID (required)")
-	flags.Float64("amount", 0, "Amount to add (required)")
+	flags.Int64("amount", 0, "Amount in micros to add (required)")
 
 	return cmd
 }
@@ -297,19 +292,19 @@ func cmdAccountAddBalance() *cobra.Command {
 func cmdAccountSubtractBalance() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "subtract-balance",
-		Short: "Subtract balance from an account",
+		Short: "Subtract balance (credit micros) from an account",
 		RunE:  runAccountSubtractBalance,
 	}
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Account ID (required)")
-	flags.Float64("amount", 0, "Amount to subtract (required)")
+	flags.Int64("amount", 0, "Amount in micros to subtract (required)")
 
 	return cmd
 }
 
 func runAccountCreate(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -333,7 +328,7 @@ func runAccountCreate(cmd *cobra.Command, args []string) error {
 }
 
 func runAccountGet(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -352,7 +347,7 @@ func runAccountGet(cmd *cobra.Command, args []string) error {
 }
 
 func runAccountList(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -379,7 +374,7 @@ func runAccountList(cmd *cobra.Command, args []string) error {
 }
 
 func runAccountDelete(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -398,7 +393,7 @@ func runAccountDelete(cmd *cobra.Command, args []string) error {
 }
 
 func runAccountAddBalance(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -408,12 +403,12 @@ func runAccountAddBalance(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid account ID format")
 	}
 
-	amount := viper.GetFloat64("amount")
+	amount := viper.GetInt64("amount")
 	if amount <= 0 {
 		return fmt.Errorf("amount must be positive")
 	}
 
-	res, err := accountHandler.AddBalance(context.Background(), targetID, float32(amount))
+	res, err := accountHandler.AddBalance(context.Background(), targetID, amount)
 	if err != nil {
 		return errors.Wrap(err, "failed to add balance")
 	}
@@ -422,7 +417,7 @@ func runAccountAddBalance(cmd *cobra.Command, args []string) error {
 }
 
 func runAccountSubtractBalance(cmd *cobra.Command, args []string) error {
-	accountHandler, _, _, err := initHandlers()
+	accountHandler, _, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -432,12 +427,12 @@ func runAccountSubtractBalance(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid account ID format")
 	}
 
-	amount := viper.GetFloat64("amount")
+	amount := viper.GetInt64("amount")
 	if amount <= 0 {
 		return fmt.Errorf("amount must be positive")
 	}
 
-	res, err := accountHandler.SubtractBalance(context.Background(), targetID, float32(amount))
+	res, err := accountHandler.SubtractBalance(context.Background(), targetID, amount)
 	if err != nil {
 		return errors.Wrap(err, "failed to subtract balance")
 	}
@@ -477,7 +472,7 @@ func cmdBillingList() *cobra.Command {
 }
 
 func runBillingGet(cmd *cobra.Command, args []string) error {
-	_, billingHandler, _, err := initHandlers()
+	_, billingHandler, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -496,7 +491,7 @@ func runBillingGet(cmd *cobra.Command, args []string) error {
 }
 
 func runBillingList(cmd *cobra.Command, args []string) error {
-	_, billingHandler, _, err := initHandlers()
+	_, billingHandler, err := initHandlers()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
@@ -532,15 +527,15 @@ func runBillingList(cmd *cobra.Command, args []string) error {
 
 // Handler initialization
 
-func initHandlers() (accounthandler.AccountHandler, billinghandler.BillingHandler, allowancehandler.AllowanceHandler, error) {
+func initHandlers() (accounthandler.AccountHandler, billinghandler.BillingHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "could not connect to the database")
+		return nil, nil, errors.Wrapf(err, "could not connect to the database")
 	}
 
 	cache, err := initCache()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	return initBillingHandlers(db, cache)
@@ -554,7 +549,7 @@ func initCache() (cachehandler.CacheHandler, error) {
 	return res, nil
 }
 
-func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accounthandler.AccountHandler, billinghandler.BillingHandler, allowancehandler.AllowanceHandler, error) {
+func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accounthandler.AccountHandler, billinghandler.BillingHandler, error) {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
@@ -562,208 +557,74 @@ func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accoun
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, "")
 
-	allowHandler := allowancehandler.NewAllowanceHandler(db)
-	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, allowHandler)
-	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler, allowHandler)
+	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
+	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler)
 
-	return accHandler, billHandler, allowHandler, nil
+	return accHandler, billHandler, nil
 }
 
-// Allowance commands
-
-func cmdAllowanceGet() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "get",
-		Short: "Get current allowance cycle for an account",
-		RunE:  runAllowanceGet,
+func initDB() (dbhandler.DBHandler, error) {
+	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not connect to the database")
 	}
-	flags := cmd.Flags()
-	flags.String("account-id", "", "Account ID (required)")
-	return cmd
-}
 
-func cmdAllowanceList() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List allowance cycles for an account",
-		RunE:  runAllowanceList,
+	cache, err := initCache()
+	if err != nil {
+		return nil, err
 	}
-	flags := cmd.Flags()
-	flags.String("account-id", "", "Account ID (required)")
-	flags.Int("limit", 100, "Limit the number of allowance cycles to retrieve")
-	flags.String("token", "", "Pagination token")
-	return cmd
+
+	return dbhandler.NewHandler(sqlDB, cache), nil
 }
 
-func cmdAllowanceProcessAll() *cobra.Command {
+// Top-up commands
+
+func cmdTopUpRun() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "process-all",
-		Short: "Create missing allowance cycles for all accounts",
-		RunE:  runAllowanceProcessAll,
+		Use:   "run",
+		Short: "Run immediate monthly top-up processing for all eligible accounts",
+		RunE:  runTopUpRun,
 	}
 	return cmd
 }
 
-func cmdAllowanceEnsure() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "ensure",
-		Short: "Ensure current allowance cycle exists for an account",
-		RunE:  runAllowanceEnsure,
-	}
-	flags := cmd.Flags()
-	flags.String("account-id", "", "Account ID (required)")
-	return cmd
-}
-
-func cmdAllowanceAddTokens() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "add-tokens",
-		Short: "Add tokens to current allowance cycle",
-		RunE:  runAllowanceAddTokens,
-	}
-	flags := cmd.Flags()
-	flags.String("account-id", "", "Account ID (required)")
-	flags.Int("amount", 0, "Number of tokens to add (required)")
-	return cmd
-}
-
-func cmdAllowanceSubtractTokens() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "subtract-tokens",
-		Short: "Subtract tokens from current allowance cycle",
-		RunE:  runAllowanceSubtractTokens,
-	}
-	flags := cmd.Flags()
-	flags.String("account-id", "", "Account ID (required)")
-	flags.Int("amount", 0, "Number of tokens to subtract (required)")
-	return cmd
-}
-
-func runAllowanceGet(cmd *cobra.Command, args []string) error {
-	_, _, allowanceHandler, err := initHandlers()
+func runTopUpRun(cmd *cobra.Command, args []string) error {
+	db, err := initDB()
 	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
+		return errors.Wrap(err, "failed to initialize database")
 	}
 
-	accountID, err := resolveUUID("account-id", "Account ID")
+	now := time.Now()
+	filters := map[account.Field]any{
+		account.FieldDeleted: false,
+	}
+
+	accounts, err := db.AccountList(context.Background(), 1000, "", filters)
 	if err != nil {
-		return errors.Wrap(err, "invalid account ID format")
+		return errors.Wrap(err, "failed to list accounts")
 	}
 
-	res, err := allowanceHandler.GetCurrentCycle(context.Background(), accountID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get current allowance cycle")
+	processed := 0
+	for _, a := range accounts {
+		if a.TmNextTopUp == nil || a.TmNextTopUp.After(now) {
+			continue
+		}
+
+		tokenAmount, ok := account.PlanTokenMap[a.PlanType]
+		if !ok || tokenAmount <= 0 {
+			continue
+		}
+
+		if err := db.AccountTopUpTokens(context.Background(), a.ID, a.CustomerID, tokenAmount, string(a.PlanType)); err != nil {
+			fmt.Printf("ERROR: account_id=%s err=%v\n", a.ID, err)
+			continue
+		}
+		fmt.Printf("OK: account_id=%s tokens=%d\n", a.ID, tokenAmount)
+		processed++
 	}
 
-	return printJSON(res)
-}
-
-func runAllowanceList(cmd *cobra.Command, args []string) error {
-	_, _, allowanceHandler, err := initHandlers()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	accountID, err := resolveUUID("account-id", "Account ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid account ID format")
-	}
-
-	limit := viper.GetInt("limit")
-	token := viper.GetString("token")
-
-	res, err := allowanceHandler.ListByAccountID(context.Background(), accountID, uint64(limit), token)
-	if err != nil {
-		return errors.Wrap(err, "failed to list allowance cycles")
-	}
-
-	return printJSON(res)
-}
-
-func runAllowanceProcessAll(cmd *cobra.Command, args []string) error {
-	_, _, allowanceHandler, err := initHandlers()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	if err := allowanceHandler.ProcessAllCycles(context.Background()); err != nil {
-		return errors.Wrap(err, "failed to process all cycles")
-	}
-
-	fmt.Println(`{"status":"ok"}`)
+	fmt.Printf("\nProcessed %d accounts.\n", processed)
 	return nil
-}
-
-func runAllowanceEnsure(cmd *cobra.Command, args []string) error {
-	accountHandler, _, allowanceHandler, err := initHandlers()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	accountID, err := resolveUUID("account-id", "Account ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid account ID format")
-	}
-
-	acc, err := accountHandler.Get(context.Background(), accountID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get account")
-	}
-
-	res, err := allowanceHandler.EnsureCurrentCycle(context.Background(), accountID, acc.CustomerID, acc.PlanType)
-	if err != nil {
-		return errors.Wrap(err, "failed to ensure allowance cycle")
-	}
-
-	return printJSON(res)
-}
-
-func runAllowanceAddTokens(cmd *cobra.Command, args []string) error {
-	_, _, allowanceHandler, err := initHandlers()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	accountID, err := resolveUUID("account-id", "Account ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid account ID format")
-	}
-
-	amount := viper.GetInt("amount")
-	if amount <= 0 {
-		return fmt.Errorf("amount must be positive")
-	}
-
-	res, err := allowanceHandler.AddTokens(context.Background(), accountID, amount)
-	if err != nil {
-		return errors.Wrap(err, "failed to add tokens")
-	}
-
-	return printJSON(res)
-}
-
-func runAllowanceSubtractTokens(cmd *cobra.Command, args []string) error {
-	_, _, allowanceHandler, err := initHandlers()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	accountID, err := resolveUUID("account-id", "Account ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid account ID format")
-	}
-
-	amount := viper.GetInt("amount")
-	if amount <= 0 {
-		return fmt.Errorf("amount must be positive")
-	}
-
-	res, err := allowanceHandler.SubtractTokens(context.Background(), accountID, amount)
-	if err != nil {
-		return errors.Wrap(err, "failed to subtract tokens")
-	}
-
-	return printJSON(res)
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {

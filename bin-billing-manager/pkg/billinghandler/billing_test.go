@@ -17,7 +17,6 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -78,15 +77,13 @@ func Test_BillingStart(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
 				},
 				AccountID:         uuid.FromStringOrNil("a2519e7c-09f7-11ee-a244-cb84b8c33ef0"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("a21b5088-09f7-11ee-b0f7-2ba7f59b91a8"),
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
-				CostCreditTotal:   0,
-				CostTokenPerUnit:  0,
-				CostTokenTotal:    0,
-				CostUnitCount:     0,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateTokenPerUnit:  0,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -126,14 +123,14 @@ func Test_BillingStart(t *testing.T) {
 					ID:         uuid.FromStringOrNil("f4444444-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("f1111111-0000-0000-0000-000000000001"),
 				},
-				AccountID:     uuid.FromStringOrNil("f3333333-0000-0000-0000-000000000001"),
-				Status:        billing.StatusProgressing,
-				ReferenceType: billing.ReferenceTypeCallExtension,
-				ReferenceID:   uuid.FromStringOrNil("f2222222-0000-0000-0000-000000000001"),
-				CostType:      billing.CostTypeCallExtension,
-				CostUnitCount: 0,
-				TMBillingStart: &tmBillingStart,
-				TMBillingEnd:   nil,
+				AccountID:       uuid.FromStringOrNil("f3333333-0000-0000-0000-000000000001"),
+				TransactionType: billing.TransactionTypeUsage,
+				Status:          billing.StatusProgressing,
+				ReferenceType:   billing.ReferenceTypeCallExtension,
+				ReferenceID:     uuid.FromStringOrNil("f2222222-0000-0000-0000-000000000001"),
+				CostType:        billing.CostTypeCallExtension,
+				TMBillingStart:  &tmBillingStart,
+				TMBillingEnd:    nil,
 			},
 		},
 	}
@@ -147,14 +144,12 @@ func Test_BillingStart(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -224,13 +219,13 @@ func Test_BillingStart_number_sms(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c378602c-16a9-11ee-a774-0f294c1a0b21"),
 					CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
 				},
-				AccountID:        uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
-				Status:           billing.StatusProgressing,
-				ReferenceType:    billing.ReferenceTypeSMS,
-				ReferenceID:      uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
-				CostType:         billing.CostTypeSMS,
-				CostTokenPerUnit: billing.DefaultTokenPerUnitSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				AccountID:         uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
+				Status:            billing.StatusProgressing,
+				ReferenceType:     billing.ReferenceTypeSMS,
+				ReferenceID:       uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
+				CostType:          billing.CostTypeSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 			},
 
 			expectBilling: &billing.Billing{
@@ -239,15 +234,13 @@ func Test_BillingStart_number_sms(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
 				},
 				AccountID:         uuid.FromStringOrNil("c3462102-16a9-11ee-97c1-077bf7697388"),
+				TransactionType:   billing.TransactionTypeUsage,
 				Status:            billing.StatusProgressing,
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
 				CostType:          billing.CostTypeSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
-				CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
-				CostCreditTotal:   0,
-				CostTokenTotal:    0,
-				CostUnitCount:     0,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -263,14 +256,12 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -283,12 +274,9 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
-			// billing end - SMS is token-eligible, so ConsumeTokens is called
-			tokensNeeded := 1 * billing.DefaultTokenPerUnitSMS // costUnitCount=1 * tokenPerUnit
-			mockAllowance.EXPECT().ConsumeTokens(ctx, tt.responseBilling.AccountID, tokensNeeded, billing.DefaultCreditPerUnitSMS, billing.DefaultTokenPerUnitSMS).Return(tokensNeeded, float32(0), nil)
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBilling.ID, float32(1), tokensNeeded, float32(0), tt.tmBillingStart).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
+			// billing end - SMS uses BillingConsumeAndRecord atomically
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.responseBilling, tt.responseBilling.AccountID, 1, 0, billing.DefaultTokenPerUnitSMS, billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -308,11 +296,6 @@ func Test_BillingEnd(t *testing.T) {
 		destination  *commonaddress.Address
 
 		responseBilling *billing.Billing
-		responseAccount *account.Account
-
-		expectCostUnitCount  float32
-		expectCostTokenTotal int
-		expectCostCreditTotal float32
 	}
 
 	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
@@ -330,7 +313,7 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 			},
 			tmBillingEnd: &tmBillingEnd,
@@ -349,19 +332,9 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 			},
-			responseAccount: &account.Account{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
-				},
-			},
-
-			// ceil(10.004s/60) = 1 minute
-			expectCostUnitCount:   1,
-			expectCostTokenTotal:  0,
-			expectCostCreditTotal: 1 * billing.DefaultCreditPerUnitCallPSTNOutgoing,
 		},
 		{
 			name: "reference type sms - token eligible",
@@ -374,8 +347,8 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:     billing.ReferenceTypeSMS,
 				CostType:          billing.CostTypeSMS,
-				CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
 			tmBillingEnd: &tmBillingEnd,
@@ -390,19 +363,10 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:     billing.ReferenceTypeSMS,
 				CostType:          billing.CostTypeSMS,
-				CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
-			responseAccount: &account.Account{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
-				},
-			},
-
-			expectCostUnitCount:   1,
-			expectCostTokenTotal:  billing.DefaultTokenPerUnitSMS,
-			expectCostCreditTotal: 0,
 		},
 	}
 
@@ -415,28 +379,29 @@ func Test_BillingEnd(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
-			if tt.billing.CostTokenPerUnit > 0 {
-				// token-eligible path
-				tokensNeeded := int(tt.expectCostUnitCount) * tt.billing.CostTokenPerUnit
-				mockAllowance.EXPECT().ConsumeTokens(ctx, tt.billing.AccountID, tokensNeeded, tt.billing.CostCreditPerUnit, tt.billing.CostTokenPerUnit).Return(tt.expectCostTokenTotal, tt.expectCostCreditTotal, nil)
-			} else if tt.billing.CostCreditPerUnit > 0 {
-				// credit-only path
-				mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.billing.AccountID, tt.expectCostCreditTotal).Return(tt.responseAccount, nil)
+			// BillingEnd now uses BillingConsumeAndRecord atomically
+			var expectBillableUnits int
+			var expectUsageDuration int
+			switch tt.billing.ReferenceType {
+			case billing.ReferenceTypeCall:
+				expectUsageDuration = int(tt.tmBillingEnd.Sub(*tt.billing.TMBillingStart).Seconds())
+				expectBillableUnits = billing.CalculateBillableUnits(expectUsageDuration)
+			default:
+				expectUsageDuration = 0
+				expectBillableUnits = 1
 			}
 
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.billing.ID, tt.expectCostUnitCount, tt.expectCostTokenTotal, tt.expectCostCreditTotal, tt.tmBillingEnd).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.billing.ID).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, expectBillableUnits, expectUsageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -459,8 +424,6 @@ func Test_BillingEnd_call_extension(t *testing.T) {
 		destination  *commonaddress.Address
 
 		responseBilling *billing.Billing
-
-		expectCostUnitCount float32
 	}{
 		{
 			name: "call_extension skips balance deduction",
@@ -495,9 +458,6 @@ func Test_BillingEnd_call_extension(t *testing.T) {
 				CostType:       billing.CostTypeCallExtension,
 				TMBillingStart: &tmBillingStart,
 			},
-
-			// ceil(10.004s/60) = 1
-			expectCostUnitCount: 1,
 		},
 	}
 
@@ -510,20 +470,19 @@ func Test_BillingEnd_call_extension(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
-			// CostTypeCallExtension -> no tokens, no credits
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.responseBilling.ID, tt.expectCostUnitCount, 0, float32(0), tt.tmBillingEnd).Return(nil)
+			// CostTypeCallExtension -> BillingSetStatusEnd with zero costs
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, 0, 0, int64(0), int64(0), int64(0), int64(0), tt.tmBillingEnd).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -580,14 +539,12 @@ func Test_BillingStart_idempotent(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -603,7 +560,7 @@ func Test_BillingStart_idempotent(t *testing.T) {
 	}
 }
 
-func Test_BillingEnd_subtract_error(t *testing.T) {
+func Test_BillingEnd_consume_error(t *testing.T) {
 
 	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
 	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
@@ -617,7 +574,7 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 		destination  *commonaddress.Address
 	}{
 		{
-			name: "subtract error propagates",
+			name: "consume and record error propagates",
 
 			billing: &billing.Billing{
 				Identity: commonidentity.Identity{
@@ -626,7 +583,7 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("e2222222-0000-0000-0000-000000000001"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 			},
 			tmBillingEnd: &tmBillingEnd,
@@ -644,22 +601,19 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
-			// credit-only path
-			costCreditTotal := float32(1) * billing.DefaultCreditPerUnitCallPSTNOutgoing
-			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.billing.AccountID, costCreditTotal).Return(nil, fmt.Errorf("insufficient balance"))
-			// expect status revert to progressing after subtract failure
-			mockDB.EXPECT().BillingSetStatus(ctx, tt.billing.ID, billing.StatusProgressing).Return(nil)
+			// BillingConsumeAndRecord returns error
+			usageDuration := int(tt.tmBillingEnd.Sub(*tt.billing.TMBillingStart).Seconds())
+			billableUnits := billing.CalculateBillableUnits(usageDuration)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(nil, fmt.Errorf("insufficient balance"))
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {
@@ -706,14 +660,12 @@ func Test_BillingStart_db_error_on_idempotency_check(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -747,7 +699,6 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 
 		existingBilling *billing.Billing
 		responseBilling *billing.Billing
-		responseAccount *account.Account
 	}{
 		{
 			name: "existing progressing SMS billing - should retry end",
@@ -769,8 +720,8 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeSMS,
-				CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
 			responseBilling: &billing.Billing{
@@ -782,14 +733,9 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeSMS,
-				CostTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitSMS,
+				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
-			},
-			responseAccount: &account.Account{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("10000006-0000-0000-0000-000000000001"),
-				},
 			},
 		},
 	}
@@ -803,26 +749,21 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
 			// idempotency check - existing billing found with progressing status
 			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(tt.existingBilling, nil)
 
-			// BillingEnd should be called - SMS is token-eligible
-			tokensNeeded := 1 * billing.DefaultTokenPerUnitSMS
-			mockAllowance.EXPECT().ConsumeTokens(ctx, tt.existingBilling.AccountID, tokensNeeded, billing.DefaultCreditPerUnitSMS, billing.DefaultTokenPerUnitSMS).Return(tokensNeeded, float32(0), nil)
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.existingBilling.ID, float32(1), tokensNeeded, float32(0), tt.tmBillingStart).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.existingBilling.ID).Return(tt.responseBilling, nil)
+			// BillingEnd should be called - SMS uses BillingConsumeAndRecord atomically
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.existingBilling, tt.existingBilling.AccountID, 1, 0, billing.DefaultTokenPerUnitSMS, billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination)
 			if err != nil {
@@ -880,14 +821,12 @@ func Test_BillingStart_idempotent_progressing_call(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -950,14 +889,12 @@ func Test_BillingStart_unsupported_reference_type(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -1014,14 +951,12 @@ func Test_BillingStart_account_not_found(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -1087,14 +1022,12 @@ func Test_BillingStart_create_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -1138,7 +1071,7 @@ func Test_BillingEnd_nil_timestamps(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("10000014-0000-0000-0000-000000000001"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    nil,
 			},
 			tmBillingEnd: nil,
@@ -1152,7 +1085,7 @@ func Test_BillingEnd_nil_timestamps(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("10000014-0000-0000-0000-000000000001"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 			},
 		},
 	}
@@ -1166,21 +1099,18 @@ func Test_BillingEnd_nil_timestamps(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
-			// costUnitCount=0, creditPerUnit > 0, costCreditTotal = 0*creditPerUnit = 0
-			// SubtractBalanceWithCheck is skipped because costCreditTotal == 0
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.billing.ID, float32(0), 0, float32(0), (*time.Time)(nil)).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.billing.ID).Return(tt.responseBilling, nil)
+			// nil timestamps: usageDuration=0, billableUnits=0
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, 0, 0, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, (*time.Time)(nil)).Return(tt.responseBilling, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err != nil {
@@ -1226,14 +1156,12 @@ func Test_BillingEnd_unsupported_reference_type(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
@@ -1247,7 +1175,7 @@ func Test_BillingEnd_unsupported_reference_type(t *testing.T) {
 	}
 }
 
-func Test_BillingEnd_update_status_end_error(t *testing.T) {
+func Test_BillingEnd_set_status_end_error(t *testing.T) {
 
 	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
 	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
@@ -1261,7 +1189,7 @@ func Test_BillingEnd_update_status_end_error(t *testing.T) {
 		destination  *commonaddress.Address
 	}{
 		{
-			name: "update status end error",
+			name: "consume and record error",
 
 			billing: &billing.Billing{
 				Identity: commonidentity.Identity{
@@ -1270,7 +1198,7 @@ func Test_BillingEnd_update_status_end_error(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("10000016-0000-0000-0000-000000000002"),
 				ReferenceType:     billing.ReferenceTypeCall,
 				CostType:          billing.CostTypeCallPSTNOutgoing,
-				CostCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
+				RateCreditPerUnit: billing.DefaultCreditPerUnitCallPSTNOutgoing,
 				TMBillingStart:    &tmBillingStart,
 			},
 			tmBillingEnd: &tmBillingEnd,
@@ -1288,22 +1216,18 @@ func Test_BillingEnd_update_status_end_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := billingHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				accountHandler:   mockAccount,
-				allowanceHandler: mockAllowance,
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
 
-			// credit-only path: SubtractBalanceWithCheck succeeds but UpdateStatusEnd fails
-			costCreditTotal := float32(1) * billing.DefaultCreditPerUnitCallPSTNOutgoing
-			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.billing.AccountID, costCreditTotal).Return(&account.Account{}, nil)
-
-			mockDB.EXPECT().BillingSetStatusEndWithCosts(ctx, tt.billing.ID, float32(1), 0, costCreditTotal, tt.tmBillingEnd).Return(fmt.Errorf("connection timeout"))
+			usageDuration := int(tt.tmBillingEnd.Sub(*tt.billing.TMBillingStart).Seconds())
+			billableUnits := billing.CalculateBillableUnits(usageDuration)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(nil, fmt.Errorf("connection timeout"))
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {

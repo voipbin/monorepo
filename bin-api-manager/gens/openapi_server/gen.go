@@ -146,14 +146,24 @@ const (
 	BillingManagerBillingStatusProgressing BillingManagerBillingStatus = "progressing"
 )
 
+// Defines values for BillingManagerBillingTransactionType.
+const (
+	BillingManagerBillingTransactionTypeAdjustment BillingManagerBillingTransactionType = "adjustment"
+	BillingManagerBillingTransactionTypeRefund     BillingManagerBillingTransactionType = "refund"
+	BillingManagerBillingTransactionTypeTopUp      BillingManagerBillingTransactionType = "top_up"
+	BillingManagerBillingTransactionTypeUsage      BillingManagerBillingTransactionType = "usage"
+)
+
 // Defines values for BillingManagerBillingreferenceType.
 const (
-	BillingManagerBillingreferenceTypeCall          BillingManagerBillingreferenceType = "call"
-	BillingManagerBillingreferenceTypeCallExtension BillingManagerBillingreferenceType = "call_extension"
-	BillingManagerBillingreferenceTypeNone          BillingManagerBillingreferenceType = ""
-	BillingManagerBillingreferenceTypeNumber        BillingManagerBillingreferenceType = "number"
-	BillingManagerBillingreferenceTypeNumberRenew   BillingManagerBillingreferenceType = "number_renew"
-	BillingManagerBillingreferenceTypeSMS           BillingManagerBillingreferenceType = "sms"
+	BillingManagerBillingreferenceTypeCall             BillingManagerBillingreferenceType = "call"
+	BillingManagerBillingreferenceTypeCallExtension    BillingManagerBillingreferenceType = "call_extension"
+	BillingManagerBillingreferenceTypeCreditFreeTier   BillingManagerBillingreferenceType = "credit_free_tier"
+	BillingManagerBillingreferenceTypeMonthlyAllowance BillingManagerBillingreferenceType = "monthly_allowance"
+	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""
+	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
+	BillingManagerBillingreferenceTypeNumberRenew      BillingManagerBillingreferenceType = "number_renew"
+	BillingManagerBillingreferenceTypeSMS              BillingManagerBillingreferenceType = "sms"
 )
 
 // Defines values for CallManagerCallDirection.
@@ -1085,8 +1095,11 @@ type AuthLoginResponse struct {
 
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
-	// Balance The balance of the account in USD.
-	Balance *float32 `json:"balance,omitempty"`
+	// BalanceCredit The credit balance of the account in micros (1 USD = 1,000,000).
+	BalanceCredit *int64 `json:"balance_credit,omitempty"`
+
+	// BalanceToken The token balance of the account.
+	BalanceToken *int64 `json:"balance_token,omitempty"`
 
 	// CustomerId The unique identifier of the associated customer.
 	CustomerId *string `json:"customer_id,omitempty"`
@@ -1115,6 +1128,12 @@ type BillingManagerAccount struct {
 	// TmDelete The timestamp when the account was deleted, if applicable.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
+	// TmLastTopup The timestamp of the last token top-up.
+	TmLastTopup *string `json:"tm_last_topup,omitempty"`
+
+	// TmNextTopup The timestamp of the next scheduled token top-up.
+	TmNextTopup *string `json:"tm_next_topup,omitempty"`
+
 	// TmUpdate The timestamp when the account was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
@@ -1128,67 +1147,43 @@ type BillingManagerAccountPaymentType string
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
 
-// BillingManagerAllowance defines model for BillingManagerAllowance.
-type BillingManagerAllowance struct {
-	// AccountId The billing account ID.
-	AccountId *string `json:"account_id,omitempty"`
-
-	// CustomerId The customer's unique identifier.
-	CustomerId *string `json:"customer_id,omitempty"`
-
-	// CycleEnd The end timestamp of the allowance cycle.
-	CycleEnd *string `json:"cycle_end,omitempty"`
-
-	// CycleStart The start timestamp of the allowance cycle.
-	CycleStart *string `json:"cycle_start,omitempty"`
-
-	// Id The unique identifier of the allowance cycle.
-	Id *string `json:"id,omitempty"`
-
-	// TmCreate The creation timestamp.
-	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmDelete The deletion timestamp, if applicable.
-	TmDelete *string `json:"tm_delete,omitempty"`
-
-	// TmUpdate The last update timestamp.
-	TmUpdate *string `json:"tm_update,omitempty"`
-
-	// TokensTotal The total number of tokens allocated for this cycle.
-	TokensTotal *int `json:"tokens_total,omitempty"`
-
-	// TokensUsed The number of tokens consumed in this cycle.
-	TokensUsed *int `json:"tokens_used,omitempty"`
-}
-
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
 	// AccountId The billing account ID.
 	AccountId *string `json:"account_id,omitempty"`
 
-	// CostCreditPerUnit The credit cost per unit.
-	CostCreditPerUnit *float32 `json:"cost_credit_per_unit,omitempty"`
+	// AmountCredit The credit delta for this transaction in micros (negative for usage, positive for top-up).
+	AmountCredit *int64 `json:"amount_credit,omitempty"`
 
-	// CostCreditTotal The total credit charged for this billing.
-	CostCreditTotal *float32 `json:"cost_credit_total,omitempty"`
+	// AmountToken The token delta for this transaction (negative for usage, positive for top-up).
+	AmountToken *int64 `json:"amount_token,omitempty"`
 
-	// CostTokenPerUnit The token cost per unit for token-eligible types.
-	CostTokenPerUnit *int `json:"cost_token_per_unit,omitempty"`
+	// BalanceCreditSnapshot The credit balance after this transaction in micros.
+	BalanceCreditSnapshot *int64 `json:"balance_credit_snapshot,omitempty"`
 
-	// CostTokenTotal The total tokens consumed for this billing.
-	CostTokenTotal *int `json:"cost_token_total,omitempty"`
+	// BalanceTokenSnapshot The token balance after this transaction.
+	BalanceTokenSnapshot *int64 `json:"balance_token_snapshot,omitempty"`
+
+	// BillableUnits The number of billable units (e.g. minutes, rounded up).
+	BillableUnits *int `json:"billable_units,omitempty"`
 
 	// CostType The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
 	CostType *string `json:"cost_type,omitempty"`
-
-	// CostUnitCount The total count of billing units (e.g. minutes for calls, 1 for SMS/number).
-	CostUnitCount *float32 `json:"cost_unit_count,omitempty"`
 
 	// CustomerId The customer's unique identifier.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Id The unique identifier of the billing.
 	Id *string `json:"id,omitempty"`
+
+	// IdempotencyKey A unique key to prevent duplicate transactions.
+	IdempotencyKey *string `json:"idempotency_key,omitempty"`
+
+	// RateCreditPerUnit The credit rate per billable unit in micros.
+	RateCreditPerUnit *int64 `json:"rate_credit_per_unit,omitempty"`
+
+	// RateTokenPerUnit The token rate per billable unit.
+	RateTokenPerUnit *int64 `json:"rate_token_per_unit,omitempty"`
 
 	// ReferenceId The ID of the reference related to this billing.
 	ReferenceId *string `json:"reference_id,omitempty"`
@@ -1213,10 +1208,19 @@ type BillingManagerBilling struct {
 
 	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TransactionType The nature of the ledger entry.
+	TransactionType *BillingManagerBillingTransactionType `json:"transaction_type,omitempty"`
+
+	// UsageDuration The actual usage duration in seconds.
+	UsageDuration *int `json:"usage_duration,omitempty"`
 }
 
 // BillingManagerBillingStatus Status of the billing.
 type BillingManagerBillingStatus string
+
+// BillingManagerBillingTransactionType The nature of the ledger entry.
+type BillingManagerBillingTransactionType string
 
 // BillingManagerBillingreferenceType The type of reference associated with this billing.
 type BillingManagerBillingreferenceType string
@@ -3769,15 +3773,6 @@ type PutBillingAccountsIdJSONBody struct {
 	Name   *string `json:"name,omitempty"`
 }
 
-// GetBillingAccountsIdAllowancesParams defines parameters for GetBillingAccountsIdAllowances.
-type GetBillingAccountsIdAllowancesParams struct {
-	// PageSize Maximum number of items to return.
-	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Pagination token for the next page.
-	PageToken *string `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
 // PostBillingAccountsIdBalanceAddForceJSONBody defines parameters for PostBillingAccountsIdBalanceAddForce.
 type PostBillingAccountsIdBalanceAddForceJSONBody struct {
 	Balance *float32 `json:"balance,omitempty"`
@@ -5792,12 +5787,6 @@ type ServerInterface interface {
 	// Update billing account
 	// (PUT /billing_accounts/{id})
 	PutBillingAccountsId(c *gin.Context, id string)
-	// Get current billing account allowance
-	// (GET /billing_accounts/{id}/allowance)
-	GetBillingAccountsIdAllowance(c *gin.Context, id string)
-	// Get billing account allowances
-	// (GET /billing_accounts/{id}/allowances)
-	GetBillingAccountsIdAllowances(c *gin.Context, id string, params GetBillingAccountsIdAllowancesParams)
 	// Add balance to billing account
 	// (POST /billing_accounts/{id}/balance_add_force)
 	PostBillingAccountsIdBalanceAddForce(c *gin.Context, id string)
@@ -7690,73 +7679,6 @@ func (siw *ServerInterfaceWrapper) PutBillingAccountsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutBillingAccountsId(c, id)
-}
-
-// GetBillingAccountsIdAllowance operation middleware
-func (siw *ServerInterfaceWrapper) GetBillingAccountsIdAllowance(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetBillingAccountsIdAllowance(c, id)
-}
-
-// GetBillingAccountsIdAllowances operation middleware
-func (siw *ServerInterfaceWrapper) GetBillingAccountsIdAllowances(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetBillingAccountsIdAllowancesParams
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetBillingAccountsIdAllowances(c, id, params)
 }
 
 // PostBillingAccountsIdBalanceAddForce operation middleware
@@ -14067,8 +13989,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
 	router.PUT(options.BaseURL+"/billing_accounts/:id", wrapper.PutBillingAccountsId)
-	router.GET(options.BaseURL+"/billing_accounts/:id/allowance", wrapper.GetBillingAccountsIdAllowance)
-	router.GET(options.BaseURL+"/billing_accounts/:id/allowances", wrapper.GetBillingAccountsIdAllowances)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_add_force", wrapper.PostBillingAccountsIdBalanceAddForce)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_subtract_force", wrapper.PostBillingAccountsIdBalanceSubtractForce)
 	router.PUT(options.BaseURL+"/billing_accounts/:id/payment_info", wrapper.PutBillingAccountsIdPaymentInfo)
@@ -15339,53 +15259,6 @@ type PutBillingAccountsIdResponseObject interface {
 type PutBillingAccountsId200JSONResponse BillingManagerAccount
 
 func (response PutBillingAccountsId200JSONResponse) VisitPutBillingAccountsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetBillingAccountsIdAllowanceRequestObject struct {
-	Id string `json:"id"`
-}
-
-type GetBillingAccountsIdAllowanceResponseObject interface {
-	VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error
-}
-
-type GetBillingAccountsIdAllowance200JSONResponse BillingManagerAllowance
-
-func (response GetBillingAccountsIdAllowance200JSONResponse) VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetBillingAccountsIdAllowance404Response struct {
-}
-
-func (response GetBillingAccountsIdAllowance404Response) VisitGetBillingAccountsIdAllowanceResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type GetBillingAccountsIdAllowancesRequestObject struct {
-	Id     string `json:"id"`
-	Params GetBillingAccountsIdAllowancesParams
-}
-
-type GetBillingAccountsIdAllowancesResponseObject interface {
-	VisitGetBillingAccountsIdAllowancesResponse(w http.ResponseWriter) error
-}
-
-type GetBillingAccountsIdAllowances200JSONResponse struct {
-	// NextPageToken The token for next pagination.
-	NextPageToken *string                    `json:"next_page_token,omitempty"`
-	Result        *[]BillingManagerAllowance `json:"result,omitempty"`
-}
-
-func (response GetBillingAccountsIdAllowances200JSONResponse) VisitGetBillingAccountsIdAllowancesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -20349,12 +20222,6 @@ type StrictServerInterface interface {
 	// Update billing account
 	// (PUT /billing_accounts/{id})
 	PutBillingAccountsId(ctx context.Context, request PutBillingAccountsIdRequestObject) (PutBillingAccountsIdResponseObject, error)
-	// Get current billing account allowance
-	// (GET /billing_accounts/{id}/allowance)
-	GetBillingAccountsIdAllowance(ctx context.Context, request GetBillingAccountsIdAllowanceRequestObject) (GetBillingAccountsIdAllowanceResponseObject, error)
-	// Get billing account allowances
-	// (GET /billing_accounts/{id}/allowances)
-	GetBillingAccountsIdAllowances(ctx context.Context, request GetBillingAccountsIdAllowancesRequestObject) (GetBillingAccountsIdAllowancesResponseObject, error)
 	// Add balance to billing account
 	// (POST /billing_accounts/{id}/balance_add_force)
 	PostBillingAccountsIdBalanceAddForce(ctx context.Context, request PostBillingAccountsIdBalanceAddForceRequestObject) (PostBillingAccountsIdBalanceAddForceResponseObject, error)
@@ -22525,61 +22392,6 @@ func (sh *strictHandler) PutBillingAccountsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutBillingAccountsIdResponseObject); ok {
 		if err := validResponse.VisitPutBillingAccountsIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetBillingAccountsIdAllowance operation middleware
-func (sh *strictHandler) GetBillingAccountsIdAllowance(ctx *gin.Context, id string) {
-	var request GetBillingAccountsIdAllowanceRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetBillingAccountsIdAllowance(ctx, request.(GetBillingAccountsIdAllowanceRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetBillingAccountsIdAllowance")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetBillingAccountsIdAllowanceResponseObject); ok {
-		if err := validResponse.VisitGetBillingAccountsIdAllowanceResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetBillingAccountsIdAllowances operation middleware
-func (sh *strictHandler) GetBillingAccountsIdAllowances(ctx *gin.Context, id string, params GetBillingAccountsIdAllowancesParams) {
-	var request GetBillingAccountsIdAllowancesRequestObject
-
-	request.Id = id
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetBillingAccountsIdAllowances(ctx, request.(GetBillingAccountsIdAllowancesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetBillingAccountsIdAllowances")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetBillingAccountsIdAllowancesResponseObject); ok {
-		if err := validResponse.VisitGetBillingAccountsIdAllowancesResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

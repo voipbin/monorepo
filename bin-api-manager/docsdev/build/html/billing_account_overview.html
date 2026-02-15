@@ -184,70 +184,74 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="billing-account-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>VoIPBIN’s Billing Account API provides balance management, token allowance tracking, and usage monitoring for your account. The billing system uses a hybrid model combining monthly token allowances with credit-based overflow. The API enables you to check balances, view allowance usage, add funds, and monitor consumption.</p>
+<p>VoIPBIN’s Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the <strong>account</strong> holds the live state (current balance and tokens) and the <strong>billings</strong> table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.</p>
 <p>With the Billing Account API you can:</p>
 <ul class="simple">
-<li><p>Check current account balance and token allowance</p></li>
-<li><p>View monthly token usage and remaining allowance</p></li>
+<li><p>Check current credit balance and token balance</p></li>
+<li><p>View billing history as a ledger of transactions</p></li>
 <li><p>Add funds to your account (admin only)</p></li>
 <li><p>View rate information for different service types</p></li>
 <li><p>Monitor usage and charges</p></li>
-<li><p>Track billing history</p></li>
+<li><p>Track all transactions via the immutable billing ledger</p></li>
 </ul>
 <section id="how-billing-works">
 <h2>How Billing Works<a class="headerlink" href="#how-billing-works" title="Link to this heading"></a></h2>
-<p>VoIPBIN uses a hybrid billing model with two cost mechanisms: <strong>token allowances</strong> and <strong>credit balance</strong>.</p>
-<p>Each plan tier includes a monthly pool of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.</p>
+<p>VoIPBIN uses a hybrid billing model with two cost mechanisms: <strong>token balance</strong> and <strong>credit balance</strong>.</p>
+<p>Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.</p>
+<p>All monetary values are stored as <strong>int64 micros</strong> (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.</p>
 <p><strong>Billing Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------+
-|                         Billing System                                |
+|                     State + Ledger Architecture                       |
 +-----------------------------------------------------------------------+
 
 +-------------------+     +-------------------+
-|  Token Allowance  |     |  Credit Balance   |
-|  (monthly pool)   |     |  (prepaid USD)    |
-+--------+----------+     +--------+----------+
+|  Account (State)  |     |  Billings (Ledger)|
+|  balance_token    |     |  Immutable entries |
+|  balance_credit   |     |  with deltas and   |
++--------+----------+     |  snapshots         |
+         |                +--------+----------+
          |                         |
-         | covers                  | covers
+         | live state              | transaction history
          v                         v
-+--------+----------+     +--------+----------+--------+----------+
-|                   |     |                   |                   |
-v                   v     v                   v                   v
-+----------+   +----------+   +----------+   +----------+   +----------+
-| VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |   |  Other   |
-| 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |   | services |
-+----------+   +----------+   +----------+   +----------+   +----------+
-     |              |              |              |              |
-     | overflow     | overflow     |              |              |
-     v              v              v              v              v
-+---------+    +---------+    +---------+    +---------+    +---------+
-|$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |    |  varies |
-| /minute |    | /message|    |$0.0045 in|   | /number |    |         |
-+---------+    +---------+    +---------+    +---------+    +---------+
++--------+----------+     +--------+----------+
+|                   |     |                   |
+v                   v     v                   v
++----------+   +----------+   +----------+   +----------+
+| VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |
+| 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |
++----------+   +----------+   +----------+   +----------+
+     |              |              |              |
+     | token first  | token first  |              |
+     | then credit  | then credit  | credit only  | credit only
+     v              v              v              v
++---------+    +---------+    +---------+    +---------+
+|$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |
+| /minute |    | /message|    |$0.0045 in|   | /number |
++---------+    +---------+    +---------+    +---------+
 </pre></div>
 </div>
 <p><strong>Key Components</strong></p>
 <ul class="simple">
-<li><p><strong>Token Allowance</strong>: A monthly pool of tokens included with your plan tier. Tokens cover VN (virtual number) calls and SMS messages. Each billing cycle is represented by an <strong>allowance</strong> record that tracks the token allocation and consumption for that month.</p></li>
-<li><p><strong>Credit Balance</strong>: Prepaid USD balance used for PSTN calls, number purchases, and overflow when tokens are exhausted.</p></li>
+<li><p><strong>Account State</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_accounts</span></code> table holds the live <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (int64 micros) and <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (int64). This is the single source of truth for current balances.</p></li>
+<li><p><strong>Billing Ledger</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_billings</span></code> table records every transaction as an immutable entry with signed deltas (<code class="docutils literal notranslate"><span class="pre">amount_token</span></code>, <code class="docutils literal notranslate"><span class="pre">amount_credit</span></code>) and post-transaction snapshots (<code class="docutils literal notranslate"><span class="pre">balance_token_snapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">balance_credit_snapshot</span></code>).</p></li>
+<li><p><strong>Monthly Token Top-Up</strong>: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a <code class="docutils literal notranslate"><span class="pre">top_up</span></code> transaction in the ledger.</p></li>
 <li><p><strong>Token-Eligible Services</strong>: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.</p></li>
 <li><p><strong>Credit-Only Services</strong>: PSTN calls and number purchases always use credits directly.</p></li>
 <li><p><strong>Free Services</strong>: Extension-to-extension calls and direct extension calls incur no charges.</p></li>
 </ul>
-<p><strong>Allowance Cycle Lifecycle</strong></p>
-<p>Each billing account has one active allowance cycle at a time. The cycle follows this lifecycle:</p>
+<p><strong>Token Top-Up Process</strong></p>
+<p>Token replenishment happens via an automated monthly cron process:</p>
 <ol class="arabic simple">
-<li><p><strong>Creation</strong>: A new allowance cycle is created on the 1st of each month (or when the account is first used). The <code class="docutils literal notranslate"><span class="pre">tokens_total</span></code> is set based on the account’s current plan tier.</p></li>
-<li><p><strong>Consumption</strong>: As token-eligible services are used, <code class="docutils literal notranslate"><span class="pre">tokens_used</span></code> increments atomically. The system checks the allowance before each service call.</p></li>
-<li><p><strong>Overflow</strong>: When <code class="docutils literal notranslate"><span class="pre">tokens_used</span></code> reaches <code class="docutils literal notranslate"><span class="pre">tokens_total</span></code>, further token-eligible usage is charged to the credit balance at the overflow rate.</p></li>
-<li><p><strong>Expiry</strong>: When the cycle end date passes, the cycle becomes inactive. A new cycle is created for the next month with a fresh token allocation.</p></li>
+<li><p><strong>Selection</strong>: The system selects accounts where <code class="docutils literal notranslate"><span class="pre">tm_next_topup</span> <span class="pre">&lt;=</span> <span class="pre">NOW()</span></code>.</p></li>
+<li><p><strong>State Update</strong>: The account’s <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> is set to the plan’s allocation. <code class="docutils literal notranslate"><span class="pre">tm_last_topup</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_next_topup</span></code> are updated.</p></li>
+<li><p><strong>Ledger Entry</strong>: A billing record is inserted with <code class="docutils literal notranslate"><span class="pre">transaction_type:</span> <span class="pre">top_up</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_type:</span> <span class="pre">monthly_allowance</span></code>, recording the positive token delta and the resulting balance snapshot.</p></li>
 </ol>
-<p>Unused tokens do <strong>not</strong> carry over between cycles. Each month starts with the full allocation defined by the plan tier.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tm_next_topup</span></code> field on the account indicates when the next top-up is scheduled.</p>
 </section>
 <section id="plan-tiers">
 <h2>Plan Tiers<a class="headerlink" href="#plan-tiers" title="Link to this heading"></a></h2>
-<p>Each billing account is assigned a plan tier that determines both resource creation limits and monthly token allowances. New accounts default to the <strong>free</strong> tier.</p>
-<p><strong>Monthly Token Allowances</strong></p>
+<p>Each billing account is assigned a plan tier that determines both resource creation limits and monthly token allocations. New accounts default to the <strong>free</strong> tier.</p>
+<p><strong>Monthly Token Allocations</strong></p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Plan</p></th>
@@ -266,7 +270,7 @@ v                   v     v                   v                   v
 </tr>
 </tbody>
 </table>
-<p>Tokens reset at the start of each monthly billing cycle. Unused tokens do not carry over.</p>
+<p>Tokens are replenished at the scheduled top-up date. The current token balance is available in the <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> field of the account.</p>
 <p><strong>Resource Limits</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -345,40 +349,49 @@ v                   v     v                   v                   v
 </tbody>
 </table>
 <p><strong>Credit Rates (Overflow and Credit-Only)</strong></p>
+<p>All credit rates are stored internally as int64 micros.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Service</p></th>
 <th class="head"><p>Rate (USD)</p></th>
+<th class="head"><p>Rate (micros)</p></th>
 <th class="head"><p>Unit</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>VN Calls (overflow)</p></td>
 <td><p>$0.0045</p></td>
-<td><p>Per minute (ceiling-rounded)</p></td>
+<td><p>4,500</p></td>
+<td><p>Per minute</p></td>
 </tr>
 <tr class="row-odd"><td><p>PSTN Outgoing Calls</p></td>
 <td><p>$0.0060</p></td>
-<td><p>Per minute (ceiling-rounded)</p></td>
+<td><p>6,000</p></td>
+<td><p>Per minute</p></td>
 </tr>
 <tr class="row-even"><td><p>PSTN Incoming Calls</p></td>
 <td><p>$0.0045</p></td>
-<td><p>Per minute (ceiling-rounded)</p></td>
+<td><p>4,500</p></td>
+<td><p>Per minute</p></td>
 </tr>
 <tr class="row-odd"><td><p>SMS (overflow)</p></td>
 <td><p>$0.008</p></td>
+<td><p>8,000</p></td>
 <td><p>Per message</p></td>
 </tr>
 <tr class="row-even"><td><p>Number Purchase</p></td>
 <td><p>$5.00</p></td>
+<td><p>5,000,000</p></td>
 <td><p>Per number</p></td>
 </tr>
 <tr class="row-odd"><td><p>Number Renewal</p></td>
 <td><p>$5.00</p></td>
+<td><p>5,000,000</p></td>
 <td><p>Per number</p></td>
 </tr>
 <tr class="row-even"><td><p>Extension Calls</p></td>
 <td><p>Free</p></td>
+<td><p>0</p></td>
 <td><p>No charge</p></td>
 </tr>
 </tbody>
@@ -386,50 +399,53 @@ v                   v     v                   v                   v
 <p><strong>How Token Consumption Works</strong></p>
 <p>When a token-eligible service is used (VN call or SMS):</p>
 <ol class="arabic simple">
-<li><p>The system checks the current month’s token allowance.</p></li>
+<li><p>The system checks the account’s <code class="docutils literal notranslate"><span class="pre">balance_token</span></code>.</p></li>
 <li><p>If tokens are available, they are consumed first.</p></li>
 <li><p>If tokens are partially available, the available tokens are consumed and the remainder overflows to credits.</p></li>
 <li><p>If no tokens remain, the full cost is charged to credits.</p></li>
 </ol>
+<p>Each transaction is recorded in the billing ledger with the token and credit amounts as signed deltas.</p>
 <p><strong>Rate Calculation Examples</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>VN Call (2 minutes 15 seconds) with tokens available:
-+--------------------------------------------+
-| Duration: 2 min 15 sec -&gt; 3 minutes        |
-| (ceiling-rounded to next whole minute)      |
-| Token cost: 3 x 1 = 3 tokens               |
-| Credit cost: $0.00 (covered by tokens)      |
-+--------------------------------------------+
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VN</span> <span class="n">Call</span> <span class="p">(</span><span class="mi">2</span> <span class="n">minutes</span> <span class="mi">15</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">with</span> <span class="n">tokens</span> <span class="n">available</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">2</span> <span class="nb">min</span> <span class="mi">15</span> <span class="n">sec</span> <span class="o">-&gt;</span> <span class="mi">3</span> <span class="n">minutes</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">ceiling</span><span class="o">-</span><span class="n">rounded</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">whole</span> <span class="n">minute</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Token</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">3</span> <span class="n">x</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">3</span> <span class="n">tokens</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">0</span> <span class="n">micros</span> <span class="p">(</span><span class="n">covered</span> <span class="n">by</span> <span class="n">tokens</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">-</span><span class="mi">3</span>                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="mi">0</span>                          <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 
-VN Call (5 minutes) with NO tokens remaining:
-+--------------------------------------------+
-| Duration: 5 minutes                         |
-| Token cost: 0 (exhausted)                   |
-| Credit cost: 5 x $0.0045 = $0.0225         |
-+--------------------------------------------+
+<span class="n">VN</span> <span class="n">Call</span> <span class="p">(</span><span class="mi">5</span> <span class="n">minutes</span><span class="p">)</span> <span class="k">with</span> <span class="n">NO</span> <span class="n">tokens</span> <span class="n">remaining</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">5</span> <span class="n">minutes</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Token</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">0</span> <span class="p">(</span><span class="n">exhausted</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">5</span> <span class="n">x</span> <span class="mi">4</span><span class="p">,</span><span class="mi">500</span> <span class="o">=</span> <span class="mi">22</span><span class="p">,</span><span class="mi">500</span> <span class="n">micros</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">22500</span>                     <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 
-PSTN Outgoing Call (2 minutes 30 seconds):
-+--------------------------------------------+
-| Duration: 2 min 30 sec -&gt; 3 minutes        |
-| (ceiling-rounded to next whole minute)      |
-| Credit cost: 3 x $0.0060 = $0.018          |
-| (always credit-only, no token deduction)    |
-+--------------------------------------------+
+<span class="n">PSTN</span> <span class="n">Outgoing</span> <span class="n">Call</span> <span class="p">(</span><span class="mi">2</span> <span class="n">minutes</span> <span class="mi">30</span> <span class="n">seconds</span><span class="p">):</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">2</span> <span class="nb">min</span> <span class="mi">30</span> <span class="n">sec</span> <span class="o">-&gt;</span> <span class="mi">3</span> <span class="n">minutes</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">ceiling</span><span class="o">-</span><span class="n">rounded</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">whole</span> <span class="n">minute</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">3</span> <span class="n">x</span> <span class="mi">6</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">18000</span>                     <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 
-SMS Campaign (100 messages) with 500 tokens remaining:
-+--------------------------------------------+
-| Token cost per message: 10 tokens           |
-| Total tokens needed: 100 x 10 = 1,000      |
-| Tokens available: 500                       |
-| Tokens consumed: 500 (50 messages)          |
-| Overflow to credit: 50 x $0.008 = $0.40    |
-+--------------------------------------------+
-
-Number Provisioning (1 number):
-+--------------------------------------------+
-| Count: 1 number                            |
-| Credit cost: 1 x $5.00 = $5.00             |
-| (always credit-only, no token deduction)    |
-+--------------------------------------------+
+<span class="n">Monthly</span> <span class="n">Token</span> <span class="n">Top</span><span class="o">-</span><span class="n">Up</span> <span class="p">(</span><span class="n">Free</span> <span class="n">plan</span><span class="p">):</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Transaction</span> <span class="nb">type</span><span class="p">:</span> <span class="n">top_up</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reference</span> <span class="nb">type</span><span class="p">:</span> <span class="n">monthly_allowance</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">+</span><span class="mi">1000</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="mi">0</span>                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">balance_token_snapshot</span><span class="p">:</span> <span class="mi">1000</span>              <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
 <p>Note: Rates are subject to change. Check the API for current pricing.</p>
@@ -446,41 +462,26 @@ Number Provisioning (1 number):
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-uuid-123&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;balance&quot;</span><span class="p">:</span> <span class="mf">150.50</span><span class="p">,</span>
+    <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
+    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
+    <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Check Current Token Allowance</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/allowance?token=&lt;token&gt;&#39;
+<p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> is in micros (150500000 = $150.50). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> is the current token count.</p>
+<p><strong>View Billing Ledger</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billings?token=&lt;token&gt;&amp;page_size=10&#39;
 </pre></div>
 </div>
-<p><strong>Response:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;allowance-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cycle_start&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cycle_end&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tokens_total&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
-    <span class="s2">&quot;tokens_used&quot;</span><span class="p">:</span> <span class="mi">350</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">tokens_total</span> <span class="pre">-</span> <span class="pre">tokens_used</span></code> gives you the remaining tokens for the current billing cycle.</p>
-<p><strong>List All Allowance Cycles</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/allowances?token=&lt;token&gt;&#39;
-</pre></div>
-</div>
-<p>Returns a paginated list of all allowance cycles (current and past) for the account.</p>
+<p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
 <p><strong>Add Balance (Admin Only)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance_add_force?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data &#39;{
-        &quot;amount&quot;: 100.00
+        &quot;balance&quot;: 100.00
     }&#39;
 </pre></div>
 </div>
@@ -488,35 +489,37 @@ Number Provisioning (1 number):
 </section>
 <section id="balance-lifecycle">
 <h2>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h2>
-<p>Account balance changes through specific operations. Token allowances reset each billing cycle.</p>
+<p>Account balance changes through specific operations. Token balances are replenished monthly via the automated top-up process.</p>
 <p><strong>Balance and Token Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------+     +-------------------+
-| Add Balance       |     | Monthly Cycle     |
-| (admin only)      |     | (automatic)       |
-+--------+----------+     +--------+----------+
-         |                         |
-         v                         v
-+-------------------+     +-------------------+
-|  Credit Balance   |     |  Token Allowance  |
-|     $150.50       |     |   650 / 1000      |
-+--------+----------+     +--------+----------+
-         |                         |
-         | PSTN calls,             | VN calls,
-         | numbers,                | SMS
-         | overflow                |
-         v                         v
-+-------------------+     +-------------------+
-|   Credit Charges  |     |  Token Usage      |
-| - $0.018 PSTN call|     | - 3 tokens call   |
-| - $5.00 number    |     | - 10 tokens SMS   |
-| - $0.40 overflow  |     |                   |
-+--------+----------+     +--------+----------+
-         |                         |
-         v                         | exhausted
-+-------------------+              |
-|  Updated Balance  |&lt;-------------+
-|     $145.08       |   overflow charges
-+-------------------+
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Add</span> <span class="n">Balance</span>       <span class="o">|</span>     <span class="o">|</span> <span class="n">Monthly</span> <span class="n">Top</span><span class="o">-</span><span class="n">Up</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">admin</span> <span class="n">only</span><span class="p">)</span>      <span class="o">|</span>     <span class="o">|</span> <span class="p">(</span><span class="n">automated</span> <span class="n">cron</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
+         <span class="o">|</span>                         <span class="o">|</span>
+         <span class="n">v</span>                         <span class="n">v</span>
+<span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
+<span class="o">|</span>  <span class="n">balance_credit</span>   <span class="o">|</span>     <span class="o">|</span>  <span class="n">balance_token</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">150</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">000</span>      <span class="o">|</span>     <span class="o">|</span>    <span class="mi">1</span><span class="p">,</span><span class="mi">000</span>          <span class="o">|</span>
+<span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
+         <span class="o">|</span>                         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="p">,</span>             <span class="o">|</span> <span class="n">VN</span> <span class="n">calls</span><span class="p">,</span>
+         <span class="o">|</span> <span class="n">numbers</span><span class="p">,</span>                <span class="o">|</span> <span class="n">SMS</span>
+         <span class="o">|</span> <span class="n">overflow</span>                <span class="o">|</span>
+         <span class="n">v</span>                         <span class="n">v</span>
+<span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Credit</span> <span class="n">Charges</span>  <span class="o">|</span>     <span class="o">|</span>  <span class="n">Token</span> <span class="n">Usage</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">18000</span> <span class="n">PSTN</span> <span class="n">call</span> <span class="o">|</span>     <span class="o">|</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">tokens</span> <span class="n">call</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">5000000</span> <span class="n">number</span>  <span class="o">|</span>     <span class="o">|</span> <span class="o">-</span> <span class="mi">10</span> <span class="n">tokens</span> <span class="n">SMS</span>   <span class="o">|</span>
+<span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
+         <span class="o">|</span>                         <span class="o">|</span>
+         <span class="n">v</span>                         <span class="o">|</span> <span class="n">exhausted</span>
+<span class="o">+-------------------+</span>              <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Updated</span> <span class="n">Balance</span>  <span class="o">|&lt;-------------+</span>
+<span class="o">|</span>  <span class="mi">145</span><span class="p">,</span><span class="mi">082</span><span class="p">,</span><span class="mi">000</span>      <span class="o">|</span>   <span class="n">overflow</span> <span class="n">charges</span>
+<span class="o">+-------------------+</span>
+
+<span class="n">All</span> <span class="n">transactions</span> <span class="n">recorded</span> <span class="ow">in</span> <span class="n">billing</span> <span class="n">ledger</span>
+<span class="k">with</span> <span class="n">signed</span> <span class="n">deltas</span> <span class="ow">and</span> <span class="n">balance</span> <span class="n">snapshots</span><span class="o">.</span>
 </pre></div>
 </div>
 </section>
@@ -527,64 +530,43 @@ Number Provisioning (1 number):
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span> <span class="n">Service</span> <span class="n">Execution</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">Identify</span> <span class="n">service</span> <span class="nb">type</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="mf">2.</span> <span class="n">If</span> <span class="n">token</span><span class="o">-</span><span class="n">eligible</span><span class="p">:</span> <span class="n">check</span> <span class="n">token</span> <span class="n">balance</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">If</span> <span class="n">token</span><span class="o">-</span><span class="n">eligible</span><span class="p">:</span> <span class="n">check</span> <span class="n">balance_token</span>  <span class="o">|</span>
 <span class="o">|</span>    <span class="o">-</span> <span class="n">If</span> <span class="n">tokens</span> <span class="n">available</span> <span class="o">-&gt;</span> <span class="n">proceed</span>         <span class="o">|</span>
-<span class="o">|</span>    <span class="o">-</span> <span class="n">If</span> <span class="n">no</span> <span class="n">tokens</span> <span class="o">-&gt;</span> <span class="n">check</span> <span class="n">credit</span> <span class="n">balance</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mf">3.</span> <span class="n">If</span> <span class="n">credit</span><span class="o">-</span><span class="n">only</span><span class="p">:</span> <span class="n">check</span> <span class="n">credit</span> <span class="n">balance</span>    <span class="o">|</span>
+<span class="o">|</span>    <span class="o">-</span> <span class="n">If</span> <span class="n">no</span> <span class="n">tokens</span> <span class="o">-&gt;</span> <span class="n">check</span> <span class="n">balance_credit</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">If</span> <span class="n">credit</span><span class="o">-</span><span class="n">only</span><span class="p">:</span> <span class="n">check</span> <span class="n">balance_credit</span>    <span class="o">|</span>
 <span class="o">|</span>    <span class="o">-</span> <span class="n">If</span> <span class="n">balance</span> <span class="o">&gt;=</span> <span class="n">cost</span> <span class="o">-&gt;</span> <span class="n">proceed</span>          <span class="o">|</span>
 <span class="o">|</span>    <span class="o">-</span> <span class="n">If</span> <span class="n">balance</span> <span class="o">&lt;</span> <span class="n">cost</span> <span class="o">-&gt;</span> <span class="n">deny</span> <span class="n">service</span>      <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
-</pre></div>
-</div>
-<p><strong>Low Balance Handling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------+     +-------------------+
-| Balance: $10.00   |     | Tokens: 0 / 1000  |
-+--------+----------+     +--------+----------+
-         |                         |
-         | Attempt VN call         |
-         | (no tokens left)        |
-         v                         |
-+-------------------+              |
-| Check credit      |&lt;-------------+
-| for overflow      |  overflow
-+--------+----------+
-         |
-         | $10.00 &gt;= $0.0045/min
-         v
-+-------------------+
-| Call proceeds      |
-| (credit charged)   |
-+-------------------+
 </pre></div>
 </div>
 </section>
 <section id="common-scenarios">
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
 <p><strong>Scenario 1: Token-Based Monthly Usage</strong></p>
-<p>Track token consumption throughout the month.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Monthly Usage (Free Plan, 1000 tokens):
-+--------------------------------------------+
-| Week 1:                                    |
-| - 50 VN calls (avg 3 min) = 150 tokens     |
-| - 20 SMS = 200 tokens                      |
-| Tokens remaining: 650                      |
-|                                            |
-| Week 2:                                    |
-| - 40 VN calls (avg 2 min) = 80 tokens      |
-| - 30 SMS = 300 tokens                      |
-| Tokens remaining: 270                      |
-|                                            |
-| Week 3:                                    |
-| - 30 VN calls (avg 3 min) = 90 tokens      |
-| - 15 SMS = 150 tokens                      |
-| Tokens remaining: 30                       |
-|                                            |
-| Week 4 (tokens nearly exhausted):          |
-| - 10 VN calls (avg 3 min) = 30 tokens      |
-|   (uses last tokens)                       |
-| - 5 SMS = overflow to credit               |
-|   5 x $0.008 = $0.04 credit charge         |
-+--------------------------------------------+
+<p>Track token consumption via the billing ledger.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Monthly</span> <span class="n">Usage</span> <span class="p">(</span><span class="n">Free</span> <span class="n">Plan</span><span class="p">,</span> <span class="mi">1000</span> <span class="n">tokens</span><span class="p">):</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Week</span> <span class="mi">1</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">50</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">150</span> <span class="n">tokens</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">20</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">200</span> <span class="n">tokens</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">650</span>                         <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Week</span> <span class="mi">2</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">40</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">2</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">80</span> <span class="n">tokens</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">30</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">300</span> <span class="n">tokens</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">270</span>                         <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Week</span> <span class="mi">3</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">30</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">90</span> <span class="n">tokens</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">15</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">150</span> <span class="n">tokens</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">30</span>                          <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Week</span> <span class="mi">4</span> <span class="p">(</span><span class="n">tokens</span> <span class="n">nearly</span> <span class="n">exhausted</span><span class="p">):</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">10</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">30</span> <span class="n">tokens</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="p">(</span><span class="n">uses</span> <span class="n">last</span> <span class="n">tokens</span><span class="p">)</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">SMS</span> <span class="o">=</span> <span class="n">overflow</span> <span class="n">to</span> <span class="n">credit</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">5</span> <span class="n">x</span> <span class="mi">8</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span> <span class="n">credit</span> <span class="n">charge</span>  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Scenario 2: Mixed Token and Credit Usage</strong></p>
@@ -595,41 +577,19 @@ Number Provisioning (1 number):
 | - Tokens needed: 200 x 3 = 600             |
 | - If 400 tokens available:                 |
 |   - 400 tokens consumed                    |
-|   - 200 overflow x 3 min x $0.0045 = $2.70|
+|   - 200 overflow x 3 min x 4,500 micros    |
+|     = 2,700,000 micros ($2.70)             |
 |                                            |
 | PSTN Calls: 50 calls (avg 2 min)           |
-| - Credit: 50 x 2 x $0.006 = $0.60         |
-| (always credit, no token deduction)         |
+| - Credit: 50 x 2 x 6,000 = 600,000 micros |
+|   ($0.60)                                  |
 |                                            |
-| SMS: 100 messages                          |
-| - Tokens needed: 100 x 10 = 1,000          |
-| - If 0 tokens remaining:                   |
-|   - Credit: 100 x $0.008 = $0.80          |
+| SMS: 100 messages (no tokens remaining)    |
+| - Credit: 100 x 8,000 = 800,000 micros    |
+|   ($0.80)                                  |
 |                                            |
-| Total credit needed: $2.70 + $0.60 + $0.80 |
-|                    = $4.10                  |
+| Total credit: 4,100,000 micros ($4.10)     |
 +--------------------------------------------+
-</pre></div>
-</div>
-<p><strong>Scenario 3: Low Balance Alert</strong></p>
-<p>Handle low balance situations.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Balance drops below threshold
-   +--------------------------------------------+
-   | Balance: $15.00                           |
-   | Threshold: $50.00                         |
-   | Tokens: 0 / 1000 (exhausted)              |
-   | Status: LOW BALANCE                       |
-   +--------------------------------------------+
-
-2. Add funds (admin action)
-   POST /billing_accounts/{id}/balance
-   { &quot;amount&quot;: 200.00 }
-
-3. Balance restored
-   +--------------------------------------------+
-   | Balance: $215.00                          |
-   | Status: OK                                |
-   +--------------------------------------------+
 </pre></div>
 </div>
 </section>
@@ -637,9 +597,9 @@ Number Provisioning (1 number):
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
 <p><strong>1. Token Monitoring</strong></p>
 <ul class="simple">
-<li><p>Check token usage regularly via the allowance endpoint</p></li>
-<li><p>Plan upgrades to higher tiers if tokens are consistently exhausted early in the cycle</p></li>
-<li><p>Track which services consume the most tokens</p></li>
+<li><p>Check <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> on the account regularly</p></li>
+<li><p>Plan upgrades to higher tiers if tokens are consistently exhausted before the next top-up</p></li>
+<li><p>Review billing ledger entries to understand consumption patterns</p></li>
 </ul>
 <p><strong>2. Balance Monitoring</strong></p>
 <ul class="simple">
@@ -652,44 +612,24 @@ Number Provisioning (1 number):
 <li><p>Separate estimates into token-eligible and credit-only services</p></li>
 <li><p>Account for token overflow in budget planning</p></li>
 <li><p>Include retry costs in estimates</p></li>
+<li><p>Note all credit amounts are in micros (divide by 1,000,000 for USD)</p></li>
 </ul>
 <p><strong>4. Security</strong></p>
 <ul class="simple">
 <li><p>Restrict balance add permissions to admins</p></li>
-<li><p>Monitor for unusual usage patterns</p></li>
-<li><p>Review billing regularly for anomalies</p></li>
+<li><p>Monitor for unusual usage patterns via the billing ledger</p></li>
+<li><p>Review billing history regularly for anomalies</p></li>
 </ul>
 <p><strong>5. Plan Selection</strong></p>
 <ul class="simple">
 <li><p>Choose plan tier based on expected VN call and SMS volume</p></li>
-<li><p>Compare token allowance cost vs. credit-only cost at each tier</p></li>
+<li><p>Compare token allocation cost vs. credit-only cost at each tier</p></li>
 <li><p>Consider upgrading if monthly overflow charges are significant</p></li>
 </ul>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
 <p><strong>Balance Issues</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Symptom</p></th>
-<th class="head"><p>Solution</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Services being denied</p></td>
-<td><p>Check credit balance and token allowance;
-add funds or upgrade plan if needed</p></td>
-</tr>
-<tr class="row-odd"><td><p>Cannot add balance</p></td>
-<td><p>Verify admin permissions; check API token
-validity</p></td>
-</tr>
-<tr class="row-even"><td><p>Balance not updating</p></td>
-<td><p>Allow time for transaction processing; check
-for API errors in response</p></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Token Issues</strong></p>
 <p><strong>Billing Issues</strong></p>
 </section>

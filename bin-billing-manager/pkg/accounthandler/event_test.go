@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"monorepo/bin-billing-manager/models/account"
-	"monorepo/bin-billing-manager/models/allowance"
-	"monorepo/bin-billing-manager/pkg/allowancehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -115,9 +113,8 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 
 		customer *cucustomer.Customer
 
-		responseUUID      uuid.UUID
-		responseAccount   *account.Account
-		responseAllowance *allowance.Allowance
+		responseUUID    uuid.UUID
+		responseAccount *account.Account
 	}
 
 	tests := []test{
@@ -134,11 +131,6 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 					ID: uuid.FromStringOrNil("b4a076de-c8eb-11ef-b239-3f082786094e"),
 				},
 			},
-			responseAllowance: &allowance.Allowance{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("c5b187ef-c8eb-11ef-b239-4f193897195f"),
-				},
-			},
 		},
 	}
 
@@ -151,14 +143,12 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := accountHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				reqHandler:       mockReq,
-				allowanceHandler: mockAllowance,
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -166,8 +156,6 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 			mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
-
-			mockAllowance.EXPECT().EnsureCurrentCycle(ctx, tt.responseAccount.ID, tt.customer.ID, account.PlanTypeFree).Return(tt.responseAllowance, nil)
 
 			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customer.ID, tt.responseAccount.ID).Return(tt.customer, nil)
 
@@ -225,14 +213,12 @@ func Test_EventCUCustomerCreated_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAllowance := allowancehandler.NewMockAllowanceHandler(mc)
 
 			h := accountHandler{
-				utilHandler:      mockUtil,
-				db:               mockDB,
-				notifyHandler:    mockNotify,
-				reqHandler:       mockReq,
-				allowanceHandler: mockAllowance,
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
 
@@ -253,8 +239,6 @@ func Test_EventCUCustomerCreated_error(t *testing.T) {
 				mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
-
-				mockAllowance.EXPECT().EnsureCurrentCycle(ctx, tt.responseAccount.ID, tt.customer.ID, account.PlanTypeFree).Return(&allowance.Allowance{}, nil)
 
 				mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customer.ID, tt.responseAccount.ID).Return(nil, fmt.Errorf("update failed"))
 

@@ -16,7 +16,6 @@ import (
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
-	bmallowance "monorepo/bin-billing-manager/models/allowance"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -151,12 +150,10 @@ type ServiceHandler interface {
 
 	// billing accounts
 	BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
-	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
-	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
+	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
+	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
 	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)
 	BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
-	BillingAccountAllowancesGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, pageSize uint64, pageToken string) ([]*bmallowance.WebhookMessage, error)
-	BillingAccountAllowanceGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmallowance.WebhookMessage, error)
 
 	// billings
 	BillingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error)

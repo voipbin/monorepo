@@ -139,7 +139,7 @@ func TestPlanTokenMap(t *testing.T) {
 	tests := []struct {
 		name     string
 		planType PlanType
-		expected int
+		expected int64
 	}{
 		{"free plan", PlanTypeFree, 1000},
 		{"basic plan", PlanTypeBasic, 10000},
