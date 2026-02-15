@@ -10,7 +10,7 @@ import (
 func (h *server) PostAuthCompleteSignup(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostAuthCompleteSignup",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 	log.Debug("Processing complete signup.")
 

@@ -80,6 +80,12 @@ func Test_CompleteSignup(t *testing.T) {
 			// get signup session
 			mockCache.EXPECT().SignupSessionGet(ctx, tt.tempToken).Return(tt.responseSession, nil)
 
+			// double-verification guard — customer not yet verified
+			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+				ID:            customerID,
+				EmailVerified: false,
+			}, nil)
+
 			// customer update
 			mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 
@@ -94,11 +100,10 @@ func Test_CompleteSignup(t *testing.T) {
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.responseSession.VerifyToken).Return(nil)
 
 			// get customer for event
-			responseCustomer := &customer.Customer{
+			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 				ID:            customerID,
 				EmailVerified: true,
-			}
-			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(responseCustomer, nil)
+			}, nil)
 
 			// publish event with headless=true
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
@@ -183,6 +188,11 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 		CustomerID:  customerID,
 		OTPCode:     "654321",
 		VerifyToken: "vt",
+	}, nil)
+	// double-verification guard — customer not yet verified
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{}, nil)
@@ -313,6 +323,11 @@ func Test_CompleteSignup_customerUpdateError(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// double-verification guard — customer not yet verified
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
+	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(fmt.Errorf("db error"))
 
 	_, err := h.CompleteSignup(ctx, "tmp_update_err", "123456")
@@ -347,6 +362,11 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 		CustomerID:  customerID,
 		OTPCode:     "123456",
 		VerifyToken: "vt",
+	}, nil)
+	// double-verification guard — customer not yet verified
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 	// AccessKey creation fails — Redis keys should NOT be cleaned up (user can retry)
@@ -386,6 +406,11 @@ func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// double-verification guard — customer not yet verified
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
+	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
 		ID: accesskeyID,
@@ -409,6 +434,92 @@ func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
 	}
 	if res.CustomerID != customerID.String() {
 		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
+	}
+}
+
+func Test_CompleteSignup_alreadyVerified(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000007")
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_already_verified", gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_already_verified").Return(&cachehandler.SignupSession{
+		CustomerID:  customerID,
+		OTPCode:     "123456",
+		VerifyToken: "vt",
+	}, nil)
+	// double-verification guard — customer already verified
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: true,
+	}, nil)
+	// Redis cleanup on early return
+	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_already_verified").Return(nil)
+	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_already_verified").Return(nil)
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
+
+	res, err := h.CompleteSignup(ctx, "tmp_already_verified", "123456")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok (already verified returns success), got: %v", err)
+	}
+	if res == nil {
+		t.Fatalf("Wrong match. expect: result, got: nil")
+	}
+	if res.CustomerID != customerID.String() {
+		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
+	}
+	// already-verified path should NOT return an accesskey
+	if res.Accesskey != nil {
+		t.Errorf("Wrong match. expect: nil accesskey (already verified), got: %v", res.Accesskey)
+	}
+}
+
+func Test_CompleteSignup_guardCustomerGetError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000008")
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_guard_err", gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_guard_err").Return(&cachehandler.SignupSession{
+		CustomerID:  customerID,
+		OTPCode:     "123456",
+		VerifyToken: "vt",
+	}, nil)
+	// double-verification guard — CustomerGet fails
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db error"))
+
+	_, err := h.CompleteSignup(ctx, "tmp_guard_err", "123456")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if err.Error() != "customer not found" {
+		t.Errorf("Wrong error message. expect: customer not found, got: %v", err)
 	}
 }
 

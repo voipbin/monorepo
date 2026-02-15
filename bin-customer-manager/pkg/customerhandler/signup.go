@@ -3,6 +3,7 @@ package customerhandler
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -255,11 +256,30 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	}
 	log.Debugf("Found signup session. customer_id: %s", session.CustomerID)
 
-	// Validate OTP
-	if session.OTPCode != code {
+	// Validate OTP using constant-time comparison to prevent timing attacks
+	if subtle.ConstantTimeCompare([]byte(session.OTPCode), []byte(code)) != 1 {
 		log.Infof("Invalid OTP code.")
 		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_code").Inc()
 		return nil, fmt.Errorf("invalid verification code")
+	}
+
+	// Guard against double-verification (e.g., if Redis cleanup failed on a previous successful call)
+	cu, err := h.db.CustomerGet(ctx, session.CustomerID)
+	if err != nil {
+		log.Errorf("Could not get customer. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("customer not found")
+	}
+	if cu.EmailVerified {
+		log.Infof("Customer already verified. customer_id: %s", cu.ID)
+		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
+		// Clean up Redis keys and return without creating duplicate resources
+		_ = h.cache.SignupSessionDelete(ctx, tempToken)
+		_ = h.cache.SignupAttemptDelete(ctx, tempToken)
+		_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
+		return &customer.CompleteSignupResult{
+			CustomerID: session.CustomerID.String(),
+		}, nil
 	}
 
 	// Mark customer as verified
@@ -288,7 +308,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
 
 	// Get verified customer for event publishing
-	cu, err := h.db.CustomerGet(ctx, session.CustomerID)
+	cu, err = h.db.CustomerGet(ctx, session.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get verified customer. err: %v", err)
 	}
