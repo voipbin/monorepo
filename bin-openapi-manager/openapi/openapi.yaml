@@ -432,6 +432,7 @@ components:
         - number_renew
         - credit_free_tier
         - monthly_allowance
+        - credit_adjustment
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
@@ -441,6 +442,7 @@ components:
         - BillingManagerBillingreferenceTypeNumberRenew
         - BillingManagerBillingreferenceTypeCreditFreeTier
         - BillingManagerBillingreferenceTypeMonthlyAllowance
+        - BillingManagerBillingreferenceTypeCreditAdjustment
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.
