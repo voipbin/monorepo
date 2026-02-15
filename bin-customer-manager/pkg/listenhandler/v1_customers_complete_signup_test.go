@@ -141,7 +141,7 @@ func Test_processV1CustomersCompleteSignupPost_completeSignupError(t *testing.T)
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	if res.StatusCode != 400 {
-		t.Errorf("Wrong match. expect: 400, got: %d", res.StatusCode)
+	if res.StatusCode != 429 {
+		t.Errorf("Wrong match. expect: 429, got: %d", res.StatusCode)
 	}
 }

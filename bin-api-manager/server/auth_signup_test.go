@@ -37,7 +37,7 @@ func Test_PostAuthSignup(t *testing.T) {
 
 			responseCust: &cscustomer.SignupResult{},
 
-			expectRes: `{}`,
+			expectRes: `{"temp_token":""}`,
 		},
 	}
 

@@ -40,6 +40,9 @@ type CacheHandler interface {
 	SignupSessionDelete(ctx context.Context, tempToken string) error
 	SignupAttemptIncrement(ctx context.Context, tempToken string, ttl time.Duration) (int64, error)
 	SignupAttemptDelete(ctx context.Context, tempToken string) error
+
+	VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error)
+	VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error
 }
 
 // NewHandler creates DBHandler

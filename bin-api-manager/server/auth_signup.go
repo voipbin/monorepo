@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -69,11 +70,12 @@ func (h *server) PostAuthSignup(c *gin.Context) {
 	if err != nil {
 		log.Debugf("Customer signup failed. err: %v", err)
 		// Return 200 with empty body to prevent email enumeration
-		c.JSON(200, gin.H{})
+		c.JSON(200, gin.H{"temp_token": ""})
 		return
 	}
 
-	c.JSON(200, res)
+	// Only return temp_token — never expose internal Customer data before verification
+	c.JSON(200, gin.H{"temp_token": res.TempToken})
 }
 
 func (h *server) GetAuthEmailVerify(c *gin.Context, params openapi_server.GetAuthEmailVerifyParams) {
@@ -83,7 +85,8 @@ func (h *server) GetAuthEmailVerify(c *gin.Context, params openapi_server.GetAut
 		return
 	}
 
-	html := fmt.Sprintf(emailVerifyHTML, token)
+	tokenJSON, _ := json.Marshal(token)
+	html := fmt.Sprintf(emailVerifyHTML, string(tokenJSON))
 	c.Data(200, "text/html; charset=utf-8", []byte(html))
 }
 
@@ -139,7 +142,7 @@ const emailVerifyHTML = `<!DOCTYPE html>
   <div id="message" class="message"></div>
 </div>
 <script>
-  var token = "%s";
+  var token = %s;
   function verify() {
     var btn = document.getElementById('verifyBtn');
     var msgEl = document.getElementById('message');

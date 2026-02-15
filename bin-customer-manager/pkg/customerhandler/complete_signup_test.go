@@ -80,6 +80,10 @@ func Test_CompleteSignup(t *testing.T) {
 			// get signup session
 			mockCache.EXPECT().SignupSessionGet(ctx, tt.tempToken).Return(tt.responseSession, nil)
 
+			// verification lock
+			mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+			mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+
 			// double-verification guard — customer not yet verified
 			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 				ID:            customerID,
@@ -189,6 +193,9 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 		OTPCode:     "654321",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — customer not yet verified
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
@@ -323,6 +330,9 @@ func Test_CompleteSignup_customerUpdateError(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — customer not yet verified
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
@@ -363,6 +373,9 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — customer not yet verified
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
@@ -406,6 +419,9 @@ func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — customer not yet verified
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
@@ -461,6 +477,9 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — customer already verified
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
@@ -511,6 +530,9 @@ func Test_CompleteSignup_guardCustomerGetError(t *testing.T) {
 		OTPCode:     "123456",
 		VerifyToken: "vt",
 	}, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// double-verification guard — CustomerGet fails
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db error"))
 
@@ -542,6 +564,9 @@ func Test_EmailVerify_accesskeyCreateError(t *testing.T) {
 	ctx := context.Background()
 
 	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_ak_fail").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
 		EmailVerified: false,
@@ -590,6 +615,9 @@ func Test_EmailVerify_customerUpdateError(t *testing.T) {
 	ctx := context.Background()
 
 	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_update_fail").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
 		EmailVerified: false,
@@ -621,6 +649,9 @@ func Test_EmailVerify_customerGetAfterUpdateError(t *testing.T) {
 	ctx := context.Background()
 
 	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_get_fail").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
 		EmailVerified: false,

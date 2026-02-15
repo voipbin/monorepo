@@ -230,3 +230,32 @@ func (mr *MockCacheHandlerMockRecorder) SignupSessionSet(ctx, tempToken, session
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignupSessionSet", reflect.TypeOf((*MockCacheHandler)(nil).SignupSessionSet), ctx, tempToken, session, ttl)
 }
+
+// VerifyLockAcquire mocks base method.
+func (m *MockCacheHandler) VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyLockAcquire", ctx, customerID, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyLockAcquire indicates an expected call of VerifyLockAcquire.
+func (mr *MockCacheHandlerMockRecorder) VerifyLockAcquire(ctx, customerID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyLockAcquire", reflect.TypeOf((*MockCacheHandler)(nil).VerifyLockAcquire), ctx, customerID, ttl)
+}
+
+// VerifyLockRelease mocks base method.
+func (m *MockCacheHandler) VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyLockRelease", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyLockRelease indicates an expected call of VerifyLockRelease.
+func (mr *MockCacheHandlerMockRecorder) VerifyLockRelease(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyLockRelease", reflect.TypeOf((*MockCacheHandler)(nil).VerifyLockRelease), ctx, customerID)
+}

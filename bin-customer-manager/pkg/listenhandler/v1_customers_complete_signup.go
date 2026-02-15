@@ -28,6 +28,9 @@ func (h *listenHandler) processV1CustomersCompleteSignupPost(ctx context.Context
 	tmp, err := h.customerHandler.CompleteSignup(ctx, reqData.TempToken, reqData.Code)
 	if err != nil {
 		log.Errorf("Could not complete signup. err: %v", err)
+		if err.Error() == "too many attempts" {
+			return simpleResponse(429), nil
+		}
 		return simpleResponse(400), nil
 	}
 

@@ -166,6 +166,20 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 	log.Debugf("Found verification token. customer_id: %s", customerID)
 
+	// Acquire verification lock to prevent concurrent verification race
+	locked, err := h.cache.VerifyLockAcquire(ctx, customerID, 30*time.Second)
+	if err != nil {
+		log.Errorf("Could not acquire verify lock. err: %v", err)
+		metricshandler.EmailVerificationTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("internal error")
+	}
+	if !locked {
+		log.Infof("Verification already in progress. customer_id: %s", customerID)
+		metricshandler.EmailVerificationTotal.WithLabelValues("already_verified").Inc()
+		return nil, fmt.Errorf("verification already in progress")
+	}
+	defer func() { _ = h.cache.VerifyLockRelease(ctx, customerID) }()
+
 	// get customer
 	c, err := h.db.CustomerGet(ctx, customerID)
 	if err != nil {
@@ -263,6 +277,22 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 		return nil, fmt.Errorf("invalid verification code")
 	}
 
+	// Acquire verification lock to prevent concurrent verification race
+	locked, err := h.cache.VerifyLockAcquire(ctx, session.CustomerID, 30*time.Second)
+	if err != nil {
+		log.Errorf("Could not acquire verify lock. err: %v", err)
+		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("internal error")
+	}
+	if !locked {
+		log.Infof("Verification already in progress. customer_id: %s", session.CustomerID)
+		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
+		return &customer.CompleteSignupResult{
+			CustomerID: session.CustomerID.String(),
+		}, nil
+	}
+	defer func() { _ = h.cache.VerifyLockRelease(ctx, session.CustomerID) }()
+
 	// Guard against double-verification (e.g., if Redis cleanup failed on a previous successful call)
 	cu, err := h.db.CustomerGet(ctx, session.CustomerID)
 	if err != nil {
@@ -339,7 +369,7 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	cfg := config.Get()
 	verifyLink := cfg.EmailVerifyBaseURL + "/auth/email-verify?token=" + token
 
-	subject := fmt.Sprintf("VoIPBin - Verify Your Email (Code: %s)", otpCode)
+	subject := "VoIPBin - Verify Your Email"
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
 			"Your verification code is: %s\n\n"+

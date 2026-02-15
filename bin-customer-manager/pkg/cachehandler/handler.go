@@ -16,6 +16,7 @@ import (
 const emailVerifyKeyPrefix = "email_verify:"
 const signupSessionKeyPrefix = "signup_session:"
 const signupAttemptsKeyPrefix = "signup_attempts:"
+const verifyLockKeyPrefix = "verify_lock:"
 
 // SignupSession stores the headless signup session data in Redis.
 type SignupSession struct {
@@ -196,4 +197,21 @@ func (h *handler) SignupAttemptDelete(ctx context.Context, tempToken string) err
 		return err
 	}
 	return nil
+}
+
+// VerifyLockAcquire attempts to acquire a distributed lock for customer verification.
+// Returns true if the lock was acquired, false if another process holds it.
+func (h *handler) VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error) {
+	key := verifyLockKeyPrefix + customerID.String()
+	ok, err := h.Cache.SetNX(ctx, key, "1", ttl).Result()
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
+}
+
+// VerifyLockRelease releases the distributed verification lock.
+func (h *handler) VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error {
+	key := verifyLockKeyPrefix + customerID.String()
+	return h.Cache.Del(ctx, key).Err()
 }

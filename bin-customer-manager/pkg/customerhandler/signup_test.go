@@ -227,6 +227,9 @@ func Test_EmailVerify(t *testing.T) {
 			ctx := context.Background()
 
 			mockCache.EXPECT().EmailVerifyTokenGet(ctx, tt.token).Return(tt.responseCustomerID, nil)
+			// verification lock
+			mockCache.EXPECT().VerifyLockAcquire(ctx, tt.responseCustomerID, 30*time.Second).Return(true, nil)
+			mockCache.EXPECT().VerifyLockRelease(ctx, tt.responseCustomerID).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseCustomer, nil)
 			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).Return(nil)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
@@ -295,6 +298,9 @@ func Test_EmailVerify_alreadyVerified(t *testing.T) {
 	ctx := context.Background()
 
 	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "sometoken").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
 		EmailVerified: true,
@@ -516,6 +522,9 @@ func Test_EmailVerify_customerGetError(t *testing.T) {
 
 	// token lookup succeeds
 	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_get_err").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 	// first CustomerGet fails
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db get error"))
 
