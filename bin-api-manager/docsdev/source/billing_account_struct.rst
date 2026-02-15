@@ -38,6 +38,8 @@ Billing account
 Allowance
 ---------
 
+An allowance represents a single monthly billing cycle for an account. Each cycle tracks a pool of tokens that the account can consume for token-eligible services (VN calls and SMS). When the cycle ends, a new cycle is created automatically with a fresh allocation of tokens based on the account's plan tier. Unused tokens do not carry over between cycles.
+
 .. code::
 
     {
@@ -53,10 +55,15 @@ Allowance
         "tm_delete": "9999-01-01T00:00:00Z"
     }
 
-* id: Allowance cycle's id.
-* customer_id: Customer's id.
-* account_id: Billing account's id.
-* cycle_start: Start of the billing cycle (beginning of the month).
-* cycle_end: End of the billing cycle (beginning of the next month).
-* tokens_total: Total tokens allocated for this cycle (determined by plan tier).
-* tokens_used: Tokens consumed so far this cycle.
+* id: Unique identifier of this allowance cycle.
+* customer_id: Customer that owns this account.
+* account_id: Billing account this allowance belongs to.
+* cycle_start: Start of the billing cycle. Always the 1st of the month at 00:00:00 UTC.
+* cycle_end: End of the billing cycle. Always the 1st of the following month at 00:00:00 UTC.
+* tokens_total: Total tokens allocated for this cycle. Determined by the account's plan tier at cycle creation time (Free: 1,000, Basic: 10,000, Professional: 100,000). Can be adjusted by platform admins.
+* tokens_used: Number of tokens consumed so far during this cycle. Incremented atomically each time a token-eligible service (VN call or SMS) is used.
+* tm_create: Timestamp when this cycle was created.
+* tm_update: Timestamp of the last modification (token consumption or admin adjustment).
+* tm_delete: Soft-delete timestamp. Active cycles have ``9999-01-01T00:00:00Z``.
+
+Remaining tokens for the cycle can be calculated as ``tokens_total - tokens_used``. When ``tokens_used`` reaches ``tokens_total``, subsequent token-eligible service usage overflows to the credit balance.

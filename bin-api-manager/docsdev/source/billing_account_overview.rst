@@ -52,11 +52,22 @@ Each plan tier includes a monthly pool of tokens that cover certain service type
 
 **Key Components**
 
-- **Token Allowance**: A monthly pool of tokens included with your plan tier. Tokens cover VN (virtual number) calls and SMS messages. Tokens reset each billing cycle.
+- **Token Allowance**: A monthly pool of tokens included with your plan tier. Tokens cover VN (virtual number) calls and SMS messages. Each billing cycle is represented by an **allowance** record that tracks the token allocation and consumption for that month.
 - **Credit Balance**: Prepaid USD balance used for PSTN calls, number purchases, and overflow when tokens are exhausted.
 - **Token-Eligible Services**: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.
 - **Credit-Only Services**: PSTN calls and number purchases always use credits directly.
 - **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
+
+**Allowance Cycle Lifecycle**
+
+Each billing account has one active allowance cycle at a time. The cycle follows this lifecycle:
+
+1. **Creation**: A new allowance cycle is created on the 1st of each month (or when the account is first used). The ``tokens_total`` is set based on the account's current plan tier.
+2. **Consumption**: As token-eligible services are used, ``tokens_used`` increments atomically. The system checks the allowance before each service call.
+3. **Overflow**: When ``tokens_used`` reaches ``tokens_total``, further token-eligible usage is charged to the credit balance at the overflow rate.
+4. **Expiry**: When the cycle end date passes, the cycle becomes inactive. A new cycle is created for the next month with a fresh token allocation.
+
+Unused tokens do **not** carry over between cycles. Each month starts with the full allocation defined by the plan tier.
 
 
 Plan Tiers
@@ -423,7 +434,7 @@ Best Practices
 
 **1. Token Monitoring**
 
-- Check token usage regularly via the allowances endpoint
+- Check token usage regularly via the allowance endpoint
 - Plan upgrades to higher tiers if tokens are consistently exhausted early in the cycle
 - Track which services consume the most tokens
 
@@ -475,10 +486,10 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Tokens exhausted early    | Review usage patterns; consider upgrading       |
-|                           | plan tier for more tokens                      |
+| Tokens exhausted early    | Review usage patterns via allowance endpoint;   |
+|                           | consider upgrading plan tier for more tokens    |
 +---------------------------+------------------------------------------------+
-| Unexpected overflow       | Check token balance via allowances endpoint;   |
+| Unexpected overflow       | Check token balance via allowance endpoint;     |
 |                           | VN calls and SMS consume tokens first          |
 +---------------------------+------------------------------------------------+
 | Tokens not resetting      | Verify billing cycle dates; tokens reset       |

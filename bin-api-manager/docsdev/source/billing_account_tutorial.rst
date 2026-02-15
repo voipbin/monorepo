@@ -57,9 +57,13 @@ The ``balance`` field shows the remaining credit balance in USD.
 Check Token Allowance
 ----------------------
 
-View your current monthly token allowance and usage. Each plan tier includes a pool of tokens that cover VN calls and SMS messages.
+Each billing account has a monthly token allowance that covers VN calls and SMS messages. The allowance is represented as a **cycle** — a record that tracks your token allocation and consumption for the current month. A new cycle is created automatically on the 1st of each month with a fresh allocation based on your plan tier.
+
+Use the ``/allowance`` endpoint (singular) to get the current active cycle, or ``/allowances`` (plural) to list all cycles including past months.
 
 **Get Current Active Allowance Cycle:**
+
+Returns the single active cycle whose ``cycle_start <= now < cycle_end``. This is the most common call for checking how many tokens remain.
 
 .. code::
 
@@ -79,6 +83,8 @@ View your current monthly token allowance and usage. Each plan tier includes a p
 
 **List All Allowance Cycles:**
 
+Returns a paginated list of all cycles (current and past) for the account, ordered by creation time descending. Use ``page_size`` and ``page_token`` query parameters for pagination.
+
 .. code::
 
     $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/<billing-account-id>/allowances?token=<YOUR_AUTH_TOKEN>'
@@ -97,10 +103,12 @@ View your current monthly token allowance and usage. Each plan tier includes a p
         }
     ]
 
-- ``tokens_total``: Total tokens allocated for this billing cycle (determined by plan tier).
-- ``tokens_used``: Tokens consumed so far this cycle.
-- Remaining tokens: ``tokens_total - tokens_used`` = 650 in this example.
-- ``cycle_start`` / ``cycle_end``: The billing cycle period. Tokens reset when a new cycle starts.
+**Understanding the Response Fields:**
+
+- ``tokens_total``: Total tokens allocated for this cycle. Set by the account's plan tier when the cycle is created. Platform admins can adjust this value.
+- ``tokens_used``: Tokens consumed so far this cycle. Incremented each time a VN call or SMS uses tokens.
+- **Remaining tokens**: ``tokens_total - tokens_used`` = 650 in this example. When this reaches 0, further VN call and SMS usage overflows to the credit balance.
+- ``cycle_start`` / ``cycle_end``: The billing cycle period. Always runs from the 1st of the month to the 1st of the next month. A new cycle with fresh tokens is created when the previous one ends.
 
 **Token Allowances by Plan:**
 
@@ -112,6 +120,8 @@ Basic               10,000
 Professional        100,000
 Unlimited           Unlimited (no limit)
 =================== ======================
+
+Unused tokens do not carry over. Each cycle starts with the full allocation for the plan tier.
 
 Add Balance (Admin Only)
 -------------------------
@@ -250,16 +260,15 @@ Programmatically verify balance and token availability before initiating calls t
             params=params
         ).json()
 
-        # Get current allowance
-        allowances = requests.get(
-            f"{base_url}/billing_accounts/{billing_account_id}/allowances",
+        # Get current allowance cycle
+        current_allowance = requests.get(
+            f"{base_url}/billing_accounts/{billing_account_id}/allowance",
             params=params
         ).json()
 
         current_balance = account['balance']
         tokens_remaining = 0
-        if allowances:
-            current_allowance = allowances[0]
+        if current_allowance:
             tokens_remaining = current_allowance['tokens_total'] - current_allowance['tokens_used']
 
         duration = math.ceil(call_duration_minutes)  # ceiling-rounded
@@ -316,18 +325,17 @@ Programmatically verify balance and token availability before initiating calls t
             );
             const account = accountResponse.data;
 
-            // Get current allowance
+            // Get current allowance cycle
             const allowanceResponse = await axios.get(
-                `${baseUrl}/billing_accounts/${billingAccountId}/allowances`,
+                `${baseUrl}/billing_accounts/${billingAccountId}/allowance`,
                 { params }
             );
-            const allowances = allowanceResponse.data;
+            const currentAllowance = allowanceResponse.data;
 
             const currentBalance = account.balance;
             let tokensRemaining = 0;
-            if (allowances && allowances.length > 0) {
-                const current = allowances[0];
-                tokensRemaining = current.tokens_total - current.tokens_used;
+            if (currentAllowance) {
+                tokensRemaining = currentAllowance.tokens_total - currentAllowance.tokens_used;
             }
 
             const duration = Math.ceil(callDurationMinutes);  // ceiling-rounded
@@ -386,17 +394,16 @@ Track token consumption during the billing cycle to plan usage and avoid unexpec
         base_url = "https://api.voipbin.net/v1.0"
         params = {"token": "<YOUR_AUTH_TOKEN>"}
 
-        # Get current allowance
-        allowances = requests.get(
-            f"{base_url}/billing_accounts/{billing_account_id}/allowances",
+        # Get current allowance cycle
+        current = requests.get(
+            f"{base_url}/billing_accounts/{billing_account_id}/allowance",
             params=params
         ).json()
 
-        if not allowances:
+        if not current:
             print("No active allowance cycle found.")
             return
 
-        current = allowances[0]
         total = current['tokens_total']
         used = current['tokens_used']
         remaining = total - used
@@ -671,7 +678,7 @@ Balance and Token Management Workflow
     GET /v1.0/billing_accounts/<account-id>
 
     # Check current token allowance
-    GET /v1.0/billing_accounts/<account-id>/allowances
+    GET /v1.0/billing_accounts/<account-id>/allowance
 
     # Set up webhook for balance monitoring
     POST /v1.0/webhooks
@@ -710,7 +717,7 @@ Balance and Token Management Workflow
 .. code::
 
     # Review token usage
-    GET /v1.0/billing_accounts/<account-id>/allowances
+    GET /v1.0/billing_accounts/<account-id>/allowance
 
     # Review credit charges
     actual_credit = initial_balance - current_balance
@@ -727,7 +734,7 @@ Troubleshooting
 **Insufficient balance error:**
 
 - Check credit balance: ``GET /v1.0/billing_accounts/<account-id>``
-- Check token allowance: ``GET /v1.0/billing_accounts/<account-id>/allowances``
+- Check token allowance: ``GET /v1.0/billing_accounts/<account-id>/allowance``
 - VN calls and SMS may still work if tokens are available, even with low credit balance
 - PSTN calls and number purchases require credit balance
 
