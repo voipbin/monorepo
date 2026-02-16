@@ -229,77 +229,6 @@
 </pre></div>
 </div>
 </section>
-<section id="check-token-allowance">
-<h2>Check Token Allowance<a class="headerlink" href="#check-token-allowance" title="Link to this heading"></a></h2>
-<p>Each billing account has a monthly token allowance that covers VN calls and SMS messages. The allowance is represented as a <strong>cycle</strong> — a record that tracks your token allocation and consumption for the current month. A new cycle is created automatically on the 1st of each month with a fresh allocation based on your plan tier.</p>
-<p>Use the <code class="docutils literal notranslate"><span class="pre">/allowance</span></code> endpoint (singular) to get the current active cycle, or <code class="docutils literal notranslate"><span class="pre">/allowances</span></code> (plural) to list all cycles including past months.</p>
-<p><strong>Get Current Active Allowance Cycle:</strong></p>
-<p>Returns the single active cycle whose <code class="docutils literal notranslate"><span class="pre">cycle_start</span> <span class="pre">&lt;=</span> <span class="pre">now</span> <span class="pre">&lt;</span> <span class="pre">cycle_end</span></code>. This is the most common call for checking how many tokens remain.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;/allowance?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
-
-{
-    &quot;id&quot;: &quot;a1b2c3d4-1234-5678-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;account_id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-    &quot;cycle_start&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;cycle_end&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-    &quot;tokens_total&quot;: 1000,
-    &quot;tokens_used&quot;: 350,
-    &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;
-}
-</pre></div>
-</div>
-<p><strong>List All Allowance Cycles:</strong></p>
-<p>Returns a paginated list of all cycles (current and past) for the account, ordered by creation time descending. Use <code class="docutils literal notranslate"><span class="pre">page_size</span></code> and <code class="docutils literal notranslate"><span class="pre">page_token</span></code> query parameters for pagination.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;/allowances?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
-
-[
-    {
-        &quot;id&quot;: &quot;a1b2c3d4-1234-5678-abcd-ef1234567890&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;account_id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-        &quot;cycle_start&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-        &quot;cycle_end&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-        &quot;tokens_total&quot;: 1000,
-        &quot;tokens_used&quot;: 350,
-        &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-        &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;
-    }
-]
-</pre></div>
-</div>
-<p><strong>Understanding the Response Fields:</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">tokens_total</span></code>: Total tokens allocated for this cycle. Set by the account’s plan tier when the cycle is created. Platform admins can adjust this value.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tokens_used</span></code>: Tokens consumed so far this cycle. Incremented each time a VN call or SMS uses tokens.</p></li>
-<li><p><strong>Remaining tokens</strong>: <code class="docutils literal notranslate"><span class="pre">tokens_total</span> <span class="pre">-</span> <span class="pre">tokens_used</span></code> = 650 in this example. When this reaches 0, further VN call and SMS usage overflows to the credit balance.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cycle_start</span></code> / <code class="docutils literal notranslate"><span class="pre">cycle_end</span></code>: The billing cycle period. Always runs from the 1st of the month to the 1st of the next month. A new cycle with fresh tokens is created when the previous one ends.</p></li>
-</ul>
-<p><strong>Token Allowances by Plan:</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Plan Tier</p></th>
-<th class="head"><p>Monthly Tokens</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Free</p></td>
-<td><p>1,000</p></td>
-</tr>
-<tr class="row-odd"><td><p>Basic</p></td>
-<td><p>10,000</p></td>
-</tr>
-<tr class="row-even"><td><p>Professional</p></td>
-<td><p>100,000</p></td>
-</tr>
-<tr class="row-odd"><td><p>Unlimited</p></td>
-<td><p>Unlimited (no limit)</p></td>
-</tr>
-</tbody>
-</table>
-<p>Unused tokens do not carry over. Each cycle starts with the full allocation for the plan tier.</p>
-</section>
 <section id="add-balance-admin-only">
 <h2>Add Balance (Admin Only)<a class="headerlink" href="#add-balance-admin-only" title="Link to this heading"></a></h2>
 <p>Only users with admin permissions can add balance to accounts. This ensures account security and prevents unauthorized access.</p>
@@ -418,24 +347,10 @@ Credit cost: $0.00 (covered by tokens)
 Credit cost: 10 x $0.008 = $0.08
 </pre></div>
 </div>
-<p><strong>Calculate Total Monthly Cost:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Token-eligible (with 1000 tokens available):
-  VN Calls: 200 min x 1 token = 200 tokens consumed
-  SMS: 50 messages x 10 tokens = 500 tokens consumed
-  Total tokens used: 700 / 1000 (within allowance)
-  Credit from overflow: $0.00
-
-Credit-only:
-  PSTN Calls: 100 min x $0.006 = $0.60
-  Phone Numbers: 3 x $5.00 = $15.00
-
-Total credit cost: $15.60
-</pre></div>
-</div>
 </section>
 <section id="check-balance-before-call">
 <h2>Check Balance Before Call<a class="headerlink" href="#check-balance-before-call" title="Link to this heading"></a></h2>
-<p>Programmatically verify balance and token availability before initiating calls to ensure successful completion.</p>
+<p>Programmatically verify balance before initiating calls to ensure successful completion.</p>
 <p><strong>Python Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">math</span>
@@ -450,33 +365,14 @@ Total credit cost: $15.60
         <span class="n">params</span><span class="o">=</span><span class="n">params</span>
     <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 
-    <span class="c1"># Get current allowance cycle</span>
-    <span class="n">current_allowance</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_accounts/</span><span class="si">{</span><span class="n">billing_account_id</span><span class="si">}</span><span class="s2">/allowance&quot;</span><span class="p">,</span>
-        <span class="n">params</span><span class="o">=</span><span class="n">params</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-
     <span class="n">current_balance</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;balance&#39;</span><span class="p">]</span>
-    <span class="n">tokens_remaining</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">current_allowance</span><span class="p">:</span>
-        <span class="n">tokens_remaining</span> <span class="o">=</span> <span class="n">current_allowance</span><span class="p">[</span><span class="s1">&#39;tokens_total&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">current_allowance</span><span class="p">[</span><span class="s1">&#39;tokens_used&#39;</span><span class="p">]</span>
-
     <span class="n">duration</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">call_duration_minutes</span><span class="p">)</span>  <span class="c1"># ceiling-rounded</span>
 
     <span class="k">if</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;vn&quot;</span><span class="p">:</span>
-        <span class="c1"># VN call: check tokens first, then credit overflow</span>
-        <span class="n">tokens_needed</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># 1 token per minute</span>
-        <span class="k">if</span> <span class="n">tokens_remaining</span> <span class="o">&gt;=</span> <span class="n">tokens_needed</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Covered by tokens: </span><span class="si">{</span><span class="n">tokens_needed</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens remaining after call: </span><span class="si">{</span><span class="n">tokens_remaining</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tokens_needed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">can_proceed</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Partial or full overflow to credit</span>
-            <span class="n">overflow_minutes</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">-</span> <span class="n">tokens_remaining</span>
-            <span class="n">overflow_cost</span> <span class="o">=</span> <span class="n">overflow_minutes</span> <span class="o">*</span> <span class="mf">0.0045</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens available: </span><span class="si">{</span><span class="n">tokens_remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overflow to credit: </span><span class="si">{</span><span class="n">overflow_minutes</span><span class="si">}</span><span class="s2"> min x $0.0045 = $</span><span class="si">{</span><span class="n">overflow_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">current_balance</span> <span class="o">&gt;=</span> <span class="n">overflow_cost</span>
+        <span class="c1"># VN call: estimate credit cost for overflow scenario</span>
+        <span class="n">estimated_cost</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mf">0.0045</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN call cost (if tokens exhausted): </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x $0.0045 = $</span><span class="si">{</span><span class="n">estimated_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">current_balance</span> <span class="o">&gt;=</span> <span class="n">estimated_cost</span>
 
     <span class="k">elif</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;pstn&quot;</span><span class="p">:</span>
         <span class="c1"># PSTN call: always credit</span>
@@ -513,36 +409,16 @@ async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callTy
         );
         const account = accountResponse.data;
 
-        // Get current allowance cycle
-        const allowanceResponse = await axios.get(
-            `${baseUrl}/billing_accounts/${billingAccountId}/allowance`,
-            { params }
-        );
-        const currentAllowance = allowanceResponse.data;
-
         const currentBalance = account.balance;
-        let tokensRemaining = 0;
-        if (currentAllowance) {
-            tokensRemaining = currentAllowance.tokens_total - currentAllowance.tokens_used;
-        }
-
         const duration = Math.ceil(callDurationMinutes);  // ceiling-rounded
 
         let canProceed = false;
 
         if (callType === &#39;vn&#39;) {
-            // VN call: check tokens first
-            const tokensNeeded = duration * 1;
-            if (tokensRemaining &gt;= tokensNeeded) {
-                console.log(`Covered by tokens: ${tokensNeeded} tokens`);
-                canProceed = true;
-            } else {
-                const overflowMinutes = duration - tokensRemaining;
-                const overflowCost = overflowMinutes * 0.0045;
-                console.log(`Tokens available: ${tokensRemaining}`);
-                console.log(`Overflow cost: $${overflowCost.toFixed(4)}`);
-                canProceed = currentBalance &gt;= overflowCost;
-            }
+            // VN call: estimate credit cost for overflow scenario
+            const estimatedCost = duration * 0.0045;
+            console.log(`VN call cost (if tokens exhausted): $${estimatedCost.toFixed(4)}`);
+            canProceed = currentBalance &gt;= estimatedCost;
         } else if (callType === &#39;pstn&#39;) {
             // PSTN call: always credit
             const estimatedCost = duration * 0.006;
@@ -566,50 +442,6 @@ async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callTy
 
 // Check for a 10 minute VN call
 checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&#39;);
-</pre></div>
-</div>
-</section>
-<section id="monitor-token-usage">
-<h2>Monitor Token Usage<a class="headerlink" href="#monitor-token-usage" title="Link to this heading"></a></h2>
-<p>Track token consumption during the billing cycle to plan usage and avoid unexpected overflow charges.</p>
-<p><strong>Python Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-
-<span class="k">def</span> <span class="nf">monitor_token_usage</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">):</span>
-    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">}</span>
-
-    <span class="c1"># Get current allowance cycle</span>
-    <span class="n">current</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_accounts/</span><span class="si">{</span><span class="n">billing_account_id</span><span class="si">}</span><span class="s2">/allowance&quot;</span><span class="p">,</span>
-        <span class="n">params</span><span class="o">=</span><span class="n">params</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">current</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No active allowance cycle found.&quot;</span><span class="p">)</span>
-        <span class="k">return</span>
-
-    <span class="n">total</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_total&#39;</span><span class="p">]</span>
-    <span class="n">used</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_used&#39;</span><span class="p">]</span>
-    <span class="n">remaining</span> <span class="o">=</span> <span class="n">total</span> <span class="o">-</span> <span class="n">used</span>
-    <span class="n">usage_pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">used</span> <span class="o">/</span> <span class="n">total</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Billing Cycle: </span><span class="si">{</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;cycle_start&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;cycle_end&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens: </span><span class="si">{</span><span class="n">used</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2"> used (</span><span class="si">{</span><span class="n">usage_pct</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Remaining: </span><span class="si">{</span><span class="n">remaining</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Estimate remaining capacity</span>
-    <span class="n">vn_call_minutes</span> <span class="o">=</span> <span class="n">remaining</span>  <span class="c1"># 1 token per minute</span>
-    <span class="n">sms_messages</span> <span class="o">=</span> <span class="n">remaining</span> <span class="o">//</span> <span class="mi">10</span>  <span class="c1"># 10 tokens per message</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Remaining capacity:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - VN calls: ~</span><span class="si">{</span><span class="n">vn_call_minutes</span><span class="si">}</span><span class="s2"> minutes&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - SMS: ~</span><span class="si">{</span><span class="n">sms_messages</span><span class="si">}</span><span class="s2"> messages&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Warn if running low</span>
-    <span class="k">if</span> <span class="n">usage_pct</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: Token usage above 80%. Consider upgrading plan tier.&quot;</span><span class="p">)</span>
-
-<span class="n">monitor_token_usage</span><span class="p">(</span><span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -691,94 +523,36 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <section id="common-use-cases">
 <h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
 <p><strong>1. Pre-Campaign Cost Estimation:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">vn_calls</span><span class="p">,</span> <span class="n">vn_avg_minutes</span><span class="p">,</span>
-                           <span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign cost considering tokens and credits.&quot;&quot;&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign cost considering credits.&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">math</span>
-
-    <span class="c1"># Get current token availability</span>
-    <span class="n">allowances</span> <span class="o">=</span> <span class="n">get_allowances</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
-    <span class="n">tokens_remaining</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">allowances</span><span class="p">:</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="n">allowances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">tokens_remaining</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_total&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_used&#39;</span><span class="p">]</span>
-
-    <span class="c1"># VN calls: tokens first, then overflow</span>
-    <span class="n">vn_total_minutes</span> <span class="o">=</span> <span class="n">vn_calls</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">vn_avg_minutes</span><span class="p">)</span>
-    <span class="n">vn_tokens_needed</span> <span class="o">=</span> <span class="n">vn_total_minutes</span>  <span class="c1"># 1 token per minute</span>
-    <span class="n">vn_tokens_consumed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">vn_tokens_needed</span><span class="p">,</span> <span class="n">tokens_remaining</span><span class="p">)</span>
-    <span class="n">vn_overflow_minutes</span> <span class="o">=</span> <span class="n">vn_total_minutes</span> <span class="o">-</span> <span class="n">vn_tokens_consumed</span>
-    <span class="n">vn_credit</span> <span class="o">=</span> <span class="n">vn_overflow_minutes</span> <span class="o">*</span> <span class="mf">0.0045</span>
-    <span class="n">tokens_remaining</span> <span class="o">-=</span> <span class="n">vn_tokens_consumed</span>
-
-    <span class="c1"># SMS: tokens first, then overflow</span>
-    <span class="n">sms_tokens_needed</span> <span class="o">=</span> <span class="n">sms_count</span> <span class="o">*</span> <span class="mi">10</span>  <span class="c1"># 10 tokens per message</span>
-    <span class="n">sms_tokens_consumed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sms_tokens_needed</span><span class="p">,</span> <span class="n">tokens_remaining</span><span class="p">)</span>
-    <span class="n">sms_overflow_count</span> <span class="o">=</span> <span class="p">(</span><span class="n">sms_tokens_needed</span> <span class="o">-</span> <span class="n">sms_tokens_consumed</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span>
-    <span class="n">sms_credit</span> <span class="o">=</span> <span class="n">sms_overflow_count</span> <span class="o">*</span> <span class="mf">0.008</span>
-    <span class="n">tokens_remaining</span> <span class="o">-=</span> <span class="n">sms_tokens_consumed</span>
 
     <span class="c1"># PSTN calls: always credit</span>
     <span class="n">pstn_total_minutes</span> <span class="o">=</span> <span class="n">pstn_calls</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">pstn_avg_minutes</span><span class="p">)</span>
     <span class="n">pstn_credit</span> <span class="o">=</span> <span class="n">pstn_total_minutes</span> <span class="o">*</span> <span class="mf">0.006</span>
 
-    <span class="n">total_credit</span> <span class="o">=</span> <span class="n">vn_credit</span> <span class="o">+</span> <span class="n">sms_credit</span> <span class="o">+</span> <span class="n">pstn_credit</span>
+    <span class="c1"># SMS: credit cost when tokens exhausted</span>
+    <span class="n">sms_credit</span> <span class="o">=</span> <span class="n">sms_count</span> <span class="o">*</span> <span class="mf">0.008</span>
+
+    <span class="n">total_credit</span> <span class="o">=</span> <span class="n">pstn_credit</span> <span class="o">+</span> <span class="n">sms_credit</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;tokens_consumed&#39;</span><span class="p">:</span> <span class="n">vn_tokens_consumed</span> <span class="o">+</span> <span class="n">sms_tokens_consumed</span><span class="p">,</span>
-        <span class="s1">&#39;vn_overflow_credit&#39;</span><span class="p">:</span> <span class="n">vn_credit</span><span class="p">,</span>
-        <span class="s1">&#39;sms_overflow_credit&#39;</span><span class="p">:</span> <span class="n">sms_credit</span><span class="p">,</span>
         <span class="s1">&#39;pstn_credit&#39;</span><span class="p">:</span> <span class="n">pstn_credit</span><span class="p">,</span>
+        <span class="s1">&#39;sms_credit&#39;</span><span class="p">:</span> <span class="n">sms_credit</span><span class="p">,</span>
         <span class="s1">&#39;total_credit_needed&#39;</span><span class="p">:</span> <span class="n">total_credit</span>
     <span class="p">}</span>
 
 <span class="c1"># Example: mixed campaign</span>
 <span class="n">costs</span> <span class="o">=</span> <span class="n">estimate_campaign_cost</span><span class="p">(</span>
-    <span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">,</span>
-    <span class="n">vn_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">vn_avg_minutes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">pstn_calls</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">sms_count</span><span class="o">=</span><span class="mi">200</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens consumed: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;tokens_consumed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN overflow credit: $</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;vn_overflow_credit&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SMS overflow credit: $</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;sms_overflow_credit&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSTN credit: $</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;pstn_credit&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SMS credit: $</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;sms_credit&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total credit needed: $</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;total_credit_needed&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>2. Monthly Cost Report:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_monthly_report</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a cost breakdown for the billing period.&quot;&quot;&quot;</span>
-    <span class="n">account</span> <span class="o">=</span> <span class="n">get_billing_account</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
-    <span class="n">allowances</span> <span class="o">=</span> <span class="n">get_allowances</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">)</span>
-
-    <span class="n">report</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;account_id&#39;</span><span class="p">:</span> <span class="n">billing_account_id</span><span class="p">,</span>
-        <span class="s1">&#39;plan_type&#39;</span><span class="p">:</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;plan_type&#39;</span><span class="p">],</span>
-        <span class="s1">&#39;period&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start_date</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">end_date</span><span class="p">},</span>
-        <span class="s1">&#39;token_usage&#39;</span><span class="p">:</span> <span class="p">{},</span>
-        <span class="s1">&#39;credit_usage&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;vn_overflow&#39;</span><span class="p">:</span> <span class="mf">0.00</span><span class="p">,</span>
-            <span class="s1">&#39;sms_overflow&#39;</span><span class="p">:</span> <span class="mf">0.00</span><span class="p">,</span>
-            <span class="s1">&#39;pstn_calls&#39;</span><span class="p">:</span> <span class="mf">0.00</span><span class="p">,</span>
-            <span class="s1">&#39;numbers&#39;</span><span class="p">:</span> <span class="mf">0.00</span>
-        <span class="p">},</span>
-        <span class="s1">&#39;total_credit_spent&#39;</span><span class="p">:</span> <span class="mf">0.00</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="n">allowances</span><span class="p">:</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="n">allowances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">report</span><span class="p">[</span><span class="s1">&#39;token_usage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_total&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;used&#39;</span><span class="p">:</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_used&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;remaining&#39;</span><span class="p">:</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_total&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">current</span><span class="p">[</span><span class="s1">&#39;tokens_used&#39;</span><span class="p">]</span>
-        <span class="p">}</span>
-
-    <span class="n">report</span><span class="p">[</span><span class="s1">&#39;total_credit_spent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s1">&#39;credit_usage&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">report</span>
-</pre></div>
-</div>
-<p><strong>3. Plan Tier Comparison:</strong></p>
+<p><strong>2. Plan Tier Comparison:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_sms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recommend the most cost-effective plan tier.&quot;&quot;&quot;</span>
     <span class="n">plans</span> <span class="o">=</span> <span class="p">{</span>
@@ -808,47 +582,36 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </section>
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
-<p><strong>1. Balance and Token Verification:</strong></p>
+<p><strong>1. Balance Verification:</strong></p>
 <ul class="simple">
-<li><p>Always check both credit balance and token allowance before high-cost operations</p></li>
-<li><p>For VN calls and SMS: check tokens first; if exhausted, ensure credit balance covers overflow</p></li>
-<li><p>For PSTN calls and numbers: check credit balance directly</p></li>
+<li><p>Always check credit balance before high-cost operations</p></li>
+<li><p>For PSTN calls and number purchases: check credit balance directly</p></li>
 <li><p>Add a buffer (10-20%) to estimated credit costs for safety</p></li>
 </ul>
-<p><strong>2. Token Management:</strong></p>
-<ul class="simple">
-<li><p>Monitor token consumption weekly to predict month-end usage</p></li>
-<li><p>Upgrade plan tier before tokens are consistently exhausted early</p></li>
-<li><p>Track which services consume the most tokens (VN calls vs SMS)</p></li>
-<li><p>Remember: unused tokens do not carry over to the next cycle</p></li>
-</ul>
-<p><strong>3. Monitoring:</strong></p>
+<p><strong>2. Monitoring:</strong></p>
 <ul class="simple">
 <li><p>Set up webhooks for real-time balance updates</p></li>
-<li><p>Monitor both credit balance and token usage during campaigns</p></li>
-<li><p>Track overflow charges to determine if a plan upgrade is worthwhile</p></li>
+<li><p>Monitor credit balance during campaigns</p></li>
+<li><p>Generate regular cost reports for analysis</p></li>
 </ul>
-<p><strong>4. Cost Management:</strong></p>
+<p><strong>3. Cost Management:</strong></p>
 <ul class="simple">
 <li><p>Separate estimates into token-eligible and credit-only services</p></li>
 <li><p>Calculate worst-case costs assuming full token overflow</p></li>
 <li><p>Generate regular cost reports for analysis</p></li>
 </ul>
-<p><strong>5. Security:</strong></p>
+<p><strong>4. Security:</strong></p>
 <ul class="simple">
 <li><p>Protect admin tokens used for balance operations</p></li>
 <li><p>Implement role-based access for balance management</p></li>
 <li><p>Audit balance changes regularly</p></li>
 </ul>
 </section>
-<section id="balance-and-token-management-workflow">
-<h2>Balance and Token Management Workflow<a class="headerlink" href="#balance-and-token-management-workflow" title="Link to this heading"></a></h2>
+<section id="balance-management-workflow">
+<h2>Balance Management Workflow<a class="headerlink" href="#balance-management-workflow" title="Link to this heading"></a></h2>
 <p><strong>1. Initial Setup:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current balance</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_accounts</span><span class="o">/&lt;</span><span class="n">account</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
-
-<span class="c1"># Check current token allowance</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_accounts</span><span class="o">/&lt;</span><span class="n">account</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;/</span><span class="n">allowance</span>
 
 <span class="c1"># Set up webhook for balance monitoring</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">webhooks</span>
@@ -857,15 +620,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 <p><strong>2. Before Operations:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Determine service type</span>
-<span class="k">if</span> <span class="n">service_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;vn_call&#39;</span><span class="p">,</span> <span class="s1">&#39;sms&#39;</span><span class="p">]:</span>
-    <span class="c1"># Check token allowance first</span>
-    <span class="n">tokens_remaining</span> <span class="o">=</span> <span class="n">get_tokens_remaining</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">tokens_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">proceed</span><span class="p">()</span>  <span class="c1"># tokens will cover it</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">check_credit_balance</span><span class="p">()</span>  <span class="c1"># need credit for overflow</span>
-
-<span class="k">elif</span> <span class="n">service_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pstn_call&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">]:</span>
+<span class="k">if</span> <span class="n">service_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pstn_call&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">]:</span>
     <span class="c1"># Always check credit balance</span>
     <span class="n">check_credit_balance</span><span class="p">()</span>
 </pre></div>
@@ -873,22 +628,11 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <p><strong>3. During Operations:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor via webhooks</span>
 <span class="o">-&gt;</span> <span class="n">Receive</span> <span class="n">balance</span> <span class="n">update</span> <span class="n">events</span>
-
-<span class="c1"># Check token burn rate</span>
-<span class="k">if</span> <span class="n">tokens_depleted_faster_than_expected</span><span class="p">():</span>
-    <span class="n">alert_and_check_credit</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>4. After Operations:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Review token usage</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_accounts</span><span class="o">/&lt;</span><span class="n">account</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;/</span><span class="n">allowance</span>
-
-<span class="c1"># Review credit charges</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Review credit charges</span>
 <span class="n">actual_credit</span> <span class="o">=</span> <span class="n">initial_balance</span> <span class="o">-</span> <span class="n">current_balance</span>
-
-<span class="c1"># Assess plan adequacy</span>
-<span class="k">if</span> <span class="n">overflow_charges</span> <span class="o">&gt;</span> <span class="n">plan_upgrade_cost</span><span class="p">:</span>
-    <span class="n">consider_plan_upgrade</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -898,19 +642,10 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <p><strong>Insufficient balance error:</strong></p>
 <ul class="simple">
 <li><p>Check credit balance: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_accounts/&lt;account-id&gt;</span></code></p></li>
-<li><p>Check token allowance: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_accounts/&lt;account-id&gt;/allowance</span></code></p></li>
-<li><p>VN calls and SMS may still work if tokens are available, even with low credit balance</p></li>
 <li><p>PSTN calls and number purchases require credit balance</p></li>
-</ul>
-<p><strong>Tokens exhausted mid-month:</strong></p>
-<ul class="simple">
-<li><p>Review token consumption patterns via the allowances endpoint</p></li>
-<li><p>Consider upgrading to a higher plan tier for more monthly tokens</p></li>
-<li><p>Budget for credit overflow charges until the next billing cycle</p></li>
 </ul>
 <p><strong>Unexpected credit charges:</strong></p>
 <ul class="simple">
-<li><p>Check if tokens were exhausted, causing VN calls or SMS to overflow to credits</p></li>
 <li><p>Verify call durations are ceiling-rounded to the next whole minute</p></li>
 <li><p>Review PSTN call history (always charged to credit)</p></li>
 </ul>
@@ -934,15 +669,13 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#check-account-balance">Check Account Balance</a></li>
-<li><a class="reference internal" href="#check-token-allowance">Check Token Allowance</a></li>
 <li><a class="reference internal" href="#add-balance-admin-only">Add Balance (Admin Only)</a></li>
 <li><a class="reference internal" href="#understanding-service-rates">Understanding Service Rates</a></li>
 <li><a class="reference internal" href="#check-balance-before-call">Check Balance Before Call</a></li>
-<li><a class="reference internal" href="#monitor-token-usage">Monitor Token Usage</a></li>
 <li><a class="reference internal" href="#monitor-balance-with-webhooks">Monitor Balance with Webhooks</a></li>
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
-<li><a class="reference internal" href="#balance-and-token-management-workflow">Balance and Token Management Workflow</a></li>
+<li><a class="reference internal" href="#balance-management-workflow">Balance Management Workflow</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
