@@ -63,12 +63,13 @@ type rabbit struct {
 	connection   amqpConnection
 	closed       atomic.Bool
 
-	// mu protects concurrent access to queues, exchanges, and queueBinds maps.
+	// mu protects concurrent access to queues, exchanges, queueBinds, and consumers.
 	// Use RLock for reads and Lock for writes.
 	mu         sync.RWMutex
 	queues     map[string]*queue
 	exchanges  map[string]*exchange
 	queueBinds map[string]*queueBind
+	consumers  []*consumerRegistration
 }
 
 type queue struct {
@@ -91,6 +92,25 @@ type queueBind struct {
 	args     amqp.Table
 }
 
+type consumerType int
+
+const (
+	consumerTypeMessage consumerType = iota
+	consumerTypeRPC
+)
+
+type consumerRegistration struct {
+	queueName    string
+	consumerName string
+	exclusive    bool
+	noLocal      bool
+	noWait       bool
+	numWorkers   int
+	cType        consumerType
+	cbMessage    sock.CbMsgConsume
+	cbRPC        sock.CbMsgRPC
+}
+
 type exchange struct {
 	name string
 
@@ -111,6 +131,7 @@ func NewRabbit(uri string) Rabbit {
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
 		queueBinds: make(map[string]*queueBind),
+		consumers:  make([]*consumerRegistration, 0),
 	}
 
 	return res

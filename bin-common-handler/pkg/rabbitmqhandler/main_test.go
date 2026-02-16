@@ -661,6 +661,23 @@ func TestNewRabbit_InitializesCorrectly(t *testing.T) {
 	}
 }
 
+func Test_newRabbit_initializesConsumers(t *testing.T) {
+	uri := "amqp://guest:guest@localhost:5672/"
+	r := NewRabbit(uri)
+
+	rabbit, ok := r.(*rabbit)
+	if !ok {
+		t.Fatal("Expected NewRabbit to return *rabbit")
+	}
+
+	if rabbit.consumers == nil {
+		t.Error("Expected consumers slice to be initialized")
+	}
+	if len(rabbit.consumers) != 0 {
+		t.Errorf("Expected 0 consumers, got %d", len(rabbit.consumers))
+	}
+}
+
 // ============================================================================
 // QueueCreate() Tests
 // ============================================================================
