@@ -43,6 +43,8 @@ type AccountHandler interface {
 
 	EventCUCustomerCreated(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
+	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
+	EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // accountHandler define

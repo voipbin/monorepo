@@ -146,6 +146,20 @@ func (mr *MockDBHandlerMockRecorder) AccountListByCustomerID(ctx, customerID, si
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountListByCustomerID), ctx, customerID, size, token)
 }
 
+// AccountSetStatus mocks base method.
+func (m *MockDBHandler) AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSetStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSetStatus indicates an expected call of AccountSetStatus.
+func (mr *MockDBHandlerMockRecorder) AccountSetStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSetStatus", reflect.TypeOf((*MockDBHandler)(nil).AccountSetStatus), ctx, id, status)
+}
+
 // AccountSubtractBalance mocks base method.
 func (m *MockDBHandler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error {
 	m.ctrl.T.Helper()

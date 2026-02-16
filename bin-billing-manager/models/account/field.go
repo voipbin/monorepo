@@ -8,6 +8,8 @@ const (
 	FieldID         Field = "id"
 	FieldCustomerID Field = "customer_id"
 
+	FieldStatus Field = "status"
+
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
 

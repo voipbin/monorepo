@@ -429,6 +429,7 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 
 	query, args, err := sq.Update(accountsTable).
 		SetMap(map[string]any{
+			"status":    string(account.StatusDeleted),
 			"tm_update": ts,
 			"tm_delete": ts,
 		}).
@@ -441,6 +442,33 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 	_, err = h.db.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("AccountDelete: could not execute. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.accountUpdateToCache(ctx, id)
+
+	return nil
+}
+
+
+// AccountSetStatus sets the account status
+func (h *handler) AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error {
+	ts := h.utilHandler.TimeNow()
+
+	query, args, err := sq.Update(accountsTable).
+		SetMap(map[string]any{
+			"status":    string(status),
+			"tm_update": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountSetStatus: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AccountSetStatus: could not execute. err: %v", err)
 	}
 
 	// update the cache
