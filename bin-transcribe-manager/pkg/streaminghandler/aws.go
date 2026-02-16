@@ -166,6 +166,9 @@ func (h *streamingHandler) awsProcessEvents(ctx context.Context, cancel context.
 					log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
 				}
 
+				if result.Alternatives[0].Transcript == nil {
+					continue
+				}
 				message := *result.Alternatives[0].Transcript
 				if len(message) == 0 {
 					continue

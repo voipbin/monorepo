@@ -147,6 +147,9 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		}
 
 		// get transcript message and create transcript
+		if len(tmp.Results[0].Alternatives) == 0 {
+			continue
+		}
 		message := tmp.Results[0].Alternatives[0].Transcript
 		if len(message) == 0 {
 			continue
