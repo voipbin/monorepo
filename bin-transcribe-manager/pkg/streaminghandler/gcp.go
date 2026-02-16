@@ -98,6 +98,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		cancel()
 	}()
 
+	speaking := false
 	t1 := time.Now()
 	for {
 		if ctx.Err() != nil {
@@ -115,8 +116,34 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		}
 
 		if !tmp.Results[0].IsFinal {
-			time.Sleep(time.Millisecond * 100)
+			// interim result — publish VAD events
+			message := ""
+			if len(tmp.Results[0].Alternatives) > 0 {
+				message = tmp.Results[0].Alternatives[0].Transcript
+			}
+
+			if !speaking {
+				speaking = true
+				now := time.Now()
+				webhookMsg := st.ConvertWebhookMessage("", &now)
+				h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechStarted, webhookMsg)
+				log.Debugf("Published speech_started. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
+			}
+
+			now := time.Now()
+			webhookMsg := st.ConvertWebhookMessage(message, &now)
+			h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechInterim, webhookMsg)
+			log.Debugf("Published speech_interim. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
 			continue
+		}
+
+		// final result — publish speech_ended if was speaking
+		if speaking {
+			speaking = false
+			now := time.Now()
+			webhookMsg := st.ConvertWebhookMessage("", &now)
+			h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechEnded, webhookMsg)
+			log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
 		}
 
 		// get transcript message and create transcript
