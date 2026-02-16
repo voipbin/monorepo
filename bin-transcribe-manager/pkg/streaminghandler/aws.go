@@ -103,6 +103,7 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 		_ = stream.Close()
 	}()
 
+	speaking := false
 	t1 := time.Now()
 	for {
 		select {
@@ -122,8 +123,39 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 			}
 
 			for _, result := range transcriptEvent.Value.Transcript.Results {
-				if result.IsPartial || len(result.Alternatives) == 0 {
+				if len(result.Alternatives) == 0 {
 					continue
+				}
+
+				if result.IsPartial {
+					// partial result — publish VAD events
+					message := ""
+					if result.Alternatives[0].Transcript != nil {
+						message = *result.Alternatives[0].Transcript
+					}
+
+					if !speaking {
+						speaking = true
+						now := time.Now()
+						webhookMsg := st.ConvertWebhookMessage("", &now)
+						h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechStarted, webhookMsg)
+						log.Debugf("Published speech_started. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
+					}
+
+					now := time.Now()
+					webhookMsg := st.ConvertWebhookMessage(message, &now)
+					h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechInterim, webhookMsg)
+					log.Debugf("Published speech_interim. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
+					continue
+				}
+
+				// final result — publish speech_ended if was speaking
+				if speaking {
+					speaking = false
+					now := time.Now()
+					webhookMsg := st.ConvertWebhookMessage("", &now)
+					h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechEnded, webhookMsg)
+					log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
 				}
 
 				message := *result.Alternatives[0].Transcript
