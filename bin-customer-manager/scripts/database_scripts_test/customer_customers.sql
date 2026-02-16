@@ -17,6 +17,9 @@ create table customer_customers(
 
   email_verified boolean not null default false,
 
+  status varchar(16) not null default 'active',
+  tm_deletion_scheduled datetime(6),
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6)

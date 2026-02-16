@@ -19,6 +19,9 @@ const (
 
 	FieldEmailVerified Field = "email_verified"
 
+	FieldStatus              Field = "status"
+	FieldTMDeletionScheduled Field = "tm_deletion_scheduled"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"

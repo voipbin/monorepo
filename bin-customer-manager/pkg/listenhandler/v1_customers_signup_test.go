@@ -50,7 +50,7 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"customer":{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null},"temp_token":"abc123"}`),
+				Data:       []byte(`{"customer":{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null},"temp_token":"abc123"}`),
 			},
 		},
 	}
@@ -185,7 +185,7 @@ func Test_processV1CustomersEmailVerifyPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"customer":{"id":"f1f2f3f4-0000-0000-0000-000000000001","email":"verify@voipbin.net","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":true,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
+				Data:       []byte(`{"customer":{"id":"f1f2f3f4-0000-0000-0000-000000000001","email":"verify@voipbin.net","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":true,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
 			},
 		},
 	}
