@@ -299,14 +299,14 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 
 **Files:**
 - Modify: `bin-customer-manager/pkg/listenhandler/main.go` (regex + routing)
-- Create: `bin-customer-manager/pkg/listenhandler/v1_customers_deletion.go`
+- Create: `bin-customer-manager/pkg/listenhandler/v1_customers_freeze.go`
 
 **Step 1: Add regex patterns**
 
 In `bin-customer-manager/pkg/listenhandler/main.go`, add:
 
 ```go
-regV1CustomersIDDeletion = regexp.MustCompile("/v1/customers/" + regUUID + "/deletion$")
+regV1CustomersIDFreeze = regexp.MustCompile("/v1/customers/" + regUUID + "/freeze$")
 regV1CustomersIDRecover  = regexp.MustCompile("/v1/customers/" + regUUID + "/recover$")
 ```
 
@@ -315,10 +315,10 @@ regV1CustomersIDRecover  = regexp.MustCompile("/v1/customers/" + regUUID + "/rec
 In the request routing switch in `main.go`, add:
 
 ```go
-// POST /v1/customers/<customer-id>/deletion (freeze)
-case regV1CustomersIDDeletion.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-    response, err = h.processV1CustomersIDDeletionPost(ctx, m)
-    requestType = "/v1/customers/deletion"
+// POST /v1/customers/<customer-id>/freeze
+case regV1CustomersIDFreeze.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+    response, err = h.processV1CustomersIDFreezePost(ctx, m)
+    requestType = "/v1/customers/freeze"
 
 // POST /v1/customers/<customer-id>/recover
 case regV1CustomersIDRecover.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
@@ -326,14 +326,14 @@ case regV1CustomersIDRecover.MatchString(m.URI) && m.Method == sock.RequestMetho
     requestType = "/v1/customers/recover"
 ```
 
-**Important:** Place these BEFORE the existing `regV1CustomersID` cases to prevent regex conflicts (since `/v1/customers/{id}/deletion` would also match `/v1/customers/{id}` regex if it's checked first).
+**Important:** Place these BEFORE the existing `regV1CustomersID` cases to prevent regex conflicts (since `/v1/customers/{id}/freeze` would also match `/v1/customers/{id}` regex if it's checked first).
 
 **Step 3: Implement handlers**
 
-In `bin-customer-manager/pkg/listenhandler/v1_customers_deletion.go`:
+In `bin-customer-manager/pkg/listenhandler/v1_customers_freeze.go`:
 
 ```go
-func (h *listenHandler) processV1CustomersIDDeletionPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+func (h *listenHandler) processV1CustomersIDFreezePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
     // Parse customer ID from URI
     // Call h.customerHandler.Freeze(ctx, id)
     // Return JSON response
@@ -359,7 +359,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 git add bin-customer-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-customer-manager: Add RPC routes for POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover
+- bin-customer-manager: Add RPC routes for POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover
 - bin-customer-manager: Implement freeze and recover listenhandler endpoints"
 ```
 
@@ -386,8 +386,8 @@ In `bin-common-handler/pkg/requesthandler/customer_customer.go`, add:
 
 ```go
 func (r *requestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
-    uri := fmt.Sprintf("/v1/customers/%s/deletion", customerID)
-    tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/deletion", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+    uri := fmt.Sprintf("/v1/customers/%s/freeze", customerID)
+    tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/freeze", requestTimeoutDefault, 0, ContentTypeJSON, nil)
     if err != nil {
         return nil, err
     }
@@ -450,13 +450,13 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 ## Task 7: OpenAPI Spec Updates
 
 **Files:**
-- Create: `bin-openapi-manager/openapi/paths/customers/id_deletion.yaml`
+- Create: `bin-openapi-manager/openapi/paths/customers/id_freeze.yaml`
 - Create: `bin-openapi-manager/openapi/paths/customers/id_recover.yaml`
 - Modify: `bin-openapi-manager/openapi/openapi.yaml` (add path refs, update CustomerManagerCustomer schema)
 
-**Step 1: Create id_deletion.yaml**
+**Step 1: Create id_freeze.yaml**
 
-In `bin-openapi-manager/openapi/paths/customers/id_deletion.yaml`:
+In `bin-openapi-manager/openapi/paths/customers/id_freeze.yaml`:
 
 ```yaml
 post:
@@ -523,8 +523,8 @@ Add path references and update CustomerManagerCustomer schema with new fields:
 
 ```yaml
 # In paths section:
-/v1.0/customers/{id}/deletion:
-  $ref: './paths/customers/id_deletion.yaml'
+/v1.0/customers/{id}/freeze:
+  $ref: './paths/customers/id_freeze.yaml'
 /v1.0/customers/{id}/recover:
   $ref: './paths/customers/id_recover.yaml'
 
@@ -559,7 +559,7 @@ cd bin-api-manager && go mod tidy && go mod vendor && go generate ./... && go te
 git add bin-openapi-manager/ bin-api-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-openapi-manager: Add /v1/customers/{id}/deletion (POST freeze) and /v1/customers/{id}/recover (POST recover) endpoint schemas
+- bin-openapi-manager: Add /v1/customers/{id}/freeze and /v1/customers/{id}/recover endpoint schemas
 - bin-openapi-manager: Add status and tm_deletion_scheduled fields to CustomerManagerCustomer schema
 - bin-api-manager: Regenerate server code from updated OpenAPI spec"
 ```
@@ -676,7 +676,7 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 In `bin-api-manager/server/customers.go`, add the generated handler stubs from OpenAPI:
 
 ```go
-func (h *server) PostCustomersIdDeletion(c *gin.Context, id string) {
+func (h *server) PostCustomersIdFreeze(c *gin.Context, id string) {
     // Extract agent, parse UUID
     // Permission: PermissionProjectSuperAdmin only
     // Call serviceHandler.CustomerFreeze(ctx, agent, customerID)
@@ -704,7 +704,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 git add bin-api-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-api-manager: Add POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover admin endpoint handlers
+- bin-api-manager: Add POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover admin endpoint handlers
 - bin-api-manager: Admin endpoints require PermissionProjectSuperAdmin"
 ```
 
@@ -1036,11 +1036,11 @@ and three-layer enforcement to prevent billing leakage.
 - bin-dbscheme-manager: Add status and tm_deletion_scheduled columns to customer_customers table
 - bin-customer-manager: Add Status/TMDeletionScheduled fields, Freeze/Recover handlers, expiry cron
 - bin-customer-manager: Add customer_frozen and customer_recovered event types
-- bin-customer-manager: Add RPC routes for POST/DELETE /v1/customers/{id}/deletion
+- bin-customer-manager: Add RPC routes for POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover
 - bin-common-handler: Add CustomerV1CustomerFreeze and CustomerV1CustomerRecover RPC methods
-- bin-openapi-manager: Add /v1/customers/{id}/deletion and /v1/customers/{id}/recover endpoint schemas
+- bin-openapi-manager: Add /v1/customers/{id}/freeze and /v1/customers/{id}/recover endpoint schemas
 - bin-api-manager: Add POST/DELETE /auth/unregister self-service endpoints
-- bin-api-manager: Add POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover admin endpoints
+- bin-api-manager: Add POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover admin endpoints
 - bin-api-manager: Add frozen account middleware (403 DELETION_SCHEDULED)
 - bin-call-manager: Subscribe to customer_frozen, hangup active calls, reject new calls
 - bin-billing-manager: Subscribe to customer_frozen/recovered, freeze/restore billing accounts

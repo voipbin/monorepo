@@ -71,7 +71,7 @@ DELETE /auth/unregister
 
 **Schedule Deletion (Freeze)**
 ```
-POST /v1/customers/{id}/deletion
+POST /v1/customers/{id}/freeze
 ```
 - **Auth**: Admin JWT
 - **Request body**: None required (admin authority is sufficient)
@@ -119,7 +119,7 @@ Everything else returns `403 DELETION_SCHEDULED`.
 ### Phase 1: Immediate Freeze
 
 ```
-POST /auth/unregister  (or)  POST /v1/customers/{id}/deletion
+POST /auth/unregister  (self-service)  or  POST /v1/customers/{id}/freeze  (admin)
     │
     ├─ customer-manager: set status=frozen, tm_deletion_scheduled=now()
     ├─ customer-manager: publish "customer_frozen" event via RabbitMQ
