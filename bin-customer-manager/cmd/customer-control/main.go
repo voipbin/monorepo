@@ -64,6 +64,8 @@ func initCommand() *cobra.Command {
 	cmdCustomer.AddCommand(cmdUpdate())
 	cmdCustomer.AddCommand(cmdUpdateBillingAccount())
 	cmdCustomer.AddCommand(cmdDelete())
+	cmdCustomer.AddCommand(cmdFreeze())
+	cmdCustomer.AddCommand(cmdRecover())
 
 	cmdAccesskey := &cobra.Command{Use: "accesskey", Short: "Accesskey operation"}
 	cmdAccesskey.AddCommand(cmdAccesskeyCreate())
@@ -306,6 +308,70 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	res, err := handler.Delete(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete customer")
+	}
+
+	return printJSON(res)
+}
+
+func cmdFreeze() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "freeze",
+		Short: "Freeze a customer account (schedule deletion)",
+		RunE:  runFreeze,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Customer ID (required)")
+
+	return cmd
+}
+
+func runFreeze(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Freeze(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to freeze customer")
+	}
+
+	return printJSON(res)
+}
+
+func cmdRecover() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "recover",
+		Short: "Recover a frozen customer account (cancel deletion)",
+		RunE:  runRecover,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Customer ID (required)")
+
+	return cmd
+}
+
+func runRecover(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Recover(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to recover customer")
 	}
 
 	return printJSON(res)
