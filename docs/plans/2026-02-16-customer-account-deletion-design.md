@@ -202,7 +202,7 @@ For each expired customer:
             ├─ bin-conference-manager
             ├─ bin-route-manager
             ├─ bin-storage-manager
-            └─ bin-billing-manager (set tm_delete on billing accounts)
+            └─ bin-billing-manager (set status='deleted' and tm_delete on billing accounts)
 ```
 
 ## 4. Key Design Decisions
@@ -227,6 +227,10 @@ For each expired customer:
 
 10. **Billing account gets its own `status` field** — `customer_frozen` sets billing account `status='frozen'` (not `tm_delete`). `customer_recovered` sets it back to `status='active'`. Only `customer_deleted` (Phase 3 expiry) sets `tm_delete` on billing accounts. This avoids conflating "frozen" with "deleted" — a billing account that was legitimately deleted before the freeze won't be incorrectly restored on recovery.
 
+12. **`IsValidBalance` must check billing account `status`** — the existing balance validation only checks `tm_delete`. Since the freeze sets `status='frozen'` without setting `tm_delete`, `IsValidBalance` must be updated to also reject charges when `status` is `frozen` or `deleted`. This is the mechanism that actually enforces "reject any new billing records" in Phase 1.
+
+13. **Existing billing `AccountDelete` must also set `status='deleted'`** — the existing `AccountDelete` DB method only sets `tm_delete`. After the migration adds the `status` column, this method must be updated to also set `status='deleted'`. This ensures consistency when `customer_deleted` fires in Phase 3 (the existing handler calls `AccountDelete` on each billing account).
+
 11. **Migration backfills existing data** — existing customers and billing accounts with `tm_delete IS NOT NULL` must have `status='deleted'` set during migration to avoid inconsistency.
 
 ## 5. Services Impacted
@@ -236,7 +240,7 @@ For each expired customer:
 | bin-customer-manager | State management, cron job, PII anonymization | Restore status | Publish customer_deleted |
 | bin-api-manager | New /auth endpoints, 403 check, admin endpoints | No change | No change |
 | bin-call-manager | Subscribe customer_frozen, hangup active calls, reject new calls | Subscribe customer_recovered, resume calls | Subscribe customer_deleted (existing) |
-| bin-billing-manager | Subscribe customer_frozen, set account status='frozen' | Subscribe customer_recovered, set account status='active' | Subscribe customer_deleted, set tm_delete (existing) |
+| bin-billing-manager | Subscribe customer_frozen, set account status='frozen', update IsValidBalance to check status | Subscribe customer_recovered, set account status='active' | Subscribe customer_deleted, set status='deleted' and tm_delete |
 | bin-openapi-manager | New endpoint schemas, new fields | No change | No change |
 | bin-dbscheme-manager | Migration: add status, tm_deletion_scheduled to customers; add status to billing_accounts; backfill existing deleted rows | No change | No change |
 | All other services | No change | No change | Subscribe customer_deleted for cascade cleanup |
