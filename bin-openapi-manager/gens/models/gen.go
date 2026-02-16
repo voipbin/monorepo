@@ -408,6 +408,13 @@ const (
 	ConversationManagerMessageStatusSent     ConversationManagerMessageStatus = "sent"
 )
 
+// Defines values for CustomerManagerCustomerStatus.
+const (
+	CustomerManagerCustomerStatusActive  CustomerManagerCustomerStatus = "active"
+	CustomerManagerCustomerStatusDeleted CustomerManagerCustomerStatus = "deleted"
+	CustomerManagerCustomerStatusFrozen  CustomerManagerCustomerStatus = "frozen"
+)
+
 // Defines values for CustomerManagerCustomerWebhookMethod.
 const (
 	CustomerManagerCustomerWebhookMethodDelete CustomerManagerCustomerWebhookMethod = "DELETE"
@@ -2028,11 +2035,17 @@ type CustomerManagerCustomer struct {
 	// PhoneNumber Phone number of the customer.
 	PhoneNumber *string `json:"phone_number,omitempty"`
 
+	// Status Account lifecycle status.
+	Status *CustomerManagerCustomerStatus `json:"status,omitempty"`
+
 	// TmCreate Timestamp when the customer was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the customer was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmDeletionScheduled When account deletion was requested (null if not scheduled).
+	TmDeletionScheduled *string `json:"tm_deletion_scheduled,omitempty"`
 
 	// TmUpdate Timestamp when the customer was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
@@ -2043,6 +2056,9 @@ type CustomerManagerCustomer struct {
 	// WebhookUri URI for the customer's webhook.
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
+
+// CustomerManagerCustomerStatus Account lifecycle status.
+type CustomerManagerCustomerStatus string
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string

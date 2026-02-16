@@ -417,6 +417,13 @@ const (
 	ConversationManagerMessageStatusSent     ConversationManagerMessageStatus = "sent"
 )
 
+// Defines values for CustomerManagerCustomerStatus.
+const (
+	CustomerManagerCustomerStatusActive  CustomerManagerCustomerStatus = "active"
+	CustomerManagerCustomerStatusDeleted CustomerManagerCustomerStatus = "deleted"
+	CustomerManagerCustomerStatusFrozen  CustomerManagerCustomerStatus = "frozen"
+)
+
 // Defines values for CustomerManagerCustomerWebhookMethod.
 const (
 	CustomerManagerCustomerWebhookMethodDelete CustomerManagerCustomerWebhookMethod = "DELETE"
@@ -2037,11 +2044,17 @@ type CustomerManagerCustomer struct {
 	// PhoneNumber Phone number of the customer.
 	PhoneNumber *string `json:"phone_number,omitempty"`
 
+	// Status Account lifecycle status.
+	Status *CustomerManagerCustomerStatus `json:"status,omitempty"`
+
 	// TmCreate Timestamp when the customer was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
 	// TmDelete Timestamp when the customer was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmDeletionScheduled When account deletion was requested (null if not scheduled).
+	TmDeletionScheduled *string `json:"tm_deletion_scheduled,omitempty"`
 
 	// TmUpdate Timestamp when the customer was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
@@ -2052,6 +2065,9 @@ type CustomerManagerCustomer struct {
 	// WebhookUri URI for the customer's webhook.
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
+
+// CustomerManagerCustomerStatus Account lifecycle status.
+type CustomerManagerCustomerStatus string
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
@@ -6050,6 +6066,12 @@ type ServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(c *gin.Context, id string)
+	// Schedule customer deletion (freeze account).
+	// (POST /customers/{id}/freeze)
+	PostCustomersIdFreeze(c *gin.Context, id string)
+	// Cancel customer deletion (recover account).
+	// (POST /customers/{id}/recover)
+	PostCustomersIdRecover(c *gin.Context, id string)
 	// Retrieve a list of emails
 	// (GET /emails)
 	GetEmails(c *gin.Context, params GetEmailsParams)
@@ -9800,6 +9822,54 @@ func (siw *ServerInterfaceWrapper) PutCustomersIdBillingAccountId(c *gin.Context
 	}
 
 	siw.Handler.PutCustomersIdBillingAccountId(c, id)
+}
+
+// PostCustomersIdFreeze operation middleware
+func (siw *ServerInterfaceWrapper) PostCustomersIdFreeze(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCustomersIdFreeze(c, id)
+}
+
+// PostCustomersIdRecover operation middleware
+func (siw *ServerInterfaceWrapper) PostCustomersIdRecover(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCustomersIdRecover(c, id)
 }
 
 // GetEmails operation middleware
@@ -14102,6 +14172,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/customers/:id", wrapper.GetCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id", wrapper.PutCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id/billing_account_id", wrapper.PutCustomersIdBillingAccountId)
+	router.POST(options.BaseURL+"/customers/:id/freeze", wrapper.PostCustomersIdFreeze)
+	router.POST(options.BaseURL+"/customers/:id/recover", wrapper.PostCustomersIdRecover)
 	router.GET(options.BaseURL+"/emails", wrapper.GetEmails)
 	router.POST(options.BaseURL+"/emails", wrapper.PostEmails)
 	router.DELETE(options.BaseURL+"/emails/:id", wrapper.DeleteEmailsId)
@@ -16854,6 +16926,40 @@ type PutCustomersIdBillingAccountIdResponseObject interface {
 type PutCustomersIdBillingAccountId200JSONResponse CustomerManagerCustomer
 
 func (response PutCustomersIdBillingAccountId200JSONResponse) VisitPutCustomersIdBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCustomersIdFreezeRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCustomersIdFreezeResponseObject interface {
+	VisitPostCustomersIdFreezeResponse(w http.ResponseWriter) error
+}
+
+type PostCustomersIdFreeze200JSONResponse CustomerManagerCustomer
+
+func (response PostCustomersIdFreeze200JSONResponse) VisitPostCustomersIdFreezeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCustomersIdRecoverRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCustomersIdRecoverResponseObject interface {
+	VisitPostCustomersIdRecoverResponse(w http.ResponseWriter) error
+}
+
+type PostCustomersIdRecover200JSONResponse CustomerManagerCustomer
+
+func (response PostCustomersIdRecover200JSONResponse) VisitPostCustomersIdRecoverResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -20546,6 +20652,12 @@ type StrictServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(ctx context.Context, request PutCustomersIdBillingAccountIdRequestObject) (PutCustomersIdBillingAccountIdResponseObject, error)
+	// Schedule customer deletion (freeze account).
+	// (POST /customers/{id}/freeze)
+	PostCustomersIdFreeze(ctx context.Context, request PostCustomersIdFreezeRequestObject) (PostCustomersIdFreezeResponseObject, error)
+	// Cancel customer deletion (recover account).
+	// (POST /customers/{id}/recover)
+	PostCustomersIdRecover(ctx context.Context, request PostCustomersIdRecoverRequestObject) (PostCustomersIdRecoverResponseObject, error)
 	// Retrieve a list of emails
 	// (GET /emails)
 	GetEmails(ctx context.Context, request GetEmailsRequestObject) (GetEmailsResponseObject, error)
@@ -24996,6 +25108,60 @@ func (sh *strictHandler) PutCustomersIdBillingAccountId(ctx *gin.Context, id str
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCustomersIdBillingAccountIdResponseObject); ok {
 		if err := validResponse.VisitPutCustomersIdBillingAccountIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCustomersIdFreeze operation middleware
+func (sh *strictHandler) PostCustomersIdFreeze(ctx *gin.Context, id string) {
+	var request PostCustomersIdFreezeRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCustomersIdFreeze(ctx, request.(PostCustomersIdFreezeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCustomersIdFreeze")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCustomersIdFreezeResponseObject); ok {
+		if err := validResponse.VisitPostCustomersIdFreezeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCustomersIdRecover operation middleware
+func (sh *strictHandler) PostCustomersIdRecover(ctx *gin.Context, id string) {
+	var request PostCustomersIdRecoverRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCustomersIdRecover(ctx, request.(PostCustomersIdRecoverRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCustomersIdRecover")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCustomersIdRecoverResponseObject); ok {
+		if err := validResponse.VisitPostCustomersIdRecoverResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

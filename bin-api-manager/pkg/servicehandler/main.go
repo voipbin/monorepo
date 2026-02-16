@@ -463,6 +463,8 @@ type ServiceHandler interface {
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerFreeze(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerRecover(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
 		ctx context.Context,

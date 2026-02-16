@@ -1,0 +1,21 @@
+post:
+  summary: Schedule customer deletion (freeze account).
+  description: |
+    Marks the customer for deletion. The account enters 'frozen' state immediately.
+    Active calls are terminated and new operations are blocked.
+    The customer has 30 days to recover before permanent deletion.
+    Admin-only endpoint.
+  tags:
+    - Customer
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'

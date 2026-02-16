@@ -1945,6 +1945,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerEmailVerify(ctx, token any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerEmailVerify", reflect.TypeOf((*MockServiceHandler)(nil).CustomerEmailVerify), ctx, token)
 }
 
+// CustomerFreeze mocks base method.
+func (m *MockServiceHandler) CustomerFreeze(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerFreeze", ctx, a, customerID)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerFreeze indicates an expected call of CustomerFreeze.
+func (mr *MockServiceHandlerMockRecorder) CustomerFreeze(ctx, a, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerFreeze", reflect.TypeOf((*MockServiceHandler)(nil).CustomerFreeze), ctx, a, customerID)
+}
+
 // CustomerGet mocks base method.
 func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1973,6 +1988,21 @@ func (m *MockServiceHandler) CustomerList(ctx context.Context, a *agent.Agent, s
 func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockServiceHandler)(nil).CustomerList), ctx, a, size, token, filters)
+}
+
+// CustomerRecover mocks base method.
+func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerRecover", ctx, a, customerID)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerRecover indicates an expected call of CustomerRecover.
+func (mr *MockServiceHandlerMockRecorder) CustomerRecover(ctx, a, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerRecover", reflect.TypeOf((*MockServiceHandler)(nil).CustomerRecover), ctx, a, customerID)
 }
 
 // CustomerSignup mocks base method.
