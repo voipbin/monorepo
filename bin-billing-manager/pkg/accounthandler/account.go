@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -76,6 +77,38 @@ func (h *accountHandler) UpdatePaymentInfo(ctx context.Context, id uuid.UUID, pa
 		log.Errorf("Could not update the account. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the account")
 	}
+
+	return res, nil
+}
+
+// SetStatus sets the account's status
+func (h *accountHandler) SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "SetStatus",
+		"id":     id,
+		"status": status,
+	})
+
+	// validate status
+	switch status {
+	case account.StatusActive, account.StatusFrozen, account.StatusDeleted:
+		// valid
+	default:
+		return nil, fmt.Errorf("invalid status: %s", status)
+	}
+
+	if err := h.db.AccountSetStatus(ctx, id, status); err != nil {
+		log.Errorf("Could not set account status. err: %v", err)
+		return nil, errors.Wrap(err, "could not set account status")
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account")
+	}
+
+	h.notifyHandler.PublishEvent(ctx, account.EventTypeAccountUpdated, res)
 
 	return res, nil
 }

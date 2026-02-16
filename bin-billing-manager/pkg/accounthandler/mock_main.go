@@ -265,6 +265,21 @@ func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, size, token, filters)
 }
 
+// SetStatus mocks base method.
+func (m *MockAccountHandler) SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetStatus", ctx, id, status)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetStatus indicates an expected call of SetStatus.
+func (mr *MockAccountHandlerMockRecorder) SetStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStatus", reflect.TypeOf((*MockAccountHandler)(nil).SetStatus), ctx, id, status)
+}
+
 // SubtractBalance mocks base method.
 func (m *MockAccountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
