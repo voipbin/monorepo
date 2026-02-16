@@ -227,11 +227,11 @@ For each expired customer:
 
 10. **Billing account gets its own `status` field** — `customer_frozen` sets billing account `status='frozen'` (not `tm_delete`). `customer_recovered` sets it back to `status='active'`. Only `customer_deleted` (Phase 3 expiry) sets `tm_delete` on billing accounts. This avoids conflating "frozen" with "deleted" — a billing account that was legitimately deleted before the freeze won't be incorrectly restored on recovery.
 
-12. **`IsValidBalance` must check billing account `status`** — the existing balance validation only checks `tm_delete`. Since the freeze sets `status='frozen'` without setting `tm_delete`, `IsValidBalance` must be updated to also reject charges when `status` is `frozen` or `deleted`. This is the mechanism that actually enforces "reject any new billing records" in Phase 1.
+11. **`IsValidBalance` must check billing account `status`** — the existing balance validation only checks `tm_delete`. Since the freeze sets `status='frozen'` without setting `tm_delete`, `IsValidBalance` must be updated to also reject charges when `status` is `frozen` or `deleted`. This is the mechanism that actually enforces "reject any new billing records" in Phase 1.
 
-13. **Existing billing `AccountDelete` must also set `status='deleted'`** — the existing `AccountDelete` DB method only sets `tm_delete`. After the migration adds the `status` column, this method must be updated to also set `status='deleted'`. This ensures consistency when `customer_deleted` fires in Phase 3 (the existing handler calls `AccountDelete` on each billing account).
+12. **Existing billing `AccountDelete` must also set `status='deleted'`** — the existing `AccountDelete` DB method only sets `tm_delete`. After the migration adds the `status` column, this method must be updated to also set `status='deleted'`. This ensures consistency when `customer_deleted` fires in Phase 3 (the existing handler calls `AccountDelete` on each billing account).
 
-11. **Migration backfills existing data** — existing customers and billing accounts with `tm_delete IS NOT NULL` must have `status='deleted'` set during migration to avoid inconsistency.
+13. **Migration backfills existing data** — existing customers and billing accounts with `tm_delete IS NOT NULL` must have `status='deleted'` set during migration to avoid inconsistency.
 
 ## 5. Services Impacted
 

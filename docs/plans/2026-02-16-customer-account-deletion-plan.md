@@ -16,21 +16,23 @@
 
 **Files:**
 - Create: `bin-dbscheme-manager/bin-manager/main/versions/<hash>_customer_customers_add_column_status_tm_deletion_scheduled.py`
+- Create: `bin-dbscheme-manager/bin-manager/main/versions/<hash>_billing_accounts_add_column_status.py`
 
-**Step 1: Create migration file**
+**Step 1: Create customer migration file**
 
 ```bash
 cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-Customer-account-deletion-design/bin-dbscheme-manager/bin-manager
 alembic -c alembic.ini revision -m "customer_customers add column status tm_deletion_scheduled"
 ```
 
-**Step 2: Edit the generated migration file**
+**Step 2: Edit the customer migration file**
 
 ```python
 def upgrade():
     op.execute("""alter table customer_customers add column status varchar(16) not null default 'active' after email_verified;""")
     op.execute("""alter table customer_customers add column tm_deletion_scheduled datetime(6) default null after status;""")
     op.execute("""create index idx_customer_customers_status on customer_customers(status);""")
+    op.execute("""update customer_customers set status = 'deleted' where tm_delete is not null;""")
 
 def downgrade():
     op.execute("""alter table customer_customers drop index idx_customer_customers_status;""")
@@ -38,13 +40,34 @@ def downgrade():
     op.execute("""alter table customer_customers drop column status;""")
 ```
 
-**Step 3: Commit**
+**Step 3: Create billing account migration file**
+
+```bash
+alembic -c alembic.ini revision -m "billing_accounts add column status"
+```
+
+**Step 4: Edit the billing account migration file**
+
+```python
+def upgrade():
+    op.execute("""alter table billing_accounts add column status varchar(16) not null default 'active' after customer_id;""")
+    op.execute("""create index idx_billing_accounts_status on billing_accounts(status);""")
+    op.execute("""update billing_accounts set status = 'deleted' where tm_delete is not null;""")
+
+def downgrade():
+    op.execute("""alter table billing_accounts drop index idx_billing_accounts_status;""")
+    op.execute("""alter table billing_accounts drop column status;""")
+```
+
+**Step 5: Commit**
 
 ```bash
 git add bin-dbscheme-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-dbscheme-manager: Add status and tm_deletion_scheduled columns to customer_customers table"
+- bin-dbscheme-manager: Add status and tm_deletion_scheduled columns to customer_customers table
+- bin-dbscheme-manager: Add status column to billing_accounts table
+- bin-dbscheme-manager: Backfill status='deleted' for existing soft-deleted rows in both tables"
 ```
 
 ---
@@ -164,7 +187,18 @@ In `bin-customer-manager/pkg/dbhandler/customer.go`, add:
 
 Follow the existing pattern in `CustomerDelete` for metrics, squirrel query building, and cache invalidation.
 
-**Step 4: Implement Freeze handler**
+**Step 4: Update existing CustomerDelete to also set status='deleted'**
+
+In `bin-customer-manager/pkg/dbhandler/customer.go`, modify the existing `CustomerDelete` method to also set `status='deleted'` alongside `tm_delete`:
+
+```go
+// In the SetMap, add:
+"status": string(customer.StatusDeleted),
+```
+
+This ensures the existing admin force-delete path (`DELETE /v1/customers/{id}`) stays consistent with the new status field.
+
+**Step 5: Implement Freeze handler**
 
 In `bin-customer-manager/pkg/customerhandler/freeze.go`:
 
@@ -188,7 +222,7 @@ func (h *customerHandler) Recover(ctx context.Context, id uuid.UUID) (*customer.
 }
 ```
 
-**Step 5: Write tests**
+**Step 6: Write tests**
 
 In `bin-customer-manager/pkg/customerhandler/freeze_test.go`:
 - Test Freeze on active customer → status becomes frozen, event published
@@ -197,14 +231,14 @@ In `bin-customer-manager/pkg/customerhandler/freeze_test.go`:
 - Test Recover on frozen customer → status becomes active, event published
 - Test Recover on active customer → returns error
 
-**Step 6: Run verification**
+**Step 7: Run verification**
 
 ```bash
 cd bin-customer-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-**Step 7: Commit**
+**Step 8: Commit**
 
 ```bash
 git add bin-customer-manager/
@@ -212,6 +246,7 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 
 - bin-customer-manager: Implement Freeze and Recover customer handler methods
 - bin-customer-manager: Add CustomerFreeze, CustomerRecover, CustomerListFrozenExpired, CustomerAnonymizePII DB methods
+- bin-customer-manager: Update existing CustomerDelete to also set status='deleted'
 - bin-customer-manager: Add tests for freeze and recover logic"
 ```
 
@@ -913,15 +948,84 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 
 ---
 
-## Task 13: Billing Manager - Frozen/Recovered Events
+## Task 13: Billing Manager - Status Field, Frozen/Recovered Events, IsValidBalance
 
 **Files:**
-- Modify: `bin-billing-manager/pkg/subscribehandler/main.go` (event routing)
-- Modify: `bin-billing-manager/pkg/subscribehandler/customer.go` (event handlers)
+- Modify: `bin-billing-manager/models/account/account.go` (add Status type and field)
+- Modify: `bin-billing-manager/models/account/field.go` (add FieldStatus)
+- Modify: `bin-billing-manager/pkg/dbhandler/main.go` (add AccountSetStatus to interface)
+- Modify: `bin-billing-manager/pkg/dbhandler/account.go` (implement AccountSetStatus, update AccountDelete)
+- Modify: `bin-billing-manager/pkg/accounthandler/balance.go` (IsValidBalance frozen check)
 - Modify: `bin-billing-manager/pkg/accounthandler/main.go` (interface)
 - Modify: `bin-billing-manager/pkg/accounthandler/event.go` (implementation)
+- Modify: `bin-billing-manager/pkg/subscribehandler/main.go` (event routing)
+- Modify: `bin-billing-manager/pkg/subscribehandler/customer.go` (event handlers)
 
-**Step 1: Add event routing**
+**Step 1: Add Status type to billing account model**
+
+In `bin-billing-manager/models/account/account.go`, add:
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusFrozen  Status = "frozen"
+    StatusDeleted Status = "deleted"
+)
+```
+
+Add field to `Account` struct:
+
+```go
+Status Status `json:"status" db:"status"`
+```
+
+In `bin-billing-manager/models/account/field.go`, add:
+
+```go
+FieldStatus Field = "status"
+```
+
+**Step 2: Add AccountSetStatus DB method and update AccountDelete**
+
+In `bin-billing-manager/pkg/dbhandler/main.go`, add to interface:
+
+```go
+AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error
+```
+
+In `bin-billing-manager/pkg/dbhandler/account.go`, implement:
+
+```go
+func (h *handler) AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error {
+    // UPDATE billing_accounts SET status=?, tm_update=NOW() WHERE id=?
+    // Follow existing AccountDelete pattern for squirrel, metrics, cache invalidation
+}
+```
+
+Also update existing `AccountDelete` to set `status='deleted'` alongside `tm_delete`:
+
+```go
+// In AccountDelete SetMap, add:
+"status": string(account.StatusDeleted),
+```
+
+**Step 3: Update IsValidBalance to check status**
+
+In `bin-billing-manager/pkg/accounthandler/balance.go`, update the existing `tm_delete` check:
+
+```go
+// Before (line 54):
+if a.TMDelete != nil {
+
+// After:
+if a.TMDelete != nil || a.Status == account.StatusFrozen || a.Status == account.StatusDeleted {
+```
+
+This is the mechanism that actually blocks charges for frozen accounts.
+
+**Step 4: Add event routing**
 
 In `bin-billing-manager/pkg/subscribehandler/main.go`, add cases to `processEvent` switch:
 
@@ -933,7 +1037,7 @@ case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type =
     err = h.processEventCUCustomerRecovered(ctx, m)
 ```
 
-**Step 2: Add event handlers**
+**Step 5: Add event handlers**
 
 In `bin-billing-manager/pkg/subscribehandler/customer.go`, add:
 
@@ -949,7 +1053,7 @@ func (h *subscribeHandler) processEventCUCustomerRecovered(ctx context.Context, 
 }
 ```
 
-**Step 3: Add to AccountHandler interface**
+**Step 6: Add to AccountHandler interface**
 
 In `bin-billing-manager/pkg/accounthandler/main.go`, add:
 
@@ -958,29 +1062,30 @@ EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error
 ```
 
-**Step 4: Implement account freeze/unfreeze**
+**Step 7: Implement account freeze/recover**
 
 In `bin-billing-manager/pkg/accounthandler/event.go`, add:
 
 ```go
 func (h *accountHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error {
-    // 1. List all accounts for customer_id (same pattern as EventCUCustomerDeleted)
-    // 2. For each account: soft-delete (sets tm_delete) to block new billing
-    //    This reuses existing AccountDelete which sets tm_delete
+    // 1. List all active accounts for customer_id (FieldDeleted: false)
+    // 2. For each account: h.db.AccountSetStatus(ctx, a.ID, account.StatusFrozen)
+    //    Does NOT set tm_delete — only changes status
     // 3. Log results
 }
 
 func (h *accountHandler) EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error {
-    // 1. List all accounts for customer_id WITH deleted=true filter
-    // 2. For each account: restore by clearing tm_delete
-    //    Use AccountUpdate with FieldTMDelete set to nil/zero
+    // 1. List all accounts for customer_id WHERE status='frozen'
+    //    Use filter: FieldStatus: account.StatusFrozen
+    // 2. For each account: h.db.AccountSetStatus(ctx, a.ID, account.StatusActive)
+    //    Only restores frozen accounts — already-deleted accounts are untouched
     // 3. Log results
 }
 ```
 
-**Note:** For the freeze, reusing the existing soft-delete on billing accounts is pragmatic — the billing system already checks `tm_delete` before creating charges. On recovery, we reverse by clearing `tm_delete`. This requires checking that account restore logic works correctly with the existing `AccountUpdate` method.
+**Note:** The existing `EventCUCustomerDeleted` handler (Phase 3 expiry) calls `AccountDelete` which now sets both `status='deleted'` and `tm_delete`. No changes needed to the existing handler.
 
-**Step 5: Run verification and commit**
+**Step 8: Run verification and commit**
 
 ```bash
 cd bin-billing-manager
@@ -991,9 +1096,13 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 git add bin-billing-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
+- bin-billing-manager: Add Status field to billing account model (active/frozen/deleted)
+- bin-billing-manager: Add AccountSetStatus DB method for status transitions
+- bin-billing-manager: Update existing AccountDelete to also set status='deleted'
+- bin-billing-manager: Update IsValidBalance to reject charges for frozen/deleted accounts
 - bin-billing-manager: Subscribe to customer_frozen and customer_recovered events
-- bin-billing-manager: Freeze billing accounts on customer_frozen (soft-delete to block new charges)
-- bin-billing-manager: Restore billing accounts on customer_recovered (clear tm_delete)"
+- bin-billing-manager: Set account status='frozen' on customer_frozen (does NOT set tm_delete)
+- bin-billing-manager: Set account status='active' on customer_recovered (only restores frozen accounts)"
 ```
 
 ---
@@ -1034,8 +1143,10 @@ Add graceful customer account deletion (unregister) with 30-day recovery period
 and three-layer enforcement to prevent billing leakage.
 
 - bin-dbscheme-manager: Add status and tm_deletion_scheduled columns to customer_customers table
+- bin-dbscheme-manager: Add status column to billing_accounts table with backfill
 - bin-customer-manager: Add Status/TMDeletionScheduled fields, Freeze/Recover handlers, expiry cron
 - bin-customer-manager: Add customer_frozen and customer_recovered event types
+- bin-customer-manager: Update existing CustomerDelete to also set status='deleted'
 - bin-customer-manager: Add RPC routes for POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover
 - bin-common-handler: Add CustomerV1CustomerFreeze and CustomerV1CustomerRecover RPC methods
 - bin-openapi-manager: Add /v1/customers/{id}/freeze and /v1/customers/{id}/recover endpoint schemas
@@ -1043,7 +1154,10 @@ and three-layer enforcement to prevent billing leakage.
 - bin-api-manager: Add POST /v1/customers/{id}/freeze and POST /v1/customers/{id}/recover admin endpoints
 - bin-api-manager: Add frozen account middleware (403 DELETION_SCHEDULED)
 - bin-call-manager: Subscribe to customer_frozen, hangup active calls, reject new calls
-- bin-billing-manager: Subscribe to customer_frozen/recovered, freeze/restore billing accounts
+- bin-billing-manager: Add status field to billing account model (active/frozen/deleted)
+- bin-billing-manager: Update IsValidBalance to reject charges for frozen/deleted accounts
+- bin-billing-manager: Update existing AccountDelete to also set status='deleted'
+- bin-billing-manager: Subscribe to customer_frozen/recovered, set account status accordingly
 EOF
 )"
 ```
