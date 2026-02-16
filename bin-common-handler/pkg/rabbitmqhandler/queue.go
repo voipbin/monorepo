@@ -50,7 +50,7 @@ func (h *rabbit) QueueCreate(name string, queueType string) error {
 func (h *rabbit) queueCreateNormal(name string) error {
 
 	// declare the queue
-	if errDeclare := h.QueueDeclare(name, true, false, false, false); errDeclare != nil {
+	if errDeclare := h.QueueDeclare(name, true, false, false, false, nil); errDeclare != nil {
 		return fmt.Errorf("could not declare the queue for normal. err: %v", errDeclare)
 	}
 
@@ -64,7 +64,7 @@ func (h *rabbit) queueCreateNormal(name string) error {
 func (h *rabbit) queueCreateVolatile(name string) error {
 
 	// declare the queue
-	if errDeclare := h.QueueDeclare(name, false, true, false, false); errDeclare != nil {
+	if errDeclare := h.QueueDeclare(name, false, true, false, false, nil); errDeclare != nil {
 		return fmt.Errorf("could not declare the queue for volatile. err: %v", errDeclare)
 	}
 
@@ -95,7 +95,7 @@ func (h *rabbit) queueConfig(name string) error {
 }
 
 // QueueDeclare declares the rabbitmq queue using name and add it to the queues.
-func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error {
+func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) error {
 	channel, err := r.connection.Channel()
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		autoDelete, // delete when unused
 		exclusive,  // exclusive
 		noWait,     // no-wait
-		nil,        // arguments
+		args,       // arguments
 	)
 	if err != nil {
 		_ = channel.Close() // close channel on error to prevent leak
@@ -127,6 +127,7 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		autoDelete: autoDelete,
 		exclusive:  exclusive,
 		noWait:     noWait,
+		args:       args,
 
 		channel: channel,
 		queue:   &q,

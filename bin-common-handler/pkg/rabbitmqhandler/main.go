@@ -77,6 +77,7 @@ type queue struct {
 	autoDelete bool
 	exclusive  bool
 	noWait     bool
+	args       amqp.Table
 
 	channel amqpChannel
 	queue   *amqp.Queue
@@ -224,7 +225,7 @@ func (r *rabbit) redeclareAll() {
 	// redeclare the queues
 	for _, queue := range queuesCopy {
 		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
-		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait); err != nil {
+		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait, queue.args); err != nil {
 			log.Errorf("Could not declare the queue. err: %v", err)
 		}
 	}

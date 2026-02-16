@@ -898,3 +898,31 @@ func (m *closedCaptureMockChannel) ExchangeDeclare(name, kind string, durable, a
 func (m *closedCaptureMockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	return amqp.Queue{Name: name}, nil
 }
+
+func Test_queueDeclare_storesArgs(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
+	}
+
+	testArgs := amqp.Table{"x-expires": int32(1800000)}
+	r.queues["test-queue"] = &queue{
+		name:       "test-queue",
+		durable:    false,
+		autoDelete: true,
+		exclusive:  false,
+		noWait:     false,
+		args:       testArgs,
+		channel:    mockCh,
+	}
+
+	q := r.queues["test-queue"]
+	if q.args == nil {
+		t.Fatal("Expected args to be stored")
+	}
+	if q.args["x-expires"] != int32(1800000) {
+		t.Errorf("Expected x-expires 1800000, got %v", q.args["x-expires"])
+	}
+}
