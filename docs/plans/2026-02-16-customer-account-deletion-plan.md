@@ -1107,12 +1107,182 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 
 ---
 
-## Task 14: Final Integration Verification
+## Task 14: Customer-Control CLI - Freeze & Recover Commands
+
+**Files:**
+- Modify: `bin-customer-manager/cmd/customer-control/main.go`
+
+**Step 1: Add `customer freeze` command**
+
+In `bin-customer-manager/cmd/customer-control/main.go`, add a new `customerFreezeCmd` using the same Cobra pattern as the existing `customerDeleteCmd`:
+
+```go
+var customerFreezeCmd = &cobra.Command{
+    Use:   "freeze",
+    Short: "Freeze a customer account (schedule deletion)",
+    Run: func(cmd *cobra.Command, args []string) {
+        id := cmd.Flag("id").Value.String()
+        customerID, err := uuid.FromString(id)
+        // ... error handling
+
+        res, err := customerHandler.Freeze(ctx, customerID)
+        // ... error handling
+
+        // Output JSON to stdout (same pattern as other commands)
+        m, _ := json.MarshalIndent(res, "", "  ")
+        fmt.Fprintln(os.Stdout, string(m))
+    },
+}
+```
+
+Register the command:
+```go
+customerCmd.AddCommand(customerFreezeCmd)
+customerFreezeCmd.Flags().String("id", "", "customer id")
+_ = customerFreezeCmd.MarkFlagRequired("id")
+```
+
+**Step 2: Add `customer recover` command**
+
+Same pattern as freeze:
+
+```go
+var customerRecoverCmd = &cobra.Command{
+    Use:   "recover",
+    Short: "Recover a frozen customer account (cancel deletion)",
+    Run: func(cmd *cobra.Command, args []string) {
+        id := cmd.Flag("id").Value.String()
+        customerID, err := uuid.FromString(id)
+        // ... error handling
+
+        res, err := customerHandler.Recover(ctx, customerID)
+        // ... error handling
+
+        m, _ := json.MarshalIndent(res, "", "  ")
+        fmt.Fprintln(os.Stdout, string(m))
+    },
+}
+```
+
+Register the command:
+```go
+customerCmd.AddCommand(customerRecoverCmd)
+customerRecoverCmd.Flags().String("id", "", "customer id")
+_ = customerRecoverCmd.MarkFlagRequired("id")
+```
+
+**Note:** Both commands call `customerHandler.Freeze()` / `customerHandler.Recover()` which already publish `customer_frozen` / `customer_recovered` events. The normal event cascading to billing-manager and call-manager happens automatically.
+
+**Step 3: Run verification and commit**
+
+```bash
+cd bin-customer-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+```bash
+git add bin-customer-manager/
+git commit -m "NOJIRA-Customer-account-deletion-design
+
+- bin-customer-manager: Add customer-control 'customer freeze' command with event publication
+- bin-customer-manager: Add customer-control 'customer recover' command with event publication"
+```
+
+---
+
+## Task 15: Billing-Control CLI - Account Set-Status Command
+
+**Files:**
+- Modify: `bin-billing-manager/cmd/billing-control/main.go`
+- Modify: `bin-billing-manager/pkg/accounthandler/main.go` (interface)
+- Modify: `bin-billing-manager/pkg/accounthandler/account.go` (implementation)
+
+**Step 1: Add SetStatus to AccountHandler interface**
+
+In `bin-billing-manager/pkg/accounthandler/main.go`, add:
+
+```go
+SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error)
+```
+
+**Step 2: Implement SetStatus**
+
+In `bin-billing-manager/pkg/accounthandler/account.go`, add:
+
+```go
+func (h *accountHandler) SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error) {
+    log := logrus.WithFields(logrus.Fields{
+        "func":   "SetStatus",
+        "id":     id,
+        "status": status,
+    })
+
+    // 1. Validate status is one of active, frozen, deleted
+    // 2. Call h.db.AccountSetStatus(ctx, id, status)
+    // 3. Get updated account
+    // 4. Publish account update notification via h.notifyHandler
+    // 5. Return updated account
+}
+```
+
+**Step 3: Add `account set-status` command**
+
+In `bin-billing-manager/cmd/billing-control/main.go`, add:
+
+```go
+var accountSetStatusCmd = &cobra.Command{
+    Use:   "set-status",
+    Short: "Set billing account status (active, frozen, deleted)",
+    Run: func(cmd *cobra.Command, args []string) {
+        id := cmd.Flag("id").Value.String()
+        statusStr := cmd.Flag("status").Value.String()
+        accountID, err := uuid.FromString(id)
+        // ... error handling
+
+        status := account.Status(statusStr)
+        // Validate status is one of: active, frozen, deleted
+
+        res, err := accountHandler.SetStatus(ctx, accountID, status)
+        // ... error handling
+
+        m, _ := json.MarshalIndent(res, "", "  ")
+        fmt.Fprintln(os.Stdout, string(m))
+    },
+}
+```
+
+Register the command:
+```go
+accountCmd.AddCommand(accountSetStatusCmd)
+accountSetStatusCmd.Flags().String("id", "", "account id")
+accountSetStatusCmd.Flags().String("status", "", "status (active, frozen, deleted)")
+_ = accountSetStatusCmd.MarkFlagRequired("id")
+_ = accountSetStatusCmd.MarkFlagRequired("status")
+```
+
+**Step 4: Run verification and commit**
+
+```bash
+cd bin-billing-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+```bash
+git add bin-billing-manager/
+git commit -m "NOJIRA-Customer-account-deletion-design
+
+- bin-billing-manager: Add SetStatus to AccountHandler interface with notification
+- bin-billing-manager: Add billing-control 'account set-status' command for admin override"
+```
+
+---
+
+## Task 16: Final Integration Verification
 
 **Step 1: Run verification on all modified services**
 
 ```bash
-for svc in bin-customer-manager bin-api-manager bin-call-manager bin-billing-manager bin-openapi-manager bin-common-handler; do
+for svc in bin-customer-manager bin-billing-manager bin-api-manager bin-call-manager bin-openapi-manager bin-common-handler; do
     echo "=== Verifying $svc ==="
     cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-Customer-account-deletion-design/$svc
     go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
@@ -1158,6 +1328,8 @@ and three-layer enforcement to prevent billing leakage.
 - bin-billing-manager: Update IsValidBalance to reject charges for frozen/deleted accounts
 - bin-billing-manager: Update existing AccountDelete to also set status='deleted'
 - bin-billing-manager: Subscribe to customer_frozen/recovered, set account status accordingly
+- bin-customer-manager: Add customer-control freeze and recover CLI commands with event publication
+- bin-billing-manager: Add billing-control account set-status CLI command with notification
 EOF
 )"
 ```
@@ -1185,13 +1357,18 @@ Task 10 (Frozen Check) ←── Task 6 ─────────────�
                                                            │ │
 Task 11 (Call Events) ←── Task 2 ─────────────────────────┘ │
 Task 12 (Call Rejection) ←── Task 11 ───────────────────────┤
-Task 13 (Billing Events) ←── Task 2 ────────────────────────┘
+Task 13 (Billing Events) ←── Task 2 ────────────────────────┤
                                                              │
-Task 14 (Integration) ←── All tasks ─────────────────────────┘
+Task 14 (Customer-Control CLI) ←── Task 3 ──────────────────┤
+Task 15 (Billing-Control CLI) ←── Task 13 ──────────────────┘
+                                                             │
+Task 16 (Integration) ←── All tasks ─────────────────────────┘
 ```
 
 **Parallelizable groups:**
 - After Task 2: Tasks 3+4+5, Task 6, Task 7, Task 11, Task 13 can run in parallel
 - After Task 6+7: Tasks 8, 9, 10 can run in parallel
 - Task 12 requires Task 11
-- Task 14 requires all others
+- Task 14 requires Task 3 (customer-control needs Freeze/Recover handler methods)
+- Task 15 requires Task 13 (billing-control needs AccountSetStatus DB method)
+- Task 16 requires all others

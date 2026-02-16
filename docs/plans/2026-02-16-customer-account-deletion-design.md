@@ -106,6 +106,29 @@ HTTP 403
 }
 ```
 
+### CLI Commands (Admin / Ops)
+
+**customer-control (bin-customer-manager)**
+
+```bash
+# Freeze a customer account (publishes customer_frozen event)
+customer-control customer freeze --id <uuid>
+
+# Recover a frozen customer account (publishes customer_recovered event)
+customer-control customer recover --id <uuid>
+```
+
+Both commands call `customerHandler.Freeze()` / `customerHandler.Recover()` directly, which publish `customer_frozen` / `customer_recovered` events via RabbitMQ. The normal cascading behavior applies — billing-manager freezes/unfreezes billing accounts, call-manager terminates/resumes calls.
+
+**billing-control (bin-billing-manager)**
+
+```bash
+# Set billing account status (publishes account update notification)
+billing-control account set-status --id <uuid> --status <active|frozen|deleted>
+```
+
+Calls `accountHandler.SetStatus()` which updates the billing account status and publishes an account update notification via notifyHandler. This is an admin override for cases where the billing account status needs to be corrected independently of customer events.
+
 ### Allowed Endpoints for Frozen Accounts
 
 - `DELETE /auth/unregister` (self-service recovery)
@@ -232,6 +255,8 @@ For each expired customer:
 12. **Existing billing `AccountDelete` must also set `status='deleted'`** — the existing `AccountDelete` DB method only sets `tm_delete`. After the migration adds the `status` column, this method must be updated to also set `status='deleted'`. This ensures consistency when `customer_deleted` fires in Phase 3 (the existing handler calls `AccountDelete` on each billing account).
 
 13. **Migration backfills existing data** — existing customers and billing accounts with `tm_delete IS NOT NULL` must have `status='deleted'` set during migration to avoid inconsistency.
+
+14. **CLI commands for manual status management** — `customer-control customer freeze/recover` and `billing-control account set-status` provide admin/ops override capabilities. Customer CLI commands trigger normal event cascading (customer_frozen/customer_recovered). Billing CLI set-status is a direct override that publishes an account update notification but does NOT trigger customer-level events — it is for correcting billing account state independently.
 
 ## 5. Services Impacted
 
