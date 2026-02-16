@@ -63,8 +63,11 @@ func (h *rabbit) queueCreateNormal(name string) error {
 
 func (h *rabbit) queueCreateVolatile(name string) error {
 
-	// declare the queue
-	if errDeclare := h.QueueDeclare(name, false, true, false, false, nil); errDeclare != nil {
+	// declare the queue with x-expires for automatic cleanup of stale queues.
+	// x-expires deletes the queue after 30 minutes with no consumers.
+	if errDeclare := h.QueueDeclare(name, false, true, false, false, amqp.Table{
+		"x-expires": int32(1800000),
+	}); errDeclare != nil {
 		return fmt.Errorf("could not declare the queue for volatile. err: %v", errDeclare)
 	}
 

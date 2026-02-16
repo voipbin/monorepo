@@ -15,8 +15,9 @@ type mockChannel struct {
 	closeErr     error
 	closeErrOnce bool // if true, only return error on first call
 
-	queueDeclareErr    error
-	queueDeclareName   string
+	queueDeclareErr  error
+	queueDeclareName string
+	queueDeclareArgs amqp.Table
 	exchangeDeclareErr error
 
 	qosErr       error
@@ -57,6 +58,7 @@ func (m *mockChannel) ExchangeDeclare(name, kind string, durable, autoDelete, in
 
 func (m *mockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	m.queueDeclareName = name
+	m.queueDeclareArgs = args
 	if m.queueDeclareErr != nil {
 		return amqp.Queue{}, m.queueDeclareErr
 	}
@@ -924,5 +926,36 @@ func Test_queueDeclare_storesArgs(t *testing.T) {
 	}
 	if q.args["x-expires"] != int32(1800000) {
 		t.Errorf("Expected x-expires 1800000, got %v", q.args["x-expires"])
+	}
+}
+
+func Test_queueCreateVolatile_xExpires(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
+	}
+
+	// Verify args are stored in queue struct after queueCreateVolatile sets them
+	testArgs := amqp.Table{"x-expires": int32(1800000)}
+	r.queues["test-volatile"] = &queue{
+		name:       "test-volatile",
+		durable:    false,
+		autoDelete: true,
+		args:       testArgs,
+		channel:    mockCh,
+	}
+
+	q := r.queues["test-volatile"]
+	if q.args == nil {
+		t.Fatal("Expected volatile queue to have args")
+	}
+	expires, ok := q.args["x-expires"]
+	if !ok {
+		t.Fatal("Expected x-expires in queue args")
+	}
+	if expires != int32(1800000) {
+		t.Errorf("Expected x-expires 1800000, got %v", expires)
 	}
 }
