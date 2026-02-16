@@ -85,11 +85,12 @@ POST /v1/customers/{id}/recover
 - **Request body**: None required (admin authority is sufficient)
 - **Response** (200): Customer object with `status: "active"` and `tm_deletion_scheduled` cleared
 
-**Immediate Force-Delete — Unchanged**
+**Immediate Force-Delete — Updated**
 ```
 DELETE /v1/customers/{id}
 ```
 - Remains as admin-only immediate soft delete (bypasses grace period, for fraud/abuse cases)
+- **Must also set `status='deleted'`** — the existing `CustomerDelete` DB method currently only sets `tm_delete`. After the migration adds the `status` column, this method must be updated to also set `status='deleted'` to maintain consistency between the two fields.
 
 ### Frozen Account Error Response
 
@@ -130,7 +131,7 @@ POST /auth/unregister  (self-service)  or  POST /v1/customers/{id}/freeze  (admi
     │   └─ Reject any new calls for frozen customers at call setup
     │
     ├─ bin-billing-manager: receives "customer_frozen" event
-    │   ├─ Mark billing account as frozen
+    │   ├─ Set billing account status='frozen' (does NOT set tm_delete)
     │   ├─ Reject any new billing records (call charges, number fees, etc.)
     │   └─ Pause recurring subscription charges
     │
@@ -157,7 +158,7 @@ DELETE /auth/unregister  (or)  POST /v1/customers/{id}/recover
     │   └─ Resume accepting new calls for customer
     │
     ├─ bin-billing-manager: receives "customer_recovered" event
-    │   ├─ Unfreeze billing account
+    │   ├─ Set billing account status='active' (restore from frozen)
     │   └─ Resume recurring subscription charges
     │
     └─ All other services resume normal operation (nothing was deleted)
@@ -201,7 +202,7 @@ For each expired customer:
             ├─ bin-conference-manager
             ├─ bin-route-manager
             ├─ bin-storage-manager
-            └─ bin-billing-manager (final billing cleanup)
+            └─ bin-billing-manager (set tm_delete on billing accounts)
 ```
 
 ## 4. Key Design Decisions
@@ -216,13 +217,17 @@ For each expired customer:
 
 5. **PII anonymization instead of hard delete** — preserves referential integrity in billing/CDR tables while satisfying privacy requirements.
 
-6. **Existing `DELETE /v1/customers/{id}` unchanged** — admin force-delete path preserved for fraud/abuse cases.
+6. **Existing `DELETE /v1/customers/{id}` updated** — admin force-delete path preserved for fraud/abuse cases. Must also set `status='deleted'` to stay consistent with the new status field.
 
 7. **Separate self-service (`/auth`) and admin (`/v1/customers/{id}`) paths** — self-service uses token identity (no `{id}` needed), admin specifies target customer explicitly.
 
 8. **Call-manager handles SIP enforcement** — checks customer frozen status at call setup, covering both inbound and outbound SIP calls without Kamailio changes.
 
 9. **Confirmation logic** — password-based accounts require password re-entry; SSO and API key users require confirmation phrase `"DELETE"` to prevent accidental script execution.
+
+10. **Billing account gets its own `status` field** — `customer_frozen` sets billing account `status='frozen'` (not `tm_delete`). `customer_recovered` sets it back to `status='active'`. Only `customer_deleted` (Phase 3 expiry) sets `tm_delete` on billing accounts. This avoids conflating "frozen" with "deleted" — a billing account that was legitimately deleted before the freeze won't be incorrectly restored on recovery.
+
+11. **Migration backfills existing data** — existing customers and billing accounts with `tm_delete IS NOT NULL` must have `status='deleted'` set during migration to avoid inconsistency.
 
 ## 5. Services Impacted
 
@@ -231,15 +236,30 @@ For each expired customer:
 | bin-customer-manager | State management, cron job, PII anonymization | Restore status | Publish customer_deleted |
 | bin-api-manager | New /auth endpoints, 403 check, admin endpoints | No change | No change |
 | bin-call-manager | Subscribe customer_frozen, hangup active calls, reject new calls | Subscribe customer_recovered, resume calls | Subscribe customer_deleted (existing) |
-| bin-billing-manager | Subscribe customer_frozen, freeze billing, pause subscriptions | Subscribe customer_recovered, unfreeze billing, resume subscriptions | Final billing cleanup |
+| bin-billing-manager | Subscribe customer_frozen, set account status='frozen' | Subscribe customer_recovered, set account status='active' | Subscribe customer_deleted, set tm_delete (existing) |
 | bin-openapi-manager | New endpoint schemas, new fields | No change | No change |
-| bin-dbscheme-manager | Migration: add status, tm_deletion_scheduled columns | No change | No change |
+| bin-dbscheme-manager | Migration: add status, tm_deletion_scheduled to customers; add status to billing_accounts; backfill existing deleted rows | No change | No change |
 | All other services | No change | No change | Subscribe customer_deleted for cascade cleanup |
 
 ## 6. Database Migration
+
+### Customer table
 
 ```sql
 ALTER TABLE customer_customers
   ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'active',
   ADD COLUMN tm_deletion_scheduled DATETIME(6) DEFAULT NULL;
+
+-- Backfill: existing soft-deleted customers must have status='deleted'
+UPDATE customer_customers SET status = 'deleted' WHERE tm_delete IS NOT NULL;
+```
+
+### Billing account table
+
+```sql
+ALTER TABLE billing_accounts
+  ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'active';
+
+-- Backfill: existing soft-deleted billing accounts must have status='deleted'
+UPDATE billing_accounts SET status = 'deleted' WHERE tm_delete IS NOT NULL;
 ```
