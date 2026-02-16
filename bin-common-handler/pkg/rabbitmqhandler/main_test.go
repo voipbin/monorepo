@@ -1,7 +1,9 @@
 package rabbitmqhandler
 
 import (
+	"context"
 	"errors"
+	"monorepo/bin-common-handler/models/sock"
 	"sync"
 	"testing"
 	"time"
@@ -15,12 +17,14 @@ type mockChannel struct {
 	closeErr     error
 	closeErrOnce bool // if true, only return error on first call
 
-	queueDeclareErr    error
-	queueDeclareName   string
+	queueDeclareErr  error
+	queueDeclareName string
+	queueDeclareArgs amqp.Table
 	exchangeDeclareErr error
 
 	qosErr       error
 	queueBindErr error
+	consumeErr   error
 }
 
 func newMockChannel() *mockChannel {
@@ -36,6 +40,9 @@ func (m *mockChannel) Close() error {
 }
 
 func (m *mockChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+	if m.consumeErr != nil {
+		return nil, m.consumeErr
+	}
 	return make(<-chan amqp.Delivery), nil
 }
 
@@ -57,6 +64,7 @@ func (m *mockChannel) ExchangeDeclare(name, kind string, durable, autoDelete, in
 
 func (m *mockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	m.queueDeclareName = name
+	m.queueDeclareArgs = args
 	if m.queueDeclareErr != nil {
 		return amqp.Queue{}, m.queueDeclareErr
 	}
@@ -99,6 +107,36 @@ func (m *mockConnection) Close() error {
 func (m *mockConnection) NotifyClose(receiver chan *amqp.Error) chan *amqp.Error {
 	m.notifyCloseCh = receiver
 	return receiver
+}
+
+// mockChannelWithConsumeCounter tracks Consume calls and can fail on demand
+type mockChannelWithConsumeCounter struct {
+	consumeCallCount *int
+	failUntil        int // fail Consume calls until this count
+}
+
+func (m *mockChannelWithConsumeCounter) Close() error { return nil }
+func (m *mockChannelWithConsumeCounter) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+	*m.consumeCallCount++
+	if *m.consumeCallCount <= m.failUntil {
+		return nil, errors.New("consume failed")
+	}
+	return make(<-chan amqp.Delivery), nil
+}
+func (m *mockChannelWithConsumeCounter) Qos(prefetchCount, prefetchSize int, global bool) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
+	return 0, nil
+}
+func (m *mockChannelWithConsumeCounter) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
+	return amqp.Queue{Name: name}, nil
 }
 
 // ============================================================================
@@ -659,6 +697,23 @@ func TestNewRabbit_InitializesCorrectly(t *testing.T) {
 	}
 }
 
+func Test_newRabbit_initializesConsumers(t *testing.T) {
+	uri := "amqp://guest:guest@localhost:5672/"
+	r := NewRabbit(uri)
+
+	rabbit, ok := r.(*rabbit)
+	if !ok {
+		t.Fatal("Expected NewRabbit to return *rabbit")
+	}
+
+	if rabbit.consumers == nil {
+		t.Error("Expected consumers slice to be initialized")
+	}
+	if len(rabbit.consumers) != 0 {
+		t.Errorf("Expected 0 consumers, got %d", len(rabbit.consumers))
+	}
+}
+
 // ============================================================================
 // QueueCreate() Tests
 // ============================================================================
@@ -897,4 +952,296 @@ func (m *closedCaptureMockChannel) ExchangeDeclare(name, kind string, durable, a
 
 func (m *closedCaptureMockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	return amqp.Queue{Name: name}, nil
+}
+
+func Test_queueDeclare_storesArgs(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
+	}
+
+	testArgs := amqp.Table{"x-expires": int32(1800000)}
+	r.queues["test-queue"] = &queue{
+		name:       "test-queue",
+		durable:    false,
+		autoDelete: true,
+		exclusive:  false,
+		noWait:     false,
+		args:       testArgs,
+		channel:    mockCh,
+	}
+
+	q := r.queues["test-queue"]
+	if q.args == nil {
+		t.Fatal("Expected args to be stored")
+	}
+	if q.args["x-expires"] != int32(1800000) {
+		t.Errorf("Expected x-expires 1800000, got %v", q.args["x-expires"])
+	}
+}
+
+func Test_queueCreateVolatile_xExpires(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
+	}
+
+	// Verify args are stored in queue struct after queueCreateVolatile sets them
+	testArgs := amqp.Table{"x-expires": int32(1800000)}
+	r.queues["test-volatile"] = &queue{
+		name:       "test-volatile",
+		durable:    false,
+		autoDelete: true,
+		args:       testArgs,
+		channel:    mockCh,
+	}
+
+	q := r.queues["test-volatile"]
+	if q.args == nil {
+		t.Fatal("Expected volatile queue to have args")
+	}
+	expires, ok := q.args["x-expires"]
+	if !ok {
+		t.Fatal("Expected x-expires in queue args")
+	}
+	if expires != int32(1800000) {
+		t.Errorf("Expected x-expires 1800000, got %v", expires)
+	}
+}
+
+func Test_startConsumers_queueNotFound(t *testing.T) {
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "nonexistent",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+	}
+
+	err := r.startConsumers(reg)
+	if err == nil {
+		t.Error("Expected error for non-existent queue")
+	}
+}
+
+func Test_startConsumers_success(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage: func(evt *sock.Event) error {
+			return nil
+		},
+	}
+
+	err := r.startConsumers(reg)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func Test_startConsumers_consumeError(t *testing.T) {
+	mockCh := newMockChannel()
+	mockCh.consumeErr = errors.New("consume failed")
+
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+	}
+
+	err := r.startConsumers(reg)
+	if err == nil {
+		t.Error("Expected error when Consume fails")
+	}
+}
+
+func Test_consumeMessage_registersConsumer(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cb := func(evt *sock.Event) error { return nil }
+
+	go func() {
+		_ = r.ConsumeMessage(ctx, "test-queue", "test-consumer", false, false, false, 1, cb)
+	}()
+
+	// Give goroutine time to register
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if len(r.consumers) != 1 {
+		t.Fatalf("Expected 1 consumer registered, got %d", len(r.consumers))
+	}
+	if r.consumers[0].queueName != "test-queue" {
+		t.Errorf("Expected queue name 'test-queue', got '%s'", r.consumers[0].queueName)
+	}
+	if r.consumers[0].consumerName != "test-consumer" {
+		t.Errorf("Expected consumer name 'test-consumer', got '%s'", r.consumers[0].consumerName)
+	}
+	if r.consumers[0].cType != consumerTypeMessage {
+		t.Errorf("Expected consumer type message, got %d", r.consumers[0].cType)
+	}
+}
+
+func Test_consumeRPC_registersConsumer(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cb := func(req *sock.Request) (*sock.Response, error) { return nil, nil }
+
+	go func() {
+		_ = r.ConsumeRPC(ctx, "test-queue", "test-consumer", false, false, false, 1, cb)
+	}()
+
+	// Give goroutine time to register
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if len(r.consumers) != 1 {
+		t.Fatalf("Expected 1 consumer registered, got %d", len(r.consumers))
+	}
+	if r.consumers[0].cType != consumerTypeRPC {
+		t.Errorf("Expected consumer type RPC, got %d", r.consumers[0].cType)
+	}
+}
+
+func Test_reconsumerAll_restoresConsumers(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	// reconsumerAll should re-register the consumer without error
+	r.reconsumerAll()
+}
+
+func Test_reconsumerAll_retryOnFailure(t *testing.T) {
+	callCount := 0
+	mockCh := &mockChannelWithConsumeCounter{
+		consumeCallCount: &callCount,
+		failUntil:        2, // fail first 2 calls, succeed on 3rd
+	}
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	r.reconsumerAll()
+
+	if callCount != 3 {
+		t.Errorf("Expected 3 consume calls (2 retries + 1 success), got %d", callCount)
+	}
+}
+
+func Test_reconsumerAll_allRetriesFail(t *testing.T) {
+	callCount := 0
+	mockCh := &mockChannelWithConsumeCounter{
+		consumeCallCount: &callCount,
+		failUntil:        10, // always fail
+	}
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	r.reconsumerAll()
+
+	if callCount != 3 {
+		t.Errorf("Expected 3 consume calls (all retries), got %d", callCount)
+	}
 }

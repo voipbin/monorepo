@@ -63,12 +63,13 @@ type rabbit struct {
 	connection   amqpConnection
 	closed       atomic.Bool
 
-	// mu protects concurrent access to queues, exchanges, and queueBinds maps.
+	// mu protects concurrent access to queues, exchanges, queueBinds, and consumers.
 	// Use RLock for reads and Lock for writes.
 	mu         sync.RWMutex
 	queues     map[string]*queue
 	exchanges  map[string]*exchange
 	queueBinds map[string]*queueBind
+	consumers  []*consumerRegistration
 }
 
 type queue struct {
@@ -77,6 +78,7 @@ type queue struct {
 	autoDelete bool
 	exclusive  bool
 	noWait     bool
+	args       amqp.Table
 
 	channel amqpChannel
 	queue   *amqp.Queue
@@ -88,6 +90,25 @@ type queueBind struct {
 	exchange string
 	noWait   bool
 	args     amqp.Table
+}
+
+type consumerType int
+
+const (
+	consumerTypeMessage consumerType = iota
+	consumerTypeRPC
+)
+
+type consumerRegistration struct {
+	queueName    string
+	consumerName string
+	exclusive    bool
+	noLocal      bool
+	noWait       bool
+	numWorkers   int
+	cType        consumerType
+	cbMessage    sock.CbMsgConsume
+	cbRPC        sock.CbMsgRPC
 }
 
 type exchange struct {
@@ -110,6 +131,7 @@ func NewRabbit(uri string) Rabbit {
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
 		queueBinds: make(map[string]*queueBind),
+		consumers:  make([]*consumerRegistration, 0),
 	}
 
 	return res
@@ -224,7 +246,7 @@ func (r *rabbit) redeclareAll() {
 	// redeclare the queues
 	for _, queue := range queuesCopy {
 		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
-		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait); err != nil {
+		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait, queue.args); err != nil {
 			log.Errorf("Could not declare the queue. err: %v", err)
 		}
 	}
@@ -242,6 +264,38 @@ func (r *rabbit) redeclareAll() {
 		logrus.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
 		if err := r.QueueBind(queueBind.name, queueBind.key, queueBind.exchange, queueBind.noWait, queueBind.args); err != nil {
 			log.Errorf("Could not bind the queue. err: %v", err)
+		}
+	}
+
+	// re-register consumers on the new channels
+	r.reconsumerAll()
+}
+
+// reconsumerAll restores all registered consumers after reconnection.
+// Called at the end of redeclareAll to re-register consumers on new channels.
+func (r *rabbit) reconsumerAll() {
+	log := logrus.WithField("func", "reconsumerAll")
+
+	r.mu.RLock()
+	consumersCopy := make([]*consumerRegistration, len(r.consumers))
+	copy(consumersCopy, r.consumers)
+	r.mu.RUnlock()
+
+	for _, reg := range consumersCopy {
+		var lastErr error
+		for attempt := 0; attempt < 3; attempt++ {
+			if err := r.startConsumers(reg); err != nil {
+				lastErr = err
+				log.Warnf("Could not re-register consumer (attempt %d/3). queue: %s, err: %v", attempt+1, reg.queueName, err)
+				time.Sleep(time.Second)
+				continue
+			}
+			log.Infof("Re-registered consumer. queue: %s, consumer: %s", reg.queueName, reg.consumerName)
+			lastErr = nil
+			break
+		}
+		if lastErr != nil {
+			log.Errorf("Failed to re-register consumer after 3 attempts. queue: %s, err: %v", reg.queueName, lastErr)
 		}
 	}
 }
