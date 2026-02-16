@@ -10,6 +10,7 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -173,6 +174,7 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.expectCustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))

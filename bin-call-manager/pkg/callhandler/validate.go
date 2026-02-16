@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/dongri/phonenumber"
 	"github.com/gofrs/uuid"
@@ -13,6 +14,28 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 )
+
+// ValidateCustomerNotFrozen returns true if the given customer is not frozen
+func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ValidateCustomerNotFrozen",
+		"customer_id": customerID,
+	})
+
+	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not get customer info. err: %v", err)
+		return false
+	}
+	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+
+	if cu.Status == cucustomer.StatusFrozen {
+		log.Infof("Customer account is frozen. Rejecting call.")
+		return false
+	}
+
+	return true
+}
 
 // ValidateCustomerBalance returns true if the given customer has enough balance
 func (h *callHandler) ValidateCustomerBalance(
