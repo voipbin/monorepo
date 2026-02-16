@@ -2,7 +2,7 @@
 
 ## Problem
 
-The billing-control CLI and dbhandler support adding/subtracting credit balance with ledger entries (`accountAdjustCreditWithLedger`), but there is no equivalent for token balance. Tokens are only modified by the monthly allowance top-up (`AccountTopUpTokens`), which resets to the plan limit. There is no general-purpose token adjustment with ledger tracking.
+The billing-control CLI and dbhandler support adding/subtracting credit balance with ledger entries (`accountAdjustCreditWithLedger`), but there is no equivalent for token balance. Tokens are only modified by the monthly top-up (`AccountTopUpTokens`), which resets to the plan limit. There is no general-purpose token adjustment with ledger tracking.
 
 ## Approach
 
@@ -99,4 +99,4 @@ Add gomock tests for accounthandler AddTokens/SubtractTokens/SubtractTokensWithC
 - No OpenAPI spec changes
 - No RabbitMQ event publishing
 - No database schema changes (balance_token column already exists, billing_billings table already supports the new reference_type as a string)
-- Existing `AccountTopUpTokens` remains unchanged (monthly allowance top-up is a separate operation)
+- Existing `AccountTopUpTokens` remains unchanged (monthly top-up is a separate operation)
