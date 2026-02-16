@@ -10,40 +10,60 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// startConsumers starts consuming from the queue and spawns worker goroutines.
+// Used by both initial ConsumeMessage/ConsumeRPC and by reconsumerAll during reconnection.
+func (r *rabbit) startConsumers(reg *consumerRegistration) error {
+	queue := r.queueGet(reg.queueName)
+	if queue == nil {
+		return fmt.Errorf("queue '%s' not found", reg.queueName)
+	}
+
+	messages, err := queue.channel.Consume(
+		reg.queueName,
+		reg.consumerName,
+		false,
+		reg.exclusive,
+		reg.noLocal,
+		reg.noWait,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("could not start consuming from queue '%s': %v", reg.queueName, err)
+	}
+
+	for i := 0; i < reg.numWorkers; i++ {
+		switch reg.cType {
+		case consumerTypeMessage:
+			go r.consumeMessageWorker(messages, reg.cbMessage)
+		case consumerTypeRPC:
+			go r.consumeRPCWorker(messages, reg.cbRPC)
+		}
+	}
+
+	return nil
+}
+
 // ConsumeMessage consumes messages from the given queue with provided options.
 // If the queueName is not provided, it defaults to a pre-configured queue.
 // It uses goroutines with a worker pool to process messages concurrently.
 func (r *rabbit) ConsumeMessage(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "ConsumeMessage",
-		"queue_name":    queueName,
-		"consumer_name": consumerName,
-	})
-
-	// Get the queue; if not found, return an error.
-	queue := r.queueGet(queueName)
-	if queue == nil {
-		return fmt.Errorf("queue '%s' not found", queueName)
+	reg := &consumerRegistration{
+		queueName:    queueName,
+		consumerName: consumerName,
+		exclusive:    exclusive,
+		noLocal:      noLocal,
+		noWait:       noWait,
+		numWorkers:   numWorkers,
+		cType:        consumerTypeMessage,
+		cbMessage:    messageConsume,
 	}
 
-	// Start consuming messages.
-	// Consume messages from the queue.
-	messages, err := queue.channel.Consume(
-		queueName,    // Queue name
-		consumerName, // Consumer name
-		false,        // auto-ack (manual acknowledgement)
-		exclusive,    // Exclusive (used for binding the queue to the current connection)
-		noLocal,      // No-local (only send messages to consumers on the same connection)
-		noWait,       // No-wait (do not wait for confirmation)
-		nil,          // Additional arguments (nil in this case)
-	)
-	if err != nil {
-		log.Errorf("Failed to consume message from queue '%s': %v", queueName, err)
-		return fmt.Errorf("could not consume messages: %v", err)
-	}
+	r.mu.Lock()
+	r.consumers = append(r.consumers, reg)
+	r.mu.Unlock()
 
-	for i := 0; i < numWorkers; i++ {
-		go r.consumeMessageWorker(messages, messageConsume)
+	if err := r.startConsumers(reg); err != nil {
+		return err
 	}
 
 	<-ctx.Done()
@@ -85,26 +105,23 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume soc
 
 // ConsumeRPC consumes RPC message with given options
 func (r *rabbit) ConsumeRPC(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume sock.CbMsgRPC) error {
-	queue := r.queueGet(queueName)
-	if queue == nil {
-		return fmt.Errorf("queue not found")
+	reg := &consumerRegistration{
+		queueName:    queueName,
+		consumerName: consumerName,
+		exclusive:    exclusive,
+		noLocal:      noLocal,
+		noWait:       noWait,
+		numWorkers:   numWorkers,
+		cType:        consumerTypeRPC,
+		cbRPC:        cbConsume,
 	}
 
-	messages, err := queue.channel.Consume(
-		queueName,    // queue
-		consumerName, // messageConsumer
-		false,        // auto-ack
-		exclusive,    // exclusive
-		noLocal,      // no-local
-		noWait,       // no-wait
-		nil,          // args
-	)
-	if err != nil {
-		return fmt.Errorf("could not consume the RPC message. err: %v", err)
-	}
+	r.mu.Lock()
+	r.consumers = append(r.consumers, reg)
+	r.mu.Unlock()
 
-	for i := 0; i < numWorkers; i++ {
-		go r.consumeRPCWorker(messages, cbConsume)
+	if err := r.startConsumers(reg); err != nil {
+		return err
 	}
 
 	<-ctx.Done()

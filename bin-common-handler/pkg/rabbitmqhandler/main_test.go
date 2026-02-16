@@ -1,7 +1,9 @@
 package rabbitmqhandler
 
 import (
+	"context"
 	"errors"
+	"monorepo/bin-common-handler/models/sock"
 	"sync"
 	"testing"
 	"time"
@@ -22,6 +24,7 @@ type mockChannel struct {
 
 	qosErr       error
 	queueBindErr error
+	consumeErr   error
 }
 
 func newMockChannel() *mockChannel {
@@ -37,6 +40,9 @@ func (m *mockChannel) Close() error {
 }
 
 func (m *mockChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+	if m.consumeErr != nil {
+		return nil, m.consumeErr
+	}
 	return make(<-chan amqp.Delivery), nil
 }
 
@@ -974,5 +980,149 @@ func Test_queueCreateVolatile_xExpires(t *testing.T) {
 	}
 	if expires != int32(1800000) {
 		t.Errorf("Expected x-expires 1800000, got %v", expires)
+	}
+}
+
+func Test_startConsumers_queueNotFound(t *testing.T) {
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "nonexistent",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+	}
+
+	err := r.startConsumers(reg)
+	if err == nil {
+		t.Error("Expected error for non-existent queue")
+	}
+}
+
+func Test_startConsumers_success(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage: func(evt *sock.Event) error {
+			return nil
+		},
+	}
+
+	err := r.startConsumers(reg)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func Test_startConsumers_consumeError(t *testing.T) {
+	mockCh := newMockChannel()
+	mockCh.consumeErr = errors.New("consume failed")
+
+	r := &rabbit{
+		queues: make(map[string]*queue),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+	}
+
+	err := r.startConsumers(reg)
+	if err == nil {
+		t.Error("Expected error when Consume fails")
+	}
+}
+
+func Test_consumeMessage_registersConsumer(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cb := func(evt *sock.Event) error { return nil }
+
+	go func() {
+		_ = r.ConsumeMessage(ctx, "test-queue", "test-consumer", false, false, false, 1, cb)
+	}()
+
+	// Give goroutine time to register
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if len(r.consumers) != 1 {
+		t.Fatalf("Expected 1 consumer registered, got %d", len(r.consumers))
+	}
+	if r.consumers[0].queueName != "test-queue" {
+		t.Errorf("Expected queue name 'test-queue', got '%s'", r.consumers[0].queueName)
+	}
+	if r.consumers[0].consumerName != "test-consumer" {
+		t.Errorf("Expected consumer name 'test-consumer', got '%s'", r.consumers[0].consumerName)
+	}
+	if r.consumers[0].cType != consumerTypeMessage {
+		t.Errorf("Expected consumer type message, got %d", r.consumers[0].cType)
+	}
+}
+
+func Test_consumeRPC_registersConsumer(t *testing.T) {
+	mockCh := newMockChannel()
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cb := func(req *sock.Request) (*sock.Response, error) { return nil, nil }
+
+	go func() {
+		_ = r.ConsumeRPC(ctx, "test-queue", "test-consumer", false, false, false, 1, cb)
+	}()
+
+	// Give goroutine time to register
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if len(r.consumers) != 1 {
+		t.Fatalf("Expected 1 consumer registered, got %d", len(r.consumers))
+	}
+	if r.consumers[0].cType != consumerTypeRPC {
+		t.Errorf("Expected consumer type RPC, got %d", r.consumers[0].cType)
 	}
 }
