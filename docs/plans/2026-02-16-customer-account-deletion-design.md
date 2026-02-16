@@ -79,9 +79,10 @@ POST /v1/customers/{id}/deletion
 
 **Cancel Deletion (Recover)**
 ```
-DELETE /v1/customers/{id}/deletion
+POST /v1/customers/{id}/recover
 ```
-- **Auth**: Admin JWT (no request body)
+- **Auth**: Admin JWT
+- **Request body**: None required (admin authority is sufficient)
 - **Response** (200): Customer object with `status: "active"` and `tm_deletion_scheduled` cleared
 
 **Immediate Force-Delete — Unchanged**
@@ -107,7 +108,7 @@ HTTP 403
 ### Allowed Endpoints for Frozen Accounts
 
 - `DELETE /auth/unregister` (self-service recovery)
-- `DELETE /v1/customers/{id}/deletion` (admin recovery)
+- `POST /v1/customers/{id}/recover` (admin recovery)
 - `GET /v1/customers/{id}` (view account status)
 - Authentication/login (needed to call recovery)
 
@@ -147,7 +148,7 @@ Three enforcement layers prevent billing leakage:
 ### Phase 2: Recovery (customer cancels within 30 days)
 
 ```
-DELETE /auth/unregister  (or)  DELETE /v1/customers/{id}/deletion
+DELETE /auth/unregister  (or)  POST /v1/customers/{id}/recover
     │
     ├─ customer-manager: set status=active, clear tm_deletion_scheduled
     ├─ customer-manager: publish "customer_recovered" event via RabbitMQ

@@ -307,6 +307,7 @@ In `bin-customer-manager/pkg/listenhandler/main.go`, add:
 
 ```go
 regV1CustomersIDDeletion = regexp.MustCompile("/v1/customers/" + regUUID + "/deletion$")
+regV1CustomersIDRecover  = regexp.MustCompile("/v1/customers/" + regUUID + "/recover$")
 ```
 
 **Step 2: Add route cases**
@@ -319,10 +320,10 @@ case regV1CustomersIDDeletion.MatchString(m.URI) && m.Method == sock.RequestMeth
     response, err = h.processV1CustomersIDDeletionPost(ctx, m)
     requestType = "/v1/customers/deletion"
 
-// DELETE /v1/customers/<customer-id>/deletion (recover)
-case regV1CustomersIDDeletion.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-    response, err = h.processV1CustomersIDDeletionDelete(ctx, m)
-    requestType = "/v1/customers/deletion"
+// POST /v1/customers/<customer-id>/recover
+case regV1CustomersIDRecover.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+    response, err = h.processV1CustomersIDRecoverPost(ctx, m)
+    requestType = "/v1/customers/recover"
 ```
 
 **Important:** Place these BEFORE the existing `regV1CustomersID` cases to prevent regex conflicts (since `/v1/customers/{id}/deletion` would also match `/v1/customers/{id}` regex if it's checked first).
@@ -338,7 +339,7 @@ func (h *listenHandler) processV1CustomersIDDeletionPost(ctx context.Context, m 
     // Return JSON response
 }
 
-func (h *listenHandler) processV1CustomersIDDeletionDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+func (h *listenHandler) processV1CustomersIDRecoverPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
     // Parse customer ID from URI
     // Call h.customerHandler.Recover(ctx, id)
     // Return JSON response
@@ -358,7 +359,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 git add bin-customer-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-customer-manager: Add RPC routes for POST/DELETE /v1/customers/{id}/deletion
+- bin-customer-manager: Add RPC routes for POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover
 - bin-customer-manager: Implement freeze and recover listenhandler endpoints"
 ```
 
@@ -398,8 +399,8 @@ func (r *requestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerI
 }
 
 func (r *requestHandler) CustomerV1CustomerRecover(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
-    uri := fmt.Sprintf("/v1/customers/%s/deletion", customerID)
-    tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodDelete, "customer/customers/deletion", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+    uri := fmt.Sprintf("/v1/customers/%s/recover", customerID)
+    tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/recover", requestTimeoutDefault, 0, ContentTypeJSON, nil)
     if err != nil {
         return nil, err
     }
@@ -450,7 +451,8 @@ git commit -m "NOJIRA-Customer-account-deletion-design
 
 **Files:**
 - Create: `bin-openapi-manager/openapi/paths/customers/id_deletion.yaml`
-- Modify: `bin-openapi-manager/openapi/openapi.yaml` (add path ref, update CustomerManagerCustomer schema)
+- Create: `bin-openapi-manager/openapi/paths/customers/id_recover.yaml`
+- Modify: `bin-openapi-manager/openapi/openapi.yaml` (add path refs, update CustomerManagerCustomer schema)
 
 **Step 1: Create id_deletion.yaml**
 
@@ -482,8 +484,14 @@ post:
             $ref: '#/components/schemas/CustomerManagerCustomer'
     '400':
       description: Bad request (customer not in active state)
+```
 
-delete:
+**Step 2: Create id_recover.yaml**
+
+In `bin-openapi-manager/openapi/paths/customers/id_recover.yaml`:
+
+```yaml
+post:
   summary: Cancel customer deletion (recover account)
   description: |
     Cancels a scheduled deletion and restores the account to active state.
@@ -509,14 +517,16 @@ delete:
       description: Customer not in frozen state
 ```
 
-**Step 2: Update openapi.yaml**
+**Step 3: Update openapi.yaml**
 
-Add path reference and update CustomerManagerCustomer schema with new fields:
+Add path references and update CustomerManagerCustomer schema with new fields:
 
 ```yaml
 # In paths section:
 /v1.0/customers/{id}/deletion:
   $ref: './paths/customers/id_deletion.yaml'
+/v1.0/customers/{id}/recover:
+  $ref: './paths/customers/id_recover.yaml'
 
 # In CustomerManagerCustomer schema, add:
 status:
@@ -549,7 +559,7 @@ cd bin-api-manager && go mod tidy && go mod vendor && go generate ./... && go te
 git add bin-openapi-manager/ bin-api-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-openapi-manager: Add /v1/customers/{id}/deletion endpoint schema (POST freeze, DELETE recover)
+- bin-openapi-manager: Add /v1/customers/{id}/deletion (POST freeze) and /v1/customers/{id}/recover (POST recover) endpoint schemas
 - bin-openapi-manager: Add status and tm_deletion_scheduled fields to CustomerManagerCustomer schema
 - bin-api-manager: Regenerate server code from updated OpenAPI spec"
 ```
@@ -673,7 +683,7 @@ func (h *server) PostCustomersIdDeletion(c *gin.Context, id string) {
     // Return 200 with customer
 }
 
-func (h *server) DeleteCustomersIdDeletion(c *gin.Context, id string) {
+func (h *server) PostCustomersIdRecover(c *gin.Context, id string) {
     // Extract agent, parse UUID
     // Permission: PermissionProjectSuperAdmin only
     // Call serviceHandler.CustomerRecover(ctx, agent, customerID)
@@ -694,7 +704,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 git add bin-api-manager/
 git commit -m "NOJIRA-Customer-account-deletion-design
 
-- bin-api-manager: Add POST/DELETE /v1/customers/{id}/deletion admin endpoint handlers
+- bin-api-manager: Add POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover admin endpoint handlers
 - bin-api-manager: Admin endpoints require PermissionProjectSuperAdmin"
 ```
 
@@ -713,7 +723,7 @@ After successful authentication in `authenticate.go`, check if the customer's st
 // After extracting agent, check customer frozen status
 // Allowed endpoints when frozen:
 //   - DELETE /auth/unregister (recovery)
-//   - DELETE /v1.0/customers/{id}/deletion (admin recovery)
+//   - POST /v1.0/customers/{id}/recover (admin recovery)
 //   - GET /v1.0/customers/{id} (view status)
 //   - GET /auth/* and POST /auth/login (authentication)
 //
@@ -1028,9 +1038,9 @@ and three-layer enforcement to prevent billing leakage.
 - bin-customer-manager: Add customer_frozen and customer_recovered event types
 - bin-customer-manager: Add RPC routes for POST/DELETE /v1/customers/{id}/deletion
 - bin-common-handler: Add CustomerV1CustomerFreeze and CustomerV1CustomerRecover RPC methods
-- bin-openapi-manager: Add /v1/customers/{id}/deletion endpoint schema and updated customer fields
+- bin-openapi-manager: Add /v1/customers/{id}/deletion and /v1/customers/{id}/recover endpoint schemas
 - bin-api-manager: Add POST/DELETE /auth/unregister self-service endpoints
-- bin-api-manager: Add POST/DELETE /v1/customers/{id}/deletion admin endpoints
+- bin-api-manager: Add POST /v1/customers/{id}/deletion and POST /v1/customers/{id}/recover admin endpoints
 - bin-api-manager: Add frozen account middleware (403 DELETION_SCHEDULED)
 - bin-call-manager: Subscribe to customer_frozen, hangup active calls, reject new calls
 - bin-billing-manager: Subscribe to customer_frozen/recovered, freeze/restore billing accounts
