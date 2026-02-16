@@ -2,14 +2,17 @@ package middleware
 
 import (
 	"net/http"
+	"fmt"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -127,11 +130,11 @@ func Test_getAccesskey(t *testing.T) {
 
 func Test_getAuthString(t *testing.T) {
 	tests := []struct {
-		name          string
-		setupRequest  func(c *gin.Context)
-		expectType    string
-		expectString  string
-		expectErr     bool
+		name         string
+		setupRequest func(c *gin.Context)
+		expectType   string
+		expectString string
+		expectErr    bool
 	}{
 		{
 			name: "Token auth",
@@ -201,11 +204,11 @@ func Test_getAuthData(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		setupRequest  func(c *gin.Context)
-		authType      string
-		mockSetup     func(mockSH *servicehandler.MockServiceHandler)
-		expectErr     bool
+		name         string
+		setupRequest func(c *gin.Context)
+		authType     string
+		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
+		expectErr    bool
 	}{
 		{
 			name: "Token auth success",
@@ -281,11 +284,11 @@ func TestAuthenticate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		setupRequest   func(c *gin.Context)
-		mockSetup      func(mockSH *servicehandler.MockServiceHandler)
-		expectStatus   int
-		expectAborted  bool
+		name          string
+		setupRequest  func(c *gin.Context)
+		mockSetup     func(mockSH *servicehandler.MockServiceHandler)
+		expectStatus  int
+		expectAborted bool
 	}{
 		{
 			name: "Valid authentication",
@@ -295,6 +298,9 @@ func TestAuthenticate(t *testing.T) {
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
 				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 					"agent": testAgent,
+				}, nil)
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusActive,
 				}, nil)
 			},
 			expectStatus:  200,
@@ -391,6 +397,10 @@ func TestAuthenticateWithMalformedAgentJSON(t *testing.T) {
 			"invalid_field": "this won't unmarshal to Agent",
 		},
 	}, nil)
+	// Agent will have zero-value fields (including zero Permission), so frozen check runs
+	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), uuid.Nil).Return(&cscustomer.WebhookMessage{
+		Status: cscustomer.StatusActive,
+	}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("Authorization", "Bearer malformedToken")
@@ -447,6 +457,9 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 		"agent": testAgent,
 	}, nil)
+	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+		Status: cscustomer.StatusActive,
+	}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("Authorization", "Bearer validToken")
@@ -479,5 +492,214 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	}
 	if capturedAgent.Username != testAgent.Username {
 		t.Errorf("Agent username mismatch. expect: %v, got: %v", testAgent.Username, capturedAgent.Username)
+	}
+}
+
+func Test_isFrozenAccountBlocked(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	deletionTime := time.Date(2026, 3, 19, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name         string
+		agent        *amagent.Agent
+		method       string
+		path         string
+		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
+		expectBlock  bool
+		expectStatus int
+	}{
+		{
+			name: "Active account - not blocked",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusActive,
+				}, nil)
+			},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Frozen account - blocked",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+					Status:              cscustomer.StatusFrozen,
+					TMDeletionScheduled: &deletionTime,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			name: "Frozen account - DELETE /auth/unregister allowed",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			method:       http.MethodDelete,
+			path:         "/auth/unregister",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Frozen account - POST /auth/unregister allowed",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			method:       http.MethodPost,
+			path:         "/auth/unregister",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Project super admin - not blocked even if frozen",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			},
+			method:       http.MethodGet,
+			path:         "/v1.0/agents",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "CustomerGet error - fail open (not blocked)",
+			agent: &amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(nil, fmt.Errorf("service unavailable"))
+			},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSH := servicehandler.NewMockServiceHandler(mc)
+			tt.mockSetup(mockSH)
+
+			req := httptest.NewRequest(tt.method, tt.path, nil)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+			c.Set(modelscommon.OBJServiceHandler, mockSH)
+
+			blocked := isFrozenAccountBlocked(c, tt.agent)
+			if blocked != tt.expectBlock {
+				t.Errorf("Wrong blocked result. expect: %v, got: %v", tt.expectBlock, blocked)
+			}
+			if blocked && w.Code != tt.expectStatus {
+				t.Errorf("Wrong status code. expect: %v, got: %v", tt.expectStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestAuthenticateFrozenAccount(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	deletionTime := time.Date(2026, 3, 19, 0, 0, 0, 0, time.UTC)
+
+	testAgent := amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: testCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	}
+
+	tests := []struct {
+		name         string
+		method       string
+		path         string
+		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
+		expectStatus int
+	}{
+		{
+			name:   "Frozen account returns 403",
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
+					"agent": testAgent,
+				}, nil)
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+					Status:              cscustomer.StatusFrozen,
+					TMDeletionScheduled: &deletionTime,
+				}, nil)
+			},
+			expectStatus: 403,
+		},
+		{
+			name:   "Frozen account allows DELETE /auth/unregister",
+			method: http.MethodDelete,
+			path:   "/auth/unregister",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
+					"agent": testAgent,
+				}, nil)
+			},
+			expectStatus: 200,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSH := servicehandler.NewMockServiceHandler(mc)
+			tt.mockSetup(mockSH)
+
+			req := httptest.NewRequest(tt.method, tt.path, nil)
+			req.Header.Set("Authorization", "Bearer validToken")
+			w := httptest.NewRecorder()
+			c, router := gin.CreateTestContext(w)
+			c.Request = req
+
+			router.Use(func(c *gin.Context) {
+				c.Set(modelscommon.OBJServiceHandler, mockSH)
+			})
+			router.Use(Authenticate())
+
+			// Register routes to match the test paths
+			handler := func(c *gin.Context) {
+				c.Status(200)
+			}
+			router.GET("/v1.0/agents", handler)
+			router.DELETE("/auth/unregister", handler)
+
+			router.ServeHTTP(w, req)
+
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong status code. expect: %v, got: %v", tt.expectStatus, w.Code)
+			}
+		})
 	}
 }

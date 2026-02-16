@@ -52,7 +52,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -167,7 +167,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -238,7 +238,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -300,7 +300,7 @@ func Test_processV1CustomersIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -377,7 +377,7 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -441,7 +441,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

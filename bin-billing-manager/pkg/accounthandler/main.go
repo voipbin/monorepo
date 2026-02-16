@@ -33,6 +33,7 @@ type AccountHandler interface {
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error)
 	UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error)
 	UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error)
+	SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error)
 
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
@@ -43,6 +44,8 @@ type AccountHandler interface {
 
 	EventCUCustomerCreated(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
+	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
+	EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // accountHandler define

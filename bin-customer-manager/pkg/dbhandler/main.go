@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -24,10 +25,14 @@ type DBHandler interface {
 	AccesskeyList(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error)
 	AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[accesskey.Field]any) error
 
+	CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error
 	CustomerCreate(ctx context.Context, b *customer.Customer) error
 	CustomerDelete(ctx context.Context, id uuid.UUID) error
+	CustomerFreeze(ctx context.Context, id uuid.UUID) error
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
+	CustomerListFrozenExpired(ctx context.Context, expiredBefore time.Time) ([]*customer.Customer, error)
+	CustomerRecover(ctx context.Context, id uuid.UUID) error
 	CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[customer.Field]any) error
 	CustomerHardDelete(ctx context.Context, id uuid.UUID) error
 }

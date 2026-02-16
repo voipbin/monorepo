@@ -71,6 +71,7 @@ func initCommand() *cobra.Command {
 	cmdAccount.AddCommand(cmdAccountSubtractBalance())
 	cmdAccount.AddCommand(cmdAccountAddTokens())
 	cmdAccount.AddCommand(cmdAccountSubtractTokens())
+	cmdAccount.AddCommand(cmdAccountSetStatus())
 
 	// Billing subcommands
 	cmdBilling := &cobra.Command{Use: "billing", Short: "Billing operations"}
@@ -513,6 +514,52 @@ func runAccountSubtractTokens(cmd *cobra.Command, args []string) error {
 	res, err := accountHandler.SubtractTokens(context.Background(), targetID, amount)
 	if err != nil {
 		return errors.Wrap(err, "failed to subtract tokens")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccountSetStatus() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-status",
+		Short: "Set billing account status (active, frozen, deleted)",
+		RunE:  runAccountSetStatus,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.String("status", "", "Status (active, frozen, deleted) (required)")
+
+	return cmd
+}
+
+func runAccountSetStatus(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	statusStr := viper.GetString("status")
+	if statusStr == "" {
+		return fmt.Errorf("status is required")
+	}
+
+	status := account.Status(statusStr)
+	switch status {
+	case account.StatusActive, account.StatusFrozen, account.StatusDeleted:
+		// valid
+	default:
+		return fmt.Errorf("invalid status: %q (must be one of: active, frozen, deleted)", status)
+	}
+
+	res, err := accountHandler.SetStatus(context.Background(), targetID, status)
+	if err != nil {
+		return errors.Wrap(err, "failed to set account status")
 	}
 
 	return printJSON(res)

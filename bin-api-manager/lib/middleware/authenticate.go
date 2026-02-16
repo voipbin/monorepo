@@ -3,12 +3,14 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	modelscommon "monorepo/bin-api-manager/models/common"
-
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -50,8 +52,58 @@ func Authenticate() gin.HandlerFunc {
 		}
 
 		c.Set("agent", a)
+
+		// Check if customer account is frozen
+		if isFrozenAccountBlocked(c, &a) {
+			return // response already sent by isFrozenAccountBlocked
+		}
+
 		c.Next()
 	}
+}
+
+// isFrozenAccountBlocked checks if a customer's account is frozen and blocks
+// non-allowed requests with a 403 DELETION_SCHEDULED response.
+// Returns true if the request was blocked, false if it should proceed.
+func isFrozenAccountBlocked(c *gin.Context, a *amagent.Agent) bool {
+	// Skip check for project super admins (they can always access)
+	if a.HasPermission(amagent.PermissionProjectSuperAdmin) {
+		return false
+	}
+
+	// Allow unregister endpoints for frozen accounts (self-service recovery)
+	path := c.Request.URL.Path
+	method := c.Request.Method
+	if path == "/auth/unregister" && (method == http.MethodDelete || method == http.MethodPost) {
+		return false
+	}
+
+	// Fetch customer to check frozen status
+	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
+	cu, err := serviceHandler.CustomerGet(c.Request.Context(), a, a.CustomerID)
+	if err != nil {
+		// If we can't fetch the customer, don't block (fail open)
+		return false
+	}
+
+	if cu.Status != cscustomer.StatusFrozen {
+		return false
+	}
+
+	// Account is frozen - return 403 with DELETION_SCHEDULED error
+	var deletionEffectiveAt *time.Time
+	if cu.TMDeletionScheduled != nil {
+		t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
+		deletionEffectiveAt = &t
+	}
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"error":                  "DELETION_SCHEDULED",
+		"message":                "Account deletion scheduled",
+		"deletion_scheduled_at":  cu.TMDeletionScheduled,
+		"deletion_effective_at":  deletionEffectiveAt,
+		"recovery_endpoint":      "DELETE /auth/unregister",
+	})
+	return true
 }
 
 func getAuthData(c *gin.Context) (map[string]interface{}, error) {

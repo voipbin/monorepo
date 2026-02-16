@@ -68,3 +68,54 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 		})
 	}
 }
+
+func Test_processEvent_processEventCUCustomerFrozen(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		event *sock.Event
+
+		expectCustomer *cucustomer.Customer
+	}{
+		{
+			name: "normal",
+
+			event: &sock.Event{
+				Publisher: "customer-manager",
+				Type:      cucustomer.EventTypeCustomerFrozen,
+				DataType:  "application/json",
+				Data:      []byte(`{"id":"79348cda-f159-11ee-ab1d-8fb25dd5896d"}`),
+			},
+
+			expectCustomer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("79348cda-f159-11ee-ab1d-8fb25dd5896d"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockGroup := groupcallhandler.NewMockGroupcallHandler(mc)
+			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := subscribeHandler{
+				sockHandler: mockSock,
+
+				callHandler:       mockCall,
+				groupcallHandler:  mockGroup,
+				confbridgeHandler: mockConf,
+			}
+
+			mockCall.EXPECT().EventCUCustomerFrozen(gomock.Any(), tt.expectCustomer).Return(nil)
+
+			if errProcess := h.processEvent(tt.event); errProcess != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)
+			}
+		})
+	}
+}

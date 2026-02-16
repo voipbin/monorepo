@@ -37,3 +37,24 @@ func (h *subscribeHandler) processEventCUCustomerDeleted(ctx context.Context, m 
 	}
 	return nil
 }
+
+// processEventCUCustomerFrozen handles the customer-manager's customer_frozen event.
+func (h *subscribeHandler) processEventCUCustomerFrozen(ctx context.Context, m *sock.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCUCustomerFrozen",
+		"event": m,
+	})
+
+	cu := &cucustomer.Customer{}
+	if err := json.Unmarshal([]byte(m.Data), &cu); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+	log.Debugf("Executing the event handler.")
+
+	if errCall := h.callHandler.EventCUCustomerFrozen(ctx, cu); errCall != nil {
+		log.Errorf("Could not handle the event correctly. The call handler returned an error. err: %v", errCall)
+	}
+
+	return nil
+}

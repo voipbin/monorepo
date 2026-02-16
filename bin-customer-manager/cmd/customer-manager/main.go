@@ -100,6 +100,9 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// start background cleanup job for expired unverified customers
 	go customerHandler.RunCleanupUnverified(context.Background())
 
+	// start background cleanup job for frozen accounts past grace period
+	go customerHandler.RunCleanupFrozenExpired(context.Background())
+
 	return listenHandler.Run(string(commonoutline.QueueNameCustomerRequest), string(commonoutline.QueueNameDelay))
 }
 

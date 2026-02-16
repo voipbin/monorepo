@@ -6,6 +6,15 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// Status represents the account lifecycle state
+type Status string
+
+const (
+	StatusActive  Status = "active"
+	StatusFrozen  Status = "frozen"
+	StatusDeleted Status = "deleted"
+)
+
 // Customer defines
 type Customer struct {
 	ID uuid.UUID `json:"id" db:"id,uuid"` // Customer's ID
@@ -24,6 +33,9 @@ type Customer struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 
 	EmailVerified bool `json:"email_verified" db:"email_verified"`
+
+	Status              Status     `json:"status" db:"status"`
+	TMDeletionScheduled *time.Time `json:"tm_deletion_scheduled" db:"tm_deletion_scheduled"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.

@@ -9,6 +9,7 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -171,6 +172,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
@@ -368,6 +370,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any()).Return(tt.responseRoutes, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)

@@ -2024,6 +2024,17 @@ components:
         - CustomerManagerCustomerWebhookMethodGet
         - CustomerManagerCustomerWebhookMethodPut
         - CustomerManagerCustomerWebhookMethodDelete
+    CustomerManagerCustomerStatus:
+      type: string
+      description: Account lifecycle status.
+      enum:
+        - active
+        - frozen
+        - deleted
+      x-enum-varnames:
+        - CustomerManagerCustomerStatusActive
+        - CustomerManagerCustomerStatusFrozen
+        - CustomerManagerCustomerStatusDeleted
     CustomerManagerCustomer:
       type: object
       properties:
@@ -2057,6 +2068,12 @@ components:
         email_verified:
           type: boolean
           description: Whether the customer's email has been verified.
+        status:
+          $ref: '#/components/schemas/CustomerManagerCustomerStatus'
+          description: Account lifecycle status.
+        tm_deletion_scheduled:
+          type: string
+          description: When account deletion was requested (null if not scheduled).
         tm_create:
           type: string
           description: Timestamp when the customer was created.
@@ -4242,6 +4259,10 @@ paths:
   /customer:
     $ref: './paths/customer/main.yaml'
 
+  /customers/{id}/freeze:
+    $ref: './paths/customers/id_freeze.yaml'
+  /customers/{id}/recover:
+    $ref: './paths/customers/id_recover.yaml'
   /customers/{id}/billing_account_id:
     $ref: './paths/customers/id_billing_account_id.yaml'
   /customers/{id}:

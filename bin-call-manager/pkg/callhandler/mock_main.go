@@ -298,6 +298,20 @@ func (mr *MockCallHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockCallHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
+// EventCUCustomerFrozen mocks base method.
+func (m *MockCallHandler) EventCUCustomerFrozen(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerFrozen", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerFrozen indicates an expected call of EventCUCustomerFrozen.
+func (mr *MockCallHandlerMockRecorder) EventCUCustomerFrozen(ctx, cu any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerFrozen", reflect.TypeOf((*MockCallHandler)(nil).EventCUCustomerFrozen), ctx, cu)
+}
+
 // EventFMActiveflowUpdated mocks base method.
 func (m *MockCallHandler) EventFMActiveflowUpdated(ctx context.Context, a *activeflow.Activeflow) error {
 	m.ctrl.T.Helper()

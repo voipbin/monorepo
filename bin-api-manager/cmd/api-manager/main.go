@@ -217,6 +217,12 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	auth.GET("/email-verify", service.GetCustomerEmailVerify)
 	auth.POST("/email-verify", service.PostCustomerEmailVerify)
 
+	// Authenticated auth routes (require middleware)
+	authProtected := app.Group("/auth")
+	authProtected.Use(middleware.Authenticate())
+	authProtected.POST("/unregister", service.PostAuthUnregister)
+	authProtected.DELETE("/unregister", service.DeleteAuthUnregister)
+
 	appServer := server.NewServer(serviceHandler)
 
 	v1 := app.Group("v1.0")

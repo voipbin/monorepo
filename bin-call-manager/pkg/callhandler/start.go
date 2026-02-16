@@ -545,6 +545,13 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	// create call id
 	id := h.utilHandler.UUIDCreate()
 
+	// validate customer is not frozen
+	if !h.ValidateCustomerNotFrozen(ctx, customerID) {
+		log.Errorf("Customer account is frozen. Rejecting incoming call. customer_id: %s", customerID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return
+	}
+
 	// validate balance
 	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionIncoming, *source, *destination); !validBalance {
 		log.Errorf("Could not pass the balance validation. customer_id: %s", customerID)

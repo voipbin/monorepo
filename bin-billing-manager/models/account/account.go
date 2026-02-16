@@ -10,6 +10,8 @@ import (
 type Account struct {
 	commonidentity.Identity
 
+	Status Status `json:"status" db:"status"`
+
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
@@ -29,6 +31,16 @@ type Account struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
+
+// Status defines the account status
+type Status string
+
+// list of Statuses
+const (
+	StatusActive  Status = "active"
+	StatusFrozen  Status = "frozen"
+	StatusDeleted Status = "deleted"
+)
 
 // PaymentType define
 type PaymentType string

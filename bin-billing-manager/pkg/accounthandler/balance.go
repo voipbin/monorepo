@@ -51,8 +51,8 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 		return false, errors.Wrap(err, "could not get account info")
 	}
 
-	if a.TMDelete != nil {
-		log.WithField("account", a).Debugf("The account has deleted already. account_id: %s", a.ID)
+	if a.TMDelete != nil || a.Status == account.StatusFrozen || a.Status == account.StatusDeleted {
+		log.WithField("account", a).Debugf("The account is not active. account_id: %s, status: %s", a.ID, a.Status)
 		return false, nil
 	}
 

@@ -129,6 +129,12 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
+	// validate customer is not frozen
+	if !h.ValidateCustomerNotFrozen(ctx, customerID) {
+		log.Infof("Customer account is frozen. Rejecting outgoing call. customer_id: %s", customerID)
+		return nil, fmt.Errorf("customer account is frozen")
+	}
+
 	// validate customer's account balance
 	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionOutgoing, source, destination); !validBalance {
 		log.Debugf("Could not pass the balance validation. customer_id: %s", customerID)

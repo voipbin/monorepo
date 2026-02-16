@@ -8,6 +8,7 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -112,6 +113,7 @@ func Test_startIncomingDomainTypeSIP(t *testing.T) {
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
@@ -449,6 +451,7 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 
 			// startCallTypeFlow
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseExtension.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseExtension.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))

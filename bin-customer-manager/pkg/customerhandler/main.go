@@ -34,6 +34,7 @@ type CustomerHandler interface {
 		webhookURI string,
 	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
+	Freeze(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	List(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
 	UpdateBasicInfo(
@@ -47,6 +48,7 @@ type CustomerHandler interface {
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
 	) (*customer.Customer, error)
+	Recover(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 
 	Signup(
@@ -63,6 +65,7 @@ type CustomerHandler interface {
 	CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error)
 
 	RunCleanupUnverified(ctx context.Context)
+	RunCleanupFrozenExpired(ctx context.Context)
 }
 
 type customerHandler struct {

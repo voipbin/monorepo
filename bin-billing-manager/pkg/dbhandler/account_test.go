@@ -510,6 +510,7 @@ func Test_AccountDelete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3d9d1d2c-06d1-11ee-a149-033de1ce53d7"),
 				},
+				Status:   account.StatusDeleted,
 				TMCreate: &tmCreate,
 				TMUpdate: &tmCreate,
 				TMDelete: &tmCreate,

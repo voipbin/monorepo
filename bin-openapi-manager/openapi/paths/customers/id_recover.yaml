@@ -1,0 +1,20 @@
+post:
+  summary: Cancel customer deletion (recover account).
+  description: |
+    Cancels a scheduled deletion and restores the account to active state.
+    Only works during the 30-day grace period.
+    Admin-only endpoint.
+  tags:
+    - Customer
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'

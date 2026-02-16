@@ -113,6 +113,7 @@ func TestCustomerDelete(t *testing.T) {
 			responseCurTime: &curTime,
 			expectRes: &customer.Customer{
 				ID:       uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
+				Status:   customer.StatusDeleted,
 				TMCreate: &curTime,
 				TMUpdate: &curTime,
 				TMDelete: &curTime,

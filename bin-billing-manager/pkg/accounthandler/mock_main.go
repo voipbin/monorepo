@@ -132,6 +132,34 @@ func (mr *MockAccountHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockAccountHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
+// EventCUCustomerFrozen mocks base method.
+func (m *MockAccountHandler) EventCUCustomerFrozen(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerFrozen", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerFrozen indicates an expected call of EventCUCustomerFrozen.
+func (mr *MockAccountHandlerMockRecorder) EventCUCustomerFrozen(ctx, cu any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerFrozen", reflect.TypeOf((*MockAccountHandler)(nil).EventCUCustomerFrozen), ctx, cu)
+}
+
+// EventCUCustomerRecovered mocks base method.
+func (m *MockAccountHandler) EventCUCustomerRecovered(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerRecovered", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerRecovered indicates an expected call of EventCUCustomerRecovered.
+func (mr *MockAccountHandlerMockRecorder) EventCUCustomerRecovered(ctx, cu any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerRecovered", reflect.TypeOf((*MockAccountHandler)(nil).EventCUCustomerRecovered), ctx, cu)
+}
+
 // Get mocks base method.
 func (m *MockAccountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -235,6 +263,21 @@ func (m *MockAccountHandler) List(ctx context.Context, size uint64, token string
 func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, size, token, filters)
+}
+
+// SetStatus mocks base method.
+func (m *MockAccountHandler) SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetStatus", ctx, id, status)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetStatus indicates an expected call of SetStatus.
+func (mr *MockAccountHandlerMockRecorder) SetStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStatus", reflect.TypeOf((*MockAccountHandler)(nil).SetStatus), ctx, id, status)
 }
 
 // SubtractBalance mocks base method.

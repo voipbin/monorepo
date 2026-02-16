@@ -33,6 +33,7 @@ type DBHandler interface {
 	AccountSubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
+	AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error
 
 	BillingCreate(ctx context.Context, c *billing.Billing) error
 	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)

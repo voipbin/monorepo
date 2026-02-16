@@ -253,3 +253,69 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 
 	c.JSON(200, res)
 }
+
+func (h *server) PostCustomersIdFreeze(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCustomersIdFreeze",
+		"request_address": c.ClientIP,
+		"customer_id":     id,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CustomerFreeze(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not freeze the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostCustomersIdRecover(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCustomersIdRecover",
+		"request_address": c.ClientIP,
+		"customer_id":     id,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CustomerRecover(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not recover the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

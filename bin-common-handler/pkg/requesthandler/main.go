@@ -668,6 +668,8 @@ type RequestHandler interface {
 		webhookURI string,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)
+	CustomerV1CustomerFreeze(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
+	CustomerV1CustomerRecover(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerList(ctx context.Context, pageToken string, pageSize uint64, filters map[cscustomer.Field]any) ([]cscustomer.Customer, error)
 	CustomerV1CustomerUpdate(

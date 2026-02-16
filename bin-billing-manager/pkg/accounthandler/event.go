@@ -73,3 +73,63 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 
 	return nil
 }
+
+// EventCUCustomerFrozen handles the customer-manager's customer_frozen event
+func (h *accountHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "EventCUCustomerFrozen",
+		"customer": cu,
+	})
+	log.Debugf("Freezing all accounts of the customer. customer_id: %s", cu.ID)
+
+	// get all active accounts for the customer
+	filters := map[account.Field]any{
+		account.FieldCustomerID: cu.ID,
+		account.FieldDeleted:    false,
+	}
+	accounts, err := h.List(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not get accounts list. err: %v", err)
+		return errors.Wrap(err, "could not get accounts list")
+	}
+
+	// set status='frozen' for each account (does NOT set tm_delete)
+	for _, a := range accounts {
+		log.Debugf("Freezing account. account_id: %s", a.ID)
+		if errSet := h.db.AccountSetStatus(ctx, a.ID, account.StatusFrozen); errSet != nil {
+			log.Errorf("Could not set account status. account_id: %s, err: %v", a.ID, errSet)
+		}
+	}
+
+	return nil
+}
+
+// EventCUCustomerRecovered handles the customer-manager's customer_recovered event
+func (h *accountHandler) EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "EventCUCustomerRecovered",
+		"customer": cu,
+	})
+	log.Debugf("Recovering frozen accounts of the customer. customer_id: %s", cu.ID)
+
+	// get all frozen accounts for the customer (not all accounts - only frozen ones)
+	filters := map[account.Field]any{
+		account.FieldCustomerID: cu.ID,
+		account.FieldStatus:     account.StatusFrozen,
+	}
+	accounts, err := h.List(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not get accounts list. err: %v", err)
+		return errors.Wrap(err, "could not get accounts list")
+	}
+
+	// set status='active' for each frozen account
+	for _, a := range accounts {
+		log.Debugf("Recovering account. account_id: %s", a.ID)
+		if errSet := h.db.AccountSetStatus(ctx, a.ID, account.StatusActive); errSet != nil {
+			log.Errorf("Could not set account status. account_id: %s, err: %v", a.ID, errSet)
+		}
+	}
+
+	return nil
+}

@@ -14,6 +14,7 @@ import (
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -115,6 +116,20 @@ func (mr *MockDBHandlerMockRecorder) AccesskeyUpdate(ctx, id, fields any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyUpdate), ctx, id, fields)
 }
 
+// CustomerAnonymizePII mocks base method.
+func (m *MockDBHandler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerAnonymizePII", ctx, id, anonName, anonEmail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerAnonymizePII indicates an expected call of CustomerAnonymizePII.
+func (mr *MockDBHandlerMockRecorder) CustomerAnonymizePII(ctx, id, anonName, anonEmail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerAnonymizePII", reflect.TypeOf((*MockDBHandler)(nil).CustomerAnonymizePII), ctx, id, anonName, anonEmail)
+}
+
 // CustomerCreate mocks base method.
 func (m *MockDBHandler) CustomerCreate(ctx context.Context, b *customer.Customer) error {
 	m.ctrl.T.Helper()
@@ -141,6 +156,20 @@ func (m *MockDBHandler) CustomerDelete(ctx context.Context, id uuid.UUID) error 
 func (mr *MockDBHandlerMockRecorder) CustomerDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDelete", reflect.TypeOf((*MockDBHandler)(nil).CustomerDelete), ctx, id)
+}
+
+// CustomerFreeze mocks base method.
+func (m *MockDBHandler) CustomerFreeze(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerFreeze", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerFreeze indicates an expected call of CustomerFreeze.
+func (mr *MockDBHandlerMockRecorder) CustomerFreeze(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerFreeze", reflect.TypeOf((*MockDBHandler)(nil).CustomerFreeze), ctx, id)
 }
 
 // CustomerGet mocks base method.
@@ -185,6 +214,35 @@ func (m *MockDBHandler) CustomerList(ctx context.Context, size uint64, token str
 func (mr *MockDBHandlerMockRecorder) CustomerList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockDBHandler)(nil).CustomerList), ctx, size, token, filters)
+}
+
+// CustomerListFrozenExpired mocks base method.
+func (m *MockDBHandler) CustomerListFrozenExpired(ctx context.Context, expiredBefore time.Time) ([]*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerListFrozenExpired", ctx, expiredBefore)
+	ret0, _ := ret[0].([]*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerListFrozenExpired indicates an expected call of CustomerListFrozenExpired.
+func (mr *MockDBHandlerMockRecorder) CustomerListFrozenExpired(ctx, expiredBefore any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerListFrozenExpired", reflect.TypeOf((*MockDBHandler)(nil).CustomerListFrozenExpired), ctx, expiredBefore)
+}
+
+// CustomerRecover mocks base method.
+func (m *MockDBHandler) CustomerRecover(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerRecover", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerRecover indicates an expected call of CustomerRecover.
+func (mr *MockDBHandlerMockRecorder) CustomerRecover(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerRecover", reflect.TypeOf((*MockDBHandler)(nil).CustomerRecover), ctx, id)
 }
 
 // CustomerUpdate mocks base method.
