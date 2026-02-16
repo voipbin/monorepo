@@ -109,6 +109,36 @@ func (m *mockConnection) NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
 	return receiver
 }
 
+// mockChannelWithConsumeCounter tracks Consume calls and can fail on demand
+type mockChannelWithConsumeCounter struct {
+	consumeCallCount *int
+	failUntil        int // fail Consume calls until this count
+}
+
+func (m *mockChannelWithConsumeCounter) Close() error { return nil }
+func (m *mockChannelWithConsumeCounter) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+	*m.consumeCallCount++
+	if *m.consumeCallCount <= m.failUntil {
+		return nil, errors.New("consume failed")
+	}
+	return make(<-chan amqp.Delivery), nil
+}
+func (m *mockChannelWithConsumeCounter) Qos(prefetchCount, prefetchSize int, global bool) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
+	return 0, nil
+}
+func (m *mockChannelWithConsumeCounter) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+	return nil
+}
+func (m *mockChannelWithConsumeCounter) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
+	return amqp.Queue{Name: name}, nil
+}
+
 // ============================================================================
 // Close() Tests
 // ============================================================================
@@ -1124,5 +1154,94 @@ func Test_consumeRPC_registersConsumer(t *testing.T) {
 	}
 	if r.consumers[0].cType != consumerTypeRPC {
 		t.Errorf("Expected consumer type RPC, got %d", r.consumers[0].cType)
+	}
+}
+
+func Test_reconsumerAll_restoresConsumers(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	// reconsumerAll should re-register the consumer without error
+	r.reconsumerAll()
+}
+
+func Test_reconsumerAll_retryOnFailure(t *testing.T) {
+	callCount := 0
+	mockCh := &mockChannelWithConsumeCounter{
+		consumeCallCount: &callCount,
+		failUntil:        2, // fail first 2 calls, succeed on 3rd
+	}
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	r.reconsumerAll()
+
+	if callCount != 3 {
+		t.Errorf("Expected 3 consume calls (2 retries + 1 success), got %d", callCount)
+	}
+}
+
+func Test_reconsumerAll_allRetriesFail(t *testing.T) {
+	callCount := 0
+	mockCh := &mockChannelWithConsumeCounter{
+		consumeCallCount: &callCount,
+		failUntil:        10, // always fail
+	}
+
+	r := &rabbit{
+		queues:    make(map[string]*queue),
+		consumers: make([]*consumerRegistration, 0),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	reg := &consumerRegistration{
+		queueName:    "test-queue",
+		consumerName: "test-consumer",
+		numWorkers:   1,
+		cType:        consumerTypeMessage,
+		cbMessage:    func(evt *sock.Event) error { return nil },
+	}
+	r.consumers = append(r.consumers, reg)
+
+	r.reconsumerAll()
+
+	if callCount != 3 {
+		t.Errorf("Expected 3 consume calls (all retries), got %d", callCount)
 	}
 }

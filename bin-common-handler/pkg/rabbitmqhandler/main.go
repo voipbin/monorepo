@@ -266,4 +266,36 @@ func (r *rabbit) redeclareAll() {
 			log.Errorf("Could not bind the queue. err: %v", err)
 		}
 	}
+
+	// re-register consumers on the new channels
+	r.reconsumerAll()
+}
+
+// reconsumerAll restores all registered consumers after reconnection.
+// Called at the end of redeclareAll to re-register consumers on new channels.
+func (r *rabbit) reconsumerAll() {
+	log := logrus.WithField("func", "reconsumerAll")
+
+	r.mu.RLock()
+	consumersCopy := make([]*consumerRegistration, len(r.consumers))
+	copy(consumersCopy, r.consumers)
+	r.mu.RUnlock()
+
+	for _, reg := range consumersCopy {
+		var lastErr error
+		for attempt := 0; attempt < 3; attempt++ {
+			if err := r.startConsumers(reg); err != nil {
+				lastErr = err
+				log.Warnf("Could not re-register consumer (attempt %d/3). queue: %s, err: %v", attempt+1, reg.queueName, err)
+				time.Sleep(time.Second)
+				continue
+			}
+			log.Infof("Re-registered consumer. queue: %s, consumer: %s", reg.queueName, reg.consumerName)
+			lastErr = nil
+			break
+		}
+		if lastErr != nil {
+			log.Errorf("Failed to re-register consumer after 3 attempts. queue: %s, err: %v", reg.queueName, lastErr)
+		}
+	}
 }
