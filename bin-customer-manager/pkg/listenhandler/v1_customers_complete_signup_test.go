@@ -1,7 +1,6 @@
 package listenhandler
 
 import (
-	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -134,7 +133,7 @@ func Test_processV1CustomersCompleteSignupPost_completeSignupError(t *testing.T)
 		Data:     []byte(`{"temp_token":"tmp_abc","code":"123456"}`),
 	}
 
-	mockCustomer.EXPECT().CompleteSignup(gomock.Any(), "tmp_abc", "123456").Return(nil, fmt.Errorf("too many attempts"))
+	mockCustomer.EXPECT().CompleteSignup(gomock.Any(), "tmp_abc", "123456").Return(nil, customerhandler.ErrTooManyAttempts)
 
 	res, err := h.processRequest(req)
 	if err != nil {

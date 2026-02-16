@@ -249,10 +249,6 @@ func (r *requestHandler) CustomerV1CustomerCompleteSignup(ctx context.Context, t
 		return nil, err
 	}
 
-	if tmp.StatusCode == 429 {
-		return nil, fmt.Errorf("too many attempts")
-	}
-
 	var res cscustomer.CompleteSignupResult
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse

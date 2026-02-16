@@ -1,6 +1,10 @@
 package server
 
 import (
+	"errors"
+
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
@@ -24,7 +28,7 @@ func (h *server) PostAuthCompleteSignup(c *gin.Context) {
 	res, err := h.serviceHandler.CustomerCompleteSignup(c.Request.Context(), req.TempToken, req.Code)
 	if err != nil {
 		log.Debugf("Complete signup failed. err: %v", err)
-		if err.Error() == "too many attempts" {
+		if errors.Is(err, requesthandler.ErrTooManyRequests) {
 			c.AbortWithStatus(429)
 			return
 		}

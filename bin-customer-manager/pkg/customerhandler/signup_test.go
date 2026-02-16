@@ -305,6 +305,8 @@ func Test_EmailVerify_alreadyVerified(t *testing.T) {
 		ID:            customerID,
 		EmailVerified: true,
 	}, nil)
+	// Token cleanup on already-verified path
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "sometoken").Return(nil)
 
 	res, err := h.EmailVerify(ctx, "sometoken")
 	if err != nil {

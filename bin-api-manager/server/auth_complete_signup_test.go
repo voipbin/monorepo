@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
@@ -117,7 +118,7 @@ func Test_PostAuthCompleteSignup_rateLimited(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/auth/complete-signup", bytes.NewBuffer([]byte(`{"temp_token":"tmp_abc","code":"123456"}`)))
 	req.Header.Set("Content-Type", "application/json")
 
-	mockSvc.EXPECT().CustomerCompleteSignup(gomock.Any(), "tmp_abc", "123456").Return(nil, fmt.Errorf("too many attempts"))
+	mockSvc.EXPECT().CustomerCompleteSignup(gomock.Any(), "tmp_abc", "123456").Return(nil, requesthandler.ErrTooManyRequests)
 
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusTooManyRequests {

@@ -3,6 +3,7 @@ package customerhandler
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
@@ -32,6 +33,13 @@ func cryptoRandInt(min, max int) (int, error) {
 		return 0, fmt.Errorf("could not generate random number: %w", err)
 	}
 	return int(n.Int64()) + min, nil
+}
+
+// hashOTP returns the SHA-256 hex digest of the given OTP code.
+// This allows storing a hash in Redis instead of the plaintext OTP.
+func hashOTP(code string) string {
+	h := sha256.Sum256([]byte(code))
+	return hex.EncodeToString(h[:])
 }
 
 // Signup creates an unverified customer and sends a verification email.
@@ -125,10 +133,10 @@ func (h *customerHandler) Signup(
 	}
 	tempToken := hex.EncodeToString(tempTokenBytes)
 
-	// store signup session in Redis
+	// store signup session in Redis (store hashed OTP for defense-in-depth)
 	session := &cachehandler.SignupSession{
 		CustomerID:  id,
-		OTPCode:     otpCode,
+		OTPCode:     hashOTP(otpCode),
 		VerifyToken: token,
 	}
 	if err := h.cache.SignupSessionSet(ctx, tempToken, session, emailVerifyTokenTTL); err != nil {
@@ -192,6 +200,8 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	if c.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", c.ID)
 		metricshandler.EmailVerificationTotal.WithLabelValues("already_verified").Inc()
+		// Clean up token (single-use, prevent reuse)
+		_ = h.cache.EmailVerifyTokenDelete(ctx, token)
 		return &customer.EmailVerifyResult{Customer: c}, nil
 	}
 
@@ -258,7 +268,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	if count > maxSignupAttempts {
 		log.Infof("Too many attempts for temp_token.")
 		metricshandler.CompleteSignupTotal.WithLabelValues("rate_limited").Inc()
-		return nil, fmt.Errorf("too many attempts")
+		return nil, ErrTooManyAttempts
 	}
 
 	// Get signup session from Redis
@@ -270,8 +280,9 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	}
 	log.Debugf("Found signup session. customer_id: %s", session.CustomerID)
 
-	// Validate OTP using constant-time comparison to prevent timing attacks
-	if subtle.ConstantTimeCompare([]byte(session.OTPCode), []byte(code)) != 1 {
+	// Validate OTP using constant-time comparison to prevent timing attacks.
+	// The stored OTP is a SHA-256 hash, so hash the user input before comparing.
+	if subtle.ConstantTimeCompare([]byte(session.OTPCode), []byte(hashOTP(code))) != 1 {
 		log.Infof("Invalid OTP code.")
 		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_code").Inc()
 		return nil, fmt.Errorf("invalid verification code")
@@ -303,12 +314,21 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 	if cu.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", cu.ID)
 		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
-		// Clean up Redis keys and return without creating duplicate resources
+
+		// Attempt AccessKey creation in case a previous call verified the customer
+		// but failed at AccessKey creation. Non-fatal if it fails (key may already exist).
+		ak, akErr := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
+		if akErr != nil {
+			log.Infof("Could not create access key for already-verified customer (may already exist). err: %v", akErr)
+		}
+
+		// Clean up Redis keys
 		_ = h.cache.SignupSessionDelete(ctx, tempToken)
 		_ = h.cache.SignupAttemptDelete(ctx, tempToken)
 		_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
 		return &customer.CompleteSignupResult{
 			CustomerID: session.CustomerID.String(),
+			Accesskey:  ak,
 		}, nil
 	}
 

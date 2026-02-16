@@ -4,6 +4,7 @@ package customerhandler
 
 import (
 	"context"
+	"errors"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -16,6 +17,9 @@ import (
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
+
+// ErrTooManyAttempts is returned when the rate limit for signup attempts is exceeded.
+var ErrTooManyAttempts = errors.New("too many attempts")
 
 // CustomerHandler interface
 type CustomerHandler interface {

@@ -2,6 +2,7 @@ package customerhandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -44,7 +45,7 @@ func Test_CompleteSignup(t *testing.T) {
 
 			responseSession: &cachehandler.SignupSession{
 				CustomerID:  customerID,
-				OTPCode:     "123456",
+				OTPCode:     hashOTP("123456"),
 				VerifyToken: "verifytoken123",
 			},
 			responseCount: 1,
@@ -163,8 +164,8 @@ func Test_CompleteSignup_rateLimitExceeded(t *testing.T) {
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "too many attempts" {
-		t.Errorf("Wrong error message. expect: too many attempts, got: %v", err)
+	if !errors.Is(err, ErrTooManyAttempts) {
+		t.Errorf("Wrong error. expect: ErrTooManyAttempts, got: %v", err)
 	}
 }
 
@@ -190,7 +191,7 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_boundary", gomock.Any()).Return(int64(5), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_boundary").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "654321",
+		OTPCode:     hashOTP("654321"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock
@@ -293,7 +294,7 @@ func Test_CompleteSignup_invalidOTPCode(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_wrong_otp", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_wrong_otp").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 
@@ -327,7 +328,7 @@ func Test_CompleteSignup_customerUpdateError(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_update_err", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_update_err").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock
@@ -370,7 +371,7 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_ak_err", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_ak_err").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock
@@ -416,7 +417,7 @@ func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_get_fail", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_get_fail").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock
@@ -474,7 +475,7 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_already_verified", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_already_verified").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock
@@ -484,6 +485,11 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
 		ID:            customerID,
 		EmailVerified: true,
+	}, nil)
+	// AccessKey creation attempt in already-verified guard
+	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
+		ID: accesskeyID,
 	}, nil)
 	// Redis cleanup on early return
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_already_verified").Return(nil)
@@ -500,9 +506,9 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	if res.CustomerID != customerID.String() {
 		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
 	}
-	// already-verified path should NOT return an accesskey
-	if res.Accesskey != nil {
-		t.Errorf("Wrong match. expect: nil accesskey (already verified), got: %v", res.Accesskey)
+	// already-verified path now attempts AccessKey creation
+	if res.Accesskey == nil {
+		t.Errorf("Wrong match. expect: accesskey in result, got: nil")
 	}
 }
 
@@ -527,7 +533,7 @@ func Test_CompleteSignup_guardCustomerGetError(t *testing.T) {
 	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_guard_err", gomock.Any()).Return(int64(1), nil)
 	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_guard_err").Return(&cachehandler.SignupSession{
 		CustomerID:  customerID,
-		OTPCode:     "123456",
+		OTPCode:     hashOTP("123456"),
 		VerifyToken: "vt",
 	}, nil)
 	// verification lock

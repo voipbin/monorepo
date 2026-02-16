@@ -3,11 +3,13 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/pkg/customerhandler"
 	"monorepo/bin-customer-manager/pkg/listenhandler/models/request"
 )
 
@@ -28,7 +30,7 @@ func (h *listenHandler) processV1CustomersCompleteSignupPost(ctx context.Context
 	tmp, err := h.customerHandler.CompleteSignup(ctx, reqData.TempToken, reqData.Code)
 	if err != nil {
 		log.Errorf("Could not complete signup. err: %v", err)
-		if err.Error() == "too many attempts" {
+		if errors.Is(err, customerhandler.ErrTooManyAttempts) {
 			return simpleResponse(429), nil
 		}
 		return simpleResponse(400), nil
