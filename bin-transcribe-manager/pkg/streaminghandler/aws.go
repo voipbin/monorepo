@@ -17,6 +17,12 @@ import (
 	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
+// awsEventStream abstracts the AWS Transcribe event stream for testing.
+type awsEventStream interface {
+	Events() <-chan types.TranscriptResultStream
+	Close() error
+}
+
 func awsNewClient(accessKey string, secretKey string) (*transcribestreaming.Client, error) {
 	cfg, err := config.LoadDefaultConfig(
 		context.Background(),
@@ -86,21 +92,23 @@ func (h *streamingHandler) awsInit(ctx context.Context, st *streaming.Streaming)
 
 // awsProcessResult handles transcript results from AWS Transcribe
 func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, streamClient *transcribestreaming.StartStreamTranscriptionOutput) {
+	stream := streamClient.GetStream()
+	h.awsProcessEvents(ctx, cancel, st, stream)
+}
+
+// awsProcessEvents processes events from an AWS event stream.
+func (h *streamingHandler) awsProcessEvents(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, stream awsEventStream) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "awsProcessResult",
+		"func":          "awsProcessEvents",
 		"streaming_id":  st.ID,
 		"transcribe_id": st.TranscribeID,
 	})
-	log.Debugf("Starting awsProcessResult. transcribe_id: %s", st.TranscribeID)
+	log.Debugf("Starting awsProcessEvents. transcribe_id: %s", st.TranscribeID)
 
 	defer func() {
-		log.Debugf("Finished awsProcessResult. transcribe_id: %s", st.TranscribeID)
-		cancel()
-	}()
-
-	stream := streamClient.GetStream()
-	defer func() {
+		log.Debugf("Finished awsProcessEvents. transcribe_id: %s", st.TranscribeID)
 		_ = stream.Close()
+		cancel()
 	}()
 
 	speaking := false
@@ -108,7 +116,7 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debug("Context canceled, stopping awsProcessResult.")
+			log.Debug("Context canceled, stopping awsProcessEvents.")
 			return
 
 		case event, ok := <-stream.Events():
