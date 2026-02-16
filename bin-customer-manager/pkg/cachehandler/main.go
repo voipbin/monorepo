@@ -34,6 +34,15 @@ type CacheHandler interface {
 	EmailVerifyTokenSet(ctx context.Context, token string, customerID uuid.UUID, ttl time.Duration) error
 	EmailVerifyTokenGet(ctx context.Context, token string) (uuid.UUID, error)
 	EmailVerifyTokenDelete(ctx context.Context, token string) error
+
+	SignupSessionSet(ctx context.Context, tempToken string, session *SignupSession, ttl time.Duration) error
+	SignupSessionGet(ctx context.Context, tempToken string) (*SignupSession, error)
+	SignupSessionDelete(ctx context.Context, tempToken string) error
+	SignupAttemptIncrement(ctx context.Context, tempToken string, ttl time.Duration) (int64, error)
+	SignupAttemptDelete(ctx context.Context, tempToken string) error
+
+	VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error)
+	VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error
 }
 
 // NewHandler creates DBHandler

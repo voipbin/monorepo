@@ -3679,6 +3679,15 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// PostAuthCompleteSignupJSONBody defines parameters for PostAuthCompleteSignup.
+type PostAuthCompleteSignupJSONBody struct {
+	// Code 6-digit verification code from email
+	Code string `json:"code"`
+
+	// TempToken Temporary token returned from POST /auth/signup
+	TempToken string `json:"temp_token"`
+}
+
 // GetAuthEmailVerifyParams defines parameters for GetAuthEmailVerify.
 type GetAuthEmailVerifyParams struct {
 	// Token The email verification token from the signup email (64-character hex string)
@@ -5339,6 +5348,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAuthCompleteSignupJSONRequestBody defines body for PostAuthCompleteSignup for application/json ContentType.
+type PostAuthCompleteSignupJSONRequestBody PostAuthCompleteSignupJSONBody
 
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody PostAuthEmailVerifyJSONBody

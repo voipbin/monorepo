@@ -22,8 +22,8 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseCustomer *customer.Customer
-		expectRes        *sock.Response
+		responseSignupResult *customer.SignupResult
+		expectRes            *sock.Response
 	}{
 		{
 			name: "normal",
@@ -34,20 +34,23 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 				Data:     []byte(`{"name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
 
-			responseCustomer: &customer.Customer{
-				ID:            uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000001"),
-				Name:          "test signup",
-				Detail:        "signup detail",
-				Email:         "signup@voipbin.net",
-				PhoneNumber:   "+821100000001",
-				Address:       "somewhere",
-				WebhookMethod: "POST",
-				WebhookURI:    "test.com",
+			responseSignupResult: &customer.SignupResult{
+				Customer: &customer.Customer{
+					ID:            uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000001"),
+					Name:          "test signup",
+					Detail:        "signup detail",
+					Email:         "signup@voipbin.net",
+					PhoneNumber:   "+821100000001",
+					Address:       "somewhere",
+					WebhookMethod: "POST",
+					WebhookURI:    "test.com",
+				},
+				TempToken: "abc123",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"customer":{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null},"temp_token":"abc123"}`),
 			},
 		},
 	}
@@ -76,7 +79,7 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 				"somewhere",
 				customer.WebhookMethod("POST"),
 				"test.com",
-			).Return(tt.responseCustomer, nil)
+			).Return(tt.responseSignupResult, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -160,8 +163,8 @@ func Test_processV1CustomersEmailVerifyPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseCustomer *customer.Customer
-		expectRes        *sock.Response
+		responseEmailVerifyResult *customer.EmailVerifyResult
+		expectRes                 *sock.Response
 	}{
 		{
 			name: "normal",
@@ -172,15 +175,17 @@ func Test_processV1CustomersEmailVerifyPost(t *testing.T) {
 				Data:     []byte(`{"token":"abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"}`),
 			},
 
-			responseCustomer: &customer.Customer{
-				ID:            uuid.FromStringOrNil("f1f2f3f4-0000-0000-0000-000000000001"),
-				Email:         "verify@voipbin.net",
-				EmailVerified: true,
+			responseEmailVerifyResult: &customer.EmailVerifyResult{
+				Customer: &customer.Customer{
+					ID:            uuid.FromStringOrNil("f1f2f3f4-0000-0000-0000-000000000001"),
+					Email:         "verify@voipbin.net",
+					EmailVerified: true,
+				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f1f2f3f4-0000-0000-0000-000000000001","email":"verify@voipbin.net","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":true,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"customer":{"id":"f1f2f3f4-0000-0000-0000-000000000001","email":"verify@voipbin.net","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":true,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
 			},
 		},
 	}
@@ -203,7 +208,7 @@ func Test_processV1CustomersEmailVerifyPost(t *testing.T) {
 			mockCustomer.EXPECT().EmailVerify(
 				gomock.Any(),
 				"abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-			).Return(tt.responseCustomer, nil)
+			).Return(tt.responseEmailVerifyResult, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

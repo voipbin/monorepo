@@ -23,7 +23,7 @@ func Test_PostAuthSignup(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseCust *cscustomer.WebhookMessage
+		responseCust *cscustomer.SignupResult
 
 		expectRes string
 	}
@@ -35,9 +35,9 @@ func Test_PostAuthSignup(t *testing.T) {
 			reqQuery: "/auth/signup",
 			reqBody:  []byte(`{"email":"test@example.com"}`),
 
-			responseCust: &cscustomer.WebhookMessage{},
+			responseCust: &cscustomer.SignupResult{},
 
-			expectRes: `{"id":"00000000-0000-0000-0000-000000000000","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"temp_token":""}`,
 		},
 	}
 
@@ -133,7 +133,7 @@ func Test_PostAuthEmailVerify(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseCust *cscustomer.WebhookMessage
+		responseCust *cscustomer.EmailVerifyResult
 
 		expectRes string
 	}
@@ -145,9 +145,9 @@ func Test_PostAuthEmailVerify(t *testing.T) {
 			reqQuery: "/auth/email-verify",
 			reqBody:  []byte(`{"token":"test-verification-token"}`),
 
-			responseCust: &cscustomer.WebhookMessage{},
+			responseCust: &cscustomer.EmailVerifyResult{},
 
-			expectRes: `{"id":"00000000-0000-0000-0000-000000000000","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{}`,
 		},
 	}
 

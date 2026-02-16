@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 )
 
@@ -47,9 +46,7 @@ func TestPostCustomerSignup(t *testing.T) {
 					"123 Test St",
 					cscustomer.WebhookMethod("POST"),
 					"https://example.com/webhook",
-				).Return(&cscustomer.WebhookMessage{
-					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				}, nil)
+				).Return(&cscustomer.SignupResult{}, nil)
 			},
 			expectStatus: 200,
 		},
@@ -151,9 +148,7 @@ func TestPostCustomerEmailVerify(t *testing.T) {
 				Token: "valid_token_64_chars_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			},
 			mockSetup: func(m *servicehandler.MockServiceHandler) {
-				m.EXPECT().CustomerEmailVerify(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
-					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				}, nil)
+				m.EXPECT().CustomerEmailVerify(gomock.Any(), gomock.Any()).Return(&cscustomer.EmailVerifyResult{}, nil)
 			},
 			expectStatus: 200,
 		},

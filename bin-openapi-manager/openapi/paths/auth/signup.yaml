@@ -60,6 +60,12 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            type: object
+            properties:
+              customer:
+                $ref: '#/components/schemas/CustomerManagerCustomer'
+              temp_token:
+                type: string
+                description: Temporary token for headless verification via /auth/complete-signup
     '400':
       description: Bad request - malformed request body

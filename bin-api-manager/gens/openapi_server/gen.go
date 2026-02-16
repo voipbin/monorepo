@@ -3688,6 +3688,15 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// PostAuthCompleteSignupJSONBody defines parameters for PostAuthCompleteSignup.
+type PostAuthCompleteSignupJSONBody struct {
+	// Code 6-digit verification code from email
+	Code string `json:"code"`
+
+	// TempToken Temporary token returned from POST /auth/signup
+	TempToken string `json:"temp_token"`
+}
+
 // GetAuthEmailVerifyParams defines parameters for GetAuthEmailVerify.
 type GetAuthEmailVerifyParams struct {
 	// Token The email verification token from the signup email (64-character hex string)
@@ -5349,6 +5358,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthCompleteSignupJSONRequestBody defines body for PostAuthCompleteSignup for application/json ContentType.
+type PostAuthCompleteSignupJSONRequestBody PostAuthCompleteSignupJSONBody
+
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody PostAuthEmailVerifyJSONBody
 
@@ -5759,6 +5771,9 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Complete headless signup verification
+	// (POST /auth/complete-signup)
+	PostAuthCompleteSignup(c *gin.Context)
 	// Email verification page
 	// (GET /auth/email-verify)
 	GetAuthEmailVerify(c *gin.Context, params GetAuthEmailVerifyParams)
@@ -7460,6 +7475,19 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// PostAuthCompleteSignup operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthCompleteSignup(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthCompleteSignup(c)
 }
 
 // GetAuthEmailVerify operation middleware
@@ -13981,6 +14009,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.POST(options.BaseURL+"/auth/complete-signup", wrapper.PostAuthCompleteSignup)
 	router.GET(options.BaseURL+"/auth/email-verify", wrapper.GetAuthEmailVerify)
 	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin)
@@ -14962,6 +14991,42 @@ func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w 
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostAuthCompleteSignupRequestObject struct {
+	Body *PostAuthCompleteSignupJSONRequestBody
+}
+
+type PostAuthCompleteSignupResponseObject interface {
+	VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error
+}
+
+type PostAuthCompleteSignup200JSONResponse struct {
+	Accesskey  *CustomerManagerAccesskey `json:"accesskey,omitempty"`
+	CustomerId *openapi_types.UUID       `json:"customer_id,omitempty"`
+}
+
+func (response PostAuthCompleteSignup200JSONResponse) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthCompleteSignup400Response struct {
+}
+
+func (response PostAuthCompleteSignup400Response) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthCompleteSignup429Response struct {
+}
+
+func (response PostAuthCompleteSignup429Response) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(429)
+	return nil
+}
+
 type GetAuthEmailVerifyRequestObject struct {
 	Params GetAuthEmailVerifyParams
 }
@@ -15005,7 +15070,10 @@ type PostAuthEmailVerifyResponseObject interface {
 	VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error
 }
 
-type PostAuthEmailVerify200JSONResponse CustomerManagerCustomer
+type PostAuthEmailVerify200JSONResponse struct {
+	Accesskey *CustomerManagerAccesskey `json:"accesskey,omitempty"`
+	Customer  *CustomerManagerCustomer  `json:"customer,omitempty"`
+}
 
 func (response PostAuthEmailVerify200JSONResponse) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -15188,7 +15256,12 @@ type PostAuthSignupResponseObject interface {
 	VisitPostAuthSignupResponse(w http.ResponseWriter) error
 }
 
-type PostAuthSignup200JSONResponse CustomerManagerCustomer
+type PostAuthSignup200JSONResponse struct {
+	Customer *CustomerManagerCustomer `json:"customer,omitempty"`
+
+	// TempToken Temporary token for headless verification via /auth/complete-signup
+	TempToken *string `json:"temp_token,omitempty"`
+}
 
 func (response PostAuthSignup200JSONResponse) VisitPostAuthSignupResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -20194,6 +20267,9 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Complete headless signup verification
+	// (POST /auth/complete-signup)
+	PostAuthCompleteSignup(ctx context.Context, request PostAuthCompleteSignupRequestObject) (PostAuthCompleteSignupResponseObject, error)
 	// Email verification page
 	// (GET /auth/email-verify)
 	GetAuthEmailVerify(ctx context.Context, request GetAuthEmailVerifyRequestObject) (GetAuthEmailVerifyResponseObject, error)
@@ -22086,6 +22162,39 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthCompleteSignup operation middleware
+func (sh *strictHandler) PostAuthCompleteSignup(ctx *gin.Context) {
+	var request PostAuthCompleteSignupRequestObject
+
+	var body PostAuthCompleteSignupJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthCompleteSignup(ctx, request.(PostAuthCompleteSignupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthCompleteSignup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthCompleteSignupResponseObject); ok {
+		if err := validResponse.VisitPostAuthCompleteSignupResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

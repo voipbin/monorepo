@@ -56,8 +56,9 @@ var (
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
 	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
 
-	regV1CustomersSignup      = regexp.MustCompile("/v1/customers/signup$")
-	regV1CustomersEmailVerify = regexp.MustCompile("/v1/customers/email_verify$")
+	regV1CustomersSignup         = regexp.MustCompile("/v1/customers/signup$")
+	regV1CustomersEmailVerify    = regexp.MustCompile("/v1/customers/email_verify$")
+	regV1CustomersCompleteSignup = regexp.MustCompile("/v1/customers/complete_signup$")
 )
 
 // simpleResponse returns simple rabbitmq response
@@ -153,6 +154,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	////////////
 	// customers
 	////////////
+	// POST /customers/complete_signup
+	case regV1CustomersCompleteSignup.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersCompleteSignupPost(ctx, m)
+		requestType = "/v1/customers/complete_signup"
+
 	// POST /customers/signup
 	case regV1CustomersSignup.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersSignupPost(ctx, m)

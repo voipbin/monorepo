@@ -290,10 +290,61 @@ func Test_EventCustomerCreated(t *testing.T) {
 				{Type: commonaddress.TypeEmail, Target: tt.customer.Email},
 			}, "Welcome to VoIPBin - Set Your Password", gomock.Any(), gomock.Nil()).Return(nil, nil)
 
-			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {
+			if err := h.EventCustomerCreated(ctx, tt.customer, false); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_EventCustomerCreated_Headless(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := &agentHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+		cache:         mockCache,
+	}
+	ctx := context.Background()
+
+	cu := &cmcustomer.Customer{
+		ID:    uuid.FromStringOrNil("9c0ea002-c8e4-11ef-bfbd-3316b71b50ac"),
+		Email: "headless@voipbin.net",
+	}
+
+	responseUUID := uuid.FromStringOrNil("38979028-c8e5-11ef-ab04-9b5ea42ae2be")
+	responseAgent := &agent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+		},
+		Username: "headless@voipbin.net",
+	}
+
+	// agent Create expectations
+	mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, cu.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
+	mockUtil.EXPECT().EmailIsValid(cu.Email).Return(true)
+	mockDB.EXPECT().AgentGetByUsername(ctx, cu.Email).Return(nil, fmt.Errorf(""))
+	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AgentGet(ctx, responseUUID).Return(responseAgent, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, responseAgent.CustomerID, agent.EventTypeAgentCreated, responseAgent)
+
+	// PasswordForgot should NOT be called when headless=true
+	// (no mock expectations set for PasswordForgot-related calls)
+
+	if err := h.EventCustomerCreated(ctx, cu, true); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
 
@@ -344,7 +395,7 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 	mockDB.EXPECT().AgentGetByUsername(ctx, customer.Email).Return(nil, fmt.Errorf("not found"))
 
 	// EventCustomerCreated should still succeed even though PasswordForgot failed
-	if err := h.EventCustomerCreated(ctx, customer); err != nil {
+	if err := h.EventCustomerCreated(ctx, customer, false); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }

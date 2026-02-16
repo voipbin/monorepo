@@ -1,0 +1,50 @@
+post:
+  summary: Complete headless signup verification
+  description: |
+    Validates a 6-digit OTP code and completes the signup process for headless/API clients.
+
+    Returns the customer ID and an auto-provisioned API access key.
+
+    This endpoint does not require authentication.
+
+    Rate limited to 5 attempts per temp_token.
+
+    **Note:** This endpoint is available at `/auth/complete-signup` (not under `/v1.0` prefix).
+  tags:
+    - Auth
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - temp_token
+            - code
+          properties:
+            temp_token:
+              type: string
+              description: Temporary token returned from POST /auth/signup
+              example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+            code:
+              type: string
+              description: 6-digit verification code from email
+              example: "123456"
+  responses:
+    '200':
+      description: Signup completed successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              customer_id:
+                type: string
+                format: uuid
+              accesskey:
+                $ref: '#/components/schemas/CustomerManagerAccesskey'
+    '400':
+      description: Invalid or expired temp_token, or wrong verification code
+    '429':
+      description: Too many attempts (max 5 per temp_token)

@@ -691,8 +691,9 @@ type RequestHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.Customer, error)
-	CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.Customer, error)
+	) (*cscustomer.SignupResult, error)
+	CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error)
+	CustomerV1CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error)
 
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)

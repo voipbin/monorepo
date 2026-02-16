@@ -96,7 +96,10 @@ func (h *customerHandler) Create(
 	}
 
 	// notify
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
+		Customer: res,
+		Headless: false,
+	})
 
 	return res, nil
 }

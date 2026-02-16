@@ -14,6 +14,16 @@ import (
 )
 
 const emailVerifyKeyPrefix = "email_verify:"
+const signupSessionKeyPrefix = "signup_session:"
+const signupAttemptsKeyPrefix = "signup_attempts:"
+const verifyLockKeyPrefix = "verify_lock:"
+
+// SignupSession stores the headless signup session data in Redis.
+type SignupSession struct {
+	CustomerID  uuid.UUID `json:"customer_id"`
+	OTPCode     string    `json:"otp_code"`
+	VerifyToken string    `json:"verify_token"`
+}
 
 // getSerialize returns cached serialized info.
 func (h *handler) getSerialize(ctx context.Context, key string, data interface{}) error {
@@ -121,4 +131,87 @@ func (h *handler) EmailVerifyTokenDelete(ctx context.Context, token string) erro
 		return err
 	}
 	return nil
+}
+
+// SignupSessionSet stores a signup session in Redis with a TTL.
+func (h *handler) SignupSessionSet(ctx context.Context, tempToken string, session *SignupSession, ttl time.Duration) error {
+	key := signupSessionKeyPrefix + tempToken
+	tmp, err := json.Marshal(session)
+	if err != nil {
+		return err
+	}
+	if err := h.Cache.Set(ctx, key, tmp, ttl).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SignupSessionGet retrieves a signup session from Redis.
+func (h *handler) SignupSessionGet(ctx context.Context, tempToken string) (*SignupSession, error) {
+	key := signupSessionKeyPrefix + tempToken
+	val, err := h.Cache.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("signup session not found or expired")
+		}
+		return nil, err
+	}
+
+	var session SignupSession
+	if err := json.Unmarshal([]byte(val), &session); err != nil {
+		return nil, err
+	}
+	return &session, nil
+}
+
+// SignupSessionDelete removes a signup session from Redis.
+func (h *handler) SignupSessionDelete(ctx context.Context, tempToken string) error {
+	key := signupSessionKeyPrefix + tempToken
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SignupAttemptIncrement increments the signup attempt counter for the given tempToken.
+// On the first increment (count == 1), the TTL is set. Returns the current count.
+func (h *handler) SignupAttemptIncrement(ctx context.Context, tempToken string, ttl time.Duration) (int64, error) {
+	key := signupAttemptsKeyPrefix + tempToken
+	count, err := h.Cache.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	if count == 1 {
+		if err := h.Cache.Expire(ctx, key, ttl).Err(); err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
+// SignupAttemptDelete removes the signup attempt counter from Redis.
+func (h *handler) SignupAttemptDelete(ctx context.Context, tempToken string) error {
+	key := signupAttemptsKeyPrefix + tempToken
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// VerifyLockAcquire attempts to acquire a distributed lock for customer verification.
+// Returns true if the lock was acquired, false if another process holds it.
+func (h *handler) VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error) {
+	key := verifyLockKeyPrefix + customerID.String()
+	ok, err := h.Cache.SetNX(ctx, key, "1", ttl).Result()
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
+}
+
+// VerifyLockRelease releases the distributed verification lock.
+func (h *handler) VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error {
+	key := verifyLockKeyPrefix + customerID.String()
+	return h.Cache.Del(ctx, key).Err()
 }
