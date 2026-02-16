@@ -273,6 +273,216 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 	return nil
 }
 
+// CustomerFreeze sets the customer status to frozen and schedules deletion.
+func (h *handler) CustomerFreeze(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("freeze", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("freeze", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
+	ts := h.utilHandler.TimeNow()
+
+	fields := map[customer.Field]any{
+		customer.FieldStatus:              string(customer.StatusFrozen),
+		customer.FieldTMDeletionScheduled: ts,
+		customer.FieldTMUpdate:            ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CustomerFreeze: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(customerTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusActive)}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CustomerFreeze: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("CustomerFreeze: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	status = "success"
+
+	// update the cache
+	_ = h.customerUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CustomerRecover sets the customer status back to active and clears the deletion schedule.
+func (h *handler) CustomerRecover(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("recover", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("recover", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
+	ts := h.utilHandler.TimeNow()
+
+	fields := map[customer.Field]any{
+		customer.FieldStatus:              string(customer.StatusActive),
+		customer.FieldTMDeletionScheduled: nil,
+		customer.FieldTMUpdate:            ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CustomerRecover: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(customerTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CustomerRecover: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("CustomerRecover: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	status = "success"
+
+	// update the cache
+	_ = h.customerUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CustomerListFrozenExpired returns customers that are frozen and past the deletion schedule.
+func (h *handler) CustomerListFrozenExpired(ctx context.Context, expiredBefore time.Time) ([]*customer.Customer, error) {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("list_frozen_expired", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("list_frozen_expired", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
+	fields := commondatabasehandler.GetDBFields(&customer.Customer{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(customerTable).
+		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)}).
+		Where(squirrel.Lt{string(customer.FieldTMDeletionScheduled): expiredBefore}).
+		Where(squirrel.Eq{string(customer.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CustomerListFrozenExpired. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CustomerListFrozenExpired. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*customer.Customer{}
+	for rows.Next() {
+		u, err := h.customerGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. CustomerListFrozenExpired. err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CustomerListFrozenExpired. err: %v", err)
+	}
+
+	status = "success"
+
+	return res, nil
+}
+
+// CustomerAnonymizePII anonymizes the customer's personally identifiable information.
+func (h *handler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("anonymize_pii", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("anonymize_pii", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
+	ts := h.utilHandler.TimeNow()
+
+	fields := map[customer.Field]any{
+		customer.FieldName:        anonName,
+		customer.FieldEmail:       anonEmail,
+		customer.FieldPhoneNumber: "",
+		customer.FieldAddress:     "",
+		customer.FieldWebhookURI:  "",
+		customer.FieldStatus:      string(customer.StatusDeleted),
+		customer.FieldTMDelete:    ts,
+		customer.FieldTMUpdate:    ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CustomerAnonymizePII: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(customerTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CustomerAnonymizePII: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("CustomerAnonymizePII: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	status = "success"
+
+	// update the cache
+	_ = h.customerUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // CustomerDelete deletes the customer.
 func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 	start := time.Now()
@@ -287,6 +497,7 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 	fields := map[customer.Field]any{
 		customer.FieldTMUpdate: ts,
 		customer.FieldTMDelete: ts,
+		customer.FieldStatus:   string(customer.StatusDeleted),
 	}
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
