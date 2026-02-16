@@ -24,8 +24,10 @@ func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID 
 
 	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get customer info. err: %v", err)
-		return false
+		// Fail open: if customer-manager is unavailable, allow the call rather than
+		// rejecting ALL calls. Billing-manager provides a second enforcement layer.
+		log.Errorf("Could not get customer info, failing open. err: %v", err)
+		return true
 	}
 	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 

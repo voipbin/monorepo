@@ -274,6 +274,64 @@ func (h *serviceHandler) CustomerRecover(ctx context.Context, a *amagent.Agent, 
 	return res.ConvertWebhookMessage(), nil
 }
 
+// CustomerSelfFreeze handles self-service account freeze (schedule deletion).
+// Requires CustomerAdmin permission and operates on the agent's own customer account.
+func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfFreeze",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerFreeze(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not freeze the customer. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
+// CustomerSelfRecover handles self-service account recovery (cancel scheduled deletion).
+// Requires CustomerAdmin permission and operates on the agent's own customer account.
+func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfRecover",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerRecover(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not recover the customer. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
 // CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {

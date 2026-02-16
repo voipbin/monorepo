@@ -67,7 +67,7 @@ func PostAuthUnregister(c *gin.Context) {
 		}
 	}
 
-	res, err := serviceHandler.CustomerFreeze(c.Request.Context(), &a, a.CustomerID)
+	res, err := serviceHandler.CustomerSelfFreeze(c.Request.Context(), &a)
 	if err != nil {
 		log.Errorf("Could not freeze the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,7 +96,7 @@ func DeleteAuthUnregister(c *gin.Context) {
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	res, err := serviceHandler.CustomerRecover(c.Request.Context(), &a, a.CustomerID)
+	res, err := serviceHandler.CustomerSelfRecover(c.Request.Context(), &a)
 	if err != nil {
 		log.Errorf("Could not recover the customer. err: %v", err)
 		c.AbortWithStatus(400)

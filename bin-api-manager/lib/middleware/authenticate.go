@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	modelscommon "monorepo/bin-api-manager/models/common"
@@ -90,10 +91,16 @@ func isFrozenAccountBlocked(c *gin.Context, a *amagent.Agent) bool {
 	}
 
 	// Account is frozen - return 403 with DELETION_SCHEDULED error
+	var deletionEffectiveAt *time.Time
+	if cu.TMDeletionScheduled != nil {
+		t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
+		deletionEffectiveAt = &t
+	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"error":                  "DELETION_SCHEDULED",
 		"message":                "Account deletion scheduled",
 		"deletion_scheduled_at":  cu.TMDeletionScheduled,
+		"deletion_effective_at":  deletionEffectiveAt,
 		"recovery_endpoint":      "DELETE /auth/unregister",
 	})
 	return true

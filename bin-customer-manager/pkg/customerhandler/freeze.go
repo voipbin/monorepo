@@ -2,12 +2,14 @@ package customerhandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // Freeze freezes the customer account.
@@ -38,6 +40,15 @@ func (h *customerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.C
 	}
 
 	if err := h.db.CustomerFreeze(ctx, id); err != nil {
+		// Handle race condition: if another request already froze this customer,
+		// the DB returns ErrNotFound (0 rows affected). Re-fetch and return if frozen.
+		if errors.Is(err, dbhandler.ErrNotFound) {
+			refetched, refetchErr := h.Get(ctx, id)
+			if refetchErr == nil && refetched.Status == customer.StatusFrozen {
+				log.Infof("Concurrent freeze detected, returning already-frozen customer. customer_id: %s", id)
+				return refetched, nil
+			}
+		}
 		log.Errorf("Could not freeze the customer. err: %v", err)
 		return nil, err
 	}
@@ -74,6 +85,15 @@ func (h *customerHandler) Recover(ctx context.Context, id uuid.UUID) (*customer.
 	}
 
 	if err := h.db.CustomerRecover(ctx, id); err != nil {
+		// Handle race condition: if another request already recovered this customer,
+		// the DB returns ErrNotFound (0 rows affected). Re-fetch and return if active.
+		if errors.Is(err, dbhandler.ErrNotFound) {
+			refetched, refetchErr := h.Get(ctx, id)
+			if refetchErr == nil && refetched.Status == customer.StatusActive {
+				log.Infof("Concurrent recover detected, returning already-active customer. customer_id: %s", id)
+				return refetched, nil
+			}
+		}
 		log.Errorf("Could not recover the customer. err: %v", err)
 		return nil, err
 	}

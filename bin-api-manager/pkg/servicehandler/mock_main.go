@@ -2005,6 +2005,36 @@ func (mr *MockServiceHandlerMockRecorder) CustomerRecover(ctx, a, customerID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerRecover", reflect.TypeOf((*MockServiceHandler)(nil).CustomerRecover), ctx, a, customerID)
 }
 
+// CustomerSelfFreeze mocks base method.
+func (m *MockServiceHandler) CustomerSelfFreeze(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerSelfFreeze", ctx, a)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerSelfFreeze indicates an expected call of CustomerSelfFreeze.
+func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreeze(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfFreeze", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfFreeze), ctx, a)
+}
+
+// CustomerSelfRecover mocks base method.
+func (m *MockServiceHandler) CustomerSelfRecover(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerSelfRecover", ctx, a)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerSelfRecover indicates an expected call of CustomerSelfRecover.
+func (mr *MockServiceHandlerMockRecorder) CustomerSelfRecover(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfRecover", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfRecover), ctx, a)
+}
+
 // CustomerSignup mocks base method.
 func (m *MockServiceHandler) CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.SignupResult, error) {
 	m.ctrl.T.Helper()
