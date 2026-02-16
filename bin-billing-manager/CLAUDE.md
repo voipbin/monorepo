@@ -55,13 +55,6 @@ billing-control account subtract-balance --id <uuid> --amount <float>
 billing-control billing get --id <uuid>
 billing-control billing list [--limit 100] [--token] [--customer-id <uuid>] [--account-id <uuid>]
 
-# Allowance operations (all return JSON)
-billing-control allowance get --account-id <uuid>
-billing-control allowance list --account-id <uuid> [--limit 100] [--token]
-billing-control allowance process-all
-billing-control allowance ensure --account-id <uuid>
-billing-control allowance add-tokens --account-id <uuid> --amount <int>
-billing-control allowance subtract-tokens --account-id <uuid> --amount <int>
 ```
 
 Uses same environment variables as billing-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
@@ -94,13 +87,6 @@ A command-line tool for managing billing accounts and records directly via datab
 ./bin/billing-control billing get --id <uuid>
 ./bin/billing-control billing list [--customer-id <uuid>] [--account-id <uuid>] [--limit 100] [--token]
 
-# Allowance commands
-./bin/billing-control allowance get --account-id <uuid>
-./bin/billing-control allowance list --account-id <uuid> [--limit 100] [--token]
-./bin/billing-control allowance process-all
-./bin/billing-control allowance ensure --account-id <uuid>
-./bin/billing-control allowance add-tokens --account-id <uuid> --amount <int>
-./bin/billing-control allowance subtract-tokens --account-id <uuid> --amount <int>
 ```
 
 Uses same environment variables as billing-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
