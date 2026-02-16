@@ -130,8 +130,8 @@ type CallHandler interface {
 		directionSpeak externalmedia.Direction,
 	) (*call.Call, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
-
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
+	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error
 	EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
 }

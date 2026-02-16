@@ -86,3 +86,33 @@ func (h *callHandler) EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
 
 	return nil
 }
+
+// EventCUCustomerFrozen handles the customer-manager's customer_frozen event
+func (h *callHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "EventCUCustomerFrozen",
+		"customer": cu,
+	})
+	log.Debugf("Hanging up all calls for frozen customer. customer_id: %s", cu.ID)
+
+	// get all active calls of the customer
+	filters := map[call.Field]any{
+		call.FieldCustomerID: cu.ID,
+		call.FieldDeleted:    false,
+	}
+	calls, err := h.List(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not get calls list. err: %v", err)
+		return errors.Wrap(err, "could not get calls list")
+	}
+
+	// hangup all calls
+	for _, e := range calls {
+		log.Debugf("Hanging up call for frozen customer. call_id: %s", e.ID)
+		if _, errHangup := h.HangingUp(ctx, e.ID, call.HangupReasonNormal); errHangup != nil {
+			log.Errorf("Could not hangup call. call_id: %s, err: %v", e.ID, errHangup)
+		}
+	}
+
+	return nil
+}

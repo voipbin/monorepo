@@ -177,6 +177,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cucustomer.EventTypeCustomerDeleted:
 		err = h.processEventCUCustomerDeleted(ctx, m)
 
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cucustomer.EventTypeCustomerFrozen:
+		err = h.processEventCUCustomerFrozen(ctx, m)
+
 	// flow-manager
 	case m.Publisher == string(commonoutline.ServiceNameFlowManager) && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
 		err = h.processEventFMActiveflowUpdated(ctx, m)
