@@ -65,6 +65,7 @@ type CustomerHandler interface {
 	CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error)
 
 	RunCleanupUnverified(ctx context.Context)
+	RunCleanupFrozenExpired(ctx context.Context)
 }
 
 type customerHandler struct {

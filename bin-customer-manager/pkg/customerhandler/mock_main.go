@@ -162,6 +162,18 @@ func (mr *MockCustomerHandlerMockRecorder) Recover(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recover", reflect.TypeOf((*MockCustomerHandler)(nil).Recover), ctx, id)
 }
 
+// RunCleanupFrozenExpired mocks base method.
+func (m *MockCustomerHandler) RunCleanupFrozenExpired(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunCleanupFrozenExpired", ctx)
+}
+
+// RunCleanupFrozenExpired indicates an expected call of RunCleanupFrozenExpired.
+func (mr *MockCustomerHandlerMockRecorder) RunCleanupFrozenExpired(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunCleanupFrozenExpired", reflect.TypeOf((*MockCustomerHandler)(nil).RunCleanupFrozenExpired), ctx)
+}
+
 // RunCleanupUnverified mocks base method.
 func (m *MockCustomerHandler) RunCleanupUnverified(ctx context.Context) {
 	m.ctrl.T.Helper()
