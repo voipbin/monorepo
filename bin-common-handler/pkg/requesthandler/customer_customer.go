@@ -283,3 +283,37 @@ func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Co
 
 	return &res, nil
 }
+
+// CustomerV1CustomerFreeze sends the request to freeze the customer
+func (r *requestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/freeze", customerID)
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/freeze", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// CustomerV1CustomerRecover sends the request to recover the customer
+func (r *requestHandler) CustomerV1CustomerRecover(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/recover", customerID)
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/recover", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
