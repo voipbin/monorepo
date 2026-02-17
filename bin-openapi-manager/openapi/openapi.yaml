@@ -204,14 +204,15 @@ components:
     PageSize:
       name: page_size
       in: query
-      description: The size of results.
+      description: "Number of results to return per page."
       required: false
       schema:
         type: integer
+        example: 25
     PageToken:
       name: page_token
       in: query
-      description: The token. tm_create
+      description: "Cursor token for pagination. Use the `next_page_token` value from the previous response."
       required: false
       schema:
         type: string
@@ -267,7 +268,8 @@ components:
 
     AgentManagerAgentRingMethod:
       type: string
-      description: Represents an agent resource.
+      description: "Method used to ring the agent for incoming calls."
+      example: "ringall"
       enum:
         - ringall
         - linear
@@ -277,7 +279,8 @@ components:
 
     AgentManagerAgentStatus:
       type: string
-      description: Agent's status
+      description: "Current availability status of the agent."
+      example: "available"
       enum:
         - ""
         - available
@@ -299,43 +302,71 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the agent."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this agent. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         username:
           type: string
-          description: Agent's username.
+          description: "Agent's login username, typically an email address."
+          example: "agent@example.com"
         name:
           type: string
-          description: Agent's name.
+          description: "Display name of the agent."
+          example: "John Smith"
         detail:
           type: string
-          description: Agent's detail.
+          description: "Additional detail or notes about the agent."
+          example: "Senior support agent"
         ring_method:
           $ref: '#/components/schemas/AgentManagerAgentRingMethod'
+          description: "Method used to ring the agent for incoming calls."
+          example: "ringall"
         status:
           $ref: '#/components/schemas/AgentManagerAgentStatus'
+          description: "Current availability status of the agent."
+          example: "available"
         permission:
           $ref: '#/components/schemas/AgentManagerAgentPermission'
+          description: "Permission level assigned to the agent."
+          example: 64
         tag_ids:
           type: array
           items:
             type: string
-          description: Agent's tag IDs.
+            format: uuid
+            x-go-type: string
+          description: "List of tag IDs assigned to this agent. Returned from the `POST /tags` or `GET /tags` response."
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
         addresses:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: Agent's endpoint addresses.
+          description: "Agent's endpoint addresses for receiving calls."
         tm_create:
           type: string
-          description: Created timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was created."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Updated timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was last updated."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: Deleted timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was deleted."
+          example: "2026-01-17T10:00:00.000000Z"
 
 
 #########################################
@@ -344,6 +375,7 @@ components:
     BillingManagerAccountPaymentMethod:
       type: string
       description: The method of payment used for the account.
+      example: "credit card"
       enum:
         - ""
         - credit card
@@ -354,6 +386,7 @@ components:
     BillingManagerAccountPaymentType:
       type: string
       description: The type of payment associated with the account.
+      example: "prepaid"
       enum:
         - ""
         - prepaid
@@ -364,6 +397,7 @@ components:
     BillingManagerAccountPlanType:
       type: string
       description: The plan tier of the billing account. Determines resource creation limits.
+      example: "basic"
       enum:
         - free
         - basic
@@ -380,49 +414,81 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier of the account.
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         customer_id:
           type: string
-          description: The unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
-          description: The name of the account.
+          description: The display name of the billing account.
+          example: "Production Account"
         detail:
           type: string
-          description: Additional details about the account.
+          description: A human-readable note describing the purpose of this account.
+          example: "Main billing account for production services"
         plan_type:
+          description: The plan tier of the billing account.
+          example: "basic"
           $ref: '#/components/schemas/BillingManagerAccountPlanType'
         balance_credit:
           type: integer
           format: int64
           description: The credit balance of the account in micros (1 USD = 1,000,000).
+          example: 1500000
         balance_token:
           type: integer
           format: int64
           description: The token balance of the account.
+          example: 500
         payment_type:
+          description: The type of payment associated with the account.
+          example: "prepaid"
           $ref: '#/components/schemas/BillingManagerAccountPaymentType'
         payment_method:
+          description: The method of payment used for the account.
+          example: "credit card"
           $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
         tm_last_topup:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of the last token top-up.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_next_topup:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of the next scheduled token top-up.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was deleted, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
 
     BillingManagerBillingreferenceType:
       type: string
       description: The type of reference associated with this billing.
+      example: "call"
       enum:
         - ""
         - call
@@ -448,6 +514,7 @@ components:
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.
+      example: "progressing"
       enum:
         - progressing
         - end
@@ -462,6 +529,7 @@ components:
     BillingManagerBillingTransactionType:
       type: string
       description: The nature of the ledger entry.
+      example: "usage"
       enum:
         - usage
         - top_up
@@ -478,73 +546,116 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier of the billing.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: The customer's unique identifier.
+          format: uuid
+          x-go-type: string
+          description: "The customer's unique identifier. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         account_id:
           type: string
-          description: The billing account ID.
+          format: uuid
+          x-go-type: string
+          description: "The billing account ID. Returned from the `GET /billing_accounts/{id}` response."
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         transaction_type:
+          description: The nature of the ledger entry.
+          example: "usage"
           $ref: '#/components/schemas/BillingManagerBillingTransactionType'
         status:
+          description: Status of the billing.
+          example: "progressing"
           $ref: '#/components/schemas/BillingManagerBillingStatus'
         reference_type:
+          description: The type of reference associated with this billing.
+          example: "call"
           $ref: '#/components/schemas/BillingManagerBillingreferenceType'
         reference_id:
           type: string
-          description: The ID of the reference related to this billing.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         cost_type:
           type: string
           description: The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
+          example: "call_pstn_outgoing"
         usage_duration:
           type: integer
           description: The actual usage duration in seconds.
+          example: 125
         billable_units:
           type: integer
           description: The number of billable units (e.g. minutes, rounded up).
+          example: 3
         rate_token_per_unit:
           type: integer
           format: int64
           description: The token rate per billable unit.
+          example: 10
         rate_credit_per_unit:
           type: integer
           format: int64
           description: The credit rate per billable unit in micros.
+          example: 50000
         amount_token:
           type: integer
           format: int64
           description: The token delta for this transaction (negative for usage, positive for top-up).
+          example: -30
         amount_credit:
           type: integer
           format: int64
           description: The credit delta for this transaction in micros (negative for usage, positive for top-up).
+          example: -150000
         balance_token_snapshot:
           type: integer
           format: int64
           description: The token balance after this transaction.
+          example: 470
         balance_credit_snapshot:
           type: integer
           format: int64
           description: The credit balance after this transaction in micros.
+          example: 1350000
         idempotency_key:
           type: string
           description: A unique key to prevent duplicate transactions.
+          example: "txn-2026-01-15-001"
         tm_billing_start:
           type: string
+          format: date-time
+          x-go-type: string
           description: The start timestamp of the billing period.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_billing_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: The end timestamp of the billing period.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The creation timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The last update timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -553,6 +664,7 @@ components:
     CallManagerCallDirection:
       type: string
       description: Call direction
+      example: "outgoing"
       enum:
         - incoming
         - outgoing
@@ -562,6 +674,7 @@ components:
     CallManagerCallHangupBy:
       type: string
       description: Indicates who hung up the call
+      example: "remote"
       enum:
         - ""
         - remote
@@ -573,6 +686,7 @@ components:
     CallManagerCallHangupReason:
       type: string
       description: Reason for call hangup
+      example: "normal"
       enum:
         - ""
         - normal
@@ -596,6 +710,7 @@ components:
     CallManagerCallMuteDirection:
       type: string
       description: Possible mute directions for the call
+      example: "both"
       enum:
         - ""
         - both
@@ -609,6 +724,7 @@ components:
     CallManagerCallStatus:
       type: string
       description: Call status
+      example: "progressing"
       enum:
         - dialing
         - ringing
@@ -626,6 +742,7 @@ components:
     CallManagerCallType:
       type: string
       description: Call type
+      example: "flow"
       enum:
         - ""
         - flow
@@ -641,81 +758,146 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this call. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., agent, queue).
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`)."
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         flow_id:
           type: string
-          description: Flow ID
+          format: uuid
+          x-go-type: string
+          description: The flow ID associated with this call. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         activeflow_id:
           type: string
-          description: Activeflow ID
+          format: uuid
+          x-go-type: string
+          description: The activeflow ID associated with this call. Returned from the `POST /activeflows` or `GET /activeflows` response.
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         type:
+          description: The type of this call.
+          example: "flow"
           $ref: '#/components/schemas/CallManagerCallType'
         master_call_id:
           type: string
-          description: Master call ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the master call that initiated this call. Returned from the `POST /calls` or `GET /calls` response."
+          example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         chained_call_ids:
           type: array
           items:
             type: string
-          description: Chained call IDs
+            format: uuid
+            x-go-type: string
+          description: "Chained call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response."
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
         recording_id:
           type: string
-          description: Current recording ID
+          format: uuid
+          x-go-type: string
+          description: The current recording ID. Returned from the `GET /recordings` response.
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         recording_ids:
           type: array
           items:
             type: string
-          description: Recording IDs
+            format: uuid
+            x-go-type: string
+          description: "Recording IDs associated with this call. Each ID is returned from the `GET /recordings` response."
+          example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
         groupcall_id:
           type: string
-          description: Group call ID, indicates if this call is part of a group call
+          format: uuid
+          x-go-type: string
+          description: Group call ID. Returned from the `POST /groupcalls` or `GET /groupcalls` response. Indicates this call is part of a group call.
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         source:
+          description: Source address of the call.
           $ref: '#/components/schemas/CommonAddress'
         destination:
+          description: Destination address of the call.
           $ref: '#/components/schemas/CommonAddress'
         status:
+          description: Current status of the call.
+          example: "progressing"
           $ref: '#/components/schemas/CallManagerCallStatus'
         action:
+          description: The current action being executed on this call.
           $ref: '#/components/schemas/FlowManagerAction'
         direction:
+          description: Direction of the call.
+          example: "outgoing"
           $ref: '#/components/schemas/CallManagerCallDirection'
         mute_direction:
+          description: Current mute direction of the call.
+          example: "both"
           $ref: '#/components/schemas/CallManagerCallMuteDirection'
         hangup_by:
+          description: Indicates who hung up the call.
+          example: "remote"
           $ref: '#/components/schemas/CallManagerCallHangupBy'
         hangup_reason:
+          description: Reason the call was hung up.
+          example: "normal"
           $ref: '#/components/schemas/CallManagerCallHangupReason'
         tm_progressing:
           type: string
-          description: Timestamp for call progressing
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call progressing.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_ringing:
           type: string
-          description: Timestamp for call ringing
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call ringing.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_hangup:
           type: string
-          description: Timestamp for call hangup
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call hangup.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
-          description: Creation timestamp
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Update timestamp
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: Deletion timestamp
+          format: date-time
+          x-go-type: string
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
 
     CallManagerGroupcallAnswerMethod:
       type: string
       description: Method to handle answered calls
+      example: "hangup_others"
       enum:
         - ""
         - hangup_others
@@ -725,6 +907,7 @@ components:
     CallManagerGroupcallRingMethod:
       type: string
       description: Method used for dialing
+      example: "ring_all"
       enum:
         - ""
         - ring_all
@@ -736,6 +919,7 @@ components:
     CallManagerGroupcallStatus:
       type: string
       description: Current status of the call or group call
+      example: "progressing"
       enum:
         - progressing
         - hangingup
@@ -750,82 +934,133 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the group call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this group call. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., agent, queue).
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`)."
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         status:
+          description: Current status of the group call.
+          example: "progressing"
           $ref: '#/components/schemas/CallManagerGroupcallStatus'
         flow_id:
           type: string
-          description: ID of the associated flow
+          format: uuid
+          x-go-type: string
+          description: The flow ID associated with this group call. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         source:
           $ref: '#/components/schemas/CommonAddress'
           nullable: true
-          description: Source address
+          description: Source address of the group call.
         destinations:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: List of destination addresses
+          minItems: 1
+          description: List of target addresses. Must contain at least one destination.
         master_call_id:
           type: string
+          format: uuid
+          x-go-type: string
           nullable: true
-          description: ID of the master call, if applicable
+          description: "The unique identifier of the master call that initiated this group call. Returned from the `POST /calls` or `GET /calls` response."
+          example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         master_groupcall_id:
           type: string
+          format: uuid
+          x-go-type: string
           nullable: true
-          description: ID of the master group call, if applicable
+          description: "The unique identifier of the master group call, if applicable. Returned from the `POST /groupcalls` or `GET /groupcalls` response."
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         ring_method:
+          description: The method used for dialing destinations.
+          example: "ring_all"
           $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
         answer_method:
+          description: The method to handle answered calls.
+          example: "hangup_others"
           $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
         answer_call_id:
           type: string
-          description: ID of the answered call
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the answered call. Returned from the `POST /calls` or `GET /calls` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         call_ids:
           type: array
           items:
             type: string
-          description: List of associated call IDs
+            format: uuid
+            x-go-type: string
+          description: "List of associated call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response."
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
         answer_groupcall_id:
           type: string
-          description: ID of the answered group call
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the answered group call. Returned from the `POST /groupcalls` or `GET /groupcalls` response."
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         groupcall_ids:
           type: array
           items:
             type: string
-          description: List of associated group call IDs
+            format: uuid
+            x-go-type: string
+          description: "List of associated group call IDs. Each ID is returned from the `POST /groupcalls` or `GET /groupcalls` response."
+          example: ["5e6f7a8b-9c0d-1234-ef01-234567890123"]
         call_count:
           type: integer
-          description: Number of remaining calls in the current dial
+          description: Number of remaining calls in the current dial.
+          example: 2
         groupcall_count:
           type: integer
-          description: Number of remaining group calls in the current dial
+          description: Number of remaining group calls in the current dial.
+          example: 1
         dial_index:
           type: integer
           nullable: true
-          description: Current dial index, valid only when the ring method is "ring_all"
+          description: Current dial index, valid only when the ring method is "ring_all".
+          example: 0
         tm_create:
           type: string
-          description: Timestamp when the call was created
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Timestamp when the call was last updated
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           nullable: true
-          description: Timestamp when the call was deleted
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
 
     CallManagerRecordingFormat:
       type: string
       description: The format of the recording.
+      example: "wav"
       enum:
         - wav
       x-enum-varnames:
@@ -833,6 +1068,7 @@ components:
     CallManagerRecordingReferenceType:
       type: string
       description: Type of reference for the recording.
+      example: "call"
       enum:
         - call
         - confbridge
@@ -842,6 +1078,7 @@ components:
     CallManagerRecordingStatus:
       type: string
       description: The status of the recording.
+      example: "recording"
       enum:
         - initiating
         - recording
@@ -857,49 +1094,86 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the recording.
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this recording. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., call, confbridge).
+          example: "call"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /conferences`)."
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         reference_type:
           description: The type of reference, either a "call" or a "confbridge".
+          example: "call"
           $ref: '#/components/schemas/CallManagerRecordingReferenceType'
         reference_id:
           type: string
-          description: The UUID of the reference.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
-          $ref: '#/components/schemas/CallManagerRecordingStatus'
           description: The status of the recording.
+          example: "recording"
+          $ref: '#/components/schemas/CallManagerRecordingStatus'
         format:
-          $ref: '#/components/schemas/CallManagerRecordingFormat'
           description: The format of the recording file (e.g., WAV).
+          example: "wav"
+          $ref: '#/components/schemas/CallManagerRecordingFormat'
         activeflow_id:
           type: string
-          description: Activeflow ID associated with this recording.
+          format: uuid
+          x-go-type: string
+          description: The activeflow ID associated with this recording. Returned from the `POST /activeflows` or `GET /activeflows` response.
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         on_end_flow_id:
           type: string
-          description: Flow ID to be executed when recording ends.
+          format: uuid
+          x-go-type: string
+          description: Flow ID to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         tm_start:
           type: string
+          format: date-time
+          x-go-type: string
           description: The start timestamp of the recording.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: The end timestamp of the recording.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
-          description: The creation timestamp of the recording.
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: The last update timestamp of the recording.
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: The timestamp when the recording was deleted.
+          format: date-time
+          x-go-type: string
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -908,6 +1182,7 @@ components:
     CampaignManagerCampaignEndHandle:
       type: string
       description: Behavior of the campaign after outdial has no more targets.
+      example: "stop"
       enum:
         - stop
         - continue
@@ -917,6 +1192,7 @@ components:
     CampaignManagerCampaignExecute:
       type: string
       description: Execution action for the campaign.
+      example: "run"
       enum:
         - run
         - stop
@@ -926,6 +1202,7 @@ components:
     CampaignManagerCampaignStatus:
       type: string
       description: Status of the campaign.
+      example: "run"
       enum:
         - stop
         - stopping
@@ -937,6 +1214,7 @@ components:
     CampaignManagerCampaignType:
       type: string
       description: Type of campaign.
+      example: "call"
       enum:
         - call
         - flow
@@ -948,41 +1226,92 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/CampaignManagerCampaignType'
+          description: The type of campaign.
+          example: "call"
         name:
           type: string
+          description: Display name of the campaign.
+          example: "Q1 Outbound Campaign"
         detail:
           type: string
+          description: Additional details about the campaign.
+          example: "Quarterly customer outreach campaign"
         status:
           $ref: '#/components/schemas/CampaignManagerCampaignStatus'
+          description: Current status of the campaign.
+          example: "run"
         service_level:
           type: integer
+          description: Target service level percentage.
+          example: 80
         end_handle:
           $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+          description: Behavior when outdial has no more targets.
+          example: "stop"
         actions:
           type: array
           items:
             $ref: '#/components/schemas/FlowManagerAction'
+          description: Ordered list of actions to execute for each campaign call.
         outplan_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the outplan. Returned from the `POST /outplans` or `GET /outplans` response."
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
         outdial_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response."
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         queue_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
+          example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
         next_campaign_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the next campaign to execute after this one completes. Returned from the `POST /campaigns` or `GET /campaigns` response."
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     CampaignManagerCampaigncallReferenceType:
       type: string
+      description: Type of reference for the campaign call.
+      example: "call"
       enum:
         - none
         - call
@@ -993,6 +1322,8 @@ components:
         - CampaignManagerCampaigncallReferenceTypeFlow
     CampaignManagerCampaigncallResult:
       type: string
+      description: Result of the campaign call attempt.
+      example: "success"
       enum:
         - ""
         - success
@@ -1003,6 +1334,8 @@ components:
         - CampaignManagerCampaigncallResultFail
     CampaignManagerCampaigncallStatus:
       type: string
+      description: Status of the campaign call.
+      example: "progressing"
       enum:
         - dialing
         - progressing
@@ -1016,107 +1349,181 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier of the campaign call.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Identifier of the customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         campaign_id:
           type: string
-          description: Identifier of the campaign.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response."
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         outplan_id:
           type: string
-          description: Identifier of the outbound plan.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the outbound plan. Returned from the `POST /outplans` or `GET /outplans` response."
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
         outdial_id:
           type: string
-          description: Identifier of the outbound dial.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the outbound dial. Returned from the `POST /outdials` or `GET /outdials` response."
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         outdial_target_id:
           type: string
-          description: Identifier of the outbound dial target.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the outbound dial target. Returned from the `GET /outdials/{id}/targets` response."
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         queue_id:
           type: string
-          description: Identifier of the queue.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
+          example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
         activeflow_id:
           type: string
-          description: Identifier of the activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         flow_id:
           type: string
-          description: Identifier of the flow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow. Returned from the `POST /flows` or `GET /flows` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         reference_type:
           $ref: '#/components/schemas/CampaignManagerCampaigncallReferenceType'
+          description: Type of reference for the campaign call.
+          example: "call"
         reference_id:
           type: string
-          description: Identifier of the reference.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/CampaignManagerCampaigncallStatus'
+          description: Status of the campaign call.
+          example: "progressing"
         result:
           $ref: '#/components/schemas/CampaignManagerCampaigncallResult'
+          description: Result of the campaign call attempt.
+          example: "success"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address of the campaign call.
         destination:
           $ref: '#/components/schemas/CommonAddress'
+          description: Destination address of the campaign call.
         destination_index:
           type: integer
-          description: Index of the destination.
+          description: Index of the current destination being dialed.
+          example: 0
         try_count:
           type: integer
-          description: Number of dialing attempts.
+          description: Number of dialing attempts made.
+          example: 2
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     CampaignManagerOutplan:
       type: object
       properties:
         id:
           type: string
-          description: Unique identifier of the outplan.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outplan.
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
         customer_id:
           type: string
-          description: Identifier of the customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
           description: Name of the outplan.
+          example: "Standard Outbound Plan"
         detail:
           type: string
           description: Detailed information about the outplan.
+          example: "Default outbound dialing plan for campaigns"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address for outbound calls.
         dial_timeout:
           type: integer
           description: Dial timeout in milliseconds.
+          example: 30000
         try_interval:
           type: integer
           description: Interval between dialing attempts in milliseconds.
+          example: 60000
         max_try_count_0:
           type: integer
           description: Maximum number of tries for level 0.
+          example: 3
         max_try_count_1:
           type: integer
           description: Maximum number of tries for level 1.
+          example: 2
         max_try_count_2:
           type: integer
           description: Maximum number of tries for level 2.
+          example: 1
         max_try_count_3:
           type: integer
           description: Maximum number of tries for level 3.
+          example: 1
         max_try_count_4:
           type: integer
           description: Maximum number of tries for level 4.
+          example: 1
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1125,6 +1532,7 @@ components:
     AIManagerAIEngineType:
       type: string
       description: Type of engine used by the ai.
+      example: "chatGPT"
       enum:
         - chatGPT
         - dialogflow
@@ -1137,6 +1545,7 @@ components:
     AIManagerAIEngineModel:
       type: string
       description: Model of the ai engine.
+      example: "gpt-4o"
       enum:
         - o1-mini
         - o1-preview
@@ -1165,57 +1574,85 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier of the ai.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the AI.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
-          description: Name of the ai.
+          description: Name of the AI.
+          example: "Customer Support Bot"
         detail:
           type: string
-          description: Detailed information about the ai.
+          description: Detailed information about the AI.
+          example: "AI assistant for handling customer inquiries"
         engine_type:
           $ref: '#/components/schemas/AIManagerAIEngineType'
+          description: Type of AI engine.
+          example: "chatGPT"
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
+          description: Model of the AI engine.
+          example: "gpt-4o"
         engine_data:
           type: object
           additionalProperties: true
-          description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+          description: Custom key-value configuration data specific to the AI engine type.
         engine_key:
           type: string
-          description: API key or authentication key for the ai engine.
+          description: API key or authentication key for the AI engine. Write-only; not returned in responses.
+          example: "sk-...redacted..."
         init_prompt:
           type: string
-          description: Initial prompt to configure the ai's behavior.
+          description: Initial prompt to configure the AI's behavior.
+          example: "You are a helpful customer support assistant."
         tts_type:
           type: string
-          description: Text-to-speech type used by the ai.
+          description: Text-to-speech provider type.
+          example: "google"
         tts_voice_id:
           type: string
-          description: Identifier for the text-to-speech voice.
+          description: Text-to-speech voice identifier.
+          example: "en-US-Neural2-F"
         stt_type:
           type: string
-          description: Speech-to-text type used by the ai.
+          description: Speech-to-text provider type.
+          example: "google"
         tool_names:
           type: array
           items:
             type: string
           description: List of tool names enabled for this AI. Use ["all"] to enable all available tools.
+          example: ["all"]
         tm_create:
           type: string
-          description: Timestamp when the ai was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Timestamp when the ai was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: Timestamp when the ai was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerAIcallGender:
       type: string
       description: Gender associated with the ai call.
+      example: "female"
       enum:
         - male
         - female
@@ -1228,6 +1665,7 @@ components:
     AIManagerAIcallReferenceType:
       type: string
       description: Type of reference associated with the ai call.
+      example: "call"
       enum:
         - ""
         - call
@@ -1238,6 +1676,7 @@ components:
     AIManagerAIcallStatus:
       type: string
       description: Status of the ai call.
+      example: "progressing"
       enum:
         - initiating
         - progressing
@@ -1252,54 +1691,99 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the ai call.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the AI call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         ai_id:
           type: string
-          description: Unique identifier of the associated ai.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         engine_type:
           $ref: '#/components/schemas/AIManagerAIEngineType'
+          description: Type of AI engine.
+          example: "chatGPT"
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
+          description: Model of the AI engine.
+          example: "gpt-4o"
         activeflow_id:
           type: string
-          description: Unique identifier for the activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         reference_type:
           $ref: '#/components/schemas/AIManagerAIcallReferenceType'
+          description: Type of reference associated with the AI call.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier for the reference.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         confbridge_id:
           type: string
-          description: Unique identifier for the conference bridge.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conference bridge. Returned from the `GET /conferences` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         transcribe_id:
           type: string
-          description: Unique identifier for the transcription service.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transcription service. Returned from the `GET /transcribes` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/AIManagerAIcallStatus'
+          description: Status of the AI call.
+          example: "progressing"
         gender:
           $ref: '#/components/schemas/AIManagerAIcallGender'
+          description: Gender associated with the AI call.
+          example: "female"
         language:
           type: string
-          description: Language used during the ai call.
+          description: Language used during the AI call.
+          example: "en-US"
         tm_end:
           type: string
-          description: Timestamp when the ai call ended.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call ended.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
-          description: Timestamp when the ai call was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Timestamp when the ai call was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: Timestamp when the ai call was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerMessageDirection:
       type: string
       description: Direction of the message.
+      example: "incoming"
       enum:
         - incoming
         - outgoing
@@ -1310,6 +1794,7 @@ components:
     AIManagerMessageRole:
       type: string
       description: Role of the entity in the conversation.
+      example: "assistant"
       enum:
         - system
         - user
@@ -1328,28 +1813,45 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         aicall_id:
           type: string
-          description: Unique identifier for the associated ai call.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated AI call. Returned from the `GET /aicalls` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         direction:
           $ref: '#/components/schemas/AIManagerMessageDirection'
           description: Direction of the message.
+          example: "incoming"
         role:
           $ref: '#/components/schemas/AIManagerMessageRole'
           description: Role of the entity in the conversation.
+          example: "assistant"
         content:
           type: string
           description: Content of the message.
+          example: "Hello, how can I help you today?"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerSummaryReferenceType:
       type: string
+      description: Type of reference for the AI summary.
+      example: "call"
       enum:
         - ""
         - "call"
@@ -1365,6 +1867,8 @@ components:
 
     AIManagerSummaryStatus:
       type: string
+      description: Status of the AI summary generation.
+      example: "progressing"
       enum:
         - ""
         - "progressing"
@@ -1379,38 +1883,68 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the summary.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         activeflow_id:
           type: string
-          description: Unique identifier for the activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         on_end_flow_id:
           type: string
-          description: Unique identifier for the on end flow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow to execute when the summary completes. Returned from the `POST /flows` or `GET /flows` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         reference_type:
           $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+          description: Type of reference for the AI summary.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier for the reference.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/AIManagerSummaryStatus'
+          description: Status of the AI summary generation.
+          example: "progressing"
         language:
           type: string
-          description: Language used during the ai call.
+          description: Language used for the AI summary.
+          example: "en-US"
         content:
           type: string
-          description: Content of the message.
+          description: Content of the summary.
+          example: "The customer called to inquire about their account balance and was assisted by the support agent."
         tm_create:
           type: string
-          description: Timestamp when the message was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Timestamp when the message was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: Timestamp when the message was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1423,6 +1957,7 @@ components:
         type:
           type: string
           description: Type of address.
+          example: "tel"
           enum:
             - ""
             - agent
@@ -1443,23 +1978,27 @@ components:
             - CommonAddressTypeTel
         target:
           type: string
-          description: Address endpoint.
+          description: "The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip."
+          example: "+14155551234"
         target_name:
           type: string
           description: Address's name.
+          example: "John Smith"
         name:
           type: string
-          description: Name.
+          description: "Optional label for this address."
+          example: "Main Office"
         detail:
           type: string
-          description: Detail description.
+          description: "Additional notes about this address."
+          example: "Primary contact number"
 
     CommonPagination:
       type: object
       properties:
         next_page_token:
           type: string
-          description: The token for next pagination.
+          description: "Cursor token for the next page of results. Pass this value as the page_token parameter in the next request."
 
 
 #########################################
@@ -1468,6 +2007,7 @@ components:
     ConferenceManagerConferenceStatus:
       type: string
       description: Status of the conference.
+      example: "progressing"
       enum:
         - starting
         - progressing
@@ -1481,6 +2021,7 @@ components:
     ConferenceManagerConferenceType:
       type: string
       description: Types of conferences.
+      example: "conference"
       enum:
         - ""
         - conference
@@ -1496,71 +2037,118 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the conference.
+          example: "8b9c0d1e-2f3a-4567-0123-456789abcdef"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConferenceManagerConferenceType'
+          description: The type of conference.
+          example: "conference"
         status:
           $ref: '#/components/schemas/ConferenceManagerConferenceStatus'
+          description: Current status of the conference.
+          example: "progressing"
         name:
           type: string
           description: Name of the conference.
+          example: "Team Standup"
         detail:
           type: string
           description: Detailed information about the conference.
+          example: "Daily team standup meeting"
         data:
           type: object
-          description: Custom data associated with the conference.
+          description: "Custom key-value data associated with the conference."
           additionalProperties: true
         timeout:
           type: integer
           description: Timeout for the conference in seconds.
           format: int32
+          example: 3600
         pre_flow_id:
           type: string
-          description: ID of the pre-flow to execute before the conference starts.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow to execute before the conference starts. Returned from the `POST /flows` or `GET /flows` response."
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         post_flow_id:
           type: string
-          description: ID of the post-flow to execute after the conference ends.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow to execute after the conference ends. Returned from the `POST /flows` or `GET /flows` response."
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         conferencecall_ids:
           type: array
-          description: List of associated conference call IDs.
+          description: "List of associated conference call IDs. Each ID is returned from the `GET /conferencecalls` response."
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         recording_id:
           type: string
-          description: ID of the main recording associated with the conference.
+          format: uuid
+          x-go-type: string
+          description: "ID of the main recording associated with the conference. Returned from the `GET /recordings` response."
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         recording_ids:
           type: array
-          description: List of associated recording IDs.
+          description: "List of associated recording IDs. Each ID is returned from the `GET /recordings` response."
+          example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         transcribe_id:
           type: string
-          description: ID of the main transcription associated with the conference.
+          format: uuid
+          x-go-type: string
+          description: "ID of the main transcription associated with the conference. Returned from the `GET /transcribes` response."
+          example: "9c0d1e2f-3a4b-5678-1234-567890abcdef"
         transcribe_ids:
           type: array
-          description: List of associated transcription IDs.
+          description: "List of associated transcription IDs. Each ID is returned from the `GET /transcribes` response."
+          example: ["9c0d1e2f-3a4b-5678-1234-567890abcdef"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         tm_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference ended.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConferenceManagerConferencecallReferenceType:
       type: string
       description: Type of the reference associated with the conference call.
+      example: "call"
       enum:
         - call
       x-enum-varnames:
@@ -1568,6 +2156,7 @@ components:
     ConferenceManagerConferencecallStatus:
       type: string
       description: Status of the conference call.
+      example: "joined"
       enum:
         - joining
         - joined
@@ -1583,32 +2172,60 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the conference call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         activeflow_id:
           type: string
-          description: Activeflow ID associated with this conference call.
+          format: uuid
+          x-go-type: string
+          description: "Activeflow ID associated with this conference call. Returned from the `POST /activeflows` or `GET /activeflows` response."
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         conference_id:
           type: string
-          description: Unique identifier of the associated conference.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated conference. Returned from the `GET /conferences` response."
+          example: "8b9c0d1e-2f3a-4567-0123-456789abcdef"
         reference_type:
           $ref: '#/components/schemas/ConferenceManagerConferencecallReferenceType'
+          description: Type of the reference associated with the conference call.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier of the reference (e.g., call ID).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
           $ref: '#/components/schemas/ConferenceManagerConferencecallStatus'
+          description: Current status of the conference call.
+          example: "joined"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1621,30 +2238,40 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the contact.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
           format: uuid
           description: Unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         first_name:
           type: string
           description: First name of the contact.
+          example: "John"
         last_name:
           type: string
           description: Last name of the contact.
+          example: "Smith"
         display_name:
           type: string
           description: Display name of the contact.
+          example: "John Smith"
         company:
           type: string
           description: Company name associated with the contact.
+          example: "Acme Corporation"
         job_title:
           type: string
           description: Job title of the contact.
+          example: "Software Engineer"
         source:
           $ref: '#/components/schemas/ContactManagerContactSource'
+          description: Source of the contact.
+          example: "manual"
         external_id:
           type: string
           description: External identifier for the contact.
+          example: "CRM-12345"
         phone_numbers:
           type: array
           description: List of phone numbers associated with the contact.
@@ -1658,6 +2285,7 @@ components:
         tag_ids:
           type: array
           description: List of tag IDs associated with the contact.
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
           items:
             type: string
             format: uuid
@@ -1665,18 +2293,22 @@ components:
           type: string
           format: date-time
           description: Timestamp when the contact was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           description: Timestamp when the contact was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           description: Timestamp when the contact was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerContactSource:
       type: string
       description: Source of the contact.
+      example: "manual"
       enum:
         - manual
         - import
@@ -1695,23 +2327,30 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the email address.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         address:
           type: string
           format: email
           description: Email address.
+          example: "john.smith@acme.com"
         type:
           $ref: '#/components/schemas/ContactManagerEmailType'
+          description: Type of the email address.
+          example: "work"
         is_primary:
           type: boolean
           description: Indicates if this is the primary email address.
+          example: true
         tm_create:
           type: string
           format: date-time
           description: Timestamp when the email was created.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerEmailType:
       type: string
       description: Type of the email address.
+      example: "work"
       enum:
         - work
         - personal
@@ -1728,25 +2367,33 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the phone number.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         number:
           type: string
           description: Phone number as entered.
+          example: "+14155551234"
         number_e164:
           type: string
           description: Phone number in E.164 format.
+          example: "+14155551234"
         type:
           $ref: '#/components/schemas/ContactManagerPhoneNumberType'
+          description: Type of the phone number.
+          example: "mobile"
         is_primary:
           type: boolean
           description: Indicates if this is the primary phone number.
+          example: true
         tm_create:
           type: string
           format: date-time
           description: Timestamp when the phone number was created.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerPhoneNumberType:
       type: string
       description: Type of the phone number.
+      example: "mobile"
       enum:
         - mobile
         - work
@@ -1767,6 +2414,7 @@ components:
     ConversationManagerAccountType:
       type: string
       description: Type of the account.
+      example: "sms"
       enum:
         - line
         - sms
@@ -1778,37 +2426,59 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the account.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation account.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConversationManagerAccountType'
+          description: Type of messaging platform.
+          example: "sms"
         name:
           type: string
           description: Name of the account.
+          example: "Main SMS Account"
         detail:
           type: string
           description: Detailed information about the account.
+          example: "Primary SMS messaging account"
         secret:
           type: string
-          description: Secret associated with the account.
+          description: Webhook secret for signature verification. Write-only.
+          example: "whsec_...redacted..."
         token:
           type: string
-          description: Token, usually an API token, associated with the account.
+          description: API token for the messaging platform. Write-only.
+          example: "xoxb_...redacted..."
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerConversationReferenceType:
       type: string
       description: Type of the reference for the conversation.
+      example: "message"
       enum:
         - ""
         - message
@@ -1822,28 +2492,50 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the conversation.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
+          description: Type of the conversation owner.
+          example: "agent"
         owner_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conversation owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         account_id:
           type: string
-          description: Unique identifier of the associated account.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conversation account. Returned from the `GET /conversation_accounts` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         name:
           type: string
           description: Name of the conversation.
+          example: "Customer Support Chat"
         detail:
           type: string
           description: Detailed information about the conversation.
+          example: "Support conversation with customer"
         reference_type:
           $ref: '#/components/schemas/ConversationManagerConversationReferenceType'
+          description: Type of the reference for the conversation.
+          example: "message"
         reference_id:
           type: string
-          description: Unique identifier for the reference (e.g., message ID, line ID).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           description: The source address for the conversation.
           $ref: '#/components/schemas/CommonAddress'
@@ -1854,17 +2546,27 @@ components:
             $ref: '#/components/schemas/CommonAddress'
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerMediaType:
       type: string
       description: Type of the media.
+      example: "image"
       enum:
         - image
         - video
@@ -1890,28 +2592,47 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the media.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the media.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConversationManagerMediaType'
+          description: Type of the media content.
+          example: "image"
         filename:
           type: string
           description: Filename of the media.
+          example: "photo_2026-01-15.jpg"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerMessageDirection:
       type: string
       description: Direction of the message (incoming or outgoing).
+      example: "incoming"
       enum:
         - outgoing
         - incoming
@@ -1921,6 +2642,7 @@ components:
     ConversationManagerMessageReferenceType:
       type: string
       description: Type of reference associated with the message (e.g., call, campaign).
+      example: "call"
       enum:
         - none
         - call
@@ -1932,6 +2654,7 @@ components:
     ConversationManagerMessageStatus:
       type: string
       description: Status of the message.
+      example: "sent"
       enum:
         - sending
         - sent
@@ -1947,27 +2670,47 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         conversation_id:
           type: string
-          description: Unique identifier of the conversation.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conversation. Returned from the `GET /conversations` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         direction:
           $ref: '#/components/schemas/ConversationManagerMessageDirection'
+          description: Direction of the message.
+          example: "incoming"
         status:
           $ref: '#/components/schemas/ConversationManagerMessageStatus'
+          description: Current delivery status of the message.
+          example: "sent"
         reference_type:
           $ref: '#/components/schemas/ConversationManagerMessageReferenceType'
+          description: Type of reference associated with the message.
+          example: "call"
         reference_id:
           type: string
-          description: The reference ID for the message (e.g., related call ID).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address of the message.
         text:
           type: string
           description: The message content.
+          example: "Hello, how can I help you today?"
         medias:
           type: array
           items:
@@ -1975,13 +2718,22 @@ components:
           description: List of media associated with the message.
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1992,26 +2744,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the access key.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: Name of the access key.
+          example: "Production API Key"
         detail:
           type: string
+          description: Additional details about the access key.
+          example: "API key for production environment"
         token:
           type: string
+          description: The access key token. Only returned once at creation time.
+          example: "ak_live_...redacted..."
         tm_expire:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key expires.
+          example: "2027-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     CustomerManagerCustomerWebhookMethod:
       type: string
       description: The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+      example: "POST"
       enum:
         - ""
         - POST
@@ -2027,6 +2810,7 @@ components:
     CustomerManagerCustomerStatus:
       type: string
       description: Account lifecycle status.
+      example: "active"
       enum:
         - active
         - frozen
@@ -2040,49 +2824,78 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
           description: Name of the customer.
+          example: "Acme Corporation"
         detail:
           type: string
           description: Details about the customer.
+          example: "Enterprise customer account"
         email:
           type: string
+          format: email
+          x-go-type: string
           description: Email address of the customer.
+          example: "admin@acme.com"
         phone_number:
           type: string
-          description: Phone number of the customer.
+          description: "Customer's contact phone number in E.164 format."
+          example: "+14155551234"
         address:
           type: string
           description: Address of the customer.
+          example: "123 Main St, San Francisco, CA 94105"
         webhook_method:
           $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
           description: Webhook method used by the customer.
+          example: "POST"
         webhook_uri:
           type: string
-          description: URI for the customer's webhook.
+          description: URI where webhook events are delivered.
+          example: "https://api.acme.com/webhooks/voipbin"
         billing_account_id:
           type: string
-          description: The ID of the customer's default billing account.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response."
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         email_verified:
           type: boolean
           description: Whether the customer's email has been verified.
+          example: true
         status:
           $ref: '#/components/schemas/CustomerManagerCustomerStatus'
           description: Account lifecycle status.
+          example: "active"
         tm_deletion_scheduled:
           type: string
-          description: When account deletion was requested (null if not scheduled).
+          format: date-time
+          x-go-type: string
+          description: Timestamp when account deletion was requested. Null if not scheduled.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 #########################################
 # Email Manager
@@ -2090,6 +2903,7 @@ components:
     EmailManagerEmailAttachmentReferenceType:
       type: string
       description: Type of the action.
+      example: "recording"
       enum:
         - ""
         - recording
@@ -2100,6 +2914,7 @@ components:
     EmailManagerEmailStatus:
       type: string
       description: Email status.
+      example: "delivered"
       enum:
         - ""
         - initiated
@@ -2132,9 +2947,13 @@ components:
         reference_type:
           description: Type of the reference.
           $ref: '#/components/schemas/EmailManagerEmailAttachmentReferenceType'
+          example: "recording"
         reference_id:
           type: string
-          description: The identifier of the next item
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (e.g., recording ID). Returned from the corresponding resource endpoint."
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
       required:
         - reference_type
         - reference_id
@@ -2144,30 +2963,43 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the email.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the email.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: ID of the customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         activeflow_id:
           type: string
-          description: ID of the associated activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the activeflow. Returned from the `POST /activeflows` or `GET /activeflows` response."
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         source:
           $ref: '#/components/schemas/CommonAddress'
-          description: The source address of the message.
+          description: The source address of the email.
         destinations:
           type: array
+          minItems: 1
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: List of destination addresses
+          description: List of destination addresses. Must contain at least one destination.
         status:
           $ref: '#/components/schemas/EmailManagerEmailStatus'
-          description: The source address of the message.
+          description: Current delivery status of the email.
+          example: "delivered"
         subject:
           type: string
           description: The subject of the email.
+          example: "Your Call Recording is Ready"
         content:
           type: string
           description: The content of the email.
+          example: "Please find your call recording attached."
         attachments:
           type: array
           items:
@@ -2175,13 +3007,22 @@ components:
           description: List of attachments
         tm_create:
           type: string
-          description: Timestamp when the flow was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: Timestamp when the flow was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
-          description: Timestamp when the flow was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
       required:
         - id
         - customer_id
@@ -2201,6 +3042,7 @@ components:
     FlowManagerActionType:
       type: string
       description: Type of the action.
+      example: "talk"
       enum:
         - ai_talk
         - ai_summary
@@ -2289,46 +3131,66 @@ components:
       properties:
         on_end_flow_id:
           type: string
-          description: The unique identifier for the flow to be executed on end.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute when AI summary completes. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         reference_type:
           $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+          example: "call"
         reference_id:
           type: string
-          description: The identifier of the reference object
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         language:
           type: string
-          description: Additional options
+          description: BCP47 language code for the summary.
+          example: "en-US"
 
     FlowManagerActionOptionAITalk:
       type: object
       properties:
         ai_id:
           type: string
-          description: The unique identifier for the flow to be executed on end.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the AI configuration to use. Returned from the `POST /ais` or `GET /ais` response.
+          example: "6f7a8b9c-0d1e-2345-f012-345678901234"
         resume:
           type: boolean
-          description: Whether to resume the AI talk.
+          description: Whether to resume a previous AI conversation.
+          example: false
         gender:
           $ref: '#/components/schemas/AIManagerAIcallGender'
+          description: Voice gender for the AI.
+          example: "female"
         language:
           type: string
+          description: BCP47 language code (e.g., en-US).
+          example: "en-US"
         duration:
           type: integer
+          description: Maximum duration of the AI talk session in seconds.
+          example: 300
 
     FlowManagerActionOptionAMD:
       type: object
       properties:
         machine_handle:
           type: string
-          enum: 
+          enum:
             - hangup
             - continue
           x-enum-varnames:
             - FlowManagerActionOptionAMDMachineHandleHangup
             - FlowManagerActionOptionAMDMachineHandleContinue
+          example: "hangup"
         async:
           type: boolean
           description: If false, the call flow will pause until AMD is complete.
+          example: false
 
     FlowManagerActionOptionAnswer:
       type: object
@@ -2344,83 +3206,112 @@ components:
         variable:
           type: string
           description: Variable name to evaluate for branching.
+          example: "call_digits"
         default_target_id:
           type: string
-          description: Default target ID if input does not match any branch targets.
+          format: uuid
+          x-go-type: string
+          description: "Default target ID if input does not match any branch targets. References an action `id` within the same flow's `actions` array."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         target_ids:
           type: object
           additionalProperties:
             type: string
-          description: Mapping of input values to target IDs.
+          description: Mapping of input values to target action IDs.
 
     FlowManagerActionOptionCall:
       type: object
       properties:
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address for the outbound call.
         destinations:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
+          minItems: 1
+          description: List of destination addresses. Must contain at least one destination.
         flow_id:
           type: string
-          description: Identifier for the flow to be executed.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute on the created call. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         actions:
           type: array
           items:
             $ref: '#/components/schemas/FlowManagerAction'
+          description: Inline actions to execute on the created call.
         chained:
           type: boolean
           description: If true, created calls will hang up when the master call hangs up.
+          example: true
         early_execution:
           type: boolean
           description: If true, the created call executes the flow before call answer.
+          example: false
 
     FlowManagerActionOptionConfbridgeJoin:
       type: object
       properties:
         confbridge_id:
           type: string
-          description: Identifier for the conference bridge to join.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conference bridge to join. Returned from the `POST /conferences` or `GET /conferences` response."
+          example: "0d1e2f3a-4b5c-6789-2345-678901abcdef"
 
     FlowManagerActionOptionConferenceJoin:
       type: object
       properties:
         conference_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conference to join. Returned from the `GET /conferences` response.
+          example: "8b9c0d1e-2f3a-4567-0123-456789abcdef"
 
     FlowManagerActionOptionConnect:
       type: object
       properties:
         source:
           $ref: '#/components/schemas/CommonAddress'
-          description: Source address.
+          description: Source address for the outbound connection.
         destinations:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: Target destination addresses.
+          minItems: 1
+          description: List of destination addresses. Must contain at least one destination.
         early_media:
           type: boolean
           description: |
             If true, the call will get early media from the destination.
+          example: false
         relay_reason:
           type: boolean
           description: |
             If true, the master call will try to hang up with the same reason as the first destination call.
             Valid only if the first destination call hangs up earlier than the master call.
+          example: true
 
     FlowManagerActionOptionConversationSend:
       type: object
       properties:
         conversation_id:
           type: string
-          description: Conversation's ID.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation. Returned from the `GET /conversations` response.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         text:
           type: string
           description: Message text.
+          example: "Your verification code is 1234."
         sync:
           type: boolean
+          description: Whether to wait for delivery confirmation.
+          example: false
 
     FlowManagerActionOptionDigitsReceive:
       type: object
@@ -2428,16 +3319,19 @@ components:
         duration:
           type: integer
           description: DTMF receiving duration in milliseconds.
+          example: 10000
         key:
           type: string
           description: |
             If set, determines which DTMF key triggers the next step.
             The end key is not included in the resulting variable.
             If not set, no key will trigger the next step.
+          example: "#"
         length:
           type: integer
           description: |
             An optional limit to the number of DTMF events that should be gathered before continuing.
+          example: 4
 
     FlowManagerActionOptionDigitsSend:
       type: object
@@ -2448,23 +3342,27 @@ components:
           pattern: "^[0-9ABCD#*]*$"
           description: |
             Keys to send. Allowed characters: 0-9, A-D, #, *. Max 100 keys.
+          example: "1234#"
         duration:
           type: integer
           minimum: 100
           maximum: 1000
           description: Duration per DTMF tone (ms).
+          example: 250
         interval:
           type: integer
           minimum: 0
           maximum: 5000
           description: Interval between keys (ms).
+          example: 100
 
     FlowManagerActionOptionEcho:
       type: object
       properties:
         duration:
           type: integer
-
+          description: Duration of the echo in milliseconds.
+          example: 30000
 
     FlowManagerActionOptionEmailSend:
       type: object
@@ -2473,14 +3371,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
+          minItems: 1
+          description: List of email destination addresses. Must contain at least one.
         subject:
           type: string
+          description: Subject line of the email.
+          example: "Meeting Recording"
         content:
           type: string
+          description: Body content of the email.
+          example: "Your recording is attached."
         attachments:
           type: array
           items:
             $ref: '#/components/schemas/EmailManagerEmailAttachment'
+          description: List of attachments to include.
 
     FlowManagerActionOptionExternalMediaStart:
       type: object
@@ -2488,23 +3393,31 @@ components:
         external_host:
           type: string
           description: External media target host address.
+          example: "media.example.com:10000"
         encapsulation:
           type: string
           description: Encapsulation. Default value is rtp.
+          example: "rtp"
         transport:
           type: string
           description: Transport. Default value is udp.
+          example: "udp"
         connection_type:
           type: string
           description: Connection type. Default value is client.
+          example: "client"
         format:
           type: string
           description: Format. Default value is ulaw.
+          example: "ulaw"
         direction:
           type: string
           description: Direction. Default value is both.
+          example: "both"
         data:
           type: string
+          description: Optional data to pass to the external media endpoint.
+          example: ""
 
     FlowManagerActionOptionExternalMediaStop:
       type: object
@@ -2515,24 +3428,36 @@ components:
       properties:
         event_url:
           type: string
+          description: URL to fetch flow actions from.
+          example: "https://api.example.com/webhooks/flow-event"
         event_method:
           type: string
+          description: HTTP method for the fetch request.
+          example: "POST"
 
     FlowManagerActionOptionFetchFlow:
       type: object
       properties:
         flow_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to fetch and execute. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     FlowManagerActionOptionGoto:
       type: object
       properties:
         target_id:
           type: string
-          description: Target's action ID in the flow array to go to.
+          format: uuid
+          x-go-type: string
+          description: "The action ID within the flow to jump to. References an action `id` within the same flow's `actions` array."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         loop_count:
           type: integer
           description: Loop count.
+          example: 3
 
     FlowManagerActionOptionHangup:
       type: object
@@ -2540,11 +3465,13 @@ components:
         reason:
           type: string
           description: Hangup reason code. See cmcall.HangupReason for details.
+          example: "normal"
         reference_id:
           type: string
-          description: |
-            If set, hangs up the call with the same reason as the referenced call ID.
-            This will overwrite the `reason` option.
+          format: uuid
+          x-go-type: string
+          description: "If set, hangs up the call with the same reason as the referenced call ID. This will overwrite the `reason` option. Returned from the `POST /calls` or `GET /calls` response."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
 
     FlowManagerActionOptionMessageSend:
       type: object
@@ -2552,15 +3479,17 @@ components:
         source:
           type: object
           $ref: '#/components/schemas/CommonAddress'
-          description: The source address for the message.
+          description: Source address for the outbound message.
         destinations:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: List of destination addresses for the message.
+          minItems: 1
+          description: List of destination addresses. Must contain at least one.
         text:
           type: string
           description: The text of the message to send.
+          example: "Your verification code is 1234."
 
     FlowManagerActionOptionPlay:
       type: object
@@ -2569,14 +3498,19 @@ components:
           type: array
           items:
             type: string
+          minItems: 1
           description: List of stream URLs for media playback.
+          example: ["https://media.voipbin.net/audio/greeting.wav"]
 
     FlowManagerActionOptionQueueJoin:
       type: object
       properties:
         queue_id:
           type: string
-          description: The ID of the queue to join.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the queue to join. Returned from the `POST /queues` or `GET /queues` response.
+          example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
 
     FlowManagerActionOptionRecordingStart:
       type: object
@@ -2584,21 +3518,29 @@ components:
         format:
           type: string
           description: Format to encode audio in. Supported values are wav, mp3, ogg.
+          example: "wav"
         end_of_silence:
           type: integer
           description: Maximum duration of silence, in seconds. 0 for no limit.
+          example: 5
         end_of_key:
           type: string
           description: DTMF input to terminate recording. Supported values are none, any, *, #.
+          example: "#"
         duration:
           type: integer
           description: Maximum duration of the recording, in seconds. 0 for no limit.
+          example: 300
         beep_start:
           type: boolean
           description: Play beep when recording begins.
+          example: true
         on_end_flow_id:
           type: string
-          description: Flow ID for the end of recording.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     FlowManagerActionOptionRecordingStop:
       type: object
@@ -2610,6 +3552,7 @@ components:
         duration:
           type: integer
           description: Sleep duration in milliseconds.
+          example: 5000
 
     FlowManagerActionOptionStreamEcho:
       type: object
@@ -2617,6 +3560,7 @@ components:
         duration:
           type: integer
           description: Duration of the stream echo.
+          example: 30000
 
     FlowManagerActionOptionTalk:
       type: object
@@ -2624,24 +3568,29 @@ components:
         text:
           type: string
           description: The text to read, either in SSML format or plain text.
+          example: "Welcome to VoIPBin. How can I help you?"
         gender:
           type: string
           description: Gender of the voice. Supported values are male, female, neutral.
+          example: "female"
         language:
           type: string
           description: IETF locale name (e.g., ko-KR, en-US).
+          example: "en-US"
         digits_handle:
           description: Defines the action when it receives digits.
           type: string
-          enum: 
+          enum:
             - ""
             - next
           x-enum-varnames:
             - FlowManagerActionOptionTalkDigitsHandleNone
             - FlowManagerActionOptionTalkDigitsHandleNext
+          example: ""
         async:
           type: boolean
           description: If true, the talk action will not block the flow execution.
+          example: false
 
     FlowManagerActionOptionTranscribeStart:
       type: object
@@ -2649,9 +3598,13 @@ components:
         language:
           type: string
           description: BCP47 format for the language (e.g., en-US).
+          example: "en-US"
         on_end_flow_id:
           type: string
-          description: Flow ID for the end of transcription.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute when transcription ends. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     FlowManagerActionOptionTranscribeStop:
       type: object
@@ -2663,9 +3616,13 @@ components:
         language:
           type: string
           description: BCP47 format for the language (e.g., en-US).
+          example: "en-US"
         on_end_flow_id:
           type: string
-          description: Flow ID for the end of transcription.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute when recording transcription ends. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     FlowManagerActionOptionVariableSet:
       type: object
@@ -2673,9 +3630,11 @@ components:
         key:
           type: string
           description: The key of the variable to set.
+          example: "caller_name"
         value:
           type: string
           description: The value of the variable to set.
+          example: "John Smith"
 
     FlowManagerActionOptionWebhookSend:
       type: object
@@ -2683,12 +3642,14 @@ components:
         sync:
           type: boolean
           description: Indicates whether the webhook is synchronous.
+          example: false
         uri:
           type: string
           description: The URI to which the webhook is sent.
+          example: "https://api.example.com/webhooks"
         method:
           type: string
-          enum: 
+          enum:
             - POST
             - GET
             - PUT
@@ -2699,12 +3660,15 @@ components:
             - FlowManagerActionOptionWebhookSendMethodPut
             - FlowManagerActionOptionWebhookSendMethodDelete
           description: The HTTP method to use for the webhook.
+          example: "POST"
         data_type:
           type: string
           description: The content type of the data being sent. Example `application/json`.
+          example: "application/json"
         data:
           type: string
           description: The data to send in the webhook.
+          example: "{}"
 
 
 
@@ -2720,13 +3684,20 @@ components:
       properties:
         id:
           type: string
-          description: The unique identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of this action within the flow.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         next_id:
           type: string
-          description: The identifier of the next item
+          format: uuid
+          x-go-type: string
+          description: "The identifier of the next action to execute. References an action `id` within the same flow's `actions` array. Null if this is the last action."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         type:
-          description: The type of the object
+          description: The type of action to execute.
           $ref: '#/components/schemas/FlowManagerActionType'
+          example: "talk"
         option:
           type: object
           additionalProperties: true
@@ -2765,11 +3736,14 @@ components:
             - For `FlowManagerActionTypeTranscribeStop`: see FlowManagerActionOptionTranscribeStop
             - For `FlowManagerActionTypeTranscribeRecording`: see FlowManagerActionOptionTranscribeRecording
             - For `FlowManagerActionTypeVariableSet`: see FlowManagerActionOptionVariableSet
-            - For `FlowManagerActionTypeWebhookSend`: see FlowManagerActionOptionWebhookSend        
+            - For `FlowManagerActionTypeWebhookSend`: see FlowManagerActionOptionWebhookSend
             - ...
         tm_execute:
           type: string
-          description: Timestamp or time to execute
+          format: date-time
+          x-go-type: string
+          description: Timestamp when this action was executed.
+          example: "2026-01-15T09:30:00.000000Z"
       required:
         - id
         - type
@@ -2777,6 +3751,7 @@ components:
     FlowManagerActiveflowStatus:
       type: string
       description: Status of the activeflow.
+      example: "running"
       enum:
         - ""
         - running
@@ -2789,6 +3764,7 @@ components:
     FlowManagerReferenceType:
       type: string
       description: Reference type of activeflow.
+      example: "call"
       enum:
         - ""
         - call
@@ -2803,31 +3779,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the activeflow.
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         customer_id:
           type: string
-          description: ID of the customer associated with the flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer associated with this activeflow. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         flow_id:
           type: string
-          description: ID of the flow definition.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow definition. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         status:
           $ref: '#/components/schemas/FlowManagerActiveflowStatus'
+          description: Current status of the activeflow.
+          example: "running"
         reference_type:
           $ref: '#/components/schemas/FlowManagerReferenceType'
+          description: The type of resource this activeflow is associated with.
+          example: "call"
         reference_id:
           type: string
-          description: ID of the reference object.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by `reference_type`. Returned from the corresponding resource endpoint."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         reference_activeflow_id:
           type: string
-          description: ID of the referenced activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced activeflow. Returned from the `GET /activeflows` response."
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         on_complete_flow_id:
           type: string
-          description: ID of the flow to be executed on completion.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute on completion. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         current_action:
           $ref: '#/components/schemas/FlowManagerAction'
+          description: The action currently being executed.
         forward_action_id:
           type: string
-          description: ID of the next action to be executed.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the next action to execute. References an action `id` within the current flow's `actions` array."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         executed_actions:
           type: array
           description: List of actions that have been executed.
@@ -2835,17 +3837,27 @@ components:
             $ref: '#/components/schemas/FlowManagerAction'
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     FlowManagerFlowType:
       type: string
       description: Type of the flow.
+      example: "flow"
       enum:
         - flow
         - conference
@@ -2864,36 +3876,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the flow.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         customer_id:
           type: string
-          description: Unique identifier for the customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer who owns this flow. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           description: The type of the flow.
           $ref: '#/components/schemas/FlowManagerFlowType'
+          example: "flow"
         name:
           type: string
           description: Name of the flow.
+          example: "Inbound Call Handler"
         detail:
           type: string
           description: Detailed description of the flow.
+          example: "Main flow for handling inbound customer calls"
         actions:
           type: array
-          description: List of actions associated with the flow.
+          description: Ordered list of actions to execute in this flow.
           items:
             $ref: '#/components/schemas/FlowManagerAction'
         on_complete_flow_id:
           type: string
-          description: ID of the flow to be executed on completion.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute on completion. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the flow was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -2902,6 +3935,7 @@ components:
     MessageManagerMessageDirection:
       type: string
       description: Direction of the message.
+      example: "outbound"
       enum:
         - outbound
         - inbound
@@ -2911,6 +3945,7 @@ components:
     MessageManagerMessageProviderName:
       type: string
       description: Name of the message provider.
+      example: "telnyx"
       enum:
         - telnyx
         - twilio
@@ -2922,6 +3957,7 @@ components:
     MessageManagerMessageType:
       type: string
       description: Type of the message.
+      example: "sms"
       enum:
         - sms
       x-enum-varnames:
@@ -2931,13 +3967,20 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier for the customer.
+          format: uuid
+          x-go-type: string
+          description: Unique identifier for the customer. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/MessageManagerMessageType'
           description: The type of the message.
+          example: "sms"
         source:
           $ref: '#/components/schemas/CommonAddress'
           description: The source address of the message.
@@ -2949,22 +3992,34 @@ components:
         text:
           type: string
           description: The text delivered in the body of the message.
+          example: "Your appointment is confirmed for tomorrow at 2 PM."
         direction:
           $ref: '#/components/schemas/MessageManagerMessageDirection'
           description: The direction of the message (outbound/inbound).
+          example: "outbound"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
     
     MessageManagerTargetStatus:
       type: string
       description: The status of the message for the target.
+      example: "delivered"
       enum:
         - received
         - queued
@@ -2990,12 +4045,17 @@ components:
         status:
           description: The current status of the message for the target.
           $ref: '#/components/schemas/MessageManagerTargetStatus'
+          example: "delivered"
         parts:
           type: integer
           description: The number of message parts (if the message is split).
+          example: 1
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the target message was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -3004,6 +4064,7 @@ components:
     NumberManagerAvailableNumber:
       type: string
       description: A feature supported by the phone number.
+      example: "voice"
       enum:
         - emergency
         - fax
@@ -3021,16 +4082,20 @@ components:
       properties:
         number:
           type: string
-          description: The available phone number.
+          description: The available phone number in E.164 format.
+          example: "+14155551234"
         country:
           type: string
           description: The country where the number is available.
+          example: "US"
         region:
           type: string
           description: The region within the country.
+          example: "California"
         postal_code:
           type: string
           description: The postal code associated with the number.
+          example: "94105"
         features:
           type: array
           items:
@@ -3040,6 +4105,7 @@ components:
     NumberManagerNumberType:
       type: string
       description: The type of the number.
+      example: "normal"
       enum:
         - normal
         - virtual
@@ -3049,6 +4115,7 @@ components:
     NumberManagerNumberProviderName:
       type: string
       description: The provider name for the number.
+      example: "telnyx"
       enum:
         - telnyx
         - twilio
@@ -3060,6 +4127,7 @@ components:
     NumberManagerNumberStatus:
       type: string
       description: The status of the number.
+      example: "active"
       enum:
         - active
         - deleted
@@ -3071,52 +4139,86 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier for the number.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: The customer ID associated with the number.
+          format: uuid
+          x-go-type: string
+          description: The customer ID associated with the number. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         number:
           type: string
-          description: The phone number.
+          description: The phone number in E.164 format (normal) or +899 format (virtual).
+          example: "+14155551234"
         type:
           $ref: '#/components/schemas/NumberManagerNumberType'
           description: The type of the number (normal or virtual).
+          example: "normal"
         call_flow_id:
           type: string
-          description: The ID of the associated call flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute for incoming calls. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         message_flow_id:
           type: string
-          description: The ID of the associated message flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute for incoming messages. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         name:
           type: string
           description: The name of the number.
+          example: "Main Support Line"
         detail:
           type: string
           description: Additional details about the number.
+          example: "Primary inbound number for customer support"
         status:
           $ref: '#/components/schemas/NumberManagerNumberStatus'
           description: The status of the number.
+          example: "active"
         t38_enabled:
           type: boolean
           description: Whether T38 is enabled for the number.
+          example: false
         emergency_enabled:
           type: boolean
           description: Whether emergency services are enabled for the number.
+          example: false
         tm_purchase:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was purchased.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_renew:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was renewed.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
 #########################################
 # Outdial Manager
@@ -3126,35 +4228,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier for the outdial.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         customer_id:
           type: string
-          description: The unique identifier for the customer associated with the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier for the customer associated with the outdial. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         campaign_id:
           type: string
-          description: The unique identifier for the campaign associated with the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         name:
           type: string
           description: The name of the outdial.
+          example: "Q1 Target List"
         detail:
           type: string
           description: The detailed description of the outdial.
+          example: "Outbound dial list for Q1 campaign"
         data:
           type: string
           description: The data associated with the outdial.
+          example: "custom-data"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
 
     OutdialManagerOutdialtargetStatus:
       type: string
       description: The status of the outdial.
+      example: "idle"
       enum:
         - progressing
         - done
@@ -3168,22 +4292,32 @@ components:
       properties:
         id:
           type: string
-          description: The unique identifier for the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier for the outdial target.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         outdial_id:
           type: string
-          description: The outdial reference ID.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         name:
           type: string
-          description: The name of the outdial.
+          description: The name of the outdial target.
+          example: "John Smith"
         detail:
           type: string
-          description: Additional details about the outdial.
+          description: Additional details about the outdial target.
+          example: "Priority customer"
         data:
           type: string
-          description: The data associated with the outdial.
+          description: The data associated with the outdial target.
+          example: "vip-tag"
         status:
           $ref: '#/components/schemas/OutdialManagerOutdialtargetStatus'
-          description: The status of the outdial.
+          description: The status of the outdial target.
+          example: "idle"
         destination_0:
           $ref: '#/components/schemas/CommonAddress'
           description: The destination address 0.
@@ -3202,27 +4336,41 @@ components:
         try_count_0:
           type: integer
           description: The try count for destination 0.
+          example: 0
         try_count_1:
           type: integer
           description: The try count for destination 1.
+          example: 0
         try_count_2:
           type: integer
           description: The try count for destination 2.
+          example: 0
         try_count_3:
           type: integer
           description: The try count for destination 3.
+          example: 0
         try_count_4:
           type: integer
           description: The try count for destination 4.
+          example: 0
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The creation timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The update timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The deletion timestamp.
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -3236,55 +4384,102 @@ components:
       x-enum-varnames:
         - QueueManagerQueueRoutingMethodNone
         - QueueManagerQueueRoutingMethodRandom
+      example: "random"
     QueueManagerQueue:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the queue."
+          example: "Sales Queue"
         detail:
           type: string
+          description: "Detailed description of the queue."
+          example: "Handles incoming sales inquiries"
         routing_method:
           $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+          description: "The method used to route calls to agents."
+          example: "random"
         tag_ids:
           type: array
+          description: "List of tag IDs assigned to this queue. Returned from the `POST /tags` or `GET /tags` response."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
         wait_flow_id:
           type: string
-          description: "Flow ID for the wait queue."
+          format: uuid
+          x-go-type: string
+          description: "The flow ID executed while callers wait in queue. Returned from the `POST /flows` or `GET /flows` response."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         wait_timeout:
           type: integer
           description: "Wait queue timeout in milliseconds."
+          example: 300000
         service_timeout:
           type: integer
           description: "Service queue timeout in milliseconds."
+          example: 600000
         wait_queuecall_ids:
           type: array
+          description: "List of queuecall IDs currently waiting. Returned from the `GET /queuecalls` response."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
         service_queuecall_ids:
           type: array
+          description: "List of queuecall IDs currently being serviced. Each ID is returned from the `GET /queuecalls` response."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"]
         total_incoming_count:
           type: integer
           description: "Total incoming call count."
+          example: 150
         total_serviced_count:
           type: integer
           description: "Total serviced call count."
+          example: 120
         total_abandoned_count:
           type: integer
           description: "Total abandoned call count."
+          example: 10
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
     QueueManagerQueuecallReferenceType:
       type: string
@@ -3292,6 +4487,7 @@ components:
         - call
       x-enum-varnames:
         - QueueManagerQueuecallReferenceTypeCall
+      example: "call"
     QueueManagerQueuecallStatus:
       type: string
       enum:
@@ -3310,40 +4506,74 @@ components:
         - QueueManagerQueuecallStatusService
         - QueueManagerQueuecallStatusDone
         - QueueManagerQueuecallStatusAbandoned
+      example: "waiting"
     QueueManagerQueuecall:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queuecall. Returned from the `GET /queuecalls` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this queuecall. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           $ref: '#/components/schemas/QueueManagerQueuecallReferenceType'
+          description: "The type of resource this queuecall references."
+          example: "call"
         reference_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (e.g., a call). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         status:
           $ref: '#/components/schemas/QueueManagerQueuecallStatus'
+          description: "Current status of the queuecall."
+          example: "waiting"
         service_agent_id:
           type: string
-          description: "The ID of the service agent handling the queue call"
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the agent handling this queuecall. Returned from the `GET /agents` response."
+          example: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
         duration_waiting:
           type: integer
           description: "Duration for waiting in milliseconds"
+          example: 45000
         duration_service:
           type: integer
           description: "Duration for service in milliseconds"
+          example: 180000
         tm_create:
           type: string
-          description: "Timestamp when the queue call was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_service:
           type: string
-          description: "Timestamp when the queue call started service"
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the queue call started service."
+          example: "2026-01-15T09:35:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the queue call was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the queue call was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3358,73 +4588,133 @@ components:
       x-enum-varnames:
         - RegistrarManagerAuthTypeBasic
         - RegistrarManagerAuthTypeIP
+      example: "basic"
     RegistrarManagerExtension:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the extension. Returned from the `POST /extensions` or `GET /extensions` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this extension. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the extension."
+          example: "Reception Desk"
         detail:
           type: string
+          description: "Detailed description of the extension."
+          example: "Main reception extension for building A"
         extension:
           type: string
+          description: "The SIP extension number."
+          example: "1001"
         domain_name:
           type: string
           description: "Domain name, same as the customer_id, used by Kamailio's INVITE validation"
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         username:
           type: string
           description: "Username, same as the Extension, used by Kamailio's INVITE validation"
+          example: "1001"
         password:
           type: string
+          description: "The SIP password for authentication."
+          example: "s3cur3P@ss"
         direct_hash:
           type: string
           description: "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net"
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
-          description: "Timestamp when the extension was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the extension was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the extension was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
     RegistrarManagerTrunk:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the trunk. Returned from the `POST /trunks` or `GET /trunks` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this trunk. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the trunk."
+          example: "Primary SIP Trunk"
         detail:
           type: string
+          description: "Detailed description of the trunk."
+          example: "Main SIP trunk for outbound calls"
         domain_name:
           type: string
+          description: "The SIP domain for this trunk."
+          example: "sip.example.com"
         auth_types:
           type: array
+          description: "List of authentication methods for this trunk."
           items:
             $ref: '#/components/schemas/RegistrarManagerAuthType'
+          example: ["basic"]
         username:
           type: string
+          description: "The SIP username for authentication."
+          example: "trunk_user"
         password:
           type: string
+          description: "The SIP password for authentication."
+          example: "s3cur3P@ss"
         allowed_ips:
           type: array
+          description: "List of IP addresses allowed for IP-based authentication."
           items:
             type: string
+          example: ["203.0.113.10", "203.0.113.11"]
         tm_create:
           type: string
-          description: "Timestamp when the trunk was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the trunk was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the trunk was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3437,77 +4727,120 @@ components:
         - sip
       x-enum-varnames:
         - RouteManagerProviderTypeSIP
+      example: "sip"
     RouteManagerProvider:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the provider."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the provider. Returned from the `POST /providers` or `GET /providers` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         type:
           $ref: '#/components/schemas/RouteManagerProviderType'
+          description: "The type of the provider."
+          example: "sip"
         hostname:
           type: string
           description: "The destination hostname for the provider."
+          example: "sip.provider.example.com"
         tech_prefix:
           type: string
           description: "The tech prefix, valid only for SIP type providers."
+          example: "9"
         tech_postfix:
           type: string
           description: "The tech postfix, valid only for SIP type providers."
+          example: "#"
         tech_headers:
           type: object
           additionalProperties:
             type: string
           description: "The tech headers, valid only for SIP type providers."
+          example: {"X-Custom-Header": "value1"}
         name:
           type: string
           description: "The name of the provider."
+          example: "Twilio SIP Provider"
         detail:
           type: string
           description: "The details about the provider."
+          example: "Primary outbound SIP provider"
         tm_create:
           type: string
-          description: "Timestamp when the provider was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the provider was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the provider was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
     RouteManagerRoute:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the route. Returned from the `POST /routes` or `GET /routes` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this route. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
           description: "The name of the route."
+          example: "US Outbound Route"
         detail:
           type: string
           description: "The details about the route."
+          example: "Routes calls to US numbers via primary provider"
         provider_id:
           type: string
-          description: "The unique identifier of the provider associated with this route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the provider used for this route. Returned from the `GET /providers` response."
+          example: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b"
         priority:
           type: integer
           description: "The priority of the route, used for routing decisions."
+          example: 1
         target:
           type: string
           description: "The target destination for the route (e.g., country code or 'all')."
+          example: "1"
         tm_create:
           type: string
-          description: "Timestamp when the route was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the route was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the route was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3518,27 +4851,44 @@ components:
       properties:
         id:
           type: string
-          description: "The unique identifier for the account."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the storage account. Returned from the `GET /storage_accounts` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the account."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         total_file_count:
           type: integer
           format: int64
           description: "The total number of files in the account."
+          example: 42
         total_file_size:
           type: integer
           format: int64
           description: "The total file size in bytes."
+          example: 1073741824
         tm_create:
           type: string
-          description: "Timestamp when the account was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the account was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the account was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
     StorageManagerFileReferenceType:
       type: string
@@ -3551,51 +4901,83 @@ components:
         - StorageManagerFileReferenceTypeNone
         - StorageManagerFileReferenceTypeNormal
         - StorageManagerFileReferenceTypeRecording
+      example: "recording"
     StorageManagerFile:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the file. Returned from the `POST /files` or `GET /files` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this file. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_id:
           type: string
-          description: "The owner ID of the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource that owns this file (e.g., an agent or a call). Returned from the corresponding owner resource endpoint."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         reference_type:
           $ref: '#/components/schemas/StorageManagerFileReferenceType'
+          description: "The type of resource this file is associated with."
+          example: "recording"
         reference_id:
           type: string
-          description: "The reference ID associated with the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         name:
           type: string
           description: "The name of the file."
+          example: "meeting-recording.wav"
         detail:
           type: string
           description: "The details of the file."
+          example: "Recording of the sales meeting"
         filename:
           type: string
           description: "The filename of the file."
+          example: "550e8400-e29b-41d4-a716-446655440000.wav"
         filesize:
           type: integer
           format: int64
           description: "The size of the file in bytes."
+          example: 5242880
         uri_download:
           type: string
           description: "The URI for downloading the file."
+          example: "https://storage.voipbin.net/files/550e8400-e29b-41d4-a716-446655440000.wav"
         tm_download_expire:
           type: string
-          description: "The timestamp when the download link expires."
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the download link expires."
+          example: "2026-02-15T09:30:00.000000Z"
         tm_create:
           type: string
-          description: "Timestamp when the file was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
-          description: "Timestamp when the file was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
-          description: "Timestamp when the file was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3612,6 +4994,7 @@ components:
         - TalkManagerTalkTypeDirect
         - TalkManagerTalkTypeGroup
         - TalkManagerTalkTypeTalk
+      example: "direct"
     TalkManagerParticipantInput:
       type: object
       description: Participant information for chat creation.
@@ -3619,9 +5002,13 @@ components:
         owner_type:
           type: string
           description: Owner type (e.g., "agent", "customer").
+          example: "agent"
         owner_id:
           type: string
-          description: Owner ID (UUID).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
       required:
         - owner_type
         - owner_id
@@ -3630,30 +5017,50 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk. Returned from the `POST /service_agents/talk_chats` or `GET /service_agents/talk_chats` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this talk. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/TalkManagerTalkType'
+          description: "The type of the talk."
+          example: "direct"
         name:
           type: string
           description: Talk name (optional).
+          example: "Sales Team Chat"
         detail:
           type: string
           description: Talk description/detail (optional).
+          example: "Internal chat for the sales team"
         member_count:
           type: integer
           description: Number of participants in this chat.
+          example: 5
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was last updated.
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was deleted.
+          example: "2026-01-17T18:45:00.000000Z"
 
     TalkManagerMessageType:
       type: string
@@ -3664,32 +5071,52 @@ components:
       x-enum-varnames:
         - TalkManagerMessageTypeNormal
         - TalkManagerMessageTypeSystem
+      example: "normal"
     TalkManagerMessage:
       type: object
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the message. Returned from the `POST /service_agents/talk_messages` or `GET /service_agents/talk_messages` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this message. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
           description: Resource's owner type.
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the message author. Returned from the corresponding owner resource endpoint."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         chat_id:
           type: string
-          description: Talk chat ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk this message belongs to. Returned from the `GET /service_agents/talk_chats` response."
+          example: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c"
         parent_id:
           type: string
-          description: Parent message ID (for threading/replies).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the parent message (for threaded replies). Returned from the `GET /service_agents/talk_messages` response."
+          example: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d"
         type:
           $ref: '#/components/schemas/TalkManagerMessageType'
+          description: "The type of the message."
+          example: "normal"
         text:
           type: string
           description: Message text content.
+          example: "Hello team, any updates on the project?"
         medias:
           type: array
           description: Media attachments.
@@ -3697,15 +5124,25 @@ components:
             $ref: '#/components/schemas/TalkManagerMedia'
         metadata:
           $ref: '#/components/schemas/TalkManagerMetadata'
+          description: "Message metadata including reactions."
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-17T18:45:00.000000Z"
 
     TalkManagerMediaType:
       type: string
@@ -3720,26 +5157,34 @@ components:
         - TalkManagerMediaTypeAgent
         - TalkManagerMediaTypeFile
         - TalkManagerMediaTypeLink
+      example: "file"
 
     TalkManagerMedia:
       type: object
       properties:
         type:
           $ref: '#/components/schemas/TalkManagerMediaType'
+          description: "The type of media content."
+          example: "file"
         address:
           description: Valid only if the type is `address`.
           $ref: '#/components/schemas/CommonAddress'
         agent_id:
-          description: Valid only if the type is `agent`.
+          description: "The unique identifier of the agent. Valid only if the type is `agent`. Returned from the `GET /agents` response."
           type: string
           format: uuid
+          example: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
         file_id:
-          description: Valid only if the type is `file`.
+          description: "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response."
           type: string
+          format: uuid
+          x-go-type: string
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         link_url:
-          description: Valid only if the type is `link`.
+          description: "The URL of the linked resource. Valid only if the type is `link`."
           type: string
           format: uri
+          example: "https://example.com/document.pdf"
 
     TalkManagerMetadata:
       type: object
@@ -3756,37 +5201,61 @@ components:
         emoji:
           type: string
           description: Emoji character for the reaction.
+          example: "👍"
         owner_type:
           type: string
           description: Type of the owner who reacted.
+          example: "agent"
         owner_id:
           type: string
-          description: ID of the owner who reacted.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the owner who reacted. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the reaction was created.
+          example: "2026-01-15T09:30:00.000000Z"
 
     TalkManagerParticipant:
       type: object
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
           description: Resource's owner type.
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         chat_id:
           type: string
-          description: Talk chat ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk this participant belongs to. Returned from the `GET /service_agents/talk_chats` response."
+          example: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c"
         tm_joined:
           type: string
-          description: Timestamp when the participant joined.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the participant joined the talk."
+          example: "2026-01-15T10:00:00.000000Z"
 
 
 #########################################
@@ -3800,12 +5269,15 @@ components:
           type: string
           format: date-time
           description: When the event occurred
+          example: "2026-01-15T09:30:00.000000Z"
         event_type:
           type: string
           description: Type of event (e.g., call_created, conference_started)
+          example: "call_created"
         data:
           type: object
           description: Event data in WebhookMessage format
+          example: {}
 
 
 #########################################
@@ -3816,22 +5288,36 @@ components:
       properties:
         id:
           type: string
-          description: "The unique identifier for the tag."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the tag. Returned from the `POST /tags` or `GET /tags` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         name:
           type: string
           description: "The name of the tag."
+          example: "VIP Customer"
         detail:
           type: string
           description: "The details about the tag."
+          example: "Tag for high-priority VIP customers"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was created."
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was last updated."
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was deleted."
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3842,43 +5328,68 @@ components:
       properties:
         id:
           type: string
-          description: Speaking session identifier
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the speaking session. Returned from the `POST /speakings` or `GET /speakings` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer identifier
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this speaking session. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           type: string
           description: Type of the referenced entity (call, confbridge)
+          example: "call"
         reference_id:
           type: string
-          description: ID of the referenced entity
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (call or confbridge). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         language:
           type: string
           description: TTS language (e.g. en-US)
+          example: "en-US"
         provider:
           type: string
           description: TTS provider (elevenlabs)
+          example: "elevenlabs"
         voice_id:
           type: string
           description: Provider-specific voice ID
+          example: "21m00Tcm4TlvDq8ikWAM"
         direction:
           type: string
           description: Audio injection direction (in, out, both)
+          example: "both"
         status:
           type: string
           description: Session status (initiating, active, stopped)
+          example: "active"
         pod_id:
           type: string
           description: Kubernetes pod hosting this session
+          example: "tts-manager-7b8f9c0d-pod1"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Creation timestamp
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Last update timestamp
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Soft-delete timestamp
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -3894,6 +5405,7 @@ components:
         - TranscribeManagerTranscribeDirectionBoth
         - TranscribeManagerTranscribeDirectionIn
         - TranscribeManagerTranscribeDirectionOut
+      example: "both"
     TranscribeManagerTranscribeReferenceType:
       type: string
       enum:
@@ -3908,6 +5420,7 @@ components:
         - TranscribeManagerTranscribeReferenceTypeCall
         - TranscribeManagerTranscribeReferenceTypeConfbridge
         - TranscribeManagerTranscribeReferenceTypeConference
+      example: "call"
     TranscribeManagerTranscribeStatus:
       type: string
       enum:
@@ -3916,36 +5429,62 @@ components:
       x-enum-varnames:
         - TranscribeManagerTranscribeStatusProgressing
         - TranscribeManagerTranscribeStatusDone
+      example: "progressing"
     TranscribeManagerTranscribe:
       type: object
       properties:
         id:
           type: string
-          description: Transcribe id
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this transcribe session. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           $ref: '#/components/schemas/TranscribeManagerTranscribeReferenceType'
+          description: "The type of resource being transcribed."
+          example: "call"
         reference_id:
           type: string
-          description: Call/Conference/Recording's ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource being transcribed (call, conference, or recording). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         status:
           $ref: '#/components/schemas/TranscribeManagerTranscribeStatus'
+          description: "Current status of the transcribe session."
+          example: "progressing"
         language:
           type: string
           description: BCP47 type's language code.
+          example: "en-US"
         direction:
           $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+          description: "The audio direction to transcribe."
+          example: "both"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when created
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when updated
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when deleted
+          example: "2026-01-17T18:45:00.000000Z"
 
     TranscribeManagerTranscriptDirection:
       type: string
@@ -3957,26 +5496,42 @@ components:
         - TranscribeManagerTranscriptDirectionBoth
         - TranscribeManagerTranscriptDirectionIn
         - TranscribeManagerTranscriptDirectionOut
+      example: "both"
     TranscribeManagerTranscript:
       type: object
       properties:
         id:
           type: string
-          description: Transcript ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transcript."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         transcribe_id:
           type: string
-          description: Transcribe ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response."
+          example: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e"
         direction:
           $ref: '#/components/schemas/TranscribeManagerTranscriptDirection'
+          description: "The audio direction of this transcript."
+          example: "both"
         message:
           type: string
           description: Transcript message
+          example: "Hello, thank you for calling. How can I help you?"
         tm_transcript:
           type: string
-          description: Timestamp for the transcript
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when this transcript was spoken."
+          example: "2026-01-15T09:31:15.000000Z"
         tm_create:
           type: string
-          description: Timestamp when created
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the transcript record was created."
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -3990,43 +5545,74 @@ components:
       x-enum-varnames:
         - TransferManagerTransferTypeAttended
         - TransferManagerTransferTypeBlind
+      example: "blind"
     TransferManagerTransfer:
       type: object
       properties:
         id:
           type: string
-          description: Transfer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transfer. Returned from the `POST /transfers` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this transfer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/TransferManagerTransferType'
+          description: "The type of transfer being performed."
+          example: "blind"
         transferer_call_id:
           type: string
-          description: Transferer Call ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the call initiating the transfer. Returned from the `GET /calls` response."
+          example: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f"
         transferee_addresses:
           type: array
-          description: List of transferee addresses
+          description: "List of target addresses for the transfer."
+          minItems: 1
           items:
             $ref: '#/components/schemas/CommonAddress'
         transferee_call_id:
           type: string
-          description: Transferee Call ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the call being transferred. Returned from the `GET /calls` response."
+          example: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a"
         groupcall_id:
           type: string
-          description: Created Groupcall ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the groupcall created for the transfer. Returned from the `GET /groupcalls` response."
+          example: "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b"
         confbridge_id:
           type: string
-          description: Conference Bridge ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conference bridge used for attended transfer. Returned from the `GET /conferences` response."
+          example: "f2a3b4c5-d6e7-8f9a-0b1c-2d3e4f5a6b7c"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when created
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when updated
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when deleted
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -4045,6 +5631,7 @@ components:
         - RagManagerDocTypeOpenAPI
         - RagManagerDocTypeDesign
         - RagManagerDocTypeGuideline
+      example: "openapi"
 
     RagManagerSource:
       type: object
@@ -4053,15 +5640,20 @@ components:
         source_file:
           type: string
           description: Path to the source file
+          example: "bin-openapi-manager/openapi/openapi.yaml"
         section_title:
           type: string
           description: Title of the relevant section
+          example: "API Authentication"
         doc_type:
           $ref: '#/components/schemas/RagManagerDocType'
+          description: "The type of documentation source."
+          example: "openapi"
         relevance_score:
           type: number
           format: double
           description: Relevance score of the source
+          example: 0.95
 
     RagManagerQueryResponse:
       type: object
@@ -4070,6 +5662,7 @@ components:
         answer:
           type: string
           description: Generated answer based on retrieved documentation
+          example: "To authenticate, use the POST /auth/login endpoint with your credentials."
         sources:
           type: array
           description: List of source references used to generate the answer

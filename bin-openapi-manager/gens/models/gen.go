@@ -846,16 +846,16 @@ const (
 
 // AIManagerAI defines model for AIManagerAI.
 type AIManagerAI struct {
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Detail Detailed information about the ai.
+	// Detail Detailed information about the AI.
 	Detail *string `json:"detail,omitempty"`
 
-	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	// EngineData Custom key-value configuration data specific to the AI engine type.
 	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
 
-	// EngineKey API key or authentication key for the ai engine.
+	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
 	// EngineModel Model of the ai engine.
@@ -864,34 +864,34 @@ type AIManagerAI struct {
 	// EngineType Type of engine used by the ai.
 	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
 
-	// Id Unique identifier of the ai.
+	// Id The unique identifier of the AI.
 	Id *string `json:"id,omitempty"`
 
-	// InitPrompt Initial prompt to configure the ai's behavior.
+	// InitPrompt Initial prompt to configure the AI's behavior.
 	InitPrompt *string `json:"init_prompt,omitempty"`
 
-	// Name Name of the ai.
+	// Name Name of the AI.
 	Name *string `json:"name,omitempty"`
 
-	// SttType Speech-to-text type used by the ai.
+	// SttType Speech-to-text provider type.
 	SttType *string `json:"stt_type,omitempty"`
 
-	// TmCreate Timestamp when the ai was created.
+	// TmCreate Timestamp when the AI was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the ai was deleted.
+	// TmDelete Timestamp when the AI was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the ai was last updated.
+	// TmUpdate Timestamp when the AI was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// ToolNames List of tool names enabled for this AI. Use ["all"] to enable all available tools.
 	ToolNames *[]string `json:"tool_names,omitempty"`
 
-	// TtsType Text-to-speech type used by the ai.
+	// TtsType Text-to-speech provider type.
 	TtsType *string `json:"tts_type,omitempty"`
 
-	// TtsVoiceId Identifier for the text-to-speech voice.
+	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 }
 
@@ -903,16 +903,16 @@ type AIManagerAIEngineType string
 
 // AIManagerAIcall defines model for AIManagerAIcall.
 type AIManagerAIcall struct {
-	// ActiveflowId Unique identifier for the activeflow.
+	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiId Unique identifier of the associated ai.
+	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
 	AiId *string `json:"ai_id,omitempty"`
 
-	// ConfbridgeId Unique identifier for the conference bridge.
+	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// EngineModel Model of the ai engine.
@@ -924,13 +924,13 @@ type AIManagerAIcall struct {
 	// Gender Gender associated with the ai call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
-	// Id Unique identifier for the ai call.
+	// Id The unique identifier of the AI call.
 	Id *string `json:"id,omitempty"`
 
-	// Language Language used during the ai call.
+	// Language Language used during the AI call.
 	Language *string `json:"language,omitempty"`
 
-	// ReferenceId Unique identifier for the reference.
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of reference associated with the ai call.
@@ -939,19 +939,19 @@ type AIManagerAIcall struct {
 	// Status Status of the ai call.
 	Status *AIManagerAIcallStatus `json:"status,omitempty"`
 
-	// TmCreate Timestamp when the ai call was created.
+	// TmCreate Timestamp when the AI call was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the ai call was deleted.
+	// TmDelete Timestamp when the AI call was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmEnd Timestamp when the ai call ended.
+	// TmEnd Timestamp when the AI call ended.
 	TmEnd *string `json:"tm_end,omitempty"`
 
-	// TmUpdate Timestamp when the ai call was last updated.
+	// TmUpdate Timestamp when the AI call was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// TranscribeId Unique identifier for the transcription service.
+	// TranscribeId The unique identifier of the transcription service. Returned from the `GET /transcribes` response.
 	TranscribeId *string `json:"transcribe_id,omitempty"`
 }
 
@@ -966,7 +966,7 @@ type AIManagerAIcallStatus string
 
 // AIManagerMessage defines model for AIManagerMessage.
 type AIManagerMessage struct {
-	// AicallId Unique identifier for the associated ai call.
+	// AicallId The unique identifier of the associated AI call. Returned from the `GET /aicalls` response.
 	AicallId *string `json:"aicall_id,omitempty"`
 
 	// Content Content of the message.
@@ -975,7 +975,7 @@ type AIManagerMessage struct {
 	// Direction Direction of the message.
 	Direction *AIManagerMessageDirection `json:"direction,omitempty"`
 
-	// Id Unique identifier for the message.
+	// Id The unique identifier of the message.
 	Id *string `json:"id,omitempty"`
 
 	// Role Role of the entity in the conversation.
@@ -996,92 +996,98 @@ type AIManagerMessageRole string
 
 // AIManagerSummary defines model for AIManagerSummary.
 type AIManagerSummary struct {
-	// ActiveflowId Unique identifier for the activeflow.
+	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// Content Content of the message.
+	// Content Content of the summary.
 	Content *string `json:"content,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id Unique identifier for the message.
+	// Id The unique identifier of the summary.
 	Id *string `json:"id,omitempty"`
 
-	// Language Language used during the ai call.
+	// Language Language used for the AI summary.
 	Language *string `json:"language,omitempty"`
 
-	// OnEndFlowId Unique identifier for the on end flow.
+	// OnEndFlowId The unique identifier of the flow to execute when the summary completes. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
-	// ReferenceId Unique identifier for the reference.
-	ReferenceId   *string                        `json:"reference_id,omitempty"`
-	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
-	Status        *AIManagerSummaryStatus        `json:"status,omitempty"`
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
+	ReferenceId *string `json:"reference_id,omitempty"`
 
-	// TmCreate Timestamp when the message was created.
+	// ReferenceType Type of reference for the AI summary.
+	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the AI summary generation.
+	Status *AIManagerSummaryStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the summary was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the message was deleted.
+	// TmDelete Timestamp when the summary was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the message was last updated.
+	// TmUpdate Timestamp when the summary was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
-// AIManagerSummaryReferenceType defines model for AIManagerSummaryReferenceType.
+// AIManagerSummaryReferenceType Type of reference for the AI summary.
 type AIManagerSummaryReferenceType string
 
-// AIManagerSummaryStatus defines model for AIManagerSummaryStatus.
+// AIManagerSummaryStatus Status of the AI summary generation.
 type AIManagerSummaryStatus string
 
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
-	// Addresses Agent's endpoint addresses.
+	// Addresses Agent's endpoint addresses for receiving calls.
 	Addresses *[]CommonAddress `json:"addresses,omitempty"`
 
-	// CustomerId Resource's customer ID.
+	// CustomerId The unique identifier of the customer who owns this agent. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Detail Agent's detail.
+	// Detail Additional detail or notes about the agent.
 	Detail *string `json:"detail,omitempty"`
-	Id     *string `json:"id,omitempty"`
 
-	// Name Agent's name.
+	// Id The unique identifier of the agent.
+	Id *string `json:"id,omitempty"`
+
+	// Name Display name of the agent.
 	Name *string `json:"name,omitempty"`
 
 	// Permission Permission type
 	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
 
-	// RingMethod Represents an agent resource.
+	// RingMethod Method used to ring the agent for incoming calls.
 	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
 
-	// Status Agent's status
+	// Status Current availability status of the agent.
 	Status *AgentManagerAgentStatus `json:"status,omitempty"`
 
-	// TagIds Agent's tag IDs.
+	// TagIds List of tag IDs assigned to this agent. Returned from the `POST /tags` or `GET /tags` response.
 	TagIds *[]string `json:"tag_ids,omitempty"`
 
-	// TmCreate Created timestamp.
+	// TmCreate Timestamp when the agent was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Deleted timestamp.
+	// TmDelete Timestamp when the agent was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Updated timestamp.
+	// TmUpdate Timestamp when the agent was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// Username Agent's username.
+	// Username Agent's login username, typically an email address.
 	Username *string `json:"username,omitempty"`
 }
 
 // AgentManagerAgentPermission Permission type
 type AgentManagerAgentPermission uint64
 
-// AgentManagerAgentRingMethod Represents an agent resource.
+// AgentManagerAgentRingMethod Method used to ring the agent for incoming calls.
 type AgentManagerAgentRingMethod string
 
-// AgentManagerAgentStatus Agent's status
+// AgentManagerAgentStatus Current availability status of the agent.
 type AgentManagerAgentStatus string
 
 // AuthLoginResponse Authentication response containing JWT token
@@ -1101,16 +1107,16 @@ type BillingManagerAccount struct {
 	// BalanceToken The token balance of the account.
 	BalanceToken *int64 `json:"balance_token,omitempty"`
 
-	// CustomerId The unique identifier of the associated customer.
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Detail Additional details about the account.
+	// Detail A human-readable note describing the purpose of this account.
 	Detail *string `json:"detail,omitempty"`
 
 	// Id The unique identifier of the account.
 	Id *string `json:"id,omitempty"`
 
-	// Name The name of the account.
+	// Name The display name of the billing account.
 	Name *string `json:"name,omitempty"`
 
 	// PaymentMethod The method of payment used for the account.
@@ -1149,7 +1155,7 @@ type BillingManagerAccountPlanType string
 
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
-	// AccountId The billing account ID.
+	// AccountId The billing account ID. Returned from the `GET /billing_accounts/{id}` response.
 	AccountId *string `json:"account_id,omitempty"`
 
 	// AmountCredit The credit delta for this transaction in micros (negative for usage, positive for top-up).
@@ -1170,7 +1176,7 @@ type BillingManagerBilling struct {
 	// CostType The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
 	CostType *string `json:"cost_type,omitempty"`
 
-	// CustomerId The customer's unique identifier.
+	// CustomerId The customer's unique identifier. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Id The unique identifier of the billing.
@@ -1185,7 +1191,7 @@ type BillingManagerBilling struct {
 	// RateTokenPerUnit The token rate per billable unit.
 	RateTokenPerUnit *int64 `json:"rate_token_per_unit,omitempty"`
 
-	// ReferenceId The ID of the reference related to this billing.
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType The type of reference associated with this billing.
@@ -1229,13 +1235,13 @@ type BillingManagerBillingreferenceType string
 type CallManagerCall struct {
 	Action *FlowManagerAction `json:"action,omitempty"`
 
-	// ActiveflowId Activeflow ID
+	// ActiveflowId The activeflow ID associated with this call. Returned from the `POST /activeflows` or `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// ChainedCallIds Chained call IDs
+	// ChainedCallIds Chained call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response.
 	ChainedCallIds *[]string `json:"chained_call_ids,omitempty"`
 
-	// CustomerId Resource's customer ID
+	// CustomerId The customer ID that owns this call. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Destination Contains source or destination detail info.
@@ -1244,10 +1250,10 @@ type CallManagerCall struct {
 	// Direction Call direction
 	Direction *CallManagerCallDirection `json:"direction,omitempty"`
 
-	// FlowId Flow ID
+	// FlowId The flow ID associated with this call. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 
-	// GroupcallId Group call ID, indicates if this call is part of a group call
+	// GroupcallId Group call ID. Returned from the `POST /groupcalls` or `GET /groupcalls` response. Indicates this call is part of a group call.
 	GroupcallId *string `json:"groupcall_id,omitempty"`
 
 	// HangupBy Indicates who hung up the call
@@ -1256,25 +1262,25 @@ type CallManagerCall struct {
 	// HangupReason Reason for call hangup
 	HangupReason *CallManagerCallHangupReason `json:"hangup_reason,omitempty"`
 
-	// Id Resource identifier
+	// Id The unique identifier of the call.
 	Id *string `json:"id,omitempty"`
 
-	// MasterCallId Master call ID
+	// MasterCallId The unique identifier of the master call that initiated this call. Returned from the `POST /calls` or `GET /calls` response.
 	MasterCallId *string `json:"master_call_id,omitempty"`
 
 	// MuteDirection Possible mute directions for the call
 	MuteDirection *CallManagerCallMuteDirection `json:"mute_direction,omitempty"`
 
-	// OwnerId Resource's owner ID
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
-	// OwnerType Resource's owner type
+	// OwnerType Type of the resource owner (e.g., agent, queue).
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// RecordingId Current recording ID
+	// RecordingId The current recording ID. Returned from the `GET /recordings` response.
 	RecordingId *string `json:"recording_id,omitempty"`
 
-	// RecordingIds Recording IDs
+	// RecordingIds Recording IDs associated with this call. Each ID is returned from the `GET /recordings` response.
 	RecordingIds *[]string `json:"recording_ids,omitempty"`
 
 	// Source Contains source or destination detail info.
@@ -1283,22 +1289,22 @@ type CallManagerCall struct {
 	// Status Call status
 	Status *CallManagerCallStatus `json:"status,omitempty"`
 
-	// TmCreate Creation timestamp
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Deletion timestamp
+	// TmDelete The deletion timestamp, if applicable.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmHangup Timestamp for call hangup
+	// TmHangup Timestamp for call hangup.
 	TmHangup *string `json:"tm_hangup,omitempty"`
 
-	// TmProgressing Timestamp for call progressing
+	// TmProgressing Timestamp for call progressing.
 	TmProgressing *string `json:"tm_progressing,omitempty"`
 
-	// TmRinging Timestamp for call ringing
+	// TmRinging Timestamp for call ringing.
 	TmRinging *string `json:"tm_ringing,omitempty"`
 
-	// TmUpdate Update timestamp
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Call type
@@ -1325,52 +1331,52 @@ type CallManagerCallType string
 
 // CallManagerGroupcall Call or group call information
 type CallManagerGroupcall struct {
-	// AnswerCallId ID of the answered call
+	// AnswerCallId The unique identifier of the answered call. Returned from the `POST /calls` or `GET /calls` response.
 	AnswerCallId *string `json:"answer_call_id,omitempty"`
 
-	// AnswerGroupcallId ID of the answered group call
+	// AnswerGroupcallId The unique identifier of the answered group call. Returned from the `POST /groupcalls` or `GET /groupcalls` response.
 	AnswerGroupcallId *string `json:"answer_groupcall_id,omitempty"`
 
 	// AnswerMethod Method to handle answered calls
 	AnswerMethod *CallManagerGroupcallAnswerMethod `json:"answer_method,omitempty"`
 
-	// CallCount Number of remaining calls in the current dial
+	// CallCount Number of remaining calls in the current dial.
 	CallCount *int `json:"call_count,omitempty"`
 
-	// CallIds List of associated call IDs
+	// CallIds List of associated call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response.
 	CallIds *[]string `json:"call_ids,omitempty"`
 
-	// CustomerId Resource's customer ID
+	// CustomerId The customer ID that owns this group call. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Destinations List of destination addresses
+	// Destinations List of target addresses. Must contain at least one destination.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
 
-	// DialIndex Current dial index, valid only when the ring method is "ring_all"
+	// DialIndex Current dial index, valid only when the ring method is "ring_all".
 	DialIndex *int `json:"dial_index"`
 
-	// FlowId ID of the associated flow
+	// FlowId The flow ID associated with this group call. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 
-	// GroupcallCount Number of remaining group calls in the current dial
+	// GroupcallCount Number of remaining group calls in the current dial.
 	GroupcallCount *int `json:"groupcall_count,omitempty"`
 
-	// GroupcallIds List of associated group call IDs
+	// GroupcallIds List of associated group call IDs. Each ID is returned from the `POST /groupcalls` or `GET /groupcalls` response.
 	GroupcallIds *[]string `json:"groupcall_ids,omitempty"`
 
-	// Id Resource identifier
+	// Id The unique identifier of the group call.
 	Id *string `json:"id,omitempty"`
 
-	// MasterCallId ID of the master call, if applicable
+	// MasterCallId The unique identifier of the master call that initiated this group call. Returned from the `POST /calls` or `GET /calls` response.
 	MasterCallId *string `json:"master_call_id"`
 
-	// MasterGroupcallId ID of the master group call, if applicable
+	// MasterGroupcallId The unique identifier of the master group call, if applicable. Returned from the `POST /groupcalls` or `GET /groupcalls` response.
 	MasterGroupcallId *string `json:"master_groupcall_id"`
 
-	// OwnerId Resource's owner ID
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
-	// OwnerType Resource's owner type
+	// OwnerType Type of the resource owner (e.g., agent, queue).
 	OwnerType *string `json:"owner_type,omitempty"`
 
 	// RingMethod Method used for dialing
@@ -1382,13 +1388,13 @@ type CallManagerGroupcall struct {
 	// Status Current status of the call or group call
 	Status *CallManagerGroupcallStatus `json:"status,omitempty"`
 
-	// TmCreate Timestamp when the call was created
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the call was deleted
+	// TmDelete The deletion timestamp, if applicable.
 	TmDelete *string `json:"tm_delete"`
 
-	// TmUpdate Timestamp when the call was last updated
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
@@ -1403,28 +1409,28 @@ type CallManagerGroupcallStatus string
 
 // CallManagerRecording defines model for CallManagerRecording.
 type CallManagerRecording struct {
-	// ActiveflowId Activeflow ID associated with this recording.
+	// ActiveflowId The activeflow ID associated with this recording. Returned from the `POST /activeflows` or `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// CustomerId Resource's customer ID
+	// CustomerId The customer ID that owns this recording. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Format The format of the recording.
 	Format *CallManagerRecordingFormat `json:"format,omitempty"`
 
-	// Id Resource identifier
+	// Id The unique identifier of the recording.
 	Id *string `json:"id,omitempty"`
 
-	// OnEndFlowId Flow ID to be executed when recording ends.
+	// OnEndFlowId Flow ID to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
-	// OwnerId Resource's owner ID
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /conferences`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
-	// OwnerType Resource's owner type
+	// OwnerType Type of the resource owner (e.g., call, confbridge).
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// ReferenceId The UUID of the reference.
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of reference for the recording.
@@ -1433,10 +1439,10 @@ type CallManagerRecording struct {
 	// Status The status of the recording.
 	Status *CallManagerRecordingStatus `json:"status,omitempty"`
 
-	// TmCreate The creation timestamp of the recording.
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete The timestamp when the recording was deleted.
+	// TmDelete The deletion timestamp, if applicable.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
 	// TmEnd The end timestamp of the recording.
@@ -1445,7 +1451,7 @@ type CallManagerRecording struct {
 	// TmStart The start timestamp of the recording.
 	TmStart *string `json:"tm_start,omitempty"`
 
-	// TmUpdate The last update timestamp of the recording.
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
@@ -1460,25 +1466,50 @@ type CallManagerRecordingStatus string
 
 // CampaignManagerCampaign defines model for CampaignManagerCampaign.
 type CampaignManagerCampaign struct {
-	Actions    *[]FlowManagerAction `json:"actions,omitempty"`
-	CustomerId *string              `json:"customer_id,omitempty"`
-	Detail     *string              `json:"detail,omitempty"`
+	// Actions Ordered list of actions to execute for each campaign call.
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Additional details about the campaign.
+	Detail *string `json:"detail,omitempty"`
 
 	// EndHandle Behavior of the campaign after outdial has no more targets.
-	EndHandle      *CampaignManagerCampaignEndHandle `json:"end_handle,omitempty"`
-	Id             *string                           `json:"id,omitempty"`
-	Name           *string                           `json:"name,omitempty"`
-	NextCampaignId *string                           `json:"next_campaign_id,omitempty"`
-	OutdialId      *string                           `json:"outdial_id,omitempty"`
-	OutplanId      *string                           `json:"outplan_id,omitempty"`
-	QueueId        *string                           `json:"queue_id,omitempty"`
-	ServiceLevel   *int                              `json:"service_level,omitempty"`
+	EndHandle *CampaignManagerCampaignEndHandle `json:"end_handle,omitempty"`
+
+	// Id The unique identifier of the campaign.
+	Id *string `json:"id,omitempty"`
+
+	// Name Display name of the campaign.
+	Name *string `json:"name,omitempty"`
+
+	// NextCampaignId The unique identifier of the next campaign to execute after this one completes. Returned from the `POST /campaigns` or `GET /campaigns` response.
+	NextCampaignId *string `json:"next_campaign_id,omitempty"`
+
+	// OutdialId The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response.
+	OutdialId *string `json:"outdial_id,omitempty"`
+
+	// OutplanId The unique identifier of the outplan. Returned from the `POST /outplans` or `GET /outplans` response.
+	OutplanId *string `json:"outplan_id,omitempty"`
+
+	// QueueId The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
+	QueueId *string `json:"queue_id,omitempty"`
+
+	// ServiceLevel Target service level percentage.
+	ServiceLevel *int `json:"service_level,omitempty"`
 
 	// Status Status of the campaign.
-	Status   *CampaignManagerCampaignStatus `json:"status,omitempty"`
-	TmCreate *string                        `json:"tm_create,omitempty"`
-	TmDelete *string                        `json:"tm_delete,omitempty"`
-	TmUpdate *string                        `json:"tm_update,omitempty"`
+	Status *CampaignManagerCampaignStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the campaign was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the campaign was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the campaign was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of campaign.
 	Type *CampaignManagerCampaignType `json:"type,omitempty"`
@@ -1498,46 +1529,52 @@ type CampaignManagerCampaignType string
 
 // CampaignManagerCampaigncall defines model for CampaignManagerCampaigncall.
 type CampaignManagerCampaigncall struct {
-	// ActiveflowId Identifier of the activeflow.
+	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// CampaignId Identifier of the campaign.
+	// CampaignId The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response.
 	CampaignId *string `json:"campaign_id,omitempty"`
 
-	// CustomerId Identifier of the customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Destination Contains source or destination detail info.
 	Destination *CommonAddress `json:"destination,omitempty"`
 
-	// DestinationIndex Index of the destination.
+	// DestinationIndex Index of the current destination being dialed.
 	DestinationIndex *int `json:"destination_index,omitempty"`
 
-	// FlowId Identifier of the flow.
+	// FlowId The unique identifier of the flow. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 
-	// Id Unique identifier of the campaign call.
+	// Id The unique identifier of the campaign call.
 	Id *string `json:"id,omitempty"`
 
-	// OutdialId Identifier of the outbound dial.
+	// OutdialId The unique identifier of the outbound dial. Returned from the `POST /outdials` or `GET /outdials` response.
 	OutdialId *string `json:"outdial_id,omitempty"`
 
-	// OutdialTargetId Identifier of the outbound dial target.
+	// OutdialTargetId The unique identifier of the outbound dial target. Returned from the `GET /outdials/{id}/targets` response.
 	OutdialTargetId *string `json:"outdial_target_id,omitempty"`
 
-	// OutplanId Identifier of the outbound plan.
+	// OutplanId The unique identifier of the outbound plan. Returned from the `POST /outplans` or `GET /outplans` response.
 	OutplanId *string `json:"outplan_id,omitempty"`
 
-	// QueueId Identifier of the queue.
+	// QueueId The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
 	QueueId *string `json:"queue_id,omitempty"`
 
-	// ReferenceId Identifier of the reference.
-	ReferenceId   *string                                   `json:"reference_id,omitempty"`
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference for the campaign call.
 	ReferenceType *CampaignManagerCampaigncallReferenceType `json:"reference_type,omitempty"`
-	Result        *CampaignManagerCampaigncallResult        `json:"result,omitempty"`
+
+	// Result Result of the campaign call attempt.
+	Result *CampaignManagerCampaigncallResult `json:"result,omitempty"`
 
 	// Source Contains source or destination detail info.
-	Source *CommonAddress                     `json:"source,omitempty"`
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Status Status of the campaign call.
 	Status *CampaignManagerCampaigncallStatus `json:"status,omitempty"`
 
 	// TmCreate Timestamp when the campaign call was created.
@@ -1549,22 +1586,22 @@ type CampaignManagerCampaigncall struct {
 	// TmUpdate Timestamp when the campaign call was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// TryCount Number of dialing attempts.
+	// TryCount Number of dialing attempts made.
 	TryCount *int `json:"try_count,omitempty"`
 }
 
-// CampaignManagerCampaigncallReferenceType defines model for CampaignManagerCampaigncallReferenceType.
+// CampaignManagerCampaigncallReferenceType Type of reference for the campaign call.
 type CampaignManagerCampaigncallReferenceType string
 
-// CampaignManagerCampaigncallResult defines model for CampaignManagerCampaigncallResult.
+// CampaignManagerCampaigncallResult Result of the campaign call attempt.
 type CampaignManagerCampaigncallResult string
 
-// CampaignManagerCampaigncallStatus defines model for CampaignManagerCampaigncallStatus.
+// CampaignManagerCampaigncallStatus Status of the campaign call.
 type CampaignManagerCampaigncallStatus string
 
 // CampaignManagerOutplan defines model for CampaignManagerOutplan.
 type CampaignManagerOutplan struct {
-	// CustomerId Identifier of the customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed information about the outplan.
@@ -1573,7 +1610,7 @@ type CampaignManagerOutplan struct {
 	// DialTimeout Dial timeout in milliseconds.
 	DialTimeout *int `json:"dial_timeout,omitempty"`
 
-	// Id Unique identifier of the outplan.
+	// Id The unique identifier of the outplan.
 	Id *string `json:"id,omitempty"`
 
 	// MaxTryCount0 Maximum number of tries for level 0.
@@ -1612,13 +1649,13 @@ type CampaignManagerOutplan struct {
 
 // CommonAddress Contains source or destination detail info.
 type CommonAddress struct {
-	// Detail Detail description.
+	// Detail Additional notes about this address.
 	Detail *string `json:"detail,omitempty"`
 
-	// Name Name.
+	// Name Optional label for this address.
 	Name *string `json:"name,omitempty"`
 
-	// Target Address endpoint.
+	// Target The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip.
 	Target *string `json:"target,omitempty"`
 
 	// TargetName Address's name.
@@ -1633,19 +1670,19 @@ type CommonAddressType string
 
 // CommonPagination defines model for CommonPagination.
 type CommonPagination struct {
-	// NextPageToken The token for next pagination.
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
 // ConferenceManagerConference defines model for ConferenceManagerConference.
 type ConferenceManagerConference struct {
-	// ConferencecallIds List of associated conference call IDs.
+	// ConferencecallIds List of associated conference call IDs. Each ID is returned from the `GET /conferencecalls` response.
 	ConferencecallIds *[]string `json:"conferencecall_ids,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId Unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Data Custom data associated with the conference.
+	// Data Custom key-value data associated with the conference.
 	Data *map[string]interface{} `json:"data,omitempty"`
 
 	// Detail Detailed information about the conference.
@@ -1657,16 +1694,16 @@ type ConferenceManagerConference struct {
 	// Name Name of the conference.
 	Name *string `json:"name,omitempty"`
 
-	// PostFlowId ID of the post-flow to execute after the conference ends.
+	// PostFlowId The unique identifier of the flow to execute after the conference ends. Returned from the `POST /flows` or `GET /flows` response.
 	PostFlowId *string `json:"post_flow_id,omitempty"`
 
-	// PreFlowId ID of the pre-flow to execute before the conference starts.
+	// PreFlowId The unique identifier of the flow to execute before the conference starts. Returned from the `POST /flows` or `GET /flows` response.
 	PreFlowId *string `json:"pre_flow_id,omitempty"`
 
-	// RecordingId ID of the main recording associated with the conference.
+	// RecordingId ID of the main recording associated with the conference. Returned from the `GET /recordings` response.
 	RecordingId *string `json:"recording_id,omitempty"`
 
-	// RecordingIds List of associated recording IDs.
+	// RecordingIds List of associated recording IDs. Each ID is returned from the `GET /recordings` response.
 	RecordingIds *[]string `json:"recording_ids,omitempty"`
 
 	// Status Status of the conference.
@@ -1687,10 +1724,10 @@ type ConferenceManagerConference struct {
 	// TmUpdate Timestamp when the conference was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// TranscribeId ID of the main transcription associated with the conference.
+	// TranscribeId ID of the main transcription associated with the conference. Returned from the `GET /transcribes` response.
 	TranscribeId *string `json:"transcribe_id,omitempty"`
 
-	// TranscribeIds List of associated transcription IDs.
+	// TranscribeIds List of associated transcription IDs. Each ID is returned from the `GET /transcribes` response.
 	TranscribeIds *[]string `json:"transcribe_ids,omitempty"`
 
 	// Type Types of conferences.
@@ -1705,19 +1742,19 @@ type ConferenceManagerConferenceType string
 
 // ConferenceManagerConferencecall defines model for ConferenceManagerConferencecall.
 type ConferenceManagerConferencecall struct {
-	// ActiveflowId Activeflow ID associated with this conference call.
+	// ActiveflowId Activeflow ID associated with this conference call. Returned from the `POST /activeflows` or `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// ConferenceId Unique identifier of the associated conference.
+	// ConferenceId Unique identifier of the associated conference. Returned from the `GET /conferences` response.
 	ConferenceId *string `json:"conference_id,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId Unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Id Unique identifier for the conference call.
 	Id *string `json:"id,omitempty"`
 
-	// ReferenceId Unique identifier of the reference (e.g., call ID).
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of the reference associated with the conference call.
@@ -1840,19 +1877,19 @@ type ContactManagerPhoneNumberType string
 
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed information about the account.
 	Detail *string `json:"detail,omitempty"`
 
-	// Id Unique identifier for the account.
+	// Id The unique identifier of the conversation account.
 	Id *string `json:"id,omitempty"`
 
 	// Name Name of the account.
 	Name *string `json:"name,omitempty"`
 
-	// Secret Secret associated with the account.
+	// Secret Webhook secret for signature verification. Write-only.
 	Secret *string `json:"secret,omitempty"`
 
 	// TmCreate Timestamp when the account was created.
@@ -1864,7 +1901,7 @@ type ConversationManagerAccount struct {
 	// TmUpdate Timestamp when the account was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// Token Token, usually an API token, associated with the account.
+	// Token API token for the messaging platform. Write-only.
 	Token *string `json:"token,omitempty"`
 
 	// Type Type of the account.
@@ -1876,27 +1913,31 @@ type ConversationManagerAccountType string
 
 // ConversationManagerConversation defines model for ConversationManagerConversation.
 type ConversationManagerConversation struct {
-	// AccountId Unique identifier of the associated account.
+	// AccountId The unique identifier of the conversation account. Returned from the `GET /conversation_accounts` response.
 	AccountId *string `json:"account_id,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed information about the conversation.
 	Detail *string `json:"detail,omitempty"`
 
-	// Id Unique identifier for the conversation.
+	// Id The unique identifier of the conversation.
 	Id *string `json:"id,omitempty"`
 
 	// Name Name of the conversation.
-	Name      *string `json:"name,omitempty"`
-	OwnerId   *string `json:"owner_id,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// OwnerId The unique identifier of the conversation owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`).
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Type of the conversation owner.
 	OwnerType *string `json:"owner_type,omitempty"`
 
 	// Participants List of participants in the conversation.
 	Participants *[]CommonAddress `json:"participants,omitempty"`
 
-	// ReferenceId Unique identifier for the reference (e.g., message ID, line ID).
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of the reference for the conversation.
@@ -1920,13 +1961,13 @@ type ConversationManagerConversationReferenceType string
 
 // ConversationManagerMedia defines model for ConversationManagerMedia.
 type ConversationManagerMedia struct {
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Filename Filename of the media.
 	Filename *string `json:"filename,omitempty"`
 
-	// Id Unique identifier for the media.
+	// Id The unique identifier of the media.
 	Id *string `json:"id,omitempty"`
 
 	// TmCreate Timestamp when the media was created.
@@ -1947,22 +1988,22 @@ type ConversationManagerMediaType string
 
 // ConversationManagerMessage defines model for ConversationManagerMessage.
 type ConversationManagerMessage struct {
-	// ConversationId Unique identifier of the conversation.
+	// ConversationId The unique identifier of the conversation. Returned from the `GET /conversations` response.
 	ConversationId *string `json:"conversation_id,omitempty"`
 
-	// CustomerId Unique identifier of the associated customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Direction Direction of the message (incoming or outgoing).
 	Direction *ConversationManagerMessageDirection `json:"direction,omitempty"`
 
-	// Id Unique identifier for the message.
+	// Id The unique identifier of the message.
 	Id *string `json:"id,omitempty"`
 
 	// Medias List of media associated with the message.
 	Medias *[]ConversationManagerMedia `json:"medias,omitempty"`
 
-	// ReferenceId The reference ID for the message (e.g., related call ID).
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of reference associated with the message (e.g., call, campaign).
@@ -1998,15 +2039,32 @@ type ConversationManagerMessageStatus string
 
 // CustomerManagerAccesskey defines model for CustomerManagerAccesskey.
 type CustomerManagerAccesskey struct {
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
-	Detail     *string `json:"detail,omitempty"`
-	Id         *string `json:"id,omitempty"`
-	Name       *string `json:"name,omitempty"`
-	TmCreate   *string `json:"tm_create,omitempty"`
-	TmDelete   *string `json:"tm_delete,omitempty"`
-	TmExpire   *string `json:"tm_expire,omitempty"`
-	TmUpdate   *string `json:"tm_update,omitempty"`
-	Token      *string `json:"token,omitempty"`
+
+	// Detail Additional details about the access key.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the access key.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the access key.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the access key was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the access key was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmExpire Timestamp when the access key expires.
+	TmExpire *string `json:"tm_expire,omitempty"`
+
+	// TmUpdate Timestamp when the access key was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Token The access key token. Only returned once at creation time.
+	Token *string `json:"token,omitempty"`
 }
 
 // CustomerManagerCustomer defines model for CustomerManagerCustomer.
@@ -2014,7 +2072,7 @@ type CustomerManagerCustomer struct {
 	// Address Address of the customer.
 	Address *string `json:"address,omitempty"`
 
-	// BillingAccountId The ID of the customer's default billing account.
+	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
 	BillingAccountId *string `json:"billing_account_id,omitempty"`
 
 	// Detail Details about the customer.
@@ -2026,13 +2084,13 @@ type CustomerManagerCustomer struct {
 	// EmailVerified Whether the customer's email has been verified.
 	EmailVerified *bool `json:"email_verified,omitempty"`
 
-	// Id Unique identifier for the customer.
+	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
 	// Name Name of the customer.
 	Name *string `json:"name,omitempty"`
 
-	// PhoneNumber Phone number of the customer.
+	// PhoneNumber Customer's contact phone number in E.164 format.
 	PhoneNumber *string `json:"phone_number,omitempty"`
 
 	// Status Account lifecycle status.
@@ -2044,7 +2102,7 @@ type CustomerManagerCustomer struct {
 	// TmDelete Timestamp when the customer was deleted.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmDeletionScheduled When account deletion was requested (null if not scheduled).
+	// TmDeletionScheduled Timestamp when account deletion was requested. Null if not scheduled.
 	TmDeletionScheduled *string `json:"tm_deletion_scheduled,omitempty"`
 
 	// TmUpdate Timestamp when the customer was last updated.
@@ -2053,7 +2111,7 @@ type CustomerManagerCustomer struct {
 	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
 
-	// WebhookUri URI for the customer's webhook.
+	// WebhookUri URI where webhook events are delivered.
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
@@ -2065,7 +2123,7 @@ type CustomerManagerCustomerWebhookMethod string
 
 // EmailManagerEmail defines model for EmailManagerEmail.
 type EmailManagerEmail struct {
-	// ActiveflowId ID of the associated activeflow.
+	// ActiveflowId The unique identifier of the activeflow. Returned from the `POST /activeflows` or `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// Attachments List of attachments
@@ -2074,13 +2132,13 @@ type EmailManagerEmail struct {
 	// Content The content of the email.
 	Content string `json:"content"`
 
-	// CustomerId ID of the customer.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId string `json:"customer_id"`
 
-	// Destinations List of destination addresses
+	// Destinations List of destination addresses. Must contain at least one destination.
 	Destinations []CommonAddress `json:"destinations"`
 
-	// Id Unique identifier for the email.
+	// Id The unique identifier of the email.
 	Id string `json:"id"`
 
 	// Source Contains source or destination detail info.
@@ -2092,19 +2150,19 @@ type EmailManagerEmail struct {
 	// Subject The subject of the email.
 	Subject string `json:"subject"`
 
-	// TmCreate Timestamp when the flow was created.
+	// TmCreate Timestamp when the email was created.
 	TmCreate string `json:"tm_create"`
 
-	// TmDelete Timestamp when the flow was deleted.
+	// TmDelete Timestamp when the email was deleted.
 	TmDelete string `json:"tm_delete"`
 
-	// TmUpdate Timestamp when the flow was last updated.
+	// TmUpdate Timestamp when the email was last updated.
 	TmUpdate string `json:"tm_update"`
 }
 
 // EmailManagerEmailAttachment defines model for EmailManagerEmailAttachment.
 type EmailManagerEmailAttachment struct {
-	// ReferenceId The identifier of the next item
+	// ReferenceId The unique identifier of the referenced resource (e.g., recording ID). Returned from the corresponding resource endpoint.
 	ReferenceId string `json:"reference_id"`
 
 	// ReferenceType Type of the action.
@@ -2119,10 +2177,10 @@ type EmailManagerEmailStatus string
 
 // FlowManagerAction defines model for FlowManagerAction.
 type FlowManagerAction struct {
-	// Id The unique identifier
+	// Id The unique identifier of this action within the flow.
 	Id string `json:"id"`
 
-	// NextId The identifier of the next item
+	// NextId The identifier of the next action to execute. References an action `id` within the same flow's `actions` array. Null if this is the last action.
 	NextId *string `json:"next_id,omitempty"`
 
 	// Option Additional options based on the `type` field.
@@ -2163,7 +2221,7 @@ type FlowManagerAction struct {
 	// - ...
 	Option *map[string]interface{} `json:"option,omitempty"`
 
-	// TmExecute Timestamp or time to execute
+	// TmExecute Timestamp when this action was executed.
 	TmExecute *string `json:"tm_execute,omitempty"`
 
 	// Type Type of the action.
@@ -2172,28 +2230,34 @@ type FlowManagerAction struct {
 
 // FlowManagerActionOptionAISummary defines model for FlowManagerActionOptionAISummary.
 type FlowManagerActionOptionAISummary struct {
-	// Language Additional options
+	// Language BCP47 language code for the summary.
 	Language *string `json:"language,omitempty"`
 
-	// OnEndFlowId The unique identifier for the flow to be executed on end.
+	// OnEndFlowId The unique identifier of the flow to execute when AI summary completes. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
-	// ReferenceId The identifier of the reference object
-	ReferenceId   *string                        `json:"reference_id,omitempty"`
+	// ReferenceId The unique identifier of the referenced resource. Returned from the corresponding resource endpoint.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference for the AI summary.
 	ReferenceType *AIManagerSummaryReferenceType `json:"reference_type,omitempty"`
 }
 
 // FlowManagerActionOptionAITalk defines model for FlowManagerActionOptionAITalk.
 type FlowManagerActionOptionAITalk struct {
-	// AiId The unique identifier for the flow to be executed on end.
-	AiId     *string `json:"ai_id,omitempty"`
-	Duration *int    `json:"duration,omitempty"`
+	// AiId The unique identifier of the AI configuration to use. Returned from the `POST /ais` or `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// Duration Maximum duration of the AI talk session in seconds.
+	Duration *int `json:"duration,omitempty"`
 
 	// Gender Gender associated with the ai call.
-	Gender   *AIManagerAIcallGender `json:"gender,omitempty"`
-	Language *string                `json:"language,omitempty"`
+	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
-	// Resume Whether to resume the AI talk.
+	// Language BCP47 language code (e.g., en-US).
+	Language *string `json:"language,omitempty"`
+
+	// Resume Whether to resume a previous AI conversation.
 	Resume *bool `json:"resume,omitempty"`
 }
 
@@ -2215,10 +2279,10 @@ type FlowManagerActionOptionBeep = map[string]interface{}
 
 // FlowManagerActionOptionBranch defines model for FlowManagerActionOptionBranch.
 type FlowManagerActionOptionBranch struct {
-	// DefaultTargetId Default target ID if input does not match any branch targets.
+	// DefaultTargetId Default target ID if input does not match any branch targets. References an action `id` within the same flow's `actions` array.
 	DefaultTargetId *string `json:"default_target_id,omitempty"`
 
-	// TargetIds Mapping of input values to target IDs.
+	// TargetIds Mapping of input values to target action IDs.
 	TargetIds *map[string]string `json:"target_ids,omitempty"`
 
 	// Variable Variable name to evaluate for branching.
@@ -2227,16 +2291,19 @@ type FlowManagerActionOptionBranch struct {
 
 // FlowManagerActionOptionCall defines model for FlowManagerActionOptionCall.
 type FlowManagerActionOptionCall struct {
+	// Actions Inline actions to execute on the created call.
 	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
 	// Chained If true, created calls will hang up when the master call hangs up.
-	Chained      *bool            `json:"chained,omitempty"`
+	Chained *bool `json:"chained,omitempty"`
+
+	// Destinations List of destination addresses. Must contain at least one destination.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
 
 	// EarlyExecution If true, the created call executes the flow before call answer.
 	EarlyExecution *bool `json:"early_execution,omitempty"`
 
-	// FlowId Identifier for the flow to be executed.
+	// FlowId The unique identifier of the flow to execute on the created call. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 
 	// Source Contains source or destination detail info.
@@ -2245,18 +2312,19 @@ type FlowManagerActionOptionCall struct {
 
 // FlowManagerActionOptionConfbridgeJoin defines model for FlowManagerActionOptionConfbridgeJoin.
 type FlowManagerActionOptionConfbridgeJoin struct {
-	// ConfbridgeId Identifier for the conference bridge to join.
+	// ConfbridgeId The unique identifier of the conference bridge to join. Returned from the `POST /conferences` or `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 }
 
 // FlowManagerActionOptionConferenceJoin defines model for FlowManagerActionOptionConferenceJoin.
 type FlowManagerActionOptionConferenceJoin struct {
+	// ConferenceId The unique identifier of the conference to join. Returned from the `GET /conferences` response.
 	ConferenceId *string `json:"conference_id,omitempty"`
 }
 
 // FlowManagerActionOptionConnect defines model for FlowManagerActionOptionConnect.
 type FlowManagerActionOptionConnect struct {
-	// Destinations Target destination addresses.
+	// Destinations List of destination addresses. Must contain at least one destination.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
 
 	// EarlyMedia If true, the call will get early media from the destination.
@@ -2272,9 +2340,11 @@ type FlowManagerActionOptionConnect struct {
 
 // FlowManagerActionOptionConversationSend defines model for FlowManagerActionOptionConversationSend.
 type FlowManagerActionOptionConversationSend struct {
-	// ConversationId Conversation's ID.
+	// ConversationId The unique identifier of the conversation. Returned from the `GET /conversations` response.
 	ConversationId *string `json:"conversation_id,omitempty"`
-	Sync           *bool   `json:"sync,omitempty"`
+
+	// Sync Whether to wait for delivery confirmation.
+	Sync *bool `json:"sync,omitempty"`
 
 	// Text Message text.
 	Text *string `json:"text,omitempty"`
@@ -2308,22 +2378,32 @@ type FlowManagerActionOptionDigitsSend struct {
 
 // FlowManagerActionOptionEcho defines model for FlowManagerActionOptionEcho.
 type FlowManagerActionOptionEcho struct {
+	// Duration Duration of the echo in milliseconds.
 	Duration *int `json:"duration,omitempty"`
 }
 
 // FlowManagerActionOptionEmailSend defines model for FlowManagerActionOptionEmailSend.
 type FlowManagerActionOptionEmailSend struct {
-	Attachments  *[]EmailManagerEmailAttachment `json:"attachments,omitempty"`
-	Content      *string                        `json:"content,omitempty"`
-	Destinations *[]CommonAddress               `json:"destinations,omitempty"`
-	Subject      *string                        `json:"subject,omitempty"`
+	// Attachments List of attachments to include.
+	Attachments *[]EmailManagerEmailAttachment `json:"attachments,omitempty"`
+
+	// Content Body content of the email.
+	Content *string `json:"content,omitempty"`
+
+	// Destinations List of email destination addresses. Must contain at least one.
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// Subject Subject line of the email.
+	Subject *string `json:"subject,omitempty"`
 }
 
 // FlowManagerActionOptionExternalMediaStart defines model for FlowManagerActionOptionExternalMediaStart.
 type FlowManagerActionOptionExternalMediaStart struct {
 	// ConnectionType Connection type. Default value is client.
 	ConnectionType *string `json:"connection_type,omitempty"`
-	Data           *string `json:"data,omitempty"`
+
+	// Data Optional data to pass to the external media endpoint.
+	Data *string `json:"data,omitempty"`
 
 	// Direction Direction. Default value is both.
 	Direction *string `json:"direction,omitempty"`
@@ -2346,12 +2426,16 @@ type FlowManagerActionOptionExternalMediaStop = map[string]interface{}
 
 // FlowManagerActionOptionFetch defines model for FlowManagerActionOptionFetch.
 type FlowManagerActionOptionFetch struct {
+	// EventMethod HTTP method for the fetch request.
 	EventMethod *string `json:"event_method,omitempty"`
-	EventUrl    *string `json:"event_url,omitempty"`
+
+	// EventUrl URL to fetch flow actions from.
+	EventUrl *string `json:"event_url,omitempty"`
 }
 
 // FlowManagerActionOptionFetchFlow defines model for FlowManagerActionOptionFetchFlow.
 type FlowManagerActionOptionFetchFlow struct {
+	// FlowId The unique identifier of the flow to fetch and execute. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 }
 
@@ -2360,7 +2444,7 @@ type FlowManagerActionOptionGoto struct {
 	// LoopCount Loop count.
 	LoopCount *int `json:"loop_count,omitempty"`
 
-	// TargetId Target's action ID in the flow array to go to.
+	// TargetId The action ID within the flow to jump to. References an action `id` within the same flow's `actions` array.
 	TargetId *string `json:"target_id,omitempty"`
 }
 
@@ -2369,14 +2453,13 @@ type FlowManagerActionOptionHangup struct {
 	// Reason Hangup reason code. See cmcall.HangupReason for details.
 	Reason *string `json:"reason,omitempty"`
 
-	// ReferenceId If set, hangs up the call with the same reason as the referenced call ID.
-	// This will overwrite the `reason` option.
+	// ReferenceId If set, hangs up the call with the same reason as the referenced call ID. This will overwrite the `reason` option. Returned from the `POST /calls` or `GET /calls` response.
 	ReferenceId *string `json:"reference_id,omitempty"`
 }
 
 // FlowManagerActionOptionMessageSend defines model for FlowManagerActionOptionMessageSend.
 type FlowManagerActionOptionMessageSend struct {
-	// Destinations List of destination addresses for the message.
+	// Destinations List of destination addresses. Must contain at least one.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
 
 	// Source Contains source or destination detail info.
@@ -2394,7 +2477,7 @@ type FlowManagerActionOptionPlay struct {
 
 // FlowManagerActionOptionQueueJoin defines model for FlowManagerActionOptionQueueJoin.
 type FlowManagerActionOptionQueueJoin struct {
-	// QueueId The ID of the queue to join.
+	// QueueId The unique identifier of the queue to join. Returned from the `POST /queues` or `GET /queues` response.
 	QueueId *string `json:"queue_id,omitempty"`
 }
 
@@ -2415,7 +2498,7 @@ type FlowManagerActionOptionRecordingStart struct {
 	// Format Format to encode audio in. Supported values are wav, mp3, ogg.
 	Format *string `json:"format,omitempty"`
 
-	// OnEndFlowId Flow ID for the end of recording.
+	// OnEndFlowId The unique identifier of the flow to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 }
 
@@ -2460,7 +2543,7 @@ type FlowManagerActionOptionTranscribeRecording struct {
 	// Language BCP47 format for the language (e.g., en-US).
 	Language *string `json:"language,omitempty"`
 
-	// OnEndFlowId Flow ID for the end of transcription.
+	// OnEndFlowId The unique identifier of the flow to execute when recording transcription ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 }
 
@@ -2469,7 +2552,7 @@ type FlowManagerActionOptionTranscribeStart struct {
 	// Language BCP47 format for the language (e.g., en-US).
 	Language *string `json:"language,omitempty"`
 
-	// OnEndFlowId Flow ID for the end of transcription.
+	// OnEndFlowId The unique identifier of the flow to execute when transcription ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 }
 
@@ -2513,28 +2596,28 @@ type FlowManagerActionType string
 type FlowManagerActiveflow struct {
 	CurrentAction *FlowManagerAction `json:"current_action,omitempty"`
 
-	// CustomerId ID of the customer associated with the flow.
+	// CustomerId The unique identifier of the customer associated with this activeflow. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// ExecutedActions List of actions that have been executed.
 	ExecutedActions *[]FlowManagerAction `json:"executed_actions,omitempty"`
 
-	// FlowId ID of the flow definition.
+	// FlowId The unique identifier of the flow definition. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 
-	// ForwardActionId ID of the next action to be executed.
+	// ForwardActionId The unique identifier of the next action to execute. References an action `id` within the current flow's `actions` array.
 	ForwardActionId *string `json:"forward_action_id,omitempty"`
 
 	// Id Unique identifier for the activeflow.
 	Id *string `json:"id,omitempty"`
 
-	// OnCompleteFlowId ID of the flow to be executed on completion.
+	// OnCompleteFlowId The unique identifier of the flow to execute on completion. Returned from the `POST /flows` or `GET /flows` response.
 	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 
-	// ReferenceActiveflowId ID of the referenced activeflow.
+	// ReferenceActiveflowId The unique identifier of the referenced activeflow. Returned from the `GET /activeflows` response.
 	ReferenceActiveflowId *string `json:"reference_activeflow_id,omitempty"`
 
-	// ReferenceId ID of the reference object.
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by `reference_type`. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Reference type of activeflow.
@@ -2558,10 +2641,10 @@ type FlowManagerActiveflowStatus string
 
 // FlowManagerFlow defines model for FlowManagerFlow.
 type FlowManagerFlow struct {
-	// Actions List of actions associated with the flow.
+	// Actions Ordered list of actions to execute in this flow.
 	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
-	// CustomerId Unique identifier for the customer.
+	// CustomerId The unique identifier of the customer who owns this flow. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Detailed description of the flow.
@@ -2573,7 +2656,7 @@ type FlowManagerFlow struct {
 	// Name Name of the flow.
 	Name *string `json:"name,omitempty"`
 
-	// OnCompleteFlowId ID of the flow to be executed on completion.
+	// OnCompleteFlowId The unique identifier of the flow to execute on completion. Returned from the `POST /flows` or `GET /flows` response.
 	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 
 	// TmCreate Timestamp when the flow was created.
@@ -2597,7 +2680,7 @@ type FlowManagerReferenceType string
 
 // MessageManagerMessage defines model for MessageManagerMessage.
 type MessageManagerMessage struct {
-	// CustomerId Unique identifier for the customer.
+	// CustomerId Unique identifier for the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Direction Direction of the message.
@@ -2666,7 +2749,7 @@ type NumberManagerAvailableNumberFeature struct {
 	// Features The list of features supported by the number.
 	Features *[]NumberManagerAvailableNumberFeature `json:"features,omitempty"`
 
-	// Number The available phone number.
+	// Number The available phone number in E.164 format.
 	Number *string `json:"number,omitempty"`
 
 	// PostalCode The postal code associated with the number.
@@ -2678,10 +2761,10 @@ type NumberManagerAvailableNumberFeature struct {
 
 // NumberManagerNumber defines model for NumberManagerNumber.
 type NumberManagerNumber struct {
-	// CallFlowId The ID of the associated call flow.
+	// CallFlowId The unique identifier of the flow to execute for incoming calls. Returned from the `POST /flows` or `GET /flows` response.
 	CallFlowId *string `json:"call_flow_id,omitempty"`
 
-	// CustomerId The customer ID associated with the number.
+	// CustomerId The customer ID associated with the number. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Additional details about the number.
@@ -2693,13 +2776,13 @@ type NumberManagerNumber struct {
 	// Id The unique identifier for the number.
 	Id *string `json:"id,omitempty"`
 
-	// MessageFlowId The ID of the associated message flow.
+	// MessageFlowId The unique identifier of the flow to execute for incoming messages. Returned from the `POST /flows` or `GET /flows` response.
 	MessageFlowId *string `json:"message_flow_id,omitempty"`
 
 	// Name The name of the number.
 	Name *string `json:"name,omitempty"`
 
-	// Number The phone number.
+	// Number The phone number in E.164 format (normal) or +899 format (virtual).
 	Number *string `json:"number,omitempty"`
 
 	// Status The status of the number.
@@ -2738,10 +2821,10 @@ type NumberManagerNumberType string
 
 // OutdialManagerOutdial defines model for OutdialManagerOutdial.
 type OutdialManagerOutdial struct {
-	// CampaignId The unique identifier for the campaign associated with the outdial.
+	// CampaignId The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response.
 	CampaignId *string `json:"campaign_id,omitempty"`
 
-	// CustomerId The unique identifier for the customer associated with the outdial.
+	// CustomerId The unique identifier for the customer associated with the outdial. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Data The data associated with the outdial.
@@ -2768,7 +2851,7 @@ type OutdialManagerOutdial struct {
 
 // OutdialManagerOutdialtarget defines model for OutdialManagerOutdialtarget.
 type OutdialManagerOutdialtarget struct {
-	// Data The data associated with the outdial.
+	// Data The data associated with the outdial target.
 	Data *string `json:"data,omitempty"`
 
 	// Destination0 Contains source or destination detail info.
@@ -2786,16 +2869,16 @@ type OutdialManagerOutdialtarget struct {
 	// Destination4 Contains source or destination detail info.
 	Destination4 *CommonAddress `json:"destination_4,omitempty"`
 
-	// Detail Additional details about the outdial.
+	// Detail Additional details about the outdial target.
 	Detail *string `json:"detail,omitempty"`
 
-	// Id The unique identifier for the outdial.
+	// Id The unique identifier for the outdial target.
 	Id *string `json:"id,omitempty"`
 
-	// Name The name of the outdial.
+	// Name The name of the outdial target.
 	Name *string `json:"name,omitempty"`
 
-	// OutdialId The outdial reference ID.
+	// OutdialId The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response.
 	OutdialId *string `json:"outdial_id,omitempty"`
 
 	// Status The status of the outdial.
@@ -2831,19 +2914,36 @@ type OutdialManagerOutdialtargetStatus string
 
 // QueueManagerQueue defines model for QueueManagerQueue.
 type QueueManagerQueue struct {
-	CustomerId          *string                         `json:"customer_id,omitempty"`
-	Detail              *string                         `json:"detail,omitempty"`
-	Id                  *string                         `json:"id,omitempty"`
-	Name                *string                         `json:"name,omitempty"`
-	RoutingMethod       *QueueManagerQueueRoutingMethod `json:"routing_method,omitempty"`
-	ServiceQueuecallIds *[]string                       `json:"service_queuecall_ids,omitempty"`
+	// CustomerId The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the queue.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
+	Id *string `json:"id,omitempty"`
+
+	// Name Display name of the queue.
+	Name          *string                         `json:"name,omitempty"`
+	RoutingMethod *QueueManagerQueueRoutingMethod `json:"routing_method,omitempty"`
+
+	// ServiceQueuecallIds List of queuecall IDs currently being serviced. Each ID is returned from the `GET /queuecalls` response.
+	ServiceQueuecallIds *[]string `json:"service_queuecall_ids,omitempty"`
 
 	// ServiceTimeout Service queue timeout in milliseconds.
-	ServiceTimeout *int      `json:"service_timeout,omitempty"`
-	TagIds         *[]string `json:"tag_ids,omitempty"`
-	TmCreate       *string   `json:"tm_create,omitempty"`
-	TmDelete       *string   `json:"tm_delete,omitempty"`
-	TmUpdate       *string   `json:"tm_update,omitempty"`
+	ServiceTimeout *int `json:"service_timeout,omitempty"`
+
+	// TagIds List of tag IDs assigned to this queue. Returned from the `POST /tags` or `GET /tags` response.
+	TagIds *[]string `json:"tag_ids,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate The last update timestamp.
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TotalAbandonedCount Total abandoned call count.
 	TotalAbandonedCount *int `json:"total_abandoned_count,omitempty"`
@@ -2854,8 +2954,10 @@ type QueueManagerQueue struct {
 	// TotalServicedCount Total serviced call count.
 	TotalServicedCount *int `json:"total_serviced_count,omitempty"`
 
-	// WaitFlowId Flow ID for the wait queue.
-	WaitFlowId       *string   `json:"wait_flow_id,omitempty"`
+	// WaitFlowId The flow ID executed while callers wait in queue. Returned from the `POST /flows` or `GET /flows` response.
+	WaitFlowId *string `json:"wait_flow_id,omitempty"`
+
+	// WaitQueuecallIds List of queuecall IDs currently waiting. Returned from the `GET /queuecalls` response.
 	WaitQueuecallIds *[]string `json:"wait_queuecall_ids,omitempty"`
 
 	// WaitTimeout Wait queue timeout in milliseconds.
@@ -2867,31 +2969,36 @@ type QueueManagerQueueRoutingMethod string
 
 // QueueManagerQueuecall defines model for QueueManagerQueuecall.
 type QueueManagerQueuecall struct {
+	// CustomerId The unique identifier of the customer who owns this queuecall. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// DurationService Duration for service in milliseconds
 	DurationService *int `json:"duration_service,omitempty"`
 
 	// DurationWaiting Duration for waiting in milliseconds
-	DurationWaiting *int                                `json:"duration_waiting,omitempty"`
-	Id              *string                             `json:"id,omitempty"`
-	ReferenceId     *string                             `json:"reference_id,omitempty"`
-	ReferenceType   *QueueManagerQueuecallReferenceType `json:"reference_type,omitempty"`
+	DurationWaiting *int `json:"duration_waiting,omitempty"`
 
-	// ServiceAgentId The ID of the service agent handling the queue call
+	// Id The unique identifier of the queuecall. Returned from the `GET /queuecalls` response.
+	Id *string `json:"id,omitempty"`
+
+	// ReferenceId The unique identifier of the referenced resource (e.g., a call). Returned from the corresponding resource endpoint.
+	ReferenceId   *string                             `json:"reference_id,omitempty"`
+	ReferenceType *QueueManagerQueuecallReferenceType `json:"reference_type,omitempty"`
+
+	// ServiceAgentId The unique identifier of the agent handling this queuecall. Returned from the `GET /agents` response.
 	ServiceAgentId *string                      `json:"service_agent_id,omitempty"`
 	Status         *QueueManagerQueuecallStatus `json:"status,omitempty"`
 
-	// TmCreate Timestamp when the queue call was created
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the queue call was deleted
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmService Timestamp when the queue call started service
+	// TmService Timestamp when the queue call started service.
 	TmService *string `json:"tm_service,omitempty"`
 
-	// TmUpdate Timestamp when the queue call was last updated
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
@@ -2933,26 +3040,37 @@ type RegistrarManagerAuthType string
 
 // RegistrarManagerExtension defines model for RegistrarManagerExtension.
 type RegistrarManagerExtension struct {
+	// CustomerId The unique identifier of the customer who owns this extension. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
-	Detail     *string `json:"detail,omitempty"`
+
+	// Detail Detailed description of the extension.
+	Detail *string `json:"detail,omitempty"`
 
 	// DirectHash Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
 	DomainName *string `json:"domain_name,omitempty"`
-	Extension  *string `json:"extension,omitempty"`
-	Id         *string `json:"id,omitempty"`
-	Name       *string `json:"name,omitempty"`
-	Password   *string `json:"password,omitempty"`
 
-	// TmCreate Timestamp when the extension was created
+	// Extension The SIP extension number.
+	Extension *string `json:"extension,omitempty"`
+
+	// Id The unique identifier of the extension. Returned from the `POST /extensions` or `GET /extensions` response.
+	Id *string `json:"id,omitempty"`
+
+	// Name Display name of the extension.
+	Name *string `json:"name,omitempty"`
+
+	// Password The SIP password for authentication.
+	Password *string `json:"password,omitempty"`
+
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the extension was deleted
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the extension was last updated
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Username Username, same as the Extension, used by Kamailio's INVITE validation
@@ -2961,23 +3079,40 @@ type RegistrarManagerExtension struct {
 
 // RegistrarManagerTrunk defines model for RegistrarManagerTrunk.
 type RegistrarManagerTrunk struct {
-	AllowedIps *[]string                   `json:"allowed_ips,omitempty"`
-	AuthTypes  *[]RegistrarManagerAuthType `json:"auth_types,omitempty"`
-	CustomerId *string                     `json:"customer_id,omitempty"`
-	Detail     *string                     `json:"detail,omitempty"`
-	DomainName *string                     `json:"domain_name,omitempty"`
-	Id         *string                     `json:"id,omitempty"`
-	Name       *string                     `json:"name,omitempty"`
-	Password   *string                     `json:"password,omitempty"`
+	// AllowedIps List of IP addresses allowed for IP-based authentication.
+	AllowedIps *[]string `json:"allowed_ips,omitempty"`
 
-	// TmCreate Timestamp when the trunk was created
+	// AuthTypes List of authentication methods for this trunk.
+	AuthTypes *[]RegistrarManagerAuthType `json:"auth_types,omitempty"`
+
+	// CustomerId The unique identifier of the customer who owns this trunk. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the trunk.
+	Detail *string `json:"detail,omitempty"`
+
+	// DomainName The SIP domain for this trunk.
+	DomainName *string `json:"domain_name,omitempty"`
+
+	// Id The unique identifier of the trunk. Returned from the `POST /trunks` or `GET /trunks` response.
+	Id *string `json:"id,omitempty"`
+
+	// Name Display name of the trunk.
+	Name *string `json:"name,omitempty"`
+
+	// Password The SIP password for authentication.
+	Password *string `json:"password,omitempty"`
+
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the trunk was deleted
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the trunk was last updated
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Username The SIP username for authentication.
 	Username *string `json:"username,omitempty"`
 }
 
@@ -2989,7 +3124,7 @@ type RouteManagerProvider struct {
 	// Hostname The destination hostname for the provider.
 	Hostname *string `json:"hostname,omitempty"`
 
-	// Id The unique identifier for the provider.
+	// Id The unique identifier of the provider. Returned from the `POST /providers` or `GET /providers` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the provider.
@@ -3004,13 +3139,13 @@ type RouteManagerProvider struct {
 	// TechPrefix The tech prefix, valid only for SIP type providers.
 	TechPrefix *string `json:"tech_prefix,omitempty"`
 
-	// TmCreate Timestamp when the provider was created.
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the provider was deleted.
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the provider was last updated.
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
@@ -3022,13 +3157,13 @@ type RouteManagerProviderType string
 
 // RouteManagerRoute defines model for RouteManagerRoute.
 type RouteManagerRoute struct {
-	// CustomerId The customer ID associated with the route.
+	// CustomerId The unique identifier of the customer who owns this route. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail The details about the route.
 	Detail *string `json:"detail,omitempty"`
 
-	// Id The unique identifier for the route.
+	// Id The unique identifier of the route. Returned from the `POST /routes` or `GET /routes` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the route.
@@ -3037,37 +3172,37 @@ type RouteManagerRoute struct {
 	// Priority The priority of the route, used for routing decisions.
 	Priority *int `json:"priority,omitempty"`
 
-	// ProviderId The unique identifier of the provider associated with this route.
+	// ProviderId The unique identifier of the provider used for this route. Returned from the `GET /providers` response.
 	ProviderId *string `json:"provider_id,omitempty"`
 
 	// Target The target destination for the route (e.g., country code or 'all').
 	Target *string `json:"target,omitempty"`
 
-	// TmCreate Timestamp when the route was created.
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the route was deleted.
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the route was last updated.
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // StorageManagerAccount defines model for StorageManagerAccount.
 type StorageManagerAccount struct {
-	// CustomerId The customer ID associated with the account.
+	// CustomerId The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id The unique identifier for the account.
+	// Id The unique identifier of the storage account. Returned from the `GET /storage_accounts` response.
 	Id *string `json:"id,omitempty"`
 
-	// TmCreate Timestamp when the account was created.
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the account was deleted.
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the account was last updated.
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TotalFileCount The total number of files in the account.
@@ -3079,7 +3214,7 @@ type StorageManagerAccount struct {
 
 // StorageManagerFile defines model for StorageManagerFile.
 type StorageManagerFile struct {
-	// CustomerId The customer ID associated with the file.
+	// CustomerId The unique identifier of the customer who owns this file. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail The details of the file.
@@ -3091,31 +3226,31 @@ type StorageManagerFile struct {
 	// Filesize The size of the file in bytes.
 	Filesize *int64 `json:"filesize,omitempty"`
 
-	// Id The unique identifier for the file.
+	// Id The unique identifier of the file. Returned from the `POST /files` or `GET /files` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the file.
 	Name *string `json:"name,omitempty"`
 
-	// OwnerId The owner ID of the file.
+	// OwnerId The unique identifier of the resource that owns this file (e.g., an agent or a call). Returned from the corresponding owner resource endpoint.
 	OwnerId *string `json:"owner_id,omitempty"`
 
-	// ReferenceId The reference ID associated with the file.
+	// ReferenceId The unique identifier of the referenced resource. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType The reference type of the file.
 	ReferenceType *StorageManagerFileReferenceType `json:"reference_type,omitempty"`
 
-	// TmCreate Timestamp when the file was created.
+	// TmCreate The creation timestamp.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the file was deleted.
+	// TmDelete The deletion timestamp.
 	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmDownloadExpire The timestamp when the download link expires.
+	// TmDownloadExpire Timestamp when the download link expires.
 	TmDownloadExpire *string `json:"tm_download_expire,omitempty"`
 
-	// TmUpdate Timestamp when the file was last updated.
+	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// UriDownload The URI for downloading the file.
@@ -3130,7 +3265,7 @@ type TagManagerTag struct {
 	// Detail The details about the tag.
 	Detail *string `json:"detail,omitempty"`
 
-	// Id The unique identifier for the tag.
+	// Id The unique identifier of the tag. Returned from the `POST /tags` or `GET /tags` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the tag.
@@ -3151,13 +3286,13 @@ type TalkManagerMedia struct {
 	// Address Contains source or destination detail info.
 	Address *CommonAddress `json:"address,omitempty"`
 
-	// AgentId Valid only if the type is `agent`.
+	// AgentId The unique identifier of the agent. Valid only if the type is `agent`. Returned from the `GET /agents` response.
 	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
 
-	// FileId Valid only if the type is `file`.
+	// FileId The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response.
 	FileId *string `json:"file_id,omitempty"`
 
-	// LinkUrl Valid only if the type is `link`.
+	// LinkUrl The URL of the linked resource. Valid only if the type is `link`.
 	LinkUrl *string `json:"link_url,omitempty"`
 
 	// Type Type of the media content.
@@ -3169,26 +3304,26 @@ type TalkManagerMediaType string
 
 // TalkManagerMessage defines model for TalkManagerMessage.
 type TalkManagerMessage struct {
-	// ChatId Talk chat ID.
+	// ChatId The unique identifier of the talk this message belongs to. Returned from the `GET /service_agents/talk_chats` response.
 	ChatId *string `json:"chat_id,omitempty"`
 
-	// CustomerId Resource's customer ID.
+	// CustomerId The unique identifier of the customer who owns this message. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id Resource identifier.
+	// Id The unique identifier of the message. Returned from the `POST /service_agents/talk_messages` or `GET /service_agents/talk_messages` response.
 	Id *string `json:"id,omitempty"`
 
 	// Medias Media attachments.
 	Medias   *[]TalkManagerMedia  `json:"medias,omitempty"`
 	Metadata *TalkManagerMetadata `json:"metadata,omitempty"`
 
-	// OwnerId Resource's owner ID.
+	// OwnerId The unique identifier of the message author. Returned from the corresponding owner resource endpoint.
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Resource's owner type.
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// ParentId Parent message ID (for threading/replies).
+	// ParentId The unique identifier of the parent message (for threaded replies). Returned from the `GET /service_agents/talk_messages` response.
 	ParentId *string `json:"parent_id,omitempty"`
 
 	// Text Message text content.
@@ -3218,28 +3353,28 @@ type TalkManagerMetadata struct {
 
 // TalkManagerParticipant defines model for TalkManagerParticipant.
 type TalkManagerParticipant struct {
-	// ChatId Talk chat ID.
+	// ChatId The unique identifier of the talk this participant belongs to. Returned from the `GET /service_agents/talk_chats` response.
 	ChatId *string `json:"chat_id,omitempty"`
 
-	// CustomerId Resource's customer ID.
+	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id Resource identifier.
+	// Id The unique identifier of the participant.
 	Id *string `json:"id,omitempty"`
 
-	// OwnerId Resource's owner ID.
+	// OwnerId The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint.
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Resource's owner type.
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// TmJoined Timestamp when the participant joined.
+	// TmJoined Timestamp when the participant joined the talk.
 	TmJoined *string `json:"tm_joined,omitempty"`
 }
 
 // TalkManagerParticipantInput Participant information for chat creation.
 type TalkManagerParticipantInput struct {
-	// OwnerId Owner ID (UUID).
+	// OwnerId The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`).
 	OwnerId string `json:"owner_id"`
 
 	// OwnerType Owner type (e.g., "agent", "customer").
@@ -3251,7 +3386,7 @@ type TalkManagerReaction struct {
 	// Emoji Emoji character for the reaction.
 	Emoji *string `json:"emoji,omitempty"`
 
-	// OwnerId ID of the owner who reacted.
+	// OwnerId The unique identifier of the owner who reacted. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the owner who reacted.
@@ -3263,13 +3398,13 @@ type TalkManagerReaction struct {
 
 // TalkManagerTalk defines model for TalkManagerTalk.
 type TalkManagerTalk struct {
-	// CustomerId Resource's customer ID.
+	// CustomerId The unique identifier of the customer who owns this talk. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Detail Talk description/detail (optional).
 	Detail *string `json:"detail,omitempty"`
 
-	// Id Resource identifier.
+	// Id The unique identifier of the talk. Returned from the `POST /service_agents/talk_chats` or `GET /service_agents/talk_chats` response.
 	Id *string `json:"id,omitempty"`
 
 	// MemberCount Number of participants in this chat.
@@ -3308,17 +3443,17 @@ type TimelineManagerEvent struct {
 
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
-	// CustomerId Customer ID
+	// CustomerId The unique identifier of the customer who owns this transcribe session. Returned from the `GET /customers` response.
 	CustomerId *string                               `json:"customer_id,omitempty"`
 	Direction  *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
 
-	// Id Transcribe id
+	// Id The unique identifier of the transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response.
 	Id *string `json:"id,omitempty"`
 
 	// Language BCP47 type's language code.
 	Language *string `json:"language,omitempty"`
 
-	// ReferenceId Call/Conference/Recording's ID
+	// ReferenceId The unique identifier of the resource being transcribed (call, conference, or recording). Returned from the corresponding resource endpoint.
 	ReferenceId   *string                                   `json:"reference_id,omitempty"`
 	ReferenceType *TranscribeManagerTranscribeReferenceType `json:"reference_type,omitempty"`
 	Status        *TranscribeManagerTranscribeStatus        `json:"status,omitempty"`
@@ -3346,19 +3481,19 @@ type TranscribeManagerTranscribeStatus string
 type TranscribeManagerTranscript struct {
 	Direction *TranscribeManagerTranscriptDirection `json:"direction,omitempty"`
 
-	// Id Transcript ID
+	// Id The unique identifier of the transcript.
 	Id *string `json:"id,omitempty"`
 
 	// Message Transcript message
 	Message *string `json:"message,omitempty"`
 
-	// TmCreate Timestamp when created
+	// TmCreate Timestamp when the transcript record was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmTranscript Timestamp for the transcript
+	// TmTranscript Timestamp when this transcript was spoken.
 	TmTranscript *string `json:"tm_transcript,omitempty"`
 
-	// TranscribeId Transcribe ID
+	// TranscribeId The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response.
 	TranscribeId *string `json:"transcribe_id,omitempty"`
 }
 
@@ -3367,16 +3502,16 @@ type TranscribeManagerTranscriptDirection string
 
 // TransferManagerTransfer defines model for TransferManagerTransfer.
 type TransferManagerTransfer struct {
-	// ConfbridgeId Conference Bridge ID
+	// ConfbridgeId The unique identifier of the conference bridge used for attended transfer. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 
-	// CustomerId Customer ID
+	// CustomerId The unique identifier of the customer who owns this transfer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// GroupcallId Created Groupcall ID
+	// GroupcallId The unique identifier of the groupcall created for the transfer. Returned from the `GET /groupcalls` response.
 	GroupcallId *string `json:"groupcall_id,omitempty"`
 
-	// Id Transfer ID
+	// Id The unique identifier of the transfer. Returned from the `POST /transfers` response.
 	Id *string `json:"id,omitempty"`
 
 	// TmCreate Timestamp when created
@@ -3388,13 +3523,13 @@ type TransferManagerTransfer struct {
 	// TmUpdate Timestamp when updated
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// TransfereeAddresses List of transferee addresses
+	// TransfereeAddresses List of target addresses for the transfer.
 	TransfereeAddresses *[]CommonAddress `json:"transferee_addresses,omitempty"`
 
-	// TransfereeCallId Transferee Call ID
+	// TransfereeCallId The unique identifier of the call being transferred. Returned from the `GET /calls` response.
 	TransfereeCallId *string `json:"transferee_call_id,omitempty"`
 
-	// TransfererCallId Transferer Call ID
+	// TransfererCallId The unique identifier of the call initiating the transfer. Returned from the `GET /calls` response.
 	TransfererCallId *string                      `json:"transferer_call_id,omitempty"`
 	Type             *TransferManagerTransferType `json:"type,omitempty"`
 }
@@ -3404,13 +3539,13 @@ type TransferManagerTransferType string
 
 // TtsManagerSpeaking defines model for TtsManagerSpeaking.
 type TtsManagerSpeaking struct {
-	// CustomerId Customer identifier
+	// CustomerId The unique identifier of the customer who owns this speaking session. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
 	// Direction Audio injection direction (in, out, both)
 	Direction *string `json:"direction,omitempty"`
 
-	// Id Speaking session identifier
+	// Id The unique identifier of the speaking session. Returned from the `POST /speakings` or `GET /speakings` response.
 	Id *string `json:"id,omitempty"`
 
 	// Language TTS language (e.g. en-US)
@@ -3422,7 +3557,7 @@ type TtsManagerSpeaking struct {
 	// Provider TTS provider (elevenlabs)
 	Provider *string `json:"provider,omitempty"`
 
-	// ReferenceId ID of the referenced entity
+	// ReferenceId The unique identifier of the referenced resource (call or confbridge). Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Type of the referenced entity (call, confbridge)
@@ -3452,10 +3587,10 @@ type PageToken = string
 
 // GetAccesskeysParams defines parameters for GetAccesskeys.
 type GetAccesskeysParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3474,10 +3609,10 @@ type PutAccesskeysIdJSONBody struct {
 
 // GetActiveflowsParams defines parameters for GetActiveflows.
 type GetActiveflowsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3494,10 +3629,10 @@ type PostActiveflowsJSONBody struct {
 
 // GetAgentsParams defines parameters for GetAgents.
 type GetAgentsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// TagIds Comma separated tag ids.
@@ -3517,7 +3652,7 @@ type PostAgentsJSONBody struct {
 	// Permission Permission type
 	Permission AgentManagerAgentPermission `json:"permission"`
 
-	// RingMethod Represents an agent resource.
+	// RingMethod Method used to ring the agent for incoming calls.
 	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
 	TagIds     []string                    `json:"tag_ids"`
 	Username   string                      `json:"username"`
@@ -3528,7 +3663,7 @@ type PutAgentsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
 	Name   *string `json:"name,omitempty"`
 
-	// RingMethod Represents an agent resource.
+	// RingMethod Method used to ring the agent for incoming calls.
 	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
 }
 
@@ -3550,7 +3685,7 @@ type PutAgentsIdPermissionJSONBody struct {
 
 // PutAgentsIdStatusJSONBody defines parameters for PutAgentsIdStatus.
 type PutAgentsIdStatusJSONBody struct {
-	// Status Agent's status
+	// Status Current availability status of the agent.
 	Status *AgentManagerAgentStatus `json:"status,omitempty"`
 }
 
@@ -3561,10 +3696,10 @@ type PutAgentsIdTagIdsJSONBody struct {
 
 // GetAicallsParams defines parameters for GetAicalls.
 type GetAicallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3583,10 +3718,10 @@ type PostAicallsJSONBody struct {
 
 // GetAimessagesParams defines parameters for GetAimessages.
 type GetAimessagesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// AicallId The aicall id.
@@ -3604,10 +3739,10 @@ type PostAimessagesJSONBody struct {
 
 // GetAisParams defines parameters for GetAis.
 type GetAisParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3675,10 +3810,10 @@ type PutAisIdJSONBody struct {
 
 // GetAisummariesParams defines parameters for GetAisummaries.
 type GetAisummariesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3691,7 +3826,9 @@ type PostAisummariesJSONBody struct {
 	OnEndFlowId string `json:"on_end_flow_id"`
 
 	// ReferenceId The ID of the reference for the ai summary.
-	ReferenceId   string                        `json:"reference_id"`
+	ReferenceId string `json:"reference_id"`
+
+	// ReferenceType Type of reference for the AI summary.
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
@@ -3775,7 +3912,7 @@ type PostAuthSignupJSONBodyWebhookMethod string
 
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
 	// CountryCode The ISO country code. Required when type is not virtual.
@@ -3812,19 +3949,19 @@ type PutBillingAccountsIdPaymentInfoJSONBody struct {
 
 // GetBillingsParams defines parameters for GetBillings.
 type GetBillingsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetCallsParams defines parameters for GetCalls.
 type GetCallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3890,19 +4027,19 @@ type PostCallsIdTalkJSONBody struct {
 
 // GetCampaigncallsParams defines parameters for GetCampaigncalls.
 type GetCampaigncallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetCampaignsParams defines parameters for GetCampaigns.
 type GetCampaignsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -3964,10 +4101,10 @@ type PutCampaignsIdActionsJSONBody struct {
 
 // GetCampaignsIdCampaigncallsParams defines parameters for GetCampaignsIdCampaigncalls.
 type GetCampaignsIdCampaigncallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4006,19 +4143,19 @@ type PutCampaignsIdStatusJSONBody struct {
 
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetConferencesParams defines parameters for GetConferences.
 type GetConferencesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4077,10 +4214,10 @@ type PostConferencesIdTranscribeStartJSONBody struct {
 
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4183,10 +4320,10 @@ type PostContactsIdTagsJSONBody struct {
 
 // GetConversationAccountsParams defines parameters for GetConversationAccounts.
 type GetConversationAccountsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4229,10 +4366,10 @@ type GetConversationsJSONBody struct {
 
 // GetConversationsParams defines parameters for GetConversations.
 type GetConversationsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4249,10 +4386,10 @@ type PutConversationsIdJSONBody struct {
 
 // GetConversationsIdMessagesParams defines parameters for GetConversationsIdMessages.
 type GetConversationsIdMessagesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4296,10 +4433,10 @@ type PutCustomerBillingAccountIdJSONBody struct {
 
 // GetCustomersParams defines parameters for GetCustomers.
 type GetCustomersParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4336,10 +4473,10 @@ type PutCustomersIdBillingAccountIdJSONBody struct {
 
 // GetEmailsParams defines parameters for GetEmails.
 type GetEmailsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4360,10 +4497,10 @@ type PostEmailsJSONBody struct {
 
 // GetExtensionsParams defines parameters for GetExtensions.
 type GetExtensionsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4390,10 +4527,10 @@ type PutExtensionsIdJSONBody struct {
 
 // GetFilesParams defines parameters for GetFiles.
 type GetFilesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4405,10 +4542,10 @@ type PostFilesMultipartBody struct {
 
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4444,10 +4581,10 @@ type PutFlowsIdJSONBody struct {
 
 // GetGroupcallsParams defines parameters for GetGroupcalls.
 type GetGroupcallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4469,10 +4606,10 @@ type PostGroupcallsJSONBody struct {
 
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4490,10 +4627,10 @@ type PostMessagesJSONBody struct {
 
 // GetNumbersParams defines parameters for GetNumbers.
 type GetNumbersParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4550,10 +4687,10 @@ type PutNumbersIdFlowIdsJSONBody struct {
 
 // GetOutdialsParams defines parameters for GetOutdials.
 type GetOutdialsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4583,10 +4720,10 @@ type PutOutdialsIdDataJSONBody struct {
 
 // GetOutdialsIdTargetsParams defines parameters for GetOutdialsIdTargets.
 type GetOutdialsIdTargetsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4614,10 +4751,10 @@ type PostOutdialsIdTargetsJSONBody struct {
 
 // GetOutplansParams defines parameters for GetOutplans.
 type GetOutplansParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4692,10 +4829,10 @@ type PutOutplansIdDialInfoJSONBody struct {
 
 // GetProvidersParams defines parameters for GetProviders.
 type GetProvidersParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4727,19 +4864,19 @@ type PutProvidersIdJSONBody struct {
 
 // GetQueuecallsParams defines parameters for GetQueuecalls.
 type GetQueuecallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetQueuesParams defines parameters for GetQueues.
 type GetQueuesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4793,19 +4930,19 @@ type PostRagsQueryJSONBody struct {
 
 // GetRecordingsParams defines parameters for GetRecordings.
 type GetRecordingsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetRoutesParams defines parameters for GetRoutes.
 type GetRoutesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// CustomerId target customer id
@@ -4853,28 +4990,28 @@ type PutRoutesIdJSONBody struct {
 
 // GetServiceAgentsAgentsParams defines parameters for GetServiceAgentsAgents.
 type GetServiceAgentsAgentsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -4977,19 +5114,19 @@ type PostServiceAgentsContactsIdTagsJSONBody struct {
 
 // GetServiceAgentsConversationsParams defines parameters for GetServiceAgentsConversations.
 type GetServiceAgentsConversationsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsConversationsIdMessagesParams defines parameters for GetServiceAgentsConversationsIdMessages.
 type GetServiceAgentsConversationsIdMessagesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5003,19 +5140,19 @@ type PostServiceAgentsConversationsIdMessagesJSONBody struct {
 
 // GetServiceAgentsExtensionsParams defines parameters for GetServiceAgentsExtensions.
 type GetServiceAgentsExtensionsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsFilesParams defines parameters for GetServiceAgentsFiles.
 type GetServiceAgentsFilesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5033,7 +5170,7 @@ type PutServiceAgentsMeJSONBody struct {
 	// Name The updated name of the agent.
 	Name string `json:"name"`
 
-	// RingMethod Represents an agent resource.
+	// RingMethod Method used to ring the agent for incoming calls.
 	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
 }
 
@@ -5051,34 +5188,34 @@ type PutServiceAgentsMePasswordJSONBody struct {
 
 // PutServiceAgentsMeStatusJSONBody defines parameters for PutServiceAgentsMeStatus.
 type PutServiceAgentsMeStatusJSONBody struct {
-	// Status Agent's status
+	// Status Current availability status of the agent.
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
 // GetServiceAgentsTagsParams defines parameters for GetServiceAgentsTags.
 type GetServiceAgentsTagsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsTalkChannelsParams defines parameters for GetServiceAgentsTalkChannels.
 type GetServiceAgentsTalkChannelsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsTalkChatsParams defines parameters for GetServiceAgentsTalkChats.
 type GetServiceAgentsTalkChatsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5120,10 +5257,10 @@ type GetServiceAgentsTalkMessagesParams struct {
 	// ChatId Chat ID to filter messages
 	ChatId string `form:"chat_id" json:"chat_id"`
 
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5186,10 +5323,10 @@ type PostSpeakingsIdSayJSONBody struct {
 
 // GetStorageAccountsParams defines parameters for GetStorageAccounts.
 type GetStorageAccountsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5200,10 +5337,10 @@ type PostStorageAccountsJSONBody struct {
 
 // GetStorageFilesParams defines parameters for GetStorageFiles.
 type GetStorageFilesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5214,10 +5351,10 @@ type PostStorageFilesMultipartBody struct {
 
 // GetTagsParams defines parameters for GetTags.
 type GetTagsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5235,10 +5372,10 @@ type PutTagsIdJSONBody struct {
 
 // GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
 type GetTimelinesResourceTypeResourceIdEventsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5247,10 +5384,10 @@ type GetTimelinesResourceTypeResourceIdEventsParamsResourceType string
 
 // GetTranscribesParams defines parameters for GetTranscribes.
 type GetTranscribesParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
@@ -5271,10 +5408,10 @@ type PostTranscribesJSONBody struct {
 
 // GetTranscriptsParams defines parameters for GetTranscripts.
 type GetTranscriptsParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken    *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 	TranscribeId string     `form:"transcribe_id" json:"transcribe_id"`
 }
@@ -5292,10 +5429,10 @@ type PostTransfersJSONBody struct {
 
 // GetTrunksParams defines parameters for GetTrunks.
 type GetTrunksParams struct {
-	// PageSize The size of results.
+	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// PageToken The token. tm_create
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
