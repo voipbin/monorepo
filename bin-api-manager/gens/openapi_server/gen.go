@@ -918,7 +918,7 @@ type AIManagerAIcall struct {
 	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
 	AiId *string `json:"ai_id,omitempty"`
 
-	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /confbridges` response.
+	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
@@ -1433,7 +1433,7 @@ type CallManagerRecording struct {
 	// OnEndFlowId Flow ID to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
-	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /confbridges`).
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /conferences`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the resource owner (e.g., call, confbridge).
@@ -3202,7 +3202,7 @@ type StorageManagerAccount struct {
 	// CustomerId The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id The unique identifier of the storage account. Returned from the `GET /storage/accounts` response.
+	// Id The unique identifier of the storage account. Returned from the `GET /storage_accounts` response.
 	Id *string `json:"id,omitempty"`
 
 	// TmCreate The creation timestamp.
@@ -3313,13 +3313,13 @@ type TalkManagerMediaType string
 
 // TalkManagerMessage defines model for TalkManagerMessage.
 type TalkManagerMessage struct {
-	// ChatId The unique identifier of the talk this message belongs to. Returned from the `GET /talk_chats` response.
+	// ChatId The unique identifier of the talk this message belongs to. Returned from the `GET /service_agents/talk_chats` response.
 	ChatId *string `json:"chat_id,omitempty"`
 
 	// CustomerId The unique identifier of the customer who owns this message. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Id The unique identifier of the message. Returned from the `POST /talk_messages` or `GET /talk_messages` response.
+	// Id The unique identifier of the message. Returned from the `POST /service_agents/talk_messages` or `GET /service_agents/talk_messages` response.
 	Id *string `json:"id,omitempty"`
 
 	// Medias Media attachments.
@@ -3332,7 +3332,7 @@ type TalkManagerMessage struct {
 	// OwnerType Resource's owner type.
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// ParentId The unique identifier of the parent message (for threaded replies). Returned from the `GET /talk_messages` response.
+	// ParentId The unique identifier of the parent message (for threaded replies). Returned from the `GET /service_agents/talk_messages` response.
 	ParentId *string `json:"parent_id,omitempty"`
 
 	// Text Message text content.
@@ -3362,7 +3362,7 @@ type TalkManagerMetadata struct {
 
 // TalkManagerParticipant defines model for TalkManagerParticipant.
 type TalkManagerParticipant struct {
-	// ChatId The unique identifier of the talk this participant belongs to. Returned from the `GET /talk_chats` response.
+	// ChatId The unique identifier of the talk this participant belongs to. Returned from the `GET /service_agents/talk_chats` response.
 	ChatId *string `json:"chat_id,omitempty"`
 
 	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
@@ -3413,7 +3413,7 @@ type TalkManagerTalk struct {
 	// Detail Talk description/detail (optional).
 	Detail *string `json:"detail,omitempty"`
 
-	// Id The unique identifier of the talk. Returned from the `POST /talk_chats` or `GET /talk_chats` response.
+	// Id The unique identifier of the talk. Returned from the `POST /service_agents/talk_chats` or `GET /service_agents/talk_chats` response.
 	Id *string `json:"id,omitempty"`
 
 	// MemberCount Number of participants in this chat.
