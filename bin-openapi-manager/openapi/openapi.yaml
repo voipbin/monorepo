@@ -5024,6 +5024,7 @@ components:
         - TalkManagerTalkTypeDirect
         - TalkManagerTalkTypeGroup
         - TalkManagerTalkTypeTalk
+      example: "direct"
     TalkManagerParticipantInput:
       type: object
       description: Participant information for chat creation.
@@ -5031,9 +5032,13 @@ components:
         owner_type:
           type: string
           description: Owner type (e.g., "agent", "customer").
+          example: "agent"
         owner_id:
           type: string
-          description: Owner ID (UUID).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
       required:
         - owner_type
         - owner_id
@@ -5042,30 +5047,50 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk. Returned from the `POST /talk_chats` or `GET /talk_chats` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this talk. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/TalkManagerTalkType'
+          description: "The type of the talk."
+          example: "direct"
         name:
           type: string
           description: Talk name (optional).
+          example: "Sales Team Chat"
         detail:
           type: string
           description: Talk description/detail (optional).
+          example: "Internal chat for the sales team"
         member_count:
           type: integer
           description: Number of participants in this chat.
+          example: 5
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was last updated.
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the talk was deleted.
+          example: "2026-01-17T18:45:00Z"
 
     TalkManagerMessageType:
       type: string
@@ -5076,32 +5101,52 @@ components:
       x-enum-varnames:
         - TalkManagerMessageTypeNormal
         - TalkManagerMessageTypeSystem
+      example: "normal"
     TalkManagerMessage:
       type: object
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the message. Returned from the `POST /talk_messages` or `GET /talk_messages` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this message. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
           description: Resource's owner type.
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the message author. Returned from the corresponding owner resource endpoint."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         chat_id:
           type: string
-          description: Talk chat ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk this message belongs to. Returned from the `GET /talk_chats` response."
+          example: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c"
         parent_id:
           type: string
-          description: Parent message ID (for threading/replies).
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the parent message (for threaded replies). Returned from the `GET /talk_messages` response."
+          example: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d"
         type:
           $ref: '#/components/schemas/TalkManagerMessageType'
+          description: "The type of the message."
+          example: "normal"
         text:
           type: string
           description: Message text content.
+          example: "Hello team, any updates on the project?"
         medias:
           type: array
           description: Media attachments.
@@ -5109,15 +5154,25 @@ components:
             $ref: '#/components/schemas/TalkManagerMedia'
         metadata:
           $ref: '#/components/schemas/TalkManagerMetadata'
+          description: "Message metadata including reactions."
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-17T18:45:00Z"
 
     TalkManagerMediaType:
       type: string
@@ -5132,26 +5187,34 @@ components:
         - TalkManagerMediaTypeAgent
         - TalkManagerMediaTypeFile
         - TalkManagerMediaTypeLink
+      example: "file"
 
     TalkManagerMedia:
       type: object
       properties:
         type:
           $ref: '#/components/schemas/TalkManagerMediaType'
+          description: "The type of media content."
+          example: "file"
         address:
           description: Valid only if the type is `address`.
           $ref: '#/components/schemas/CommonAddress'
         agent_id:
-          description: Valid only if the type is `agent`.
+          description: "The unique identifier of the agent. Valid only if the type is `agent`. Returned from the `GET /agents` response."
           type: string
           format: uuid
+          example: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
         file_id:
-          description: Valid only if the type is `file`.
+          description: "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response."
           type: string
+          format: uuid
+          x-go-type: string
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         link_url:
-          description: Valid only if the type is `link`.
+          description: "The URL of the linked resource. Valid only if the type is `link`."
           type: string
           format: uri
+          example: "https://example.com/document.pdf"
 
     TalkManagerMetadata:
       type: object
@@ -5168,37 +5231,61 @@ components:
         emoji:
           type: string
           description: Emoji character for the reaction.
+          example: "👍"
         owner_type:
           type: string
           description: Type of the owner who reacted.
+          example: "agent"
         owner_id:
           type: string
-          description: ID of the owner who reacted.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the owner who reacted."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the reaction was created.
+          example: "2026-01-15T09:30:00Z"
 
     TalkManagerParticipant:
       type: object
       properties:
         id:
           type: string
-          description: Resource identifier.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
           description: Resource's owner type.
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the participant owner. Returned from the corresponding owner resource endpoint."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         chat_id:
           type: string
-          description: Talk chat ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the talk this participant belongs to. Returned from the `GET /talk_chats` response."
+          example: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c"
         tm_joined:
           type: string
-          description: Timestamp when the participant joined.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the participant joined the talk."
+          example: "2026-01-15T10:00:00Z"
 
 
 #########################################
@@ -5212,12 +5299,15 @@ components:
           type: string
           format: date-time
           description: When the event occurred
+          example: "2026-01-15T09:30:00Z"
         event_type:
           type: string
           description: Type of event (e.g., call_created, conference_started)
+          example: "call_created"
         data:
           type: object
           description: Event data in WebhookMessage format
+          example: {}
 
 
 #########################################
@@ -5228,22 +5318,36 @@ components:
       properties:
         id:
           type: string
-          description: "The unique identifier for the tag."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the tag. Returned from the `POST /tags` or `GET /tags` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         name:
           type: string
           description: "The name of the tag."
+          example: "VIP Customer"
         detail:
           type: string
           description: "The details about the tag."
+          example: "Tag for high-priority VIP customers"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was created."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was last updated."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Timestamp when the tag was deleted."
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -5254,43 +5358,68 @@ components:
       properties:
         id:
           type: string
-          description: Speaking session identifier
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the speaking session. Returned from the `POST /speakings` or `GET /speakings` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer identifier
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this speaking session. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           type: string
           description: Type of the referenced entity (call, confbridge)
+          example: "call"
         reference_id:
           type: string
-          description: ID of the referenced entity
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (call or confbridge). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         language:
           type: string
           description: TTS language (e.g. en-US)
+          example: "en-US"
         provider:
           type: string
           description: TTS provider (elevenlabs)
+          example: "elevenlabs"
         voice_id:
           type: string
           description: Provider-specific voice ID
+          example: "21m00Tcm4TlvDq8ikWAM"
         direction:
           type: string
           description: Audio injection direction (in, out, both)
+          example: "both"
         status:
           type: string
           description: Session status (initiating, active, stopped)
+          example: "active"
         pod_id:
           type: string
           description: Kubernetes pod hosting this session
+          example: "tts-manager-7b8f9c0d-pod1"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Creation timestamp
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Last update timestamp
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Soft-delete timestamp
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -5306,6 +5435,7 @@ components:
         - TranscribeManagerTranscribeDirectionBoth
         - TranscribeManagerTranscribeDirectionIn
         - TranscribeManagerTranscribeDirectionOut
+      example: "both"
     TranscribeManagerTranscribeReferenceType:
       type: string
       enum:
@@ -5320,6 +5450,7 @@ components:
         - TranscribeManagerTranscribeReferenceTypeCall
         - TranscribeManagerTranscribeReferenceTypeConfbridge
         - TranscribeManagerTranscribeReferenceTypeConference
+      example: "call"
     TranscribeManagerTranscribeStatus:
       type: string
       enum:
@@ -5328,36 +5459,62 @@ components:
       x-enum-varnames:
         - TranscribeManagerTranscribeStatusProgressing
         - TranscribeManagerTranscribeStatusDone
+      example: "progressing"
     TranscribeManagerTranscribe:
       type: object
       properties:
         id:
           type: string
-          description: Transcribe id
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this transcribe session. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           $ref: '#/components/schemas/TranscribeManagerTranscribeReferenceType'
+          description: "The type of resource being transcribed."
+          example: "call"
         reference_id:
           type: string
-          description: Call/Conference/Recording's ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource being transcribed (call, conference, or recording). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         status:
           $ref: '#/components/schemas/TranscribeManagerTranscribeStatus'
+          description: "Current status of the transcribe session."
+          example: "progressing"
         language:
           type: string
           description: BCP47 type's language code.
+          example: "en-US"
         direction:
           $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+          description: "The audio direction to transcribe."
+          example: "both"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when created
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when updated
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when deleted
+          example: "2026-01-17T18:45:00Z"
 
     TranscribeManagerTranscriptDirection:
       type: string
@@ -5369,26 +5526,42 @@ components:
         - TranscribeManagerTranscriptDirectionBoth
         - TranscribeManagerTranscriptDirectionIn
         - TranscribeManagerTranscriptDirectionOut
+      example: "both"
     TranscribeManagerTranscript:
       type: object
       properties:
         id:
           type: string
-          description: Transcript ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transcript."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         transcribe_id:
           type: string
-          description: Transcribe ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response."
+          example: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e"
         direction:
           $ref: '#/components/schemas/TranscribeManagerTranscriptDirection'
+          description: "The audio direction of this transcript."
+          example: "both"
         message:
           type: string
           description: Transcript message
+          example: "Hello, thank you for calling. How can I help you?"
         tm_transcript:
           type: string
-          description: Timestamp for the transcript
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when this transcript was spoken."
+          example: "2026-01-15T09:31:15Z"
         tm_create:
           type: string
-          description: Timestamp when created
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the transcript record was created."
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -5402,43 +5575,74 @@ components:
       x-enum-varnames:
         - TransferManagerTransferTypeAttended
         - TransferManagerTransferTypeBlind
+      example: "blind"
     TransferManagerTransfer:
       type: object
       properties:
         id:
           type: string
-          description: Transfer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the transfer. Returned from the `POST /transfers` or `GET /transfers` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Customer ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this transfer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/TransferManagerTransferType'
+          description: "The type of transfer being performed."
+          example: "blind"
         transferer_call_id:
           type: string
-          description: Transferer Call ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the call initiating the transfer. Returned from the `GET /calls` response."
+          example: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f"
         transferee_addresses:
           type: array
-          description: List of transferee addresses
+          description: "List of target addresses for the transfer."
+          minItems: 1
           items:
             $ref: '#/components/schemas/CommonAddress'
         transferee_call_id:
           type: string
-          description: Transferee Call ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the call being transferred. Returned from the `GET /calls` response."
+          example: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a"
         groupcall_id:
           type: string
-          description: Created Groupcall ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the groupcall created for the transfer. Returned from the `GET /groupcalls` response."
+          example: "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b"
         confbridge_id:
           type: string
-          description: Conference Bridge ID
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conference bridge used for attended transfer. Returned from the `GET /conferences` response."
+          example: "f2a3b4c5-d6e7-8f9a-0b1c-2d3e4f5a6b7c"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when created
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when updated
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when deleted
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -5457,6 +5661,7 @@ components:
         - RagManagerDocTypeOpenAPI
         - RagManagerDocTypeDesign
         - RagManagerDocTypeGuideline
+      example: "openapi"
 
     RagManagerSource:
       type: object
@@ -5465,15 +5670,20 @@ components:
         source_file:
           type: string
           description: Path to the source file
+          example: "bin-openapi-manager/openapi/openapi.yaml"
         section_title:
           type: string
           description: Title of the relevant section
+          example: "API Authentication"
         doc_type:
           $ref: '#/components/schemas/RagManagerDocType'
+          description: "The type of documentation source."
+          example: "openapi"
         relevance_score:
           type: number
           format: double
           description: Relevance score of the source
+          example: 0.95
 
     RagManagerQueryResponse:
       type: object
@@ -5482,6 +5692,7 @@ components:
         answer:
           type: string
           description: Generated answer based on retrieved documentation
+          example: "To authenticate, use the POST /auth/login endpoint with your credentials."
         sources:
           type: array
           description: List of source references used to generate the answer
