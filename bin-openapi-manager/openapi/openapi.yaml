@@ -4414,55 +4414,102 @@ components:
       x-enum-varnames:
         - QueueManagerQueueRoutingMethodNone
         - QueueManagerQueueRoutingMethodRandom
+      example: "random"
     QueueManagerQueue:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the queue."
+          example: "Sales Queue"
         detail:
           type: string
+          description: "Detailed description of the queue."
+          example: "Handles incoming sales inquiries"
         routing_method:
           $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+          description: "The method used to route calls to agents."
+          example: "random"
         tag_ids:
           type: array
+          description: "List of tag IDs assigned to this queue. Returned from the `POST /tags` or `GET /tags` response."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
         wait_flow_id:
           type: string
-          description: "Flow ID for the wait queue."
+          format: uuid
+          x-go-type: string
+          description: "The flow ID executed while callers wait in queue. Returned from the `POST /flows` or `GET /flows` response."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         wait_timeout:
           type: integer
           description: "Wait queue timeout in milliseconds."
+          example: 300000
         service_timeout:
           type: integer
           description: "Service queue timeout in milliseconds."
+          example: 600000
         wait_queuecall_ids:
           type: array
+          description: "List of queuecall IDs currently waiting. Returned from the `GET /queuecalls` response."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
         service_queuecall_ids:
           type: array
+          description: "List of queuecall IDs currently being serviced."
           items:
             type: string
+            format: uuid
+            x-go-type: string
+          example: ["c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"]
         total_incoming_count:
           type: integer
           description: "Total incoming call count."
+          example: 150
         total_serviced_count:
           type: integer
           description: "Total serviced call count."
+          example: 120
         total_abandoned_count:
           type: integer
           description: "Total abandoned call count."
+          example: 10
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
     QueueManagerQueuecallReferenceType:
       type: string
@@ -4470,6 +4517,7 @@ components:
         - call
       x-enum-varnames:
         - QueueManagerQueuecallReferenceTypeCall
+      example: "call"
     QueueManagerQueuecallStatus:
       type: string
       enum:
@@ -4488,40 +4536,74 @@ components:
         - QueueManagerQueuecallStatusService
         - QueueManagerQueuecallStatusDone
         - QueueManagerQueuecallStatusAbandoned
+      example: "waiting"
     QueueManagerQueuecall:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the queuecall. Returned from the `GET /queuecalls` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this queuecall. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         reference_type:
           $ref: '#/components/schemas/QueueManagerQueuecallReferenceType'
+          description: "The type of resource this queuecall references."
+          example: "call"
         reference_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (e.g., a call). Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         status:
           $ref: '#/components/schemas/QueueManagerQueuecallStatus'
+          description: "Current status of the queuecall."
+          example: "waiting"
         service_agent_id:
           type: string
-          description: "The ID of the service agent handling the queue call"
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the agent handling this queuecall. Returned from the `GET /agents` response."
+          example: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
         duration_waiting:
           type: integer
           description: "Duration for waiting in milliseconds"
+          example: 45000
         duration_service:
           type: integer
           description: "Duration for service in milliseconds"
+          example: 180000
         tm_create:
           type: string
-          description: "Timestamp when the queue call was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_service:
           type: string
-          description: "Timestamp when the queue call started service"
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the queue call started service."
+          example: "2026-01-15T09:35:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the queue call was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the queue call was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -4536,73 +4618,133 @@ components:
       x-enum-varnames:
         - RegistrarManagerAuthTypeBasic
         - RegistrarManagerAuthTypeIP
+      example: "basic"
     RegistrarManagerExtension:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the extension. Returned from the `POST /extensions` or `GET /extensions` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this extension. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the extension."
+          example: "Reception Desk"
         detail:
           type: string
+          description: "Detailed description of the extension."
+          example: "Main reception extension for building A"
         extension:
           type: string
+          description: "The SIP extension number."
+          example: "1001"
         domain_name:
           type: string
           description: "Domain name, same as the customer_id, used by Kamailio's INVITE validation"
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         username:
           type: string
           description: "Username, same as the Extension, used by Kamailio's INVITE validation"
+          example: "1001"
         password:
           type: string
+          description: "The SIP password for authentication."
+          example: "s3cur3P@ss"
         direct_hash:
           type: string
           description: "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net"
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
-          description: "Timestamp when the extension was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the extension was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the extension was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
     RegistrarManagerTrunk:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the trunk. Returned from the `POST /trunks` or `GET /trunks` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this trunk. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: "Display name of the trunk."
+          example: "Primary SIP Trunk"
         detail:
           type: string
+          description: "Detailed description of the trunk."
+          example: "Main SIP trunk for outbound calls"
         domain_name:
           type: string
+          description: "The SIP domain for this trunk."
+          example: "sip.example.com"
         auth_types:
           type: array
+          description: "List of authentication methods for this trunk."
           items:
             $ref: '#/components/schemas/RegistrarManagerAuthType'
+          example: ["basic"]
         username:
           type: string
+          description: "The SIP username for authentication."
+          example: "trunk_user"
         password:
           type: string
+          description: "The SIP password for authentication."
+          example: "s3cur3P@ss"
         allowed_ips:
           type: array
+          description: "List of IP addresses allowed for IP-based authentication."
           items:
             type: string
+          example: ["203.0.113.10", "203.0.113.11"]
         tm_create:
           type: string
-          description: "Timestamp when the trunk was created"
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the trunk was last updated"
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the trunk was deleted"
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -4615,77 +4757,120 @@ components:
         - sip
       x-enum-varnames:
         - RouteManagerProviderTypeSIP
+      example: "sip"
     RouteManagerProvider:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the provider."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the provider. Returned from the `POST /providers` or `GET /providers` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         type:
           $ref: '#/components/schemas/RouteManagerProviderType'
+          description: "The type of the provider."
+          example: "sip"
         hostname:
           type: string
           description: "The destination hostname for the provider."
+          example: "sip.provider.example.com"
         tech_prefix:
           type: string
           description: "The tech prefix, valid only for SIP type providers."
+          example: "9"
         tech_postfix:
           type: string
           description: "The tech postfix, valid only for SIP type providers."
+          example: "#"
         tech_headers:
           type: object
           additionalProperties:
             type: string
           description: "The tech headers, valid only for SIP type providers."
+          example: {"X-Custom-Header": "value1"}
         name:
           type: string
           description: "The name of the provider."
+          example: "Twilio SIP Provider"
         detail:
           type: string
           description: "The details about the provider."
+          example: "Primary outbound SIP provider"
         tm_create:
           type: string
-          description: "Timestamp when the provider was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the provider was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the provider was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
     RouteManagerRoute:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the route. Returned from the `POST /routes` or `GET /routes` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this route. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
           description: "The name of the route."
+          example: "US Outbound Route"
         detail:
           type: string
           description: "The details about the route."
+          example: "Routes calls to US numbers via primary provider"
         provider_id:
           type: string
-          description: "The unique identifier of the provider associated with this route."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the provider used for this route. Returned from the `GET /providers` response."
+          example: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b"
         priority:
           type: integer
           description: "The priority of the route, used for routing decisions."
+          example: 1
         target:
           type: string
           description: "The target destination for the route (e.g., country code or 'all')."
+          example: "1"
         tm_create:
           type: string
-          description: "Timestamp when the route was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the route was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the route was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
@@ -4696,27 +4881,44 @@ components:
       properties:
         id:
           type: string
-          description: "The unique identifier for the account."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the storage account. Returned from the `GET /storage/accounts` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the account."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         total_file_count:
           type: integer
           format: int64
           description: "The total number of files in the account."
+          example: 42
         total_file_size:
           type: integer
           format: int64
           description: "The total file size in bytes."
+          example: 1073741824
         tm_create:
           type: string
-          description: "Timestamp when the account was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the account was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the account was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
     StorageManagerFileReferenceType:
       type: string
@@ -4729,51 +4931,83 @@ components:
         - StorageManagerFileReferenceTypeNone
         - StorageManagerFileReferenceTypeNormal
         - StorageManagerFileReferenceTypeRecording
+      example: "recording"
     StorageManagerFile:
       type: object
       properties:
         id:
           type: string
-          description: "The unique identifier for the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the file. Returned from the `POST /files` or `GET /files` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: "The customer ID associated with the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this file. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_id:
           type: string
-          description: "The owner ID of the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the resource that owns this file (e.g., an agent or a call). Depends on the context of file creation."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         reference_type:
           $ref: '#/components/schemas/StorageManagerFileReferenceType'
+          description: "The type of resource this file is associated with."
+          example: "recording"
         reference_id:
           type: string
-          description: "The reference ID associated with the file."
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource. Returned from the corresponding resource endpoint."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         name:
           type: string
           description: "The name of the file."
+          example: "meeting-recording.wav"
         detail:
           type: string
           description: "The details of the file."
+          example: "Recording of the sales meeting"
         filename:
           type: string
           description: "The filename of the file."
+          example: "550e8400-e29b-41d4-a716-446655440000.wav"
         filesize:
           type: integer
           format: int64
           description: "The size of the file in bytes."
+          example: 5242880
         uri_download:
           type: string
           description: "The URI for downloading the file."
+          example: "https://storage.voipbin.net/files/550e8400-e29b-41d4-a716-446655440000.wav"
         tm_download_expire:
           type: string
-          description: "The timestamp when the download link expires."
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the download link expires."
+          example: "2026-02-15T09:30:00Z"
         tm_create:
           type: string
-          description: "Timestamp when the file was created."
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: "Timestamp when the file was last updated."
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: "Timestamp when the file was deleted."
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp."
+          example: "2026-01-17T18:45:00Z"
 
 
 #########################################
