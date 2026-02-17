@@ -329,8 +329,13 @@ func (h *awsHandler) SayFinish(vendorConfig any) error {
 
 	cf.Message.Finish = true
 
-	// Close audioCh to signal runProcess that no more audio is coming
+	// Cancel context first so any in-flight SayAdd takes the ctx.Done branch
+	// instead of sending on the closed channel (which would panic).
+	cf.Cancel()
+
+	cf.mu.Lock()
 	close(cf.audioCh)
+	cf.mu.Unlock()
 
 	return nil
 }

@@ -334,14 +334,9 @@ func (h *gcpHandler) SayFlush(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *GCPConfig or is nil")
 	}
 
-	// GCP gRPC doesn't have a flush concept like ElevenLabs.
-	cf.muStream.Lock()
-	defer cf.muStream.Unlock()
-
-	if cf.Stream == nil {
-		return nil
-	}
-
+	// GCP gRPC bidirectional streaming doesn't have a flush concept.
+	// Audio is delivered as soon as it's synthesized by the server.
+	_ = cf
 	return nil
 }
 
