@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="customer-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (customer management operations incur no charges)</p></li>
+<li><p><strong>Async:</strong> No. All customer operations are synchronous and return immediately.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.</p>
 <p>With the Customer API you can:</p>
 <ul class="simple">
@@ -376,6 +385,11 @@
 </pre></div>
 </div>
 <p>The guest agent ensures every account has at least one administrator for recovery purposes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The customer <code class="docutils literal notranslate"><span class="pre">id</span></code> is the top-level scoping identifier for all resources in VoIPBIN. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> explicitly in most creation requests – it is derived from the authentication token.</p>
+</div>
 </section>
 <section id="common-scenarios">
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>

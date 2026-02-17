@@ -133,49 +133,47 @@ func (h *streamingHandler) runStreamer(ctx context.Context, st *streaming.Stream
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "runStreamer",
 		"streaming_id": st.ID,
+		"provider":     st.Provider,
 	})
 
-	initHandlers := map[streaming.VendorName]func(ctx context.Context, st *streaming.Streaming) (any, error){
-		streaming.VendorNameElevenlabs: h.elevenlabsHandler.Init,
+	// Select handler based on provider
+	handler, vendorName := h.getStreamerByProvider(st.Provider)
+	if handler == nil {
+		return fmt.Errorf("unsupported or unconfigured provider: %s", st.Provider)
 	}
 
-	for n, f := range initHandlers {
-		tmp, errInit := f(ctx, st)
-		if errInit != nil {
-			log.Errorf("Handler initialization failed: %v", errInit)
-			continue
-		}
-
-		h.SetVendorInfo(st, n, tmp)
-		break
+	tmp, errInit := handler.Init(ctx, st)
+	if errInit != nil {
+		log.Errorf("Handler initialization failed for provider %s: %v", st.Provider, errInit)
+		return fmt.Errorf("could not initialize %s handler: %v", st.Provider, errInit)
 	}
 
-	if st.VendorConfig == nil {
-		return fmt.Errorf("failed to initialize any vendor for streaming ID: %s", st.ID)
-	}
+	h.SetVendorInfo(st, vendorName, tmp)
 
 	go func(s *streaming.Streaming) {
-
-		// run the streamer based on the vendor
-		switch s.VendorName {
-		case streaming.VendorNameNone:
-			log.Errorf("No suitable vendor found for streaming ID: %s", s.ID)
-			return
-
-		case streaming.VendorNameElevenlabs:
-			log.Debugf("Starting ElevenLabs handler for streaming ID: %s", s.ID)
-			if errRun := h.elevenlabsHandler.Run(s.VendorConfig); errRun != nil {
-				log.Errorf("Could not run the elevenlabs handler. err: %v", errRun)
-			}
-			log.Debugf("ElevenLabs handler finished for streaming_id: %s, message_id: %s", s.ID, s.MessageID)
-
-		default:
-			log.Errorf("Unsupported vendor: %s for streaming ID: %s", s.VendorName, s.ID)
-			return
+		log.Debugf("Starting %s handler for streaming ID: %s", s.VendorName, s.ID)
+		if errRun := handler.Run(s.VendorConfig); errRun != nil {
+			log.Errorf("Could not run the %s handler. err: %v", s.VendorName, errRun)
 		}
+		log.Debugf("%s handler finished for streaming_id: %s, message_id: %s", s.VendorName, s.ID, s.MessageID)
 
 		h.SetVendorInfo(s, streaming.VendorNameNone, nil)
 	}(st)
 
 	return nil
+}
+
+// getStreamerByProvider returns the streamer handler and vendor name for the given provider string.
+func (h *streamingHandler) getStreamerByProvider(provider string) (streamer, streaming.VendorName) {
+	switch streaming.VendorName(provider) {
+	case streaming.VendorNameElevenlabs:
+		return h.elevenlabsHandler, streaming.VendorNameElevenlabs
+	case streaming.VendorNameGCP:
+		return h.gcpHandler, streaming.VendorNameGCP
+	case streaming.VendorNameAWS:
+		return h.awsHandler, streaming.VendorNameAWS
+	default:
+		// Fallback: try elevenlabs for empty/unknown provider (backwards compat)
+		return h.elevenlabsHandler, streaming.VendorNameElevenlabs
+	}
 }

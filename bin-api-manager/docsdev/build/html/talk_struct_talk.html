@@ -197,13 +197,18 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Talk’s unique identifier.</p></li>
-<li><p>customer_id: Customer’s unique identifier.</p></li>
-<li><p>type: Talk’s type. See detail <a class="reference internal" href="#talk-struct-talk-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>tm_create: Timestamp when the talk was created.</p></li>
-<li><p>tm_update: Timestamp when the talk was last updated.</p></li>
-<li><p>tm_delete: Timestamp when the talk was deleted (soft delete).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The talk’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The talk’s type. See <a class="reference internal" href="#talk-struct-talk-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the talk was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the talk was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the talk was deleted (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the talk has not been deleted. An empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> also indicates the talk is active.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -229,10 +234,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>normal</p></td>
-<td><p>1:1 talk between two agents.</p></td>
+<td><p>1:1 talk between two agents. Private direct conversation.</p></td>
 </tr>
 <tr class="row-odd"><td><p>group</p></td>
-<td><p>Group talk with multiple participants.</p></td>
+<td><p>Group talk with multiple participants. Team discussions.</p></td>
 </tr>
 </tbody>
 </table>

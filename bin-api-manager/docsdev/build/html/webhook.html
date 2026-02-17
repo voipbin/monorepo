@@ -188,6 +188,15 @@
 <span id="webhook-main"></span><h1>Webhook<a class="headerlink" href="#webhook" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="webhook-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free – Webhook delivery does not incur charges. Events are pushed to your configured endpoint at no cost.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webhooks</span></code> creates the webhook configuration synchronously. Event delivery to your endpoint happens asynchronously as events occur.</p></li>
+</ul>
+</div>
 <p>Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.</p>
 <section id="notification-mechanism">
 <h3>Notification Mechanism<a class="headerlink" href="#notification-mechanism" title="Link to this heading"></a></h3>
@@ -201,20 +210,113 @@
 <section id="custom-endpoints">
 <h3>Custom Endpoints<a class="headerlink" href="#custom-endpoints" title="Link to this heading"></a></h3>
 <p>To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBIN transmits webhook events. Upon an event occurrence, VoIPBIN initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Your webhook endpoint must respond with HTTP 200 within 5 seconds. VoIPBIN may retry delivery if your server is unreachable. Webhooks may be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.</p>
+</div>
+</section>
+<section id="webhook-event-types">
+<h3>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h3>
+<p>VoIPBIN sends webhook events for various resource types. Each event includes the resource type, event type, and the full resource data.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource Type</p></th>
+<th class="head"><p>Events</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">call</span></code></p></td>
+<td><p>Call status changes (dialing, ringing, progressing, hangup)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">groupcall</span></code></p></td>
+<td><p>Groupcall status changes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">conference</span></code></p></td>
+<td><p>Conference lifecycle events</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">conferencecall</span></code></p></td>
+<td><p>Participant join/leave events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">message</span></code></p></td>
+<td><p>Message sent/received/delivered events</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recording</span></code></p></td>
+<td><p>Recording started/completed events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe</span></code></p></td>
+<td><p>Transcription completed events</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">queue</span></code></p></td>
+<td><p>Queue events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">queuecall</span></code></p></td>
+<td><p>Queue call events (joined, agent connected, timeout)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">activeflow</span></code></p></td>
+<td><p>Flow execution events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">campaign</span></code></p></td>
+<td><p>Campaign status changes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">number</span></code></p></td>
+<td><p>Number provisioning events</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="benefits-of-webhooks">
 <h3>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Link to this heading"></a></h3>
 <p>Webhooks deliver a range of advantages for VoIPBIN users:</p>
 <ul class="simple">
-<li><p>Real-Time Updates: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBIN resources.</p></li>
-<li><p>Customization: Users can tailor webhook endpoints and process data as per their specific needs, facilitating the creation of customized workflows and integrations.</p></li>
-<li><p>Automated Actions: Webhooks enable users to automate actions based on event data, such as record updates, notifications, or the initiation of additional processes.</p></li>
-<li><p>Enhanced Monitoring: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBIN system, ensuring informed decision-making.</p></li>
+<li><p><strong>Real-Time Updates</strong>: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBIN resources.</p></li>
+<li><p><strong>Customization</strong>: Users can tailor webhook endpoints and process data as per their specific needs, facilitating the creation of customized workflows and integrations.</p></li>
+<li><p><strong>Automated Actions</strong>: Webhooks enable users to automate actions based on event data, such as record updates, notifications, or the initiation of additional processes.</p></li>
+<li><p><strong>Enhanced Monitoring</strong>: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBIN system, ensuring informed decision-making.</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Webhooks not being received:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Your webhook endpoint URL is incorrect, unreachable, or not responding with HTTP 200.</p></li>
+<li><p><strong>Fix:</strong> Verify the endpoint URL via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webhooks</span></code>. Ensure your server is publicly accessible and responds with <code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code> within 5 seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Duplicate webhook events:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> VoIPBIN retries delivery if your endpoint did not respond in time.</p></li>
+<li><p><strong>Fix:</strong> Implement idempotent processing. Use the combination of resource <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> to deduplicate events.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request (creating webhook):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid URL format or missing required fields.</p></li>
+<li><p><strong>Fix:</strong> Ensure the <code class="docutils literal notranslate"><span class="pre">url</span></code> field is a valid HTTPS URL. Verify <code class="docutils literal notranslate"><span class="pre">event_types</span></code> is a non-empty array.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
 </section>
 <section id="webhook-struct-webhook">
 <span id="id1"></span><h2>Webhook<a class="headerlink" href="#webhook-struct-webhook" title="Link to this heading"></a></h2>
+<p>All webhook events follow a common envelope structure with two fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook event type indicating what occurred (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The resource-specific payload. Structure varies by event type and matches the corresponding resource struct.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> in webhook payloads indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> with this sentinel value means the call is still in progress. Use the <code class="docutils literal notranslate"><span class="pre">type</span></code> field to determine which resource struct to parse from the <code class="docutils literal notranslate"><span class="pre">data</span></code> field.</p>
+</div>
 <section id="activeflow-created">
 <span id="webhook-struct-webhook-activeflow-created"></span><h3>activeflow_created<a class="headerlink" href="#activeflow-created" title="Link to this heading"></a></h3>
 <p>The notification message for the activeflow create.</p>
@@ -227,8 +329,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
@@ -283,8 +385,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id2">
 <h4>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
@@ -339,8 +441,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id3">
 <h4>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
@@ -399,8 +501,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
@@ -460,8 +562,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_ringing&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id5">
 <h4>Example<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
@@ -521,8 +623,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_answered&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id6">
 <h4>Example<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
@@ -583,8 +685,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id7">
 <h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
@@ -650,8 +752,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_hungup&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id8">
 <h4>Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
@@ -716,8 +818,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queue-updated">
@@ -732,8 +834,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queue-deleted">
@@ -748,8 +850,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queuecall-created">
@@ -764,8 +866,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id9">
 <h4>Example<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
@@ -799,8 +901,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_entering&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id10">
 <h4>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
@@ -834,8 +936,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_kicking&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id11">
 <h4>Example<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
@@ -869,8 +971,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_serviced&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id12">
 <h4>Example<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
@@ -904,8 +1006,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_done&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id13">
 <h4>Example<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
@@ -939,8 +1041,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_abandoned&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-created">
@@ -955,13 +1057,12 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-updated">
 <span id="webhook-struct-webhook-agent-updated"></span><h3>agent_updated<a class="headerlink" href="#agent-updated" title="Link to this heading"></a></h3>
-<p>Notification message for agent update.</p>
 <p>The notification message for the agent update.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_updated&quot;</span><span class="p">,</span>
@@ -972,8 +1073,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-deleted">
@@ -988,8 +1089,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-status-updated">
@@ -1004,8 +1105,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_status_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id14">
 <h4>Example<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
@@ -1043,6 +1144,17 @@
 </section>
 <section id="tutorial">
 <span id="webhook-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before creating a webhook, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.</p></li>
+<li><p>Knowledge of which event types you want to receive (e.g., <code class="docutils literal notranslate"><span class="pre">call_created</span></code>, <code class="docutils literal notranslate"><span class="pre">message_created</span></code>). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a> for the full list.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server. The <code class="docutils literal notranslate"><span class="pre">uri</span></code> field must be a valid HTTPS URL for production use.</p>
+</div>
 <section id="create-a-webhook">
 <h3>Create a Webhook<a class="headerlink" href="#create-a-webhook" title="Link to this heading"></a></h3>
 <p>Register a webhook endpoint to receive real-time event notifications from VoIPBIN. Webhooks notify your server when events occur (call status changes, messages received, etc.).</p>
@@ -1134,8 +1246,8 @@
 </pre></div>
 </div>
 </section>
-<section id="webhook-event-types">
-<h3>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h3>
+<section id="id15">
+<h3>Webhook Event Types<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <p>VoIPBIN sends different event types to your webhook endpoint. For the complete list, see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a>.</p>
 <p><strong>Call Events:</strong></p>
 <ul class="simple">
@@ -1448,7 +1560,9 @@ Email recordings to stakeholders when ready:</p>
 <li><a class="reference internal" href="#notification-mechanism">Notification Mechanism</a></li>
 <li><a class="reference internal" href="#types-of-webhooks">Types of Webhooks</a></li>
 <li><a class="reference internal" href="#custom-endpoints">Custom Endpoints</a></li>
+<li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
 <li><a class="reference internal" href="#benefits-of-webhooks">Benefits of Webhooks</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#webhook-struct-webhook">Webhook</a><ul>
@@ -1522,7 +1636,7 @@ Email recordings to stakeholders when ready:</p>
 <li><a class="reference internal" href="#get-list-of-webhooks">Get List of Webhooks</a></li>
 <li><a class="reference internal" href="#update-a-webhook">Update a Webhook</a></li>
 <li><a class="reference internal" href="#delete-a-webhook">Delete a Webhook</a></li>
-<li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
+<li><a class="reference internal" href="#id15">Webhook Event Types</a></li>
 <li><a class="reference internal" href="#receiving-webhook-events">Receiving Webhook Events</a></li>
 <li><a class="reference internal" href="#testing-webhooks">Testing Webhooks</a></li>
 <li><a class="reference internal" href="#webhook-payload-structure">Webhook Payload Structure</a></li>

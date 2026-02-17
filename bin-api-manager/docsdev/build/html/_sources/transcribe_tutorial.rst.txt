@@ -3,6 +3,20 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with transcription, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* An active call or conference in ``progressing`` status. Obtain the call ID via ``GET /calls`` or conference ID via ``GET /conferences``.
+* A BCP47 language code matching the speaker's language (e.g., ``en-US``, ``ko-KR``). See :ref:`Supported Languages <transcribe-overview-supported_languages>`.
+* (Optional for recording transcription) A recording ID from ``GET /recordings``.
+
+.. note:: **AI Implementation Hint**
+
+   Transcription can only be started on a call or conference that is in ``progressing`` status (i.e., answered and active). For recording transcription, the recording must exist and be in ``ended`` status. The ``language`` parameter is required and must be a valid BCP47 code; there is no auto-detect mode.
+
 Start Transcription with Flow Action
 -------------------------------------
 

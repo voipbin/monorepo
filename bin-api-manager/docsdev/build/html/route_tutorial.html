@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="route-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with routes, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A provider ID (UUID). Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p>A customer ID (UUID). Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>. Use <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> for system-wide default routes.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Routes are evaluated by <code class="docutils literal notranslate"><span class="pre">priority</span></code> (lower number = higher priority). To set up failover, create multiple routes for the same <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> and <code class="docutils literal notranslate"><span class="pre">target</span></code> with different <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> values and incrementing <code class="docutils literal notranslate"><span class="pre">priority</span></code> values (e.g., 1, 2, 3). If the first provider fails, VoIPBIN automatically tries the next route.</p>
+</div>
 <section id="get-list-of-routes">
-<h2>Get list of routes<a class="headerlink" href="#get-list-of-routes" title="Link to this heading"></a></h2>
+<h3>Get list of routes<a class="headerlink" href="#get-list-of-routes" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/routes?customer_id=00000000-0000-0000-0000-000000000001&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -208,7 +221,7 @@
 </div>
 </section>
 <section id="get-detail-of-route">
-<h2>Get detail of route<a class="headerlink" href="#get-detail-of-route" title="Link to this heading"></a></h2>
+<h3>Get detail of route<a class="headerlink" href="#get-detail-of-route" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/routes/dccfd81b-5f11-4c49-8e3f-70730ef1a4d3?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -226,7 +239,7 @@
 </div>
 </section>
 <section id="create-a-new-route">
-<h2>Create a new route<a class="headerlink" href="#create-a-new-route" title="Link to this heading"></a></h2>
+<h3>Create a new route<a class="headerlink" href="#create-a-new-route" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/routes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -251,26 +264,22 @@
 </div>
 </section>
 <section id="update-route">
-<h2>Update route<a class="headerlink" href="#update-route" title="Link to this heading"></a></h2>
+<h3>Update route<a class="headerlink" href="#update-route" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
-        &quot;type&quot;: &quot;sip&quot;,
-        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
-        &quot;tech_prefix&quot;: &quot;&quot;,
-        &quot;tech_postfix&quot;: &quot;&quot;,
-        &quot;tech_headers&quot;: {},
-        &quot;name&quot;: &quot;telnyx basic&quot;,
-        &quot;detail&quot;: &quot;telnyx basic&quot;
+        &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;priority&quot;: 2,
+        &quot;target&quot;: &quot;+82&quot;
     }&#39;
 
 {
     &quot;id&quot;: &quot;b972b61c-59d2-4217-8fbb-a32304be5c3b&quot;,
     &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
     &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
+    &quot;priority&quot;: 2,
     &quot;target&quot;: &quot;+82&quot;,
     &quot;tm_create&quot;: &quot;2022-11-02 15:36:32.174346&quot;,
     &quot;tm_update&quot;: &quot;2022-11-02 15:43:09.190169&quot;,
@@ -280,7 +289,7 @@
 </div>
 </section>
 <section id="delete-route">
-<h2>Delete route<a class="headerlink" href="#delete-route" title="Link to this heading"></a></h2>
+<h3>Delete route<a class="headerlink" href="#delete-route" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -298,6 +307,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -308,11 +318,14 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-routes">Get list of routes</a></li>
 <li><a class="reference internal" href="#get-detail-of-route">Get detail of route</a></li>
 <li><a class="reference internal" href="#create-a-new-route">Create a new route</a></li>
 <li><a class="reference internal" href="#update-route">Update route</a></li>
 <li><a class="reference internal" href="#delete-route">Delete route</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

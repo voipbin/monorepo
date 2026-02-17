@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="trunking">
 <h1>Trunking<a class="headerlink" href="#trunking" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable. Outbound calls through SIP trunking incur per-call charges based on destination and provider rates.</p></li>
+<li><p><strong>Async:</strong> No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+</ul>
+</div>
 <p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>
 <section id="server-address">
 <h2>Server address<a class="headerlink" href="#server-address" title="Link to this heading"></a></h2>
@@ -236,6 +245,11 @@
 <span class="o">|</span>                                        <span class="o">|&lt;----------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">---------------|</span>
 <span class="o">|&lt;-------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">------------------|</span>                                        <span class="o">|</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The trunk server address format is <code class="docutils literal notranslate"><span class="pre">sip:{your-domain}.trunk.voipbin.net</span></code>. When configuring a SIP client for trunking, use the extension’s <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> for authentication, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication.</p>
 </div>
 </section>
 </section>

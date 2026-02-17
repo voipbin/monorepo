@@ -188,6 +188,15 @@
 <h1>Billing Account<a class="headerlink" href="#billing-account" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="billing-account-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (reading billing data incurs no charges; adding balance is an admin-only operation)</p></li>
+<li><p><strong>Async:</strong> No. All billing account operations are synchronous and return immediately. Balance changes from service usage (calls, SMS) happen asynchronously as services are consumed.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the <strong>account</strong> holds the live state (current balance and tokens) and the <strong>billings</strong> table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.</p>
 <p>With the Billing Account API you can:</p>
 <ul class="simple">
@@ -203,6 +212,11 @@
 <p>VoIPBIN uses a hybrid billing model with two cost mechanisms: <strong>token balance</strong> and <strong>credit balance</strong>.</p>
 <p>Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.</p>
 <p>All monetary values are stored as <strong>int64 micros</strong> (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (int64), not dollars. To convert: divide by 1,000,000 for USD (e.g., <code class="docutils literal notranslate"><span class="pre">69772630</span></code> micros = $69.77). When displaying balance to users, always convert from micros to the currency unit. When estimating costs, multiply the rate in micros by the number of billable units.</p>
+</div>
 <p><strong>Billing Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------+
 |                     State + Ledger Architecture                       |
@@ -649,6 +663,17 @@ v                   v     v                   v
 </section>
 <section id="tutorial">
 <span id="billing-account-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before managing billing accounts, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>The billing account ID (UUID). Obtain it via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code> which lists all billing accounts for the authenticated customer.</p></li>
+<li><p>(For adding balance) Admin-level permissions on the account.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">balance</span></code> field in billing account responses is a float representing USD (e.g., <code class="docutils literal notranslate"><span class="pre">69.77263</span></code> = $69.77). When estimating costs, multiply the per-unit rate by billable units. Call durations are ceiling-rounded to the next whole minute for billing purposes (e.g., a 2 minute 15 second call is billed as 3 minutes).</p>
+</div>
 <section id="check-account-balance">
 <h3>Check Account Balance<a class="headerlink" href="#check-account-balance" title="Link to this heading"></a></h3>
 <p>Check your billing account balance before initiating calls or sending messages to ensure sufficient funds.</p>
@@ -1146,18 +1171,26 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Billing account’s id.</p></li>
-<li><p>customer_id: Customer’s id.</p></li>
-<li><p>name: Billing account’s name.</p></li>
-<li><p>detail: Billing account’s detail.</p></li>
-<li><p>plan_type: Plan tier of the account. Determines resource creation limits. Available values: <code class="docutils literal notranslate"><span class="pre">free</span></code>, <code class="docutils literal notranslate"><span class="pre">basic</span></code>, <code class="docutils literal notranslate"><span class="pre">professional</span></code>, <code class="docutils literal notranslate"><span class="pre">unlimited</span></code>.</p></li>
-<li><p>balance_credit: Credit balance in micros (int64). 1 USD = 1,000,000 micros. Example: 69772630 = $69.77.</p></li>
-<li><p>balance_token: Token balance (int64). Tokens are replenished monthly via top-up.</p></li>
-<li><p>payment_type: Payment type. Reserved.</p></li>
-<li><p>payment_method: Payment method. Reserved.</p></li>
-<li><p>tm_last_topup: Timestamp of the last token top-up.</p></li>
-<li><p>tm_next_topup: Timestamp of the next scheduled token top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The billing account’s unique identifier. Returned when listing billing accounts via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code> or retrieving a specific account via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts/{id}</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this billing account. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The billing account’s display name. Optional.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the billing account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plan_type</span></code> (enum string): The plan tier of the account. Determines resource creation limits and monthly token allocations. Values: <code class="docutils literal notranslate"><span class="pre">free</span></code>, <code class="docutils literal notranslate"><span class="pre">basic</span></code>, <code class="docutils literal notranslate"><span class="pre">professional</span></code>, <code class="docutils literal notranslate"><span class="pre">unlimited</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: <code class="docutils literal notranslate"><span class="pre">69772630</span></code> = $69.77. Used for PSTN calls, number purchases, and token overflow charges.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and SMS (10 tokens/message). Replenished monthly via automated top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">payment_type</span></code> (String): Payment type. Reserved for future use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">payment_method</span></code> (String): Payment method. Reserved for future use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_last_topup</span></code> (string, ISO 8601): Timestamp of the last token top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_next_topup</span></code> (string, ISO 8601): Timestamp of the next scheduled token top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the billing account was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the billing account was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601 or null): Timestamp when the billing account was deleted. <code class="docutils literal notranslate"><span class="pre">null</span></code> indicates the account is active.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Unlike other VoIPBIN resources that use <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> as the sentinel for “not deleted,” the billing account’s <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> field uses <code class="docutils literal notranslate"><span class="pre">null</span></code> to indicate an active account. Always check for <code class="docutils literal notranslate"><span class="pre">null</span></code> rather than the sentinel timestamp when determining if a billing account is active. The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (int64) – divide by 1,000,000 to get USD.</p>
+</div>
 </section>
 <section id="billing-ledger-entry">
 <span id="billing-account-struct-billing"></span><h3>Billing (Ledger Entry)<a class="headerlink" href="#billing-ledger-entry" title="Link to this heading"></a></h3>
@@ -1189,26 +1222,34 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Unique identifier of the ledger entry.</p></li>
-<li><p>customer_id: Customer that owns this account.</p></li>
-<li><p>account_id: Billing account this entry belongs to.</p></li>
-<li><p>transaction_type: Nature of the transaction. Values: <code class="docutils literal notranslate"><span class="pre">usage</span></code>, <code class="docutils literal notranslate"><span class="pre">top_up</span></code>, <code class="docutils literal notranslate"><span class="pre">adjustment</span></code>, <code class="docutils literal notranslate"><span class="pre">refund</span></code>.</p></li>
-<li><p>status: Billing status. Values: <code class="docutils literal notranslate"><span class="pre">progressing</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>, <code class="docutils literal notranslate"><span class="pre">pending</span></code>, <code class="docutils literal notranslate"><span class="pre">finished</span></code>.</p></li>
-<li><p>reference_type: Source of the transaction. Values: <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">call_extension</span></code>, <code class="docutils literal notranslate"><span class="pre">sms</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, <code class="docutils literal notranslate"><span class="pre">number_renew</span></code>, <code class="docutils literal notranslate"><span class="pre">credit_free_tier</span></code>, <code class="docutils literal notranslate"><span class="pre">monthly_allowance</span></code>.</p></li>
-<li><p>reference_id: ID of the originating resource (call ID, number ID, etc.).</p></li>
-<li><p>cost_type: Classification of the billing cost (e.g. <code class="docutils literal notranslate"><span class="pre">call_pstn_outgoing</span></code>, <code class="docutils literal notranslate"><span class="pre">call_vn</span></code>, <code class="docutils literal notranslate"><span class="pre">sms</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>).</p></li>
-<li><p>usage_duration: Actual usage duration in seconds (for calls).</p></li>
-<li><p>billable_units: Number of billable units after ceiling rounding (e.g. 135 seconds becomes 3 minutes).</p></li>
-<li><p>rate_token_per_unit: Token rate per billable unit (int64).</p></li>
-<li><p>rate_credit_per_unit: Credit rate per billable unit in micros (int64). Example: 6000 = $0.006.</p></li>
-<li><p>amount_token: Token delta. Negative for usage, positive for top-up.</p></li>
-<li><p>amount_credit: Credit delta in micros. Negative for usage, positive for top-up.</p></li>
-<li><p>balance_token_snapshot: Token balance after this transaction.</p></li>
-<li><p>balance_credit_snapshot: Credit balance in micros after this transaction.</p></li>
-<li><p>idempotency_key: Unique key to prevent duplicate billing.</p></li>
-<li><p>tm_billing_start: Start of the billing period.</p></li>
-<li><p>tm_billing_end: End of the billing period.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The unique identifier of this ledger entry. Returned when listing billings via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billings</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this billing account. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">account_id</span></code> (UUID): The billing account this entry belongs to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transaction_type</span></code> (enum string): The nature of the transaction. Values: <code class="docutils literal notranslate"><span class="pre">usage</span></code> (service consumption), <code class="docutils literal notranslate"><span class="pre">top_up</span></code> (token replenishment), <code class="docutils literal notranslate"><span class="pre">adjustment</span></code> (manual correction), <code class="docutils literal notranslate"><span class="pre">refund</span></code> (credit return).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The billing entry status. Values: <code class="docutils literal notranslate"><span class="pre">progressing</span></code> (in progress), <code class="docutils literal notranslate"><span class="pre">end</span></code> (completed), <code class="docutils literal notranslate"><span class="pre">pending</span></code> (awaiting processing), <code class="docutils literal notranslate"><span class="pre">finished</span></code> (finalized).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The source of the transaction. Values: <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">call_extension</span></code>, <code class="docutils literal notranslate"><span class="pre">sms</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, <code class="docutils literal notranslate"><span class="pre">number_renew</span></code>, <code class="docutils literal notranslate"><span class="pre">credit_free_tier</span></code>, <code class="docutils literal notranslate"><span class="pre">monthly_allowance</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the originating resource (e.g., call ID, number ID). Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of the corresponding resource endpoint (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cost_type</span></code> (enum string): Classification of the billing cost. Values include: <code class="docutils literal notranslate"><span class="pre">call_pstn_outgoing</span></code>, <code class="docutils literal notranslate"><span class="pre">call_pstn_incoming</span></code>, <code class="docutils literal notranslate"><span class="pre">call_vn</span></code>, <code class="docutils literal notranslate"><span class="pre">call_extension</span></code>, <code class="docutils literal notranslate"><span class="pre">sms</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, <code class="docutils literal notranslate"><span class="pre">number_renew</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">usage_duration</span></code> (Integer): Actual usage duration in seconds (for calls). Not applicable for non-call services.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">billable_units</span></code> (Integer): Number of billable units after ceiling rounding (e.g., 135 seconds becomes 3 minutes for call billing).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rate_token_per_unit</span></code> (Integer, int64): Token rate per billable unit. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for credit-only services.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rate_credit_per_unit</span></code> (Integer, int64 micros): Credit rate per billable unit in micros. Example: <code class="docutils literal notranslate"><span class="pre">6000</span></code> = $0.006.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amount_token</span></code> (Integer, int64): Token delta for this transaction. Negative for usage, positive for top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amount_credit</span></code> (Integer, int64 micros): Credit delta in micros for this transaction. Negative for usage, positive for top-up/refund.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">balance_token_snapshot</span></code> (Integer, int64): The token balance immediately after this transaction was applied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">balance_credit_snapshot</span></code> (Integer, int64 micros): The credit balance in micros immediately after this transaction was applied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">idempotency_key</span></code> (UUID): Unique key to prevent duplicate billing entries for the same event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_billing_start</span></code> (string, ISO 8601): Timestamp marking the start of the billing period for this transaction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_billing_end</span></code> (string, ISO 8601): Timestamp marking the end of the billing period for this transaction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this ledger entry was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when this ledger entry was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601 or null): Timestamp when this ledger entry was deleted. <code class="docutils literal notranslate"><span class="pre">null</span></code> indicates the entry is active.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All monetary fields (<code class="docutils literal notranslate"><span class="pre">rate_credit_per_unit</span></code>, <code class="docutils literal notranslate"><span class="pre">amount_credit</span></code>, <code class="docutils literal notranslate"><span class="pre">balance_credit_snapshot</span></code>) are in micros (int64). Divide by 1,000,000 to convert to USD. The <code class="docutils literal notranslate"><span class="pre">amount_token</span></code> and <code class="docutils literal notranslate"><span class="pre">amount_credit</span></code> fields are signed: negative values represent charges/consumption, positive values represent top-ups or refunds. Call durations are ceiling-rounded to the next whole minute for billing (e.g., 135 seconds = 3 billable minutes).</p>
+</div>
 </section>
 </section>
 </section>

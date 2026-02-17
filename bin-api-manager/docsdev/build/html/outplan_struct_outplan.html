@@ -208,20 +208,28 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Outplan’s id.</p></li>
-<li><p>name: Outplan’s name.</p></li>
-<li><p>detail: Outplan’s detail.</p></li>
-<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>dial_timeout: Timeout for dialing. milliseconds</p></li>
-<li><p>try_interval: Delay time for retry. milliseconds</p></li>
-<li><p>max_try_count_0: Maximum try count for destination 0.</p></li>
-<li><p>max_try_count_1: Maximum try count for destination 1.</p></li>
-<li><p>max_try_count_2: Maximum try count for destination 2.</p></li>
-<li><p>max_try_count_3: Maximum try count for destination 3.</p></li>
-<li><p>max_try_count_4: Maximum try count for destination 4.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The outplan’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outplans</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the outplan.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the outplan’s strategy.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address (caller ID) used when dialing. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dial_timeout</span></code> (Integer): Maximum time in milliseconds to wait for the target to answer before marking as no-answer. For example, <code class="docutils literal notranslate"><span class="pre">30000</span></code> = 30 seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_interval</span></code> (Integer): Delay time in milliseconds between retry attempts to the same target. For example, <code class="docutils literal notranslate"><span class="pre">3600000</span></code> = 1 hour.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_try_count_0</span></code> (Integer): Maximum number of dial attempts for <code class="docutils literal notranslate"><span class="pre">destination_0</span></code> on outdialtargets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_try_count_1</span></code> (Integer): Maximum number of dial attempts for <code class="docutils literal notranslate"><span class="pre">destination_1</span></code> on outdialtargets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_try_count_2</span></code> (Integer): Maximum number of dial attempts for <code class="docutils literal notranslate"><span class="pre">destination_2</span></code> on outdialtargets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_try_count_3</span></code> (Integer): Maximum number of dial attempts for <code class="docutils literal notranslate"><span class="pre">destination_3</span></code> on outdialtargets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_try_count_4</span></code> (Integer): Maximum number of dial attempts for <code class="docutils literal notranslate"><span class="pre">destination_4</span></code> on outdialtargets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the outplan was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any outplan property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the outplan was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dial_timeout</span></code> and <code class="docutils literal notranslate"><span class="pre">try_interval</span></code> fields are in <strong>milliseconds</strong>. Common conversions: 30 seconds = <code class="docutils literal notranslate"><span class="pre">30000</span></code>, 1 minute = <code class="docutils literal notranslate"><span class="pre">60000</span></code>, 1 hour = <code class="docutils literal notranslate"><span class="pre">3600000</span></code>, 2 hours = <code class="docutils literal notranslate"><span class="pre">7200000</span></code>. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> is a sentinel meaning the resource has <strong>not</strong> been deleted.</p>
+</div>
 <section id="example">
-<h3>example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test outplan&quot;</span><span class="p">,</span>
@@ -250,12 +258,12 @@
 </section>
 <section id="try-interval">
 <h2>Try interval<a class="headerlink" href="#try-interval" title="Link to this heading"></a></h2>
-<p>When the VoIPBIN makes a retry dialing, it waits try interval after the previous call’s end.</p>
+<p>When VoIPBIN makes a retry dial attempt, it waits the <code class="docutils literal notranslate"><span class="pre">try_interval</span></code> duration (in milliseconds) after the previous call ends before dialing again.</p>
 <img alt="_images/outplan_struct_try_interval.png" src="_images/outplan_struct_try_interval.png" />
 </section>
 <section id="max-try-count">
 <h2>Max try count<a class="headerlink" href="#max-try-count" title="Link to this heading"></a></h2>
-<p>The max try count configs max try count for the given destination.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">max_try_count_N</span></code> fields configure the maximum number of dial attempts for the corresponding <code class="docutils literal notranslate"><span class="pre">destination_N</span></code> on outdialtargets.</p>
 <img alt="_images/outplan_struct_max_try_count.png" src="_images/outplan_struct_max_try_count.png" />
 </section>
 </section>
@@ -270,7 +278,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Outplan</a><ul>
 <li><a class="reference internal" href="#outplan-struct-outplan-outplan">Outplan</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#try-interval">Try interval</a></li>

@@ -44,20 +44,29 @@ Call
         "tm_hangup": "<string>"
     }
 
-* id: Call's ID.
-* flow_id: Call's flow id.
-* *type*: Call's type. See detail :ref:`here <call-struct-call-type>`.
-* master_call_id: Master call's id. If the master_call_id set, it follows master call's hangup.
-* chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.
-* recording_id: Shows currently recording id.
-* recording_ids: List of recording ids.
-* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
-* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
-* *status*: Call's status. See detail :ref:`here <call-struct-call-status>`.
-* *action*: Call's current action. See detail :ref:`here <flow-struct-action>`.
-* *direction*: Call's direction. See detail :ref:`here <call-struct-call-direction>`.
-* *hangup_by*: Shows call's hangup end. See detail :ref:`here <call-struct-call-hangupby>`.
-* *hangup_reason*: Show call's hangup reason. See detail :ref:`here <call-struct-call-hangupreason>`.
+* ``id`` (UUID): The call's unique identifier. Returned when creating a call via ``POST /calls`` or when listing calls via ``GET /calls``.
+* ``flow_id`` (UUID): The flow associated with this call. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no flow is assigned.
+* ``type`` (enum string): The call's type. See :ref:`Type <call-struct-call-type>`.
+* ``master_call_id`` (UUID): The master call's ID in a call chain. Obtained from another call's ``id`` field. If set, this call follows the master call's hangup. Set to ``00000000-0000-0000-0000-000000000000`` if this call has no master.
+* ``chained_call_ids`` (Array of UUID): List of chained call IDs linked to this call. Each ID is a call ``id`` from ``GET /calls``. When this call hangs up, all chained calls also hang up.
+* ``recording_id`` (UUID): The currently active recording's ID. Obtained from ``GET /recordings``. Set to ``00000000-0000-0000-0000-000000000000`` if no recording is active.
+* ``recording_ids`` (Array of UUID): List of all recording IDs created during this call's lifetime. Each ID can be used with ``GET /recordings/{id}`` to retrieve the recording.
+* ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
+* ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
+* ``status`` (enum string): The call's current status. See :ref:`Status <call-struct-call-status>`.
+* ``action`` (Object): The call's currently executing flow action. See :ref:`Action <flow-struct-action>`.
+* ``direction`` (enum string): The call's direction. See :ref:`Direction <call-struct-call-direction>`.
+* ``hangup_by`` (enum string): Which endpoint initiated the hangup. See :ref:`Hangup by <call-struct-call-hangupby>`.
+* ``hangup_reason`` (enum string): The reason the call ended. See :ref:`Hangup reason <call-struct-call-hangupreason>`.
+* ``tm_create`` (string, ISO 8601): Timestamp when the call was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any call property.
+* ``tm_progressing`` (string, ISO 8601): Timestamp when the call was answered.
+* ``tm_ringing`` (string, ISO 8601): Timestamp when the destination started ringing.
+* ``tm_hangup`` (string, ISO 8601): Timestamp when the call ended.
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_hangup`` with this value means the call is still in progress.
 
 Example
 +++++++
@@ -111,31 +120,31 @@ Example
 
 Type
 ----
-Call's type.
+Call's type (enum string).
 
 =========== ============
 Type        Description
 =========== ============
-flow        Executing the call-flow
-conference  Conference call.
-sip-service sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.
+flow        Executing a call flow. The call runs the actions defined in the associated flow.
+conference  Conference call. The call is part of a multi-party conference.
+sip-service SIP service call. Executes the pre-defined SIP service corresponding to the destination.
 =========== ============
 
 .. _call-struct-call-status:
 
 Status
 ------
-Call's status.
+Call's current status (enum string). States only move forward, never backward.
 
 =========== ===================
 Status      Description
 =========== ===================
-dialing     The call is created. We are dialing to the destination.
-ringing     The destination has confirmed that the call is ringng.
-progressing The call has answered. The both endpoints are talking to each other.
-terminating The call is terminating.
-canceling   The call originator is canceling the call.
-hangup      The call has been completed.
+dialing     The call is created. The system is dialing the destination through the phone network.
+ringing     The destination has confirmed the call is ringing. The callee can now answer.
+progressing The call has been answered. Both endpoints can hear each other and media is flowing.
+terminating The system is ending the call. This occurs when the application hangs up or a flow action ends the call.
+canceling   The call originator is canceling the call before the destination answered. Only applies to outgoing calls.
+hangup      The call has ended. This is the final state — no further changes are possible.
 =========== ===================
 
 **state diagram**
@@ -146,44 +155,44 @@ hangup      The call has been completed.
 
 Direction
 ---------
-Call's direction.
+Call's direction (enum string).
 
 =========== ============
 Direction   Description
 =========== ============
-incoming    The call was coming from the outside of VoIPBIN.
-outgoing    The call was generated by VoIPBIN.
+incoming    The call originated from outside VoIPBIN (e.g., a PSTN caller dialing a VoIPBIN number).
+outgoing    The call was initiated by VoIPBIN (e.g., via ``POST /calls``).
 =========== ============
 
 .. _call-struct-call-hangupby:
 
 Hangup by
 ---------
-The Hangup by shows which endpoint sent the hangup request first.
+Which endpoint sent the hangup request first (enum string).
 
 =========== ============
 hangup by   Description
 =========== ============
-remote      The remote end hangup the call first.
-local       The local end hangup the call first.
+remote      The remote end (the other party) hung up the call first.
+local       The local end (your application or flow action) hung up the call first.
 =========== ============
 
 .. _call-struct-call-hangupreason:
 
 Hangup reason
 -------------
-Shows why the call was hungup.
+The reason the call ended (enum string).
 
 =========== ============
 Reason      Description
 =========== ============
-normal      The call has ended after answer.
-failed      The call attempt(signal) was not reached to the phone network.
-busy        The destination is on the line with another caller.
-cancel      Call was cancelled by the originator before it was answered.
-timeout     Call reached max call duration after it was answered.
-noanswer    Destination didn't answer until destination's timeout.
-dialout     The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
-amd         Hangup caused by the action type amd. The call's amd action result hung up the call.
+normal      The call ended normally after being answered. Someone hung up.
+failed      The call attempt did not reach the phone network. Network or routing failure.
+busy        The destination is on another call.
+cancel      The call was cancelled by the originator before the destination answered.
+timeout     The call exceeded the maximum allowed duration after being answered.
+noanswer    The destination did not answer before the destination's ring timeout expired.
+dialout     The call exceeded VoIPBIN's dialing timeout before being answered. This is VoIPBIN's own timeout for outgoing calls.
+amd         The Answering Machine Detection (AMD) action detected a voicemail and hung up the call according to your AMD settings.
 =========== ============
 

@@ -184,10 +184,25 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with emails, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A verified sender email address (the <code class="docutils literal notranslate"><span class="pre">source</span></code> field must use a domain verified with VoIPBIN).</p></li>
+<li><p>Recipient email addresses for sending.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Sending emails incurs charges. The <code class="docutils literal notranslate"><span class="pre">source</span></code> address must use a domain that has been verified in VoIPBIN’s system. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field uses the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>.</p>
+</div>
 <section id="get-list-of-emails">
-<h2>Get list of emails<a class="headerlink" href="#get-list-of-emails" title="Link to this heading"></a></h2>
+<h3>Get list of emails<a class="headerlink" href="#get-list-of-emails" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location &#39;https://api.voipbin.net/v1.0/emails?accesskey=your_accesskey&#39;
 
 {
@@ -227,7 +242,6 @@
 </div>
 </section>
 </section>
-</section>
 
 </main>
                         
@@ -238,10 +252,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#get-list-of-emails">Get list of emails</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#get-list-of-emails">Get list of emails</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

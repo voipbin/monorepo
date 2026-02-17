@@ -185,6 +185,11 @@
     <section id="tool-functions">
 <span id="ai-struct-tool"></span><h1>Tool Functions<a class="headerlink" href="#tool-functions" title="Link to this heading"></a></h1>
 <p>Tool functions enable the AI to perform actions during voice conversations. When the AI determines that an action is needed based on the conversation context, it can invoke the appropriate tool function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tool functions are invoked by the LLM, not by your application code. You configure which tools are available via the <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> field in the AI configuration (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or inline flow action). The LLM decides when to call a tool based on conversation context and the tool’s parameter schema. Your prompt should describe when each tool should be used.</p>
+</div>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>                      <span class="n">AI</span> <span class="n">Engine</span>                    <span class="n">VoIPBIN</span> <span class="n">Platform</span>
@@ -248,6 +253,11 @@
 <section id="connect-call">
 <span id="ai-struct-tool-connect-call"></span><h2>connect_call<a class="headerlink" href="#connect-call" title="Link to this heading"></a></h2>
 <p>Connects or transfers the user to another endpoint (person, department, or phone number).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">connect_call</span></code> tool creates a new outgoing call and bridges it with the current call. The <code class="docutils literal notranslate"><span class="pre">source.type</span></code> determines the caller ID shown to the destination. For PSTN transfers, use <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code> with an E.164 phone number (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). For internal transfers, use <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;extension&quot;</span></code> with the extension name.</p>
+</div>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Caller requests a transfer: “transfer me to…”, “connect me to…”</p></li>
@@ -348,6 +358,11 @@
 <section id="send-message">
 <span id="ai-struct-tool-send-message"></span><h2>send_message<a class="headerlink" href="#send-message" title="Link to this heading"></a></h2>
 <p>Sends an SMS text message to a phone number.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers in <code class="docutils literal notranslate"><span class="pre">source.target</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations[].target</span></code> must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). If the user provides a local number like <code class="docutils literal notranslate"><span class="pre">555-1234</span></code>, the LLM must normalize it to E.164 before invoking this tool. The <code class="docutils literal notranslate"><span class="pre">source</span></code> phone number must be a number owned by your VoIPBIN account (obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>).</p>
+</div>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Caller explicitly requests a text: “text me”, “send me a text”, “SMS me”</p></li>
@@ -492,6 +507,11 @@
 <section id="set-variables">
 <span id="ai-struct-tool-set-variables"></span><h2>set_variables<a class="headerlink" href="#set-variables" title="Link to this heading"></a></h2>
 <p>Saves key-value data to the flow context for later use by downstream actions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Variables set via <code class="docutils literal notranslate"><span class="pre">set_variables</span></code> are accessible in subsequent flow actions using the <code class="docutils literal notranslate"><span class="pre">${variable_name}</span></code> syntax. Variable names are case-sensitive strings. Values are always stored as strings. These variables persist for the duration of the flow execution and are included in webhook events.</p>
+</div>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Save information collected during conversation (name, account number, preferences)</p></li>
@@ -558,6 +578,11 @@
 <section id="get-aicall-messages">
 <span id="ai-struct-tool-get-aicall-messages"></span><h2>get_aicall_messages<a class="headerlink" href="#get-aicall-messages" title="Link to this heading"></a></h2>
 <p>Retrieves message history from a specific AI call session.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> (UUID) must reference a completed or active AI call session. You can obtain this ID from the <code class="docutils literal notranslate"><span class="pre">${voipbin.aicall.id}</span></code> flow variable during the current call, or from a previous call’s webhook event data. This tool is most useful for multi-call workflows where AI needs context from a prior conversation.</p>
+</div>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Need message history from a different AI call (not current conversation)</p></li>

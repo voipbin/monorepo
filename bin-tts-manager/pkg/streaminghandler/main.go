@@ -69,6 +69,8 @@ const (
 
 const (
 	variableElevenlabsVoiceID = "voipbin.tts.elevenlabs.voice_id"
+	variableGCPVoiceID        = "voipbin.tts.gcp.voice_id"
+	variableAWSVoiceID        = "voipbin.tts.aws.voice_id"
 )
 
 type streamer interface {
@@ -180,6 +182,8 @@ type streamingHandler struct {
 	muStreaming  sync.Mutex
 
 	elevenlabsHandler streamer
+	gcpHandler        streamer
+	awsHandler        streamer
 }
 
 // NewStreamingHandler define
@@ -190,9 +194,13 @@ func NewStreamingHandler(
 	listenAddress string,
 	podID string,
 	elevenlabsAPIKey string,
+	awsAccessKey string,
+	awsSecretKey string,
 ) StreamingHandler {
 
 	elevenlabsHandler := NewElevenlabsHandler(reqHandler, notifyHandler, elevenlabsAPIKey)
+	gcpHandler := NewGCPHandler(reqHandler, notifyHandler)
+	awsHandler := NewAWSHandler(reqHandler, notifyHandler, awsAccessKey, awsSecretKey)
 
 	return &streamingHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
@@ -206,5 +214,7 @@ func NewStreamingHandler(
 		muStreaming:  sync.Mutex{},
 
 		elevenlabsHandler: elevenlabsHandler,
+		gcpHandler:        gcpHandler,
+		awsHandler:        awsHandler,
 	}
 }

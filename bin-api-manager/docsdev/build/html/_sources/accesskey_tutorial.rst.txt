@@ -3,13 +3,25 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before managing accesskeys, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an existing access key from ``GET /accesskeys``.
+* (For creation) The ``expire`` duration in seconds (e.g., ``31536000`` for one year).
+
+.. note:: **AI Implementation Hint**
+
+   The ``expire`` field in the create request is in seconds, not a timestamp. For example, use ``86400`` for a one-day key, ``2592000`` for 30 days, or ``31536000`` for one year. The API calculates the actual expiration timestamp and returns it in the ``tm_expire`` field.
+
 Create, Retrieve, and Manage Accesskeys
 ---------------------------------------
-This tutorial demonstrates how to create an access key, retrieve a list of access keys, and retrieve a specific access key using the API. All requests must include the `accesskey` query parameter for authentication.
+This tutorial demonstrates how to create an access key, retrieve a list of access keys, and retrieve a specific access key using the API. All requests must include the ``accesskey`` query parameter for authentication.
 
 1. **Create an Accesskey**
 
-   Use the following command to create a new access key. The `expire` parameter specifies the duration in seconds before the key expires.
+   Use the following command to create a new access key. The ``expire`` parameter specifies the duration in seconds before the key expires.
 
    .. code::
 
@@ -23,7 +35,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
 
    Example Response:
 
-   .. code-block:: json
+   .. code::
 
       {
           "id": "2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc",
@@ -39,7 +51,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
 
 2. **Get a List of Accesskeys**
 
-   Retrieve all existing access keys associated with your account. Include the `accesskey` query parameter in the request URL for authentication.
+   Retrieve all existing access keys associated with your account. Include the ``accesskey`` query parameter in the request URL for authentication.
 
    .. code::
 
@@ -47,7 +59,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
 
    Example Response:
 
-   .. code-block:: json
+   .. code::
 
       {
           "result": [
@@ -68,7 +80,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
 
 3. **Get a Specific Accesskey**
 
-   Retrieve details of a specific access key using its unique ID. Include the `accesskey` query parameter for authentication.
+   Retrieve details of a specific access key using its unique ID. Include the ``accesskey`` query parameter for authentication.
 
    .. code::
 
@@ -76,7 +88,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
 
    Example Response:
 
-   .. code-block:: json
+   .. code::
 
       {
           "id": "2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc",

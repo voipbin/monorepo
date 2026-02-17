@@ -36,14 +36,21 @@ Email
         "tm_delete": "<string>"
     },
 
-* id: Email's ID.
-* customer_id: Customer's ID.
-* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
-* *destinations*: List of destination addresses info. See detail :ref:`here <common-struct-address-address>`.
-* status: Email's deliverence status. See detail :ref:`here <email-struct-email-status>`.
-* subject: Email's subject.
-* content: Email's content.
-* attachments: List of attachments. See detail :ref:`here <email-struct-attachment>`.
+* ``id`` (UUID): The email's unique identifier. Returned when creating via ``POST /emails`` or listing via ``GET /emails``.
+* ``customer_id`` (UUID): The customer who owns this email. Obtained from ``GET /customers``.
+* ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
+* ``destinations`` (Array of Object): List of destination addresses. See :ref:`Address <common-struct-address-address>`.
+* ``status`` (enum string): The email's delivery status. See :ref:`Status <email-struct-email-status>`.
+* ``subject`` (String): The email's subject line.
+* ``content`` (String): The email's body content.
+* ``attachments`` (Array of Object): List of attachments. See :ref:`Attachment <email-struct-attachment>`.
+* ``tm_create`` (string, ISO 8601): Timestamp when the email was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last status update.
+* ``tm_delete`` (string, ISO 8601): Timestamp of deletion (soft delete).
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the email has not been deleted.
 
 Example
 +++++++
@@ -84,12 +91,16 @@ Status
 ------
 Email's status.
 
-========== ========================
-Status     Description
-========== ========================
-""         None
-initiated  The email has been initiated.
-processed  The email has been received is being processed.
-delivered  The email has been successfully delivered to the recipient's inbox (or spam folder).
-========== ========================
++------------+------------------------------------------------------------------+
+| Status     | Description                                                      |
++============+==================================================================+
+| ``""``     | No status set. Initial default before processing begins.         |
++------------+------------------------------------------------------------------+
+| initiated  | The email has been created and accepted for processing.          |
++------------+------------------------------------------------------------------+
+| processed  | The email is being processed and routed for delivery.            |
++------------+------------------------------------------------------------------+
+| delivered  | The email has been successfully delivered to the recipient's     |
+|            | mail server (may end up in inbox or spam folder).                |
++------------+------------------------------------------------------------------+
 

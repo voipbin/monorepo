@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High -- Queues require coordinating agents, tags, flows, and calls. Set up agents and tags first.
+   * **Cost:** No direct charge for queue operations. Underlying calls are chargeable per call minute.
+   * **Async:** Yes. ``POST /queues`` creates the queue synchronously, but calls entering a queue via the ``queue_join`` flow action are processed asynchronously. Poll ``GET /queues/{id}`` to monitor queue state, or use ``GET /queuecalls`` to track individual call progress.
+
 Call queueing allows calls to be placed on hold without handling the actual inquiries or transferring callers to the desired party. While in the call queue, the caller is played pre-recorded music or messages. Call queues are often used in call centers when there are not enough staff to handle a large number of calls. Call center operators generally receive information about the number of callers in the call queue and the duration of the waiting time. This allows them to respond flexibly to peak demand by deploying extra call center staff.
 
 With the VoIPBIN's queueing feature, businesses and call centers can effectively manage inbound calls, provide a smooth waiting experience for callers, and ensure that calls are efficiently distributed to available agents, improving overall customer service and call center performance.
@@ -171,6 +178,10 @@ Tags work as a skill-based filter:
 - Having extra tags is fine (Agent A has "vip" but queue doesn't require it)
 - If an agent is missing even one required tag, they're excluded
 - Tags define skills, languages, departments, or any grouping you need
+
+.. note:: **AI Implementation Hint**
+
+   Before creating a queue, you must have tags and agents already set up. Create tags via ``POST /tags``, assign them to agents via ``PUT /agents/{id}``, then reference the tag IDs in the queue's ``tag_ids`` field. Agents must have **all** tags the queue requires (AND logic), so verify agent tags with ``GET /agents/{id}`` before expecting queue routing to work.
 
 **Agent Status**
 
@@ -413,6 +424,10 @@ Controls how long a conversation can last once connected:
 - Set via queue's ``service_timeout`` field (milliseconds)
 - 0 means no timeout (talk forever)
 - When exceeded, the call is ended gracefully
+
+.. note:: **AI Implementation Hint**
+
+   Timeout values are in **milliseconds**, not seconds. A 5-minute wait timeout is ``300000``, not ``300``. Setting ``0`` disables the timeout entirely (wait/talk forever). If callers are being disconnected unexpectedly, check that timeout values are not set in seconds by mistake.
 
 **Timeout Scenarios**
 

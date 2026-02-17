@@ -44,20 +44,16 @@ func (h *streamingHandler) SayStop(ctx context.Context, id uuid.UUID) error {
 		return errors.Wrapf(err, "could not update message ID. streaming_id: %s, message_id: %s", id, uuid.Nil)
 	}
 
-	switch st.VendorName {
-	case streaming.VendorNameNone:
-		return nil
-
-	case streaming.VendorNameElevenlabs:
-		if st.VendorConfig == nil {
-			return nil
-		}
-
-		return h.elevenlabsHandler.SayStop(st.VendorConfig)
-
-	default:
+	if st.VendorName == streaming.VendorNameNone || st.VendorConfig == nil {
 		return nil
 	}
+
+	handler, _ := h.getStreamerByProvider(string(st.VendorName))
+	if handler == nil {
+		return nil
+	}
+
+	return handler.SayStop(st.VendorConfig)
 }
 
 // SayAdd adds text to the current message being synthesized
@@ -79,14 +75,13 @@ func (h *streamingHandler) SayAdd(ctx context.Context, id uuid.UUID, messageID u
 		return fmt.Errorf("vendor config is nil. streaming_id: %s", id)
 	}
 
-	switch st.VendorName {
-	case streaming.VendorNameElevenlabs:
-		log.Debugf("Adding text to ElevenLabs streaming. streaming_id: %s, message_id: %s, text: %s", id, messageID, text)
-		return h.elevenlabsHandler.SayAdd(st.VendorConfig, text)
-
-	default:
+	handler, _ := h.getStreamerByProvider(string(st.VendorName))
+	if handler == nil {
 		return errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)
 	}
+
+	log.Debugf("Adding text to %s streaming. streaming_id: %s, message_id: %s, text: %s", st.VendorName, id, messageID, text)
+	return handler.SayAdd(st.VendorConfig, text)
 }
 
 // SayFlush flushes the current streaming buffer.
@@ -108,16 +103,15 @@ func (h *streamingHandler) SayFlush(ctx context.Context, id uuid.UUID) error {
 	st.VendorLock.Lock()
 	defer st.VendorLock.Unlock()
 
-	switch st.VendorName {
-	case streaming.VendorNameElevenlabs:
-		if errFlush := h.elevenlabsHandler.SayFlush(st.VendorConfig); errFlush != nil {
-			log.Errorf("Could not flush the say streaming. err: %v", errFlush)
-			return errFlush
-		}
-
-	default:
+	handler, _ := h.getStreamerByProvider(string(st.VendorName))
+	if handler == nil {
 		log.Errorf("Unsupported vendor. vendor_name: %s", st.VendorName)
 		return fmt.Errorf("unsupported vendor: %s", st.VendorName)
+	}
+
+	if errFlush := handler.SayFlush(st.VendorConfig); errFlush != nil {
+		log.Errorf("Could not flush the say streaming. err: %v", errFlush)
+		return errFlush
 	}
 
 	return nil
@@ -136,14 +130,13 @@ func (h *streamingHandler) SayFinish(ctx context.Context, id uuid.UUID, messageI
 		return nil, fmt.Errorf("vendor config is nil. streaming_id: %s", id)
 	}
 
-	switch st.VendorName {
-	case streaming.VendorNameElevenlabs:
-		if errFinish := h.elevenlabsHandler.SayFinish(st.VendorConfig); errFinish != nil {
-			return nil, errors.Wrapf(errFinish, "could not finish the elevenlabs streaming. streaming_id: %s, message_id: %s", id, messageID)
-		}
-		return st, nil
-
-	default:
+	handler, _ := h.getStreamerByProvider(string(st.VendorName))
+	if handler == nil {
 		return nil, errors.Errorf("unsupported vendor for text streaming. vendor: %s", st.VendorName)
 	}
+
+	if errFinish := handler.SayFinish(st.VendorConfig); errFinish != nil {
+		return nil, errors.Wrapf(errFinish, "could not finish streaming. streaming_id: %s, message_id: %s", id, messageID)
+	}
+	return st, nil
 }

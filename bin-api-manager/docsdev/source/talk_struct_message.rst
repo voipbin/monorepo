@@ -39,19 +39,23 @@ Message
         "tm_delete": "<string>"
     }
 
-* id: Message's unique identifier.
-* customer_id: Customer's unique identifier.
-* owner_type: Type of the message owner (e.g., "agent").
-* owner_id: Owner's unique identifier.
-* chat_id: Talk's unique identifier that this message belongs to.
-* parent_id: Parent message ID for threaded replies (optional).
-* type: Message type. See detail :ref:`here <talk-struct-message-type>`.
-* text: Message text content.
-* medias: Array of media attachments.
-* metadata: Message metadata including reactions.
-* tm_create: Timestamp when the message was created.
-* tm_update: Timestamp when the message was last updated.
-* tm_delete: Timestamp when the message was deleted (soft delete).
+* ``id`` (UUID): The message's unique identifier. Returned when creating via ``POST /service_agents/talk_messages`` or listing via ``GET /service_agents/talk_messages``.
+* ``customer_id`` (UUID): The customer's unique identifier. Obtained from ``GET /customers``.
+* ``owner_type`` (enum string): Type of the message owner. Currently only ``"agent"`` for user-sent messages, or ``"system"`` for system-generated messages.
+* ``owner_id`` (UUID): The agent's unique identifier who sent the message. Obtained from ``GET /agents``.
+* ``chat_id`` (UUID): The talk's unique identifier that this message belongs to. Obtained from ``GET /service_agents/talk_chats``.
+* ``parent_id`` (UUID, optional): Parent message ID for threaded replies. Must be the ``id`` of an existing message in the same talk. Omit or set to empty string for top-level messages.
+* ``type`` (enum string): Message type. See :ref:`Type <talk-struct-message-type>`.
+* ``text`` (String): Message text content.
+* ``medias`` (Array of Object): Array of media attachments. Each object contains ``type`` (MIME type string), ``url`` (String), and ``name`` (String).
+* ``metadata`` (Object): Message metadata including reactions. Contains a ``reactions`` array.
+* ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
+* ``tm_update`` (string, ISO 8601): Timestamp when the message was last updated.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the message was deleted (soft delete).
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of empty string ``""`` means the message has not been deleted. To create a threaded reply, set ``parent_id`` to the ``id`` of the message you want to reply to. The parent message must exist in the same talk.
 
 Example
 +++++++
@@ -89,12 +93,14 @@ Type
 ----
 Message type indicates whether it's a regular message or system notification.
 
-=========== ============
+=========== ============================================================
 Type        Description
-=========== ============
-normal      Regular message sent by an agent.
-system      System-generated notification message.
-=========== ============
+=========== ============================================================
+normal      Regular message sent by an agent. Contains user-authored text
+            and optional media attachments.
+system      System-generated notification message. Automatically created
+            when participants join or leave the talk.
+=========== ============================================================
 
 Threading
 ---------
@@ -110,9 +116,9 @@ Reactions
 ---------
 Agents can add emoji reactions to messages. Reactions are stored in the message metadata and include:
 
-* **emoji**: The emoji character (e.g., "👍", "❤️", "😊").
-* **owner_type**: Type of the reactor (e.g., "agent").
-* **owner_id**: Unique identifier of the agent who reacted.
-* **tm_create**: Timestamp when the reaction was added.
+* ``emoji`` (String): The emoji character (e.g., "thumbsup", "heart").
+* ``owner_type`` (enum string): Type of the reactor. Currently only ``"agent"``.
+* ``owner_id`` (UUID): Unique identifier of the agent who reacted. Obtained from ``GET /agents``.
+* ``tm_create`` (string, ISO 8601): Timestamp when the reaction was added.
 
 Multiple agents can react to the same message, and the same agent can add multiple different emoji reactions. Reactions provide quick feedback without sending a full message response.

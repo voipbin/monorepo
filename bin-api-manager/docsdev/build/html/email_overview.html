@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="email-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Chargeable (per email sent)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">queued</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails/{id}</span></code> or use webhooks to track delivery status changes.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.</p>
 <p>With the Email API you can:</p>
 <ul class="simple">
@@ -280,6 +289,11 @@
    <span class="o">|&lt;--------------------------+--------------------------&gt;|</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> email address must be from a domain you have verified with VoIPBIN. Using an unverified domain will cause delivery failures. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field accepts an array of address objects, not plain email strings.</p>
 </div>
 <p><strong>Basic Email Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \

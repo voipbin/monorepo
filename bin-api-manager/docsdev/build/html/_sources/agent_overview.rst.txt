@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Free (agent management operations incur no charges; calls routed to agents are billed per call minute)
+   * **Async:** No. Agent CRUD operations are synchronous. However, agent status changes due to incoming calls (e.g., ``available`` to ``ringing`` to ``busy``) happen asynchronously via the queue routing system.
+
 The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
 In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. They have statuses, skills (tags), and contact addresses that determine when and how they can receive calls.
@@ -198,6 +205,10 @@ Each agent can have multiple contact addresses - these are the endpoints where c
 +------------+----------------------------------------------------------------+
 | sip        | Direct SIP address (user@domain)                               |
 +------------+----------------------------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   When setting agent addresses of type ``tel``, the number must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces (e.g., ``+15551234567``). For ``extension`` type, use only numeric characters without special characters.
 
 **Address Uniqueness**
 

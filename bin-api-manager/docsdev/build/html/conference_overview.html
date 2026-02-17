@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="conference-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium-High</p></li>
+<li><p><strong>Cost:</strong> Chargeable (credit deduction per conference minute per participant)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">starting</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> or subscribe via WebSocket to track conference status changes.</p></li>
+</ul>
+</div>
 <p>The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.</p>
 <p>Additionally, the Conference API allows developers to establish voice, video, and WebRTC (Web Real-Time Communication) calls, enabling seamless voice and video communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.</p>
 <img alt="_images/conference_overview_flow.png" src="_images/conference_overview_flow.png" />
@@ -459,6 +468,11 @@ Flow                    Conference-Manager              Call-Manager
 +-------------------------------------------------------------------------+
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">type</span></code> field is immutable after creation. Choose <code class="docutils literal notranslate"><span class="pre">conference</span></code> for multi-party rooms (2+ participants, stays active until explicitly deleted) or <code class="docutils literal notranslate"><span class="pre">connect</span></code> for 1:1 bridges (auto-terminates when either party leaves). If unsure, default to <code class="docutils literal notranslate"><span class="pre">conference</span></code> since it handles both single and multi-party scenarios.</p>
+</div>
 <p><strong>Type: Connect (1:1 Bridge)</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
 |                      Type: Connect (Two-Party)                          |
@@ -519,6 +533,11 @@ When one participant leaves:
 <span class="o">|</span>                                                                         <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Recording and transcription can only start when the conference status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. If you attempt <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences/{id}/recording_start</span></code> on a conference in <code class="docutils literal notranslate"><span class="pre">starting</span></code> or <code class="docutils literal notranslate"><span class="pre">terminating</span></code> status, the request will fail. Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> and verify <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> before starting recording or transcription.</p>
 </div>
 <p><strong>Recording Rules</strong></p>
 <ul class="simple">

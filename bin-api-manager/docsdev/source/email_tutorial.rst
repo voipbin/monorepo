@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with emails, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A verified sender email address (the ``source`` field must use a domain verified with VoIPBIN).
+* Recipient email addresses for sending.
+
+.. note:: **AI Implementation Hint**
+
+   Sending emails incurs charges. The ``source`` address must use a domain that has been verified in VoIPBIN's system. The ``destinations`` field uses the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``email``.
+
 Get list of emails
 ------------------
 

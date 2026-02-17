@@ -184,8 +184,20 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="activeflow-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with activeflows, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>An existing activeflow ID (UUID). Activeflows are created automatically when a flow is triggered (e.g., by an incoming call or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>). List them via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>You cannot create activeflows directly via the API. They are created automatically when a flow is triggered. To have an activeflow to inspect, first create a call (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>) with flow actions, then list activeflows with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. The <code class="docutils literal notranslate"><span class="pre">status</span></code> field will be <code class="docutils literal notranslate"><span class="pre">running</span></code> during execution and <code class="docutils literal notranslate"><span class="pre">ended</span></code> after completion.</p>
+</div>
 <section id="get-activeflow-list">
-<h2>Get activeflow list<a class="headerlink" href="#get-activeflow-list" title="Link to this heading"></a></h2>
+<h3>Get activeflow list<a class="headerlink" href="#get-activeflow-list" title="Link to this heading"></a></h3>
 <p>Getting a list of activeflows.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/activeflows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -220,7 +232,7 @@
 </div>
 </section>
 <section id="stop-activeflow">
-<h2>Stop activeflow<a class="headerlink" href="#stop-activeflow" title="Link to this heading"></a></h2>
+<h3>Stop activeflow<a class="headerlink" href="#stop-activeflow" title="Link to this heading"></a></h3>
 <p>Stop the activeflow.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/activeflows/1cb0566c-6aa5-45fd-beb7-e71a968075ea/stop?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -250,6 +262,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -260,8 +273,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-activeflow-list">Get activeflow list</a></li>
 <li><a class="reference internal" href="#stop-activeflow">Stop activeflow</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

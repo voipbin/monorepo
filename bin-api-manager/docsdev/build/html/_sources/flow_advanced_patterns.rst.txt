@@ -5,6 +5,20 @@ Advanced Flow Patterns
 
 This section covers advanced flow design patterns for building sophisticated communication applications.
 
+Prerequisites
++++++++++++++
+
+Before implementing these patterns, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* Familiarity with basic flow concepts (actions, branching, variables). See :ref:`Flow Overview <flow-overview>` and :ref:`Basic Tutorial <flow-tutorial-basic>`.
+* (For queue patterns) Queues with agents configured. Create queues via ``POST /queues`` and assign agents.
+* (For AI patterns) An AI agent configured. Obtain the ``ai_id`` from your AI agent setup.
+
+.. note:: **AI Implementation Hint**
+
+   These advanced patterns rely heavily on ``fetch_flow`` for modularity. Each sub-flow is a standalone flow created via ``POST /flows``, and the main flow references them by ``flow_id``. This means you need to create the sub-flows first, obtain their IDs from the responses, and then use those IDs in the main flow's ``fetch_flow`` actions. The ``on_complete_flow_id`` field is set on the flow definition itself (not on individual actions).
+
 Multi-Level IVR with Sub-Menus
 ------------------------------
 
@@ -127,6 +141,10 @@ Building complex IVR systems with nested menus:
 
 Business Hours Routing
 ----------------------
+
+.. note:: **AI Implementation Hint**
+
+   The ``condition_datetime`` action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the ``hour`` values accordingly. For example, 9 AM EST = 14:00 UTC. Two ``condition_datetime`` actions are needed to define a range (one for opening, one for closing).
 
 Route calls differently based on time of day:
 

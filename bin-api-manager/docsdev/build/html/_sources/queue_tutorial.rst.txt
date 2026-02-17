@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with queues, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* At least one tag ID (UUID). Create tags via ``POST /tags`` or obtain existing ones from ``GET /tags``. Tags define the skills required for agents to receive calls from this queue.
+* At least one agent configured with matching tags. Create agents via ``POST /agents`` and assign tags via ``PUT /agents/{id}``. Verify agent tags with ``GET /agents/{id}``.
+* (Optional) A wait flow with actions for callers to hear while waiting. Common actions include ``talk`` (text-to-speech announcements) and ``sleep`` (pause between announcements).
+
+.. note:: **AI Implementation Hint**
+
+   Queues require tags and agents to function. If you create a queue without any agents having matching tags, calls will wait indefinitely (or until ``wait_timeout``). Always verify that at least one agent has all the tags listed in the queue's ``tag_ids`` before routing calls to the queue.
 
 Create a new queue
 ------------------
@@ -39,6 +52,10 @@ Create a new queue
         "timeout_wait": 100000,
         "timeout_service": 10000000
     }'
+
+.. note:: **AI Implementation Hint**
+
+   The ``tag_ids`` field must contain valid tag UUIDs obtained from ``GET /tags``. The ``wait_actions`` array defines what callers hear while waiting -- use ``talk`` for announcements and ``sleep`` for pauses. Timeout values (``timeout_wait``, ``timeout_service``) are in **milliseconds**: ``100000`` = 100 seconds, ``10000000`` = ~2.8 hours.
 
 Get list of queues
 ------------------

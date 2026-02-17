@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="transcribe-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable (per minute of audio transcribed)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. Transcripts are delivered asynchronously via webhook (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events) or WebSocket subscription. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes/{id}</span></code> to check for <code class="docutils literal notranslate"><span class="pre">done</span></code> status when complete.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.</p>
 <p>With the Transcription API you can:</p>
 <ul class="simple">
@@ -294,6 +303,11 @@ speaker relative to conference)</p></td>
 <section id="starting-transcription">
 <h2>Starting Transcription<a class="headerlink" href="#starting-transcription" title="Link to this heading"></a></h2>
 <p>VoIPBIN provides two methods to start transcription based on your use case.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter uses BCP47 codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>). Using the wrong language code significantly degrades accuracy. If the speaker’s language is unknown, start with the most likely code and consider switching if results are poor. There is no auto-detect mode; you must specify a language explicitly.</p>
+</div>
 <p><strong>Method 1: Via Flow Action</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> and <code class="docutils literal notranslate"><span class="pre">transcribe_stop</span></code> actions in your call flow for automatic control.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Flow</span>                    <span class="n">VoIPBIN</span>                     <span class="n">Your</span> <span class="n">App</span>

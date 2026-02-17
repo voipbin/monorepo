@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before managing billing accounts, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* The billing account ID (UUID). Obtain it via ``GET /billing_accounts`` which lists all billing accounts for the authenticated customer.
+* (For adding balance) Admin-level permissions on the account.
+
+.. note:: **AI Implementation Hint**
+
+   The ``balance`` field in billing account responses is a float representing USD (e.g., ``69.77263`` = $69.77). When estimating costs, multiply the per-unit rate by billable units. Call durations are ceiling-rounded to the next whole minute for billing purposes (e.g., a 2 minute 15 second call is billed as 3 minutes).
+
 Check Account Balance
 ----------------------
 

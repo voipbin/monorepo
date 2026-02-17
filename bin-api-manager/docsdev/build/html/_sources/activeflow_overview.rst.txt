@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High -- Activeflows are runtime instances of flows. You never create them directly; they are created automatically when a flow is triggered (e.g., by an incoming call or ``POST /calls``).
+   * **Cost:** No direct cost. Activeflows are a monitoring/control interface. However, the underlying trigger (call, message) may incur charges.
+   * **Async:** Yes. Activeflows execute asynchronously. Use ``GET /activeflows/{id}`` to poll the current state, or subscribe via WebSocket for real-time updates.
+
 The activeflow is a dynamic entity within the VoIPBIN system that plays a vital role in representing the real-time state of a registered flow. As the flow is executed, it generates an activeflow, which contains an action cursor and relevant status information. This activeflow serves as a control interface, providing efficient management and flexibility during flow execution.
 
 In essence, the activeflow concept is a powerful tool that facilitates the smooth and flexible execution of registered flows. Its dynamic nature allows for real-time updates, ensuring that users can monitor and manage the flow execution efficiently.
@@ -31,6 +38,10 @@ Understanding the difference between a Flow and an ActiveFlow is essential for w
                |     When triggered                     |
                +----------------------------------------+
                         Creates
+
+.. note:: **AI Implementation Hint**
+
+   You cannot create an activeflow directly. Activeflows are created automatically when a flow is triggered (e.g., by an incoming call or by creating an outbound call with ``POST /calls``). Use ``GET /activeflows`` to list running instances, and ``POST /activeflows/{id}/stop`` to terminate one. The ``reference_type`` field tells you what triggered the activeflow (call, message, api, etc.).
 
 **Analogy**: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you're on, what ingredients you've used, and the current state of the dish.
 

@@ -173,7 +173,20 @@ open build/html/index.html  # macOS
 xdg-open build/html/index.html  # Linux
 ```
 
-#### Documentation Conventions
+#### AI-Native RST Writing Guidelines
+
+**Target Audience:** Documentation writers, developers, and AI agents (LLMs).
+**Goal:** Make RST documentation machine-actionable for AI agents without losing human readability.
+**Applicability:** These rules apply when **creating new RST pages or modifying existing ones**. Do not retroactively rewrite pages you are not otherwise touching. When editing an existing page, apply the rules to the sections you are changing.
+
+**Relationship to OpenAPI Rules:** These RST guidelines are the documentation counterpart to the "AI-Native OpenAPI Specification Rules" in `bin-openapi-manager/CLAUDE.md`. When updating both an OpenAPI schema and its corresponding RST documentation, both guideline sets apply.
+
+**Core Philosophy: "Explicit Over Implicit"**
+
+AI models cannot infer context. Every piece of information must be self-contained.
+
+- Human-Native: "Enter the ID to stop it."
+- AI-Native: "Enter the `activeflow_id` (UUID) returned from `POST /activeflows` to stop the running flow."
 
 **File Naming:**
 - `<resource>.rst` - Main resource file (includes other files)
@@ -181,17 +194,172 @@ xdg-open build/html/index.html  # Linux
 - `<resource>_tutorial.rst` - Step-by-step guide
 - `<resource>_struct_<type>.rst` - Data structure reference
 
-**RST Style:**
+##### The 5 Commandments
+
+**Rule 1: Data Provenance (Where Do IDs Come From?)**
+
+Never mention an ID parameter without stating its source endpoint.
+
+```
+Bad:
+  queue_id: The ID of the queue.
+
+Good:
+  queue_id: The unique UUID of the queue. Obtained from the ``id`` field of ``GET /queues``.
+```
+
+**Rule 2: Strict Typing in Prose**
+
+Use specific formats. Never use vague terms like "text" or "number."
+
+| Vague Term | AI-Native Replacement |
+|---|---|
+| "The phone number" | "Phone number in E.164 format (e.g., `+821012345678`). Must start with `+`. No dashes or spaces." |
+| "The ID" | "UUID string (e.g., `a1b2c3d4-e5f6-7890-abcd-ef1234567890`)" |
+| "The timestamp" | "ISO 8601 / RFC 3339 timestamp (e.g., `2026-01-15T10:30:00Z`)" |
+| "The status" | "Enum string. One of: `dialing`, `ringing`, `progressing`, `hangup`." |
+
+**Rule 3: AI Hint Admonitions**
+
+Add `.. note:: **AI Implementation Hint**` blocks for normalization rules, decision logic, and common pitfalls.
+
+```rst
+.. note:: **AI Implementation Hint**
+
+   If the user provides a local phone number (e.g., ``010-1234-5678``),
+   you **MUST** normalize it to E.164 format (``+821012345678``) before
+   calling this API.
+```
+
+Use for:
+- Input normalization (phone formats, timezone conversions)
+- Prerequisite checks ("Verify the flow exists via `GET /flows/{id}` before assigning")
+- Cost warnings ("This operation deducts credits from the account balance")
+- Async behavior ("This returns immediately. Poll `GET /calls/{id}` or use WebSocket for status updates")
+
+Required in overview and tutorial files (at least one per page). In struct files: include only when field usage has non-obvious requirements.
+
+**Rule 4: Explicit State Transitions (Enums)**
+
+Every enum or status field must list all possible values with descriptions. Applies only to resources that have a status or state field.
+
+```
+Bad:
+  Returns the status of the call.
+
+Good:
+  status (enum string):
+  * ``dialing``: System is currently dialing the destination.
+  * ``ringing``: Destination device is ringing, awaiting answer.
+  * ``progressing``: Call answered. Audio is flowing between parties.
+  * ``terminating``: System is ending the call.
+  * ``canceling``: Originator is canceling before answer (outgoing calls only).
+  * ``hangup``: Call ended. Final state — no further changes possible.
+```
+
+**Rule 5: Self-Correcting Error Handling**
+
+Provide cause-and-fix pairs for HTTP error codes. This lets AI agents self-heal when an API call fails.
+
+```rst
+Troubleshooting
+---------------
+
+* **400 Bad Request:**
+    * **Cause:** The ``to`` field contains dashes or spaces.
+    * **Fix:** Remove all non-numeric characters except the leading ``+``.
+
+* **402 Payment Required:**
+    * **Cause:** Insufficient account balance.
+    * **Fix:** Check balance via ``GET /billing-accounts``. Prompt user to top up.
+
+* **404 Not Found:**
+    * **Cause:** The resource UUID does not exist or belongs to another customer.
+    * **Fix:** Verify the UUID was obtained from a recent ``GET`` list call.
+
+* **409 Conflict:**
+    * **Cause:** Resource is in an incompatible state for this operation.
+    * **Fix:** Check current status via ``GET /resource/{id}`` before retrying.
+```
+
+##### Per-File-Type Rules
+
+**`*_overview.rst` Files:**
+
+1. AI Context block at the top of the overview:
+   ```rst
+   .. note:: **AI Context**
+
+      * **Complexity:** Low | Medium | High
+      * **Cost:** Free | Chargeable (credit deduction)
+      * **Async:** Yes/No. If yes, state how to track status.
+   ```
+2. State lifecycle with all enum values (if the resource has a status field)
+3. Related documentation cross-refs using `:ref:`
+4. At least one AI Implementation Hint (Rule 3)
+
+**`*_struct_*.rst` Files:**
+
+1. Type for every field (UUID, String(E.164), enum, ISO 8601, Boolean, Integer, Array, Object)
+2. Provenance for every ID/reference field ("Obtained from `GET /endpoint`") (Rule 1)
+3. Required/Optional marker for request body structs
+4. Enum values listed inline or via `:ref:` to a dedicated section (Rule 4)
+5. AI Implementation Hint only when field usage has non-obvious requirements
+
+Example field description format:
+```
+* ``flow_id`` (UUID, Optional): The flow to execute when the call is answered.
+  Obtained from the ``id`` field of ``GET /flows``.
+  Set to ``00000000-0000-0000-0000-000000000000`` if no flow is assigned.
+```
+
+**`*_tutorial.rst` Files:**
+
+1. Prerequisites block listing what IDs/resources are needed and how to obtain them:
+   ```rst
+   Prerequisites
+   +++++++++++++
+
+   Before creating a call, you need:
+
+   * A source phone number (E.164 format). Obtain one via ``GET /numbers``.
+   * A destination phone number (E.164 format) or extension.
+   * (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
+   ```
+2. Complete request AND response examples for every operation
+3. At least one AI Implementation Hint for common gotchas (Rule 3)
+4. Response field annotations — comment key fields (e.g., `// Save this as call_id`)
+
+**`*_troubleshooting.rst` Files:**
+
+1. Debugging tools — list relevant API endpoints for diagnosis
+2. Symptom -> Cause -> Fix pattern for each issue (Rule 5)
+3. HTTP error code reference table
+4. Diagnostic steps with actual API calls to run
+
+##### Quick Checklist
+
+Before considering any RST documentation page complete, verify:
+
+- [ ] Every ID field states its source endpoint (Rule 1)
+- [ ] Every field has an explicit type: UUID, E.164, enum, ISO 8601, etc. (Rule 2)
+- [ ] Overview and tutorial pages have at least one `.. note:: **AI Implementation Hint**` (Rule 3)
+- [ ] Every enum/status lists all possible values with descriptions (Rule 4)
+- [ ] Request struct fields are marked Required or Optional (Rule 2)
+- [ ] Error scenarios include cause + fix pairs (Rule 5)
+- [ ] Cross-references use `:ref:` to link related documentation
+- [ ] Code examples include both request AND response
+
+##### RST Formatting Rules
+
 - Use `.. code::` for code blocks (not `.. code-block::`)
 - Reference other sections: `:ref:\`link-target\``
 - Use `**bold**` for emphasis, not `*italic*`
 - Keep lines under 120 characters when practical
-
-**Common Issues:**
-- Empty sections like "Common used." are embarrassing - always provide content
-- Check for typos: "Ovewview", "Acesskey", "comming", "existed"
+- Use "VoIPBIN" consistently (not "Voipbin" or "voipbin")
+- Always provide content in sections — no empty stubs like "Common used."
+- Check for common typos: "Ovewview", "Acesskey", "comming", "existed"
 - Grammar: "The doesn't affect" → "This doesn't affect"
-- Consistency: "VoIPBIN" not "Voipbin" or "voipbin"
 
 #### Documentation Maintenance
 

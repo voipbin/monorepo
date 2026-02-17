@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before sending messages, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). This must be a number you own. Obtain your numbers via ``GET /numbers``.
+* A destination phone number in E.164 format (e.g., ``+15559876543``).
+
+.. note:: **AI Implementation Hint**
+
+   Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. The ``source`` and ``destinations`` fields use the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``tel``.
+
 Send a message
 --------------
 

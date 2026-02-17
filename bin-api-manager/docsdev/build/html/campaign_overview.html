@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="campaign-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High – Campaigns coordinate multiple resources (outdials, outplans, queues, flows). Set up all dependencies before creating a campaign.</p></li>
+<li><p><strong>Cost:</strong> Chargeable. Running a campaign makes outbound calls/messages, each of which incurs per-minute or per-message charges.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/campaigns</span></code> creates the campaign in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. Set <code class="docutils literal notranslate"><span class="pre">status</span></code> to <code class="docutils literal notranslate"><span class="pre">running</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}</span></code> to start dialing. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns/{id}</span></code> to monitor campaign state and progress.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Campaign API provides a comprehensive platform for managing large-scale outbound communication campaigns. Whether you need to make thousands of calls, send bulk SMS, or deliver email notifications, the Campaign API orchestrates the entire process with intelligent dialing strategies and automatic retry handling.</p>
 <p>With the Campaign API you can:</p>
 <ul class="simple">
@@ -231,6 +240,11 @@
 <li><p><strong>Queue</strong>: Groups agents who handle answered calls</p></li>
 <li><p><strong>Flow</strong>: Specifies actions to take when calls connect</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A campaign requires all four dependencies (outdial, outplan, queue, flow) to be created <strong>before</strong> the campaign itself. The <code class="docutils literal notranslate"><span class="pre">outdial_id</span></code>, <code class="docutils literal notranslate"><span class="pre">outplan_id</span></code>, <code class="docutils literal notranslate"><span class="pre">queue_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> must reference existing resources. Creating a campaign with missing or invalid dependency IDs will result in failures when the campaign starts dialing.</p>
+</div>
 </section>
 <section id="campaign-lifecycle">
 <h2>Campaign Lifecycle<a class="headerlink" href="#campaign-lifecycle" title="Link to this heading"></a></h2>

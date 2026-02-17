@@ -22,30 +22,16 @@ Accesskey
       "tm_delete": "9999-01-01 00:00:00.000000"
    }
 
-- **id**:  
-  A unique identifier (`UUID`) for the access key. This is auto-generated when the key is created.
+* ``id`` (UUID): The accesskey's unique identifier. Returned when creating an accesskey via ``POST /accesskeys`` or when listing accesskeys via ``GET /accesskeys``.
+* ``customer_id`` (UUID): The customer that owns this accesskey. Obtained from the ``id`` field of ``GET /customers``.
+* ``name`` (String): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.
+* ``detail`` (String): An optional description of the accesskey's intended use or purpose.
+* ``token`` (String): The API token credential used to authenticate requests. Must be stored securely and never exposed in client-side code.
+* ``tm_expire`` (string, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.
+* ``tm_create`` (string, ISO 8601): Timestamp when the accesskey was created.
+* ``tm_update`` (string, ISO 8601): Timestamp when the accesskey was last updated.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the accesskey was deleted, if applicable.
 
-- **customer_id**:  
-  The `UUID` representing the customer to whom the access key belongs. This links the key to a specific customer account.
+.. note:: **AI Implementation Hint**
 
-- **name**:  
-  An optional string field that allows users to assign a human-readable name to the access key. This is useful for identification purposes in multi-key environments.
-
-- **detail**:  
-  An optional string field for additional information about the access key, such as its intended use or description.
-
-- **token**:  
-  The API token string. This is the credential used to authenticate API requests. It must be treated as sensitive information and stored securely.
-
-- **tm_expire**:  
-  A timestamp (`ISO 8601 format`) indicating when the access key will expire. After this time, the key will no longer be valid.
-
-- **tm_create**:  
-  A timestamp (`ISO 8601 format`) indicating when the access key was created.
-
-- **tm_update**:  
-  A timestamp (`ISO 8601 format`) showing the last time the access key was updated. This is useful for tracking modifications to the key.
-
-- **tm_delete**:  
-  A timestamp (`ISO 8601 format`) indicating when the key was marked for deletion. If the value is set to a far-future date (e.g., `"9999-01-01 00:00:00.000000"`), it implies the key is not deleted.
-
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the accesskey has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent "not yet occurred."

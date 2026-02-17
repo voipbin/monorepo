@@ -188,6 +188,15 @@
 <h1>Mediastream<a class="headerlink" href="#mediastream" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="mediastream-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High</p></li>
+<li><p><strong>Cost:</strong> Free (no additional charge beyond the underlying call/conference costs)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action is initiated by VoIPBIN connecting to your server.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.</p>
 <p>With the Media Stream API you can:</p>
 <ul class="simple">
@@ -253,6 +262,11 @@
 <section id="streaming-modes">
 <h3>Streaming Modes<a class="headerlink" href="#streaming-modes" title="Link to this heading"></a></h3>
 <p>VoIPBIN supports two streaming modes based on your application’s needs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Media streaming requires the call or conference to be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered). The <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.</p>
+</div>
 <p><strong>Bi-Directional Streaming</strong></p>
 <p>Your application both receives and sends audio through the same WebSocket connection.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>                              <span class="o">+----------+</span>
@@ -722,6 +736,18 @@ format matches encapsulation type</p></td>
 </section>
 <section id="tutorial">
 <span id="mediastream-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before using media streaming, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>An active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the call ID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. Or an active conference via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p>A WebSocket client library (not a standard HTTP client). The media stream endpoint upgrades the HTTP connection to WebSocket.</p></li>
+<li><p>Knowledge of the audio format for your chosen encapsulation: <code class="docutils literal notranslate"><span class="pre">rtp</span></code> (G.711 ulaw, 12-byte header + 160-byte payload), <code class="docutils literal notranslate"><span class="pre">sln</span></code> (raw PCM, no headers), or <code class="docutils literal notranslate"><span class="pre">audiosocket</span></code> (Asterisk AudioSocket, 320-byte chunks).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The media stream URL (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code>) is a WebSocket upgrade endpoint. Do not use <code class="docutils literal notranslate"><span class="pre">curl</span></code> or standard HTTP libraries to connect. Use a WebSocket client (e.g., Python <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code>, JavaScript <code class="docutils literal notranslate"><span class="pre">WebSocket</span></code>, Node.js <code class="docutils literal notranslate"><span class="pre">ws</span></code>). Audio data must be sent as binary frames, not text frames.</p>
+</div>
 <section id="bi-directional-media-streaming-for-calls">
 <h3>Bi-Directional Media Streaming for Calls<a class="headerlink" href="#bi-directional-media-streaming-for-calls" title="Link to this heading"></a></h3>
 <p>Connect to a call’s media stream via WebSocket to send and receive audio in real-time. This allows you to build custom audio processing applications without SIP signaling.</p>

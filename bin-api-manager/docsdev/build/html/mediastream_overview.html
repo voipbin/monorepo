@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="mediastream-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High</p></li>
+<li><p><strong>Cost:</strong> Free (no additional charge beyond the underlying call/conference costs)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action is initiated by VoIPBIN connecting to your server.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.</p>
 <p>With the Media Stream API you can:</p>
 <ul class="simple">
@@ -249,6 +258,11 @@
 <section id="streaming-modes">
 <h2>Streaming Modes<a class="headerlink" href="#streaming-modes" title="Link to this heading"></a></h2>
 <p>VoIPBIN supports two streaming modes based on your application’s needs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Media streaming requires the call or conference to be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered). The <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.</p>
+</div>
 <p><strong>Bi-Directional Streaming</strong></p>
 <p>Your application both receives and sends audio through the same WebSocket connection.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>                              <span class="o">+----------+</span>

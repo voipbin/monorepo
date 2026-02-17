@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before creating a webhook, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.
+* Knowledge of which event types you want to receive (e.g., ``call_created``, ``message_created``). See :ref:`Webhook Structure <webhook-struct-webhook>` for the full list.
+
+.. note:: **AI Implementation Hint**
+
+   Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server. The ``uri`` field must be a valid HTTPS URL for production use.
+
 Create a Webhook
 ----------------
 

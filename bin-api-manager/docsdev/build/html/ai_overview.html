@@ -184,7 +184,21 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="ai-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High</p></li>
+<li><p><strong>Cost:</strong> Chargeable (credit deduction per AI session based on LLM, TTS, and STT usage)</p></li>
+<li><p><strong>Async:</strong> Yes. AI sessions run asynchronously during calls. Monitor via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or WebSocket events.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>AI is configured in two layers: (1) a reusable AI configuration resource created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> (defines LLM, TTS, STT, and tools), and (2) a flow action (<code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> or <code class="docutils literal notranslate"><span class="pre">ai</span></code>) that references the AI configuration or provides inline settings. For quick prototyping, use inline flow actions. For production, create a reusable AI resource and reference it by <code class="docutils literal notranslate"><span class="pre">ai_id</span></code>.</p>
+</div>
 </section>
 <section id="how-it-works">
 <h1>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h1>
@@ -492,7 +506,7 @@
 </section>
 <section id="configuring-tools">
 <h2>Configuring Tools<a class="headerlink" href="#configuring-tools" title="Link to this heading"></a></h2>
-<p>Tools are configured per-AI using the <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> field:</p>
+<p>Tools are configured per-AI using the <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> field (Array of String):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Enable</span> <span class="nb">all</span> <span class="n">tools</span>
 <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
 
@@ -502,6 +516,11 @@
 <span class="o">//</span> <span class="n">Disable</span> <span class="nb">all</span> <span class="n">tools</span> <span class="p">(</span><span class="n">conversation</span><span class="o">-</span><span class="n">only</span><span class="p">)</span>
 <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[]</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>, the AI can invoke any available tool, including <code class="docutils literal notranslate"><span class="pre">stop_flow</span></code> which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations.</p>
 </div>
 </section>
 </section>
@@ -807,6 +826,46 @@
 </section>
 <section id="troubleshooting">
 <h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When diagnosing AI call issues, check these endpoints in order: (1) <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to verify call status and hangup reason, (2) <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}</span></code> to check flow execution state, (3) WebSocket events for real-time error notifications.</p>
+</div>
+<p><strong>Common HTTP Errors</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> format. Must be <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Verify the format matches the provider table in <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>402 Payment Required:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Insufficient account balance for AI session (LLM + TTS + STT costs).</p></li>
+<li><p><strong>Fix:</strong> Check balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code>. Top up before retrying.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>500 Internal Server Error:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> LLM provider API key is invalid or the provider is unavailable.</p></li>
+<li><p><strong>Fix:</strong> Verify <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is correct. Check the provider’s status page.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 <p><strong>Audio Issues</strong></p>
 <table class="docutils align-default">
 <thead>

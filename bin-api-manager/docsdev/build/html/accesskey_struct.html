@@ -200,25 +200,21 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><strong>id</strong>:
-A unique identifier (<cite>UUID</cite>) for the access key. This is auto-generated when the key is created.</p></li>
-<li><p><strong>customer_id</strong>:
-The <cite>UUID</cite> representing the customer to whom the access key belongs. This links the key to a specific customer account.</p></li>
-<li><p><strong>name</strong>:
-An optional string field that allows users to assign a human-readable name to the access key. This is useful for identification purposes in multi-key environments.</p></li>
-<li><p><strong>detail</strong>:
-An optional string field for additional information about the access key, such as its intended use or description.</p></li>
-<li><p><strong>token</strong>:
-The API token string. This is the credential used to authenticate API requests. It must be treated as sensitive information and stored securely.</p></li>
-<li><p><strong>tm_expire</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the access key will expire. After this time, the key will no longer be valid.</p></li>
-<li><p><strong>tm_create</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the access key was created.</p></li>
-<li><p><strong>tm_update</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) showing the last time the access key was updated. This is useful for tracking modifications to the key.</p></li>
-<li><p><strong>tm_delete</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the key was marked for deletion. If the value is set to a far-future date (e.g., <cite>“9999-01-01 00:00:00.000000”</cite>), it implies the key is not deleted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The accesskey’s unique identifier. Returned when creating an accesskey via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code> or when listing accesskeys via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this accesskey. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the accesskey’s intended use or purpose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String): The API token credential used to authenticate requests. Must be stored securely and never exposed in client-side code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> (string, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the accesskey was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the accesskey was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the accesskey was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the accesskey has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+</div>
 </section>
 </section>
 

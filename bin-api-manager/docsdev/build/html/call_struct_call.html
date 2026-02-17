@@ -222,21 +222,31 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Call’s ID.</p></li>
-<li><p>flow_id: Call’s flow id.</p></li>
-<li><p><em>type</em>: Call’s type. See detail <a class="reference internal" href="#call-struct-call-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>master_call_id: Master call’s id. If the master_call_id set, it follows master call’s hangup.</p></li>
-<li><p>chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.</p></li>
-<li><p>recording_id: Shows currently recording id.</p></li>
-<li><p>recording_ids: List of recording ids.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="#call-struct-call-direction"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="#call-struct-call-hangupby"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="#call-struct-call-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The call’s unique identifier. Returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or when listing calls via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID): The flow associated with this call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The call’s type. See <a class="reference internal" href="#call-struct-call-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">master_call_id</span></code> (UUID): The master call’s ID in a call chain. Obtained from another call’s <code class="docutils literal notranslate"><span class="pre">id</span></code> field. If set, this call follows the master call’s hangup. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this call has no master.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chained_call_ids</span></code> (Array of UUID): List of chained call IDs linked to this call. Each ID is a call <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. When this call hangs up, all chained calls also hang up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this call’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The call’s current status. See <a class="reference internal" href="#call-struct-call-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">action</span></code> (Object): The call’s currently executing flow action. See <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The call’s direction. See <a class="reference internal" href="#call-struct-call-direction"><span class="std std-ref">Direction</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hangup_by</span></code> (enum string): Which endpoint initiated the hangup. See <a class="reference internal" href="#call-struct-call-hangupby"><span class="std std-ref">Hangup by</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> (enum string): The reason the call ended. See <a class="reference internal" href="#call-struct-call-hangupreason"><span class="std std-ref">Hangup reason</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the call was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any call property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_progressing</span></code> (string, ISO 8601): Timestamp when the call was answered.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_ringing</span></code> (string, ISO 8601): Timestamp when the destination started ringing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> (string, ISO 8601): Timestamp when the call ended.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> with this value means the call is still in progress.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -287,7 +297,7 @@
 </section>
 <section id="type">
 <span id="call-struct-call-type"></span><h2>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h2>
-<p>Call’s type.</p>
+<p>Call’s type (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -296,20 +306,20 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>flow</p></td>
-<td><p>Executing the call-flow</p></td>
+<td><p>Executing a call flow. The call runs the actions defined in the associated flow.</p></td>
 </tr>
 <tr class="row-odd"><td><p>conference</p></td>
-<td><p>Conference call.</p></td>
+<td><p>Conference call. The call is part of a multi-party conference.</p></td>
 </tr>
 <tr class="row-even"><td><p>sip-service</p></td>
-<td><p>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</p></td>
+<td><p>SIP service call. Executes the pre-defined SIP service corresponding to the destination.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="call-struct-call-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Call’s status.</p>
+<p>Call’s current status (enum string). States only move forward, never backward.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Status</p></th>
@@ -318,22 +328,22 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>dialing</p></td>
-<td><p>The call is created. We are dialing to the destination.</p></td>
+<td><p>The call is created. The system is dialing the destination through the phone network.</p></td>
 </tr>
 <tr class="row-odd"><td><p>ringing</p></td>
-<td><p>The destination has confirmed that the call is ringng.</p></td>
+<td><p>The destination has confirmed the call is ringing. The callee can now answer.</p></td>
 </tr>
 <tr class="row-even"><td><p>progressing</p></td>
-<td><p>The call has answered. The both endpoints are talking to each other.</p></td>
+<td><p>The call has been answered. Both endpoints can hear each other and media is flowing.</p></td>
 </tr>
 <tr class="row-odd"><td><p>terminating</p></td>
-<td><p>The call is terminating.</p></td>
+<td><p>The system is ending the call. This occurs when the application hangs up or a flow action ends the call.</p></td>
 </tr>
 <tr class="row-even"><td><p>canceling</p></td>
-<td><p>The call originator is canceling the call.</p></td>
+<td><p>The call originator is canceling the call before the destination answered. Only applies to outgoing calls.</p></td>
 </tr>
 <tr class="row-odd"><td><p>hangup</p></td>
-<td><p>The call has been completed.</p></td>
+<td><p>The call has ended. This is the final state — no further changes are possible.</p></td>
 </tr>
 </tbody>
 </table>
@@ -342,7 +352,7 @@
 </section>
 <section id="direction">
 <span id="call-struct-call-direction"></span><h2>Direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h2>
-<p>Call’s direction.</p>
+<p>Call’s direction (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Direction</p></th>
@@ -351,17 +361,17 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>incoming</p></td>
-<td><p>The call was coming from the outside of VoIPBIN.</p></td>
+<td><p>The call originated from outside VoIPBIN (e.g., a PSTN caller dialing a VoIPBIN number).</p></td>
 </tr>
 <tr class="row-odd"><td><p>outgoing</p></td>
-<td><p>The call was generated by VoIPBIN.</p></td>
+<td><p>The call was initiated by VoIPBIN (e.g., via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="hangup-by">
 <span id="call-struct-call-hangupby"></span><h2>Hangup by<a class="headerlink" href="#hangup-by" title="Link to this heading"></a></h2>
-<p>The Hangup by shows which endpoint sent the hangup request first.</p>
+<p>Which endpoint sent the hangup request first (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>hangup by</p></th>
@@ -370,17 +380,17 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>remote</p></td>
-<td><p>The remote end hangup the call first.</p></td>
+<td><p>The remote end (the other party) hung up the call first.</p></td>
 </tr>
 <tr class="row-odd"><td><p>local</p></td>
-<td><p>The local end hangup the call first.</p></td>
+<td><p>The local end (your application or flow action) hung up the call first.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="hangup-reason">
 <span id="call-struct-call-hangupreason"></span><h2>Hangup reason<a class="headerlink" href="#hangup-reason" title="Link to this heading"></a></h2>
-<p>Shows why the call was hungup.</p>
+<p>The reason the call ended (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Reason</p></th>
@@ -389,28 +399,28 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>normal</p></td>
-<td><p>The call has ended after answer.</p></td>
+<td><p>The call ended normally after being answered. Someone hung up.</p></td>
 </tr>
 <tr class="row-odd"><td><p>failed</p></td>
-<td><p>The call attempt(signal) was not reached to the phone network.</p></td>
+<td><p>The call attempt did not reach the phone network. Network or routing failure.</p></td>
 </tr>
 <tr class="row-even"><td><p>busy</p></td>
-<td><p>The destination is on the line with another caller.</p></td>
+<td><p>The destination is on another call.</p></td>
 </tr>
 <tr class="row-odd"><td><p>cancel</p></td>
-<td><p>Call was cancelled by the originator before it was answered.</p></td>
+<td><p>The call was cancelled by the originator before the destination answered.</p></td>
 </tr>
 <tr class="row-even"><td><p>timeout</p></td>
-<td><p>Call reached max call duration after it was answered.</p></td>
+<td><p>The call exceeded the maximum allowed duration after being answered.</p></td>
 </tr>
 <tr class="row-odd"><td><p>noanswer</p></td>
-<td><p>Destination didn’t answer until destination’s timeout.</p></td>
+<td><p>The destination did not answer before the destination’s ring timeout expired.</p></td>
 </tr>
 <tr class="row-even"><td><p>dialout</p></td>
-<td><p>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</p></td>
+<td><p>The call exceeded VoIPBIN’s dialing timeout before being answered. This is VoIPBIN’s own timeout for outgoing calls.</p></td>
 </tr>
 <tr class="row-odd"><td><p>amd</p></td>
-<td><p>Hangup caused by the action type amd. The call’s amd action result hung up the call.</p></td>
+<td><p>The Answering Machine Detection (AMD) action detected a voicemail and hung up the call according to your AMD settings.</p></td>
 </tr>
 </tbody>
 </table>

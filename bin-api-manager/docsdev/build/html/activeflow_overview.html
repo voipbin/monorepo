@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="activeflow-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High – Activeflows are runtime instances of flows. You never create them directly; they are created automatically when a flow is triggered (e.g., by an incoming call or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>).</p></li>
+<li><p><strong>Cost:</strong> No direct cost. Activeflows are a monitoring/control interface. However, the underlying trigger (call, message) may incur charges.</p></li>
+<li><p><strong>Async:</strong> Yes. Activeflows execute asynchronously. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}</span></code> to poll the current state, or subscribe via WebSocket for real-time updates.</p></li>
+</ul>
+</div>
 <p>The activeflow is a dynamic entity within the VoIPBIN system that plays a vital role in representing the real-time state of a registered flow. As the flow is executed, it generates an activeflow, which contains an action cursor and relevant status information. This activeflow serves as a control interface, providing efficient management and flexibility during flow execution.</p>
 <p>In essence, the activeflow concept is a powerful tool that facilitates the smooth and flexible execution of registered flows. Its dynamic nature allows for real-time updates, ensuring that users can monitor and manage the flow execution efficiently.</p>
 <p>By providing real-time status updates and a flexible control interface, the activeflow becomes a valuable tool for businesses to efficiently manage complex workflows and automate their critical processes. The stop functionality adds an extra layer of control and adaptability, allowing users to make informed decisions and optimize their flow executions as required.</p>
@@ -207,6 +216,11 @@
            <span class="o">+----------------------------------------+</span>
                     <span class="n">Creates</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>You cannot create an activeflow directly. Activeflows are created automatically when a flow is triggered (e.g., by an incoming call or by creating an outbound call with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>). Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code> to list running instances, and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows/{id}/stop</span></code> to terminate one. The <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> field tells you what triggered the activeflow (call, message, api, etc.).</p>
 </div>
 <p><strong>Analogy</strong>: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you’re on, what ingredients you’ve used, and the current state of the dish.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="p">(</span><span class="n">Recipe</span> <span class="n">Book</span><span class="p">)</span>                    <span class="n">ActiveFlow</span> <span class="p">(</span><span class="n">Cooking</span> <span class="n">Session</span><span class="p">)</span>

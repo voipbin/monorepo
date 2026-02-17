@@ -212,15 +212,28 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Groupcall’s ID.</p></li>
-<li><p>customer_id: Customer’s ID</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: List of destination addresses info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>ring_method</em>: Ring method. See detail <a class="reference internal" href="#call-struct-groupcall-ring-method"><span class="std std-ref">here</span></a></p></li>
-<li><p><em>answer_method</em>: Answering method. See detail <a class="reference internal" href="#call-struct-groupcall-answer-method"><span class="std std-ref">here</span></a></p></li>
-<li><p>answer_call_id: Represents answered call id.</p></li>
-<li><p>call_ids: List of created call ids.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The groupcall’s unique identifier. Returned when creating a groupcall or when listing groupcalls via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this groupcall. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): List of destination addresses to ring. Each entry follows the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> structure. A destination can also be another groupcall for nested groupcalls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (enum string): How destinations are rung. See <a class="reference internal" href="#call-struct-groupcall-ring-method"><span class="std std-ref">Ring method</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">answer_method</span></code> (enum string): What happens when a destination answers. See <a class="reference internal" href="#call-struct-groupcall-answer-method"><span class="std std-ref">Answer method</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">answer_call_id</span></code> (UUID): The call ID of the destination that answered. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> until a destination answers. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_ids</span></code> (Array of UUID): List of call IDs created for each destination. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to check individual call status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the groupcall was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any groupcall property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the groupcall was deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the groupcall has not been deleted.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Groupcalls involve active calls to real destinations, which are chargeable. Each destination in the <code class="docutils literal notranslate"><span class="pre">destinations</span></code> array results in an individual call being created. With <code class="docutils literal notranslate"><span class="pre">ring_all</span></code>, all calls are placed simultaneously. Monitor <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> to track the status of each individual call.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -265,7 +278,7 @@
 </section>
 <section id="ring-method">
 <span id="call-struct-groupcall-ring-method"></span><h2>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading"></a></h2>
-<p>Groupcall’s ringing method.</p>
+<p>Groupcall’s ringing method (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -274,17 +287,17 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>ring_all</p></td>
-<td><p>Make a call to the all destinations at once.</p></td>
+<td><p>Make a call to all destinations at once. The first destination to answer wins; all other calls are cancelled.</p></td>
 </tr>
 <tr class="row-odd"><td><p>linear</p></td>
-<td><p>Make a call to the destination one-by-one in a linear.</p></td>
+<td><p>Make a call to each destination one-by-one in order. If a destination does not answer, the next one is tried.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="answer-method">
 <span id="call-struct-groupcall-answer-method"></span><h2>Answer method<a class="headerlink" href="#answer-method" title="Link to this heading"></a></h2>
-<p>Call’s status.</p>
+<p>What happens when a destination answers (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -293,7 +306,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>hangup_others</p></td>
-<td><p>Hang up the other calls.</p></td>
+<td><p>Hang up all other unanswered calls when one destination answers.</p></td>
 </tr>
 </tbody>
 </table>

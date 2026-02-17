@@ -198,13 +198,21 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Account’s ID.</p></li>
-<li><p>customer_id: Customer’s ID.</p></li>
-<li><p>total_file_count: Total file count.</p></li>
-<li><p>total_file_size: Total file size(Byte).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The storage account’s unique identifier. Returned when listing storage accounts via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_accounts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this storage account. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_file_count</span></code> (Integer): Total number of files stored in this account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_file_size</span></code> (Integer): Total size of all files in bytes. Divide by 1,073,741,824 to get size in GB.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the storage account was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update (e.g., file upload or deletion changed totals).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the storage account was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the storage account has not been deleted. The <code class="docutils literal notranslate"><span class="pre">total_file_size</span></code> is in bytes; compare against the quota (default 10 GB = 10,737,418,240 bytes) to check remaining capacity.</p>
+</div>
 <section id="example">
-<h3>example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1f8ccab9-1b64-11ef-8530-42010a7e5015&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -230,7 +238,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Account</a><ul>
 <li><a class="reference internal" href="#storage-struct-account-account">Account</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

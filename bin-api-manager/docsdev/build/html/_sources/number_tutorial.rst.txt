@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with numbers, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* (For provisioning) A valid number from the available inventory. Search available numbers via ``GET /available_numbers``.
+* (For flow assignment) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
+
+.. note:: **AI Implementation Hint**
+
+   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). Virtual numbers always use the ``+899`` prefix (e.g., ``+899100000001``).
+
 Get list of available numbers
 -----------------------------
 
@@ -29,6 +42,7 @@ Example
         },
         ...
     ]
+    }
 
 
 
@@ -52,6 +66,7 @@ Example
         },
         ...
     ]
+    }
 
 
 Create virtual number
@@ -172,6 +187,10 @@ Example
 
 Create number
 -------------
+
+.. note:: **AI Implementation Hint**
+
+   ``POST /numbers`` with a normal (non-virtual) number triggers a real provider purchase that costs money. For development and testing, use virtual numbers (``+899`` prefix) instead. Virtual numbers are free and do not require provider involvement.
 
 Example
 

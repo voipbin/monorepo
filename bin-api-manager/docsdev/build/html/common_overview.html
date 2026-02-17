@@ -184,7 +184,21 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="common-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low – These are shared data structures and conventions used across all VoIPBIN APIs. No API calls are specific to this section.</p></li>
+<li><p><strong>Cost:</strong> Free. Common structures are reference documentation only; no operations are performed.</p></li>
+<li><p><strong>Async:</strong> N/A. This section documents conventions, not API endpoints.</p></li>
+</ul>
+</div>
 <p>This section covers common data structures, patterns, and concepts used throughout the VoIPBIN API. Understanding these foundational elements will help you work more effectively with all VoIPBIN resources.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All VoIPBIN timestamps use the format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS.microseconds</span></code> in UTC. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the resource has <strong>not</strong> been deleted (sentinel value). When filtering by time ranges, use URL-encoded timestamps as query parameters (e.g., <code class="docutils literal notranslate"><span class="pre">?page_token=2022-06-17%2006%3A06%3A14.948432</span></code>).</p>
+</div>
 <section id="common-data-structures">
 <h2>Common Data Structures<a class="headerlink" href="#common-data-structures" title="Link to this heading"></a></h2>
 <section id="address-structure">

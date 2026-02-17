@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="message-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Chargeable (per message segment sent)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">sending</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages/{id}</span></code> or use webhooks to track delivery status changes.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Message API enables you to send and receive SMS (Short Message Service) and MMS (Multimedia Messaging Service) globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.</p>
 <p>With the Message API you can:</p>
 <ul class="simple">
@@ -296,6 +305,11 @@
    <span class="o">|&lt;--------------------------+--------------------------&gt;|</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> must be a number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.</p>
 </div>
 <p><strong>Send SMS Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;&#39; \

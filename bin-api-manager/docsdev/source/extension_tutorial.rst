@@ -3,6 +3,18 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with extensions, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A domain ID (UUID) for creating extensions. Obtained from your account's domain configuration.
+
+.. note:: **AI Implementation Hint**
+
+   When creating an extension, the ``extension`` field and ``username`` field are typically set to the same value. The ``password`` is used for SIP device authentication. After creation, configure SIP devices with the ``username``, ``password``, and the domain ``{customer-id}.registrar.voipbin.net``.
+
 Get list of extensions
 ----------------------
 

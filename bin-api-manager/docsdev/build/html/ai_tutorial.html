@@ -184,8 +184,24 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="ai-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before using AI features, you need:</p>
+<ul class="simple">
+<li><p>A valid authentication token (String). Obtain via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an accesskey from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Obtain one owned by your account via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format or an internal extension.</p></li>
+<li><p>An LLM provider API key (String). Obtain from your provider’s dashboard (e.g., OpenAI, Anthropic).</p></li>
+<li><p>(Optional) A pre-created AI configuration (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or use inline action settings.</p></li>
+<li><p>(Optional) A flow ID (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>AI features use three external services: an LLM (e.g., OpenAI), a TTS provider (e.g., ElevenLabs), and an STT provider (e.g., Deepgram). Each incurs costs on both VoIPBIN credits and the external provider’s billing. Verify your VoIPBIN balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code> and your provider API key validity before creating AI calls.</p>
+</div>
 <section id="simple-ai-voice-assistant">
-<h2>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h2>
+<h3>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h3>
 <p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the user’s speech, process it, and respond using text-to-speech.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -216,14 +232,27 @@
     }&#39;
 </pre></div>
 </div>
-<p>This creates a call with an AI assistant that will:
-1. Answer the incoming call
-2. Listen to the user’s speech using STT (Speech-to-Text)
-3. Process the input through the AI engine with the given prompt
-4. Respond using TTS (Text-to-Speech)</p>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">call_id</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:30:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This creates a call with an AI assistant that will:</p>
+<ol class="arabic simple">
+<li><p>Answer the incoming call</p></li>
+<li><p>Listen to the user’s speech using STT (Speech-to-Text)</p></li>
+<li><p>Process the input through the AI engine with the given prompt</p></li>
+<li><p>Respond using TTS (Text-to-Speech)</p></li>
+</ol>
 </section>
 <section id="ai-talk-with-real-time-conversation">
-<h2>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h2>
+<h3>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h3>
 <p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the user starts talking.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -254,14 +283,32 @@
     }&#39;
 </pre></div>
 </div>
-<p>AI Talk provides:
-- <strong>Interruption Detection</strong>: Stops speaking when user talks
-- <strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time
-- <strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output
-- <strong>Context Retention</strong>: Remembers previous conversation exchanges</p>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">call_id</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:31:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>AI Talk provides:</p>
+<ul class="simple">
+<li><p><strong>Interruption Detection</strong>: Stops speaking when user talks</p></li>
+<li><p><strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time</p></li>
+<li><p><strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output</p></li>
+<li><p><strong>Context Retention</strong>: Remembers previous conversation exchanges</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action type (not <code class="docutils literal notranslate"><span class="pre">ai</span></code>) enables real-time voice interaction with interruption detection. Use <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> for live conversational AI. The older <code class="docutils literal notranslate"><span class="pre">ai</span></code> action type uses a simpler request-response pattern without interruption support and is recommended only for basic Q&amp;A use cases.</p>
+</div>
 </section>
 <section id="ai-with-custom-voice-id">
-<h2>AI with Custom Voice ID<a class="headerlink" href="#ai-with-custom-voice-id" title="Link to this heading"></a></h2>
+<h3>AI with Custom Voice ID<a class="headerlink" href="#ai-with-custom-voice-id" title="Link to this heading"></a></h3>
 <p>Customize the AI voice by specifying an ElevenLabs Voice ID using variables.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -301,7 +348,7 @@
 <p>See <a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">Built-in ElevenLabs Voice IDs</span></a> for available voice options.</p>
 </section>
 <section id="ai-summary-for-call-transcription">
-<h2>AI Summary for Call Transcription<a class="headerlink" href="#ai-summary-for-call-transcription" title="Link to this heading"></a></h2>
+<h3>AI Summary for Call Transcription<a class="headerlink" href="#ai-summary-for-call-transcription" title="Link to this heading"></a></h3>
 <p>Generate an AI-powered summary of a call transcription. This is useful for post-call analysis and record-keeping.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -334,7 +381,7 @@
                 }
             },
             {
-                &quot;type&quot;: &quot;wait&quot;,
+                &quot;type&quot;: &quot;sleep&quot;,
                 &quot;option&quot;: {
                     &quot;duration&quot;: 30000
                 }
@@ -360,11 +407,11 @@
 <p>The AI summary will:
 - Process the transcription from <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code>
 - Generate a structured summary of key points
-- Store the summary in <code class="docutils literal notranslate"><span class="pre">${voipbin.ai_summary.result}</span></code>
+- Store the summary in <code class="docutils literal notranslate"><span class="pre">${voipbin.ai_summary.content}</span></code>
 - Can be accessed via webhook or API after the call</p>
 </section>
 <section id="real-time-ai-summary">
-<h2>Real-Time AI Summary<a class="headerlink" href="#real-time-ai-summary" title="Link to this heading"></a></h2>
+<h3>Real-Time AI Summary<a class="headerlink" href="#real-time-ai-summary" title="Link to this heading"></a></h3>
 <p>Get AI summaries while the call is still active. Useful for live call monitoring and agent assistance.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -423,7 +470,7 @@
 - <strong>Call Monitoring</strong>: Enables supervisors to quickly understand ongoing calls</p>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>Initial Prompt Design:</strong>
 - Be specific about the AI’s role and behavior
 - Include constraints (e.g., “Keep responses under 30 seconds”)
@@ -440,7 +487,45 @@
 - Always include fallback actions after AI actions
 - Handle cases where AI may not understand the input
 - Provide clear instructions to users about what they can ask</p>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> format or missing required action fields.</p></li>
+<li><p><strong>Fix:</strong> Verify <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> uses <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> format (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>). Ensure <code class="docutils literal notranslate"><span class="pre">initial_prompt</span></code> is provided.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>402 Payment Required:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Insufficient VoIPBIN account balance.</p></li>
+<li><p><strong>Fix:</strong> Check balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code>. Top up before retrying.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>AI not responding during call:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> LLM provider API key is invalid or rate-limited.</p></li>
+<li><p><strong>Fix:</strong> Verify the <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> in your AI configuration. Check the provider’s status page and rate limits.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>No audio from AI:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> TTS provider credentials are invalid or the voice ID does not exist.</p></li>
+<li><p><strong>Fix:</strong> Verify <code class="docutils literal notranslate"><span class="pre">tts_type</span></code> and <code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code>. Try using a default voice (omit <code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 <p>For more details on AI features and configuration, see <a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">AI Overview</span></a>.</p>
+</section>
 </section>
 </section>
 
@@ -453,12 +538,16 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-ai-voice-assistant">Simple AI Voice Assistant</a></li>
 <li><a class="reference internal" href="#ai-talk-with-real-time-conversation">AI Talk with Real-Time Conversation</a></li>
 <li><a class="reference internal" href="#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
 <li><a class="reference internal" href="#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li><a class="reference internal" href="#real-time-ai-summary">Real-Time AI Summary</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

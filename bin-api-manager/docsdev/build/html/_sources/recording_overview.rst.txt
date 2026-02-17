@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Chargeable (recording duration contributes to call costs; storage charged per GB)
+   * **Async:** Yes. Recordings transition through states: ``starting`` -> ``recording`` -> ``stopping`` -> ``available``. Poll ``GET /recordings/{id}`` to check for ``available`` status before downloading.
+
 VoIPBIN's Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.
 
 With the Recording API you can:
@@ -106,6 +113,10 @@ Every recording moves through a predictable set of states from creation to avail
 Starting and Stopping Recordings
 --------------------------------
 VoIPBIN provides multiple ways to control recordings based on your use case.
+
+.. note:: **AI Implementation Hint**
+
+   A recording can only be started on a call or conference that is in ``progressing`` status (i.e., answered). Attempting to start recording on a call that is still ``dialing`` or ``ringing`` will fail. Always verify the call status via ``GET /calls/{id}`` before issuing a recording start command.
 
 **Method 1: Via Flow Action**
 

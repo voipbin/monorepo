@@ -205,16 +205,24 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Message’s ID.</p></li>
-<li><p>conversation_id: Conversation’s ID.</p></li>
-<li><p>direction: Message’s direction. See detail <a class="reference internal" href="#conversation-struct-message-direction"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>status: Message’s status.</p></li>
-<li><p>reference_type: Conversation’s reference type. See detail <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Conversation’s reference id.</p></li>
-<li><p>source: Conversation’s source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>text: Message’s text.</p></li>
-<li><p>medias: Message’s medias.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The message’s unique identifier within the conversation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> (UUID): The parent conversation’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code> or from the URL path when sending messages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): Whether the message is incoming or outgoing. See <a class="reference internal" href="#conversation-struct-message-direction"><span class="std std-ref">Direction</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The message’s delivery status (e.g., <code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">received</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel used for this message. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the channel (e.g., a Line user ID or phone number).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The sender’s address for this message. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): The message body text content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of Object): List of media attachments (images, videos, etc.) included with the message.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the message was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last status update.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the message has not been deleted.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -246,16 +254,18 @@
 <p>Message’s direction.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Direction type</p></th>
+<tr class="row-odd"><th class="head"><p>Direction</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>incoming</p></td>
-<td><p>Incoming message(Towards voipbin).</p></td>
+<td><p>Incoming message from a participant towards VoIPBIN. Delivered
+to your application via webhook.</p></td>
 </tr>
 <tr class="row-odd"><td><p>outgoing</p></td>
-<td><p>Outgoing message(From voipbin).</p></td>
+<td><p>Outgoing message sent from your application via VoIPBIN to a
+conversation participant.</p></td>
 </tr>
 </tbody>
 </table>

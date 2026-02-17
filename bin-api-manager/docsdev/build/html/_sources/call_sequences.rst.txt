@@ -5,6 +5,10 @@ Internal Call Sequences
 
 This section reveals how calls flow through VoIPBIN's internal components. Understanding these sequences helps developers debug issues and optimize their integrations.
 
+.. note:: **AI Implementation Hint**
+
+   These internal sequences are provided for debugging and understanding purposes. As an API consumer, you interact only with ``api-manager`` (via REST API) and receive events via webhooks or WebSocket. You do not need to interact with internal components (Kamailio, Asterisk, RabbitMQ) directly.
+
 Inbound PSTN Call Flow
 ----------------------
 
@@ -112,6 +116,10 @@ When someone calls your VoIPBIN number from a regular phone:
     | o Handles branching and loops            |
     +------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   For inbound calls, the flow that executes is determined by the phone number configuration. The destination number is looked up to find the associated ``flow_id``. Configure your number's flow assignment via ``PUT /numbers/{number-id}`` with the ``flow_id`` field. Verify your number configuration with ``GET /numbers/{number-id}``.
+
 Outbound API Call Flow
 ----------------------
 
@@ -191,6 +199,10 @@ When you create a call via the API:
         |<-------------+<--------------+               |               |               |
         |              |               |               |               |               |
 
+.. note:: **AI Implementation Hint**
+
+   The ``POST /calls`` response returns immediately with status ``dialing``. The call has not connected yet at this point. To know when the call is answered, either poll ``GET /calls/{call-id}`` for status ``progressing``, or subscribe to the ``call_answered`` webhook event. If you provide ``actions`` in the ``POST /calls`` request, a temporary flow is created automatically -- you do not need to create a flow separately via ``POST /flows``.
+
 WebRTC Call Flow
 ----------------
 
@@ -253,6 +265,10 @@ WebRTC calls (browser-to-phone or browser-to-browser):
     | Entry point      | Kamailio         | api-manager      |
     | Audio quality    | G.711 (64kbps)   | Opus (variable)  |
     +------------------+------------------+------------------+
+
+.. note:: **AI Implementation Hint**
+
+   WebRTC calls enter through ``api-manager`` via WebSocket (WSS), not through Kamailio like PSTN calls. This means WebRTC calls require a valid authentication token for the WebSocket connection. If a WebRTC call fails to connect, check that the ICE candidate exchange completes successfully -- common issues include STUN/TURN server misconfiguration or corporate firewalls blocking UDP.
 
 SIP Trunk Call Flow
 -------------------
@@ -377,6 +393,10 @@ How recording starts and stops:
          |               | Record        |               |              |
          |               |               |               |              |
 
+.. note:: **AI Implementation Hint**
+
+   Recording upload to cloud storage is asynchronous -- the recording URL is not available immediately after the call ends. Poll ``GET /recordings/{recording-id}`` until the ``url`` field is populated. Signed URLs expire after 1 hour; fetch a fresh URL from the API each time you need to download. If the call hangs up before ``record_stop`` executes, the recording is stopped and uploaded automatically.
+
 **Recording File Lifecycle:**
 
 .. code::
@@ -483,6 +503,10 @@ Calls with AI assistant (Pipecat integration):
        |<----------+              |                  |                |
        | AI speaks |              |                  |                |
        |           |              |                  |                |
+
+.. note:: **AI Implementation Hint**
+
+   The AI voice call uses Audiosocket (port 9000) to bridge Asterisk audio to the Pipecat pipeline. Audio is resampled from Asterisk's native 8kHz ulaw to 16kHz PCM for the STT/LLM processing, then resampled back for playback. This resampling happens automatically. If the AI voice sounds unnatural or there is high latency, the issue is typically in the LLM response time or TTS generation, not in the audio pipeline.
 
 **AI Tool Calling Sequence:**
 
@@ -609,6 +633,10 @@ Multi-party conference call setup:
     | Participant A  |       | Participant B  |       | Participant C  |
     +----------------+       +----------------+       +----------------+
 
+.. note:: **AI Implementation Hint**
+
+   Conference audio mixing is handled by Asterisk bridges internally. As an API consumer, you join participants to a conference via the ``conference_join`` flow action with a ``conference_id``. Each participant is a separate call (and separately billed). The conference bridge automatically handles audio mixing so each participant hears all others but not themselves.
+
 Event Publication Sequence
 --------------------------
 
@@ -652,6 +680,10 @@ How call events propagate through the system:
         |               |                  |               |               | Update
         |               |                  |               |               | balance
 
+.. note:: **AI Implementation Hint**
+
+   Events are published to RabbitMQ and fanned out to all subscribers. As an API consumer, you receive events via webhooks (HTTP POST to your endpoint) or via WebSocket subscription. Webhook delivery is retried up to 3 times with exponential backoff if your endpoint returns a non-2xx status code. Always return HTTP 200 immediately and process the webhook asynchronously to avoid timeouts.
+
 **Event Types and Subscribers:**
 
 .. code::
@@ -668,4 +700,3 @@ How call events propagate through the system:
                         transfer-manager, ai-manager
     call_recording      webhook-manager, storage-manager
     call_transcribing   webhook-manager, transcribe-manager
-

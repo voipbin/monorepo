@@ -5,6 +5,10 @@ Flow Best Practices
 
 This section covers design patterns, optimization techniques, and best practices for building maintainable and efficient flows.
 
+.. note:: **AI Implementation Hint**
+
+   When generating flows programmatically, follow three key rules: (1) Always set ``default_target_id`` on every ``branch`` action to handle unexpected input. (2) Always set ``loop_count`` on every ``goto`` action to prevent infinite loops. (3) Only set explicit ``id`` fields on actions that are referenced as targets by ``goto``, ``branch``, or ``condition_*`` actions.
+
 Flow Design Principles
 ----------------------
 

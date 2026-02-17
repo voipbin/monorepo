@@ -16,6 +16,7 @@ For production use, you can :ref:`sign up <quickstart_signup>` for your own acco
 .. include:: quickstart_authentication.rst
 .. include:: quickstart_call.rst
 .. include:: quickstart_queue.rst
+.. include:: quickstart_transcribe.rst
 
 .. _quickstart_next:
 

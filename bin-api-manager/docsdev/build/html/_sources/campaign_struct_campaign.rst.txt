@@ -30,18 +30,25 @@ Campaign
         "tm_delete": "<string>"
     }
 
-* id: Campaign's ID.
-* *type*: Campaign's type. See detail :ref:`here <campaign-struct-campaign-type>`.
-* name: Campaign's name.
-* detail: Campaign's detail.
-* *status*: Campaign's status. See detail :ref:`here <campaign-struct-campaign-status>`.
-* *service_level*: Campaign's service level. See detail :ref:`here <campaign-struct-campaign-service_level>`.
-* *end_handle*: Campaign's outdial list end handle. See detail :ref:`here <campaign-struct-campaign-end_handle>`.
-* *actions*: Campaign's list of actions. See detail :ref:`here <flow-struct-action-action>`.
-* outplan_id: Outplan's ID.
-* outdial_id: Outdial's ID.
-* queue_id: Queue's ID.
-* next_campaign_id: Next campaign's ID.
+* ``id`` (UUID): The campaign's unique identifier. Returned when creating via ``POST /campaigns`` or listing via ``GET /campaigns``.
+* ``type`` (enum string): Campaign's type. See :ref:`Type <campaign-struct-campaign-type>`.
+* ``name`` (String): Human-readable name for the campaign.
+* ``detail`` (String): Detailed description of the campaign.
+* ``status`` (enum string): Campaign's current status. See :ref:`Status <campaign-struct-campaign-status>`.
+* ``service_level`` (Integer): Campaign's service level percentage. Controls the dialing rate relative to available agents. See :ref:`Service Level <campaign-struct-campaign-service_level>`.
+* ``end_handle`` (enum string): What happens when the outdial target list is exhausted. See :ref:`End Handle <campaign-struct-campaign-end_handle>`.
+* ``actions`` (Array of Object): List of flow actions executed when a target answers. Each action follows the :ref:`Action <flow-struct-action-action>` structure.
+* ``outplan_id`` (UUID): The outplan controlling dialing strategy. Obtained from the ``id`` field of ``GET /outplans``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
+* ``outdial_id`` (UUID): The outdial containing target destinations. Obtained from the ``id`` field of ``GET /outdials``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
+* ``queue_id`` (UUID): The queue for routing answered calls to agents. Obtained from the ``id`` field of ``GET /queues``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
+* ``next_campaign_id`` (UUID): The campaign to chain after this one finishes. Obtained from the ``id`` field of ``GET /campaigns``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
+* ``tm_create`` (string, ISO 8601): Timestamp when the campaign was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any campaign property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the campaign was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted. This is a sentinel value, not a real timestamp. When filtering active resources, check for this value.
 
 Example
 +++++++
@@ -80,27 +87,27 @@ Example
 
 Type
 ----
-Campaign's type.
+Campaign's type. Determines how the campaign communicates with targets.
 
 =========== ============
 Type        Description
 =========== ============
-call        The campaign will make a call to the destination with a flow.
-flow        The campaign will execute flow with a destination.
+call        The campaign will make a voice call to each target destination and execute the configured flow actions upon answer.
+flow        The campaign will execute the configured flow actions directed at each target destination without an explicit voice call setup.
 =========== ============
 
 .. _campaign-struct-campaign-status:
 
 Status
 ------
-Campaign's status.
+Campaign's current operational status. Use ``PUT /campaigns/{id}`` with ``{"status": "run"}`` to start and ``{"status": "stop"}`` to stop the campaign.
 
 =========== ============
 Type        Description
 =========== ============
-stop        The campaign stopped.
-stopping    The campaign is being stop. Waiting for dialing/process call's termination.
-run         The campaign is running. It will create a new call or flow execution.
+stop        The campaign is stopped. No dialing is occurring. This is the initial state after creation.
+stopping    The campaign is transitioning to stopped. Active calls are being terminated before the campaign fully stops. This is a transient state.
+run         The campaign is actively running. It will create new calls or flow executions based on the outplan and outdial configuration.
 =========== ============
 
 .. _campaign-struct-campaign-service_level:
@@ -121,12 +128,12 @@ This is valid only if the campaign has a valid queue_id.
 
 End handle
 ----------
-Campaign's outdial list end handle.
+Determines what the campaign does when all targets in the outdial have been attempted.
 
 =========== ============
 Type        Description
 =========== ============
-stop        The campaign will stop if the outdial has no more outdial target
-continue    The campaign will continue to run after outdial has no more outdial target.
+stop        The campaign will transition to stopped status when the outdial has no more targets to dial. This is the typical setting for one-time campaigns.
+continue    The campaign will remain in running status after all outdial targets have been attempted. Useful for campaigns where new targets may be added to the outdial dynamically.
 =========== ============
 

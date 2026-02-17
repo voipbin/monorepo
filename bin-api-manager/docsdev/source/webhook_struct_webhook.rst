@@ -3,6 +3,15 @@
 Webhook
 =======
 
+All webhook events follow a common envelope structure with two fields:
+
+* ``type`` (enum string): The webhook event type indicating what occurred (e.g., ``"call_created"``, ``"activeflow_updated"``).
+* ``data`` (Object): The resource-specific payload. Structure varies by event type and matches the corresponding resource struct.
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` in webhook payloads indicate the event has not yet occurred. For example, ``tm_hangup`` with this sentinel value means the call is still in progress. Use the ``type`` field to determine which resource struct to parse from the ``data`` field.
+
 .. _webhook-struct-webhook-activeflow_created:
 
 activeflow_created
@@ -18,8 +27,8 @@ The notification message for the activeflow create.
         }
     }
 
-* type: The webhook type.
-* data: The detail of activeflow. See detail :ref:`here <flow-struct-activeflow>`.
+* ``type`` (enum string): The webhook type. Value: ``"activeflow_created"``.
+* ``data`` (Object): The detail of activeflow. See detail :ref:`here <activeflow-struct-activeflow>`.
 
 Example
 +++++++
@@ -77,8 +86,8 @@ The notification message for the activeflow update.
         }
     }
 
-* type: The webhook type.
-* data: The detail of activeflow. See detail :ref:`here <flow-struct-activeflow>`.
+* ``type`` (enum string): The webhook type. Value: ``"activeflow_updated"``.
+* ``data`` (Object): The detail of activeflow. See detail :ref:`here <activeflow-struct-activeflow>`.
 
 Example
 +++++++
@@ -136,8 +145,8 @@ The notification message for the activeflow delete.
         }
     }
 
-* type: The webhook type.
-* data: The detail of activeflow. See detail :ref:`here <flow-struct-activeflow>`.
+* ``type`` (enum string): The webhook type. Value: ``"activeflow_deleted"``.
+* ``data`` (Object): The detail of activeflow. See detail :ref:`here <activeflow-struct-activeflow>`.
 
 Example
 +++++++
@@ -199,8 +208,8 @@ The notification message for the call create.
         }
     }
 
-* type: The webhook type.
-* data: The detail of call. See detail :ref:`here <call-struct-call>`.
+* ``type`` (enum string): The webhook type. Value: ``"call_created"``.
+* ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
 +++++++
@@ -263,8 +272,8 @@ The notification message for the call ringing.
         }
     }
 
-* type: The webhook type.
-* data: The detail of call. See detail :ref:`here <call-struct-call>`.
+* ``type`` (enum string): The webhook type. Value: ``"call_ringing"``.
+* ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
 +++++++
@@ -327,8 +336,8 @@ The notification message for the call answer.
         }
     }
 
-* type: The webhook type.
-* data: The detail of call. See detail :ref:`here <call-struct-call>`.
+* ``type`` (enum string): The webhook type. Value: ``"call_answered"``.
+* ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
 +++++++
@@ -392,8 +401,8 @@ The notification message for the call update.
         }
     }
 
-* type: The webhook type.
-* data: The detail of call. See detail :ref:`here <call-struct-call>`.
+* ``type`` (enum string): The webhook type. Value: ``"call_updated"``.
+* ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
 +++++++
@@ -462,8 +471,8 @@ The notification message for the call hangup.
         }
     }
 
-* type: The webhook type.
-* data: The detail of call. See detail :ref:`here <call-struct-call>`.
+* ``type`` (enum string): The webhook type. Value: ``"call_hungup"``.
+* ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
 +++++++
@@ -531,8 +540,8 @@ Notification message for queue create.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
+* ``type`` (enum string): The webhook type. Value: ``"queue_created"``.
+* ``data`` (Object): The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queue_updated:
 
@@ -549,8 +558,8 @@ The notification message for the queue update.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
+* ``type`` (enum string): The webhook type. Value: ``"queue_updated"``.
+* ``data`` (Object): The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queue_deleted:
 
@@ -567,8 +576,8 @@ The notification message for the queue delete.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
+* ``type`` (enum string): The webhook type. Value: ``"queue_deleted"``.
+* ``data`` (Object): The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queuecall_created:
 
@@ -585,8 +594,8 @@ The notification message for the queuecall create.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_created"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -623,8 +632,8 @@ Notification message for queuecall is entering to the agent's conference room.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_entering"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -661,8 +670,8 @@ The notification message for the queuecall is being kicked.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_kicking"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -700,8 +709,8 @@ The notification message for the queuecall is serviced.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_serviced"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -738,8 +747,8 @@ The notification message for the queuecall is done.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_done"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -776,8 +785,8 @@ The notification message for the queuecall is abandoned.
         }
     }
 
-* type: The webhook type.
-* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_abandoned"``.
+* ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 .. _webhook-struct-webhook-agent_created:
 
@@ -794,15 +803,13 @@ The notification message for the agent create.
         }
     }
 
-* type: The webhook type.
-* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* ``type`` (enum string): The webhook type. Value: ``"agent_created"``.
+* ``data`` (Object): The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_updated:
 
 agent_updated
 -------------
-Notification message for agent update.
-
 The notification message for the agent update.
 
 .. code::
@@ -814,8 +821,8 @@ The notification message for the agent update.
         }
     }
 
-* type: The webhook type.
-* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* ``type`` (enum string): The webhook type. Value: ``"agent_updated"``.
+* ``data`` (Object): The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_deleted:
 
@@ -832,8 +839,8 @@ The notification message for the agent delete.
         }
     }
 
-* type: The webhook type.
-* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* ``type`` (enum string): The webhook type. Value: ``"agent_deleted"``.
+* ``data`` (Object): The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_status_updated:
 
@@ -850,8 +857,8 @@ The notification message for the agent's status update.
         }
     }
 
-* type: The webhook type.
-* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* ``type`` (enum string): The webhook type. Value: ``"agent_status_updated"``.
+* ``data`` (Object): The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 Example
 +++++++

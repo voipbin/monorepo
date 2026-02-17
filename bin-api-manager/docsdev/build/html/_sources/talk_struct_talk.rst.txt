@@ -19,12 +19,16 @@ Talk
         "tm_delete": "<string>"
     }
 
-* id: Talk's unique identifier.
-* customer_id: Customer's unique identifier.
-* type: Talk's type. See detail :ref:`here <talk-struct-talk-type>`.
-* tm_create: Timestamp when the talk was created.
-* tm_update: Timestamp when the talk was last updated.
-* tm_delete: Timestamp when the talk was deleted (soft delete).
+* ``id`` (UUID): The talk's unique identifier. Returned when creating via ``POST /service_agents/talk_chats`` or listing via ``GET /service_agents/talk_chats``.
+* ``customer_id`` (UUID): The customer's unique identifier. Obtained from ``GET /customers``.
+* ``type`` (enum string): The talk's type. See :ref:`Type <talk-struct-talk-type>`.
+* ``tm_create`` (string, ISO 8601): Timestamp when the talk was created.
+* ``tm_update`` (string, ISO 8601): Timestamp when the talk was last updated.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the talk was deleted (soft delete).
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the talk has not been deleted. An empty string ``""`` also indicates the talk is active.
 
 Example
 +++++++
@@ -46,9 +50,9 @@ Type
 ----
 Talk's type determines whether it's a one-on-one or group conversation.
 
-=========== ============
+=========== ============================================================
 Type        Description
-=========== ============
-normal      1:1 talk between two agents.
-group       Group talk with multiple participants.
-=========== ============
+=========== ============================================================
+normal      1:1 talk between two agents. Private direct conversation.
+group       Group talk with multiple participants. Team discussions.
+=========== ============================================================

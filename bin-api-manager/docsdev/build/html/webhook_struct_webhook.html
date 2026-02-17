@@ -184,6 +184,16 @@
                         <main role="main" id="main">
     <section id="webhook">
 <span id="webhook-struct-webhook"></span><h1>Webhook<a class="headerlink" href="#webhook" title="Link to this heading"></a></h1>
+<p>All webhook events follow a common envelope structure with two fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook event type indicating what occurred (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The resource-specific payload. Structure varies by event type and matches the corresponding resource struct.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> in webhook payloads indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> with this sentinel value means the call is still in progress. Use the <code class="docutils literal notranslate"><span class="pre">type</span></code> field to determine which resource struct to parse from the <code class="docutils literal notranslate"><span class="pre">data</span></code> field.</p>
+</div>
 <section id="activeflow-created">
 <span id="webhook-struct-webhook-activeflow-created"></span><h2>activeflow_created<a class="headerlink" href="#activeflow-created" title="Link to this heading"></a></h2>
 <p>The notification message for the activeflow create.</p>
@@ -196,8 +206,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
@@ -252,8 +262,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id1">
 <h3>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
@@ -308,8 +318,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of activeflow. See detail <span class="xref std std-ref">here</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id2">
 <h3>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
@@ -368,8 +378,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id3">
 <h3>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
@@ -429,8 +439,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_ringing&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id4">
 <h3>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
@@ -490,8 +500,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_answered&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id5">
 <h3>Example<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
@@ -552,8 +562,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id6">
 <h3>Example<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
@@ -619,8 +629,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_hungup&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id7">
 <h3>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
@@ -685,8 +695,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queue-updated">
@@ -701,8 +711,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queue-deleted">
@@ -717,8 +727,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queue_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queue. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="queuecall-created">
@@ -733,8 +743,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id8">
 <h3>Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
@@ -768,8 +778,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_entering&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id9">
 <h3>Example<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
@@ -803,8 +813,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_kicking&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id10">
 <h3>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
@@ -838,8 +848,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_serviced&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id11">
 <h3>Example<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
@@ -873,8 +883,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_done&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id12">
 <h3>Example<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
@@ -908,8 +918,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_abandoned&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-created">
@@ -924,13 +934,12 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_created&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-updated">
 <span id="webhook-struct-webhook-agent-updated"></span><h2>agent_updated<a class="headerlink" href="#agent-updated" title="Link to this heading"></a></h2>
-<p>Notification message for agent update.</p>
 <p>The notification message for the agent update.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_updated&quot;</span><span class="p">,</span>
@@ -941,8 +950,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-deleted">
@@ -957,8 +966,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_deleted&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="agent-status-updated">
@@ -973,8 +982,8 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>type: The webhook type.</p></li>
-<li><p>data: The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;agent_status_updated&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of agent. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id13">
 <h3>Example<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>

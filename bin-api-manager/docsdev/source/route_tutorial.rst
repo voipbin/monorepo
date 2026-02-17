@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with routes, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A provider ID (UUID). Obtain from ``GET /providers`` or create one via ``POST /providers``.
+* A customer ID (UUID). Obtain from ``GET /customers``. Use ``00000000-0000-0000-0000-000000000001`` for system-wide default routes.
+
+.. note:: **AI Implementation Hint**
+
+   Routes are evaluated by ``priority`` (lower number = higher priority). To set up failover, create multiple routes for the same ``customer_id`` and ``target`` with different ``provider_id`` values and incrementing ``priority`` values (e.g., 1, 2, 3). If the first provider fails, VoIPBIN automatically tries the next route.
+
 Get list of routes
 ---------------------
 
@@ -83,24 +96,20 @@ Example
 
 .. code::
 
-    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
-        --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
         --data-raw '{
-            "type": "sip",
-            "hostname": "sip.telnyx.com",
-            "tech_prefix": "",
-            "tech_postfix": "",
-            "tech_headers": {},
-            "name": "telnyx basic",
-            "detail": "telnyx basic"
+            "customer_id": "00000000-0000-0000-0000-000000000001",
+            "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+            "priority": 2,
+            "target": "+82"
         }'
 
     {
         "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
         "customer_id": "00000000-0000-0000-0000-000000000001",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-        "priority": 1,
+        "priority": 2,
         "target": "+82",
         "tm_create": "2022-11-02 15:36:32.174346",
         "tm_update": "2022-11-02 15:43:09.190169",

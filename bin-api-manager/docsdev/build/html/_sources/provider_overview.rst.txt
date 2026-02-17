@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free. Providers are configuration records. Costs are incurred when calls are routed through the configured provider, not when creating the provider entry.
+   * **Async:** No. ``POST /providers`` returns immediately with the created provider.
+
 VoIPBIN's Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.
 
 With the Provider API you can:
@@ -97,6 +104,10 @@ Configure providers with technical parameters.
         "tm_create": "2024-01-01T00:00:00Z"
     }
 
+
+.. note:: **AI Implementation Hint**
+
+   Providers are typically managed by platform administrators. The ``tech_prefix`` and ``tech_postfix`` fields modify the dialed number before sending to the provider. Most providers do not require these fields (leave as empty strings). The ``tech_headers`` field is an object of custom SIP headers sent with every call to this provider -- use it for provider-specific authentication tokens or routing hints.
 
 Provider Types
 --------------

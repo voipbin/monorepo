@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="agent-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (agent management operations incur no charges; calls routed to agents are billed per call minute)</p></li>
+<li><p><strong>Async:</strong> No. Agent CRUD operations are synchronous. However, agent status changes due to incoming calls (e.g., <code class="docutils literal notranslate"><span class="pre">available</span></code> to <code class="docutils literal notranslate"><span class="pre">ringing</span></code> to <code class="docutils literal notranslate"><span class="pre">busy</span></code>) happen asynchronously via the queue routing system.</p></li>
+</ul>
+</div>
 <p>The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.</p>
 <p>In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. They have statuses, skills (tags), and contact addresses that determine when and how they can receive calls.</p>
 <section id="agent-status">
@@ -386,6 +395,11 @@ Agent Tags:                              Queue Requirements:
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When setting agent addresses of type <code class="docutils literal notranslate"><span class="pre">tel</span></code>, the number must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). For <code class="docutils literal notranslate"><span class="pre">extension</span></code> type, use only numeric characters without special characters.</p>
+</div>
 <p><strong>Address Uniqueness</strong></p>
 <p>Each address can only belong to one agent per customer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>✓ Agent A has extension 1001 in Customer X

@@ -185,6 +185,11 @@
     <section id="call-troubleshooting">
 <span id="id1"></span><h1>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h1>
 <p>This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When troubleshooting, always start by fetching the call details: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls/{call-id}</span></code>. The <code class="docutils literal notranslate"><span class="pre">status</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_by</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code>, and timestamp fields provide the primary diagnostic information. If the call has an associated <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>, also check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/activeflows/{activeflow-id}</span></code> for flow execution errors.</p>
+</div>
 <section id="debugging-tools">
 <h2>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading"></a></h2>
 <p>Before troubleshooting, understand the tools available:</p>
@@ -204,6 +209,11 @@
 <span class="n">Get</span> <span class="n">transcripts</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcripts</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> is a UUID returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or from webhook events. The <code class="docutils literal notranslate"><span class="pre">activeflow-id</span></code> is obtained from the call’s associated flow execution. All debugging endpoints require a valid authentication token (JWT or access key).</p>
 </div>
 <p><strong>WebSocket for Real-time Monitoring:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Connect:
@@ -227,90 +237,71 @@ Events you&#39;ll receive:
 </section>
 <section id="call-never-connects">
 <h2>Call Never Connects<a class="headerlink" href="#call-never-connects" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Call status goes directly from “dialing” to “hangup”</p></li>
-<li><p>hangup_reason is “failed”</p></li>
-<li><p>No ringing ever occurred</p></li>
-</ul>
-<p><strong>Common Causes and Solutions:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cause</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Invalid</span> <span class="n">Phone</span> <span class="n">Number</span> <span class="n">Format</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span>                                 <span class="o">|</span>
-<span class="o">|</span> <span class="s2">&quot;+1 555-123-4567&quot;</span> <span class="p">(</span><span class="n">has</span> <span class="n">spaces</span><span class="o">/</span><span class="n">dashes</span><span class="p">)</span>    <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="s2">&quot;+15551234567&quot;</span> <span class="p">(</span><span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">)</span>            <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
+<p><strong>Symptom:</strong> Call status goes directly from <code class="docutils literal notranslate"><span class="pre">dialing</span></code> to <code class="docutils literal notranslate"><span class="pre">hangup</span></code>. The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> is <code class="docutils literal notranslate"><span class="pre">failed</span></code>. No ringing ever occurred (<code class="docutils literal notranslate"><span class="pre">tm_ringing</span></code> is <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code>).</p>
+<p><strong>Diagnostic API call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Cause</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Number</span> <span class="n">Not</span> <span class="n">Provisioned</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span>                                 <span class="o">|</span>
-<span class="o">|</span> <span class="n">Source</span> <span class="n">number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">account</span>        <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">numbers</span> <span class="n">to</span> <span class="n">verify</span> <span class="n">ownership</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">Purchase</span> <span class="n">number</span> <span class="k">if</span> <span class="n">needed</span>                <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
-
-<span class="n">Cause</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Insufficient</span> <span class="n">Balance</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span>                                 <span class="o">|</span>
-<span class="o">|</span> <span class="n">Account</span> <span class="n">balance</span> <span class="n">too</span> <span class="n">low</span> <span class="k">for</span> <span class="n">call</span>         <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">billing</span><span class="o">-</span><span class="n">accounts</span> <span class="n">to</span> <span class="n">check</span> <span class="n">balance</span><span class="o">|</span>
-<span class="o">|</span> <span class="n">Add</span> <span class="n">funds</span> <span class="n">to</span> <span class="n">account</span>                     <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
-
-<span class="n">Cause</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Carrier</span> <span class="n">Rejection</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span>                                 <span class="o">|</span>
-<span class="o">|</span> <span class="n">Destination</span> <span class="n">carrier</span> <span class="n">rejected</span> <span class="n">the</span> <span class="n">call</span>    <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Indicators</span><span class="p">:</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">Works</span> <span class="n">to</span> <span class="n">some</span> <span class="n">numbers</span><span class="p">,</span> <span class="ow">not</span> <span class="n">others</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">Specific</span> <span class="n">area</span> <span class="n">codes</span> <span class="n">fail</span>               <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Contact</span> <span class="n">support</span> <span class="k">with</span> <span class="n">call</span> <span class="n">details</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="n">Try</span> <span class="n">alternate</span> <span class="n">routes</span> <span class="k">if</span> <span class="n">available</span>        <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
+<span class="n">Look</span> <span class="k">for</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Diagnostic Steps:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Check</span> <span class="n">call</span> <span class="n">details</span><span class="p">:</span>
-   <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<p><strong>Cause 1: Invalid Phone Number Format</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="s2">&quot;+1 555-123-4567&quot;</span> <span class="p">(</span><span class="n">has</span> <span class="n">spaces</span><span class="o">/</span><span class="n">dashes</span><span class="p">)</span>
 
-   <span class="n">Look</span> <span class="k">for</span><span class="p">:</span>
-   <span class="p">{</span>
-     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
-     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>  <span class="o">&lt;-</span> <span class="n">Indicates</span> <span class="n">network</span><span class="o">/</span><span class="n">routing</span> <span class="n">issue</span>
-     <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-     <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01...&quot;</span>  <span class="o">&lt;-</span> <span class="n">Never</span> <span class="n">rang</span>
-   <span class="p">}</span>
+<span class="n">Fix</span><span class="p">:</span>
+<span class="s2">&quot;+15551234567&quot;</span> <span class="p">(</span><span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">,</span> <span class="n">digits</span> <span class="n">only</span> <span class="n">after</span> <span class="o">+</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Number Not Provisioned</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">Source</span> <span class="n">number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">account</span><span class="o">.</span>
 
-<span class="mf">2.</span> <span class="n">Verify</span> <span class="n">number</span> <span class="nb">format</span><span class="p">:</span>
-   <span class="n">Source</span><span class="p">:</span> <span class="n">Must</span> <span class="n">be</span> <span class="o">+</span><span class="n">E</span><span class="mf">.164</span> <span class="p">(</span><span class="n">your</span> <span class="n">VoIPBIN</span> <span class="n">number</span><span class="p">)</span>
-   <span class="n">Destination</span><span class="p">:</span> <span class="n">Must</span> <span class="n">be</span> <span class="o">+</span><span class="n">E</span><span class="mf">.164</span> <span class="ow">or</span> <span class="n">valid</span> <span class="n">extension</span>
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">numbers</span>
+<span class="n">Verify</span> <span class="n">the</span> <span class="n">source</span> <span class="n">number</span> <span class="n">appears</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">response</span><span class="o">.</span>
 
-<span class="mf">3.</span> <span class="n">Check</span> <span class="n">account</span> <span class="n">status</span><span class="p">:</span>
-   <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">billing</span><span class="o">-</span><span class="n">accounts</span>
-   <span class="n">Verify</span><span class="p">:</span> <span class="n">balance</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;active&quot;</span>
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Purchase</span> <span class="n">a</span> <span class="n">number</span> <span class="n">via</span> <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">numbers</span> <span class="ow">or</span> <span class="n">use</span> <span class="n">a</span> <span class="n">number</span>
+<span class="n">you</span> <span class="n">already</span> <span class="n">own</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Insufficient Balance</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">Account</span> <span class="n">balance</span> <span class="n">too</span> <span class="n">low</span> <span class="k">for</span> <span class="n">call</span><span class="o">.</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">billing</span><span class="o">-</span><span class="n">accounts</span>
+<span class="n">Check</span> <span class="n">that</span> <span class="n">balance</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;active&quot;</span><span class="o">.</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Add</span> <span class="n">funds</span> <span class="n">to</span> <span class="n">your</span> <span class="n">account</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 4: Carrier Rejection</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">Destination</span> <span class="n">carrier</span> <span class="n">rejected</span> <span class="n">the</span> <span class="n">call</span><span class="o">.</span>
+
+<span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Works</span> <span class="n">to</span> <span class="n">some</span> <span class="n">numbers</span><span class="p">,</span> <span class="ow">not</span> <span class="n">others</span>
+<span class="o">-</span> <span class="n">Specific</span> <span class="n">area</span> <span class="n">codes</span> <span class="n">fail</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Contact</span> <span class="n">support</span> <span class="k">with</span> <span class="n">the</span> <span class="n">call</span><span class="o">-</span><span class="nb">id</span> <span class="k">for</span> <span class="n">investigation</span><span class="o">.</span>
+<span class="n">Try</span> <span class="n">alternate</span> <span class="n">routes</span> <span class="k">if</span> <span class="n">available</span><span class="o">.</span>
 </pre></div>
 </div>
 </section>
 <section id="call-rings-but-no-answer">
 <h2>Call Rings But No Answer<a class="headerlink" href="#call-rings-but-no-answer" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Call reaches “ringing” status</p></li>
-<li><p>hangup_reason is “noanswer” or “dialout”</p></li>
-</ul>
-<p><strong>Understanding the Difference:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;noanswer&quot;</span> <span class="n">vs</span> <span class="s2">&quot;dialout&quot;</span><span class="p">:</span>
-
-<span class="n">noanswer</span><span class="p">:</span>
+<p><strong>Symptom:</strong> Call reaches <code class="docutils literal notranslate"><span class="pre">ringing</span></code> status, then hangs up. The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> is <code class="docutils literal notranslate"><span class="pre">noanswer</span></code> or <code class="docutils literal notranslate"><span class="pre">dialout</span></code>.</p>
+<p><strong>Understanding the difference:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;noanswer&quot;</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">The</span> <span class="n">destination</span> <span class="n">phone</span> <span class="n">rang</span> <span class="n">until</span> <span class="n">the</span>     <span class="o">|</span>
 <span class="o">|</span> <span class="n">destination</span><span class="s1">&#39;s voicemail or timeout       |</span>
@@ -320,7 +311,7 @@ Events you&#39;ll receive:
 <span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Nobody</span> <span class="n">picked</span> <span class="n">up</span>                  <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
-<span class="n">dialout</span><span class="p">:</span>
+<span class="s2">&quot;dialout&quot;</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">VoIPBIN</span><span class="s1">&#39;s dial timeout expired before    |</span>
 <span class="o">|</span> <span class="n">the</span> <span class="n">call</span> <span class="n">was</span> <span class="n">answered</span><span class="o">.</span>                   <span class="o">|</span>
@@ -331,405 +322,390 @@ Events you&#39;ll receive:
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
-<p><strong>Solutions:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">For</span> <span class="s2">&quot;noanswer&quot;</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">expected</span> <span class="n">behavior</span> <span class="n">when</span> <span class="n">nobody</span> <span class="n">answers</span>
-<span class="o">-</span> <span class="n">Consider</span> <span class="n">leaving</span> <span class="n">voicemail</span> <span class="p">(</span><span class="k">if</span> <span class="n">AMD</span> <span class="n">detects</span> <span class="n">machine</span><span class="p">)</span>
+<p><strong>Fix for “noanswer”:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="ow">is</span> <span class="n">expected</span> <span class="n">behavior</span> <span class="n">when</span> <span class="n">nobody</span> <span class="n">answers</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">Consider</span> <span class="n">using</span> <span class="n">AMD</span> <span class="n">to</span> <span class="n">detect</span> <span class="n">voicemail</span> <span class="ow">and</span> <span class="n">leave</span> <span class="n">a</span> <span class="n">message</span>
 <span class="o">-</span> <span class="n">Implement</span> <span class="n">retry</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">application</span>
+<span class="o">-</span> <span class="n">Use</span> <span class="n">groupcall</span> <span class="k">with</span> <span class="n">multiple</span> <span class="n">destinations</span> <span class="k">for</span> <span class="n">fallback</span>
+</pre></div>
+</div>
+<p><strong>Fix for “dialout”:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Increase</span> <span class="n">dial_timeout</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">call</span> <span class="n">request</span><span class="p">:</span>
 
-<span class="n">For</span> <span class="s2">&quot;dialout&quot;</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">Increase</span> <span class="n">dial_timeout</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">call</span> <span class="n">request</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>
+<span class="p">{</span>
+  <span class="s2">&quot;dial_timeout&quot;</span><span class="p">:</span> <span class="mi">45000</span><span class="p">,</span>
+  <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">}</span>
 
-  <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;dial_timeout&quot;</span><span class="p">:</span> <span class="mi">45000</span><span class="p">,</span>  <span class="o">&lt;-</span> <span class="mi">45</span> <span class="n">seconds</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
-  <span class="p">}</span>
-
-<span class="o">-</span> <span class="n">Default</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="mi">30</span> <span class="n">seconds</span>
-<span class="o">-</span> <span class="n">Recommended</span><span class="p">:</span> <span class="mi">45</span><span class="o">-</span><span class="mi">60</span> <span class="n">seconds</span> <span class="k">for</span> <span class="n">PSTN</span> <span class="n">calls</span>
+<span class="n">Default</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="mi">30000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">30</span> <span class="n">seconds</span><span class="p">)</span><span class="o">.</span>
+<span class="n">Recommended</span><span class="p">:</span> <span class="mi">45000</span><span class="o">-</span><span class="mi">60000</span> <span class="n">ms</span> <span class="k">for</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="o">.</span>
 </pre></div>
 </div>
 </section>
 <section id="call-answers-but-no-audio">
 <h2>Call Answers But No Audio<a class="headerlink" href="#call-answers-but-no-audio" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Call reaches “progressing” status</p></li>
-<li><p>One or both parties cannot hear each other</p></li>
-<li><p>Call may disconnect after silence</p></li>
-</ul>
-<p><strong>Common Causes:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Cause 1: NAT/Firewall Issues (WebRTC)
-+------------------------------------------+
-| Problem:                                 |
-| ICE candidates cannot traverse NAT       |
-|                                          |
-| Symptoms:                                |
-| - WebRTC call connects (signaling OK)    |
-| - No audio in either direction           |
-|                                          |
-| Solution:                                |
-| - Ensure TURN server is configured       |
-| - Check client firewall allows UDP       |
-| - Verify ICE gathering completes         |
-+------------------------------------------+
+<p><strong>Symptom:</strong> Call reaches <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. One or both parties cannot hear each other. Call may disconnect after silence.</p>
+<p><strong>Diagnostic API call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-Cause 2: Codec Mismatch
-+------------------------------------------+
-| Problem:                                 |
-| Endpoints don&#39;t share a common codec     |
-|                                          |
-| Symptoms:                                |
-| - SIP call connects                      |
-| - RTP flows but audio is garbled/silent  |
-|                                          |
-| Solution:                                |
-| VoIPBIN auto-transcodes, but check       |
-| endpoint codec configuration if using    |
-| SIP trunking                             |
-+------------------------------------------+
-
-Cause 3: Hold State Stuck
-+------------------------------------------+
-| Problem:                                 |
-| Call is on hold but wasn&#39;t resumed       |
-|                                          |
-| Symptoms:                                |
-| - Call was working, then went silent     |
-| - One party can hear, other cannot       |
-|                                          |
-| Solution:                                |
-| Check mute/hold status:                  |
-| GET /v1/calls/{call-id}                  |
-| {                                        |
-|   &quot;mute_direction&quot;: &quot;both&quot;,  &lt;- Problem! |
-|   &quot;hold&quot;: true               &lt;- Problem! |
-| }                                        |
-|                                          |
-| Resume:                                  |
-| POST /v1/calls/{call-id}/resume          |
-| POST /v1/calls/{call-id}/unmute          |
-+------------------------------------------+
+<span class="n">Check</span> <span class="n">these</span> <span class="n">fields</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;progressing&quot;</span>
+<span class="o">-</span> <span class="n">hold</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="n">false</span>
+<span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;&quot;</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Debug Audio Path:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Audio</span> <span class="n">Flow</span> <span class="n">Check</span><span class="p">:</span>
+<p><strong>Cause 1: NAT/Firewall Issues (WebRTC)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">WebRTC</span> <span class="n">call</span> <span class="n">connects</span> <span class="p">(</span><span class="n">signaling</span> <span class="n">OK</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">No</span> <span class="n">audio</span> <span class="ow">in</span> <span class="n">either</span> <span class="n">direction</span>
 
-<span class="mf">1.</span> <span class="n">Verify</span> <span class="n">call</span> <span class="n">status</span><span class="p">:</span>
-   <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
-   <span class="n">Confirm</span><span class="p">:</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;progressing&quot;</span>
-
-<span class="mf">2.</span> <span class="n">Check</span> <span class="n">media</span> <span class="n">status</span><span class="p">:</span>
-   <span class="n">Look</span> <span class="k">for</span><span class="p">:</span>
-   <span class="o">-</span> <span class="n">hold</span><span class="p">:</span> <span class="n">false</span>
-   <span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="s2">&quot;&quot;</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
-
-<span class="mf">3.</span> <span class="n">For</span> <span class="n">SIP</span> <span class="n">calls</span><span class="p">,</span> <span class="n">check</span> <span class="n">RTP</span><span class="p">:</span>
-   <span class="o">-</span> <span class="n">Verify</span> <span class="n">RTPEngine</span> <span class="ow">is</span> <span class="n">receiving</span> <span class="n">packets</span>
-   <span class="o">-</span> <span class="n">Check</span> <span class="k">for</span> <span class="n">one</span><span class="o">-</span><span class="n">way</span> <span class="n">audio</span> <span class="p">(</span><span class="n">NAT</span> <span class="n">issue</span><span class="p">)</span>
-
-<span class="mf">4.</span> <span class="n">For</span> <span class="n">WebRTC</span> <span class="n">calls</span><span class="p">:</span>
-   <span class="o">-</span> <span class="n">Check</span> <span class="n">browser</span> <span class="n">console</span> <span class="k">for</span> <span class="n">ICE</span> <span class="n">errors</span>
-   <span class="o">-</span> <span class="n">Verify</span> <span class="n">DTLS</span> <span class="n">handshake</span> <span class="n">completed</span>
-   <span class="o">-</span> <span class="n">Test</span> <span class="k">with</span> <span class="n">different</span> <span class="n">network</span>
+<span class="n">Fix</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Ensure</span> <span class="n">TURN</span> <span class="n">server</span> <span class="ow">is</span> <span class="n">configured</span>
+<span class="o">-</span> <span class="n">Check</span> <span class="n">client</span> <span class="n">firewall</span> <span class="n">allows</span> <span class="n">UDP</span>
+<span class="o">-</span> <span class="n">Verify</span> <span class="n">ICE</span> <span class="n">gathering</span> <span class="n">completes</span>
+<span class="o">-</span> <span class="n">Test</span> <span class="k">with</span> <span class="n">a</span> <span class="n">different</span> <span class="n">network</span>
 </pre></div>
+</div>
+<p><strong>Cause 2: Codec Mismatch</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">SIP</span> <span class="n">call</span> <span class="n">connects</span>
+<span class="o">-</span> <span class="n">RTP</span> <span class="n">flows</span> <span class="n">but</span> <span class="n">audio</span> <span class="ow">is</span> <span class="n">garbled</span> <span class="ow">or</span> <span class="n">silent</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">VoIPBIN</span> <span class="n">auto</span><span class="o">-</span><span class="n">transcodes</span> <span class="n">between</span> <span class="n">codecs</span><span class="p">,</span> <span class="n">but</span> <span class="n">check</span>
+<span class="n">endpoint</span> <span class="n">codec</span> <span class="n">configuration</span> <span class="k">if</span> <span class="n">using</span> <span class="n">SIP</span> <span class="n">trunking</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Hold State Stuck</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Call</span> <span class="n">was</span> <span class="n">working</span><span class="p">,</span> <span class="n">then</span> <span class="n">went</span> <span class="n">silent</span>
+<span class="o">-</span> <span class="n">One</span> <span class="n">party</span> <span class="n">can</span> <span class="n">hear</span><span class="p">,</span> <span class="n">other</span> <span class="n">cannot</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;hold&quot;</span><span class="p">:</span> <span class="n">true</span>
+<span class="p">}</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">resume</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">unmute</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For WebRTC no-audio issues, the problem is almost always network-related (firewall, NAT, TURN). Check the browser’s developer console for ICE connection state errors. For SIP calls with one-way audio, the issue is typically NAT – the RTP packets are being sent to the wrong IP address. VoIPBIN’s RTPEngine handles most NAT traversal automatically.</p>
 </div>
 </section>
 <section id="flow-actions-not-executing">
 <h2>Flow Actions Not Executing<a class="headerlink" href="#flow-actions-not-executing" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Call answers but expected TTS/media doesn’t play</p></li>
-<li><p>Actions seem to be skipped</p></li>
-</ul>
-<p><strong>Common Causes:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Cause 1: early_execution Timing
-+------------------------------------------+
-| Problem:                                 |
-| Actions execute before call answers      |
-|                                          |
-| With early_execution: true               |
-| - Actions start on INVITE                |
-| - Call may not be ready for audio        |
-|                                          |
-| Solution:                                |
-| Set early_execution: false (default)     |
-| Actions start after 200 OK (answered)    |
-+------------------------------------------+
+<p><strong>Symptom:</strong> Call answers but expected TTS/media does not play. Actions seem to be skipped.</p>
+<p><strong>Diagnostic API call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-Cause 2: Action Errors
-+------------------------------------------+
-| Problem:                                 |
-| An action fails and flow stops           |
-|                                          |
-| Check activeflow:                        |
-| GET /v1/activeflows/{flow-id}            |
-| {                                        |
-|   &quot;current_action&quot;: {                    |
-|     &quot;type&quot;: &quot;talk&quot;,                      |
-|     &quot;error&quot;: &quot;TTS service unavailable&quot;   |
-|   }                                      |
-| }                                        |
-|                                          |
-| Solution:                                |
-| Check error message                      |
-| Verify action configuration              |
-+------------------------------------------+
-
-Cause 3: Missing Action IDs for Branching
-+------------------------------------------+
-| Problem:                                 |
-| Branch targets action that doesn&#39;t exist |
-|                                          |
-| Example:                                 |
-| {                                        |
-|   &quot;type&quot;: &quot;branch&quot;,                      |
-|   &quot;option&quot;: {                            |
-|     &quot;target_ids&quot;: {                      |
-|       &quot;1&quot;: &quot;nonexistent-id&quot;  &lt;- Error!   |
-|     }                                    |
-|   }                                      |
-| }                                        |
-|                                          |
-| Solution:                                |
-| Verify all target_ids match action IDs   |
-+------------------------------------------+
+<span class="n">Look</span> <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">current_action</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;TTS service unavailable&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
+</div>
+<p><strong>Cause 1: early_execution Timing</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">Actions</span> <span class="n">execute</span> <span class="n">before</span> <span class="n">call</span> <span class="n">answers</span><span class="o">.</span>
+
+<span class="n">With</span> <span class="n">early_execution</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="n">actions</span> <span class="n">start</span> <span class="n">on</span> <span class="n">INVITE</span>
+<span class="p">(</span><span class="n">before</span> <span class="mi">200</span> <span class="n">OK</span><span class="p">)</span><span class="o">.</span> <span class="n">The</span> <span class="n">call</span> <span class="n">may</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">ready</span> <span class="k">for</span> <span class="n">audio</span><span class="o">.</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Set</span> <span class="n">early_execution</span><span class="p">:</span> <span class="n">false</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span><span class="o">.</span>
+<span class="n">Actions</span> <span class="n">start</span> <span class="n">after</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span> <span class="p">(</span><span class="mi">200</span> <span class="n">OK</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Action Errors</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">An</span> <span class="n">action</span> <span class="n">fails</span> <span class="ow">and</span> <span class="n">flow</span> <span class="n">stops</span><span class="o">.</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Check</span> <span class="n">the</span> <span class="n">error</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">current_action</span><span class="o">.</span>
+<span class="n">Verify</span> <span class="n">action</span> <span class="n">configuration</span> <span class="p">(</span><span class="n">correct</span> <span class="n">fields</span><span class="p">,</span> <span class="n">valid</span> <span class="n">IDs</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Missing Action IDs for Branching</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
+<span class="n">Branch</span> <span class="n">targets</span> <span class="n">an</span> <span class="n">action</span> <span class="n">ID</span> <span class="n">that</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span><span class="o">.</span>
+
+<span class="n">Example</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;nonexistent-id&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Verify</span> <span class="nb">all</span> <span class="n">target_ids</span> <span class="n">match</span> <span class="n">an</span> <span class="n">action</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">flow</span><span class="o">.</span>
+<span class="n">Use</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">flows</span><span class="o">/</span><span class="p">{</span><span class="n">flow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span> <span class="n">to</span> <span class="n">inspect</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">definition</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>If flow actions are not executing at all, verify that the call has a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> set (not <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>). For outbound calls, you must either provide <code class="docutils literal notranslate"><span class="pre">actions</span></code> inline in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or reference an existing flow via <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. For inbound calls, the flow is determined by the phone number configuration – check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers/{number-id}</span></code> for the <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> assignment.</p>
 </div>
 </section>
 <section id="webhooks-not-received">
 <h2>Webhooks Not Received<a class="headerlink" href="#webhooks-not-received" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>No webhooks arrive at your endpoint</p></li>
-<li><p>Some webhooks arrive, others don’t</p></li>
-</ul>
-<p><strong>Diagnostic Steps:</strong></p>
+<p><strong>Symptom:</strong> No webhooks arrive at your endpoint, or only some webhooks arrive.</p>
+<p><strong>Diagnostic API calls:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span><span class="p">:</span>
-   <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span>
-   <span class="p">{</span>
-     <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span><span class="p">,</span>
-     <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">],</span>
-     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span>
-   <span class="p">}</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span>
+<span class="p">{</span>
+  <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span>
+<span class="p">}</span>
 
 <span class="mf">2.</span> <span class="n">Check</span> <span class="n">webhook</span> <span class="n">delivery</span> <span class="n">history</span><span class="p">:</span>
-   <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">deliveries</span>
-   <span class="p">{</span>
-     <span class="s2">&quot;deliveries&quot;</span><span class="p">:</span> <span class="p">[</span>
-       <span class="p">{</span>
-         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;delivery-uuid&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;http_code&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-         <span class="s2">&quot;attempts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-         <span class="s2">&quot;last_attempt&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00Z&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Connection timeout&quot;</span>
-       <span class="p">}</span>
-     <span class="p">]</span>
-   <span class="p">}</span>
-
-<span class="mf">3.</span> <span class="n">Common</span> <span class="n">issues</span><span class="p">:</span>
-
-   <span class="n">Endpoint</span> <span class="ow">not</span> <span class="n">accessible</span><span class="p">:</span>
-   <span class="o">+------------------------------------------+</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Server</span> <span class="n">firewall</span> <span class="n">blocks</span> <span class="n">VoIPBIN</span> <span class="n">IPs</span>    <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">HTTPS</span> <span class="n">certificate</span> <span class="n">invalid</span>             <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Endpoint</span> <span class="n">returns</span> <span class="mi">4</span><span class="n">xx</span><span class="o">/</span><span class="mi">5</span><span class="n">xx</span> <span class="n">errors</span>       <span class="o">|</span>
-   <span class="o">|</span>                                         <span class="o">|</span>
-   <span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                               <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Whitelist</span> <span class="n">VoIPBIN</span> <span class="n">IP</span> <span class="n">ranges</span>           <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Use</span> <span class="n">valid</span> <span class="n">SSL</span> <span class="n">certificate</span>             <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Ensure</span> <span class="n">endpoint</span> <span class="n">returns</span> <span class="mi">200</span> <span class="n">OK</span>        <span class="o">|</span>
-   <span class="o">+------------------------------------------+</span>
-
-   <span class="n">Endpoint</span> <span class="n">too</span> <span class="n">slow</span><span class="p">:</span>
-   <span class="o">+------------------------------------------+</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Webhook</span> <span class="n">times</span> <span class="n">out</span> <span class="p">(</span><span class="o">&gt;</span> <span class="mi">5</span> <span class="n">seconds</span><span class="p">)</span>       <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">VoIPBIN</span> <span class="n">retries</span><span class="p">,</span> <span class="n">causing</span> <span class="n">duplicates</span>   <span class="o">|</span>
-   <span class="o">|</span>                                         <span class="o">|</span>
-   <span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                               <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Return</span> <span class="mi">200</span> <span class="n">immediately</span>                <span class="o">|</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Process</span> <span class="n">webhook</span> <span class="n">asynchronously</span>        <span class="o">|</span>
-   <span class="o">+------------------------------------------+</span>
-
-   <span class="n">Wrong</span> <span class="n">event</span> <span class="n">subscription</span><span class="p">:</span>
-   <span class="o">+------------------------------------------+</span>
-   <span class="o">|</span> <span class="o">-</span> <span class="n">Subscribed</span> <span class="n">to</span> <span class="s2">&quot;call_created&quot;</span> <span class="n">but</span>      <span class="o">|</span>
-   <span class="o">|</span>   <span class="n">expecting</span> <span class="s2">&quot;call_hungup&quot;</span>               <span class="o">|</span>
-   <span class="o">|</span>                                         <span class="o">|</span>
-   <span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                               <span class="o">|</span>
-   <span class="o">|</span> <span class="n">Update</span> <span class="n">webhook</span> <span class="n">events</span><span class="p">:</span>                  <span class="o">|</span>
-   <span class="o">|</span> <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>                   <span class="o">|</span>
-   <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">]}</span>             <span class="o">|</span>
-   <span class="o">+------------------------------------------+</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">deliveries</span>
+<span class="p">{</span>
+  <span class="s2">&quot;deliveries&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;delivery-uuid&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;http_code&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+      <span class="s2">&quot;attempts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+      <span class="s2">&quot;last_attempt&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00Z&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Connection timeout&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
 </pre></div>
+</div>
+<p><strong>Cause 1: Endpoint not accessible</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Delivery</span> <span class="n">status</span> <span class="ow">is</span> <span class="s2">&quot;failed&quot;</span>
+<span class="o">-</span> <span class="n">Error</span> <span class="n">indicates</span> <span class="n">connection</span> <span class="n">refused</span> <span class="ow">or</span> <span class="n">timeout</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Whitelist</span> <span class="n">VoIPBIN</span> <span class="n">IP</span> <span class="n">ranges</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">firewall</span>
+<span class="o">-</span> <span class="n">Use</span> <span class="n">valid</span> <span class="n">SSL</span> <span class="n">certificate</span> <span class="p">(</span><span class="bp">self</span><span class="o">-</span><span class="n">signed</span> <span class="n">certs</span> <span class="n">are</span> <span class="n">rejected</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Ensure</span> <span class="n">your</span> <span class="n">endpoint</span> <span class="n">returns</span> <span class="n">HTTP</span> <span class="mi">200</span> <span class="n">OK</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Endpoint too slow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Webhook</span> <span class="n">times</span> <span class="n">out</span> <span class="p">(</span><span class="o">&gt;</span> <span class="mi">5</span> <span class="n">seconds</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">VoIPBIN</span> <span class="n">retries</span><span class="p">,</span> <span class="n">causing</span> <span class="n">duplicate</span> <span class="n">deliveries</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Return</span> <span class="n">HTTP</span> <span class="mi">200</span> <span class="n">immediately</span>
+<span class="o">-</span> <span class="n">Process</span> <span class="n">the</span> <span class="n">webhook</span> <span class="n">payload</span> <span class="n">asynchronously</span>
+<span class="o">-</span> <span class="n">Use</span> <span class="n">a</span> <span class="n">message</span> <span class="n">queue</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">SQS</span><span class="p">,</span> <span class="n">RabbitMQ</span><span class="p">)</span> <span class="k">for</span> <span class="n">processing</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Wrong event subscription</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Subscribed</span> <span class="n">to</span> <span class="s2">&quot;call_created&quot;</span> <span class="n">but</span> <span class="n">expecting</span> <span class="s2">&quot;call_hungup&quot;</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Update</span> <span class="n">webhook</span> <span class="n">events</span><span class="p">:</span>
+<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span> <span class="s2">&quot;call_created&quot;</span><span class="p">]}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/webhooks/{webhook-id}/deliveries</span></code> to see delivery attempts and failure reasons. If you are not receiving any webhooks, verify your webhook <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> and the <code class="docutils literal notranslate"><span class="pre">events</span></code> array includes the event types you need.</p>
 </div>
 </section>
 <section id="recording-issues">
 <h2>Recording Issues<a class="headerlink" href="#recording-issues" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Recording not found</p></li>
-<li><p>Recording is empty or truncated</p></li>
-<li><p>Recording URL doesn’t work</p></li>
-</ul>
-<p><strong>Troubleshooting:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Recording Not Created:
-+------------------------------------------+
-| Check if recording was started:          |
-|                                          |
-| GET /v1/calls/{call-id}                  |
-| {                                        |
-|   &quot;recording_ids&quot;: []  &lt;- Empty!         |
-| }                                        |
-|                                          |
-| Causes:                                  |
-| - record_start action not in flow        |
-| - Call hung up before recording started  |
-| - Error in recording action              |
-|                                          |
-| Solution:                                |
-| Verify flow has record_start action      |
-| Check activeflow for errors              |
-+------------------------------------------+
-
-Recording Empty:
-+------------------------------------------+
-| Recording exists but duration is 0       |
-|                                          |
-| Causes:                                  |
-| - Recording started after call ended     |
-| - Audio not flowing during recording     |
-|                                          |
-| Solution:                                |
-| Place record_start early in flow         |
-| Verify call had audio (not on mute)      |
-+------------------------------------------+
-
-Recording URL Expired:
-+------------------------------------------+
-| GET /v1/recordings/{id} returns URL      |
-| but download fails with 403              |
-|                                          |
-| Cause:                                   |
-| Signed URLs expire after 1 hour          |
-|                                          |
-| Solution:                                |
-| Fetch fresh URL from API                 |
-| Download immediately after getting URL   |
-+------------------------------------------+
+<p><strong>Symptom:</strong> Recording not found, recording is empty or truncated, or recording URL does not work.</p>
+<p><strong>Diagnostic API call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="n">Check</span> <span class="n">the</span> <span class="n">recording_ids</span> <span class="n">array</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 </pre></div>
+</div>
+<p><strong>Cause 1: Recording Not Created</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">recording_ids</span> <span class="n">array</span> <span class="ow">is</span> <span class="n">empty</span>
+
+<span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">record_start</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flow</span>
+<span class="o">-</span> <span class="n">Call</span> <span class="n">hung</span> <span class="n">up</span> <span class="n">before</span> <span class="n">recording</span> <span class="n">started</span>
+<span class="o">-</span> <span class="n">Error</span> <span class="ow">in</span> <span class="n">recording</span> <span class="n">action</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Verify</span> <span class="n">flow</span> <span class="n">has</span> <span class="n">record_start</span> <span class="n">action</span><span class="o">.</span>
+<span class="n">Check</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span> <span class="k">for</span> <span class="n">errors</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Recording Empty (duration 0)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Recording</span> <span class="n">exists</span> <span class="n">but</span> <span class="n">duration</span> <span class="ow">is</span> <span class="mi">0</span>
+
+<span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Recording</span> <span class="n">started</span> <span class="n">after</span> <span class="n">call</span> <span class="n">ended</span>
+<span class="o">-</span> <span class="n">Audio</span> <span class="ow">not</span> <span class="n">flowing</span> <span class="n">during</span> <span class="n">recording</span> <span class="p">(</span><span class="n">call</span> <span class="n">on</span> <span class="n">mute</span><span class="p">)</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Place</span> <span class="n">record_start</span> <span class="n">early</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">action</span> <span class="nb">list</span><span class="o">.</span>
+<span class="n">Verify</span> <span class="n">call</span> <span class="n">had</span> <span class="n">audio</span> <span class="p">(</span><span class="ow">not</span> <span class="n">on</span> <span class="n">mute</span><span class="o">/</span><span class="n">hold</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Recording URL Returns 403</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">URL</span>
+<span class="o">-</span> <span class="n">Downloading</span> <span class="n">the</span> <span class="n">URL</span> <span class="n">fails</span> <span class="k">with</span> <span class="n">HTTP</span> <span class="mi">403</span>
+
+<span class="n">Cause</span><span class="p">:</span>
+<span class="n">Signed</span> <span class="n">URLs</span> <span class="n">expire</span> <span class="n">after</span> <span class="mi">1</span> <span class="n">hour</span><span class="o">.</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Fetch</span> <span class="n">a</span> <span class="n">fresh</span> <span class="n">URL</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">API</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="n">recording</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="n">Download</span> <span class="n">immediately</span> <span class="n">after</span> <span class="n">getting</span> <span class="n">the</span> <span class="n">URL</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Recording upload to cloud storage is asynchronous. After a call ends, the recording may take a few seconds to become available. If <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/recordings/{recording-id}</span></code> returns a recording without a <code class="docutils literal notranslate"><span class="pre">url</span></code>, the upload is still in progress. Poll the endpoint until <code class="docutils literal notranslate"><span class="pre">url</span></code> is populated. Cloud storage retention is 90 days by default – download recordings before they expire.</p>
 </div>
 </section>
 <section id="transfer-problems">
 <h2>Transfer Problems<a class="headerlink" href="#transfer-problems" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Transfer fails</p></li>
-<li><p>Caller dropped during transfer</p></li>
-<li><p>Consult call doesn’t connect</p></li>
-</ul>
-<p><strong>Common Issues:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Blind</span> <span class="n">Transfer</span> <span class="n">Fails</span><span class="p">:</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Caller</span> <span class="n">disconnected</span> <span class="n">during</span> <span class="n">transfer</span>      <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Causes</span><span class="p">:</span>                                  <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">Transfer</span> <span class="n">destination</span> <span class="n">busy</span><span class="o">/</span><span class="n">unavailable</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">No</span> <span class="n">failover</span> <span class="n">configured</span>                 <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Use</span> <span class="n">attended</span> <span class="n">transfer</span> <span class="k">for</span> <span class="n">important</span> <span class="n">calls</span><span class="o">|</span>
-<span class="o">|</span> <span class="n">Configure</span> <span class="n">fallback</span> <span class="n">action</span> <span class="n">on</span> <span class="n">failure</span>     <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
-
-<span class="n">Attended</span> <span class="n">Transfer</span> <span class="o">-</span> <span class="n">Consult</span> <span class="n">Fails</span><span class="p">:</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">can</span><span class="s1">&#39;t reach Agent B              |</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Check</span> <span class="n">transfer</span> <span class="n">status</span><span class="p">:</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span><span class="p">,</span>                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;consult_call&quot;</span><span class="p">:</span> <span class="p">{</span>                      <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>                  <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>          <span class="o">|</span>
-<span class="o">|</span>   <span class="p">}</span>                                      <span class="o">|</span>
-<span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Cancel</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="k">try</span> <span class="n">different</span> <span class="n">agent</span><span class="p">:</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">cancel</span>           <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
-
-<span class="n">Caller</span> <span class="n">Hears</span> <span class="n">Dead</span> <span class="n">Air</span> <span class="n">During</span> <span class="n">Transfer</span><span class="p">:</span>
-<span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Hold</span> <span class="n">music</span> <span class="ow">not</span> <span class="n">playing</span>                   <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Causes</span><span class="p">:</span>                                  <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">MOH</span> <span class="ow">not</span> <span class="n">configured</span>                     <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">Mute</span> <span class="n">applied</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">hold</span>           <span class="o">|</span>
-<span class="o">|</span>                                          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ensure</span> <span class="n">transfer</span> <span class="n">uses</span> <span class="n">proper</span> <span class="n">hold</span><span class="p">:</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;hold_caller&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>                   <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;play_moh&quot;</span><span class="p">:</span> <span class="n">true</span>                       <span class="o">|</span>
-<span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
-<span class="o">+------------------------------------------+</span>
+<p><strong>Symptom:</strong> Transfer fails, caller dropped during transfer, or consult call does not connect.</p>
+<p><strong>Diagnostic API call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;consult_call&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
+</div>
+<p><strong>Cause 1: Blind Transfer Fails</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Caller</span> <span class="n">disconnected</span> <span class="n">during</span> <span class="n">transfer</span>
+
+<span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Transfer</span> <span class="n">destination</span> <span class="n">busy</span> <span class="ow">or</span> <span class="n">unavailable</span>
+<span class="o">-</span> <span class="n">No</span> <span class="n">failover</span> <span class="n">configured</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Use</span> <span class="n">attended</span> <span class="n">transfer</span> <span class="k">for</span> <span class="n">important</span> <span class="n">calls</span><span class="o">.</span>
+<span class="n">Configure</span> <span class="n">fallback</span> <span class="n">action</span> <span class="n">on</span> <span class="n">failure</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Attended Transfer - Consult Fails</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">cannot</span> <span class="n">reach</span> <span class="n">Agent</span> <span class="n">B</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Cancel</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="k">try</span> <span class="n">a</span> <span class="n">different</span> <span class="n">agent</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">cancel</span>
+</pre></div>
+</div>
+<p><strong>Cause 3: Caller Hears Dead Air During Transfer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Hold</span> <span class="n">music</span> <span class="ow">not</span> <span class="n">playing</span> <span class="n">during</span> <span class="n">transfer</span>
+
+<span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">MOH</span> <span class="ow">not</span> <span class="n">configured</span>
+<span class="o">-</span> <span class="n">Mute</span> <span class="n">applied</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">hold</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Ensure</span> <span class="n">transfer</span> <span class="n">uses</span> <span class="n">proper</span> <span class="n">hold</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>
+<span class="p">{</span>
+  <span class="s2">&quot;hold_caller&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+  <span class="s2">&quot;play_moh&quot;</span><span class="p">:</span> <span class="n">true</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">transfer-id</span></code> is returned in the response to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code>. Use it to check transfer status (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/transfers/{transfer-id}</span></code>), complete the transfer (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code>), or cancel it (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code>). If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.</p>
 </div>
 </section>
 <section id="queue-problems">
 <h2>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading"></a></h2>
-<p><strong>Symptoms:</strong></p>
-<ul class="simple">
-<li><p>Calls not distributed to agents</p></li>
-<li><p>Long wait times</p></li>
-<li><p>Agents not receiving calls</p></li>
-</ul>
-<p><strong>Troubleshooting:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>No Agents Receiving Calls:
-+------------------------------------------+
-| Check queue status:                      |
-| GET /v1/queues/{queue-id}                |
-| {                                        |
-|   &quot;available_agents&quot;: 0,  &lt;- No agents!  |
-|   &quot;waiting_calls&quot;: 5                     |
-| }                                        |
-|                                          |
-| Check agent status:                      |
-| GET /v1/agents?queue_id={queue-id}       |
-| Verify agents have status: &quot;available&quot;   |
-|                                          |
-| Common causes:                           |
-| - All agents in &quot;busy&quot; or &quot;offline&quot;      |
-| - Agents not logged into queue           |
-| - Agent status not updated after call    |
-+------------------------------------------+
+<p><strong>Symptom:</strong> Calls not distributed to agents, long wait times, or agents not receiving calls.</p>
+<p><strong>Diagnostic API calls:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Check queue status:
+GET /v1/queues/{queue-id}
+{
+  &quot;available_agents&quot;: 0,
+  &quot;waiting_calls&quot;: 5
+}
 
-Calls Timing Out in Queue:
-+------------------------------------------+
-| Check queue configuration:               |
-| {                                        |
-|   &quot;timeout&quot;: 30000,  &lt;- 30 seconds only  |
-|   &quot;timeout_action&quot;: &quot;hangup&quot;             |
-| }                                        |
-|                                          |
-| Solution:                                |
-| - Increase timeout                       |
-| - Add fallback action (voicemail, etc.)  |
-|                                          |
-| PUT /v1/queues/{queue-id}                |
-| {                                        |
-|   &quot;timeout&quot;: 300000,  &lt;- 5 minutes       |
-|   &quot;timeout_flow_id&quot;: &quot;voicemail-flow&quot;    |
-| }                                        |
-+------------------------------------------+
+Check agent status:
+GET /v1/agents?queue_id={queue-id}
+Verify agents have status: &quot;available&quot;
 </pre></div>
+</div>
+<p><strong>Cause 1: No Available Agents</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">available_agents</span> <span class="ow">is</span> <span class="mi">0</span>
+<span class="o">-</span> <span class="n">waiting_calls</span> <span class="ow">is</span> <span class="n">increasing</span>
+
+<span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">&quot;busy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;offline&quot;</span> <span class="n">status</span>
+<span class="o">-</span> <span class="n">Agents</span> <span class="ow">not</span> <span class="n">logged</span> <span class="n">into</span> <span class="n">queue</span>
+<span class="o">-</span> <span class="n">Agent</span> <span class="n">status</span> <span class="ow">not</span> <span class="n">updated</span> <span class="n">after</span> <span class="n">previous</span> <span class="n">call</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Verify</span> <span class="n">agent</span> <span class="n">status</span> <span class="n">via</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span><span class="o">.</span>
+<span class="n">Ensure</span> <span class="n">agents</span> <span class="nb">set</span> <span class="n">their</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;available&quot;</span> <span class="n">after</span> <span class="n">calls</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><strong>Cause 2: Calls Timing Out in Queue</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Calls</span> <span class="n">hang</span> <span class="n">up</span> <span class="n">after</span> <span class="n">short</span> <span class="n">wait</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+  <span class="s2">&quot;timeout_action&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+<span class="p">}</span>
+
+<span class="n">Fix</span><span class="p">:</span>
+<span class="n">Increase</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">a</span> <span class="n">fallback</span> <span class="n">action</span><span class="p">:</span>
+<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
+  <span class="s2">&quot;timeout_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">timeout_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
 </div>
 </section>
 <section id="error-reference">
@@ -749,19 +725,42 @@ Calls Timing Out in Queue:
 <span class="o">+----------------+----------------------------------+------------------------+</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> field is the most important diagnostic field. <code class="docutils literal notranslate"><span class="pre">failed</span></code> means the call never reached the phone network (check number format, provisioning, balance). <code class="docutils literal notranslate"><span class="pre">noanswer</span></code> and <code class="docutils literal notranslate"><span class="pre">dialout</span></code> both mean nobody picked up, but <code class="docutils literal notranslate"><span class="pre">dialout</span></code> is your timeout while <code class="docutils literal notranslate"><span class="pre">noanswer</span></code> is the destination’s timeout. <code class="docutils literal notranslate"><span class="pre">cancel</span></code> means the originator hung up before the call was answered. <code class="docutils literal notranslate"><span class="pre">amd</span></code> means voicemail was detected and your AMD settings triggered a hangup.</p>
+</div>
 <p><strong>HTTP Error Codes:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------+----------------------------------+------------------------+</span>
-<span class="o">|</span> <span class="n">Code</span> <span class="o">|</span> <span class="n">Meaning</span>                          <span class="o">|</span> <span class="n">Solution</span>               <span class="o">|</span>
-<span class="o">+------+----------------------------------+------------------------+</span>
-<span class="o">|</span> <span class="mi">400</span>  <span class="o">|</span> <span class="n">Invalid</span> <span class="n">request</span> <span class="nb">format</span>           <span class="o">|</span> <span class="n">Check</span> <span class="n">request</span> <span class="n">body</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">401</span>  <span class="o">|</span> <span class="n">Authentication</span> <span class="n">failed</span>            <span class="o">|</span> <span class="n">Check</span> <span class="n">token</span><span class="o">/</span><span class="n">accesskey</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">403</span>  <span class="o">|</span> <span class="n">Permission</span> <span class="n">denied</span>                <span class="o">|</span> <span class="n">Check</span> <span class="n">account</span> <span class="n">perms</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="mi">404</span>  <span class="o">|</span> <span class="n">Resource</span> <span class="ow">not</span> <span class="n">found</span>               <span class="o">|</span> <span class="n">Verify</span> <span class="n">ID</span> <span class="n">exists</span>       <span class="o">|</span>
-<span class="o">|</span> <span class="mi">409</span>  <span class="o">|</span> <span class="n">Conflict</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">call</span> <span class="n">ended</span><span class="p">)</span>      <span class="o">|</span> <span class="n">Resource</span> <span class="n">state</span> <span class="n">changed</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">429</span>  <span class="o">|</span> <span class="n">Rate</span> <span class="n">limit</span> <span class="n">exceeded</span>              <span class="o">|</span> <span class="n">Slow</span> <span class="n">down</span> <span class="n">requests</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">500</span>  <span class="o">|</span> <span class="n">Server</span> <span class="n">error</span>                     <span class="o">|</span> <span class="n">Contact</span> <span class="n">support</span>        <span class="o">|</span>
-<span class="o">+------+----------------------------------+------------------------+</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="n">Code</span> <span class="o">|</span> <span class="n">Meaning</span>                          <span class="o">|</span> <span class="n">Fix</span>                           <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">400</span>  <span class="o">|</span> <span class="n">Invalid</span> <span class="n">request</span> <span class="nb">format</span>           <span class="o">|</span> <span class="n">Check</span> <span class="n">request</span> <span class="n">body</span> <span class="n">JSON</span>       <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="ow">and</span> <span class="n">required</span> <span class="n">fields</span>           <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">401</span>  <span class="o">|</span> <span class="n">Authentication</span> <span class="n">failed</span>            <span class="o">|</span> <span class="n">Check</span> <span class="n">JWT</span> <span class="n">token</span> <span class="ow">or</span> <span class="n">access</span> <span class="n">key</span> <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="ow">is</span> <span class="n">valid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">expired</span>      <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">403</span>  <span class="o">|</span> <span class="n">Permission</span> <span class="n">denied</span>                <span class="o">|</span> <span class="n">Check</span> <span class="n">account</span> <span class="n">permissions</span>     <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="ow">and</span> <span class="n">resource</span> <span class="n">ownership</span>        <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">404</span>  <span class="o">|</span> <span class="n">Resource</span> <span class="ow">not</span> <span class="n">found</span>               <span class="o">|</span> <span class="n">Verify</span> <span class="n">the</span> <span class="n">UUID</span> <span class="n">exists</span> <span class="n">via</span>    <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="n">the</span> <span class="n">corresponding</span> <span class="n">GET</span> <span class="n">endpoint</span><span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">409</span>  <span class="o">|</span> <span class="n">Conflict</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">call</span> <span class="n">ended</span><span class="p">)</span>      <span class="o">|</span> <span class="n">Resource</span> <span class="n">state</span> <span class="n">changed</span><span class="p">;</span>       <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="n">re</span><span class="o">-</span><span class="n">fetch</span> <span class="ow">and</span> <span class="n">retry</span>            <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">429</span>  <span class="o">|</span> <span class="n">Rate</span> <span class="n">limit</span> <span class="n">exceeded</span>              <span class="o">|</span> <span class="n">Slow</span> <span class="n">down</span> <span class="n">requests</span><span class="p">;</span> <span class="n">implement</span> <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="n">exponential</span> <span class="n">backoff</span>           <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
+<span class="o">|</span> <span class="mi">500</span>  <span class="o">|</span> <span class="n">Server</span> <span class="n">error</span>                     <span class="o">|</span> <span class="n">Contact</span> <span class="n">support</span> <span class="k">with</span> <span class="n">the</span>      <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>                                  <span class="o">|</span> <span class="n">request</span> <span class="n">ID</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">response</span>  <span class="o">|</span>
+<span class="o">+------+----------------------------------+-------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> response header when contacting support.</p>
 </div>
 </section>
 <section id="getting-help">

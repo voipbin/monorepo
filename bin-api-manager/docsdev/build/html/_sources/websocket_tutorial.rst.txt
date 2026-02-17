@@ -3,6 +3,20 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before connecting to WebSocket, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* Your customer ID (UUID). Obtained from your account or ``GET /customers``.
+* (Optional) Agent IDs (UUIDs) for agent-level subscriptions. Obtained from ``GET /agents``.
+* A WebSocket client library (e.g., ``websocket-client`` for Python, ``ws`` for Node.js, or the browser's native ``WebSocket`` API).
+
+.. note:: **AI Implementation Hint**
+
+   The WebSocket URL is ``wss://api.voipbin.net/v1.0/ws?token=<token>``. Always use ``wss://`` (not ``ws://``) for production. The token is passed as a query parameter, not a header. After connecting, you must send a ``subscribe`` message before any events will be delivered. If the connection drops, all subscriptions are lost and must be re-sent after reconnecting.
+
 Connect to WebSocket
 --------------------
 

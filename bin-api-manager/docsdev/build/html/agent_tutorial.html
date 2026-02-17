@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="agent-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before managing agents, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For tag assignment) Tag IDs (UUIDs). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain existing ones via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p>(For address assignment) Contact addresses in the correct format: E.164 for <code class="docutils literal notranslate"><span class="pre">tel</span></code> type (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>), numeric-only for <code class="docutils literal notranslate"><span class="pre">extension</span></code> type, or <code class="docutils literal notranslate"><span class="pre">user&#64;domain</span></code> for <code class="docutils literal notranslate"><span class="pre">sip</span></code> type.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating an agent, the <code class="docutils literal notranslate"><span class="pre">password</span></code> field is required but is write-only and never returned in responses. The agent’s initial <code class="docutils literal notranslate"><span class="pre">status</span></code> will be <code class="docutils literal notranslate"><span class="pre">offline</span></code>. After creation, the agent must explicitly set their status to <code class="docutils literal notranslate"><span class="pre">available</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/status</span></code> before they can receive calls from queues.</p>
+</div>
 <section id="create-a-new-agent">
-<h2>Create a new agent<a class="headerlink" href="#create-a-new-agent" title="Link to this heading"></a></h2>
+<h3>Create a new agent<a class="headerlink" href="#create-a-new-agent" title="Link to this heading"></a></h3>
 <p>Create a new agent.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -199,11 +212,26 @@
         &quot;permission&quot;: 0,
         &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;]
     }&#39;
+
+{
+    &quot;id&quot;: &quot;f1a2b3c4-d5e6-7890-abcd-ef1234567890&quot;,
+    &quot;username&quot;: &quot;test2&quot;,
+    &quot;name&quot;: &quot;test tag&quot;,
+    &quot;detail&quot;: &quot;test tag example&quot;,
+    &quot;ring_method&quot;: &quot;ringall&quot;,
+    &quot;status&quot;: &quot;offline&quot;,
+    &quot;permission&quot;: 0,
+    &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;],
+    &quot;addresses&quot;: [],
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="update-agent-s-status">
-<h2>Update agent’s status<a class="headerlink" href="#update-agent-s-status" title="Link to this heading"></a></h2>
+<h3>Update agent’s status<a class="headerlink" href="#update-agent-s-status" title="Link to this heading"></a></h3>
 <p>Update agent’s status to the available.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/status?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -215,8 +243,13 @@
 </div>
 </section>
 <section id="update-agent-s-addresses">
-<h2>Update agent’s addresses<a class="headerlink" href="#update-agent-s-addresses" title="Link to this heading"></a></h2>
+<h3>Update agent’s addresses<a class="headerlink" href="#update-agent-s-addresses" title="Link to this heading"></a></h3>
 <p>Update agent’s addresses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/addresses</span></code> endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>, then include all desired addresses in the update request. Phone numbers in <code class="docutils literal notranslate"><span class="pre">tel</span></code> type addresses must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/addresses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -232,6 +265,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -242,9 +276,12 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-new-agent">Create a new agent</a></li>
 <li><a class="reference internal" href="#update-agent-s-status">Update agent’s status</a></li>
 <li><a class="reference internal" href="#update-agent-s-addresses">Update agent’s addresses</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

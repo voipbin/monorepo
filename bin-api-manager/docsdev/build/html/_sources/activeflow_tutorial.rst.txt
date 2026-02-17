@@ -3,6 +3,18 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with activeflows, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* An existing activeflow ID (UUID). Activeflows are created automatically when a flow is triggered (e.g., by an incoming call or ``POST /calls``). List them via ``GET /activeflows``.
+
+.. note:: **AI Implementation Hint**
+
+   You cannot create activeflows directly via the API. They are created automatically when a flow is triggered. To have an activeflow to inspect, first create a call (``POST /calls``) with flow actions, then list activeflows with ``GET /activeflows``. The ``status`` field will be ``running`` during execution and ``ended`` after completion.
+
 Get activeflow list
 -------------------
 Getting a list of activeflows.

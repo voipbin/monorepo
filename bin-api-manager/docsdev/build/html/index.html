@@ -233,6 +233,7 @@
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#authentication">Authentication</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#generate-a-token">Generate a Token</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#generate-an-accesskey">Generate an Accesskey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#call">Call</a><ul>
@@ -242,6 +243,19 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#queue">Queue</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#create-a-queue">Create a queue</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#transcribe">Transcribe</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-1-create-a-transcription-flow">Step 1: Create a transcription flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-2-create-a-virtual-number-and-assign-the-flow">Step 2: Create a virtual number and assign the flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-3-subscribe-to-transcribe-events-via-websocket">Step 3: Subscribe to transcribe events via WebSocket</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-4-make-a-call-to-the-virtual-number">Step 4: Make a call to the virtual number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-5-receive-real-time-transcription-events">Step 5: Receive real-time transcription events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#receive-events-via-webhook-alternative">Receive events via webhook (alternative)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-6-verify-transcription-results">Step 6: Verify transcription results</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quickstart.html#id3">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#what-s-next">What’s Next</a></li>
@@ -722,7 +736,9 @@
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#notification-mechanism">Notification Mechanism</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#types-of-webhooks">Types of Webhooks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#custom-endpoints">Custom Endpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-event-types">Webhook Event Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#benefits-of-webhooks">Benefits of Webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="webhook.html#webhook-struct-webhook">Webhook</a><ul>
@@ -796,7 +812,7 @@
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#get-list-of-webhooks">Get List of Webhooks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#update-a-webhook">Update a Webhook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#delete-a-webhook">Delete a Webhook</a></li>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-event-types">Webhook Event Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#id15">Webhook Event Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#receiving-webhook-events">Receiving Webhook Events</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#testing-webhooks">Testing Webhooks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-payload-structure">Webhook Payload Structure</a></li>
@@ -915,6 +931,7 @@
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-call-list">Get call list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-specific-call">Get specific call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#make-a-groupcall">Make a groupcall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="call.html#internal-call-sequences">Internal Call Sequences</a><ul>
@@ -1027,6 +1044,7 @@
 <li class="toctree-l4"><a class="reference internal" href="conference.html#id10">Example</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1129,7 +1147,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="transcribe.html#transcribe-struct-transcribe">Transcribe</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#id6">Transcribe</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="transcribe.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#reference-type">reference_type</a></li>
@@ -1138,7 +1156,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="transcribe.html#transcription">Transcription</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#id7">Transcription</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="transcribe.html#id8">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#id8">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#direction">direction</a></li>
@@ -1439,6 +1457,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#real-time-ai-summary">Real-Time AI Summary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#id7">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id8">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1510,7 +1529,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="outdial.html#outdial-struct-outdial">Outdial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="outdial.html#outdial-struct-outdial-outdial">Outdial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="outdial.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="outdial.html#example">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -1548,7 +1567,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="outplan.html#outplan-struct-outplan">Outplan</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#outplan-struct-outplan-outplan">Outplan</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="outplan.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="outplan.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#try-interval">Try interval</a></li>
@@ -1586,7 +1605,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="number.html#number-struct-number">Number</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="number.html#number-struct-number-number">Number</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="number.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="number.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="number.html#type">Type</a></li>
@@ -1625,7 +1644,7 @@
 <li class="toctree-l3"><a class="reference internal" href="agent.html#agent-struct-agent-agent">Agent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="agent.html#ring-method">Ring method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="agent.html#status">Status</a></li>
-<li class="toctree-l3"><a class="reference internal" href="agent.html#id2">Permission</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#agent-struct-agent-permission">Permission</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="agent.html#tutorial">Tutorial</a><ul>
@@ -1757,14 +1776,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="storage.html#account">Account</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="storage.html#storage-struct-account-account">Account</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="storage.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage.html#example">Example</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="storage.html#file">File</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="storage.html#storage-struct-file-file">File</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="storage.html#id3">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage.html#id3">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="storage.html#reference-type">Reference Type</a></li>
@@ -1809,7 +1828,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="provider.html#provider-struct-provider">Provider</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="provider.html#provider-struct-provider-provider">Provider</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="provider.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="provider.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="provider.html#type">Type</a></li>
@@ -1839,7 +1858,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="route.html#route-struct-route">Route</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="route.html#route-struct-route-route">Route</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="route.html#example">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="route.html#example">Example</a></li>
 </ul>
 </li>
 </ul>

@@ -184,8 +184,20 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with extensions, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A domain ID (UUID) for creating extensions. Obtained from your account’s domain configuration.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating an extension, the <code class="docutils literal notranslate"><span class="pre">extension</span></code> field and <code class="docutils literal notranslate"><span class="pre">username</span></code> field are typically set to the same value. The <code class="docutils literal notranslate"><span class="pre">password</span></code> is used for SIP device authentication. After creation, configure SIP devices with the <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, and the domain <code class="docutils literal notranslate"><span class="pre">{customer-id}.registrar.voipbin.net</span></code>.</p>
+</div>
 <section id="get-list-of-extensions">
-<h2>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading"></a></h2>
+<h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading"></a></h3>
 <p>Gets the list of registered extensions of the given domain.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499&#39;
 
@@ -210,7 +222,7 @@
 </div>
 </section>
 <section id="get-detail-of-specified-extension">
-<h2>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Link to this heading"></a></h2>
+<h3>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Link to this heading"></a></h3>
 <p>Gets the detail of registered extension.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -230,7 +242,7 @@
 </div>
 </section>
 <section id="create-a-extension">
-<h2>Create a extension<a class="headerlink" href="#create-a-extension" title="Link to this heading"></a></h2>
+<h3>Create a extension<a class="headerlink" href="#create-a-extension" title="Link to this heading"></a></h3>
 <p>Create a new extension.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -259,7 +271,7 @@
 </div>
 </section>
 <section id="update-the-extension">
-<h2>Update the extension<a class="headerlink" href="#update-the-extension" title="Link to this heading"></a></h2>
+<h3>Update the extension<a class="headerlink" href="#update-the-extension" title="Link to this heading"></a></h3>
 <p>Update the existing extension with given info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -285,7 +297,7 @@
 </div>
 </section>
 <section id="enable-direct-extension">
-<h2>Enable direct extension<a class="headerlink" href="#enable-direct-extension" title="Link to this heading"></a></h2>
+<h3>Enable direct extension<a class="headerlink" href="#enable-direct-extension" title="Link to this heading"></a></h3>
 <p>Enable direct access for an extension. This generates a unique hash that allows external callers to reach the extension via a public SIP URI (<code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>) without needing to know the customer’s registrar domain.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -310,7 +322,7 @@
 </div>
 </section>
 <section id="regenerate-direct-extension-hash">
-<h2>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading"></a></h2>
+<h3>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading"></a></h3>
 <p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -335,7 +347,7 @@
 </div>
 </section>
 <section id="disable-direct-extension">
-<h2>Disable direct extension<a class="headerlink" href="#disable-direct-extension" title="Link to this heading"></a></h2>
+<h3>Disable direct extension<a class="headerlink" href="#disable-direct-extension" title="Link to this heading"></a></h3>
 <p>Disable direct access for an extension. This removes the hash and the public SIP URI will no longer work.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -360,11 +372,12 @@
 </div>
 </section>
 <section id="delete-the-extension">
-<h2>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Link to this heading"></a></h2>
+<h3>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Link to this heading"></a></h3>
 <p>Delete the existing extension of given id.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -377,6 +390,7 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-extensions">Get list of extensions</a></li>
 <li><a class="reference internal" href="#get-detail-of-specified-extension">Get detail of specified extension</a></li>
 <li><a class="reference internal" href="#create-a-extension">Create a extension</a></li>
@@ -385,6 +399,8 @@
 <li><a class="reference internal" href="#regenerate-direct-extension-hash">Regenerate direct extension hash</a></li>
 <li><a class="reference internal" href="#disable-direct-extension">Disable direct extension</a></li>
 <li><a class="reference internal" href="#delete-the-extension">Delete the extension</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

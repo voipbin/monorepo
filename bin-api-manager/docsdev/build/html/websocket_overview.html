@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="websocket-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium – Requires persistent connection management, topic subscription, and reconnection logic.</p></li>
+<li><p><strong>Cost:</strong> Free – WebSocket connections and event delivery do not incur charges.</p></li>
+<li><p><strong>Async:</strong> Yes. Connect via <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code>, then send subscribe messages to receive events. Events are pushed asynchronously as they occur on subscribed topics.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s WebSocket API enables real-time, bi-directional communication for receiving instant event notifications. WebSockets maintain persistent connections, allowing immediate delivery of call status changes, message arrivals, flow updates, and other platform events without polling.</p>
 <p>The WebSocket API provides:</p>
 <ul class="simple">
@@ -228,6 +237,11 @@
 <span class="o">|</span> <span class="n">Events</span> <span class="n">are</span> <span class="n">pushed</span> <span class="n">instantly</span> <span class="k">as</span> <span class="n">they</span> <span class="n">occur</span> <span class="o">-</span> <span class="n">no</span> <span class="n">polling</span> <span class="n">needed</span>         <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The topic format is <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> as the <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> to subscribe to all resources of a type (e.g., <code class="docutils literal notranslate"><span class="pre">customer_id:abc123:call:*</span></code> for all call events). Always implement automatic reconnection with exponential backoff since connections can drop due to network issues or token expiration.</p>
 </div>
 <p><strong>Key Components</strong></p>
 <ul class="simple">

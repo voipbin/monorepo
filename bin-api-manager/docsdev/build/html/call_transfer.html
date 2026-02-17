@@ -189,6 +189,11 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <p>There are two main types of call transfer in CPaaS: blind transfer and attended transfer.</p>
 <p>In both types of call transfer, the transfer can be done manually by the person initiating the transfer, or it can be automated using CPaaS software. Automated transfer is typically done using rules-based routing, which determines the appropriate person or device to transfer the call to based on predefined rules or criteria.</p>
 <p>Call transfer is just one of many features available in CPaaS technology, which can help improve call handling, reduce call times, and improve overall customer service.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> used in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{call-id}/transfer</span></code> must be an active call (status <code class="docutils literal notranslate"><span class="pre">progressing</span></code>). Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event such as <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>.</p>
+</div>
 <section id="blind-transfer">
 <span id="call-transfer-blind-transfer"></span><h2>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h2>
 <p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
@@ -227,6 +232,11 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <li><p>The Transferee answers the call and is connected to the Caller.</p></li>
 </ul>
 <p>This is the basic process of an blind transfer using a CPaaS like VoIPBIN.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>In a blind transfer, the transferer is disconnected immediately after the transfer is initiated. If the transferee does not answer, the caller may be left with no connection. For critical calls, use attended transfer instead. The caller will hear ringing while waiting for the transferee to answer.</p>
+</div>
 </section>
 <section id="attended-transfer">
 <span id="call-transfer-attended-transfer"></span><h2>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading"></a></h2>
@@ -280,6 +290,11 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <li><p>The VoIPBIN turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
 </ul>
 <p>This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transfers/{transfer-id}/cancel</span></code> and resume the original call with the caller.</p>
+</div>
 </section>
 </section>
 

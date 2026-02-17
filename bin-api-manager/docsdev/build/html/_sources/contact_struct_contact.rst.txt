@@ -28,21 +28,21 @@ Contact
         "tm_delete": "<string>"
     }
 
-* id: Contact's unique identifier.
-* customer_id: Customer who owns this contact.
-* first_name: Contact's first name.
-* last_name: Contact's last name.
-* display_name: Contact's display name.
-* company: Contact's company or organization.
-* job_title: Contact's job title.
-* source: How the contact was created. See :ref:`Source <contact-struct-contact-source>`.
-* external_id: Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.).
-* phone_numbers: Array of phone numbers. See :ref:`PhoneNumber <contact-struct-contact-phonenumber>`.
-* emails: Array of email addresses. See :ref:`Email <contact-struct-contact-email>`.
-* tag_ids: Array of tag UUIDs assigned to this contact.
-* tm_create: Timestamp of creation.
-* tm_update: Timestamp of last update.
-* tm_delete: Timestamp of deletion (soft delete).
+* ``id`` (UUID): The contact's unique identifier. Returned when creating via ``POST /contacts`` or listing via ``GET /contacts``.
+* ``customer_id`` (UUID): The customer who owns this contact. Obtained from ``GET /customers``.
+* ``first_name`` (String): Contact's first name.
+* ``last_name`` (String): Contact's last name.
+* ``display_name`` (String): Contact's display name, typically "First Last". Used for caller ID enrichment.
+* ``company`` (String): Contact's company or organization name.
+* ``job_title`` (String): Contact's job title or role.
+* ``source`` (enum string): How the contact was created. See :ref:`Source <contact-struct-contact-source>`.
+* ``external_id`` (String): Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.). Used for deduplication and two-way sync.
+* ``phone_numbers`` (Array of Object): Array of phone numbers associated with this contact. See :ref:`PhoneNumber <contact-struct-contact-phonenumber>`.
+* ``emails`` (Array of Object): Array of email addresses associated with this contact. See :ref:`Email <contact-struct-contact-email>`.
+* ``tag_ids`` (Array of UUID): Array of tag UUIDs assigned to this contact. Each tag ID is obtained from ``GET /tags``.
+* ``tm_create`` (string, ISO 8601): Timestamp when the contact was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update. ``null`` if never updated.
+* ``tm_delete`` (string, ISO 8601): Timestamp of deletion (soft delete). ``null`` if not deleted.
 
 .. _contact-struct-contact-source:
 
@@ -78,12 +78,12 @@ PhoneNumber
         "tm_create": "<string>"
     }
 
-* id: Phone number's unique identifier.
-* number: Phone number as originally entered.
-* number_e164: Phone number normalized to E.164 format (e.g., "+15551234567").
-* type: Phone number type. See :ref:`PhoneNumberType <contact-struct-contact-phonenumbertype>`.
-* is_primary: Whether this is the primary phone number for the contact.
-* tm_create: Timestamp of creation.
+* ``id`` (UUID): The phone number entry's unique identifier. Returned when adding via ``POST /contacts/{id}/phone-numbers``.
+* ``number`` (String): Phone number as originally entered by the user.
+* ``number_e164`` (String): Phone number normalized to E.164 format (e.g., ``+15551234567``). Used for lookup matching.
+* ``type`` (enum string): Phone number type. See :ref:`PhoneNumberType <contact-struct-contact-phonenumbertype>`.
+* ``is_primary`` (Boolean): Whether this is the primary phone number for the contact. Only one number should be marked primary.
+* ``tm_create`` (string, ISO 8601): Timestamp when the phone number was added.
 
 .. _contact-struct-contact-phonenumbertype:
 
@@ -119,11 +119,11 @@ Email
         "tm_create": "<string>"
     }
 
-* id: Email's unique identifier.
-* address: Email address (stored in lowercase).
-* type: Email address type. See :ref:`EmailType <contact-struct-contact-emailtype>`.
-* is_primary: Whether this is the primary email for the contact.
-* tm_create: Timestamp of creation.
+* ``id`` (UUID): The email entry's unique identifier. Returned when adding via ``POST /contacts/{id}/emails``.
+* ``address`` (String): Email address (stored and matched in lowercase).
+* ``type`` (enum string): Email address type. See :ref:`EmailType <contact-struct-contact-emailtype>`.
+* ``is_primary`` (Boolean): Whether this is the primary email for the contact. Only one email should be marked primary.
+* ``tm_create`` (string, ISO 8601): Timestamp when the email address was added.
 
 .. _contact-struct-contact-emailtype:
 

@@ -5,6 +5,19 @@ Tutorial
 
 This tutorial demonstrates how to use the Talk API to create conversations, manage participants, send messages with threading and reactions.
 
+Prerequisites
++++++++++++++
+
+Before using the Talk API, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* Agent IDs (UUIDs) for the participants you want to add. Obtain agent IDs via ``GET /agents``.
+* (For threading) An existing message ID to reply to. Obtain message IDs via ``GET /service_agents/talk_messages``.
+
+.. note:: **AI Implementation Hint**
+
+   Talk API uses the ``/service_agents/talk_chats`` and ``/service_agents/talk_messages`` endpoints. The agent making the request must be authenticated and will automatically become a participant. When adding other participants, use their agent ``id`` from ``GET /agents`` as the ``owner_id``.
+
 Create a Talk
 -------------
 

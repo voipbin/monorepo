@@ -34,21 +34,23 @@ Campaigncall
         "tm_update": "2022-04-29 07:02:48.304704"
     }
 
-* id: Campaigncall's ID.
-* campaign_id: Campaign's ID.
-* outplan_id: Outplan's ID.
-* outdial_id: Outdial's ID.
-* outdial_target_id: outdialtarget's ID.
-* queue_id: Queue's ID.
-* activeflow_id: Activeflow's ID.
-* *reference_type*: Reference's type. See detail :ref:`here <campaign-struct-campaigncall-reference_type>`.
-* reference_id: Reference's ID.
-* *status*: Campaigncall's status. See detail :ref:`here <campaign-struct-campaigncall-status>`.
-* *result*: Campaigncall's result. See detail :ref:`here <campaign-struct-campaigncall-result>`.
-* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
-* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
-* destination_index: Destination's index.
-* try_count: Try count.
+* ``id`` (UUID): The campaigncall's unique identifier. Returned when listing via ``GET /campaigncalls``.
+* ``campaign_id`` (UUID): The parent campaign. Obtained from the ``id`` field of ``GET /campaigns``.
+* ``outplan_id`` (UUID): The outplan used for this dial attempt. Obtained from the ``id`` field of ``GET /outplans``.
+* ``outdial_id`` (UUID): The outdial containing the target. Obtained from the ``id`` field of ``GET /outdials``.
+* ``outdial_target_id`` (UUID): The specific outdialtarget being dialed. Obtained from the ``id`` field of ``GET /outdials/{id}/targets``.
+* ``queue_id`` (UUID): The queue for routing the answered call. Obtained from the ``id`` field of ``GET /queues``.
+* ``activeflow_id`` (UUID): The activeflow executing the call actions. Obtained from the ``id`` field of ``GET /activeflows``.
+* ``reference_type`` (enum string): The type of resource this campaigncall is linked to. See :ref:`Reference Type <campaign-struct-campaigncall-reference_type>`.
+* ``reference_id`` (UUID): The ID of the referenced resource (e.g., the call ID when ``reference_type`` is ``call``).
+* ``status`` (enum string): The campaigncall's current status. See :ref:`Status <campaign-struct-campaigncall-status>`.
+* ``result`` (enum string): The campaigncall's outcome after completion. See :ref:`Result <campaign-struct-campaigncall-result>`.
+* ``source`` (Object): Source address used for the dial attempt. See :ref:`Address <common-struct-address-address>`.
+* ``destination`` (Object): Destination address being dialed. See :ref:`Address <common-struct-address-address>`.
+* ``destination_index`` (Integer): Index of the destination within the outdialtarget (0-4), corresponding to ``destination_0`` through ``destination_4``.
+* ``try_count`` (Integer): The current attempt number for this destination.
+* ``tm_create`` (string, ISO 8601): Timestamp when the campaigncall was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to the campaigncall.
 
 Example
 +++++++
@@ -91,44 +93,48 @@ Example
 
 Reference type
 --------------
-Campaigncall's reference type.
+The type of resource this campaigncall is associated with. The ``reference_id`` field contains the ID of this resource.
 
 =========== ============
 Type        Description
 =========== ============
-none        Has no reference type.
-call        The reference type is call. Reference id is call's ID.
+none        No associated resource. The campaigncall has not yet created a reference.
+call        The campaigncall is associated with a voice call. The ``reference_id`` is the call's UUID, retrievable via ``GET /calls/{reference_id}``.
 =========== ============
 
 .. _campaign-struct-campaigncall-status:
 
 Status
 ------
-Campaigncall's status.
+The campaigncall's current operational status. This is a read-only field managed by the system.
 
 =========== ============
 Type        Description
 =========== ============
-dialing     The campaigncall is dialing(not answered yet)
-progressing The campaigncall is progressing(the call answered)
-done        The campaigncall is hungup
+dialing     The campaigncall is dialing the target. The call has not been answered yet.
+progressing The campaigncall is in progress. The target has answered and the flow actions are executing.
+done        The campaigncall has completed. The call has been hung up. Check the ``result`` field for the outcome.
 =========== ============
 
 .. _campaign-struct-campaigncall-result:
 
 Result
 ------
-Campaigncall's result. The result is calculated by the final status/result of the referenced resource(call/sms/...).
+The campaigncall's outcome, calculated from the final status of the referenced resource (call, SMS, etc.).
 
-For example, if the call ended with no_answer, the result will be calculated to the fail.
+For example, if the call ended with ``no_answer``, the result is calculated as ``fail``.
 
 =========== ============
 Type        Description
 =========== ============
-""          Have no result yet.
-success     The campaigncall ended successfully. The target's status will be set to the done and will not make retry.
-fail        The campaigncall ended unsuccesfully. The target's status will be set to the idle and will make a retry.
+""          No result yet. The campaigncall is still in progress (``status`` is ``dialing`` or ``progressing``).
+success     The campaigncall ended successfully. The outdialtarget's status is set to ``done`` and no retry will be made.
+fail        The campaigncall ended unsuccessfully. The outdialtarget's status is set to ``idle`` and a retry will be scheduled if retries remain per the outplan configuration.
 =========== ============
+
+.. note:: **AI Implementation Hint**
+
+   Only a ``normal`` call hangup reason maps to ``success``. All other hangup reasons (busy, no_answer, failed, etc.) map to ``fail``. A ``fail`` result triggers a retry if the outdialtarget has not exceeded its ``max_try_count`` for the current destination index.
 
 The call hangup reason - result mapping table.
 

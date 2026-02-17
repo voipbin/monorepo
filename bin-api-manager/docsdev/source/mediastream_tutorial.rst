@@ -3,6 +3,20 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before using media streaming, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* An active call in ``progressing`` status. Obtain the call ID via ``GET /calls``. Or an active conference via ``GET /conferences``.
+* A WebSocket client library (not a standard HTTP client). The media stream endpoint upgrades the HTTP connection to WebSocket.
+* Knowledge of the audio format for your chosen encapsulation: ``rtp`` (G.711 ulaw, 12-byte header + 160-byte payload), ``sln`` (raw PCM, no headers), or ``audiosocket`` (Asterisk AudioSocket, 320-byte chunks).
+
+.. note:: **AI Implementation Hint**
+
+   The media stream URL (``GET /calls/{id}/media_stream``) is a WebSocket upgrade endpoint. Do not use ``curl`` or standard HTTP libraries to connect. Use a WebSocket client (e.g., Python ``websocket-client``, JavaScript ``WebSocket``, Node.js ``ws``). Audio data must be sent as binary frames, not text frames.
+
 Bi-Directional Media Streaming for Calls
 -----------------------------------------
 

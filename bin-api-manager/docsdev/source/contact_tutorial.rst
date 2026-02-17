@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with contacts, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* (Optional) Tag IDs (UUIDs) for categorization. Create tags via ``POST /tags`` or obtain existing ones from ``GET /tags``.
+* (Optional) Phone numbers in E.164 format (e.g., ``+15551234567``) for phone number entries.
+
+.. note:: **AI Implementation Hint**
+
+   Phone numbers are automatically normalized to E.164 format in the ``number_e164`` field. When using the phone lookup endpoint (``GET /contacts/lookup?phone=...``), the ``+`` character must be URL-encoded as ``%2B``. Contact operations are free and synchronous.
+
 Create a contact
 ----------------
 Create a new contact with phone numbers, emails, and tags.

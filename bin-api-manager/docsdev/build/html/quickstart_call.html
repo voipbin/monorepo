@@ -184,9 +184,22 @@
                         <main role="main" id="main">
     <section id="call">
 <span id="quickstart-call"></span><h1>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h1>
-<p>Make an outbound voice call using the VoIPBin API. You can either define actions inline or reference an existing flow.</p>
+<p>Make an outbound voice call using the VoIPBIN API. You can either define actions inline or reference an existing flow.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
+<li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). If the user provides a local format like <code class="docutils literal notranslate"><span class="pre">010-1234-5678</span></code>, normalize it to E.164 before calling this API. The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>.</p>
+</div>
 <section id="make-a-call-with-inline-actions">
-<h2>Make a call with inline actions<a class="headerlink" href="#make-a-call-with-inline-actions" title="Link to this heading"></a></h2>
+<h3>Make a call with inline actions<a class="headerlink" href="#make-a-call-with-inline-actions" title="Link to this heading"></a></h3>
 <p>This example initiates a call and plays a text-to-speech message to the recipient:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -205,7 +218,7 @@
             {
                 &quot;type&quot;: &quot;talk&quot;,
                 &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is a VoIPBin test call. Thank you, bye.&quot;,
+                    &quot;text&quot;: &quot;Hello. This is a VoIPBIN test call. Thank you, bye.&quot;,
                     &quot;language&quot;: &quot;en-US&quot;
                 }
             }
@@ -235,7 +248,7 @@
 </div>
 </section>
 <section id="make-a-call-with-an-existing-flow">
-<h2>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h2>
+<h3>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h3>
 <p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -254,7 +267,13 @@
     }&#39;
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID) must reference an existing flow. Obtain one from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. If the flow does not exist, the API returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></code>.</p>
+</div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
+</section>
 </section>
 </section>
 
@@ -267,8 +286,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Call</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#make-a-call-with-inline-actions">Make a call with inline actions</a></li>
 <li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

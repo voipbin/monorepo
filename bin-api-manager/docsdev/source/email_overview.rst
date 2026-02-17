@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Chargeable (per email sent)
+   * **Async:** Yes. ``POST /emails`` returns immediately with status ``queued``. Poll ``GET /emails/{id}`` or use webhooks to track delivery status changes.
+
 VoIPBIN's Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.
 
 With the Email API you can:
@@ -101,6 +108,10 @@ Send emails through the VoIPBIN API with full control over content and formattin
        | Webhook: delivered        |   Email in inbox          |
        |<--------------------------+-------------------------->|
        |                           |                           |
+
+.. note:: **AI Implementation Hint**
+
+   The ``source`` email address must be from a domain you have verified with VoIPBIN. Using an unverified domain will cause delivery failures. The ``destinations`` field accepts an array of address objects, not plain email strings.
 
 **Basic Email Example:**
 

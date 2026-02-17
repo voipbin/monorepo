@@ -5,6 +5,10 @@ Tool Functions
 
 Tool functions enable the AI to perform actions during voice conversations. When the AI determines that an action is needed based on the conversation context, it can invoke the appropriate tool function.
 
+.. note:: **AI Implementation Hint**
+
+   Tool functions are invoked by the LLM, not by your application code. You configure which tools are available via the ``tool_names`` field in the AI configuration (``POST /ais`` or inline flow action). The LLM decides when to call a tool based on conversation context and the tool's parameter schema. Your prompt should describe when each tool should be used.
+
 Overview
 --------
 
@@ -51,6 +55,10 @@ connect_call
 ------------
 
 Connects or transfers the user to another endpoint (person, department, or phone number).
+
+.. note:: **AI Implementation Hint**
+
+   The ``connect_call`` tool creates a new outgoing call and bridges it with the current call. The ``source.type`` determines the caller ID shown to the destination. For PSTN transfers, use ``type: "tel"`` with an E.164 phone number (e.g., ``+15551234567``). For internal transfers, use ``type: "extension"`` with the extension name.
 
 **When to use:**
 
@@ -163,6 +171,10 @@ send_message
 ------------
 
 Sends an SMS text message to a phone number.
+
+.. note:: **AI Implementation Hint**
+
+   Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. The ``source`` phone number must be a number owned by your VoIPBIN account (obtainable via ``GET /numbers``).
 
 **When to use:**
 
@@ -334,6 +346,10 @@ set_variables
 
 Saves key-value data to the flow context for later use by downstream actions.
 
+.. note:: **AI Implementation Hint**
+
+   Variables set via ``set_variables`` are accessible in subsequent flow actions using the ``${variable_name}`` syntax. Variable names are case-sensitive strings. Values are always stored as strings. These variables persist for the duration of the flow execution and are included in webhook events.
+
 **When to use:**
 
 * Save information collected during conversation (name, account number, preferences)
@@ -413,6 +429,10 @@ get_aicall_messages
 -------------------
 
 Retrieves message history from a specific AI call session.
+
+.. note:: **AI Implementation Hint**
+
+   The ``aicall_id`` (UUID) must reference a completed or active AI call session. You can obtain this ID from the ``${voipbin.aicall.id}`` flow variable during the current call, or from a previous call's webhook event data. This tool is most useful for multi-call workflows where AI needs context from a prior conversation.
 
 **When to use:**
 

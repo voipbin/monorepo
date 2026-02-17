@@ -185,6 +185,11 @@
     <section id="flow-best-practices">
 <span id="id1"></span><h1>Flow Best Practices<a class="headerlink" href="#flow-best-practices" title="Link to this heading"></a></h1>
 <p>This section covers design patterns, optimization techniques, and best practices for building maintainable and efficient flows.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When generating flows programmatically, follow three key rules: (1) Always set <code class="docutils literal notranslate"><span class="pre">default_target_id</span></code> on every <code class="docutils literal notranslate"><span class="pre">branch</span></code> action to handle unexpected input. (2) Always set <code class="docutils literal notranslate"><span class="pre">loop_count</span></code> on every <code class="docutils literal notranslate"><span class="pre">goto</span></code> action to prevent infinite loops. (3) Only set explicit <code class="docutils literal notranslate"><span class="pre">id</span></code> fields on actions that are referenced as targets by <code class="docutils literal notranslate"><span class="pre">goto</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, or <code class="docutils literal notranslate"><span class="pre">condition_*</span></code> actions.</p>
+</div>
 <section id="flow-design-principles">
 <h2>Flow Design Principles<a class="headerlink" href="#flow-design-principles" title="Link to this heading"></a></h2>
 <section id="keep-flows-focused">

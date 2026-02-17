@@ -188,6 +188,15 @@
 <span id="talk-main"></span><h1>Talk<a class="headerlink" href="#talk" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="talk-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free – Talk messaging does not incur per-message charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/talks</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/talks/{id}/messages</span></code> return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.</p>
 <p>With the Talk API you can:</p>
 <ul class="simple">
@@ -320,6 +329,11 @@
         ]
     }&#39;
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Talk uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> endpoint (not <code class="docutils literal notranslate"><span class="pre">/talks</span></code>) for agent-facing operations. The participant’s <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> must be a valid agent UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Only agents who are participants of a talk can send or view messages in that talk.</p>
 </div>
 <p><strong>Add Participant</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/participants?token=&lt;token&gt;&#39; \
@@ -678,13 +692,18 @@ subscription</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Talk’s unique identifier.</p></li>
-<li><p>customer_id: Customer’s unique identifier.</p></li>
-<li><p>type: Talk’s type. See detail <a class="reference internal" href="talk_struct_talk.html#talk-struct-talk-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>tm_create: Timestamp when the talk was created.</p></li>
-<li><p>tm_update: Timestamp when the talk was last updated.</p></li>
-<li><p>tm_delete: Timestamp when the talk was deleted (soft delete).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The talk’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The talk’s type. See <a class="reference internal" href="talk_struct_talk.html#talk-struct-talk-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the talk was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the talk was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the talk was deleted (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the talk has not been deleted. An empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> also indicates the talk is active.</p>
+</div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -710,10 +729,10 @@ subscription</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>normal</p></td>
-<td><p>1:1 talk between two agents.</p></td>
+<td><p>1:1 talk between two agents. Private direct conversation.</p></td>
 </tr>
 <tr class="row-odd"><td><p>group</p></td>
-<td><p>Group talk with multiple participants.</p></td>
+<td><p>Group talk with multiple participants. Team discussions.</p></td>
 </tr>
 </tbody>
 </table>
@@ -754,20 +773,25 @@ subscription</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Message’s unique identifier.</p></li>
-<li><p>customer_id: Customer’s unique identifier.</p></li>
-<li><p>owner_type: Type of the message owner (e.g., “agent”).</p></li>
-<li><p>owner_id: Owner’s unique identifier.</p></li>
-<li><p>chat_id: Talk’s unique identifier that this message belongs to.</p></li>
-<li><p>parent_id: Parent message ID for threaded replies (optional).</p></li>
-<li><p>type: Message type. See detail <a class="reference internal" href="talk_struct_message.html#talk-struct-message-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>text: Message text content.</p></li>
-<li><p>medias: Array of media attachments.</p></li>
-<li><p>metadata: Message metadata including reactions.</p></li>
-<li><p>tm_create: Timestamp when the message was created.</p></li>
-<li><p>tm_update: Timestamp when the message was last updated.</p></li>
-<li><p>tm_delete: Timestamp when the message was deleted (soft delete).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The message’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_messages</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_messages</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): Type of the message owner. Currently only <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code> for user-sent messages, or <code class="docutils literal notranslate"><span class="pre">&quot;system&quot;</span></code> for system-generated messages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent’s unique identifier who sent the message. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chat_id</span></code> (UUID): The talk’s unique identifier that this message belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parent_id</span></code> (UUID, optional): Parent message ID for threaded replies. Must be the <code class="docutils literal notranslate"><span class="pre">id</span></code> of an existing message in the same talk. Omit or set to empty string for top-level messages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Message type. See <a class="reference internal" href="talk_struct_message.html#talk-struct-message-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): Message text content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of Object): Array of media attachments. Each object contains <code class="docutils literal notranslate"><span class="pre">type</span></code> (MIME type string), <code class="docutils literal notranslate"><span class="pre">url</span></code> (String), and <code class="docutils literal notranslate"><span class="pre">name</span></code> (String).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object): Message metadata including reactions. Contains a <code class="docutils literal notranslate"><span class="pre">reactions</span></code> array.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the message was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the message was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the message was deleted (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> means the message has not been deleted. To create a threaded reply, set <code class="docutils literal notranslate"><span class="pre">parent_id</span></code> to the <code class="docutils literal notranslate"><span class="pre">id</span></code> of the message you want to reply to. The parent message must exist in the same talk.</p>
+</div>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -809,10 +833,12 @@ subscription</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>normal</p></td>
-<td><p>Regular message sent by an agent.</p></td>
+<td><p>Regular message sent by an agent. Contains user-authored text
+and optional media attachments.</p></td>
 </tr>
 <tr class="row-odd"><td><p>system</p></td>
-<td><p>System-generated notification message.</p></td>
+<td><p>System-generated notification message. Automatically created
+when participants join or leave the talk.</p></td>
 </tr>
 </tbody>
 </table>
@@ -831,10 +857,10 @@ subscription</p></td>
 <h3>Reactions<a class="headerlink" href="#reactions" title="Link to this heading"></a></h3>
 <p>Agents can add emoji reactions to messages. Reactions are stored in the message metadata and include:</p>
 <ul class="simple">
-<li><p><strong>emoji</strong>: The emoji character (e.g., “👍”, “❤️”, “😊”).</p></li>
-<li><p><strong>owner_type</strong>: Type of the reactor (e.g., “agent”).</p></li>
-<li><p><strong>owner_id</strong>: Unique identifier of the agent who reacted.</p></li>
-<li><p><strong>tm_create</strong>: Timestamp when the reaction was added.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emoji</span></code> (String): The emoji character (e.g., “thumbsup”, “heart”).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): Type of the reactor. Currently only <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): Unique identifier of the agent who reacted. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the reaction was added.</p></li>
 </ul>
 <p>Multiple agents can react to the same message, and the same agent can add multiple different emoji reactions. Reactions provide quick feedback without sending a full message response.</p>
 </section>
@@ -854,13 +880,18 @@ subscription</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Participant’s unique identifier.</p></li>
-<li><p>customer_id: Customer’s unique identifier.</p></li>
-<li><p>owner_type: Type of the participant (e.g., “agent”).</p></li>
-<li><p>owner_id: Participant’s unique identifier.</p></li>
-<li><p>chat_id: Talk’s unique identifier that this participant belongs to.</p></li>
-<li><p>tm_joined: Timestamp when the participant joined the talk.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The participant’s unique identifier. Returned when adding a participant via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats/{id}/participants</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): Type of the participant. Currently only <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code> is supported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chat_id</span></code> (UUID): The talk’s unique identifier that this participant belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_joined</span></code> (string, ISO 8601): Timestamp when the participant joined the talk.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When a participant is removed and later re-added, a new participant record is created with a new <code class="docutils literal notranslate"><span class="pre">id</span></code> and updated <code class="docutils literal notranslate"><span class="pre">tm_joined</span></code> timestamp. The previous participant record is hard-deleted from the database.</p>
+</div>
 <section id="id7">
 <h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -898,6 +929,17 @@ subscription</p></td>
 <section id="tutorial">
 <span id="talk-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <p>This tutorial demonstrates how to use the Talk API to create conversations, manage participants, send messages with threading and reactions.</p>
+<p>Before using the Talk API, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>Agent IDs (UUIDs) for the participants you want to add. Obtain agent IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p>(For threading) An existing message ID to reply to. Obtain message IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_messages</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Talk API uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> and <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_messages</span></code> endpoints. The agent making the request must be authenticated and will automatically become a participant. When adding other participants, use their agent <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code> as the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>.</p>
+</div>
 <section id="create-a-talk">
 <h3>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading"></a></h3>
 <p>Create a new talk conversation:</p>

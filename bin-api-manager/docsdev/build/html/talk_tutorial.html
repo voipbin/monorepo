@@ -185,8 +185,21 @@
     <section id="tutorial">
 <span id="talk-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <p>This tutorial demonstrates how to use the Talk API to create conversations, manage participants, send messages with threading and reactions.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before using the Talk API, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>Agent IDs (UUIDs) for the participants you want to add. Obtain agent IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p>(For threading) An existing message ID to reply to. Obtain message IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_messages</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Talk API uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> and <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_messages</span></code> endpoints. The agent making the request must be authenticated and will automatically become a participant. When adding other participants, use their agent <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code> as the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>.</p>
+</div>
 <section id="create-a-talk">
-<h2>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading"></a></h2>
+<h3>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading"></a></h3>
 <p>Create a new talk conversation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span>
 <span class="p">{</span>
@@ -207,7 +220,7 @@
 </div>
 </section>
 <section id="add-participants">
-<h2>Add Participants<a class="headerlink" href="#add-participants" title="Link to this heading"></a></h2>
+<h3>Add Participants<a class="headerlink" href="#add-participants" title="Link to this heading"></a></h3>
 <p>Add agents to the talk:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span>
 <span class="p">{</span>
@@ -229,7 +242,7 @@
 </div>
 </section>
 <section id="send-a-message">
-<h2>Send a Message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h2>
+<h3>Send a Message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
 <p>Send a message to the talk:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
 <span class="p">{</span>
@@ -260,7 +273,7 @@
 </div>
 </section>
 <section id="reply-to-a-message-threading">
-<h2>Reply to a Message (Threading)<a class="headerlink" href="#reply-to-a-message-threading" title="Link to this heading"></a></h2>
+<h3>Reply to a Message (Threading)<a class="headerlink" href="#reply-to-a-message-threading" title="Link to this heading"></a></h3>
 <p>Reply to an existing message by specifying the parent_id:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
 <span class="p">{</span>
@@ -293,7 +306,7 @@
 </div>
 </section>
 <section id="add-a-reaction">
-<h2>Add a Reaction<a class="headerlink" href="#add-a-reaction" title="Link to this heading"></a></h2>
+<h3>Add a Reaction<a class="headerlink" href="#add-a-reaction" title="Link to this heading"></a></h3>
 <p>Add an emoji reaction to a message:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span><span class="o">/</span><span class="n">b2d4f7a1</span><span class="o">-</span><span class="mi">3</span><span class="n">c2e</span><span class="o">-</span><span class="mi">4</span><span class="n">f5a</span><span class="o">-</span><span class="mi">8</span><span class="n">d9c</span><span class="o">-</span><span class="mf">2e3</span><span class="n">f4a5b6c7d</span><span class="o">/</span><span class="n">reactions</span>
 <span class="p">{</span>
@@ -330,7 +343,7 @@
 </div>
 </section>
 <section id="list-messages">
-<h2>List Messages<a class="headerlink" href="#list-messages" title="Link to this heading"></a></h2>
+<h3>List Messages<a class="headerlink" href="#list-messages" title="Link to this heading"></a></h3>
 <p>Retrieve messages from a talk with pagination:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /service_agents/talk_messages?page_size=50
 </pre></div>
@@ -385,7 +398,7 @@
 </div>
 </section>
 <section id="remove-a-participant">
-<h2>Remove a Participant<a class="headerlink" href="#remove-a-participant" title="Link to this heading"></a></h2>
+<h3>Remove a Participant<a class="headerlink" href="#remove-a-participant" title="Link to this heading"></a></h3>
 <p>Remove a participant from the talk:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span><span class="o">/</span><span class="n">f4d6e9b3</span><span class="o">-</span><span class="mi">5</span><span class="n">c4a</span><span class="o">-</span><span class="mi">4</span><span class="n">d5e</span><span class="o">-</span><span class="mi">9</span><span class="n">f8a</span><span class="o">-</span><span class="mi">2</span><span class="n">b3c4d5e6f7g</span>
 </pre></div>
@@ -403,7 +416,7 @@
 </div>
 </section>
 <section id="delete-a-talk">
-<h2>Delete a Talk<a class="headerlink" href="#delete-a-talk" title="Link to this heading"></a></h2>
+<h3>Delete a Talk<a class="headerlink" href="#delete-a-talk" title="Link to this heading"></a></h3>
 <p>Delete a talk (soft delete):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span>
 </pre></div>
@@ -421,6 +434,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -431,6 +445,7 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-talk">Create a Talk</a></li>
 <li><a class="reference internal" href="#add-participants">Add Participants</a></li>
 <li><a class="reference internal" href="#send-a-message">Send a Message</a></li>
@@ -439,6 +454,8 @@
 <li><a class="reference internal" href="#list-messages">List Messages</a></li>
 <li><a class="reference internal" href="#remove-a-participant">Remove a Participant</a></li>
 <li><a class="reference internal" href="#delete-a-talk">Delete a Talk</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
