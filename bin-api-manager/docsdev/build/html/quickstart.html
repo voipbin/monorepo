@@ -189,9 +189,9 @@
 <p>There are two ways to get started with VoIPBin:</p>
 <ul class="simple">
 <li><p><strong>Try the Demo</strong> — Click the <strong>Try Demo Account</strong> button at <a class="reference external" href="https://admin.voipbin.net">admin.voipbin.net</a> to explore VoIPBin instantly. No setup or sign-up needed.</p></li>
-<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBin platform on your local machine using Docker. See the <a class="reference internal" href="quickstart_sandbox.html#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
+<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBin platform on your local machine using Docker. See the <a class="reference internal" href="#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
 </ul>
-<p>For production use, you can <a class="reference internal" href="quickstart_signup.html#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
+<p>For production use, you can <a class="reference internal" href="#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
 <section id="sandbox">
 <span id="quickstart-sandbox"></span><h2>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading"></a></h2>
 <p>The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
@@ -340,7 +340,7 @@ $ sudo ./voipbin
 <span id="quickstart-call"></span><h2>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h2>
 <p>Make an outbound voice call using the VoIPBIN API. You can either define actions inline or reference an existing flow.</p>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
 <li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
@@ -431,7 +431,7 @@ $ sudo ./voipbin
 <span id="quickstart-queue"></span><h2>Queue<a class="headerlink" href="#queue" title="Link to this heading"></a></h2>
 <p>Queues let you route incoming calls to available agents. Callers hear hold music or messages while waiting for an agent to become available.</p>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags are used to match agents to queues.</p></li>
 <li><p>At least one agent with the matching tag assigned. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags.</p></li>
 </ul>
@@ -496,7 +496,7 @@ $ sudo ./voipbin
 <span id="quickstart-transcribe"></span><h2>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading"></a></h2>
 <p>Set up real-time speech-to-text transcription on a voice call using the VoIPBIN API. This walkthrough creates a flow that answers a call, starts transcription, speaks a greeting, and pauses — then shows how to receive transcription events via WebSocket and webhook.</p>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or from your admin console profile.</p></li>
 </ul>
@@ -698,7 +698,7 @@ $ sudo ./voipbin
 </section>
 <section id="step-4-make-a-call-to-the-virtual-number">
 <h3>Step 4: Make a call to the virtual number<a class="headerlink" href="#step-4-make-a-call-to-the-virtual-number" title="Link to this heading"></a></h3>
-<p>With the WebSocket connected, make an outbound call to the virtual number. The call’s destination is the virtual number you created; the source is any number owned by your account.</p>
+<p>With the WebSocket connected, make an outbound call to the virtual number. The call’s destination is the virtual number you created; the source is any number owned by your account. In this quickstart scenario, the TTS greeting will generate <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> transcripts. To also see <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> transcripts (caller speech), you would need a SIP or WebRTC client connected to the call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -748,6 +748,7 @@ $ sudo ./voipbin
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
@@ -788,12 +789,14 @@ $ sudo ./voipbin
     }&#39;
 </pre></div>
 </div>
+<p>Note: the <code class="docutils literal notranslate"><span class="pre">event_types</span></code> registration uses dot notation (<code class="docutils literal notranslate"><span class="pre">transcript.created</span></code>), while the delivered payload’s <code class="docutils literal notranslate"><span class="pre">event_type</span></code> field uses underscore notation (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>).</p>
 <p>VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your endpoint each time a transcript segment is generated:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span>
 
 <span class="p">{</span>
     <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
@@ -813,7 +816,7 @@ $ sudo ./voipbin
 </section>
 <section id="step-6-verify-transcription-results">
 <h3>Step 6: Verify transcription results<a class="headerlink" href="#step-6-verify-transcription-results" title="Link to this heading"></a></h3>
-<p>After the call ends, you can retrieve the full transcript via the API. Use the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID) from the WebSocket or webhook events:</p>
+<p>After the call ends, you can retrieve the full transcript via the API. Use the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID) from the WebSocket or webhook events. In this flow-based scenario, no <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> call is made directly — the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> is generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes and is surfaced only via events. If you did not capture it from an event, you can also find it via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes?resource_id=&lt;call-id&gt;</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;your-token&gt;&amp;transcribe_id=&lt;transcribe-id&gt;&#39;
 </pre></div>
 </div>

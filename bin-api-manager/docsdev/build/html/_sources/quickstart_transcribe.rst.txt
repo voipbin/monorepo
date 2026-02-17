@@ -226,7 +226,7 @@ The wildcard ``*`` subscribes to events from all transcriptions under your accou
 
 Step 4: Make a call to the virtual number
 ------------------------------------------
-With the WebSocket connected, make an outbound call to the virtual number. The call's destination is the virtual number you created; the source is any number owned by your account.
+With the WebSocket connected, make an outbound call to the virtual number. The call's destination is the virtual number you created; the source is any number owned by your account. In this quickstart scenario, the TTS greeting will generate ``direction: "out"`` transcripts. To also see ``direction: "in"`` transcripts (caller speech), you would need a SIP or WebRTC client connected to the call.
 
 .. code::
 
@@ -282,6 +282,7 @@ Within seconds of the call being answered, the WebSocket begins delivering ``tra
     {
         "event_type": "transcript_created",
         "timestamp": "2026-02-18T10:02:05.000000Z",
+        "topic": "customer_id:<your-customer-id>:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
         "data": {
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
@@ -324,6 +325,8 @@ Instead of WebSocket, you can receive transcription events via HTTP webhook. Cre
             ]
         }'
 
+Note: the ``event_types`` registration uses dot notation (``transcript.created``), while the delivered payload's ``event_type`` field uses underscore notation (``transcript_created``).
+
 VoIPBIN sends a ``POST`` request to your endpoint each time a transcript segment is generated:
 
 .. code::
@@ -333,6 +336,7 @@ VoIPBIN sends a ``POST`` request to your endpoint each time a transcript segment
     {
         "event_type": "transcript_created",
         "timestamp": "2026-02-18T10:02:05.000000Z",
+        "topic": "customer_id:<your-customer-id>:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
         "data": {
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
@@ -349,7 +353,7 @@ VoIPBIN sends a ``POST`` request to your endpoint each time a transcript segment
 
 Step 6: Verify transcription results
 --------------------------------------
-After the call ends, you can retrieve the full transcript via the API. Use the ``transcribe_id`` (UUID) from the WebSocket or webhook events:
+After the call ends, you can retrieve the full transcript via the API. Use the ``transcribe_id`` (UUID) from the WebSocket or webhook events. In this flow-based scenario, no ``POST /transcribes`` call is made directly — the ``transcribe_id`` is generated internally when the ``transcribe_start`` action executes and is surfaced only via events. If you did not capture it from an event, you can also find it via ``GET /transcribes?resource_id=<call-id>``.
 
 .. code::
 
