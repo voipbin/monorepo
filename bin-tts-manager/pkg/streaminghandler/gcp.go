@@ -31,6 +31,7 @@ type GCPConfig struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc
 
+	Client  *texttospeech.Client
 	Stream  texttospeechpb.TextToSpeech_StreamingSynthesizeClient
 	ConnAst net.Conn
 
@@ -141,7 +142,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 	// Extract language code from the voice name (e.g., "en-US-Chirp3-HD-Charon" -> "en-US")
 	langCode := h.extractLangCode(voiceID, st.Language)
 
-	stream, err := h.connect(ctx, voiceID, langCode)
+	client, stream, err := h.connect(ctx, voiceID, langCode)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to initialize GCP StreamingSynthesize")
 	}
@@ -151,6 +152,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		Streaming: st,
 		Ctx:       cfCtx,
 		Cancel:    cancel,
+		Client:    client,
 		Stream:    stream,
 		ConnAst:   st.ConnAst,
 		Message: &message.Message{
@@ -168,7 +170,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 	return res, nil
 }
 
-func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode string) (texttospeechpb.TextToSpeech_StreamingSynthesizeClient, error) {
+func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode string) (*texttospeech.Client, texttospeechpb.TextToSpeech_StreamingSynthesizeClient, error) {
 	keepAliveParams := keepalive.ClientParameters{
 		Time:                30 * time.Second,
 		Timeout:             10 * time.Second,
@@ -182,12 +184,13 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 		option.WithEndpoint(defaultGCPStreamingEndpoint),
 	)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create GCP TTS client")
+		return nil, nil, errors.Wrapf(err, "could not create GCP TTS client")
 	}
 
 	stream, err := client.StreamingSynthesize(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not start StreamingSynthesize")
+		_ = client.Close()
+		return nil, nil, errors.Wrapf(err, "could not start StreamingSynthesize")
 	}
 
 	// Send config as the first message
@@ -206,10 +209,11 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 		},
 	}
 	if err := stream.Send(configReq); err != nil {
-		return nil, errors.Wrapf(err, "could not send streaming config")
+		_ = client.Close()
+		return nil, nil, errors.Wrapf(err, "could not send streaming config")
 	}
 
-	return stream, nil
+	return client, stream, nil
 }
 
 func (h *gcpHandler) terminate(cf *GCPConfig) {
@@ -219,6 +223,11 @@ func (h *gcpHandler) terminate(cf *GCPConfig) {
 	if cf.Stream != nil {
 		_ = cf.Stream.CloseSend()
 		cf.Stream = nil
+	}
+
+	if cf.Client != nil {
+		_ = cf.Client.Close()
+		cf.Client = nil
 	}
 
 	cf.Cancel()

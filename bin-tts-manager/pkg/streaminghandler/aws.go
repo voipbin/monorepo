@@ -33,10 +33,11 @@ type AWSConfig struct {
 
 	Client  *polly.Client
 	ConnAst net.Conn
+	VoiceID string
 
 	Message *message.Message
 
-	// audioCh receives PCM audio chunks from SayAdd goroutines
+	// audioCh receives PCM audio chunks from SayAdd calls
 	audioCh chan []byte
 	mu      sync.Mutex
 }
@@ -158,6 +159,7 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		Cancel:    cancel,
 		Client:    client,
 		ConnAst:   st.ConnAst,
+		VoiceID:   voiceID,
 		Message: &message.Message{
 			Identity: commonidentity.Identity{
 				ID:         st.MessageID,
@@ -247,13 +249,11 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 		return fmt.Errorf("vendorConfig is not a *AWSConfig or is nil")
 	}
 
-	voiceID := h.getVoiceID(cf.Ctx, cf.Streaming)
-
 	input := &polly.SynthesizeSpeechInput{
 		Text:         aws.String(text),
 		TextType:     types.TextTypeText,
 		OutputFormat: types.OutputFormatPcm,
-		VoiceId:      types.VoiceId(voiceID),
+		VoiceId:      types.VoiceId(cf.VoiceID),
 		SampleRate:   aws.String(defaultAWSStreamingSampleRate),
 	}
 
@@ -261,34 +261,32 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to synthesize speech via AWS Polly")
 	}
+	defer func() {
+		_ = resp.AudioStream.Close()
+	}()
 
-	// Read the audio stream in chunks and send to audioCh
-	go func() {
-		defer func() {
-			_ = resp.AudioStream.Close()
-		}()
+	// Read the audio stream synchronously and send to audioCh
+	buf := make([]byte, 4096)
+	for {
+		n, readErr := resp.AudioStream.Read(buf)
+		if n > 0 {
+			chunk := make([]byte, n)
+			copy(chunk, buf[:n])
 
-		buf := make([]byte, 4096)
-		for {
-			n, readErr := resp.AudioStream.Read(buf)
-			if n > 0 {
-				chunk := make([]byte, n)
-				copy(chunk, buf[:n])
-
-				select {
-				case cf.audioCh <- chunk:
-				case <-cf.Ctx.Done():
-					return
-				}
-			}
-			if readErr != nil {
-				if readErr != io.EOF {
-					log.Errorf("Error reading AWS Polly audio stream: %v", readErr)
-				}
-				return
+			select {
+			case cf.audioCh <- chunk:
+			case <-cf.Ctx.Done():
+				return cf.Ctx.Err()
 			}
 		}
-	}()
+		if readErr != nil {
+			if readErr != io.EOF {
+				log.Errorf("Error reading AWS Polly audio stream: %v", readErr)
+				return errors.Wrapf(readErr, "error reading AWS Polly audio stream")
+			}
+			break
+		}
+	}
 
 	cf.Message.TotalMessage += text
 	cf.Message.TotalCount++
@@ -330,6 +328,10 @@ func (h *awsHandler) SayFinish(vendorConfig any) error {
 	}
 
 	cf.Message.Finish = true
+
+	// Close audioCh to signal runProcess that no more audio is coming
+	close(cf.audioCh)
+
 	return nil
 }
 
