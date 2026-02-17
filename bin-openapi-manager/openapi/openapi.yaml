@@ -581,7 +581,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the referenced resource."
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         cost_type:
           type: string
@@ -779,7 +779,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the resource owner.
+          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         flow_id:
           type: string
@@ -801,7 +801,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the master call that initiated this call.
+          description: "The unique identifier of the master call that initiated this call. Returned from the `POST /calls` or `GET /calls` response."
           example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         chained_call_ids:
           type: array
@@ -809,7 +809,7 @@ components:
             type: string
             format: uuid
             x-go-type: string
-          description: Chained call IDs.
+          description: "Chained call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response."
           example: ["550e8400-e29b-41d4-a716-446655440000"]
         recording_id:
           type: string
@@ -823,7 +823,7 @@ components:
             type: string
             format: uuid
             x-go-type: string
-          description: Recording IDs associated with this call.
+          description: "Recording IDs associated with this call. Each ID is returned from the `GET /recordings` response."
           example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
         groupcall_id:
           type: string
@@ -955,7 +955,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the resource owner.
+          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         status:
           description: Current status of the group call.
@@ -982,14 +982,14 @@ components:
           format: uuid
           x-go-type: string
           nullable: true
-          description: The unique identifier of the master call that initiated this group call.
+          description: "The unique identifier of the master call that initiated this group call. Returned from the `POST /calls` or `GET /calls` response."
           example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         master_groupcall_id:
           type: string
           format: uuid
           x-go-type: string
           nullable: true
-          description: The unique identifier of the master group call, if applicable.
+          description: "The unique identifier of the master group call, if applicable. Returned from the `POST /groupcalls` or `GET /groupcalls` response."
           example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         ring_method:
           description: The method used for dialing destinations.
@@ -1003,7 +1003,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the answered call.
+          description: "The unique identifier of the answered call. Returned from the `POST /calls` or `GET /calls` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
         call_ids:
           type: array
@@ -1011,13 +1011,13 @@ components:
             type: string
             format: uuid
             x-go-type: string
-          description: List of associated call IDs.
+          description: "List of associated call IDs. Each ID is returned from the `POST /calls` or `GET /calls` response."
           example: ["550e8400-e29b-41d4-a716-446655440000"]
         answer_groupcall_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the answered group call.
+          description: "The unique identifier of the answered group call. Returned from the `POST /groupcalls` or `GET /groupcalls` response."
           example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         groupcall_ids:
           type: array
@@ -1025,7 +1025,7 @@ components:
             type: string
             format: uuid
             x-go-type: string
-          description: List of associated group call IDs.
+          description: "List of associated group call IDs. Each ID is returned from the `POST /groupcalls` or `GET /groupcalls` response."
           example: ["5e6f7a8b-9c0d-1234-ef01-234567890123"]
         call_count:
           type: integer
@@ -1115,7 +1115,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the resource owner.
+          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         reference_type:
           description: The type of reference, either a "call" or a "confbridge".
@@ -1125,7 +1125,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
           description: The status of the recording.
@@ -1237,9 +1237,8 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the customer.
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         type:
           $ref: '#/components/schemas/CampaignManagerCampaignType'
           description: The type of campaign.
@@ -1273,28 +1272,25 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the outplan.
+          description: "The unique identifier of the outplan. Returned from the `POST /outplans` or `GET /outplans` response."
           example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
-          x-provenance: "Returned from the `POST /outplans` or `GET /outplans` response."
         outdial_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the outdial.
+          description: "The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response."
           example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
-          x-provenance: "Returned from the `POST /outdials` or `GET /outdials` response."
         queue_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the queue.
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
           example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
-          x-provenance: "Returned from the `POST /queues` or `GET /queues` response."
         next_campaign_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the next campaign to execute after this one completes.
+          description: "The unique identifier of the next campaign to execute after this one completes. Returned from the `POST /campaigns` or `GET /campaigns` response."
           example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         tm_create:
           type: string
@@ -1364,58 +1360,50 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the customer.
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         campaign_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the campaign.
+          description: "The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response."
           example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
-          x-provenance: "Returned from the `POST /campaigns` or `GET /campaigns` response."
         outplan_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the outbound plan.
+          description: "The unique identifier of the outbound plan. Returned from the `POST /outplans` or `GET /outplans` response."
           example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
-          x-provenance: "Returned from the `POST /outplans` or `GET /outplans` response."
         outdial_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the outbound dial.
+          description: "The unique identifier of the outbound dial. Returned from the `POST /outdials` or `GET /outdials` response."
           example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
-          x-provenance: "Returned from the `POST /outdials` or `GET /outdials` response."
         outdial_target_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the outbound dial target.
+          description: "The unique identifier of the outbound dial target. Returned from the `GET /outdials/{id}/targets` response."
           example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
-          x-provenance: "Returned from the `GET /outdials/{id}/targets` response."
         queue_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the queue.
+          description: "The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response."
           example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
-          x-provenance: "Returned from the `POST /queues` or `GET /queues` response."
         activeflow_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the activeflow.
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /activeflows` response."
         flow_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the flow.
+          description: "The unique identifier of the flow. Returned from the `POST /flows` or `GET /flows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `POST /flows` or `GET /flows` response."
         reference_type:
           $ref: '#/components/schemas/CampaignManagerCampaigncallReferenceType'
           description: Type of reference for the campaign call.
@@ -1424,7 +1412,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the reference.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/CampaignManagerCampaigncallStatus'
@@ -1480,9 +1468,8 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the customer.
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         name:
           type: string
           description: Name of the outplan.
@@ -1598,9 +1585,8 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the associated customer.
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         name:
           type: string
           description: Name of the AI.
@@ -1716,16 +1702,14 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the associated customer.
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         ai_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the associated AI.
+          description: "The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `POST /ais` or `GET /ais` response."
         engine_type:
           $ref: '#/components/schemas/AIManagerAIEngineType'
           description: Type of AI engine.
@@ -1738,9 +1722,8 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the activeflow.
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /activeflows` response."
         reference_type:
           $ref: '#/components/schemas/AIManagerAIcallReferenceType'
           description: Type of reference associated with the AI call.
@@ -1749,22 +1732,20 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the reference.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "550e8400-e29b-41d4-a716-446655440000"
         confbridge_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the conference bridge.
+          description: "The unique identifier of the conference bridge. Returned from the `GET /confbridges` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /confbridges` response."
         transcribe_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the transcription service.
+          description: "The unique identifier of the transcription service. Returned from the `GET /transcribes` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /transcribes` response."
         status:
           $ref: '#/components/schemas/AIManagerAIcallStatus'
           description: Status of the AI call.
@@ -1843,9 +1824,8 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the associated AI call.
+          description: "The unique identifier of the associated AI call. Returned from the `GET /aicalls` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /aicalls` response."
         direction:
           $ref: '#/components/schemas/AIManagerMessageDirection'
           description: Direction of the message.
@@ -1914,23 +1894,20 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the associated customer.
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          x-provenance: "Returned from the `GET /customers` response."
         activeflow_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the activeflow.
+          description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `GET /activeflows` response."
         on_end_flow_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the flow to execute when the summary completes.
+          description: "The unique identifier of the flow to execute when the summary completes. Returned from the `POST /flows` or `GET /flows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-          x-provenance: "Returned from the `POST /flows` or `GET /flows` response."
         reference_type:
           $ref: '#/components/schemas/AIManagerSummaryReferenceType'
           description: Type of reference for the AI summary.
@@ -1939,7 +1916,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the reference.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/AIManagerSummaryStatus'
@@ -2115,7 +2092,7 @@ components:
           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         conferencecall_ids:
           type: array
-          description: List of associated conference call IDs.
+          description: "List of associated conference call IDs. Each ID is returned from the `GET /conferencecalls` response."
           example: ["550e8400-e29b-41d4-a716-446655440000"]
           items:
             type: string
@@ -2125,11 +2102,11 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: ID of the main recording associated with the conference.
+          description: "ID of the main recording associated with the conference. Returned from the `GET /recordings` response."
           example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         recording_ids:
           type: array
-          description: List of associated recording IDs.
+          description: "List of associated recording IDs. Each ID is returned from the `GET /recordings` response."
           example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
           items:
             type: string
@@ -2139,11 +2116,11 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: ID of the main transcription associated with the conference.
+          description: "ID of the main transcription associated with the conference. Returned from the `GET /transcribes` response."
           example: "9c0d1e2f-3a4b-5678-1234-567890abcdef"
         transcribe_ids:
           type: array
-          description: List of associated transcription IDs.
+          description: "List of associated transcription IDs. Each ID is returned from the `GET /transcribes` response."
           example: ["9c0d1e2f-3a4b-5678-1234-567890abcdef"]
           items:
             type: string
@@ -2231,7 +2208,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
           $ref: '#/components/schemas/ConferenceManagerConferencecallStatus'
@@ -2539,7 +2516,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the conversation owner.
+          description: "The unique identifier of the conversation owner. Returned from the `GET /customers` response."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         account_id:
           type: string
@@ -2563,7 +2540,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           description: The source address for the conversation.
@@ -2731,7 +2708,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           $ref: '#/components/schemas/CommonAddress'
@@ -2980,7 +2957,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the referenced resource (e.g., recording ID)."
+          description: "The unique identifier of the referenced resource (e.g., recording ID). Returned from the corresponding resource endpoint."
           example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
       required:
         - reference_type
@@ -3170,7 +3147,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         language:
           type: string
@@ -3239,7 +3216,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: Default target ID if input does not match any branch targets.
+          description: "Default target ID if input does not match any branch targets. References an action `id` within the same flow's `actions` array."
           example: "550e8400-e29b-41d4-a716-446655440000"
         target_ids:
           type: object
@@ -3286,7 +3263,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the conference bridge to join.
+          description: "The unique identifier of the conference bridge to join. Returned from the `POST /conferences` or `GET /conferences` response."
           example: "0d1e2f3a-4b5c-6789-2345-678901abcdef"
 
     FlowManagerActionOptionConferenceJoin:
@@ -3480,7 +3457,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The action ID within the flow to jump to.
+          description: "The action ID within the flow to jump to. References an action `id` within the same flow's `actions` array."
           example: "550e8400-e29b-41d4-a716-446655440000"
         loop_count:
           type: integer
@@ -3498,9 +3475,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: |
-            If set, hangs up the call with the same reason as the referenced call ID.
-            This will overwrite the `reason` option.
+          description: "If set, hangs up the call with the same reason as the referenced call ID. This will overwrite the `reason` option. Returned from the `POST /calls` or `GET /calls` response."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
 
     FlowManagerActionOptionMessageSend:
@@ -3722,7 +3697,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The identifier of the next action to execute. Null if this is the last action.
+          description: "The identifier of the next action to execute. References an action `id` within the same flow's `actions` array. Null if this is the last action."
           example: "550e8400-e29b-41d4-a716-446655440000"
         type:
           description: The type of action to execute.
@@ -3837,13 +3812,13 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced resource.
+          description: "The unique identifier of the referenced resource. The actual resource type is determined by `reference_type`. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         reference_activeflow_id:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the referenced activeflow.
+          description: "The unique identifier of the referenced activeflow. Returned from the `GET /activeflows` response."
           example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         on_complete_flow_id:
           type: string
@@ -3858,7 +3833,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the next action to execute.
+          description: "The unique identifier of the next action to execute. References an action `id` within the current flow's `actions` array."
           example: "550e8400-e29b-41d4-a716-446655440000"
         executed_actions:
           type: array
@@ -4474,7 +4449,7 @@ components:
           example: ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
         service_queuecall_ids:
           type: array
-          description: "List of queuecall IDs currently being serviced."
+          description: "List of queuecall IDs currently being serviced. Each ID is returned from the `GET /queuecalls` response."
           items:
             type: string
             format: uuid
@@ -4951,7 +4926,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the resource that owns this file (e.g., an agent or a call). Depends on the context of file creation."
+          description: "The unique identifier of the resource that owns this file (e.g., an agent or a call). Returned from the corresponding owner resource endpoint."
           example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         reference_type:
           $ref: '#/components/schemas/StorageManagerFileReferenceType'
@@ -5240,7 +5215,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the owner who reacted."
+          description: "The unique identifier of the owner who reacted. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
           example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
         tm_create:
           type: string
