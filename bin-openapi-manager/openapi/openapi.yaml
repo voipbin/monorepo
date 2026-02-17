@@ -218,7 +218,7 @@ components:
         type: string
         format: date-time
         x-go-type: string
-        example: "2026-01-15T09:30:00Z"
+        example: "2026-01-15T09:30:00.000000Z"
 
 
   schemas:
@@ -357,19 +357,19 @@ components:
           format: date-time
           x-go-type: string
           description: "Timestamp when the agent was created."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the agent was last updated."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the agent was deleted."
-          example: "2026-01-17T10:00:00Z"
+          example: "2026-01-17T10:00:00.000000Z"
 
 
 #########################################
@@ -462,31 +462,31 @@ components:
           format: date-time
           x-go-type: string
           description: The timestamp of the last token top-up.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_next_topup:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp of the next scheduled token top-up.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp when the account was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp when the account was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp when the account was deleted, if applicable.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     BillingManagerBillingreferenceType:
       type: string
@@ -634,31 +634,31 @@ components:
           format: date-time
           x-go-type: string
           description: The start timestamp of the billing period.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_billing_end:
           type: string
           format: date-time
           x-go-type: string
           description: The end timestamp of the billing period.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: The creation timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The last update timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The deletion timestamp, if applicable.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -865,37 +865,37 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp for call progressing.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_ringing:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp for call ringing.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_hangup:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp for call hangup.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: The creation timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The last update timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The deletion timestamp, if applicable.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     CallManagerGroupcallAnswerMethod:
       type: string
@@ -1045,20 +1045,20 @@ components:
           format: date-time
           x-go-type: string
           description: The creation timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The last update timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           nullable: true
           description: The deletion timestamp, if applicable.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     CallManagerRecordingFormat:
       type: string
@@ -1152,31 +1152,31 @@ components:
           format: date-time
           x-go-type: string
           description: The start timestamp of the recording.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_end:
           type: string
           format: date-time
           x-go-type: string
           description: The end timestamp of the recording.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: The creation timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The last update timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The deletion timestamp, if applicable.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1297,19 +1297,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     CampaignManagerCampaigncallReferenceType:
       type: string
@@ -1441,19 +1441,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign call was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign call was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the campaign call was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     CampaignManagerOutplan:
       type: object
@@ -1514,19 +1514,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the outplan was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the outplan was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the outplan was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -1638,19 +1638,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the AI was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the AI was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the AI was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerAIcallGender:
       type: string
@@ -1763,25 +1763,25 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the AI call ended.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the AI call was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the AI call was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the AI call was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerMessageDirection:
       type: string
@@ -1843,13 +1843,13 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the message was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerSummaryReferenceType:
       type: string
@@ -1935,19 +1935,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the summary was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the summary was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the summary was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -2004,7 +2004,7 @@ components:
           format: date-time
           x-go-type: string
           description: "Cursor token for the next page of results. Pass this value as the page_token parameter in the next request."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -2131,25 +2131,25 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the conference ended.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conference was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conference was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conference was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConferenceManagerConferencecallReferenceType:
       type: string
@@ -2219,19 +2219,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the conference call was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conference call was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conference call was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -2299,17 +2299,17 @@ components:
           type: string
           format: date-time
           description: Timestamp when the contact was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           description: Timestamp when the contact was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           description: Timestamp when the contact was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerContactSource:
       type: string
@@ -2351,7 +2351,7 @@ components:
           type: string
           format: date-time
           description: Timestamp when the email was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerEmailType:
       type: string
@@ -2394,7 +2394,7 @@ components:
           type: string
           format: date-time
           description: Timestamp when the phone number was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ContactManagerPhoneNumberType:
       type: string
@@ -2467,19 +2467,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the account was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the account was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the account was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerConversationReferenceType:
       type: string
@@ -2555,19 +2555,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the conversation was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conversation was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the conversation was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerMediaType:
       type: string
@@ -2621,19 +2621,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the media was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the media was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the media was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     ConversationManagerMessageDirection:
       type: string
@@ -2727,19 +2727,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the message was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -2777,25 +2777,25 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the access key expires.
-          example: "2027-01-15T09:30:00Z"
+          example: "2027-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the access key was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the access key was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the access key was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     CustomerManagerCustomerWebhookMethod:
       type: string
@@ -2883,25 +2883,25 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when account deletion was requested. Null if not scheduled.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the customer was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the customer was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the customer was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 #########################################
 # Email Manager
@@ -3016,19 +3016,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the email was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the email was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the email was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
       required:
         - id
         - customer_id
@@ -3749,7 +3749,7 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when this action was executed.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
       required:
         - id
         - type
@@ -3846,19 +3846,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     FlowManagerFlowType:
       type: string
@@ -3920,19 +3920,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the flow was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -4008,19 +4008,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the message was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
     
     MessageManagerTargetStatus:
       type: string
@@ -4061,7 +4061,7 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the target message was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -4200,31 +4200,31 @@ components:
           format: date-time
           x-go-type: string
           description: The timestamp of when the number was purchased.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_renew:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp of when the number was renewed.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp of when the number was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp of when the number was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The timestamp of when the number was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 #########################################
 # Outdial Manager
@@ -4267,19 +4267,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the outdial was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the outdial was last updated.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the outdial was deleted.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     OutdialManagerOutdialtargetStatus:
       type: string
@@ -4364,19 +4364,19 @@ components:
           format: date-time
           x-go-type: string
           description: The creation timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: The update timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: The deletion timestamp.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -4473,19 +4473,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     QueueManagerQueuecallReferenceType:
       type: string
@@ -4561,25 +4561,25 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_service:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the queue call started service."
-          example: "2026-01-15T09:35:00Z"
+          example: "2026-01-15T09:35:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -4643,19 +4643,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
     RegistrarManagerTrunk:
       type: object
       properties:
@@ -4708,19 +4708,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -4778,19 +4778,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     RouteManagerRoute:
       type: object
@@ -4834,19 +4834,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -4882,19 +4882,19 @@ components:
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     StorageManagerFileReferenceType:
       type: string
@@ -4965,25 +4965,25 @@ components:
           format: date-time
           x-go-type: string
           description: "Timestamp when the download link expires."
-          example: "2026-02-15T09:30:00Z"
+          example: "2026-02-15T09:30:00.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: "The creation timestamp."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "The last update timestamp."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "The deletion timestamp."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -5054,19 +5054,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the talk was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the talk was last updated.
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the talk was deleted.
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     TalkManagerMessageType:
       type: string
@@ -5136,19 +5136,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the message was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was last updated.
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was deleted.
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     TalkManagerMediaType:
       type: string
@@ -5223,7 +5223,7 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when the reaction was created.
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
     TalkManagerParticipant:
       type: object
@@ -5261,7 +5261,7 @@ components:
           format: date-time
           x-go-type: string
           description: "Timestamp when the participant joined the talk."
-          example: "2026-01-15T10:00:00Z"
+          example: "2026-01-15T10:00:00.000000Z"
 
 
 #########################################
@@ -5275,7 +5275,7 @@ components:
           type: string
           format: date-time
           description: When the event occurred
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         event_type:
           type: string
           description: Type of event (e.g., call_created, conference_started)
@@ -5311,19 +5311,19 @@ components:
           format: date-time
           x-go-type: string
           description: "Timestamp when the tag was created."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the tag was last updated."
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the tag was deleted."
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -5383,19 +5383,19 @@ components:
           format: date-time
           x-go-type: string
           description: Creation timestamp
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Last update timestamp
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Soft-delete timestamp
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
@@ -5478,19 +5478,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when created
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when updated
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when deleted
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
     TranscribeManagerTranscriptDirection:
       type: string
@@ -5531,13 +5531,13 @@ components:
           format: date-time
           x-go-type: string
           description: "Timestamp when this transcript was spoken."
-          example: "2026-01-15T09:31:15Z"
+          example: "2026-01-15T09:31:15.000000Z"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: "Timestamp when the transcript record was created."
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
 
 
 #########################################
@@ -5606,19 +5606,19 @@ components:
           format: date-time
           x-go-type: string
           description: Timestamp when created
-          example: "2026-01-15T09:30:00Z"
+          example: "2026-01-15T09:30:00.000000Z"
         tm_update:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when updated
-          example: "2026-01-16T14:20:00Z"
+          example: "2026-01-16T14:20:00.000000Z"
         tm_delete:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when deleted
-          example: "2026-01-17T18:45:00Z"
+          example: "2026-01-17T18:45:00.000000Z"
 
 
 #########################################
