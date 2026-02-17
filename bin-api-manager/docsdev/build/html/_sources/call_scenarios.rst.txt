@@ -5,6 +5,10 @@ Advanced Call Scenarios
 
 This section covers real-world call scenarios that combine multiple VoIPBIN features. Each scenario includes the complete flow, API examples, and best practices.
 
+.. note:: **AI Implementation Hint**
+
+   All scenarios in this section involve active outbound calls, which are chargeable. Each ``POST /calls`` request creates a billable call. Test your flow logic with a single destination before scaling to production. Use ``GET /calls/{call-id}`` to verify call status at each step.
+
 IVR Menu with Queue Routing
 ---------------------------
 
@@ -150,6 +154,10 @@ A common contact center pattern: caller navigates an IVR menu, then enters a que
         ]
     }
 
+.. note:: **AI Implementation Hint**
+
+   The ``queue_id`` values (e.g., ``"sales-queue-uuid"``) must be valid UUIDs obtained from ``GET /queues``. The ``branch`` action's ``target_ids`` map DTMF digits to action ``id`` values within the same flow. If a ``target_id`` does not match any action ``id``, the flow will fail silently. Always include a ``default_target_id`` to handle unexpected input. The ``goto`` action's ``loop_count`` prevents infinite loops -- after the specified number of iterations, execution continues to the next action.
+
 AI-Assisted Customer Service
 ----------------------------
 
@@ -221,6 +229,10 @@ Combine AI voice assistant with human escalation:
             }
         ]
     }
+
+.. note:: **AI Implementation Hint**
+
+   The ``ai_id`` in the ``ai_talk`` action must be a valid UUID obtained from ``GET /ais``. Tool definitions with ``webhook_url`` will send HTTP POST requests to your server when the AI invokes the tool -- ensure your endpoint is publicly accessible and returns responses within 5 seconds. The ``end_call_phrases`` trigger automatic call hangup when the caller says any of the listed phrases.
 
 Outbound Campaign with Voicemail Detection
 ------------------------------------------
@@ -347,6 +359,10 @@ Automated calling campaign that detects answering machines:
         ]
     }
 
+.. note:: **AI Implementation Hint**
+
+   The ``outplan_id`` and ``flow_id`` must be valid UUIDs obtained from ``GET /outplans`` and ``GET /flows`` respectively. Each call placed by the campaign is individually chargeable. The ``amd`` (Answering Machine Detection) action analyzes the first few seconds of audio after answer -- if it detects a voicemail greeting, execution jumps to the action with ``id`` matching ``machine_action``. The ``max_concurrent_calls`` limits how many calls the campaign places at the same time.
+
 Click-to-Call with Recording
 ----------------------------
 
@@ -433,6 +449,10 @@ Website visitor clicks to call, conversation is recorded:
             }
         ]
     }
+
+.. note:: **AI Implementation Hint**
+
+   The ``source.target`` in ``POST /v1/calls`` must be a phone number you own, verified via ``GET /numbers``. The ``early_execution: false`` setting (default) ensures actions execute only after the destination answers. The ``record_start`` action must be placed before ``connect`` in the action list to capture the full conversation. After the call ends, retrieve the recording via ``GET /recordings/{recording-id}`` using the ID from the call's ``recording_ids`` array.
 
 **Webhook Integration:**
 
@@ -569,6 +589,10 @@ Create a conference with multiple participants joining at different times:
         ]
     }
 
+.. note:: **AI Implementation Hint**
+
+   The ``conference_id`` in ``conference_join`` must be obtained from the ``id`` field in the ``POST /v1/conferences`` response or from ``GET /conferences``. The ``customer_id`` in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The ``role`` field controls permissions: ``moderator`` can mute/unmute others, while ``participant`` can only control their own audio.
+
 Call Screening with Whisper
 ---------------------------
 
@@ -666,6 +690,10 @@ Screen calls before connecting to agent:
         ]
     }
 
+.. note:: **AI Implementation Hint**
+
+   The ``whisper`` feature in the ``connect`` action plays a message only to the agent (the caller cannot hear it). The ``record_voice`` action stores the recording in a flow variable (``caller_name_recording``) that can be referenced later using ``{{variable_name}}`` syntax. If the agent presses the ``reject_key``, the connect action fails and flow execution continues to the next action -- add a fallback (e.g., try another agent or go to voicemail).
+
 Warm Transfer with Context
 --------------------------
 
@@ -752,6 +780,10 @@ Transfer call with context passed to the receiving agent:
         }
     }
 
+.. note:: **AI Implementation Hint**
+
+   The ``call-id`` in ``POST /v1/calls/{call-id}/transfer`` must be an active call in ``progressing`` status. The ``transfer_id`` returned in the response is used for subsequent operations: ``POST /v1/transfers/{transfer-id}/complete`` to finish the transfer, or ``POST /v1/transfers/{transfer-id}/cancel`` to abort it. The ``context`` object is passed through to the ``transfer_completed`` webhook, allowing Agent B's application to display caller information. The consult call to Agent B is a separate billable call.
+
 Call with Real-time Transcription
 ---------------------------------
 
@@ -836,3 +868,6 @@ Transcribe call in real-time for live captioning or analysis:
         }
     }
 
+.. note:: **AI Implementation Hint**
+
+   Real-time transcription events are delivered via WebSocket, not webhooks. You must establish a WebSocket connection to ``wss://api.voipbin.net/v1.0/ws?token=<token>`` and subscribe to the ``customer_id:<your-id>:transcript:*`` topic before the call starts to receive all events. The ``direction`` field in transcript events indicates which party is speaking: ``in`` for the caller, ``out`` for the agent/system. Place ``transcribe_start`` before ``connect`` in the action list to capture transcription from the beginning of the conversation.

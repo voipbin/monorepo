@@ -184,10 +184,24 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="call-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before creating a call, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). This must be a number you own. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>) or a SIP endpoint address.</p></li>
+<li><p>(Optional) A flow ID (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). If the user provides a local format like <code class="docutils literal notranslate"><span class="pre">010-1234-5678</span></code>, normalize it to <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> before calling the API.</p>
+</div>
 <section id="simple-outbound-call-with-tts">
-<h2>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h2>
-<p>Making an outbound call with TTS(Text-to-Speech) action.
-When the destination answer the call, it will speak the given text message.</p>
+<h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h3>
+<p>Making an outbound call with TTS (Text-to-Speech) action.
+When the destination answers the call, it will speak the given text message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -215,7 +229,7 @@ When the destination answer the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-media-file-play">
-<h2>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h2>
+<h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h3>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -245,11 +259,11 @@ When the destination answer the call, it will play the given media file.</p>
 
 [
     {
-        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,
+        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,   // Save this as call_id (UUID)
         &quot;user_id&quot;: 1,
-        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,
+        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,   // Auto-generated flow (UUID)
         &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
+        &quot;type&quot;: &quot;flow&quot;,   // enum: flow, conference, sip-service
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
@@ -264,11 +278,11 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;status&quot;: &quot;dialing&quot;,   // enum: dialing, ringing, progressing, terminating, canceling, hangup
+        &quot;direction&quot;: &quot;outgoing&quot;,   // enum: incoming, outgoing
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2021-02-04 04:44:20.904662&quot;,
+        &quot;tm_create&quot;: &quot;2021-02-04 04:44:20.904662&quot;,   // ISO 8601 timestamp
         &quot;tm_update&quot;: &quot;&quot;,
         &quot;tm_progressing&quot;: &quot;&quot;,
         &quot;tm_ringing&quot;: &quot;&quot;,
@@ -279,7 +293,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-tts-and-connect">
-<h2>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h2>
+<h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -357,7 +371,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-talk-and-digits-send">
-<h2>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h2>
+<h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h3>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -432,8 +446,8 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-branch">
-<h2>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Link to this heading"></a></h2>
-<p>Making an outbound call with brach. It will get the digits from the call and will execute the branch.</p>
+<h3>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Link to this heading"></a></h3>
+<p>Making an outbound call with branch. It will get the digits from the call and will execute the branch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
                 <span class="o">|</span>
@@ -543,7 +557,7 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
-                &quot;text&quot;: &quot;You didn&#39;\&#39;&#39;t choice correct number. Default selected.&quot;,
+                &quot;text&quot;: &quot;You didn&#39;\&#39;&#39;t choose the correct number. Default selected.&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
         },
@@ -610,7 +624,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-call-list">
-<h2>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h2>
+<h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h3>
 <p>Getting a list of calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -654,7 +668,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-specific-call">
-<h2>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h2>
+<h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h3>
 <p>Getting a given call uuid’s call info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -694,7 +708,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="make-a-groupcall">
-<h2>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h2>
+<h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h3>
 <p>Make a groupcall to the multiple destinations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -764,6 +778,52 @@ When the destination answer the call, it will play the given media file.</p>
 </pre></div>
 </div>
 </section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> or <code class="docutils literal notranslate"><span class="pre">destinations[].target</span></code> phone number is not in E.164 format (contains dashes, spaces, or missing <code class="docutils literal notranslate"><span class="pre">+</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Normalize all phone numbers to E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no spaces or dashes (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request (source number):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> phone number is not owned by your VoIPBIN account.</p></li>
+<li><p><strong>Fix:</strong> Use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Only numbers you own can be used as the source.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>402 Payment Required:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Insufficient account balance to make a call.</p></li>
+<li><p><strong>Fix:</strong> Check balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code>. Top up before retrying.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found (flow_id):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the flow ID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call immediately hangs up:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> No <code class="docutils literal notranslate"><span class="pre">answer</span></code> action at the beginning of the flow, or the destination is unreachable.</p></li>
+<li><p><strong>Fix:</strong> Ensure your actions list starts with <code class="docutils literal notranslate"><span class="pre">{&quot;type&quot;:</span> <span class="pre">&quot;answer&quot;}</span></code> for outbound calls. Check the call’s <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> field via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> for details.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
 </section>
 
 </main>
@@ -775,6 +835,7 @@ When the destination answer the call, it will play the given media file.</p>
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
@@ -783,6 +844,9 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#get-call-list">Get call list</a></li>
 <li><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
 <li><a class="reference internal" href="#make-a-groupcall">Make a groupcall</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

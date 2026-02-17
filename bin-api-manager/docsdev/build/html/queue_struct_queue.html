@@ -223,26 +223,34 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>id</em>: Queue’s ID.</p></li>
-<li><p><em>name</em>: Queue’s name.</p></li>
-<li><p><em>detail</em>: Queue’s detail description.</p></li>
-<li><p><em>routing_method</em>: Define the queue’s call routing method. See detail <a class="reference internal" href="#queue-struct-queue-routing-method"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>tag_ids</em>: List of tags.</p></li>
-<li><p><em>wait_actions</em>: List of actions for waiting calls.</p></li>
-<li><p><em>wait_timeout</em>: Timeout for waiting(ms). If it sets to 0, no timeout.</p></li>
-<li><p><em>service_timeout</em>: Timeout for service(talk with agent. ms). If it sets to 0, no timeout.</p></li>
-<li><p><em>wait_queue_call_ids</em>: List of waiting call ids.</p></li>
-<li><p><em>service_queue_call_ids</em>: List of service call ids.</p></li>
-<li><p><em>total_incoming_count</em>: Number of joined calls.</p></li>
-<li><p><em>total_serviced_count</em>: Number of serviced calls.</p></li>
-<li><p><em>total_abandoned_count</em>: Number of abandoned calls.</p></li>
-<li><p><em>total_waittime</em>: Sum of all call’s waitting time(ms).</p></li>
-<li><p><em>total_service_duration</em>: Sum of all call’s service time(ms).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The queue’s unique identifier. Returned when creating a queue via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code> or when listing queues via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the queue.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the queue’s purpose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">routing_method</span></code> (enum string): The queue’s call routing method for selecting agents. See <a class="reference internal" href="#queue-struct-queue-routing-method"><span class="std std-ref">Routing Method</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): List of tag IDs that agents must match to receive calls from this queue. Each ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Agents must have <strong>all</strong> listed tags (AND logic).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> (Array of Object): List of flow actions executed while callers wait in the queue. Each action follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure. These loop until an agent is found or the wait timeout is reached.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code> (Integer): Maximum time in milliseconds a caller can wait in the queue before being removed. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout (wait indefinitely).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_timeout</span></code> (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout (talk indefinitely).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code> to retrieve details. Read-only, managed by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code>. Read-only, managed by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_incoming_count</span></code> (Integer): Total number of calls that have entered this queue. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_serviced_count</span></code> (Integer): Total number of calls that were successfully connected to an agent. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_abandoned_count</span></code> (Integer): Total number of calls that left the queue without being serviced. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_waittime</span></code> (Integer): Sum of all calls’ waiting time in milliseconds. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_service_duration</span></code> (Integer): Sum of all calls’ service (agent conversation) time in milliseconds. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the queue was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any queue property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the queue was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code> and <code class="docutils literal notranslate"><span class="pre">service_timeout</span></code> fields are in <strong>milliseconds</strong>. A 5-minute wait timeout should be <code class="docutils literal notranslate"><span class="pre">300000</span></code>, not <code class="docutils literal notranslate"><span class="pre">300</span></code>. Setting either to <code class="docutils literal notranslate"><span class="pre">0</span></code> disables that timeout entirely.</p>
+</div>
 </section>
 <section id="routing-method">
 <span id="queue-struct-queue-routing-method"></span><h2>Routing Method<a class="headerlink" href="#routing-method" title="Link to this heading"></a></h2>
-<p>Define the queue’s queued call routing method to the agent if the number of available agent is more than 2.</p>
+<p>Defines how the queue selects an agent when multiple matching agents are available.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -251,7 +259,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>random</p></td>
-<td><p>Pick the agent randomly.</p></td>
+<td><p>Selects a random agent from the pool of available agents that match all required tags.</p></td>
 </tr>
 </tbody>
 </table>

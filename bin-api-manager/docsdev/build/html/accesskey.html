@@ -188,10 +188,24 @@
 <span id="accesskey-main"></span><h1>Accesskey<a class="headerlink" href="#accesskey" title="Link to this heading"></a></h1>
 <section id="accesskey-api-overview">
 <span id="accesskey-overview"></span><h2>Accesskey API Overview<a class="headerlink" href="#accesskey-api-overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (no charges for accesskey operations)</p></li>
+<li><p><strong>Async:</strong> No. All accesskey operations are synchronous and return immediately.</p></li>
+</ul>
+</div>
 <p>The Accesskey API provides a secure and efficient way to authenticate and interact with the VoIPBIN platform. It utilizes access keys as API tokens to enable authorized access to API endpoints. This ensures seamless integration while maintaining the security and integrity of your operations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter (not the <code class="docutils literal notranslate"><span class="pre">token</span></code> parameter) when authenticating with an access key. The <code class="docutils literal notranslate"><span class="pre">token</span></code> parameter is used for session-based authentication, while <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> is for API key-based authentication. Do not confuse the two.</p>
+</div>
 <section id="api-usage">
 <h3>API Usage<a class="headerlink" href="#api-usage" title="Link to this heading"></a></h3>
-<p>To use the Accesskey, pass the <cite>token</cite> in the query parameters or headers of your API requests. Below is an example usage:</p>
+<p>To use the Accesskey, pass the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> in the query parameters of your API requests. Below is an example usage:</p>
 <section id="example-request">
 <h4>Example Request<a class="headerlink" href="#example-request" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4&#39;</span>
@@ -201,13 +215,13 @@
 <section id="description-of-parameters">
 <h4>Description of Parameters<a class="headerlink" href="#description-of-parameters" title="Link to this heading"></a></h4>
 <ul class="simple">
-<li><p><strong>Accesskey</strong>: The <cite>accesskey</cite> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
+<li><p><strong>Accesskey</strong>: The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
 </ul>
 </section>
 </section>
 <section id="authentication">
 <h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h3>
-<p>The <cite>token</cite> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
 </section>
 <section id="lifecycles-and-expiry">
 <h3>Lifecycles and Expiry<a class="headerlink" href="#lifecycles-and-expiry" title="Link to this heading"></a></h3>
@@ -218,6 +232,11 @@
 <li><p><strong>tm_expire</strong>: The expiration timestamp. Ensure you rotate keys before this date.</p></li>
 <li><p><strong>tm_delete</strong>: The deletion timestamp, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating an accesskey, the <code class="docutils literal notranslate"><span class="pre">expire</span></code> field is specified in seconds (e.g., <code class="docutils literal notranslate"><span class="pre">31536000</span></code> for one year). The API returns <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> as an ISO 8601 timestamp calculated from the creation time plus the expiry duration. Always check <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> before using a key to avoid authentication failures with expired tokens.</p>
+</div>
 </section>
 <section id="notes">
 <h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
@@ -245,35 +264,41 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><strong>id</strong>:
-A unique identifier (<cite>UUID</cite>) for the access key. This is auto-generated when the key is created.</p></li>
-<li><p><strong>customer_id</strong>:
-The <cite>UUID</cite> representing the customer to whom the access key belongs. This links the key to a specific customer account.</p></li>
-<li><p><strong>name</strong>:
-An optional string field that allows users to assign a human-readable name to the access key. This is useful for identification purposes in multi-key environments.</p></li>
-<li><p><strong>detail</strong>:
-An optional string field for additional information about the access key, such as its intended use or description.</p></li>
-<li><p><strong>token</strong>:
-The API token string. This is the credential used to authenticate API requests. It must be treated as sensitive information and stored securely.</p></li>
-<li><p><strong>tm_expire</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the access key will expire. After this time, the key will no longer be valid.</p></li>
-<li><p><strong>tm_create</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the access key was created.</p></li>
-<li><p><strong>tm_update</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) showing the last time the access key was updated. This is useful for tracking modifications to the key.</p></li>
-<li><p><strong>tm_delete</strong>:
-A timestamp (<cite>ISO 8601 format</cite>) indicating when the key was marked for deletion. If the value is set to a far-future date (e.g., <cite>“9999-01-01 00:00:00.000000”</cite>), it implies the key is not deleted.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The accesskey’s unique identifier. Returned when creating an accesskey via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code> or when listing accesskeys via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this accesskey. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the accesskey’s intended use or purpose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String): The API token credential used to authenticate requests. Must be stored securely and never exposed in client-side code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> (string, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the accesskey was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the accesskey was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the accesskey was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the accesskey has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+</div>
 </section>
 </section>
 <section id="tutorial">
 <span id="accesskey-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before managing accesskeys, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an existing access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For creation) The <code class="docutils literal notranslate"><span class="pre">expire</span></code> duration in seconds (e.g., <code class="docutils literal notranslate"><span class="pre">31536000</span></code> for one year).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">expire</span></code> field in the create request is in seconds, not a timestamp. For example, use <code class="docutils literal notranslate"><span class="pre">86400</span></code> for a one-day key, <code class="docutils literal notranslate"><span class="pre">2592000</span></code> for 30 days, or <code class="docutils literal notranslate"><span class="pre">31536000</span></code> for one year. The API calculates the actual expiration timestamp and returns it in the <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> field.</p>
+</div>
 <section id="create-retrieve-and-manage-accesskeys">
 <h3>Create, Retrieve, and Manage Accesskeys<a class="headerlink" href="#create-retrieve-and-manage-accesskeys" title="Link to this heading"></a></h3>
-<p>This tutorial demonstrates how to create an access key, retrieve a list of access keys, and retrieve a specific access key using the API. All requests must include the <cite>accesskey</cite> query parameter for authentication.</p>
+<p>This tutorial demonstrates how to create an access key, retrieve a list of access keys, and retrieve a specific access key using the API. All requests must include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter for authentication.</p>
 <ol class="arabic">
 <li><p><strong>Create an Accesskey</strong></p>
-<p>Use the following command to create a new access key. The <cite>expire</cite> parameter specifies the duration in seconds before the key expires.</p>
+<p>Use the following command to create a new access key. The <code class="docutils literal notranslate"><span class="pre">expire</span></code> parameter specifies the duration in seconds before the key expires.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -284,61 +309,61 @@ A timestamp (<cite>ISO 8601 format</cite>) indicating when the key was marked fo
 </pre></div>
 </div>
 <p>Example Response:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_expire&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_create&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_delete&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p><strong>Get a List of Accesskeys</strong></p>
-<p>Retrieve all existing access keys associated with your account. Include the <cite>accesskey</cite> query parameter in the request URL for authentication.</p>
+<p>Retrieve all existing access keys associated with your account. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter in the request URL for authentication.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;&#39;
 </pre></div>
 </div>
 <p>Example Response:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;tm_expire&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;tm_create&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;tm_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;tm_delete&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;next_page_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p><strong>Get a Specific Accesskey</strong></p>
-<p>Retrieve details of a specific access key using its unique ID. Include the <cite>accesskey</cite> query parameter for authentication.</p>
+<p>Retrieve details of a specific access key using its unique ID. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter for authentication.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;&#39;
 </pre></div>
 </div>
 <p>Example Response:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_expire&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_create&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tm_delete&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>

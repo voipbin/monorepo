@@ -188,6 +188,15 @@
 <h1>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="recording-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable (recording duration contributes to call costs; storage charged per GB)</p></li>
+<li><p><strong>Async:</strong> Yes. Recordings transition through states: <code class="docutils literal notranslate"><span class="pre">starting</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">recording</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">stopping</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">available</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to check for <code class="docutils literal notranslate"><span class="pre">available</span></code> status before downloading.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.</p>
 <p>With the Recording API you can:</p>
 <ul class="simple">
@@ -298,6 +307,11 @@ Recording</p></td>
 <section id="starting-and-stopping-recordings">
 <h3>Starting and Stopping Recordings<a class="headerlink" href="#starting-and-stopping-recordings" title="Link to this heading"></a></h3>
 <p>VoIPBIN provides multiple ways to control recordings based on your use case.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A recording can only be started on a call or conference that is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (i.e., answered). Attempting to start recording on a call that is still <code class="docutils literal notranslate"><span class="pre">dialing</span></code> or <code class="docutils literal notranslate"><span class="pre">ringing</span></code> will fail. Always verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> before issuing a recording start command.</p>
+</div>
 <p><strong>Method 1: Via Flow Action</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> and <code class="docutils literal notranslate"><span class="pre">recording_stop</span></code> actions in your call flow for automatic recording control.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Flow</span>                    <span class="n">VoIPBIN</span>                     <span class="n">Storage</span>
@@ -695,15 +709,26 @@ your retention settings.</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Recording’s ID.</p></li>
-<li><p>type: Recording’s type. See detail <a class="reference internal" href="recording_struct_recording.html#reocording-struct-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Reference’s ID. It shows call/conference’s ID.</p></li>
-<li><p>status: Recording status. See detail <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>format: Recording file format. See detail <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-format"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The recording’s unique identifier. Returned when creating a recording via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{id}/recording_start</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The recording’s type. See <a class="reference internal" href="recording_struct_recording.html#recording-struct-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the call or conference being recorded. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The recording’s current status. See <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">format</span></code> (enum string): The recording file format. See <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-format"><span class="std std-ref">Format</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_start</span></code> (string, ISO 8601): Timestamp when the recording started capturing audio.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_end</span></code> (string, ISO 8601): Timestamp when the recording stopped capturing audio.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the recording resource was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any recording property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the recording was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the recording has not been deleted. An empty <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) in older recordings also indicates not deleted.</p>
+</div>
 </section>
 <section id="type">
-<span id="reocording-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<span id="recording-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -712,46 +737,48 @@ your retention settings.</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>call</p></td>
-<td><p>Call recording.</p></td>
+<td><p>Recording of a single call. Audio from both parties is mixed into one channel. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> corresponds to a call ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>conference</p></td>
-<td><p>Conference recording.</p></td>
+<td><p>Recording of a conference. Audio from all participants is mixed together. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> corresponds to a conference ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="recording-struct-recording-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>initiating</p></td>
-<td><p>Preparing the recording.</p></td>
+<td><p>Preparing the recording. Audio capture is being set up. The recording file is not yet available.</p></td>
 </tr>
 <tr class="row-odd"><td><p>recording</p></td>
-<td><p>Recording now.</p></td>
+<td><p>Actively capturing audio. The file is being written to storage in real-time.</p></td>
 </tr>
 <tr class="row-even"><td><p>ended</p></td>
-<td><p>Recording ended.</p></td>
+<td><p>Recording is complete. The file is ready for download via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordingfiles/{id}</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="format">
 <span id="recording-struct-recording-format"></span><h3>Format<a class="headerlink" href="#format" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">format</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>wav</p></td>
-<td><p>Wav format.</p></td>
+<td><p>WAV format (PCM). 8 kHz sample rate, 16-bit, mono. Approximately 1 MB per minute of audio.</p></td>
 </tr>
 </tbody>
 </table>
@@ -759,6 +786,17 @@ your retention settings.</p></td>
 </section>
 <section id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with recordings, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A call or conference with recording enabled. Start a recording via the <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> flow action or via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{id}/recording_start</span></code>.</p></li>
+<li><p>A recording ID (UUID). Obtain from the call’s <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> field via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or by listing recordings via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Recording files are only available for download after the recording reaches <code class="docutils literal notranslate"><span class="pre">ended</span></code> status. If you attempt to download immediately after stopping a recording, the file may not be ready. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> and check for <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;ended&quot;</span></code> before calling <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordingfiles/{id}</span></code>.</p>
+</div>
 <section id="get-list-of-recordings">
 <h3>Get list of recordings<a class="headerlink" href="#get-list-of-recordings" title="Link to this heading"></a></h3>
 <p>Example</p>

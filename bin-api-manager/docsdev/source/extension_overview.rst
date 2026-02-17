@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Free. Extensions are internal routing endpoints with no per-unit charges.
+   * **Async:** No. ``POST /extensions`` returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.
+
 VoIPBIN's Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN's cloud infrastructure and your SIP devices, softphones, or PBX systems.
 
 With the Extension API you can:
@@ -155,6 +162,10 @@ VoIPBIN uses digest authentication for secure registration.
 
 The nonce value prevents replay attacks by ensuring each authentication attempt is unique.
 
+
+.. note:: **AI Implementation Hint**
+
+   The SIP registration domain follows the pattern ``{customer-id}.registrar.voipbin.net``. The ``customer_id`` is part of your account, not the extension ID. When configuring SIP devices, use the ``username`` and ``password`` from the extension, and the domain derived from your ``customer_id``.
 
 Extension Configuration
 -----------------------

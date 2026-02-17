@@ -223,24 +223,10 @@
 </pre></div>
 </div>
 <p><strong>Fields</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>type</p></td>
-<td><p>string</p></td>
-<td><p>Must be “subscribe”</p></td>
-</tr>
-<tr class="row-odd"><td><p>topics</p></td>
-<td><p>array</p></td>
-<td><p>List of topic patterns to subscribe to</p></td>
-</tr>
-</tbody>
-</table>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Must be <code class="docutils literal notranslate"><span class="pre">&quot;subscribe&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">topics</span></code> (Array of String): List of topic patterns to subscribe to. Each topic follows the format <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> for the resource_id to match all resources of a type.</p></li>
+</ul>
 <p><strong>Example: Subscribe to all calls</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
@@ -296,24 +282,10 @@
 </pre></div>
 </div>
 <p><strong>Fields</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>type</p></td>
-<td><p>string</p></td>
-<td><p>Must be “unsubscribe”</p></td>
-</tr>
-<tr class="row-odd"><td><p>topics</p></td>
-<td><p>array</p></td>
-<td><p>List of topic patterns to unsubscribe from</p></td>
-</tr>
-</tbody>
-</table>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Must be <code class="docutils literal notranslate"><span class="pre">&quot;unsubscribe&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">topics</span></code> (Array of String): List of topic patterns to unsubscribe from. Must match the exact topic patterns used during subscription.</p></li>
+</ul>
 <p><strong>Example: Unsubscribe from calls</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
@@ -341,27 +313,12 @@
 </pre></div>
 </div>
 <p><strong>Topic Components</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Component</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>scope</p></td>
-<td><p>Access level: “customer_id” or “agent_id”</p></td>
-</tr>
-<tr class="row-odd"><td><p>scope_id</p></td>
-<td><p>UUID of the customer or agent</p></td>
-</tr>
-<tr class="row-even"><td><p>resource_type</p></td>
-<td><p>Type of resource: call, message, activeflow, conference, etc.</p></td>
-</tr>
-<tr class="row-odd"><td><p>resource_id</p></td>
-<td><p>UUID of specific resource or “*” for all</p></td>
-</tr>
-</tbody>
-</table>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scope</span></code> (enum string): Access level. Either <code class="docutils literal notranslate"><span class="pre">&quot;customer_id&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;agent_id&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scope_id</span></code> (UUID): The UUID of the customer or agent. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code> (enum string): Type of resource: <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">message</span></code>, <code class="docutils literal notranslate"><span class="pre">activeflow</span></code>, <code class="docutils literal notranslate"><span class="pre">conference</span></code>, <code class="docutils literal notranslate"><span class="pre">queue</span></code>, <code class="docutils literal notranslate"><span class="pre">agent</span></code>, <code class="docutils literal notranslate"><span class="pre">recording</span></code>, <code class="docutils literal notranslate"><span class="pre">transcription</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resource_id</span></code> (UUID or <code class="docutils literal notranslate"><span class="pre">*</span></code>): UUID of a specific resource, or <code class="docutils literal notranslate"><span class="pre">*</span></code> to match all resources of the given type.</p></li>
+</ul>
 <p><strong>Valid Scopes</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -447,32 +404,17 @@
 </pre></div>
 </div>
 <p><strong>Fields</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>event_type</p></td>
-<td><p>string</p></td>
-<td><p>Type of event (e.g., “call.status”)</p></td>
-</tr>
-<tr class="row-odd"><td><p>timestamp</p></td>
-<td><p>string</p></td>
-<td><p>ISO 8601 timestamp in UTC</p></td>
-</tr>
-<tr class="row-even"><td><p>topic</p></td>
-<td><p>string</p></td>
-<td><p>Topic pattern that triggered this event</p></td>
-</tr>
-<tr class="row-odd"><td><p>data</p></td>
-<td><p>object</p></td>
-<td><p>Resource-specific data payload</p></td>
-</tr>
-</tbody>
-</table>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">event_type</span></code> (enum string): Type of event (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call.status&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;message.received&quot;</span></code>). See <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> for the full list.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (string, ISO 8601): When the event occurred, in UTC format.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">topic</span></code> (String): The topic pattern that triggered this event. Matches one of your subscribed topic patterns.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): Resource-specific data payload. Structure varies by <code class="docutils literal notranslate"><span class="pre">event_type</span></code> and corresponds to the relevant resource struct (e.g., <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">Call</span></a> for call events).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">event_type</span></code> field (not <code class="docutils literal notranslate"><span class="pre">type</span></code>) to determine the event kind for server-pushed events. The <code class="docutils literal notranslate"><span class="pre">type</span></code> field is used only for client-to-server messages (<code class="docutils literal notranslate"><span class="pre">subscribe</span></code>/<code class="docutils literal notranslate"><span class="pre">unsubscribe</span></code>) and server acknowledgments (<code class="docutils literal notranslate"><span class="pre">ack</span></code>/<code class="docutils literal notranslate"><span class="pre">error</span></code>). Always check for both <code class="docutils literal notranslate"><span class="pre">type</span></code> and <code class="docutils literal notranslate"><span class="pre">event_type</span></code> in your message handler to handle all message categories.</p>
+</div>
 </section>
 <section id="event-type-reference">
 <h2>Event Type Reference<a class="headerlink" href="#event-type-reference" title="Link to this heading"></a></h2>

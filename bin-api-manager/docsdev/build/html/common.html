@@ -188,7 +188,21 @@
 <span id="common-main"></span><h1>Common<a class="headerlink" href="#common" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="common-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low – These are shared data structures and conventions used across all VoIPBIN APIs. No API calls are specific to this section.</p></li>
+<li><p><strong>Cost:</strong> Free. Common structures are reference documentation only; no operations are performed.</p></li>
+<li><p><strong>Async:</strong> N/A. This section documents conventions, not API endpoints.</p></li>
+</ul>
+</div>
 <p>This section covers common data structures, patterns, and concepts used throughout the VoIPBIN API. Understanding these foundational elements will help you work more effectively with all VoIPBIN resources.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All VoIPBIN timestamps use the format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS.microseconds</span></code> in UTC. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the resource has <strong>not</strong> been deleted (sentinel value). When filtering by time ranges, use URL-encoded timestamps as query parameters (e.g., <code class="docutils literal notranslate"><span class="pre">?page_token=2022-06-17%2006%3A06%3A14.948432</span></code>).</p>
+</div>
 <section id="common-data-structures">
 <h3>Common Data Structures<a class="headerlink" href="#common-data-structures" title="Link to this heading"></a></h3>
 <section id="address-structure">
@@ -367,7 +381,7 @@
 <span id="common-struct-address"></span><h2>Address<a class="headerlink" href="#address" title="Link to this heading"></a></h2>
 <section id="common-struct-address-address">
 <span id="id1"></span><h3>Address<a class="headerlink" href="#common-struct-address-address" title="Link to this heading"></a></h3>
-<p>Defines source/destination address.</p>
+<p>Defines source/destination address. This structure is used throughout VoIPBIN wherever communication endpoints are specified, including calls (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>), messages (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code>), flows (connect/call actions), and number configurations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -378,16 +392,21 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>type</em>: Address type. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>target: The address endpoint. Caller’s destination address.</p></li>
-<li><p>target_name: The address’s name. Caller’s name.</p></li>
-<li><p>name: Name.</p></li>
-<li><p>detail: Detail description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Address type. Determines how <code class="docutils literal notranslate"><span class="pre">target</span></code> is interpreted. See <a class="reference internal" href="common_struct_address.html#common-struct-address-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> (String): The address endpoint. Format depends on <code class="docutils literal notranslate"><span class="pre">type</span></code>: E.164 phone number for <code class="docutils literal notranslate"><span class="pre">tel</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>), extension number for <code class="docutils literal notranslate"><span class="pre">extension</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">2001</span></code>), agent UUID for <code class="docutils literal notranslate"><span class="pre">agent</span></code> (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>), or SIP URI for <code class="docutils literal notranslate"><span class="pre">sip</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">user&#64;domain.com</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String): Display name associated with the address. For <code class="docutils literal notranslate"><span class="pre">tel</span></code> type, this is the caller ID name. Optional.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable label for this address. Optional.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Additional description or metadata for this address. Optional.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When constructing an Address, only <code class="docutils literal notranslate"><span class="pre">type</span></code> and <code class="docutils literal notranslate"><span class="pre">target</span></code> are required. For <code class="docutils literal notranslate"><span class="pre">tel</span></code> type, the <code class="docutils literal notranslate"><span class="pre">target</span></code> must be in E.164 format with a leading <code class="docutils literal notranslate"><span class="pre">+</span></code> and no spaces or special characters. For <code class="docutils literal notranslate"><span class="pre">agent</span></code> type, the <code class="docutils literal notranslate"><span class="pre">target</span></code> must be a valid agent UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p>
+</div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <ul class="simple">
-<li><p>The tel type address. The target is destination number.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">tel</span></code> type address. The target is a phone number in E.164 format.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
@@ -396,7 +415,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The extension type address. The target is extension number.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">extension</span></code> type address. The target is an extension number.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
@@ -405,7 +424,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The agent type address. The target is agent’s id.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">agent</span></code> type address. The target is the agent’s UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
@@ -414,7 +433,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The sip type address. The target is sip address.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">sip</span></code> type address. The target is a SIP URI.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
@@ -435,19 +454,19 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>agent</p></td>
-<td><p>Used for calling to the agent(target must be the agent’s id)</p></td>
+<td><p>Address for calling an agent. <code class="docutils literal notranslate"><span class="pre">target</span></code> must be the agent’s UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>extension</p></td>
-<td><p>Used for calling to extension.</p></td>
+<td><p>Address for calling an extension number. <code class="docutils literal notranslate"><span class="pre">target</span></code> is the extension number string (e.g., <code class="docutils literal notranslate"><span class="pre">2001</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p>sip</p></td>
-<td><p>SIP type address.</p></td>
+<td><p>SIP protocol address. <code class="docutils literal notranslate"><span class="pre">target</span></code> is a SIP URI (e.g., <code class="docutils literal notranslate"><span class="pre">user&#64;domain.com</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>tel</p></td>
-<td><p>Telephone number type address.</p></td>
+<td><p>Telephone number address. <code class="docutils literal notranslate"><span class="pre">target</span></code> must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p>line</p></td>
-<td><p>Line type address.</p></td>
+<td><p>Line type address. Used for LINE messaging integrations. <code class="docutils literal notranslate"><span class="pre">target</span></code> is the LINE user or channel ID.</p></td>
 </tr>
 </tbody>
 </table>

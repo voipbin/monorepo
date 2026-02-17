@@ -42,22 +42,29 @@ Outdialtarget
         "tm_delete": "<string>"
     }
 
-* id: outdialtarget's ID.
-* outdial_id: outdial's ID.
-* name: outdialtarget's name.
-* detail: outdialtarget's detail.
-* data: outdialtarget's data.
-* *status*: outdialtarget's status. See detail :ref:`here <outdial-struct-outdialtarget-status>`.
-* *destination_0*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
-* *destination_1*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
-* *destination_2*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
-* *destination_3*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
-* *destination_4*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
-* try_count_0: destination 0's try count.
-* try_count_1: destination 1's try count.
-* try_count_2: destination 2's try count.
-* try_count_3: destination 3's try count.
-* try_count_4: destination 4's try count.
+* ``id`` (UUID): The outdialtarget's unique identifier. Returned when creating via ``POST /outdials/{id}/targets`` or listing via ``GET /outdials/{id}/targets``.
+* ``outdial_id`` (UUID): The parent outdial this target belongs to. Obtained from the ``id`` field of ``GET /outdials``.
+* ``name`` (String): Human-readable name for the target (e.g., contact name).
+* ``detail`` (String): Detailed description of the target.
+* ``data`` (String): Arbitrary data associated with the target. Can be used for custom metadata.
+* ``status`` (enum string): The outdialtarget's current status. See :ref:`Status <outdial-struct-outdialtarget-status>`.
+* ``destination_0`` (Object or null): Primary destination address. See :ref:`Address <common-struct-address-address>`. Set to ``null`` if not configured.
+* ``destination_1`` (Object or null): Secondary destination address. See :ref:`Address <common-struct-address-address>`. Set to ``null`` if not configured.
+* ``destination_2`` (Object or null): Third destination address. See :ref:`Address <common-struct-address-address>`. Set to ``null`` if not configured.
+* ``destination_3`` (Object or null): Fourth destination address. See :ref:`Address <common-struct-address-address>`. Set to ``null`` if not configured.
+* ``destination_4`` (Object or null): Fifth destination address. See :ref:`Address <common-struct-address-address>`. Set to ``null`` if not configured.
+* ``try_count_0`` (Integer): Current number of dial attempts made to ``destination_0``. Read-only, incremented by the system.
+* ``try_count_1`` (Integer): Current number of dial attempts made to ``destination_1``. Read-only.
+* ``try_count_2`` (Integer): Current number of dial attempts made to ``destination_2``. Read-only.
+* ``try_count_3`` (Integer): Current number of dial attempts made to ``destination_3``. Read-only.
+* ``try_count_4`` (Integer): Current number of dial attempts made to ``destination_4``. Read-only.
+* ``tm_create`` (string, ISO 8601): Timestamp when the outdialtarget was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any outdialtarget property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the outdialtarget was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+
+.. note:: **AI Implementation Hint**
+
+   Each outdialtarget supports up to 5 destinations (``destination_0`` through ``destination_4``). The campaign dials destinations in order, starting with ``destination_0``. When all retries for a destination are exhausted (``try_count_N`` reaches the outplan's ``max_try_count_N``), it moves to the next destination. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` is a sentinel meaning the resource has **not** been deleted.
 
 Example
 +++++++
@@ -96,14 +103,14 @@ Example
 
 Status
 ------
-Outdialtarget's status.
+The outdialtarget's current processing status. This is a read-only field managed by the system.
 
 =========== ============
 Type        Description
 =========== ============
-idle        The outdialtarget is idle
-progressing The outdialtarget is calling
-done        The outdialtarget has done to dialing.
+idle        The outdialtarget is idle and available to be dialed. This is the initial state after creation and the state it returns to between retry attempts.
+progressing The outdialtarget is currently being dialed. A campaigncall is active for this target.
+done        The outdialtarget has completed processing. Either the call was answered successfully or all retry attempts have been exhausted.
 =========== ============
 
 **state diagram**

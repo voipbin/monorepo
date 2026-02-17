@@ -21,13 +21,20 @@ Outdial
         "tm_delete": "<string>"
     }
 
-* id: Outdial's ID.
-* campaign_id: Campaign's ID.
-* name: outdial's name.
-* detail: outdial's detail.
-* data: outdial's data.
+* ``id`` (UUID): The outdial's unique identifier. Returned when creating via ``POST /outdials`` or listing via ``GET /outdials``.
+* ``campaign_id`` (UUID): The campaign this outdial is attached to. Obtained from the ``id`` field of ``GET /campaigns``. Set to ``00000000-0000-0000-0000-000000000000`` if not attached to any campaign.
+* ``name`` (String): Human-readable name for the outdial.
+* ``detail`` (String): Detailed description of the outdial's purpose.
+* ``data`` (String): Arbitrary data associated with the outdial. Can be used for custom metadata.
+* ``tm_create`` (string, ISO 8601): Timestamp when the outdial was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any outdial property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the outdial was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
 
-example
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted. This is a sentinel value, not a real timestamp.
+
+Example
 +++++++
 
 .. code::

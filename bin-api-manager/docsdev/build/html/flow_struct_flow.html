@@ -201,12 +201,20 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Flow’s ID.</p></li>
-<li><p>type: Flow’s types. See detail <a class="reference internal" href="#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>name: Flow’s name.</p></li>
-<li><p>detail: Flow’s detail.</p></li>
-<li><p>actions: List of actions. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The flow’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The flow’s type. See detail <a class="reference internal" href="#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The flow’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A human-readable description of the flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">actions</span></code> (Array of Object): Ordered list of actions to execute. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the flow was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to the flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the flow was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code>, this means the flow is still active.</p>
+</div>
 <p><strong>Example</strong>
 .. code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

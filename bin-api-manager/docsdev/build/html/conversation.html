@@ -188,6 +188,15 @@
 <span id="conversation-main"></span><h1>Conversation<a class="headerlink" href="#conversation" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="conversation-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (conversations are organizational containers; message delivery costs apply per channel)</p></li>
+<li><p><strong>Async:</strong> Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
 <p>With the Conversation API you can:</p>
 <ul class="simple">
@@ -373,6 +382,11 @@ immediate         detailed           interactive
 <section id="creating-conversations">
 <h3>Creating Conversations<a class="headerlink" href="#creating-conversations" title="Link to this heading"></a></h3>
 <p>Create conversations explicitly or let VoIPBIN auto-create them.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conversations are automatically matched based on participants and channel. Before creating a new conversation, check if an active conversation already exists between the same participants to avoid duplicates. Sending a message to a closed conversation will create a new one.</p>
+</div>
 <p><strong>Create a Conversation</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conversations?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -753,14 +767,22 @@ retry queue</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Conversation’s ID.</p></li>
-<li><p>name: Conversation’s name.</p></li>
-<li><p>detail: Conversation’s detail.</p></li>
-<li><p>reference_type: Conversation’s reference type. See detail <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Conversation’s reference id.</p></li>
-<li><p>source: Conversation’s source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>participants: List of participants. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conversation’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the conversation (e.g., “Customer Support #1234”).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Additional description or context for the conversation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel type that initiated this conversation. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the reference channel (e.g., a phone number or Line user ID).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The conversation’s source address. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">participants</span></code> (Array of Object): List of participant addresses in this conversation. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the conversation was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the conversation has not been deleted.</p>
+</div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -811,10 +833,10 @@ retry queue</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>message</p></td>
-<td><p>Message(SMS/MMS).</p></td>
+<td><p>Conversation initiated via SMS/MMS messaging channel.</p></td>
 </tr>
 <tr class="row-odd"><td><p>line</p></td>
-<td><p>Line.</p></td>
+<td><p>Conversation initiated via Line messaging platform.</p></td>
 </tr>
 </tbody>
 </table>
@@ -843,16 +865,24 @@ retry queue</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Message’s ID.</p></li>
-<li><p>conversation_id: Conversation’s ID.</p></li>
-<li><p>direction: Message’s direction. See detail <a class="reference internal" href="conversation_struct_message.html#conversation-struct-message-direction"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>status: Message’s status.</p></li>
-<li><p>reference_type: Conversation’s reference type. See detail <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Conversation’s reference id.</p></li>
-<li><p>source: Conversation’s source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>text: Message’s text.</p></li>
-<li><p>medias: Message’s medias.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The message’s unique identifier within the conversation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> (UUID): The parent conversation’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code> or from the URL path when sending messages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): Whether the message is incoming or outgoing. See <a class="reference internal" href="conversation_struct_message.html#conversation-struct-message-direction"><span class="std std-ref">Direction</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The message’s delivery status (e.g., <code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">received</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel used for this message. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the channel (e.g., a Line user ID or phone number).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The sender’s address for this message. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): The message body text content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of Object): List of media attachments (images, videos, etc.) included with the message.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the message was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last status update.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the message has not been deleted.</p>
+</div>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -884,16 +914,18 @@ retry queue</p></td>
 <p>Message’s direction.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Direction type</p></th>
+<tr class="row-odd"><th class="head"><p>Direction</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>incoming</p></td>
-<td><p>Incoming message(Towards voipbin).</p></td>
+<td><p>Incoming message from a participant towards VoIPBIN. Delivered
+to your application via webhook.</p></td>
 </tr>
 <tr class="row-odd"><td><p>outgoing</p></td>
-<td><p>Outgoing message(From voipbin).</p></td>
+<td><p>Outgoing message sent from your application via VoIPBIN to a
+conversation participant.</p></td>
 </tr>
 </tbody>
 </table>
@@ -901,6 +933,17 @@ retry queue</p></td>
 </section>
 <section id="tutorial">
 <span id="conversation-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with conversations, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> value indicating the channel for the conversation (e.g., <code class="docutils literal notranslate"><span class="pre">message</span></code> for SMS/MMS, <code class="docutils literal notranslate"><span class="pre">line</span></code> for Line). See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p>(Optional) Participant addresses in the appropriate format for the channel (E.164 phone numbers for SMS, Line user IDs for Line).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conversations are free to create, but messages sent within them incur per-channel delivery costs (SMS, email, etc.). When sending a message to a conversation via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>, the conversation ID is passed in the URL path, not the request body.</p>
+</div>
 <section id="setup-the-conversation">
 <h3>Setup the conversation<a class="headerlink" href="#setup-the-conversation" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \

@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free -- Talk messaging does not incur per-message charges.
+   * **Async:** No. ``POST /talks`` and ``POST /talks/{id}/messages`` return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.
+
 VoIPBIN's Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.
 
 With the Talk API you can:
@@ -154,6 +161,10 @@ Create talks and manage participants through the API.
                 "agent-id-3"
             ]
         }'
+
+.. note:: **AI Implementation Hint**
+
+   Talk uses the ``/service_agents/talk_chats`` endpoint (not ``/talks``) for agent-facing operations. The participant's ``owner_id`` must be a valid agent UUID obtained from ``GET /agents``. Only agents who are participants of a talk can send or view messages in that talk.
 
 **Add Participant**
 

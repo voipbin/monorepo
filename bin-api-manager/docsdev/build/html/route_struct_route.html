@@ -199,14 +199,22 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Provider’s id.</p></li>
-<li><p>customer_id: Customer’s id. If the customer id is “00000000-0000-0000-0000-000000000001”, then it used for every customer.</p></li>
-<li><p>provider_id: Provider’s id.</p></li>
-<li><p>priority: Route priority.</p></li>
-<li><p>target: Target country code. If it set to “all”, it used for every destination target.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The route’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/routes</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer this route applies to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>. The special value <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> means this route applies to all customers (system default).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider_id</span></code> (UUID): The provider used for outbound calls on this route. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">priority</span></code> (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> (String): Target country code prefix for destination matching (e.g., <code class="docutils literal notranslate"><span class="pre">+82</span></code>, <code class="docutils literal notranslate"><span class="pre">+1</span></code>). Set to <code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code> to match every destination.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the route was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any route property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the route was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the route has not been deleted.</p>
+</div>
 <section id="example">
-<h3>example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;491b6858-5357-11ed-b753-8fd49cd36340&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000001&quot;</span><span class="p">,</span>
@@ -233,7 +241,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Route</a><ul>
 <li><a class="reference internal" href="#route-struct-route-route">Route</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

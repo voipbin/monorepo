@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="contact-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with contacts, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(Optional) Tag IDs (UUIDs) for categorization. Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain existing ones from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p>(Optional) Phone numbers in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>) for phone number entries.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers are automatically normalized to E.164 format in the <code class="docutils literal notranslate"><span class="pre">number_e164</span></code> field. When using the phone lookup endpoint (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts/lookup?phone=...</span></code>), the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. Contact operations are free and synchronous.</p>
+</div>
 <section id="create-a-contact">
-<h2>Create a contact<a class="headerlink" href="#create-a-contact" title="Link to this heading"></a></h2>
+<h3>Create a contact<a class="headerlink" href="#create-a-contact" title="Link to this heading"></a></h3>
 <p>Create a new contact with phone numbers, emails, and tags.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -271,7 +284,7 @@
 </div>
 </section>
 <section id="get-a-list-of-contacts">
-<h2>Get a list of contacts<a class="headerlink" href="#get-a-list-of-contacts" title="Link to this heading"></a></h2>
+<h3>Get a list of contacts<a class="headerlink" href="#get-a-list-of-contacts" title="Link to this heading"></a></h3>
 <p>Retrieve all contacts. Supports pagination with <code class="docutils literal notranslate"><span class="pre">page_size</span></code> and <code class="docutils literal notranslate"><span class="pre">page_token</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
 
@@ -321,13 +334,13 @@
 </div>
 </section>
 <section id="get-a-specific-contact">
-<h2>Get a specific contact<a class="headerlink" href="#get-a-specific-contact" title="Link to this heading"></a></h2>
+<h3>Get a specific contact<a class="headerlink" href="#get-a-specific-contact" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="update-a-contact">
-<h2>Update a contact<a class="headerlink" href="#update-a-contact" title="Link to this heading"></a></h2>
+<h3>Update a contact<a class="headerlink" href="#update-a-contact" title="Link to this heading"></a></h3>
 <p>Update contact fields. Only the provided fields are changed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -343,14 +356,14 @@
 </div>
 </section>
 <section id="delete-a-contact">
-<h2>Delete a contact<a class="headerlink" href="#delete-a-contact" title="Link to this heading"></a></h2>
+<h3>Delete a contact<a class="headerlink" href="#delete-a-contact" title="Link to this heading"></a></h3>
 <p>Soft-deletes the contact. The record is not permanently removed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="lookup-a-contact-by-phone-number">
-<h2>Lookup a contact by phone number<a class="headerlink" href="#lookup-a-contact-by-phone-number" title="Link to this heading"></a></h2>
+<h3>Lookup a contact by phone number<a class="headerlink" href="#lookup-a-contact-by-phone-number" title="Link to this heading"></a></h3>
 <p>Find a contact by phone number in E.164 format.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;phone=%2B15551234567&#39;
 </pre></div>
@@ -358,14 +371,14 @@
 <p>Note: The <code class="docutils literal notranslate"><span class="pre">+</span></code> in the phone number must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>.</p>
 </section>
 <section id="lookup-a-contact-by-email">
-<h2>Lookup a contact by email<a class="headerlink" href="#lookup-a-contact-by-email" title="Link to this heading"></a></h2>
+<h3>Lookup a contact by email<a class="headerlink" href="#lookup-a-contact-by-email" title="Link to this heading"></a></h3>
 <p>Find a contact by email address. Matching is case-insensitive.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;email=john@acme.com&#39;
 </pre></div>
 </div>
 </section>
 <section id="add-a-phone-number">
-<h2>Add a phone number<a class="headerlink" href="#add-a-phone-number" title="Link to this heading"></a></h2>
+<h3>Add a phone number<a class="headerlink" href="#add-a-phone-number" title="Link to this heading"></a></h3>
 <p>Add a new phone number to an existing contact.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/phone-numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -378,7 +391,7 @@
 </div>
 </section>
 <section id="update-a-phone-number">
-<h2>Update a phone number<a class="headerlink" href="#update-a-phone-number" title="Link to this heading"></a></h2>
+<h3>Update a phone number<a class="headerlink" href="#update-a-phone-number" title="Link to this heading"></a></h3>
 <p>Update an existing phone number’s details.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/phone-numbers/&lt;phone-number-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -391,13 +404,13 @@
 </div>
 </section>
 <section id="remove-a-phone-number">
-<h2>Remove a phone number<a class="headerlink" href="#remove-a-phone-number" title="Link to this heading"></a></h2>
+<h3>Remove a phone number<a class="headerlink" href="#remove-a-phone-number" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/phone-numbers/&lt;phone-number-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="add-an-email-address">
-<h2>Add an email address<a class="headerlink" href="#add-an-email-address" title="Link to this heading"></a></h2>
+<h3>Add an email address<a class="headerlink" href="#add-an-email-address" title="Link to this heading"></a></h3>
 <p>Add a new email address to an existing contact.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/emails?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -410,7 +423,7 @@
 </div>
 </section>
 <section id="update-an-email-address">
-<h2>Update an email address<a class="headerlink" href="#update-an-email-address" title="Link to this heading"></a></h2>
+<h3>Update an email address<a class="headerlink" href="#update-an-email-address" title="Link to this heading"></a></h3>
 <p>Update an existing email address’s details.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/emails/&lt;email-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -423,13 +436,13 @@
 </div>
 </section>
 <section id="remove-an-email-address">
-<h2>Remove an email address<a class="headerlink" href="#remove-an-email-address" title="Link to this heading"></a></h2>
+<h3>Remove an email address<a class="headerlink" href="#remove-an-email-address" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/emails/&lt;email-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="add-a-tag">
-<h2>Add a tag<a class="headerlink" href="#add-a-tag" title="Link to this heading"></a></h2>
+<h3>Add a tag<a class="headerlink" href="#add-a-tag" title="Link to this heading"></a></h3>
 <p>Assign a tag to a contact for categorization or routing.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -440,10 +453,11 @@
 </div>
 </section>
 <section id="remove-a-tag">
-<h2>Remove a tag<a class="headerlink" href="#remove-a-tag" title="Link to this heading"></a></h2>
+<h3>Remove a tag<a class="headerlink" href="#remove-a-tag" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags/&lt;tag-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -456,6 +470,7 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-contact">Create a contact</a></li>
 <li><a class="reference internal" href="#get-a-list-of-contacts">Get a list of contacts</a></li>
 <li><a class="reference internal" href="#get-a-specific-contact">Get a specific contact</a></li>
@@ -471,6 +486,8 @@
 <li><a class="reference internal" href="#remove-an-email-address">Remove an email address</a></li>
 <li><a class="reference internal" href="#add-a-tag">Add a tag</a></li>
 <li><a class="reference internal" href="#remove-a-tag">Remove a tag</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

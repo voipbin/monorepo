@@ -214,15 +214,23 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Email’s ID.</p></li>
-<li><p>customer_id: Customer’s ID.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: List of destination addresses info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>status: Email’s deliverence status. See detail <a class="reference internal" href="#email-struct-email-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>subject: Email’s subject.</p></li>
-<li><p>content: Email’s content.</p></li>
-<li><p>attachments: List of attachments. See detail <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The email’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this email. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): List of destination addresses. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The email’s delivery status. See <a class="reference internal" href="#email-struct-email-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subject</span></code> (String): The email’s subject line.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">content</span></code> (String): The email’s body content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> (Array of Object): List of attachments. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the email was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last status update.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the email has not been deleted.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -266,17 +274,18 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>“”</p></td>
-<td><p>None</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>No status set. Initial default before processing begins.</p></td>
 </tr>
 <tr class="row-odd"><td><p>initiated</p></td>
-<td><p>The email has been initiated.</p></td>
+<td><p>The email has been created and accepted for processing.</p></td>
 </tr>
 <tr class="row-even"><td><p>processed</p></td>
-<td><p>The email has been received is being processed.</p></td>
+<td><p>The email is being processed and routed for delivery.</p></td>
 </tr>
 <tr class="row-odd"><td><p>delivered</p></td>
-<td><p>The email has been successfully delivered to the recipient’s inbox (or spam folder).</p></td>
+<td><p>The email has been successfully delivered to the recipient’s
+mail server (may end up in inbox or spam folder).</p></td>
 </tr>
 </tbody>
 </table>

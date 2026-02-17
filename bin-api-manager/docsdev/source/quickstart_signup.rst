@@ -2,7 +2,7 @@
 
 Signup
 ======
-To use the VoIPBin production API, you need your own account.
+To use the VoIPBIN production API, you need your own account.
 
 How to Sign Up
 --------------

@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before managing customers, you need:
+
+* An authentication token with admin permissions. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* (For creation) A unique ``username`` and ``password`` for the new customer account.
+* (Optional) A webhook URI to receive event notifications for the customer.
+
+.. note:: **AI Implementation Hint**
+
+   Customer creation requires admin-level permissions. Regular agents cannot create or delete customers. The ``password`` field is required when creating a customer but is write-only and never returned in API responses. When a customer is created, a guest agent with admin permissions is automatically created for that account.
+
 Get list of customers
 ----------------------
 
@@ -96,6 +109,10 @@ Example
 
 Delete customer
 ---------------
+
+.. note:: **AI Implementation Hint**
+
+   Deleting a customer is a destructive operation that removes the customer account and all associated resources (agents, numbers, flows, etc.). This cannot be undone. The API returns the deleted customer object with ``tm_delete`` set to the deletion timestamp.
 
 Example
 

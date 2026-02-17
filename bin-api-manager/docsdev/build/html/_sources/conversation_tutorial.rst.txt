@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with conversations, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A ``reference_type`` value indicating the channel for the conversation (e.g., ``message`` for SMS/MMS, ``line`` for Line). See :ref:`Reference type <conversation-struct-conversation-reference_type>`.
+* (Optional) Participant addresses in the appropriate format for the channel (E.164 phone numbers for SMS, Line user IDs for Line).
+
+.. note:: **AI Implementation Hint**
+
+   Conversations are free to create, but messages sent within them incur per-channel delivery costs (SMS, email, etc.). When sending a message to a conversation via ``POST /conversations/{id}/messages``, the conversation ID is passed in the URL path, not the request body.
+
 Setup the conversation
 ----------------------
 
@@ -20,7 +33,7 @@ Get list of conversations
 Example
 +++++++
 
-.. code ::
+.. code::
 
     $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/conversations?token=<YOUR_AUTH_TOKEN>'
 

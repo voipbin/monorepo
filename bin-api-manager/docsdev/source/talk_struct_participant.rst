@@ -19,12 +19,16 @@ Participant
         "tm_joined": "<string>"
     }
 
-* id: Participant's unique identifier.
-* customer_id: Customer's unique identifier.
-* owner_type: Type of the participant (e.g., "agent").
-* owner_id: Participant's unique identifier.
-* chat_id: Talk's unique identifier that this participant belongs to.
-* tm_joined: Timestamp when the participant joined the talk.
+* ``id`` (UUID): The participant's unique identifier. Returned when adding a participant via ``POST /service_agents/talk_chats/{id}/participants``.
+* ``customer_id`` (UUID): The customer's unique identifier. Obtained from ``GET /customers``.
+* ``owner_type`` (enum string): Type of the participant. Currently only ``"agent"`` is supported.
+* ``owner_id`` (UUID): The agent's unique identifier. Obtained from ``GET /agents``.
+* ``chat_id`` (UUID): The talk's unique identifier that this participant belongs to. Obtained from ``GET /service_agents/talk_chats``.
+* ``tm_joined`` (string, ISO 8601): Timestamp when the participant joined the talk.
+
+.. note:: **AI Implementation Hint**
+
+   When a participant is removed and later re-added, a new participant record is created with a new ``id`` and updated ``tm_joined`` timestamp. The previous participant record is hard-deleted from the database.
 
 Example
 +++++++

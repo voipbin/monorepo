@@ -185,6 +185,11 @@
     <section id="call-media-and-codecs">
 <span id="call-media"></span><h1>Call Media and Codecs<a class="headerlink" href="#call-media-and-codecs" title="Link to this heading"></a></h1>
 <p>This section covers audio and video media handling in VoIPBIN, including codec support, quality considerations, and encryption.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Media operations (recording, transcription, TTS) require an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event (e.g., <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.</p>
+</div>
 <section id="audio-codec-support">
 <h2>Audio Codec Support<a class="headerlink" href="#audio-codec-support" title="Link to this heading"></a></h2>
 <p>VoIPBIN supports multiple audio codecs for different use cases:</p>
@@ -242,6 +247,11 @@
 <span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Acceptable</span> <span class="k">for</span> <span class="n">voice</span>            <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Codec selection is automatic. VoIPBIN negotiates the best codec supported by both endpoints. You do not need to specify a codec when creating calls. If you experience audio quality issues, check the call type: PSTN calls use G.711 (narrowband), while WebRTC calls use Opus (wideband). Transcoding between codec types adds minimal latency.</p>
 </div>
 </section>
 <section id="audio-quality-factors">
@@ -351,6 +361,11 @@
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>If a client reports one-way audio or no audio, the most common cause is a firewall blocking UDP traffic on the RTP port ranges. For environments with restrictive firewalls, use WebRTC with TURN relay as a fallback. WebRTC encapsulates media over TCP/443, bypassing most firewall restrictions.</p>
+</div>
 </section>
 <section id="media-encryption">
 <h2>Media Encryption<a class="headerlink" href="#media-encryption" title="Link to this heading"></a></h2>
@@ -414,6 +429,11 @@
 <span class="o">-</span> <span class="n">Conferencing</span> <span class="p">(</span><span class="n">mixing</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>WebRTC calls are always encrypted (SRTP). PSTN calls are unencrypted on the carrier segment – this is a carrier limitation, not a VoIPBIN limitation. If you need recording or transcription, VoIPBIN must access the unencrypted audio stream, so true end-to-end encryption is not possible when these features are enabled.</p>
+</div>
 </section>
 <section id="dtmf-handling">
 <h2>DTMF Handling<a class="headerlink" href="#dtmf-handling" title="Link to this heading"></a></h2>
@@ -462,6 +482,11 @@
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/dtmf</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain it from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event. The <code class="docutils literal notranslate"><span class="pre">digits</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and <code class="docutils literal notranslate"><span class="pre">#</span></code>. The <code class="docutils literal notranslate"><span class="pre">duration</span></code> controls how long each tone plays (in milliseconds) and <code class="docutils literal notranslate"><span class="pre">interval</span></code> controls the pause between tones.</p>
 </div>
 </section>
 <section id="recording-formats">
@@ -515,6 +540,11 @@
 <span class="o">|</span>           <span class="n">Better</span> <span class="k">for</span> <span class="n">analysis</span><span class="o">/</span><span class="n">transcription</span><span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Recording must be started with a <code class="docutils literal notranslate"><span class="pre">record_start</span></code> flow action and stopped with <code class="docutils literal notranslate"><span class="pre">record_stop</span></code> or automatically when the call hangs up. Recordings are uploaded to cloud storage asynchronously after the call ends. The recording URL obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> uses signed URLs that expire after 1 hour. Fetch a fresh URL each time you need to download.</p>
 </div>
 </section>
 <section id="text-to-speech-tts">
@@ -623,6 +653,11 @@
    <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Transcription events are delivered via WebSocket subscription, not via webhooks. Subscribe to <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;your-id&gt;:transcript:*</span></code> to receive real-time transcript events. Each event contains the <code class="docutils literal notranslate"><span class="pre">direction</span></code> (<code class="docutils literal notranslate"><span class="pre">in</span></code> or <code class="docutils literal notranslate"><span class="pre">out</span></code>) so you can distinguish which party is speaking. The <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter must use the exact locale code (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, not <code class="docutils literal notranslate"><span class="pre">en</span></code>).</p>
+</div>
 </section>
 <section id="video-calls-webrtc">
 <h2>Video Calls (WebRTC)<a class="headerlink" href="#video-calls-webrtc" title="Link to this heading"></a></h2>
@@ -701,25 +736,25 @@
 </pre></div>
 </div>
 <p><strong>Capacity Planning:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Example: 100 Concurrent Calls
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Example</span><span class="p">:</span> <span class="mi">100</span> <span class="n">Concurrent</span> <span class="n">Calls</span>
 
-Audio Only (G.711):
-+------------------------------------------+
-| 100 calls × 160 kbps = 16 Mbps           |
-| Recommended: 20 Mbps (headroom)          |
-+------------------------------------------+
+<span class="n">Audio</span> <span class="n">Only</span> <span class="p">(</span><span class="n">G</span><span class="mf">.711</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mi">100</span> <span class="n">calls</span> <span class="n">x</span> <span class="mi">160</span> <span class="n">kbps</span> <span class="o">=</span> <span class="mi">16</span> <span class="n">Mbps</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Recommended</span><span class="p">:</span> <span class="mi">20</span> <span class="n">Mbps</span> <span class="p">(</span><span class="n">headroom</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
 
-Audio Only (Opus):
-+------------------------------------------+
-| 100 calls × 100 kbps = 10 Mbps           |
-| Recommended: 15 Mbps (headroom)          |
-+------------------------------------------+
+<span class="n">Audio</span> <span class="n">Only</span> <span class="p">(</span><span class="n">Opus</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mi">100</span> <span class="n">calls</span> <span class="n">x</span> <span class="mi">100</span> <span class="n">kbps</span> <span class="o">=</span> <span class="mi">10</span> <span class="n">Mbps</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Recommended</span><span class="p">:</span> <span class="mi">15</span> <span class="n">Mbps</span> <span class="p">(</span><span class="n">headroom</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
 
-Video (720p):
-+------------------------------------------+
-| 100 calls × 4 Mbps = 400 Mbps            |
-| Recommended: 500 Mbps (headroom)         |
-+------------------------------------------+
+<span class="n">Video</span> <span class="p">(</span><span class="mi">720</span><span class="n">p</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mi">100</span> <span class="n">calls</span> <span class="n">x</span> <span class="mi">4</span> <span class="n">Mbps</span> <span class="o">=</span> <span class="mi">400</span> <span class="n">Mbps</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Recommended</span><span class="p">:</span> <span class="mi">500</span> <span class="n">Mbps</span> <span class="p">(</span><span class="n">headroom</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -753,6 +788,11 @@ Video (720p):
 <span class="o">|</span> <span class="o">&lt;</span> <span class="mf">3.1</span><span class="p">:</span>   <span class="n">Bad</span> <span class="p">(</span><span class="n">unacceptable</span><span class="p">)</span>              <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Call-level metrics (<code class="docutils literal notranslate"><span class="pre">duration</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code>) are available in the call object via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call-id}</span></code> after the call ends. Media-level metrics (<code class="docutils literal notranslate"><span class="pre">jitter</span></code>, <code class="docutils literal notranslate"><span class="pre">packet_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">mos</span></code>) may not be available for all call types. A MOS score below 3.6 typically indicates network issues (high latency, packet loss, or jitter) rather than a VoIPBIN platform problem.</p>
 </div>
 </section>
 </section>

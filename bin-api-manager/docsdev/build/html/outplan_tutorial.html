@@ -184,8 +184,20 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="outplan-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with outplans, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>) to use as the caller ID. This number should be obtained from your provisioned numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All time values (<code class="docutils literal notranslate"><span class="pre">dial_timeout</span></code> and <code class="docutils literal notranslate"><span class="pre">try_interval</span></code>) are in <strong>milliseconds</strong>. A common mistake is to pass seconds instead of milliseconds. For example, a 30-second timeout should be <code class="docutils literal notranslate"><span class="pre">30000</span></code>, not <code class="docutils literal notranslate"><span class="pre">30</span></code>. A 10-minute retry interval should be <code class="docutils literal notranslate"><span class="pre">600000</span></code>.</p>
+</div>
 <section id="get-list-of-outplans">
-<h2>Get list of outplans<a class="headerlink" href="#get-list-of-outplans" title="Link to this heading"></a></h2>
+<h3>Get list of outplans<a class="headerlink" href="#get-list-of-outplans" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -220,7 +232,7 @@
 </div>
 </section>
 <section id="get-detail-of-outplan">
-<h2>Get detail of outplan<a class="headerlink" href="#get-detail-of-outplan" title="Link to this heading"></a></h2>
+<h3>Get detail of outplan<a class="headerlink" href="#get-detail-of-outplan" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -250,7 +262,7 @@
 </div>
 </section>
 <section id="create-a-new-outplan">
-<h2>Create a new outplan<a class="headerlink" href="#create-a-new-outplan" title="Link to this heading"></a></h2>
+<h3>Create a new outplan<a class="headerlink" href="#create-a-new-outplan" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outplans?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -273,7 +285,7 @@
 </div>
 </section>
 <section id="update-outplan-s-dial-info">
-<h2>Update outplan’s dial info<a class="headerlink" href="#update-outplan-s-dial-info" title="Link to this heading"></a></h2>
+<h3>Update outplan’s dial info<a class="headerlink" href="#update-outplan-s-dial-info" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e/dial_info?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -294,14 +306,14 @@
 </div>
 </section>
 <section id="delete-outplan">
-<h2>Delete outplan<a class="headerlink" href="#delete-outplan" title="Link to this heading"></a></h2>
+<h3>Delete outplan<a class="headerlink" href="#delete-outplan" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/outplans/88334a03-bc6b-40b6-878f-46df2d9865db?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="update-outplan-s-basic-info">
-<h2>Update outplan’s basic info<a class="headerlink" href="#update-outplan-s-basic-info" title="Link to this heading"></a></h2>
+<h3>Update outplan’s basic info<a class="headerlink" href="#update-outplan-s-basic-info" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -336,6 +348,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -346,12 +359,15 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-outplans">Get list of outplans</a></li>
 <li><a class="reference internal" href="#get-detail-of-outplan">Get detail of outplan</a></li>
 <li><a class="reference internal" href="#create-a-new-outplan">Create a new outplan</a></li>
 <li><a class="reference internal" href="#update-outplan-s-dial-info">Update outplan’s dial info</a></li>
 <li><a class="reference internal" href="#delete-outplan">Delete outplan</a></li>
 <li><a class="reference internal" href="#update-outplan-s-basic-info">Update outplan’s basic info</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

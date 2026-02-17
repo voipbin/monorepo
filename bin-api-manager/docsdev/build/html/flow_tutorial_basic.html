@@ -184,8 +184,20 @@
                         <main role="main" id="main">
     <section id="tutorial-basic">
 <span id="flow-tutorial-basic"></span><h1>Tutorial basic<a class="headerlink" href="#tutorial-basic" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with flows, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For update/delete) A flow ID (UUID). Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or the response of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>, action <code class="docutils literal notranslate"><span class="pre">id</span></code> fields are optional. The server auto-generates UUIDs for actions that lack explicit IDs. Only set action IDs when you need to reference them from <code class="docutils literal notranslate"><span class="pre">goto</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, or <code class="docutils literal notranslate"><span class="pre">condition_*</span></code> actions using <code class="docutils literal notranslate"><span class="pre">target_id</span></code> or <code class="docutils literal notranslate"><span class="pre">target_ids</span></code>. Flow changes (update/delete) do not affect calls already in progress – they only apply to future executions.</p>
+</div>
 <section id="get-list-of-flows">
-<h2>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Link to this heading"></a></h2>
+<h3>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Link to this heading"></a></h3>
 <p>Gets the list of registered flows.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -240,7 +252,7 @@
 </div>
 </section>
 <section id="get-detail-of-specified-flow">
-<h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Link to this heading"></a></h2>
+<h3>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Link to this heading"></a></h3>
 <p>Gets the detail of registered flows.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -276,7 +288,7 @@
 </div>
 </section>
 <section id="create-a-flow">
-<h2>Create a flow<a class="headerlink" href="#create-a-flow" title="Link to this heading"></a></h2>
+<h3>Create a flow<a class="headerlink" href="#create-a-flow" title="Link to this heading"></a></h3>
 <p>Create a new flow for incoming call requests.
 When the call is incoming, this flow will answer the call first, then speak the welcome text.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -324,7 +336,7 @@ When the call is incoming, this flow will answer the call first, then speak the 
 </div>
 </section>
 <section id="update-the-flow">
-<h2>Update the flow<a class="headerlink" href="#update-the-flow" title="Link to this heading"></a></h2>
+<h3>Update the flow<a class="headerlink" href="#update-the-flow" title="Link to this heading"></a></h3>
 <p>Update an existing flow with the given information.
 This doesn’t affect existing calls. Flow changes will only affect new calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -406,12 +418,18 @@ This doesn’t affect existing calls. Flow changes will only affect new calls.</
 </div>
 </section>
 <section id="delete-the-flow">
-<h2>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Link to this heading"></a></h2>
+<h3>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Link to this heading"></a></h3>
 <p>Delete an existing flow by its flow ID.
-This doesn’t affect existing calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+This doesn’t affect existing calls. Flow changes will only affect new calls.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The DELETE request uses the <code class="docutils literal notranslate"><span class="pre">DELETE</span></code> HTTP method, not <code class="docutils literal notranslate"><span class="pre">GET</span></code>. A successful deletion returns HTTP 204 No Content. The flow is soft-deleted (<code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> is set) and will no longer appear in <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> list results, but calls already using this flow are not affected.</p>
+</div>
+</section>
 </section>
 </section>
 
@@ -424,11 +442,14 @@ This doesn’t affect existing calls.</p>
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial basic</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-flows">Get list of flows</a></li>
 <li><a class="reference internal" href="#get-detail-of-specified-flow">Get detail of specified flow</a></li>
 <li><a class="reference internal" href="#create-a-flow">Create a flow</a></li>
 <li><a class="reference internal" href="#update-the-flow">Update the flow</a></li>
 <li><a class="reference internal" href="#delete-the-flow">Delete the flow</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

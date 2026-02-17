@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="conversation-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (conversations are organizational containers; message delivery costs apply per channel)</p></li>
+<li><p><strong>Async:</strong> Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
 <p>With the Conversation API you can:</p>
 <ul class="simple">
@@ -369,6 +378,11 @@ immediate         detailed           interactive
 <section id="creating-conversations">
 <h2>Creating Conversations<a class="headerlink" href="#creating-conversations" title="Link to this heading"></a></h2>
 <p>Create conversations explicitly or let VoIPBIN auto-create them.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conversations are automatically matched based on participants and channel. Before creating a new conversation, check if an active conversation already exists between the same participants to avoid duplicates. Sending a message to a closed conversation will create a new one.</p>
+</div>
 <p><strong>Create a Conversation</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conversations?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \

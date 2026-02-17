@@ -5,6 +5,10 @@ Call Media and Codecs
 
 This section covers audio and video media handling in VoIPBIN, including codec support, quality considerations, and encryption.
 
+.. note:: **AI Implementation Hint**
+
+   Media operations (recording, transcription, TTS) require an active call in ``progressing`` status. Obtain the ``call-id`` from ``GET /calls`` or from a webhook event (e.g., ``call_answered``) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.
+
 Audio Codec Support
 -------------------
 
@@ -67,6 +71,10 @@ VoIPBIN supports multiple audio codecs for different use cases:
     | Reason: Only 8 kbps required             |
     | Quality: Acceptable for voice            |
     +------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   Codec selection is automatic. VoIPBIN negotiates the best codec supported by both endpoints. You do not need to specify a codec when creating calls. If you experience audio quality issues, check the call type: PSTN calls use G.711 (narrowband), while WebRTC calls use Opus (wideband). Transcoding between codec types adds minimal latency.
 
 Audio Quality Factors
 ---------------------
@@ -184,6 +192,10 @@ Real-time Transport Protocol (RTP) carries audio:
     | If blocked: WebRTC with TURN as fallback |
     +------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   If a client reports one-way audio or no audio, the most common cause is a firewall blocking UDP traffic on the RTP port ranges. For environments with restrictive firewalls, use WebRTC with TURN relay as a fallback. WebRTC encapsulates media over TCP/443, bypassing most firewall restrictions.
+
 Media Encryption
 ----------------
 
@@ -254,6 +266,10 @@ VoIPBIN supports encrypted media for security:
     - Transcription
     - Conferencing (mixing)
 
+.. note:: **AI Implementation Hint**
+
+   WebRTC calls are always encrypted (SRTP). PSTN calls are unencrypted on the carrier segment -- this is a carrier limitation, not a VoIPBIN limitation. If you need recording or transcription, VoIPBIN must access the unencrypted audio stream, so true end-to-end encryption is not possible when these features are enabled.
+
 DTMF Handling
 -------------
 
@@ -306,6 +322,10 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
             "terminator": "#"     // Optional end char
         }
     }
+
+.. note:: **AI Implementation Hint**
+
+   The ``call-id`` in ``POST /v1/calls/{call-id}/dtmf`` must be an active call in ``progressing`` status. Obtain it from ``GET /calls`` or from a webhook event. The ``digits`` field accepts ``0-9``, ``*``, and ``#``. The ``duration`` controls how long each tone plays (in milliseconds) and ``interval`` controls the pause between tones.
 
 Recording Formats
 -----------------
@@ -363,6 +383,10 @@ VoIPBIN supports multiple recording formats:
     |           Left = inbound, Right = outbound|
     |           Better for analysis/transcription|
     +------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   Recording must be started with a ``record_start`` flow action and stopped with ``record_stop`` or automatically when the call hangs up. Recordings are uploaded to cloud storage asynchronously after the call ends. The recording URL obtained from ``GET /recordings/{id}`` uses signed URLs that expire after 1 hour. Fetch a fresh URL each time you need to download.
 
 Text-to-Speech (TTS)
 --------------------
@@ -479,6 +503,10 @@ Real-time transcription of audio:
        | VoIPBIN resamples automatically          |
        +------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   Transcription events are delivered via WebSocket subscription, not via webhooks. Subscribe to ``customer_id:<your-id>:transcript:*`` to receive real-time transcript events. Each event contains the ``direction`` (``in`` or ``out``) so you can distinguish which party is speaking. The ``language`` parameter must use the exact locale code (e.g., ``en-US``, not ``en``).
+
 Video Calls (WebRTC)
 --------------------
 
@@ -570,19 +598,19 @@ Plan network capacity based on call types:
 
     Audio Only (G.711):
     +------------------------------------------+
-    | 100 calls × 160 kbps = 16 Mbps           |
+    | 100 calls x 160 kbps = 16 Mbps           |
     | Recommended: 20 Mbps (headroom)          |
     +------------------------------------------+
 
     Audio Only (Opus):
     +------------------------------------------+
-    | 100 calls × 100 kbps = 10 Mbps           |
+    | 100 calls x 100 kbps = 10 Mbps           |
     | Recommended: 15 Mbps (headroom)          |
     +------------------------------------------+
 
     Video (720p):
     +------------------------------------------+
-    | 100 calls × 4 Mbps = 400 Mbps            |
+    | 100 calls x 4 Mbps = 400 Mbps            |
     | Recommended: 500 Mbps (headroom)         |
     +------------------------------------------+
 
@@ -620,3 +648,6 @@ Monitor call quality with metrics:
     | < 3.1:   Bad (unacceptable)              |
     +------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   Call-level metrics (``duration``, ``hangup_reason``) are available in the call object via ``GET /calls/{call-id}`` after the call ends. Media-level metrics (``jitter``, ``packet_loss``, ``mos``) may not be available for all call types. A MOS score below 3.6 typically indicates network issues (high latency, packet loss, or jitter) rather than a VoIPBIN platform problem.

@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="webhook-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before creating a webhook, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.</p></li>
+<li><p>Knowledge of which event types you want to receive (e.g., <code class="docutils literal notranslate"><span class="pre">call_created</span></code>, <code class="docutils literal notranslate"><span class="pre">message_created</span></code>). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a> for the full list.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server. The <code class="docutils literal notranslate"><span class="pre">uri</span></code> field must be a valid HTTPS URL for production use.</p>
+</div>
 <section id="create-a-webhook">
-<h2>Create a Webhook<a class="headerlink" href="#create-a-webhook" title="Link to this heading"></a></h2>
+<h3>Create a Webhook<a class="headerlink" href="#create-a-webhook" title="Link to this heading"></a></h3>
 <p>Register a webhook endpoint to receive real-time event notifications from VoIPBIN. Webhooks notify your server when events occur (call status changes, messages received, etc.).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -223,7 +236,7 @@
 <p>The webhook is now active and will receive POST requests when specified events occur.</p>
 </section>
 <section id="get-list-of-webhooks">
-<h2>Get List of Webhooks<a class="headerlink" href="#get-list-of-webhooks" title="Link to this heading"></a></h2>
+<h3>Get List of Webhooks<a class="headerlink" href="#get-list-of-webhooks" title="Link to this heading"></a></h3>
 <p>Retrieve all registered webhooks for your account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -251,7 +264,7 @@
 </div>
 </section>
 <section id="update-a-webhook">
-<h2>Update a Webhook<a class="headerlink" href="#update-a-webhook" title="Link to this heading"></a></h2>
+<h3>Update a Webhook<a class="headerlink" href="#update-a-webhook" title="Link to this heading"></a></h3>
 <p>Modify an existing webhook’s configuration, such as changing the URI or event types.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -269,14 +282,14 @@
 </div>
 </section>
 <section id="delete-a-webhook">
-<h2>Delete a Webhook<a class="headerlink" href="#delete-a-webhook" title="Link to this heading"></a></h2>
+<h3>Delete a Webhook<a class="headerlink" href="#delete-a-webhook" title="Link to this heading"></a></h3>
 <p>Remove a webhook when it’s no longer needed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="webhook-event-types">
-<h2>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h2>
+<h3>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h3>
 <p>VoIPBIN sends different event types to your webhook endpoint. For the complete list, see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a>.</p>
 <p><strong>Call Events:</strong></p>
 <ul class="simple">
@@ -328,7 +341,7 @@
 </ul>
 </section>
 <section id="receiving-webhook-events">
-<h2>Receiving Webhook Events<a class="headerlink" href="#receiving-webhook-events" title="Link to this heading"></a></h2>
+<h3>Receiving Webhook Events<a class="headerlink" href="#receiving-webhook-events" title="Link to this heading"></a></h3>
 <p>Your webhook endpoint should accept POST requests and process the JSON payload. Here’s an example webhook server implementation:</p>
 <p><strong>Python (Flask) Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
@@ -438,7 +451,7 @@ app.listen(5000, () =&gt; {
 </div>
 </section>
 <section id="testing-webhooks">
-<h2>Testing Webhooks<a class="headerlink" href="#testing-webhooks" title="Link to this heading"></a></h2>
+<h3>Testing Webhooks<a class="headerlink" href="#testing-webhooks" title="Link to this heading"></a></h3>
 <p><strong>Local Development:</strong></p>
 <p>Use tools like ngrok to expose your local server for testing:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Install ngrok
@@ -478,7 +491,7 @@ $ ngrok http 5000
 </div>
 </section>
 <section id="webhook-payload-structure">
-<h2>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading"></a></h2>
+<h3>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading"></a></h3>
 <p>All webhook events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
@@ -496,7 +509,7 @@ $ ngrok http 5000
 </ul>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>1. Acknowledge Quickly:</strong>
 - Return 200 OK immediately upon receiving the webhook
 - Process time-consuming tasks asynchronously (queue jobs, background workers)
@@ -523,7 +536,7 @@ $ ngrok http 5000
 - Monitor webhook processing times</p>
 </section>
 <section id="common-use-cases">
-<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>CRM Integration:</strong>
 Automatically update your CRM when calls end:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hungup&#39;</span><span class="p">:</span>
@@ -567,6 +580,7 @@ Email recordings to stakeholders when ready:</p>
 <p>For more information about webhook configuration and event types, see <a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a>.</p>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -577,6 +591,7 @@ Email recordings to stakeholders when ready:</p>
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-webhook">Create a Webhook</a></li>
 <li><a class="reference internal" href="#get-list-of-webhooks">Get List of Webhooks</a></li>
 <li><a class="reference internal" href="#update-a-webhook">Update a Webhook</a></li>
@@ -587,6 +602,8 @@ Email recordings to stakeholders when ready:</p>
 <li><a class="reference internal" href="#webhook-payload-structure">Webhook Payload Structure</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -197,10 +197,18 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Tag’s id.</p></li>
-<li><p>name: Tag’s name.</p></li>
-<li><p>detail: Tag’s detail description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The tag’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the tag. Must be unique per customer account. Used for matching agents to queues.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of what this tag represents.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the tag was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any tag property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the tag was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tag names must be unique within a customer account. When assigning tags to agents via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/tag_ids</span></code>, use the tag’s <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID), not the tag name. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> is a sentinel meaning the resource has <strong>not</strong> been deleted.</p>
+</div>
 </section>
 </section>
 

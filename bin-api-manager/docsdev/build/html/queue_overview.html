@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="queue-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High – Queues require coordinating agents, tags, flows, and calls. Set up agents and tags first.</p></li>
+<li><p><strong>Cost:</strong> No direct charge for queue operations. Underlying calls are chargeable per call minute.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code> creates the queue synchronously, but calls entering a queue via the <code class="docutils literal notranslate"><span class="pre">queue_join</span></code> flow action are processed asynchronously. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues/{id}</span></code> to monitor queue state, or use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls</span></code> to track individual call progress.</p></li>
+</ul>
+</div>
 <p>Call queueing allows calls to be placed on hold without handling the actual inquiries or transferring callers to the desired party. While in the call queue, the caller is played pre-recorded music or messages. Call queues are often used in call centers when there are not enough staff to handle a large number of calls. Call center operators generally receive information about the number of callers in the call queue and the duration of the waiting time. This allows them to respond flexibly to peak demand by deploying extra call center staff.</p>
 <p>With the VoIPBIN’s queueing feature, businesses and call centers can effectively manage inbound calls, provide a smooth waiting experience for callers, and ensure that calls are efficiently distributed to available agents, improving overall customer service and call center performance.</p>
 <section id="the-purpose-of-call-queueing">
@@ -323,6 +332,11 @@ Queue Configuration:                    Agent Pool:
 <li><p>If an agent is missing even one required tag, they’re excluded</p></li>
 <li><p>Tags define skills, languages, departments, or any grouping you need</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Before creating a queue, you must have tags and agents already set up. Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code>, assign them to agents via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}</span></code>, then reference the tag IDs in the queue’s <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> field. Agents must have <strong>all</strong> tags the queue requires (AND logic), so verify agent tags with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code> before expecting queue routing to work.</p>
+</div>
 <p><strong>Agent Status</strong></p>
 <p>The agent’s status must be “available” to receive queue calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent Statuses and Queue Eligibility:
@@ -548,6 +562,11 @@ Caller enters queue
 <li><p>0 means no timeout (talk forever)</p></li>
 <li><p>When exceeded, the call is ended gracefully</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timeout values are in <strong>milliseconds</strong>, not seconds. A 5-minute wait timeout is <code class="docutils literal notranslate"><span class="pre">300000</span></code>, not <code class="docutils literal notranslate"><span class="pre">300</span></code>. Setting <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the timeout entirely (wait/talk forever). If callers are being disconnected unexpectedly, check that timeout values are not set in seconds by mistake.</p>
+</div>
 <p><strong>Timeout Scenarios</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="n">waits</span> <span class="n">too</span> <span class="n">long</span>
 <span class="o">+----------+</span>                                        <span class="o">+-----------+</span>

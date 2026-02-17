@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="billing-account-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (reading billing data incurs no charges; adding balance is an admin-only operation)</p></li>
+<li><p><strong>Async:</strong> No. All billing account operations are synchronous and return immediately. Balance changes from service usage (calls, SMS) happen asynchronously as services are consumed.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the <strong>account</strong> holds the live state (current balance and tokens) and the <strong>billings</strong> table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.</p>
 <p>With the Billing Account API you can:</p>
 <ul class="simple">
@@ -199,6 +208,11 @@
 <p>VoIPBIN uses a hybrid billing model with two cost mechanisms: <strong>token balance</strong> and <strong>credit balance</strong>.</p>
 <p>Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.</p>
 <p>All monetary values are stored as <strong>int64 micros</strong> (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (int64), not dollars. To convert: divide by 1,000,000 for USD (e.g., <code class="docutils literal notranslate"><span class="pre">69772630</span></code> micros = $69.77). When displaying balance to users, always convert from micros to the currency unit. When estimating costs, multiply the rate in micros by the number of billable units.</p>
+</div>
 <p><strong>Billing Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------+
 |                     State + Ledger Architecture                       |

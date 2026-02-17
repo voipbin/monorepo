@@ -2,7 +2,18 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High
+   * **Cost:** Chargeable (credit deduction per AI session based on LLM, TTS, and STT usage)
+   * **Async:** Yes. AI sessions run asynchronously during calls. Monitor via ``GET /calls/{id}`` or WebSocket events.
+
 VoIPBIN's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
+
+.. note:: **AI Implementation Hint**
+
+   AI is configured in two layers: (1) a reusable AI configuration resource created via ``POST /ais`` (defines LLM, TTS, STT, and tools), and (2) a flow action (``ai_talk`` or ``ai``) that references the AI configuration or provides inline settings. For quick prototyping, use inline flow actions. For production, create a reusable AI resource and reference it by ``ai_id``.
 
 How it works
 ============
@@ -306,9 +317,9 @@ For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-too
 
 Configuring Tools
 -----------------
-Tools are configured per-AI using the ``tool_names`` field:
+Tools are configured per-AI using the ``tool_names`` field (Array of String):
 
-::
+.. code::
 
     // Enable all tools
     "tool_names": ["all"]
@@ -318,6 +329,10 @@ Tools are configured per-AI using the ``tool_names`` field:
 
     // Disable all tools (conversation-only)
     "tool_names": []
+
+.. note:: **AI Implementation Hint**
+
+   When using ``["all"]``, the AI can invoke any available tool, including ``stop_flow`` which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations.
 
 Using the AI
 ============
@@ -584,6 +599,28 @@ Best Practices
 
 Troubleshooting
 ===============
+
+.. note:: **AI Implementation Hint**
+
+   When diagnosing AI call issues, check these endpoints in order: (1) ``GET /calls/{id}`` to verify call status and hangup reason, (2) ``GET /activeflows/{id}`` to check flow execution state, (3) WebSocket events for real-time error notifications.
+
+**Common HTTP Errors**
+
+* **400 Bad Request:**
+    * **Cause:** Invalid ``engine_model`` format. Must be ``<provider>.<model>`` (e.g., ``openai.gpt-4o``).
+    * **Fix:** Verify the format matches the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
+
+* **402 Payment Required:**
+    * **Cause:** Insufficient account balance for AI session (LLM + TTS + STT costs).
+    * **Fix:** Check balance via ``GET /billing-accounts``. Top up before retrying.
+
+* **404 Not Found:**
+    * **Cause:** The ``ai_id`` does not exist or belongs to a different customer.
+    * **Fix:** Verify the UUID was obtained from ``GET /ais`` or ``POST /ais``.
+
+* **500 Internal Server Error:**
+    * **Cause:** LLM provider API key is invalid or the provider is unavailable.
+    * **Fix:** Verify ``engine_key`` is correct. Check the provider's status page.
 
 **Audio Issues**
 

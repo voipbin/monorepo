@@ -26,14 +26,21 @@ Activeflow
         "tm_delete": "<string>"
     }
 
-* id: Activeflow's ID.
-* customer_id: Customer's ID.
-* flow_id: Flow's ID.
-* *status*: Activeflow's status. See detail :ref:`here <activeflow-struct-activeflow-status>`.
-* *reference_type*: Represent which resource started activeflow.
-* reference_id: Referenced type's ID.
-* current_action: Currently running action on this activeflow. See detail :ref:`here <flow-struct-action-action>`.
-* forward_action_id: Forward action id.
+* ``id`` (UUID): The activeflow's unique identifier. Returned when listing via ``GET /activeflows`` or ``GET /activeflows/{id}``.
+* ``customer_id`` (UUID): The customer who owns this activeflow. Obtained from ``GET /customers`` or your authentication context.
+* ``flow_id`` (UUID): The flow template this activeflow was created from. Obtained from ``GET /flows``.
+* ``status`` (enum string): The activeflow's current status. See detail :ref:`here <activeflow-struct-activeflow-status>`.
+* ``reference_type`` (enum string): The resource type that triggered this activeflow. See detail :ref:`here <activeflow-struct-activeflow-reference-type>`.
+* ``reference_id`` (UUID): The ID of the resource that triggered this activeflow (e.g., a call ID if ``reference_type`` is ``call``). Obtained from the corresponding resource endpoint (e.g., ``GET /calls/{id}``).
+* ``current_action`` (Object): The action currently being executed. See detail :ref:`here <flow-struct-action-action>`.
+* ``forward_action_id`` (UUID): The ID of the next action to execute. Set to ``00000000-0000-0000-0000-000000000000`` if sequential (next in array).
+* ``tm_create`` (String, ISO 8601): Timestamp when the activeflow was created.
+* ``tm_update`` (String, ISO 8601): Timestamp of the last state change.
+* ``tm_delete`` (String, ISO 8601): Timestamp when the activeflow was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+
+.. note:: **AI Implementation Hint**
+
+   Activeflows are read-only from an API perspective -- you cannot create them via API. They are created automatically when a flow is triggered. You can only list them (``GET /activeflows``), inspect them (``GET /activeflows/{id}``), or stop them (``POST /activeflows/{id}/stop``). Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred.
 
 Example
 +++++++
@@ -69,12 +76,14 @@ Status
 Activeflow's status.
 
 =========== ============
-Type        Description
+Status      Description
 =========== ============
-EMPTY       None
+``""``      Initial state. The activeflow has been created but execution has not yet started.
 running     Activeflow is running.
 ended       Activeflow has stopped.
 =========== ============
+
+.. _activeflow-struct-activeflow-reference-type:
 
 Reference type
 --------------

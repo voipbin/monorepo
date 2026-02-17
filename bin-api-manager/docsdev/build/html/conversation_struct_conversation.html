@@ -205,14 +205,22 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Conversation’s ID.</p></li>
-<li><p>name: Conversation’s name.</p></li>
-<li><p>detail: Conversation’s detail.</p></li>
-<li><p>reference_type: Conversation’s reference type. See detail <a class="reference internal" href="#conversation-struct-conversation-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Conversation’s reference id.</p></li>
-<li><p>source: Conversation’s source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>participants: List of participants. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conversation’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the conversation (e.g., “Customer Support #1234”).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Additional description or context for the conversation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel type that initiated this conversation. See <a class="reference internal" href="#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the reference channel (e.g., a phone number or Line user ID).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The conversation’s source address. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">participants</span></code> (Array of Object): List of participant addresses in this conversation. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the conversation was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the conversation has not been deleted.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -263,10 +271,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>message</p></td>
-<td><p>Message(SMS/MMS).</p></td>
+<td><p>Conversation initiated via SMS/MMS messaging channel.</p></td>
 </tr>
 <tr class="row-odd"><td><p>line</p></td>
-<td><p>Line.</p></td>
+<td><p>Conversation initiated via Line messaging platform.</p></td>
 </tr>
 </tbody>
 </table>

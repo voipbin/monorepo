@@ -188,6 +188,15 @@
 <span id="route-main"></span><h1>Route<a class="headerlink" href="#route" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="route-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Routes are configuration rules with no per-unit charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> returns immediately with the created route.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Route API provides intelligent SIP routing with automatic failover capabilities. Routes determine which provider handles outbound calls and define fallback strategies when primary routes fail.</p>
 <p>With the Route API you can:</p>
 <ul class="simple">
@@ -338,6 +347,11 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> of <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> is the system-wide default. Routes with this customer ID apply to all customers unless a customer-specific route exists. A <code class="docutils literal notranslate"><span class="pre">target</span></code> of <code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code> matches every destination. For country-specific routing, use the E.164 country code prefix (e.g., <code class="docutils literal notranslate"><span class="pre">+82</span></code> for South Korea, <code class="docutils literal notranslate"><span class="pre">+1</span></code> for US/Canada).</p>
+</div>
 </section>
 <section id="route-configuration">
 <h3>Route Configuration<a class="headerlink" href="#route-configuration" title="Link to this heading"></a></h3>
@@ -516,14 +530,22 @@ changing route priorities</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Provider’s id.</p></li>
-<li><p>customer_id: Customer’s id. If the customer id is “00000000-0000-0000-0000-000000000001”, then it used for every customer.</p></li>
-<li><p>provider_id: Provider’s id.</p></li>
-<li><p>priority: Route priority.</p></li>
-<li><p>target: Target country code. If it set to “all”, it used for every destination target.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The route’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/routes</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer this route applies to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>. The special value <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> means this route applies to all customers (system default).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider_id</span></code> (UUID): The provider used for outbound calls on this route. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">priority</span></code> (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> (String): Target country code prefix for destination matching (e.g., <code class="docutils literal notranslate"><span class="pre">+82</span></code>, <code class="docutils literal notranslate"><span class="pre">+1</span></code>). Set to <code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code> to match every destination.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the route was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any route property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the route was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the route has not been deleted.</p>
+</div>
 <section id="example">
-<h4>example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;491b6858-5357-11ed-b753-8fd49cd36340&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000001&quot;</span><span class="p">,</span>
@@ -541,6 +563,17 @@ changing route priorities</p></td>
 </section>
 <section id="tutorial">
 <span id="route-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with routes, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A provider ID (UUID). Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p>A customer ID (UUID). Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>. Use <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> for system-wide default routes.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Routes are evaluated by <code class="docutils literal notranslate"><span class="pre">priority</span></code> (lower number = higher priority). To set up failover, create multiple routes for the same <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> and <code class="docutils literal notranslate"><span class="pre">target</span></code> with different <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> values and incrementing <code class="docutils literal notranslate"><span class="pre">priority</span></code> values (e.g., 1, 2, 3). If the first provider fails, VoIPBIN automatically tries the next route.</p>
+</div>
 <section id="get-list-of-routes">
 <h3>Get list of routes<a class="headerlink" href="#get-list-of-routes" title="Link to this heading"></a></h3>
 <p>Example</p>
@@ -610,24 +643,20 @@ changing route priorities</p></td>
 <section id="update-route">
 <h3>Update route<a class="headerlink" href="#update-route" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
-        &quot;type&quot;: &quot;sip&quot;,
-        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
-        &quot;tech_prefix&quot;: &quot;&quot;,
-        &quot;tech_postfix&quot;: &quot;&quot;,
-        &quot;tech_headers&quot;: {},
-        &quot;name&quot;: &quot;telnyx basic&quot;,
-        &quot;detail&quot;: &quot;telnyx basic&quot;
+        &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;priority&quot;: 2,
+        &quot;target&quot;: &quot;+82&quot;
     }&#39;
 
 {
     &quot;id&quot;: &quot;b972b61c-59d2-4217-8fbb-a32304be5c3b&quot;,
     &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
     &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
+    &quot;priority&quot;: 2,
     &quot;target&quot;: &quot;+82&quot;,
     &quot;tm_create&quot;: &quot;2022-11-02 15:36:32.174346&quot;,
     &quot;tm_update&quot;: &quot;2022-11-02 15:43:09.190169&quot;,
@@ -686,7 +715,7 @@ changing route priorities</p></td>
 </li>
 <li><a class="reference internal" href="#route-struct-route">Route</a><ul>
 <li><a class="reference internal" href="#route-struct-route-route">Route</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

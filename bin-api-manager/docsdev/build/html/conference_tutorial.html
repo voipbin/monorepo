@@ -184,10 +184,25 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with conferences, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(Optional) A flow ID (UUID) for <code class="docutils literal notranslate"><span class="pre">pre_actions</span></code> or <code class="docutils literal notranslate"><span class="pre">post_actions</span></code>. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+<li><p>(Optional) To add participants, you need an active call. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conferences are created with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> and begin in <code class="docutils literal notranslate"><span class="pre">starting</span></code> status, quickly transitioning to <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. Participants do not join via the conference API directly – they join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>). To remove a participant, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{conferencecall_id}</span></code>. To terminate the entire conference, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferences/{conference_id}</span></code>.</p>
+</div>
 <section id="install-channel-line">
-<h2>Install channel: line<a class="headerlink" href="#install-channel-line" title="Link to this heading"></a></h2>
+<h3>Install channel: line<a class="headerlink" href="#install-channel-line" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -195,12 +210,12 @@
     }&#39;
 </pre></div>
 </div>
-</section>
-</section>
 <section id="get-list-of-conferences">
-<h2>Get list of conferences<a class="headerlink" href="#get-list-of-conferences" title="Link to this heading"></a></h2>
+<h3>Get list of conferences<a class="headerlink" href="#get-list-of-conferences" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id1">
-<h3>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -225,12 +240,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="get-detail-of-conference">
-<h2>Get detail of conference<a class="headerlink" href="#get-detail-of-conference" title="Link to this heading"></a></h2>
+<h3>Get detail of conference<a class="headerlink" href="#get-detail-of-conference" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id2">
-<h3>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -249,12 +264,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="create-a-new-conference">
-<h2>Create a new conference<a class="headerlink" href="#create-a-new-conference" title="Link to this heading"></a></h2>
+<h3>Create a new conference<a class="headerlink" href="#create-a-new-conference" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id3">
-<h3>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
         &quot;type&quot;: &quot;conference&quot;,
@@ -278,27 +293,68 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="kick-the-conferencecall-from-the-conference">
-<h2>Kick the conferencecall from the conference<a class="headerlink" href="#kick-the-conferencecall-from-the-conference" title="Link to this heading"></a></h2>
+<h3>Kick the conferencecall from the conference<a class="headerlink" href="#kick-the-conferencecall-from-the-conference" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>You can only kick participants whose status is <code class="docutils literal notranslate"><span class="pre">joining</span></code> or <code class="docutils literal notranslate"><span class="pre">joined</span></code>. Attempting to delete a conferencecall in <code class="docutils literal notranslate"><span class="pre">leaving</span></code> or <code class="docutils literal notranslate"><span class="pre">leaved</span></code> status will fail. Obtain the conferencecall ID from the conference’s <code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> array (via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code>) or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p>
+</div>
+</section>
+</section>
 <section id="id4">
-<h3>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,
-    &quot;status&quot;: &quot;leaving&quot;,
-    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,
+    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,   // Conferencecall ID (UUID)
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,   // Customer UUID
+    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,   // Parent conference UUID
+    &quot;reference_type&quot;: &quot;call&quot;,   // enum: call, line
+    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,   // The call&#39;s UUID
+    &quot;status&quot;: &quot;leaving&quot;,   // enum: joining, joined, leaving, leaved
+    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,   // ISO 8601 timestamp
     &quot;tm_update&quot;: &quot;2022-08-09 03:54:10.035297&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;   // 9999-01-01 means not deleted
 }
 </pre></div>
 </div>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid conference creation parameters (e.g., missing <code class="docutils literal notranslate"><span class="pre">type</span></code> field).</p></li>
+<li><p><strong>Fix:</strong> Ensure the request body includes <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;conference&quot;</span></code> and a <code class="docutils literal notranslate"><span class="pre">name</span></code> string.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The conference UUID or conferencecall UUID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>409 Conflict (kick participant):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Attempted to kick a participant whose status is <code class="docutils literal notranslate"><span class="pre">leaving</span></code> or <code class="docutils literal notranslate"><span class="pre">leaved</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Check participant status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> before attempting deletion. Only <code class="docutils literal notranslate"><span class="pre">joining</span></code> or <code class="docutils literal notranslate"><span class="pre">joined</span></code> participants can be kicked.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Conference has no participants:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Participants join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>), not through the conference API.</p></li>
+<li><p><strong>Fix:</strong> Create a call with a flow containing a <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> action that references the conference ID.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 </section>
 </section>
@@ -312,24 +368,28 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#install-channel-line">Install channel: line</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#install-channel-line">Install channel: line</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a><ul>
-<li><a class="reference internal" href="#id1">Example</a></li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a><ul>
-<li><a class="reference internal" href="#id2">Example</a></li>
+<li><a class="reference internal" href="#id1">Example</a><ul>
+<li><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#create-a-new-conference">Create a new conference</a><ul>
-<li><a class="reference internal" href="#id3">Example</a></li>
+<li><a class="reference internal" href="#id2">Example</a><ul>
+<li><a class="reference internal" href="#create-a-new-conference">Create a new conference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a><ul>
-<li><a class="reference internal" href="#id4">Example</a></li>
+<li><a class="reference internal" href="#id3">Example</a><ul>
+<li><a class="reference internal" href="#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">Example</a><ul>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

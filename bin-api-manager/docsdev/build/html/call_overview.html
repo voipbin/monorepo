@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="call-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable (credit deduction per call minute)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">dialing</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or subscribe via WebSocket to track call status changes.</p></li>
+</ul>
+</div>
 <p>The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different gender and accents.</p>
 <p>With the VoIPBIN API you can:</p>
 <ul class="simple">

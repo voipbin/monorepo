@@ -2,6 +2,13 @@
 
 Trunking
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Chargeable. Outbound calls through SIP trunking incur per-call charges based on destination and provider rates.
+   * **Async:** No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via ``GET /calls/{id}``.
+
 SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.
 
 Server address
@@ -59,6 +66,10 @@ By following these steps, you can make a SIP outgoing call through VoIPBIN using
     |                                        |<---------------- 200 OK ---------------|
     |<------------- 200 OK ------------------|                                        |
 
+
+.. note:: **AI Implementation Hint**
+
+   The trunk server address format is ``sip:{your-domain}.trunk.voipbin.net``. When configuring a SIP client for trunking, use the extension's ``username`` and ``password`` for authentication, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication.
 
 Call handle
 -------------------

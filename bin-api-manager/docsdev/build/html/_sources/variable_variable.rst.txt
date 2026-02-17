@@ -3,161 +3,165 @@
 Variable
 ========
 
+.. note:: **AI Implementation Hint**
+
+   All system variables use the ``voipbin.`` prefix. Variables are read-only unless explicitly set via the ``variable_set`` flow action. Use the ``${voipbin.<category>.<field>}`` syntax to reference them in flow action text fields, webhook URLs, and conditional expressions.
+
 Activeflow
 ----------
-* voipbin.activeflow.id: Activeflow's ID.
-* voipbin.activeflow.reference_type: Activeflow's reference type.
-* voipbin.activeflow.reference_id: Activeflow's reference ID.
-* voipbin.activeflow.reference_activeflow_id: Activeflow's reference activeflow id.
-* voipbin.activeflow.flow_id: Activeflow's flow id.
+* ``voipbin.activeflow.id`` (UUID): The activeflow's unique identifier. Obtained from the current flow execution context.
+* ``voipbin.activeflow.reference_type`` (String): The type of resource that triggered this flow (e.g., ``"call"``, ``"message"``).
+* ``voipbin.activeflow.reference_id`` (UUID): The ID of the resource that triggered this flow (e.g., the call ID or message ID).
+* ``voipbin.activeflow.reference_activeflow_id`` (UUID): The parent activeflow's ID when this flow was triggered from another flow.
+* ``voipbin.activeflow.flow_id`` (UUID): The flow template ID used for this execution. Obtained from ``GET /flows``.
 
 Call
 ----
 
 Source address
 ++++++++++++++
-* voipbin.call.source.name: Source address's name.
-* voipbin.call.source.detail: Source address's detail.
-* voipbin.call.source.target: Source address's target.
-* voipbin.call.source.target_name: Source address's target name.
-* voipbin.call.source.type: Source address's type.
+* ``voipbin.call.source.name`` (String): Source address's display name.
+* ``voipbin.call.source.detail`` (String): Source address's detail information.
+* ``voipbin.call.source.target`` (String): Source address's target (e.g., phone number in E.164 format like ``+15551234567``).
+* ``voipbin.call.source.target_name`` (String): Source address's target name.
+* ``voipbin.call.source.type`` (String): Source address's type (e.g., ``"tel"``, ``"sip"``).
 
 Destination address
 +++++++++++++++++++
-* voipbin.call.destination.name: Destination address's name.
-* voipbin.call.destination.detail: Destination address's detail.
-* voipbin.call.destination.target: Destination address's target.
-* voipbin.call.destination.target_name: Destination address's target name.
-* voipbin.call.destination.type: Destination address's type.
+* ``voipbin.call.destination.name`` (String): Destination address's display name.
+* ``voipbin.call.destination.detail`` (String): Destination address's detail information.
+* ``voipbin.call.destination.target`` (String): Destination address's target (e.g., phone number in E.164 format).
+* ``voipbin.call.destination.target_name`` (String): Destination address's target name.
+* ``voipbin.call.destination.type`` (String): Destination address's type (e.g., ``"tel"``, ``"sip"``).
 
 Others
 ++++++
-* voipbin.call.direction: Call's direction.
-* voipbin.call.master_call_id: Call's master call id.
-* voipbin.call.digits: Call's received digits.
+* ``voipbin.call.direction`` (enum string): Call's direction (``"incoming"`` or ``"outgoing"``).
+* ``voipbin.call.master_call_id`` (UUID): The master call's ID in a call chain.
+* ``voipbin.call.digits`` (String): DTMF digits received during the call (e.g., from a ``digits_receive`` action).
 
 Message
 -------
 
 Source address
 ++++++++++++++
-* voipbin.message.source.name: Source address's name.
-* voipbin.message.source.detail: Source address's detail.
-* voipbin.message.source.target: Source address's target.
-* voipbin.message.source.target_name: Source address's target name.
-* voipbin.message.source.type: Source address's type.
+* ``voipbin.message.source.name`` (String): Source address's display name.
+* ``voipbin.message.source.detail`` (String): Source address's detail information.
+* ``voipbin.message.source.target`` (String): Source address's target (e.g., phone number in E.164 format).
+* ``voipbin.message.source.target_name`` (String): Source address's target name.
+* ``voipbin.message.source.type`` (String): Source address's type (e.g., ``"tel"``).
 
 Target destination address
 ++++++++++++++++++++++++++
-* voipbin.message.target.destination.name: Destination address's name.
-* voipbin.message.target.destination.detail: Destination address's detail.
-* voipbin.message.target.destination.target: Destination address's target.
-* voipbin.message.target.destination.target_name: Destination address's target name.
-* voipbin.message.target.destination.type: Destination address's type.
+* ``voipbin.message.target.destination.name`` (String): Destination address's display name.
+* ``voipbin.message.target.destination.detail`` (String): Destination address's detail information.
+* ``voipbin.message.target.destination.target`` (String): Destination address's target (e.g., phone number in E.164 format).
+* ``voipbin.message.target.destination.target_name`` (String): Destination address's target name.
+* ``voipbin.message.target.destination.type`` (String): Destination address's type (e.g., ``"tel"``).
 
 Message
 +++++++
-* voipbin.message.id: Message's id.
-* voipbin.message.text: Message's text.
-* voipbin.message.direction: Message's direction.
+* ``voipbin.message.id`` (UUID): The message's unique identifier.
+* ``voipbin.message.text`` (String): The message's text content.
+* ``voipbin.message.direction`` (enum string): The message's direction (``"incoming"`` or ``"outgoing"``).
 
 Queue
 -----
 
 Queue info
 ++++++++++
-* voipbin.queue.id: Entered Queue's ID.
-* voipbin.queue.name: Entered Queue's name.
-* voipbin.queue.detail: Entered Queue's detail.
+* ``voipbin.queue.id`` (UUID): The entered queue's unique identifier. Obtained from ``GET /queues``.
+* ``voipbin.queue.name`` (String): The entered queue's name.
+* ``voipbin.queue.detail`` (String): The entered queue's detail description.
 
 Queuecall info
 ++++++++++++++
-* voipbin.queuecall.id: Created Queuecall's ID.
-* voipbin.queuecall.timeout_wait: Created Queuecall's wait timeout
-* voipbin.queuecall.timeout_service: Created Queuecall's service timeout.
+* ``voipbin.queuecall.id`` (UUID): The created queuecall's unique identifier.
+* ``voipbin.queuecall.timeout_wait`` (Integer): The queuecall's wait timeout in seconds.
+* ``voipbin.queuecall.timeout_service`` (Integer): The queuecall's service timeout in seconds.
 
 AI Call
 -------
-* voipbin.aicall.id: Created AI Call's ID.
-* voipbin.aicall.ai_id: Created AI Call's AI ID.
-* voipbin.aicall.ai_engine_model: Created AI Call's AI engine model.
-* voipbin.aicall.confbridge_id: Created AI Call's confbridge ID.
-* voipbin.aicall.gender: Created AI call's voice gender.
-* voipbin.aicall.language: Created AI call's voice language.
+* ``voipbin.aicall.id`` (UUID): The created AI call's unique identifier.
+* ``voipbin.aicall.ai_id`` (UUID): The AI configuration ID used. Obtained from ``GET /ais``.
+* ``voipbin.aicall.ai_engine_model`` (String): The AI engine model name (e.g., ``"gpt-4"``).
+* ``voipbin.aicall.confbridge_id`` (UUID): The conference bridge ID hosting the AI call.
+* ``voipbin.aicall.gender`` (enum string): The AI voice gender (e.g., ``"male"``, ``"female"``).
+* ``voipbin.aicall.language`` (String): The AI voice language (e.g., ``"en-US"``).
 
 AI Summary
 ----------
-* voipbin.ai_summary.id: Created AI Summary's ID.
-* voipbin.ai_summary.reference_type: Created AI Summary's reference type.
-* voipbin.ai_summary.reference_id: Created AI Summary's reference ID.
-* voipbin.ai_summary.language: Created AI Summary's language.
-* voipbin.ai_summary.content: Created AI Summary's content.
+* ``voipbin.ai_summary.id`` (UUID): The created AI summary's unique identifier.
+* ``voipbin.ai_summary.reference_type`` (String): The type of resource summarized (e.g., ``"call"``).
+* ``voipbin.ai_summary.reference_id`` (UUID): The ID of the resource that was summarized.
+* ``voipbin.ai_summary.language`` (String): The language of the summary (e.g., ``"en-US"``).
+* ``voipbin.ai_summary.content`` (String): The generated summary text content.
 
 Recording
 ---------
-* voipbin.recording.id: Created Recording's ID.
-* voipbin.recording.reference_type: Created Recording's reference type.
-* voipbin.recording.reference_id: Created Recording's reference ID.
-* voipbin.recording.format: Created Recording's format.
-* voipbin.recording.recording_name: Created Recording's name.
-* voipbin.recording.filenames: Created Recording's filenames.
+* ``voipbin.recording.id`` (UUID): The created recording's unique identifier. Obtained from ``GET /recordings``.
+* ``voipbin.recording.reference_type`` (String): The type of resource being recorded (e.g., ``"call"``).
+* ``voipbin.recording.reference_id`` (UUID): The ID of the resource being recorded (e.g., the call ID).
+* ``voipbin.recording.format`` (String): The recording format (e.g., ``"wav"``, ``"mp3"``).
+* ``voipbin.recording.recording_name`` (String): The recording's name.
+* ``voipbin.recording.filenames`` (String): The recording's output filenames.
 
 Transcribe
 ----------
-* voipbin.transcribe.id: Created Transcribe's ID.
-* voipbin.transcribe.language: Created Transcribe's language.
-* voipbin.transcribe.direction: Created Transcribe's direction.
+* ``voipbin.transcribe.id`` (UUID): The created transcribe's unique identifier. Obtained from ``GET /transcribes``.
+* ``voipbin.transcribe.language`` (String): The transcription language (e.g., ``"en-US"``).
+* ``voipbin.transcribe.direction`` (enum string): The transcription direction (``"in"``, ``"out"``, or ``"both"``).
 
 Transcript
 ----------
-* voipbin.transcript.id: Created Transcript's ID.
-* voipbin.transcript.transcribe_id: Parent Transcribe's ID.
-* voipbin.transcript.direction: Transcript's direction (in/out).
-* voipbin.transcript.message: Transcript's text content.
+* ``voipbin.transcript.id`` (UUID): The created transcript's unique identifier.
+* ``voipbin.transcript.transcribe_id`` (UUID): The parent transcribe's unique identifier.
+* ``voipbin.transcript.direction`` (enum string): The transcript's direction (``"in"`` for caller, ``"out"`` for callee).
+* ``voipbin.transcript.message`` (String): The transcript's text content.
 
 Conference
 ----------
-* voipbin.conference.id: Created Conference's ID.
-* voipbin.conference.name: Conference's name.
-* voipbin.conference.type: Conference's type (connect/confbridge).
-* voipbin.conference.status: Conference's status.
+* ``voipbin.conference.id`` (UUID): The created conference's unique identifier. Obtained from ``GET /conferences``.
+* ``voipbin.conference.name`` (String): The conference's name.
+* ``voipbin.conference.type`` (enum string): The conference's type (``"connect"`` or ``"confbridge"``).
+* ``voipbin.conference.status`` (enum string): The conference's current status.
 
 Confbridge
 ++++++++++
-* voipbin.confbridge.id: Created Confbridge's ID.
-* voipbin.confbridge.type: Confbridge's type.
-* voipbin.confbridge.status: Confbridge's status.
+* ``voipbin.confbridge.id`` (UUID): The created confbridge's unique identifier.
+* ``voipbin.confbridge.type`` (String): The confbridge's type.
+* ``voipbin.confbridge.status`` (enum string): The confbridge's current status.
 
 Agent
 -----
-* voipbin.agent.id: Agent's ID.
-* voipbin.agent.name: Agent's name.
-* voipbin.agent.detail: Agent's detail.
-* voipbin.agent.status: Agent's status.
+* ``voipbin.agent.id`` (UUID): The agent's unique identifier. Obtained from ``GET /agents``.
+* ``voipbin.agent.name`` (String): The agent's display name.
+* ``voipbin.agent.detail`` (String): The agent's detail description.
+* ``voipbin.agent.status`` (enum string): The agent's current status (e.g., ``"available"``, ``"busy"``).
 
 Webhook Response
 ----------------
-Variables available after a webhook_send action with sync=true.
+Variables available after a ``webhook_send`` action with ``sync=true``.
 
-* voipbin.webhook.status_code: HTTP response status code.
-* voipbin.webhook.body: HTTP response body as string.
+* ``voipbin.webhook.status_code`` (Integer): The HTTP response status code (e.g., ``200``, ``404``).
+* ``voipbin.webhook.body`` (String): The HTTP response body as a string.
 
 Email
 -----
-* voipbin.email.id: Created Email's ID.
-* voipbin.email.status: Email's status.
-* voipbin.email.subject: Email's subject.
+* ``voipbin.email.id`` (UUID): The created email's unique identifier.
+* ``voipbin.email.status`` (enum string): The email's delivery status.
+* ``voipbin.email.subject`` (String): The email's subject line.
 
 Outdial
 -------
-* voipbin.outdial.id: Created Outdial's ID.
-* voipbin.outdial.status: Outdial's status.
+* ``voipbin.outdial.id`` (UUID): The created outdial's unique identifier. Obtained from ``GET /outdials``.
+* ``voipbin.outdial.status`` (enum string): The outdial's current status.
 
 Outdialtarget
 +++++++++++++
-* voipbin.outdialtarget.id: Created Outdialtarget's ID.
-* voipbin.outdialtarget.status: Outdialtarget's status.
-* voipbin.outdialtarget.try_count: Current try count.
+* ``voipbin.outdialtarget.id`` (UUID): The created outdialtarget's unique identifier.
+* ``voipbin.outdialtarget.status`` (enum string): The outdialtarget's current status.
+* ``voipbin.outdialtarget.try_count`` (Integer): The current try count for this target.
 
 Custom Variables
 ----------------

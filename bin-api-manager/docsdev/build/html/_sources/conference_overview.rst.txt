@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium-High
+   * **Cost:** Chargeable (credit deduction per conference minute per participant)
+   * **Async:** Yes. ``POST /conferences`` returns immediately with status ``starting``. Poll ``GET /conferences/{id}`` or subscribe via WebSocket to track conference status changes.
+
 The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.
 
 Additionally, the Conference API allows developers to establish voice, video, and WebRTC (Web Real-Time Communication) calls, enabling seamless voice and video communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.
@@ -285,6 +292,10 @@ VoIPBIN supports different conference types for different use cases.
     |                                                                         |
     +-------------------------------------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   The ``type`` field is immutable after creation. Choose ``conference`` for multi-party rooms (2+ participants, stays active until explicitly deleted) or ``connect`` for 1:1 bridges (auto-terminates when either party leaves). If unsure, default to ``conference`` since it handles both single and multi-party scenarios.
+
 **Type: Connect (1:1 Bridge)**
 
 ::
@@ -350,6 +361,10 @@ Conferences support recording all participant audio into a single file.
     |   recording_ids: ["abc-123", ...]  (all recordings history)             |
     |                                                                         |
     +-------------------------------------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   Recording and transcription can only start when the conference status is ``progressing``. If you attempt ``POST /conferences/{id}/recording_start`` on a conference in ``starting`` or ``terminating`` status, the request will fail. Always poll ``GET /conferences/{id}`` and verify ``status`` is ``progressing`` before starting recording or transcription.
 
 **Recording Rules**
 

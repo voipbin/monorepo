@@ -185,8 +185,21 @@
     <section id="flow-debugging-and-troubleshooting">
 <span id="flow-debugging"></span><h1>Flow Debugging and Troubleshooting<a class="headerlink" href="#flow-debugging-and-troubleshooting" title="Link to this heading"></a></h1>
 <p>This section provides tools and techniques for debugging flow execution issues.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before debugging, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>The call ID (UUID) or activeflow ID (UUID) of the session you want to debug. Obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>.</p></li>
+<li><p>(Optional) A webhook endpoint (e.g., <a class="reference external" href="https://webhook.site">https://webhook.site</a>) to receive real-time flow events for monitoring.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The most common debugging path is: (1) Find the call via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> using the phone number or time range. (2) Get the activeflow via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows?reference_id={call-id}</span></code>. (3) Inspect variables via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}/variables</span></code> to see what values were set. (4) Check <code class="docutils literal notranslate"><span class="pre">current_action_id</span></code> and <code class="docutils literal notranslate"><span class="pre">execute_count</span></code> to understand where execution stopped and why.</p>
+</div>
 <section id="debugging-tools">
-<h2>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading"></a></h2>
+<h3>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading"></a></h3>
 <p>VoIPBIN provides several tools for debugging flows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">Debugging</span> <span class="n">Resources</span><span class="p">:</span>
 
@@ -218,7 +231,7 @@
 </div>
 </section>
 <section id="examining-activeflow-state">
-<h2>Examining Activeflow State<a class="headerlink" href="#examining-activeflow-state" title="Link to this heading"></a></h2>
+<h3>Examining Activeflow State<a class="headerlink" href="#examining-activeflow-state" title="Link to this heading"></a></h3>
 <p>Use the API to inspect activeflow execution:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Get Activeflow Details:
 
@@ -255,9 +268,11 @@ Key fields to examine:
 </div>
 </section>
 <section id="common-issues-and-solutions">
-<h2>Common Issues and Solutions<a class="headerlink" href="#common-issues-and-solutions" title="Link to this heading"></a></h2>
+<h3>Common Issues and Solutions<a class="headerlink" href="#common-issues-and-solutions" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="flow-never-starts">
-<h3>Flow Never Starts<a class="headerlink" href="#flow-never-starts" title="Link to this heading"></a></h3>
+<h2>Flow Never Starts<a class="headerlink" href="#flow-never-starts" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Call connects but no flow actions execute
 
 Diagnostic Steps:
@@ -286,7 +301,7 @@ Common Causes:
 </div>
 </section>
 <section id="flow-stops-unexpectedly">
-<h3>Flow Stops Unexpectedly<a class="headerlink" href="#flow-stops-unexpectedly" title="Link to this heading"></a></h3>
+<h2>Flow Stops Unexpectedly<a class="headerlink" href="#flow-stops-unexpectedly" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Flow</span> <span class="n">stops</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">middle</span> <span class="n">without</span> <span class="n">completing</span>
 
 <span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
@@ -314,7 +329,12 @@ Common Causes:
 </div>
 </section>
 <section id="branch-not-working">
-<h3>Branch Not Working<a class="headerlink" href="#branch-not-working" title="Link to this heading"></a></h3>
+<h2>Branch Not Working<a class="headerlink" href="#branch-not-working" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Branch matching is <strong>exact string comparison</strong> and case-sensitive. The most common cause of branch failures is that <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code> with a <code class="docutils literal notranslate"><span class="pre">key</span></code> terminator (e.g., <code class="docutils literal notranslate"><span class="pre">#</span></code>) includes the terminator in the <code class="docutils literal notranslate"><span class="pre">voipbin.call.digits</span></code> variable. For example, if the user presses <code class="docutils literal notranslate"><span class="pre">1#</span></code>, the variable value is <code class="docutils literal notranslate"><span class="pre">1#</span></code>, which does not match a <code class="docutils literal notranslate"><span class="pre">target_ids</span></code> key of <code class="docutils literal notranslate"><span class="pre">&quot;1&quot;</span></code>. Either remove the <code class="docutils literal notranslate"><span class="pre">key</span></code> parameter or account for the terminator in your target keys.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Branch</span> <span class="n">always</span> <span class="n">goes</span> <span class="n">to</span> <span class="n">default</span> <span class="ow">or</span> <span class="n">wrong</span> <span class="n">target</span>
 
 <span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
@@ -358,7 +378,7 @@ Common Causes:
 </div>
 </section>
 <section id="talk-action-not-playing">
-<h3>Talk Action Not Playing<a class="headerlink" href="#talk-action-not-playing" title="Link to this heading"></a></h3>
+<h2>Talk Action Not Playing<a class="headerlink" href="#talk-action-not-playing" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Talk</span> <span class="n">action</span> <span class="n">executes</span> <span class="n">but</span> <span class="n">no</span> <span class="n">audio</span> <span class="n">heard</span>
 
 <span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
@@ -385,7 +405,7 @@ Common Causes:
 </div>
 </section>
 <section id="digits-not-received">
-<h3>Digits Not Received<a class="headerlink" href="#digits-not-received" title="Link to this heading"></a></h3>
+<h2>Digits Not Received<a class="headerlink" href="#digits-not-received" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: digits_receive action never captures input
 
 Diagnostic Steps:
@@ -424,7 +444,7 @@ Common Causes:
 </div>
 </section>
 <section id="connect-action-failing">
-<h3>Connect Action Failing<a class="headerlink" href="#connect-action-failing" title="Link to this heading"></a></h3>
+<h2>Connect Action Failing<a class="headerlink" href="#connect-action-failing" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Connect action doesn&#39;t reach destination
 
 Diagnostic Steps:
@@ -452,7 +472,7 @@ Common Causes:
 </div>
 </section>
 <section id="variables-not-substituting">
-<h3>Variables Not Substituting<a class="headerlink" href="#variables-not-substituting" title="Link to this heading"></a></h3>
+<h2>Variables Not Substituting<a class="headerlink" href="#variables-not-substituting" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: ${variable} appears literally in output instead of value
 
 Diagnostic Steps:
@@ -478,7 +498,7 @@ Example:
 </div>
 </section>
 <section id="queue-join-not-working">
-<h3>Queue Join Not Working<a class="headerlink" href="#queue-join-not-working" title="Link to this heading"></a></h3>
+<h2>Queue Join Not Working<a class="headerlink" href="#queue-join-not-working" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Caller joins queue but never gets connected to agent
 
 Diagnostic Steps:
@@ -505,10 +525,8 @@ Common Causes:
 +------------------------------------------------------------------+
 </pre></div>
 </div>
-</section>
-</section>
 <section id="using-webhooks-for-debugging">
-<h2>Using Webhooks for Debugging<a class="headerlink" href="#using-webhooks-for-debugging" title="Link to this heading"></a></h2>
+<h3>Using Webhooks for Debugging<a class="headerlink" href="#using-webhooks-for-debugging" title="Link to this heading"></a></h3>
 <p>Set up webhooks to monitor flow execution in real-time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span> <span class="n">Event</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -563,7 +581,7 @@ Common Causes:
 </div>
 </section>
 <section id="testing-flows">
-<h2>Testing Flows<a class="headerlink" href="#testing-flows" title="Link to this heading"></a></h2>
+<h3>Testing Flows<a class="headerlink" href="#testing-flows" title="Link to this heading"></a></h3>
 <p>Best practices for testing flows before production:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Testing</span> <span class="n">Strategy</span><span class="p">:</span>
 
@@ -636,7 +654,7 @@ Common Causes:
 </div>
 </section>
 <section id="debugging-webhook-integration">
-<h2>Debugging Webhook Integration<a class="headerlink" href="#debugging-webhook-integration" title="Link to this heading"></a></h2>
+<h3>Debugging Webhook Integration<a class="headerlink" href="#debugging-webhook-integration" title="Link to this heading"></a></h3>
 <p>Common issues with webhook_send:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Webhook Send Debugging:
 
@@ -683,7 +701,7 @@ Debug Tips:
 </div>
 </section>
 <section id="flow-execution-limits">
-<h2>Flow Execution Limits<a class="headerlink" href="#flow-execution-limits" title="Link to this heading"></a></h2>
+<h3>Flow Execution Limits<a class="headerlink" href="#flow-execution-limits" title="Link to this heading"></a></h3>
 <p>Understanding and avoiding execution limits:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Execution</span> <span class="n">Limits</span><span class="p">:</span>
 
@@ -732,7 +750,7 @@ Debug Tips:
 </div>
 </section>
 <section id="error-messages-reference">
-<h2>Error Messages Reference<a class="headerlink" href="#error-messages-reference" title="Link to this heading"></a></h2>
+<h3>Error Messages Reference<a class="headerlink" href="#error-messages-reference" title="Link to this heading"></a></h3>
 <p>Common error messages and their meanings:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Error</span> <span class="n">Reference</span><span class="p">:</span>
 
@@ -788,7 +806,7 @@ Debug Tips:
 </div>
 </section>
 <section id="logging-best-practices">
-<h2>Logging Best Practices<a class="headerlink" href="#logging-best-practices" title="Link to this heading"></a></h2>
+<h3>Logging Best Practices<a class="headerlink" href="#logging-best-practices" title="Link to this heading"></a></h3>
 <p>Add strategic webhooks for debugging:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Strategic</span> <span class="n">Logging</span> <span class="n">Points</span><span class="p">:</span>
 
@@ -856,7 +874,7 @@ Debug Tips:
 </div>
 </section>
 <section id="quick-diagnostic-commands">
-<h2>Quick Diagnostic Commands<a class="headerlink" href="#quick-diagnostic-commands" title="Link to this heading"></a></h2>
+<h3>Quick Diagnostic Commands<a class="headerlink" href="#quick-diagnostic-commands" title="Link to this heading"></a></h3>
 <p>Common API calls for troubleshooting:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Diagnostic</span> <span class="n">API</span> <span class="n">Calls</span><span class="p">:</span>
 
@@ -891,6 +909,7 @@ Debug Tips:
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -901,9 +920,12 @@ Debug Tips:
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Flow Debugging and Troubleshooting</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#debugging-tools">Debugging Tools</a></li>
 <li><a class="reference internal" href="#examining-activeflow-state">Examining Activeflow State</a></li>
-<li><a class="reference internal" href="#common-issues-and-solutions">Common Issues and Solutions</a><ul>
+<li><a class="reference internal" href="#common-issues-and-solutions">Common Issues and Solutions</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#flow-never-starts">Flow Never Starts</a></li>
 <li><a class="reference internal" href="#flow-stops-unexpectedly">Flow Stops Unexpectedly</a></li>
 <li><a class="reference internal" href="#branch-not-working">Branch Not Working</a></li>
@@ -911,9 +933,7 @@ Debug Tips:
 <li><a class="reference internal" href="#digits-not-received">Digits Not Received</a></li>
 <li><a class="reference internal" href="#connect-action-failing">Connect Action Failing</a></li>
 <li><a class="reference internal" href="#variables-not-substituting">Variables Not Substituting</a></li>
-<li><a class="reference internal" href="#queue-join-not-working">Queue Join Not Working</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#queue-join-not-working">Queue Join Not Working</a><ul>
 <li><a class="reference internal" href="#using-webhooks-for-debugging">Using Webhooks for Debugging</a></li>
 <li><a class="reference internal" href="#testing-flows">Testing Flows</a></li>
 <li><a class="reference internal" href="#debugging-webhook-integration">Debugging Webhook Integration</a></li>
@@ -921,6 +941,8 @@ Debug Tips:
 <li><a class="reference internal" href="#error-messages-reference">Error Messages Reference</a></li>
 <li><a class="reference internal" href="#logging-best-practices">Logging Best Practices</a></li>
 <li><a class="reference internal" href="#quick-diagnostic-commands">Quick Diagnostic Commands</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -21,13 +21,20 @@ Route
         "tm_delete": "<string>"
     }
 
-* id: Provider's id.
-* customer_id: Customer's id. If the customer id is "00000000-0000-0000-0000-000000000001", then it used for every customer.
-* provider_id: Provider's id.
-* priority: Route priority.
-* target: Target country code. If it set to "all", it used for every destination target.
+* ``id`` (UUID): The route's unique identifier. Returned when creating via ``POST /routes`` or listing via ``GET /routes``.
+* ``customer_id`` (UUID): The customer this route applies to. Obtained from ``GET /customers``. The special value ``00000000-0000-0000-0000-000000000001`` means this route applies to all customers (system default).
+* ``provider_id`` (UUID): The provider used for outbound calls on this route. Obtained from the ``id`` field of ``GET /providers``.
+* ``priority`` (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.
+* ``target`` (String): Target country code prefix for destination matching (e.g., ``+82``, ``+1``). Set to ``"all"`` to match every destination.
+* ``tm_create`` (string, ISO 8601): Timestamp when the route was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any route property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the route was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
 
-example
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the route has not been deleted.
+
+Example
 +++++++
 
 .. code::

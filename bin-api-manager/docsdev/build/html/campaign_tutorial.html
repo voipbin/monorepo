@@ -184,10 +184,27 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="campaign-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with campaigns, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>An outdial ID (UUID) with at least one target. Create an outdial via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials</span></code> and add targets via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials/{id}/targets</span></code>.</p></li>
+<li><p>An outplan ID (UUID) defining the dialing strategy. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outplans</span></code>.</p></li>
+<li><p>A queue ID (UUID) with agents assigned (for call-type campaigns that connect to agents). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p>(Optional) A flow ID (UUID) defining call actions. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>, or define inline <code class="docutils literal notranslate"><span class="pre">actions</span></code> in the campaign creation request.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Campaigns are created in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. You must explicitly set the status to <code class="docutils literal notranslate"><span class="pre">running</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}</span></code> to start dialing. Running a campaign incurs charges for each outbound call or message made. Always verify your outdial targets and outplan settings before starting.</p>
+</div>
 <section id="get-list-of-campaigns">
-<h2>Get list of campaigns<a class="headerlink" href="#get-list-of-campaigns" title="Link to this heading"></a></h2>
+<h3>Get list of campaigns<a class="headerlink" href="#get-list-of-campaigns" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -224,12 +241,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="get-detail-of-campaign">
-<h2>Get detail of campaign<a class="headerlink" href="#get-detail-of-campaign" title="Link to this heading"></a></h2>
+<h3>Get detail of campaign<a class="headerlink" href="#get-detail-of-campaign" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id1">
-<h3>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns/183c0d5c-691e-42f3-af2b-9bffc2740f83?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -261,12 +278,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="create-a-new-campaign">
-<h2>Create a new campaign<a class="headerlink" href="#create-a-new-campaign" title="Link to this heading"></a></h2>
+<h3>Create a new campaign<a class="headerlink" href="#create-a-new-campaign" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id2">
-<h3>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -288,9 +305,24 @@
     &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
     &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;
 }&#39;
+
+{
+    &quot;id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;,
+    &quot;name&quot;: &quot;test campaign&quot;,
+    &quot;detail&quot;: &quot;test campaign detail&quot;,
+    &quot;type&quot;: &quot;call&quot;,
+    &quot;status&quot;: &quot;stop&quot;,
+    &quot;service_level&quot;: 100,
+    &quot;end_handle&quot;: &quot;stop&quot;,
+    &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
+    &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
+    &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
-</section>
 </section>
 </section>
 
@@ -303,18 +335,19 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#get-list-of-campaigns">Get list of campaigns</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#get-list-of-campaigns">Get list of campaigns</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-detail-of-campaign">Get detail of campaign</a><ul>
-<li><a class="reference internal" href="#id1">Example</a></li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#get-detail-of-campaign">Get detail of campaign</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#create-a-new-campaign">Create a new campaign</a><ul>
+<li><a class="reference internal" href="#id1">Example</a><ul>
+<li><a class="reference internal" href="#create-a-new-campaign">Create a new campaign</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id2">Example</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

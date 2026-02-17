@@ -188,6 +188,15 @@
 <span id="number-main"></span><h1>Number<a class="headerlink" href="#number" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="number-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low-Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable for normal numbers (provider purchase fee). Virtual numbers (+899 prefix) are free but subject to tier-based limits.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> for virtual numbers returns immediately with status <code class="docutils literal notranslate"><span class="pre">active</span></code>. Normal number provisioning may return <code class="docutils literal notranslate"><span class="pre">purchase-pending</span></code> until provider confirms.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.</p>
 <p>With the Number API you can:</p>
 <ul class="simple">
@@ -300,6 +309,11 @@
 <section id="provisioning-numbers">
 <h3>Provisioning Numbers<a class="headerlink" href="#provisioning-numbers" title="Link to this heading"></a></h3>
 <p>Provision numbers through a two-step process: search, then provision.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Normal number provisioning requires a real provider purchase and costs money. For development and testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">type=virtual</span></code>) which are free and instantly available. Search with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/available_numbers?type=virtual</span></code> and provision with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> using a <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefixed number.</p>
+</div>
 <p><strong>Step 1: Search Available Numbers</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/number_availables?token=&lt;token&gt;&amp;country=US&amp;type=local&#39;
 </pre></div>
@@ -365,6 +379,11 @@
 </pre></div>
 </div>
 <img alt="_images/number-flow_execution.png" src="_images/number-flow_execution.png" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code> set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> first, then assign it to the number via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/numbers/{id}</span></code>.</p>
+</div>
 <p><strong>Configure Flows</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -643,19 +662,27 @@ check for flow execution errors</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Number’s ID.</p></li>
-<li><p>number: Number.</p></li>
-<li><p>type: Number’s type. See detail <a class="reference internal" href="number_struct_number.html#number-struct-number-type"><span class="std std-ref">here</span></a></p></li>
-<li><p>call_flow_id: Flow id for incoming call.</p></li>
-<li><p>message_flow_id: Flow id for incoming message.</p></li>
-<li><p>name: Number’s name.</p></li>
-<li><p>detail: Number’s detail description.</p></li>
-<li><p>status: Number’s status. See detail <a class="reference internal" href="number_struct_number.html#number-struct-number-status"><span class="std std-ref">here</span></a></p></li>
-<li><p>t38_enabled: T38 support.</p></li>
-<li><p>emergency_enabled: Emergency call support.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The number’s unique identifier. Returned when creating a number via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> (String, E.164): The phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must start with <code class="docutils literal notranslate"><span class="pre">+</span></code>. Virtual numbers use the <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix (e.g., <code class="docutils literal notranslate"><span class="pre">+899100000001</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The number’s type. See <a class="reference internal" href="number_struct_number.html#number-struct-number-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> (UUID): The flow to execute for inbound calls. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code> (UUID): The flow to execute for inbound messages. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable label for the number. Free-form text for organizational use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the number’s purpose or configuration notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The number’s current status. See <a class="reference internal" href="number_struct_number.html#number-struct-number-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t38_enabled</span></code> (Boolean): Whether T.38 fax support is enabled on this number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emergency_enabled</span></code> (Boolean): Whether emergency calling (e.g., 911) is enabled on this number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the number was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any number property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the number was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the number has not been deleted.</p>
+</div>
 <section id="example">
-<h4>example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0b266038-844b-11ec-97d8-63ba531361ce&quot;</span><span class="p">,</span>
     <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span><span class="p">,</span>
@@ -677,6 +704,7 @@ check for flow execution errors</p></td>
 </section>
 <section id="type">
 <span id="number-struct-number-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -685,28 +713,35 @@ check for flow execution errors</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>normal</p></td>
-<td><p>Normal number purchased from a provider.</p></td>
+<td><p>A standard phone number purchased from a provider (Telnyx or Twilio). Routed via PSTN. Supports inbound calls and messages from external callers. Incurs provider purchase and usage charges.</p></td>
 </tr>
 <tr class="row-odd"><td><p>virtual</p></td>
-<td><p>Virtual number with +899 prefix. No provider purchase required.</p></td>
+<td><p>A virtual number with <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix. No provider purchase required. Routed internally within VoIPBIN only. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing. Free to create but subject to tier-based limits.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="number-struct-number-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>active</p></td>
-<td><p>Number is being used.</p></td>
+<td><p>The number is provisioned and ready to receive inbound calls and messages. Flows assigned to this number will execute when triggered.</p></td>
+</tr>
+<tr class="row-odd"><td><p>purchase-pending</p></td>
+<td><p>The number purchase has been submitted to the provider but not yet confirmed. This is a transient state for normal numbers only. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers/{id}</span></code> until status changes to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>suspended</p></td>
+<td><p>The number is temporarily disabled. Inbound calls and messages will not be handled. Can be reactivated.</p></td>
 </tr>
 <tr class="row-odd"><td><p>deleted</p></td>
-<td><p>Number has deleted.</p></td>
+<td><p>The number has been released and is no longer active. Returned after calling <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/numbers/{id}</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -714,6 +749,17 @@ check for flow execution errors</p></td>
 </section>
 <section id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with numbers, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For provisioning) A valid number from the available inventory. Search available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/available_numbers</span></code>.</p></li>
+<li><p>(For flow assignment) A flow ID (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). Virtual numbers always use the <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix (e.g., <code class="docutils literal notranslate"><span class="pre">+899100000001</span></code>).</p>
+</div>
 <section id="get-list-of-available-numbers">
 <h3>Get list of available numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Link to this heading"></a></h3>
 <p>Example</p>
@@ -736,6 +782,7 @@ check for flow execution errors</p></td>
     },
     ...
 ]
+}
 </pre></div>
 </div>
 </section>
@@ -755,6 +802,7 @@ check for flow execution errors</p></td>
     },
     ...
 ]
+}
 </pre></div>
 </div>
 </section>
@@ -865,6 +913,11 @@ check for flow execution errors</p></td>
 </section>
 <section id="create-number">
 <h3>Create number<a class="headerlink" href="#create-number" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> with a normal (non-virtual) number triggers a real provider purchase that costs money. For development and testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) instead. Virtual numbers are free and do not require provider involvement.</p>
+</div>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -920,7 +973,7 @@ check for flow execution errors</p></td>
 </li>
 <li><a class="reference internal" href="#number-struct-number">Number</a><ul>
 <li><a class="reference internal" href="#number-struct-number-number">Number</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#type">Type</a></li>

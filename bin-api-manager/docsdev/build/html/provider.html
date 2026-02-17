@@ -188,6 +188,15 @@
 <span id="provider-main"></span><h1>Provider<a class="headerlink" href="#provider" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="provider-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Providers are configuration records. Costs are incurred when calls are routed through the configured provider, not when creating the provider entry.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code> returns immediately with the created provider.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.</p>
 <p>With the Provider API you can:</p>
 <ul class="simple">
@@ -285,6 +294,11 @@
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Providers are typically managed by platform administrators. The <code class="docutils literal notranslate"><span class="pre">tech_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">tech_postfix</span></code> fields modify the dialed number before sending to the provider. Most providers do not require these fields (leave as empty strings). The <code class="docutils literal notranslate"><span class="pre">tech_headers</span></code> field is an object of custom SIP headers sent with every call to this provider – use it for provider-specific authentication tokens or routing hints.</p>
 </div>
 </section>
 <section id="provider-types">
@@ -473,16 +487,25 @@ number is allowed</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Provider’s id.</p></li>
-<li><p>name: Provider’s name.</p></li>
-<li><p>detail: Provider’s detail.</p></li>
-<li><p>type: Provider’s type. See detail <a class="reference internal" href="provider_struct_provider.html#provider-struct-provider-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>tech_prefix: Tech prefix. Will be attacehd to the beginning of the destination. Valid only the type sip.</p></li>
-<li><p>tech_postfix: Tech postfix. Will be attacehd to the end of the destination. Valid only the type sip.</p></li>
-<li><p>tech_headers: Key/value fair of SIP headers. Valid only the type sip.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The provider’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable label for the provider. Free-form text for organizational use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the provider’s purpose or configuration notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The provider’s protocol type. See <a class="reference internal" href="provider_struct_provider.html#provider-struct-provider-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hostname</span></code> (String): The SIP server address for the provider (e.g., <code class="docutils literal notranslate"><span class="pre">sip.telnyx.com</span></code>). Used as the destination for outbound SIP INVITE messages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tech_prefix</span></code> (String): Prefix attached to the beginning of the dialed destination number. Valid only for type <code class="docutils literal notranslate"><span class="pre">sip</span></code>. Leave as empty string if not required.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tech_postfix</span></code> (String): Postfix attached to the end of the dialed destination number. Valid only for type <code class="docutils literal notranslate"><span class="pre">sip</span></code>. Leave as empty string if not required.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tech_headers</span></code> (Object): Key/value pairs of custom SIP headers sent with outbound calls. Valid only for type <code class="docutils literal notranslate"><span class="pre">sip</span></code>. Use empty object <code class="docutils literal notranslate"><span class="pre">{}</span></code> if not required.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the provider was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any provider property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the provider was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the provider has not been deleted.</p>
+</div>
 <section id="example">
-<h4>example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
@@ -511,7 +534,8 @@ number is allowed</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>sip</p></td>
-<td><p>SIP service provider.</p></td>
+<td><p>SIP service provider. Uses Session Initiation Protocol for voice
+call routing to the PSTN. Examples: Telnyx, Twilio, Bandwidth.</p></td>
 </tr>
 </tbody>
 </table>
@@ -519,6 +543,17 @@ number is allowed</p></td>
 </section>
 <section id="tutorial">
 <span id="provider-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with providers, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>The provider’s SIP hostname (e.g., <code class="docutils literal notranslate"><span class="pre">sip.telnyx.com</span></code>). This is provided by the telephony service provider.</p></li>
+<li><p>(Optional) Any custom SIP headers or number formatting rules required by the provider.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Providers are typically managed by platform administrators. After creating a provider, you must create at least one route (via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code>) that references the provider’s <code class="docutils literal notranslate"><span class="pre">id</span></code> before outbound calls can use it. The provider alone does not enable call routing.</p>
+</div>
 <section id="get-list-of-providers">
 <h3>Get list of providers<a class="headerlink" href="#get-list-of-providers" title="Link to this heading"></a></h3>
 <p>Example</p>
@@ -549,28 +584,19 @@ number is allowed</p></td>
 <section id="get-detail-of-provider">
 <h3>Get detail of provider<a class="headerlink" href="#get-detail-of-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-    &quot;name&quot;: &quot;test outplan&quot;,
-    &quot;detail&quot;: &quot;outplan for test use.&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15559876543&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
-    },
-    &quot;dial_timeout&quot;: 30000,
-    &quot;try_interval&quot;: 60000,
-    &quot;max_try_count_0&quot;: 5,
-    &quot;max_try_count_1&quot;: 5,
-    &quot;max_try_count_2&quot;: 5,
-    &quot;max_try_count_3&quot;: 5,
-    &quot;max_try_count_4&quot;: 5,
-    &quot;tm_create&quot;: &quot;2022-04-28 01:50:23.414000&quot;,
-    &quot;tm_update&quot;: &quot;2022-04-30 12:01:13.780469&quot;,
+    &quot;id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+    &quot;type&quot;: &quot;sip&quot;,
+    &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+    &quot;tech_prefix&quot;: &quot;&quot;,
+    &quot;tech_postfix&quot;: &quot;&quot;,
+    &quot;tech_headers&quot;: {},
+    &quot;name&quot;: &quot;telnyx basic&quot;,
+    &quot;detail&quot;: &quot;telnyx basic&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;2022-10-24 04:53:14.171374&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
@@ -650,7 +676,7 @@ number is allowed</p></td>
 </li>
 <li><a class="reference internal" href="#provider-struct-provider">Provider</a><ul>
 <li><a class="reference internal" href="#provider-struct-provider-provider">Provider</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#type">Type</a></li>

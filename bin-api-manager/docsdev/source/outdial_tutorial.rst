@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with outdials, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* Target phone numbers in E.164 format (e.g., ``+15551234567``) for telephone destinations.
+* (Optional) SIP URIs for SIP destinations or email addresses for email campaigns.
+
+.. note:: **AI Implementation Hint**
+
+   Outdialtargets support up to 5 destinations per target (``destination_0`` through ``destination_4``). The campaign dials destinations in order, moving to the next only when all retries on the current destination are exhausted. Phone numbers must be in E.164 format with the ``+`` prefix.
+
 Get list of outdials
 --------------------
 

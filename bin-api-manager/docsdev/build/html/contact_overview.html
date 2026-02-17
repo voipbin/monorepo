@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="contact-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (contacts are organizational records with no per-operation charges)</p></li>
+<li><p><strong>Async:</strong> No. All contact CRUD operations are synchronous and return the result immediately.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.</p>
 <p>With the Contact API you can:</p>
 <ul class="simple">
@@ -269,6 +278,11 @@ Contact matched → enrich conversation context
 </pre></div>
 </div>
 <p>Phone numbers are matched in E.164 format for reliable international matching. Email addresses are matched case-insensitively.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When using phone number lookup, the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts/lookup?phone=%2B15551234567</span></code>. Omitting this encoding will result in the <code class="docutils literal notranslate"><span class="pre">+</span></code> being interpreted as a space and the lookup will fail.</p>
+</div>
 </section>
 <section id="source-tracking">
 <h2>Source Tracking<a class="headerlink" href="#source-tracking" title="Link to this heading"></a></h2>

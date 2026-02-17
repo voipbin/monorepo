@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High
+   * **Cost:** Free (no additional charge beyond the underlying call/conference costs)
+   * **Async:** Yes. ``GET /calls/{id}/media_stream`` upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the ``external_media_start`` flow action is initiated by VoIPBIN connecting to your server.
+
 VoIPBIN's Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.
 
 With the Media Stream API you can:
@@ -62,6 +69,10 @@ The Media Bridge handles protocol conversion between RTP (VoIP standard) and Web
 Streaming Modes
 ---------------
 VoIPBIN supports two streaming modes based on your application's needs.
+
+.. note:: **AI Implementation Hint**
+
+   Media streaming requires the call or conference to be in ``progressing`` status (answered). The ``GET /calls/{id}/media_stream`` endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.
 
 **Bi-Directional Streaming**
 

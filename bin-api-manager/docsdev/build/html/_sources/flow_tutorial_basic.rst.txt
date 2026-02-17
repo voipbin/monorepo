@@ -3,6 +3,18 @@
 Tutorial basic
 ==============
 
+Prerequisites
++++++++++++++
+
+Before working with flows, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* (For update/delete) A flow ID (UUID). Obtain from ``GET /flows`` or the response of ``POST /flows``.
+
+.. note:: **AI Implementation Hint**
+
+   When creating a flow via ``POST /flows``, action ``id`` fields are optional. The server auto-generates UUIDs for actions that lack explicit IDs. Only set action IDs when you need to reference them from ``goto``, ``branch``, or ``condition_*`` actions using ``target_id`` or ``target_ids``. Flow changes (update/delete) do not affect calls already in progress -- they only apply to future executions.
+
 Get list of flows
 -----------------
 
@@ -238,9 +250,13 @@ Delete the flow
 ---------------
 
 Delete an existing flow by its flow ID.
-This doesn't affect existing calls.
+This doesn't affect existing calls. Flow changes will only affect new calls.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=<YOUR_AUTH_TOKEN>' \
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=<YOUR_AUTH_TOKEN>'
+
+.. note:: **AI Implementation Hint**
+
+   The DELETE request uses the ``DELETE`` HTTP method, not ``GET``. A successful deletion returns HTTP 204 No Content. The flow is soft-deleted (``tm_delete`` is set) and will no longer appear in ``GET /flows`` list results, but calls already using this flow are not affected.
 

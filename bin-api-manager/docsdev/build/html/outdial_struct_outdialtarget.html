@@ -220,23 +220,31 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: outdialtarget’s ID.</p></li>
-<li><p>outdial_id: outdial’s ID.</p></li>
-<li><p>name: outdialtarget’s name.</p></li>
-<li><p>detail: outdialtarget’s detail.</p></li>
-<li><p>data: outdialtarget’s data.</p></li>
-<li><p><em>status</em>: outdialtarget’s status. See detail <a class="reference internal" href="#outdial-struct-outdialtarget-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination_0</em>: outdialtarget’s destination. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination_1</em>: outdialtarget’s destination. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination_2</em>: outdialtarget’s destination. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination_3</em>: outdialtarget’s destination. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination_4</em>: outdialtarget’s destination. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>try_count_0: destination 0’s try count.</p></li>
-<li><p>try_count_1: destination 1’s try count.</p></li>
-<li><p>try_count_2: destination 2’s try count.</p></li>
-<li><p>try_count_3: destination 3’s try count.</p></li>
-<li><p>try_count_4: destination 4’s try count.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The outdialtarget’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials/{id}/targets</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials/{id}/targets</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outdial_id</span></code> (UUID): The parent outdial this target belongs to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the target (e.g., contact name).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the target.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (String): Arbitrary data associated with the target. Can be used for custom metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The outdialtarget’s current status. See <a class="reference internal" href="#outdial-struct-outdialtarget-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_0</span></code> (Object or null): Primary destination address. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Set to <code class="docutils literal notranslate"><span class="pre">null</span></code> if not configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_1</span></code> (Object or null): Secondary destination address. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Set to <code class="docutils literal notranslate"><span class="pre">null</span></code> if not configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_2</span></code> (Object or null): Third destination address. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Set to <code class="docutils literal notranslate"><span class="pre">null</span></code> if not configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_3</span></code> (Object or null): Fourth destination address. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Set to <code class="docutils literal notranslate"><span class="pre">null</span></code> if not configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_4</span></code> (Object or null): Fifth destination address. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Set to <code class="docutils literal notranslate"><span class="pre">null</span></code> if not configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count_0</span></code> (Integer): Current number of dial attempts made to <code class="docutils literal notranslate"><span class="pre">destination_0</span></code>. Read-only, incremented by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count_1</span></code> (Integer): Current number of dial attempts made to <code class="docutils literal notranslate"><span class="pre">destination_1</span></code>. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count_2</span></code> (Integer): Current number of dial attempts made to <code class="docutils literal notranslate"><span class="pre">destination_2</span></code>. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count_3</span></code> (Integer): Current number of dial attempts made to <code class="docutils literal notranslate"><span class="pre">destination_3</span></code>. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count_4</span></code> (Integer): Current number of dial attempts made to <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>. Read-only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the outdialtarget was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any outdialtarget property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the outdialtarget was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Each outdialtarget supports up to 5 destinations (<code class="docutils literal notranslate"><span class="pre">destination_0</span></code> through <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>). The campaign dials destinations in order, starting with <code class="docutils literal notranslate"><span class="pre">destination_0</span></code>. When all retries for a destination are exhausted (<code class="docutils literal notranslate"><span class="pre">try_count_N</span></code> reaches the outplan’s <code class="docutils literal notranslate"><span class="pre">max_try_count_N</span></code>), it moves to the next destination. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> is a sentinel meaning the resource has <strong>not</strong> been deleted.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -272,7 +280,7 @@
 </section>
 <section id="status">
 <span id="outdial-struct-outdialtarget-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Outdialtarget’s status.</p>
+<p>The outdialtarget’s current processing status. This is a read-only field managed by the system.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -281,13 +289,13 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>idle</p></td>
-<td><p>The outdialtarget is idle</p></td>
+<td><p>The outdialtarget is idle and available to be dialed. This is the initial state after creation and the state it returns to between retry attempts.</p></td>
 </tr>
 <tr class="row-odd"><td><p>progressing</p></td>
-<td><p>The outdialtarget is calling</p></td>
+<td><p>The outdialtarget is currently being dialed. A campaigncall is active for this target.</p></td>
 </tr>
 <tr class="row-even"><td><p>done</p></td>
-<td><p>The outdialtarget has done to dialing.</p></td>
+<td><p>The outdialtarget has completed processing. Either the call was answered successfully or all retry attempts have been exhausted.</p></td>
 </tr>
 </tbody>
 </table>

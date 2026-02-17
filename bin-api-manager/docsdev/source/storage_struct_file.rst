@@ -27,19 +27,26 @@ File
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-* id: File's ID.
-* customer_id: Customer's ID.
-* owner_id: Owner(Agent)'s ID. If the owner does not exist, this will be empty.
-* reference_type: Reference type.
-* reference_id: Reference ID.
-* name: File's name.
-* detail: File's detail.
-* filename: File's filename.
-* filesize: File's size(Byte).
-* uri_download: File's download URI.
-* tm_download_expire: File's download expiration time.
+* ``id`` (UUID): The file's unique identifier. Returned when uploading a file via ``POST /files`` or listing via ``GET /files``.
+* ``customer_id`` (UUID): The customer who owns this file. Obtained from ``GET /customers``.
+* ``owner_id`` (UUID): The agent who uploaded or owns this file. Obtained from ``GET /agents``. Empty string if no specific owner.
+* ``reference_type`` (enum string): The type of resource this file is associated with. See :ref:`Reference Type <storage-struct-file-reference-type>`.
+* ``reference_id`` (UUID): The ID of the associated resource. Depending on ``reference_type``, obtained from ``GET /recordings`` or other endpoints. Set to ``00000000-0000-0000-0000-000000000000`` if no reference.
+* ``name`` (String): A human-readable name for the file. May be empty if not explicitly set.
+* ``detail`` (String): A longer description of the file's purpose or content. May be empty.
+* ``filename`` (String): The original filename of the uploaded file (e.g., ``screenshot.png``, ``call_recording.wav``).
+* ``filesize`` (Integer): The file size in bytes.
+* ``uri_download`` (String): A time-limited signed URL for downloading the file. Check ``tm_download_expire`` before using. Fetch fresh details via ``GET /files/{id}`` if expired.
+* ``tm_download_expire`` (string, ISO 8601): Expiration time of the ``uri_download``. After this time, the URL is no longer valid.
+* ``tm_create`` (string, ISO 8601): Timestamp when the file was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any file property. Set to ``9999-01-01 00:00:00.000000`` if never updated after creation.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the file was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
 
-example
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the file has not been deleted. The ``uri_download`` is a time-limited signed URL; always check ``tm_download_expire`` before using it. If expired, call ``GET /files/{id}`` to obtain a fresh URL.
+
+Example
 +++++++
 
 .. code::
@@ -66,9 +73,11 @@ example
 Reference Type
 --------------
 
+All possible values for the ``reference_type`` field:
+
 ============== ==============================
-Reference Type       Description
+Reference Type Description
 ============== ==============================
-none           Has no reference information.
-recording      Recording type
+none           The file has no associated resource. Typically for manually uploaded files. The ``reference_id`` will be ``00000000-0000-0000-0000-000000000000``.
+recording      The file is associated with a recording. The ``reference_id`` is a recording ID from ``GET /recordings``.
 ============== ==============================

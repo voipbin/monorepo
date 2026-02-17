@@ -219,20 +219,28 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Conference’s ID.</p></li>
-<li><p>customer_id: Customer’s ID.</p></li>
-<li><p><em>type</em>: Conference’s type. See detail <a class="reference internal" href="#conference-struct-conference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Conference’s status. See detail <a class="reference internal" href="#conference-struct-conference-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>name: Conference’s name.</p></li>
-<li><p>detail: Conference’s detail description.</p></li>
-<li><p>data: Reserved.</p></li>
-<li><p>timeout: Timeout(second).</p></li>
-<li><p>pre_actions: Set of actions for entering calls.</p></li>
-<li><p>post_action: Set of actions for leaving calls.</p></li>
-<li><p>conferencecall_ids: List of conferencecall ids.</p></li>
-<li><p>recording_id: Currently recoriding id.</p></li>
-<li><p>recording_ids: List of recording ids.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conference’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this conference. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The conference’s type. Immutable after creation. See <a class="reference internal" href="#conference-struct-conference-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The conference’s current status. See <a class="reference internal" href="#conference-struct-conference-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the conference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the conference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): Reserved for future use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (Integer): Conference auto-termination timeout in seconds. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_actions</span></code> (Array of Object): Flow actions executed when a participant joins (e.g., greeting message). Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">post_actions</span></code> (Array of Object): Flow actions executed when a participant leaves. Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> to retrieve participant details.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this conference’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the conference was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to any conference property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the conference was deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the conference is still active.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -279,7 +287,7 @@
 </section>
 <section id="type">
 <span id="conference-struct-conference-type"></span><h2>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h2>
-<p>Conference’s type.</p>
+<p>Conference’s type (enum string). Immutable after creation.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -288,35 +296,35 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>conference</p></td>
-<td><p>Conference.</p></td>
+<td><p>Multi-party conference room. Supports 2+ participants. Remains active even with 0 or 1 participant. Only terminates when explicitly deleted or timeout expires.</p></td>
 </tr>
 <tr class="row-odd"><td><p>connect</p></td>
-<td><p>Connect.</p></td>
+<td><p>Two-party bridge. Designed for exactly 2 participants (e.g., customer-agent). Auto-ejects the remaining participant when one leaves, then terminates.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="conference-struct-conference-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Conference’s status.</p>
+<p>Conference’s current status (enum string). States only move forward, never backward.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>starting</p></td>
-<td><p>Conference is starting.</p></td>
+<td><p>Conference is being initialized. Brief transitional state. No operations (recording, transcription) are possible yet.</p></td>
 </tr>
 <tr class="row-odd"><td><p>progressing</p></td>
-<td><p>Conference is progressing.</p></td>
+<td><p>Conference is active. Participants can join, recording and transcription can start. This is the main operational state.</p></td>
 </tr>
 <tr class="row-even"><td><p>terminating</p></td>
-<td><p>Conference is terminating.</p></td>
+<td><p>Conference is closing. No new participants can join. Waiting for existing participants to leave.</p></td>
 </tr>
 <tr class="row-odd"><td><p>terminated</p></td>
-<td><p>Conference is terminated.</p></td>
+<td><p>Conference is completely closed. No further operations are possible. This is the final state.</p></td>
 </tr>
 </tbody>
 </table>

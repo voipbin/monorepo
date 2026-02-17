@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High -- Campaigns coordinate multiple resources (outdials, outplans, queues, flows). Set up all dependencies before creating a campaign.
+   * **Cost:** Chargeable. Running a campaign makes outbound calls/messages, each of which incurs per-minute or per-message charges.
+   * **Async:** Yes. ``POST /campaigns`` creates the campaign in ``stop`` status. Set ``status`` to ``running`` via ``PUT /campaigns/{id}`` to start dialing. Poll ``GET /campaigns/{id}`` to monitor campaign state and progress.
+
 VoIPBIN's Campaign API provides a comprehensive platform for managing large-scale outbound communication campaigns. Whether you need to make thousands of calls, send bulk SMS, or deliver email notifications, the Campaign API orchestrates the entire process with intelligent dialing strategies and automatic retry handling.
 
 With the Campaign API you can:
@@ -53,6 +60,10 @@ A campaign coordinates multiple resources to execute outbound communications eff
 - **Outplan**: Defines the dialing strategy (timing, retries, intervals)
 - **Queue**: Groups agents who handle answered calls
 - **Flow**: Specifies actions to take when calls connect
+
+.. note:: **AI Implementation Hint**
+
+   A campaign requires all four dependencies (outdial, outplan, queue, flow) to be created **before** the campaign itself. The ``outdial_id``, ``outplan_id``, ``queue_id``, and ``flow_id`` must reference existing resources. Creating a campaign with missing or invalid dependency IDs will result in failures when the campaign starts dialing.
 
 
 Campaign Lifecycle

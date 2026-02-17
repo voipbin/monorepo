@@ -184,8 +184,19 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="tag-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with tags, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tag names must be unique within a customer account. After creating a tag, use its <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) when assigning it to agents via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/tag_ids</span></code> or when configuring queue requirements via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code>. Tags by themselves have no effect until assigned to agents and referenced by queues.</p>
+</div>
 <section id="create-a-new-tag">
-<h2>Create a new tag<a class="headerlink" href="#create-a-new-tag" title="Link to this heading"></a></h2>
+<h3>Create a new tag<a class="headerlink" href="#create-a-new-tag" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -193,8 +204,18 @@
         &quot;name&quot;: &quot;test tag&quot;,
         &quot;detail&quot;: &quot;test tag example&quot;
     }&#39;
+
+{
+    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
+    &quot;name&quot;: &quot;test tag&quot;,
+    &quot;detail&quot;: &quot;test tag example&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -207,7 +228,10 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-new-tag">Create a new tag</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

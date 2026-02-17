@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low-Medium
+   * **Cost:** Free. Creating outdials and targets is free. Costs are incurred when a campaign dials the targets.
+   * **Async:** No. ``POST /outdials`` and ``POST /outdials/{id}/targets`` return immediately with the created resource.
+
 VoIPBIN's Outdial API provides a scalable solution for managing outbound call destinations. An outdial is a collection of targets (phone numbers, SIP URIs, email addresses) that campaigns or flows dial sequentially. With built-in retry tracking and status management, the Outdial API handles large-scale outbound operations efficiently.
 
 With the Outdial API you can:
@@ -52,6 +59,10 @@ Outdials serve as the "who to contact" component of campaigns and outbound flows
 - **Outdial Target**: An individual destination with its address and retry count
 - **Address**: The destination (phone number, SIP URI, email)
 - **Try Count**: Number of dial attempts remaining for this target
+
+.. note:: **AI Implementation Hint**
+
+   Outdialtargets support up to 5 destination addresses (``destination_0`` through ``destination_4``). Each destination has its own independent try count. The campaign dials ``destination_0`` first, and if all retries are exhausted, moves to ``destination_1``, and so on. Do not modify targets while the parent campaign is in ``running`` status.
 
 
 Target Lifecycle

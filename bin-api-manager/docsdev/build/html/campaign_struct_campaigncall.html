@@ -212,21 +212,23 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Campaigncall’s ID.</p></li>
-<li><p>campaign_id: Campaign’s ID.</p></li>
-<li><p>outplan_id: Outplan’s ID.</p></li>
-<li><p>outdial_id: Outdial’s ID.</p></li>
-<li><p>outdial_target_id: outdialtarget’s ID.</p></li>
-<li><p>queue_id: Queue’s ID.</p></li>
-<li><p>activeflow_id: Activeflow’s ID.</p></li>
-<li><p><em>reference_type</em>: Reference’s type. See detail <a class="reference internal" href="#campaign-struct-campaigncall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Reference’s ID.</p></li>
-<li><p><em>status</em>: Campaigncall’s status. See detail <a class="reference internal" href="#campaign-struct-campaigncall-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>result</em>: Campaigncall’s result. See detail <a class="reference internal" href="#campaign-struct-campaigncall-result"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>destination_index: Destination’s index.</p></li>
-<li><p>try_count: Try count.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The campaigncall’s unique identifier. Returned when listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigncalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">campaign_id</span></code> (UUID): The parent campaign. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outplan_id</span></code> (UUID): The outplan used for this dial attempt. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outdial_id</span></code> (UUID): The outdial containing the target. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outdial_target_id</span></code> (UUID): The specific outdialtarget being dialed. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials/{id}/targets</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_id</span></code> (UUID): The queue for routing the answered call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The activeflow executing the call actions. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this campaigncall is linked to. See <a class="reference internal" href="#campaign-struct-campaigncall-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the referenced resource (e.g., the call ID when <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The campaigncall’s current status. See <a class="reference internal" href="#campaign-struct-campaigncall-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> (enum string): The campaigncall’s outcome after completion. See <a class="reference internal" href="#campaign-struct-campaigncall-result"><span class="std std-ref">Result</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address used for the dial attempt. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address being dialed. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_index</span></code> (Integer): Index of the destination within the outdialtarget (0-4), corresponding to <code class="docutils literal notranslate"><span class="pre">destination_0</span></code> through <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">try_count</span></code> (Integer): The current attempt number for this destination.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the campaigncall was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to the campaigncall.</p></li>
 </ul>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
@@ -267,7 +269,7 @@
 </section>
 <section id="reference-type">
 <span id="campaign-struct-campaigncall-reference-type"></span><h2>Reference type<a class="headerlink" href="#reference-type" title="Link to this heading"></a></h2>
-<p>Campaigncall’s reference type.</p>
+<p>The type of resource this campaigncall is associated with. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> field contains the ID of this resource.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -276,17 +278,17 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>none</p></td>
-<td><p>Has no reference type.</p></td>
+<td><p>No associated resource. The campaigncall has not yet created a reference.</p></td>
 </tr>
 <tr class="row-odd"><td><p>call</p></td>
-<td><p>The reference type is call. Reference id is call’s ID.</p></td>
+<td><p>The campaigncall is associated with a voice call. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is the call’s UUID, retrievable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{reference_id}</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="campaign-struct-campaigncall-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Campaigncall’s status.</p>
+<p>The campaigncall’s current operational status. This is a read-only field managed by the system.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -295,21 +297,21 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>dialing</p></td>
-<td><p>The campaigncall is dialing(not answered yet)</p></td>
+<td><p>The campaigncall is dialing the target. The call has not been answered yet.</p></td>
 </tr>
 <tr class="row-odd"><td><p>progressing</p></td>
-<td><p>The campaigncall is progressing(the call answered)</p></td>
+<td><p>The campaigncall is in progress. The target has answered and the flow actions are executing.</p></td>
 </tr>
 <tr class="row-even"><td><p>done</p></td>
-<td><p>The campaigncall is hungup</p></td>
+<td><p>The campaigncall has completed. The call has been hung up. Check the <code class="docutils literal notranslate"><span class="pre">result</span></code> field for the outcome.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="result">
 <span id="campaign-struct-campaigncall-result"></span><h2>Result<a class="headerlink" href="#result" title="Link to this heading"></a></h2>
-<p>Campaigncall’s result. The result is calculated by the final status/result of the referenced resource(call/sms/…).</p>
-<p>For example, if the call ended with no_answer, the result will be calculated to the fail.</p>
+<p>The campaigncall’s outcome, calculated from the final status of the referenced resource (call, SMS, etc.).</p>
+<p>For example, if the call ended with <code class="docutils literal notranslate"><span class="pre">no_answer</span></code>, the result is calculated as <code class="docutils literal notranslate"><span class="pre">fail</span></code>.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -318,16 +320,21 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>“”</p></td>
-<td><p>Have no result yet.</p></td>
+<td><p>No result yet. The campaigncall is still in progress (<code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">dialing</span></code> or <code class="docutils literal notranslate"><span class="pre">progressing</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>success</p></td>
-<td><p>The campaigncall ended successfully. The target’s status will be set to the done and will not make retry.</p></td>
+<td><p>The campaigncall ended successfully. The outdialtarget’s status is set to <code class="docutils literal notranslate"><span class="pre">done</span></code> and no retry will be made.</p></td>
 </tr>
 <tr class="row-even"><td><p>fail</p></td>
-<td><p>The campaigncall ended unsuccesfully. The target’s status will be set to the idle and will make a retry.</p></td>
+<td><p>The campaigncall ended unsuccessfully. The outdialtarget’s status is set to <code class="docutils literal notranslate"><span class="pre">idle</span></code> and a retry will be scheduled if retries remain per the outplan configuration.</p></td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Only a <code class="docutils literal notranslate"><span class="pre">normal</span></code> call hangup reason maps to <code class="docutils literal notranslate"><span class="pre">success</span></code>. All other hangup reasons (busy, no_answer, failed, etc.) map to <code class="docutils literal notranslate"><span class="pre">fail</span></code>. A <code class="docutils literal notranslate"><span class="pre">fail</span></code> result triggers a retry if the outdialtarget has not exceeded its <code class="docutils literal notranslate"><span class="pre">max_try_count</span></code> for the current destination index.</p>
+</div>
 <p>The call hangup reason - result mapping table.</p>
 <table class="docutils align-default">
 <thead>

@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="outplan-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Creating and managing outplans is free. Costs are incurred when the associated campaign dials targets.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outplans</span></code> returns immediately with the created outplan.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Outplan API provides fine-grained control over dialing strategies for outbound campaigns. An outplan defines how the system should handle dial attempts, including timeouts, retry intervals, and maximum attempt counts. By configuring outplans, you can optimize contact rates while respecting recipient preferences and regulatory requirements.</p>
 <p>With the Outplan API you can:</p>
 <ul class="simple">
@@ -229,6 +238,11 @@
 <li><p><strong>Max Try Count</strong>: Maximum number of dial attempts per target</p></li>
 <li><p><strong>Timing Windows</strong>: When dialing is permitted (optional)</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dial_timeout</span></code> and <code class="docutils literal notranslate"><span class="pre">try_interval</span></code> fields are in <strong>milliseconds</strong>. A 30-second dial timeout is <code class="docutils literal notranslate"><span class="pre">30000</span></code>, not <code class="docutils literal notranslate"><span class="pre">30</span></code>. A 2-hour retry interval is <code class="docutils literal notranslate"><span class="pre">7200000</span></code>. The <code class="docutils literal notranslate"><span class="pre">max_try_count_0</span></code> through <code class="docutils literal notranslate"><span class="pre">max_try_count_4</span></code> correspond to destination indices on the outdialtarget (<code class="docutils literal notranslate"><span class="pre">destination_0</span></code> through <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>), not result types.</p>
+</div>
 </section>
 <section id="outplan-configuration">
 <h2>Outplan Configuration<a class="headerlink" href="#outplan-configuration" title="Link to this heading"></a></h2>

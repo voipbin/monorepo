@@ -184,8 +184,22 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="queue-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with queues, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain existing ones from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags define the skills required for agents to receive calls from this queue.</p></li>
+<li><p>At least one agent configured with matching tags. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}</span></code>. Verify agent tags with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>.</p></li>
+<li><p>(Optional) A wait flow with actions for callers to hear while waiting. Common actions include <code class="docutils literal notranslate"><span class="pre">talk</span></code> (text-to-speech announcements) and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> (pause between announcements).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Queues require tags and agents to function. If you create a queue without any agents having matching tags, calls will wait indefinitely (or until <code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code>). Always verify that at least one agent has all the tags listed in the queue’s <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> before routing calls to the queue.</p>
+</div>
 <section id="create-a-new-queue">
-<h2>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Link to this heading"></a></h2>
+<h3>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Link to this heading"></a></h3>
 <p>Create a new queue</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -218,9 +232,14 @@
 }&#39;
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> field must contain valid tag UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> array defines what callers hear while waiting – use <code class="docutils literal notranslate"><span class="pre">talk</span></code> for announcements and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> for pauses. Timeout values (<code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code>, <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code>) are in <strong>milliseconds</strong>: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds, <code class="docutils literal notranslate"><span class="pre">10000000</span></code> = ~2.8 hours.</p>
+</div>
 </section>
 <section id="get-list-of-queues">
-<h2>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Link to this heading"></a></h2>
+<h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Link to this heading"></a></h3>
 <p>Gets the list of created queues.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -272,6 +291,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -282,8 +302,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-new-queue">Create a new queue</a></li>
 <li><a class="reference internal" href="#get-list-of-queues">Get list of queues</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

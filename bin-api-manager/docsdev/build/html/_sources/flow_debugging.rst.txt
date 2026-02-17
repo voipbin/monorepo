@@ -5,6 +5,19 @@ Flow Debugging and Troubleshooting
 
 This section provides tools and techniques for debugging flow execution issues.
 
+Prerequisites
++++++++++++++
+
+Before debugging, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* The call ID (UUID) or activeflow ID (UUID) of the session you want to debug. Obtain from ``GET /calls`` or ``GET /activeflows``.
+* (Optional) A webhook endpoint (e.g., https://webhook.site) to receive real-time flow events for monitoring.
+
+.. note:: **AI Implementation Hint**
+
+   The most common debugging path is: (1) Find the call via ``GET /calls`` using the phone number or time range. (2) Get the activeflow via ``GET /activeflows?reference_id={call-id}``. (3) Inspect variables via ``GET /activeflows/{id}/variables`` to see what values were set. (4) Check ``current_action_id`` and ``execute_count`` to understand where execution stopped and why.
+
 Debugging Tools
 ---------------
 
@@ -146,6 +159,10 @@ Flow Stops Unexpectedly
 
 Branch Not Working
 ++++++++++++++++++
+
+.. note:: **AI Implementation Hint**
+
+   Branch matching is **exact string comparison** and case-sensitive. The most common cause of branch failures is that ``digits_receive`` with a ``key`` terminator (e.g., ``#``) includes the terminator in the ``voipbin.call.digits`` variable. For example, if the user presses ``1#``, the variable value is ``1#``, which does not match a ``target_ids`` key of ``"1"``. Either remove the ``key`` parameter or account for the terminator in your target keys.
 
 .. code::
 

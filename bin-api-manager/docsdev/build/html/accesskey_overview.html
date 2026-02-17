@@ -184,10 +184,24 @@
                         <main role="main" id="main">
     <section id="accesskey-api-overview">
 <span id="accesskey-overview"></span><h1>Accesskey API Overview<a class="headerlink" href="#accesskey-api-overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (no charges for accesskey operations)</p></li>
+<li><p><strong>Async:</strong> No. All accesskey operations are synchronous and return immediately.</p></li>
+</ul>
+</div>
 <p>The Accesskey API provides a secure and efficient way to authenticate and interact with the VoIPBIN platform. It utilizes access keys as API tokens to enable authorized access to API endpoints. This ensures seamless integration while maintaining the security and integrity of your operations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter (not the <code class="docutils literal notranslate"><span class="pre">token</span></code> parameter) when authenticating with an access key. The <code class="docutils literal notranslate"><span class="pre">token</span></code> parameter is used for session-based authentication, while <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> is for API key-based authentication. Do not confuse the two.</p>
+</div>
 <section id="api-usage">
 <h2>API Usage<a class="headerlink" href="#api-usage" title="Link to this heading"></a></h2>
-<p>To use the Accesskey, pass the <cite>token</cite> in the query parameters or headers of your API requests. Below is an example usage:</p>
+<p>To use the Accesskey, pass the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> in the query parameters of your API requests. Below is an example usage:</p>
 <section id="example-request">
 <h3>Example Request<a class="headerlink" href="#example-request" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4&#39;</span>
@@ -197,13 +211,13 @@
 <section id="description-of-parameters">
 <h3>Description of Parameters<a class="headerlink" href="#description-of-parameters" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><strong>Accesskey</strong>: The <cite>accesskey</cite> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
+<li><p><strong>Accesskey</strong>: The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
 </ul>
 </section>
 </section>
 <section id="authentication">
 <h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
-<p>The <cite>token</cite> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
 </section>
 <section id="lifecycles-and-expiry">
 <h2>Lifecycles and Expiry<a class="headerlink" href="#lifecycles-and-expiry" title="Link to this heading"></a></h2>
@@ -214,6 +228,11 @@
 <li><p><strong>tm_expire</strong>: The expiration timestamp. Ensure you rotate keys before this date.</p></li>
 <li><p><strong>tm_delete</strong>: The deletion timestamp, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating an accesskey, the <code class="docutils literal notranslate"><span class="pre">expire</span></code> field is specified in seconds (e.g., <code class="docutils literal notranslate"><span class="pre">31536000</span></code> for one year). The API returns <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> as an ISO 8601 timestamp calculated from the creation time plus the expiry duration. Always check <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> before using a key to avoid authentication failures with expired tokens.</p>
+</div>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>

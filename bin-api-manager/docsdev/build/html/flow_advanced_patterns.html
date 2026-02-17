@@ -185,8 +185,22 @@
     <section id="advanced-flow-patterns">
 <span id="flow-advanced-patterns"></span><h1>Advanced Flow Patterns<a class="headerlink" href="#advanced-flow-patterns" title="Link to this heading"></a></h1>
 <p>This section covers advanced flow design patterns for building sophisticated communication applications.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before implementing these patterns, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>Familiarity with basic flow concepts (actions, branching, variables). See <a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">Flow Overview</span></a> and <a class="reference internal" href="flow_tutorial_basic.html#flow-tutorial-basic"><span class="std std-ref">Basic Tutorial</span></a>.</p></li>
+<li><p>(For queue patterns) Queues with agents configured. Create queues via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code> and assign agents.</p></li>
+<li><p>(For AI patterns) An AI agent configured. Obtain the <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> from your AI agent setup.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>These advanced patterns rely heavily on <code class="docutils literal notranslate"><span class="pre">fetch_flow</span></code> for modularity. Each sub-flow is a standalone flow created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>, and the main flow references them by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. This means you need to create the sub-flows first, obtain their IDs from the responses, and then use those IDs in the main flow’s <code class="docutils literal notranslate"><span class="pre">fetch_flow</span></code> actions. The <code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> field is set on the flow definition itself (not on individual actions).</p>
+</div>
 <section id="multi-level-ivr-with-sub-menus">
-<h2>Multi-Level IVR with Sub-Menus<a class="headerlink" href="#multi-level-ivr-with-sub-menus" title="Link to this heading"></a></h2>
+<h3>Multi-Level IVR with Sub-Menus<a class="headerlink" href="#multi-level-ivr-with-sub-menus" title="Link to this heading"></a></h3>
 <p>Building complex IVR systems with nested menus:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Multi</span><span class="o">-</span><span class="n">Level</span> <span class="n">IVR</span> <span class="n">Structure</span><span class="p">:</span>
 
@@ -301,7 +315,12 @@
 </div>
 </section>
 <section id="business-hours-routing">
-<h2>Business Hours Routing<a class="headerlink" href="#business-hours-routing" title="Link to this heading"></a></h2>
+<h3>Business Hours Routing<a class="headerlink" href="#business-hours-routing" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the <code class="docutils literal notranslate"><span class="pre">hour</span></code> values accordingly. For example, 9 AM EST = 14:00 UTC. Two <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> actions are needed to define a range (one for opening, one for closing).</p>
+</div>
 <p>Route calls differently based on time of day:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Business</span> <span class="n">Hours</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -409,7 +428,7 @@
 </div>
 </section>
 <section id="dynamic-flow-with-external-data">
-<h2>Dynamic Flow with External Data<a class="headerlink" href="#dynamic-flow-with-external-data" title="Link to this heading"></a></h2>
+<h3>Dynamic Flow with External Data<a class="headerlink" href="#dynamic-flow-with-external-data" title="Link to this heading"></a></h3>
 <p>Fetch customer data from your API to personalize the experience:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Data Integration:
 
@@ -543,7 +562,7 @@
 </div>
 </section>
 <section id="ai-powered-conversational-flow">
-<h2>AI-Powered Conversational Flow<a class="headerlink" href="#ai-powered-conversational-flow" title="Link to this heading"></a></h2>
+<h3>AI-Powered Conversational Flow<a class="headerlink" href="#ai-powered-conversational-flow" title="Link to this heading"></a></h3>
 <p>Integrate AI for natural language interactions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Voice</span> <span class="n">Assistant</span> <span class="n">Pattern</span><span class="p">:</span>
 
@@ -668,7 +687,7 @@
 </div>
 </section>
 <section id="call-recording-with-consent">
-<h2>Call Recording with Consent<a class="headerlink" href="#call-recording-with-consent" title="Link to this heading"></a></h2>
+<h3>Call Recording with Consent<a class="headerlink" href="#call-recording-with-consent" title="Link to this heading"></a></h3>
 <p>Legal compliance pattern for recording calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Consent</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -795,7 +814,7 @@
 </div>
 </section>
 <section id="callback-request-pattern">
-<h2>Callback Request Pattern<a class="headerlink" href="#callback-request-pattern" title="Link to this heading"></a></h2>
+<h3>Callback Request Pattern<a class="headerlink" href="#callback-request-pattern" title="Link to this heading"></a></h3>
 <p>Allow customers to request a callback instead of waiting:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Callback</span> <span class="n">Flow</span> <span class="n">Pattern</span><span class="p">:</span>
 
@@ -961,7 +980,7 @@
 </div>
 </section>
 <section id="survey-after-call">
-<h2>Survey After Call<a class="headerlink" href="#survey-after-call" title="Link to this heading"></a></h2>
+<h3>Survey After Call<a class="headerlink" href="#survey-after-call" title="Link to this heading"></a></h3>
 <p>Using on_complete_flow_id for post-call surveys:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">-</span><span class="n">Call</span> <span class="n">Survey</span> <span class="n">Pattern</span><span class="p">:</span>
 
@@ -1103,7 +1122,7 @@
 </div>
 </section>
 <section id="failover-and-redundancy">
-<h2>Failover and Redundancy<a class="headerlink" href="#failover-and-redundancy" title="Link to this heading"></a></h2>
+<h3>Failover and Redundancy<a class="headerlink" href="#failover-and-redundancy" title="Link to this heading"></a></h3>
 <p>Handle failures gracefully with fallback options:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Failover Pattern:
 
@@ -1242,7 +1261,7 @@ Primary:     connect to Agent 1
 </div>
 </section>
 <section id="language-selection">
-<h2>Language Selection<a class="headerlink" href="#language-selection" title="Link to this heading"></a></h2>
+<h3>Language Selection<a class="headerlink" href="#language-selection" title="Link to this heading"></a></h3>
 <p>Multi-language IVR with persistent language preference:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Language Selection Pattern:
 
@@ -1380,7 +1399,7 @@ Primary:     connect to Agent 1
 </div>
 </section>
 <section id="parallel-call-attempts-ring-all">
-<h2>Parallel Call Attempts (Ring All)<a class="headerlink" href="#parallel-call-attempts-ring-all" title="Link to this heading"></a></h2>
+<h3>Parallel Call Attempts (Ring All)<a class="headerlink" href="#parallel-call-attempts-ring-all" title="Link to this heading"></a></h3>
 <p>Ring multiple destinations simultaneously:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ring</span> <span class="n">All</span> <span class="n">Pattern</span><span class="p">:</span>
 
@@ -1458,7 +1477,7 @@ Primary:     connect to Agent 1
 </div>
 </section>
 <section id="real-time-transcription-with-keyword-detection">
-<h2>Real-Time Transcription with Keyword Detection<a class="headerlink" href="#real-time-transcription-with-keyword-detection" title="Link to this heading"></a></h2>
+<h3>Real-Time Transcription with Keyword Detection<a class="headerlink" href="#real-time-transcription-with-keyword-detection" title="Link to this heading"></a></h3>
 <p>Monitor calls for specific keywords:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Transcription</span> <span class="n">Pattern</span><span class="p">:</span>
 
@@ -1528,6 +1547,7 @@ Primary:     connect to Agent 1
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -1538,6 +1558,7 @@ Primary:     connect to Agent 1
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Advanced Flow Patterns</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#multi-level-ivr-with-sub-menus">Multi-Level IVR with Sub-Menus</a></li>
 <li><a class="reference internal" href="#business-hours-routing">Business Hours Routing</a></li>
 <li><a class="reference internal" href="#dynamic-flow-with-external-data">Dynamic Flow with External Data</a></li>
@@ -1549,6 +1570,8 @@ Primary:     connect to Agent 1
 <li><a class="reference internal" href="#language-selection">Language Selection</a></li>
 <li><a class="reference internal" href="#parallel-call-attempts-ring-all">Parallel Call Attempts (Ring All)</a></li>
 <li><a class="reference internal" href="#real-time-transcription-with-keyword-detection">Real-Time Transcription with Keyword Detection</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

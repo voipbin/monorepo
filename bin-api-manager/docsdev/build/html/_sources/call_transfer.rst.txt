@@ -11,6 +11,10 @@ In both types of call transfer, the transfer can be done manually by the person 
 
 Call transfer is just one of many features available in CPaaS technology, which can help improve call handling, reduce call times, and improve overall customer service.
 
+.. note:: **AI Implementation Hint**
+
+   Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. The ``call-id`` used in ``POST /calls/{call-id}/transfer`` must be an active call (status ``progressing``). Obtain the ``call-id`` from ``GET /calls`` or from a webhook event such as ``call_answered``.
+
 .. _call-transfer-blind_transfer:
 
 Blind Transfer
@@ -52,6 +56,10 @@ Blind transfer is the simplest type of call transfer. In this type of transfer, 
 * The Transferee answers the call and is connected to the Caller.
 
 This is the basic process of an blind transfer using a CPaaS like VoIPBIN.
+
+.. note:: **AI Implementation Hint**
+
+   In a blind transfer, the transferer is disconnected immediately after the transfer is initiated. If the transferee does not answer, the caller may be left with no connection. For critical calls, use attended transfer instead. The caller will hear ringing while waiting for the transferee to answer.
 
 .. _call-transfer-attended_transfer:
 
@@ -108,3 +116,7 @@ Attended transfer, also known as consultative transfer, involves the person init
 * The VoIPBIN turn off the Caller's Music on hold and the Caller and Transferee can now hear each other.
 
 This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.
+
+.. note:: **AI Implementation Hint**
+
+   During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer via ``POST /transfers/{transfer-id}/cancel`` and resume the original call with the caller.

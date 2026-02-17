@@ -184,8 +184,22 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="websocket-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before connecting to WebSocket, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>Your customer ID (UUID). Obtained from your account or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p>(Optional) Agent IDs (UUIDs) for agent-level subscriptions. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p>A WebSocket client library (e.g., <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code> for Python, <code class="docutils literal notranslate"><span class="pre">ws</span></code> for Node.js, or the browser’s native <code class="docutils literal notranslate"><span class="pre">WebSocket</span></code> API).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The WebSocket URL is <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code>. Always use <code class="docutils literal notranslate"><span class="pre">wss://</span></code> (not <code class="docutils literal notranslate"><span class="pre">ws://</span></code>) for production. The token is passed as a query parameter, not a header. After connecting, you must send a <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> message before any events will be delivered. If the connection drops, all subscriptions are lost and must be re-sent after reconnecting.</p>
+</div>
 <section id="connect-to-websocket">
-<h2>Connect to WebSocket<a class="headerlink" href="#connect-to-websocket" title="Link to this heading"></a></h2>
+<h3>Connect to WebSocket<a class="headerlink" href="#connect-to-websocket" title="Link to this heading"></a></h3>
 <p>Establish a WebSocket connection to receive real-time event updates from VoIPBIN. The WebSocket provides bi-directional communication for subscribing to specific event topics.</p>
 <p><strong>WebSocket Endpoint:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;
@@ -193,7 +207,7 @@
 </div>
 </section>
 <section id="subscribe-to-events">
-<h2>Subscribe to Events<a class="headerlink" href="#subscribe-to-events" title="Link to this heading"></a></h2>
+<h3>Subscribe to Events<a class="headerlink" href="#subscribe-to-events" title="Link to this heading"></a></h3>
 <p>After connecting, send a subscription message to receive events for specific resources.</p>
 <p><strong>Subscription Message Format:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -219,7 +233,7 @@
 <p>This subscribes to all call and message events for your customer account.</p>
 </section>
 <section id="unsubscribe-from-events">
-<h2>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading"></a></h2>
+<h3>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading"></a></h3>
 <p>Stop receiving events for specific topics by sending an unsubscribe message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
@@ -231,7 +245,7 @@
 </div>
 </section>
 <section id="websocket-client-examples">
-<h2>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h2>
+<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
 <p><strong>Python Example:</strong></p>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code> library:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
@@ -460,7 +474,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="topic-pattern-matching">
-<h2>Topic Pattern Matching<a class="headerlink" href="#topic-pattern-matching" title="Link to this heading"></a></h2>
+<h3>Topic Pattern Matching<a class="headerlink" href="#topic-pattern-matching" title="Link to this heading"></a></h3>
 <p>WebSocket supports wildcard subscriptions using <code class="docutils literal notranslate"><span class="pre">*</span></code> to match multiple resources.</p>
 <p><strong>Subscribe to all calls:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -504,7 +518,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="permission-requirements">
-<h2>Permission Requirements<a class="headerlink" href="#permission-requirements" title="Link to this heading"></a></h2>
+<h3>Permission Requirements<a class="headerlink" href="#permission-requirements" title="Link to this heading"></a></h3>
 <p><strong>Customer-Level Topics:</strong></p>
 <p>To subscribe to customer-level topics, you need:
 - Admin permission, OR
@@ -519,7 +533,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="event-message-format">
-<h2>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading"></a></h2>
+<h3>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading"></a></h3>
 <p>All WebSocket events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.status&quot;</span><span class="p">,</span>
@@ -538,7 +552,7 @@ function processIncomingMessage(messageData) {
 - <code class="docutils literal notranslate"><span class="pre">data</span></code>: Resource-specific data (call, message, activeflow, etc.)</p>
 </section>
 <section id="common-use-cases">
-<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>Real-Time Call Monitoring:</strong></p>
 <p>Monitor all active calls in real-time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
@@ -618,7 +632,7 @@ ws.on(&#39;message&#39;, function(data) {
 </div>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>1. Connection Management:</strong>
 - Implement automatic reconnection with exponential backoff
 - Handle connection drops gracefully
@@ -645,7 +659,7 @@ ws.on(&#39;message&#39;, function(data) {
 - Verify subscription/unsubscription works correctly</p>
 </section>
 <section id="connection-lifecycle">
-<h2>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h2>
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
 <p><strong>1. Connect:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span> <span class="o">=</span> <span class="n">new</span> <span class="n">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;</span><span class="p">);</span>
 </pre></div>
@@ -688,6 +702,7 @@ ws.on(&#39;message&#39;, function(data) {
 <p>For more details about WebSocket topics and event types, see <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a>.</p>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -698,6 +713,7 @@ ws.on(&#39;message&#39;, function(data) {
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#connect-to-websocket">Connect to WebSocket</a></li>
 <li><a class="reference internal" href="#subscribe-to-events">Subscribe to Events</a></li>
 <li><a class="reference internal" href="#unsubscribe-from-events">Unsubscribe from Events</a></li>
@@ -708,6 +724,8 @@ ws.on(&#39;message&#39;, function(data) {
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

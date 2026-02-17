@@ -3,11 +3,25 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before creating a call, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). This must be a number you own. Obtain your numbers via ``GET /numbers``.
+* A destination phone number in E.164 format (e.g., ``+15559876543``) or a SIP endpoint address.
+* (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
+
+.. note:: **AI Implementation Hint**
+
+   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). If the user provides a local format like ``010-1234-5678``, normalize it to ``+821012345678`` before calling the API.
+
 Simple outbound call with TTS
 -----------------------------
 
-Making an outbound call with TTS(Text-to-Speech) action.
-When the destination answer the call, it will speak the given text message.
+Making an outbound call with TTS (Text-to-Speech) action.
+When the destination answers the call, it will speak the given text message.
 
 .. code::
 
@@ -71,11 +85,11 @@ When the destination answer the call, it will play the given media file.
 
     [
         {
-            "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",
+            "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",   // Save this as call_id (UUID)
             "user_id": 1,
-            "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",
+            "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",   // Auto-generated flow (UUID)
             "conf_id": "00000000-0000-0000-0000-000000000000",
-            "type": "flow",
+            "type": "flow",   // enum: flow, conference, sip-service
             "master_call_id": "00000000-0000-0000-0000-000000000000",
             "chained_call_ids": [],
             "recording_id": "00000000-0000-0000-0000-000000000000",
@@ -90,11 +104,11 @@ When the destination answer the call, it will play the given media file.
                 "target": "+15559876543",
                 "name": ""
             },
-            "status": "dialing",
-            "direction": "outgoing",
+            "status": "dialing",   // enum: dialing, ringing, progressing, terminating, canceling, hangup
+            "direction": "outgoing",   // enum: incoming, outgoing
             "hangup_by": "",
             "hangup_reason": "",
-            "tm_create": "2021-02-04 04:44:20.904662",
+            "tm_create": "2021-02-04 04:44:20.904662",   // ISO 8601 timestamp
             "tm_update": "",
             "tm_progressing": "",
             "tm_ringing": "",
@@ -264,7 +278,7 @@ Making an outbound call. After answer the call, it will play the TTS and then se
 Simple outbound call with Branch
 ---------------------------------
 
-Making an outbound call with brach. It will get the digits from the call and will execute the branch.
+Making an outbound call with branch. It will get the digits from the call and will execute the branch.
 
 .. code::
 
@@ -378,7 +392,7 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
                 "type": "talk",
                 "option": {
-                    "text": "You didn'\''t choice correct number. Default selected.",
+                    "text": "You didn'\''t choose the correct number. Default selected.",
                     "language": "en-US"
                 }
             },
@@ -603,3 +617,26 @@ Make a groupcall to the multiple destinations.
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
+
+Troubleshooting
+---------------
+
+* **400 Bad Request:**
+    * **Cause:** The ``source.target`` or ``destinations[].target`` phone number is not in E.164 format (contains dashes, spaces, or missing ``+``).
+    * **Fix:** Normalize all phone numbers to E.164 format: ``+`` followed by country code and number, no spaces or dashes (e.g., ``+15551234567``).
+
+* **400 Bad Request (source number):**
+    * **Cause:** The ``source.target`` phone number is not owned by your VoIPBIN account.
+    * **Fix:** Use a number from ``GET /numbers``. Only numbers you own can be used as the source.
+
+* **402 Payment Required:**
+    * **Cause:** Insufficient account balance to make a call.
+    * **Fix:** Check balance via ``GET /billing-accounts``. Top up before retrying.
+
+* **404 Not Found (flow_id):**
+    * **Cause:** The ``flow_id`` does not exist or belongs to a different customer.
+    * **Fix:** Verify the flow ID was obtained from ``GET /flows`` or ``POST /flows``.
+
+* **Call immediately hangs up:**
+    * **Cause:** No ``answer`` action at the beginning of the flow, or the destination is unreachable.
+    * **Fix:** Ensure your actions list starts with ``{"type": "answer"}`` for outbound calls. Check the call's ``hangup_reason`` field via ``GET /calls/{id}`` for details.
