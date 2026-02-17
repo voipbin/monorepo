@@ -69,6 +69,8 @@ const (
 
 const (
 	variableElevenlabsVoiceID = "voipbin.tts.elevenlabs.voice_id"
+	variableGCPVoiceID        = "voipbin.tts.gcp.voice_id"
+	variableAWSVoiceID        = "voipbin.tts.aws.voice_id"
 )
 
 type streamer interface {

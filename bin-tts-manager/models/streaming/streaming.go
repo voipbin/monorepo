@@ -67,4 +67,6 @@ type VendorName string
 const (
 	VendorNameNone       VendorName = ""           // vendor name is not set
 	VendorNameElevenlabs VendorName = "elevenlabs" // elevenlabs vendor
+	VendorNameGCP        VendorName = "gcp"        // gcp vendor
+	VendorNameAWS        VendorName = "aws"        // aws vendor
 )
