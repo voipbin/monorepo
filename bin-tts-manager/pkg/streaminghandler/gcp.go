@@ -37,6 +37,7 @@ type GCPConfig struct {
 
 	Message *message.Message
 
+	audioCh  chan []byte // buffered channel between receiver and sender goroutines
 	muStream sync.Mutex // protects Stream
 }
 
@@ -44,6 +45,7 @@ const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
 	defaultGCPStreamingSampleRate = int32(8000)
 	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
+	defaultGCPAudioChBuffer       = 256 // buffer capacity for audio fragments between receiver and sender
 )
 
 var gcpVoiceIDMap = map[string]string{
@@ -162,6 +164,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 			},
 			StreamingID: st.ID,
 		},
+		audioCh:  make(chan []byte, defaultGCPAudioChBuffer),
 		muStream: sync.Mutex{},
 	}
 
@@ -202,7 +205,7 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 					Name:         voiceID,
 				},
 				StreamingAudioConfig: &texttospeechpb.StreamingAudioConfig{
-					AudioEncoding:   texttospeechpb.AudioEncoding_LINEAR16,
+					AudioEncoding:   texttospeechpb.AudioEncoding_PCM,
 					SampleRateHertz: defaultGCPStreamingSampleRate,
 				},
 			},
@@ -262,6 +265,25 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
 
+	// Receiver goroutine: reads from GCP stream, pre-fragments into 320-byte
+	// chunks, and pushes them into audioCh. Closes the channel when done.
+	go h.gcpReceiver(cf)
+
+	// Sender: ticks every 20ms, sends buffered audio or silence to Asterisk.
+	h.gcpSender(cf, log)
+}
+
+// gcpReceiver reads audio from the GCP gRPC stream, splits it into
+// audiosocketMaxFragmentSize-byte fragments, and pushes each fragment
+// into cf.audioCh. It closes the channel when the stream ends.
+func (h *gcpHandler) gcpReceiver(cf *GCPConfig) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "gcpHandler.gcpReceiver",
+		"streaming_id": cf.Streaming.ID,
+	})
+
+	defer close(cf.audioCh)
+
 	for {
 		select {
 		case <-cf.Ctx.Done():
@@ -288,9 +310,62 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
-		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
-			log.Errorf("Could not write audio to asterisk: %v", errWrite)
+		// Split into fixed-size fragments and push to channel.
+		offset := 0
+		for offset < len(audioData) {
+			fragmentLen := min(audiosocketMaxFragmentSize, len(audioData)-offset)
+			fragment := make([]byte, fragmentLen)
+			copy(fragment, audioData[offset:offset+fragmentLen])
+
+			select {
+			case cf.audioCh <- fragment:
+			case <-cf.Ctx.Done():
+				return
+			}
+
+			offset += fragmentLen
+		}
+	}
+}
+
+// gcpSender sends one audio frame to Asterisk every 20ms. When the
+// audioCh buffer has data it sends real audio; otherwise it sends a
+// silence frame to keep the stream continuous and avoid choppiness.
+func (h *gcpHandler) gcpSender(cf *GCPConfig, log *logrus.Entry) {
+	silence := make([]byte, audiosocketSilenceFrameSize)
+	ticker := time.NewTicker(audiosocketWriteDelay)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-cf.Ctx.Done():
 			return
+
+		case <-ticker.C:
+			var frame []byte
+
+			// Drain one fragment from the buffer, or use silence.
+			select {
+			case data, ok := <-cf.audioCh:
+				if !ok {
+					// Channel closed — stream finished.
+					return
+				}
+				frame = data
+			default:
+				frame = silence
+			}
+
+			tmp, err := audiosocketWrapDataPCM16Bit(frame)
+			if err != nil {
+				log.Errorf("Could not wrap audio data: %v", err)
+				return
+			}
+
+			if _, errWrite := cf.ConnAst.Write(tmp); errWrite != nil {
+				log.Errorf("Could not write audio to asterisk: %v", errWrite)
+				return
+			}
 		}
 	}
 }
