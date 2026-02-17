@@ -3511,7 +3511,7 @@ type TransferManagerTransfer struct {
 	// GroupcallId The unique identifier of the groupcall created for the transfer. Returned from the `GET /groupcalls` response.
 	GroupcallId *string `json:"groupcall_id,omitempty"`
 
-	// Id The unique identifier of the transfer. Returned from the `POST /transfers` or `GET /transfers` response.
+	// Id The unique identifier of the transfer. Returned from the `POST /transfers` response.
 	Id *string `json:"id,omitempty"`
 
 	// TmCreate Timestamp when created

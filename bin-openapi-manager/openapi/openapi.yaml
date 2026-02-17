@@ -5553,7 +5553,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the transfer. Returned from the `POST /transfers` or `GET /transfers` response."
+          description: "The unique identifier of the transfer. Returned from the `POST /transfers` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
