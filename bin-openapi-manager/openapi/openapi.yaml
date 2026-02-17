@@ -1983,6 +1983,7 @@ components:
         type:
           type: string
           description: Type of address.
+          example: "tel"
           enum:
             - ""
             - agent
@@ -2003,23 +2004,30 @@ components:
             - CommonAddressTypeTel
         target:
           type: string
-          description: Address endpoint.
+          description: "The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip."
+          example: "+14155551234"
         target_name:
           type: string
           description: Address's name.
+          example: "John Smith"
         name:
           type: string
-          description: Name.
+          description: "Optional label for this address."
+          example: "Main Office"
         detail:
           type: string
-          description: Detail description.
+          description: "Additional notes about this address."
+          example: "Primary contact number"
 
     CommonPagination:
       type: object
       properties:
         next_page_token:
           type: string
-          description: The token for next pagination.
+          format: date-time
+          x-go-type: string
+          description: "Cursor token for the next page of results. Pass this value as the page_token parameter in the next request."
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -2028,6 +2036,7 @@ components:
     ConferenceManagerConferenceStatus:
       type: string
       description: Status of the conference.
+      example: "progressing"
       enum:
         - starting
         - progressing
@@ -2041,6 +2050,7 @@ components:
     ConferenceManagerConferenceType:
       type: string
       description: Types of conferences.
+      example: "conference"
       enum:
         - ""
         - conference
@@ -2056,71 +2066,118 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the conference.
+          example: "8b9c0d1e-2f3a-4567-0123-456789abcdef"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConferenceManagerConferenceType'
+          description: The type of conference.
+          example: "conference"
         status:
           $ref: '#/components/schemas/ConferenceManagerConferenceStatus'
+          description: Current status of the conference.
+          example: "progressing"
         name:
           type: string
           description: Name of the conference.
+          example: "Team Standup"
         detail:
           type: string
           description: Detailed information about the conference.
+          example: "Daily team standup meeting"
         data:
           type: object
-          description: Custom data associated with the conference.
+          description: "Custom key-value data associated with the conference."
           additionalProperties: true
         timeout:
           type: integer
           description: Timeout for the conference in seconds.
           format: int32
+          example: 3600
         pre_flow_id:
           type: string
-          description: ID of the pre-flow to execute before the conference starts.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow to execute before the conference starts. Returned from the `POST /flows` or `GET /flows` response."
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         post_flow_id:
           type: string
-          description: ID of the post-flow to execute after the conference ends.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the flow to execute after the conference ends. Returned from the `POST /flows` or `GET /flows` response."
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         conferencecall_ids:
           type: array
           description: List of associated conference call IDs.
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         recording_id:
           type: string
+          format: uuid
+          x-go-type: string
           description: ID of the main recording associated with the conference.
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         recording_ids:
           type: array
           description: List of associated recording IDs.
+          example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         transcribe_id:
           type: string
+          format: uuid
+          x-go-type: string
           description: ID of the main transcription associated with the conference.
+          example: "9c0d1e2f-3a4b-5678-1234-567890abcdef"
         transcribe_ids:
           type: array
           description: List of associated transcription IDs.
+          example: ["9c0d1e2f-3a4b-5678-1234-567890abcdef"]
           items:
             type: string
+            format: uuid
+            x-go-type: string
         tm_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference ended.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     ConferenceManagerConferencecallReferenceType:
       type: string
       description: Type of the reference associated with the conference call.
+      example: "call"
       enum:
         - call
       x-enum-varnames:
@@ -2128,6 +2185,7 @@ components:
     ConferenceManagerConferencecallStatus:
       type: string
       description: Status of the conference call.
+      example: "joined"
       enum:
         - joining
         - joined
@@ -2143,32 +2201,60 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the conference call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         activeflow_id:
           type: string
-          description: Activeflow ID associated with this conference call.
+          format: uuid
+          x-go-type: string
+          description: "Activeflow ID associated with this conference call. Returned from the `POST /activeflows` or `GET /activeflows` response."
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         conference_id:
           type: string
-          description: Unique identifier of the associated conference.
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated conference. Returned from the `GET /conferences` response."
+          example: "8b9c0d1e-2f3a-4567-0123-456789abcdef"
         reference_type:
           $ref: '#/components/schemas/ConferenceManagerConferencecallReferenceType'
+          description: Type of the reference associated with the conference call.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier of the reference (e.g., call ID).
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the referenced resource.
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
           $ref: '#/components/schemas/ConferenceManagerConferencecallStatus'
+          description: Current status of the conference call.
+          example: "joined"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conference call was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -2181,30 +2267,40 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the contact.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
           format: uuid
           description: Unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         first_name:
           type: string
           description: First name of the contact.
+          example: "John"
         last_name:
           type: string
           description: Last name of the contact.
+          example: "Smith"
         display_name:
           type: string
           description: Display name of the contact.
+          example: "John Smith"
         company:
           type: string
           description: Company name associated with the contact.
+          example: "Acme Corporation"
         job_title:
           type: string
           description: Job title of the contact.
+          example: "Software Engineer"
         source:
           $ref: '#/components/schemas/ContactManagerContactSource'
+          description: Source of the contact.
+          example: "manual"
         external_id:
           type: string
           description: External identifier for the contact.
+          example: "CRM-12345"
         phone_numbers:
           type: array
           description: List of phone numbers associated with the contact.
@@ -2218,6 +2314,7 @@ components:
         tag_ids:
           type: array
           description: List of tag IDs associated with the contact.
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
           items:
             type: string
             format: uuid
@@ -2225,18 +2322,22 @@ components:
           type: string
           format: date-time
           description: Timestamp when the contact was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
           format: date-time
           description: Timestamp when the contact was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
           format: date-time
           description: Timestamp when the contact was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     ContactManagerContactSource:
       type: string
       description: Source of the contact.
+      example: "manual"
       enum:
         - manual
         - import
@@ -2255,23 +2356,30 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the email address.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         address:
           type: string
           format: email
           description: Email address.
+          example: "john.smith@acme.com"
         type:
           $ref: '#/components/schemas/ContactManagerEmailType'
+          description: Type of the email address.
+          example: "work"
         is_primary:
           type: boolean
           description: Indicates if this is the primary email address.
+          example: true
         tm_create:
           type: string
           format: date-time
           description: Timestamp when the email was created.
+          example: "2026-01-15T09:30:00Z"
 
     ContactManagerEmailType:
       type: string
       description: Type of the email address.
+      example: "work"
       enum:
         - work
         - personal
@@ -2288,25 +2396,33 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the phone number.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         number:
           type: string
           description: Phone number as entered.
+          example: "+14155551234"
         number_e164:
           type: string
           description: Phone number in E.164 format.
+          example: "+14155551234"
         type:
           $ref: '#/components/schemas/ContactManagerPhoneNumberType'
+          description: Type of the phone number.
+          example: "mobile"
         is_primary:
           type: boolean
           description: Indicates if this is the primary phone number.
+          example: true
         tm_create:
           type: string
           format: date-time
           description: Timestamp when the phone number was created.
+          example: "2026-01-15T09:30:00Z"
 
     ContactManagerPhoneNumberType:
       type: string
       description: Type of the phone number.
+      example: "mobile"
       enum:
         - mobile
         - work
