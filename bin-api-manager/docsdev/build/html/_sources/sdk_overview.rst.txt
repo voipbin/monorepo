@@ -14,11 +14,15 @@ SDKs simplify the development process by providing:
 
 Accesskey
 ---------
-Most of the APIs in the SDK require an access key to authenticate the user and authorize access to the platform or framework. 
-The access key is a unique identifier that is used to identify the user and grant access to the platform or framework. 
-Developers can obtain an access key by registering for an account on the platform or framework's website and generating an access key through the developer portal.
+Most SDK methods require an accesskey (String) to authenticate the user and authorize access to the VoIPBIN platform.
+The accesskey is a long-lived API token obtained from ``GET /accesskeys`` or created via ``POST /accesskeys``.
+You can also generate an accesskey through the `admin console <https://admin.voipbin.net>`_.
 
 See detail about the accesskey :ref:`here <accesskey-overview>`.
+
+.. note:: **AI Implementation Hint**
+
+   When initializing the SDK, pass the accesskey string directly. Do not wrap it in a Bearer header — the SDK handles authentication internally. Use ``GET /accesskeys`` to list existing keys, or create a new one via ``POST /accesskeys`` with a custom expiration.
 
 Support Languages
 -----------------

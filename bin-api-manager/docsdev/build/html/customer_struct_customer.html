@@ -206,16 +206,24 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Customer’s ID.</p></li>
-<li><p>username: Customer’s username.</p></li>
-<li><p>name: Name.</p></li>
-<li><p>detail: Detail.</p></li>
-<li><p>webhook_method: Webhook method.</p></li>
-<li><p>webhook_uri: Webhook URI.</p></li>
-<li><p>line_secret: Line’s secret.</p></li>
-<li><p>line_token: Line’s token.</p></li>
-<li><p>permission_ids: List of permission ids.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The customer’s unique identifier. Returned when creating a customer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/customers</span></code> or when listing customers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">username</span></code> (String): The customer’s login username. Must be unique across the platform.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The display name of the customer organization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description or notes about the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string): The HTTP method used for webhook notifications. Typically <code class="docutils literal notranslate"><span class="pre">POST</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String): The URI where webhook event notifications are sent for this customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_secret</span></code> (String): The LINE messaging platform channel secret for LINE integration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_token</span></code> (String): The LINE messaging platform channel access token for LINE integration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">permission_ids</span></code> (Array of UUID): List of default permission IDs for this customer’s resources. Each ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/permissions</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the customer was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the customer was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the customer was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the customer has not been deleted. The <code class="docutils literal notranslate"><span class="pre">line_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">line_token</span></code> fields are only needed if the customer uses LINE messaging integration; they can be left empty for voice-only customers.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

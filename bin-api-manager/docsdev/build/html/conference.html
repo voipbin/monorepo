@@ -188,6 +188,15 @@
 <h1>Conference<a class="headerlink" href="#conference" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="conference-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium-High</p></li>
+<li><p><strong>Cost:</strong> Chargeable (credit deduction per conference minute per participant)</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">starting</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> or subscribe via WebSocket to track conference status changes.</p></li>
+</ul>
+</div>
 <p>The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.</p>
 <p>Additionally, the Conference API allows developers to establish voice, video, and WebRTC (Web Real-Time Communication) calls, enabling seamless voice and video communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.</p>
 <img alt="_images/conference_overview_flow.png" src="_images/conference_overview_flow.png" />
@@ -463,6 +472,11 @@ Flow                    Conference-Manager              Call-Manager
 +-------------------------------------------------------------------------+
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">type</span></code> field is immutable after creation. Choose <code class="docutils literal notranslate"><span class="pre">conference</span></code> for multi-party rooms (2+ participants, stays active until explicitly deleted) or <code class="docutils literal notranslate"><span class="pre">connect</span></code> for 1:1 bridges (auto-terminates when either party leaves). If unsure, default to <code class="docutils literal notranslate"><span class="pre">conference</span></code> since it handles both single and multi-party scenarios.</p>
+</div>
 <p><strong>Type: Connect (1:1 Bridge)</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
 |                      Type: Connect (Two-Party)                          |
@@ -523,6 +537,11 @@ When one participant leaves:
 <span class="o">|</span>                                                                         <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Recording and transcription can only start when the conference status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. If you attempt <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences/{id}/recording_start</span></code> on a conference in <code class="docutils literal notranslate"><span class="pre">starting</span></code> or <code class="docutils literal notranslate"><span class="pre">terminating</span></code> status, the request will fail. Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> and verify <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> before starting recording or transcription.</p>
 </div>
 <p><strong>Recording Rules</strong></p>
 <ul class="simple">
@@ -909,20 +928,28 @@ Every 5 seconds, for each participant:
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Conference’s ID.</p></li>
-<li><p>customer_id: Customer’s ID.</p></li>
-<li><p><em>type</em>: Conference’s type. See detail <a class="reference internal" href="conference_struct_conference.html#conference-struct-conference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Conference’s status. See detail <a class="reference internal" href="conference_struct_conference.html#conference-struct-conference-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>name: Conference’s name.</p></li>
-<li><p>detail: Conference’s detail description.</p></li>
-<li><p>data: Reserved.</p></li>
-<li><p>timeout: Timeout(second).</p></li>
-<li><p>pre_actions: Set of actions for entering calls.</p></li>
-<li><p>post_action: Set of actions for leaving calls.</p></li>
-<li><p>conferencecall_ids: List of conferencecall ids.</p></li>
-<li><p>recording_id: Currently recoriding id.</p></li>
-<li><p>recording_ids: List of recording ids.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conference’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this conference. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The conference’s type. Immutable after creation. See <a class="reference internal" href="conference_struct_conference.html#conference-struct-conference-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The conference’s current status. See <a class="reference internal" href="conference_struct_conference.html#conference-struct-conference-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the conference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the conference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): Reserved for future use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (Integer): Conference auto-termination timeout in seconds. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_actions</span></code> (Array of Object): Flow actions executed when a participant joins (e.g., greeting message). Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">post_actions</span></code> (Array of Object): Flow actions executed when a participant leaves. Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> to retrieve participant details.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this conference’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the conference was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to any conference property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the conference was deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the conference is still active.</p>
+</div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -969,7 +996,7 @@ Every 5 seconds, for each participant:
 </section>
 <section id="type">
 <span id="conference-struct-conference-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
-<p>Conference’s type.</p>
+<p>Conference’s type (enum string). Immutable after creation.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -978,35 +1005,35 @@ Every 5 seconds, for each participant:
 </thead>
 <tbody>
 <tr class="row-even"><td><p>conference</p></td>
-<td><p>Conference.</p></td>
+<td><p>Multi-party conference room. Supports 2+ participants. Remains active even with 0 or 1 participant. Only terminates when explicitly deleted or timeout expires.</p></td>
 </tr>
 <tr class="row-odd"><td><p>connect</p></td>
-<td><p>Connect.</p></td>
+<td><p>Two-party bridge. Designed for exactly 2 participants (e.g., customer-agent). Auto-ejects the remaining participant when one leaves, then terminates.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="conference-struct-conference-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
-<p>Conference’s status.</p>
+<p>Conference’s current status (enum string). States only move forward, never backward.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>starting</p></td>
-<td><p>Conference is starting.</p></td>
+<td><p>Conference is being initialized. Brief transitional state. No operations (recording, transcription) are possible yet.</p></td>
 </tr>
 <tr class="row-odd"><td><p>progressing</p></td>
-<td><p>Conference is progressing.</p></td>
+<td><p>Conference is active. Participants can join, recording and transcription can start. This is the main operational state.</p></td>
 </tr>
 <tr class="row-even"><td><p>terminating</p></td>
-<td><p>Conference is terminating.</p></td>
+<td><p>Conference is closing. No new participants can join. Waiting for existing participants to leave.</p></td>
 </tr>
 <tr class="row-odd"><td><p>terminated</p></td>
-<td><p>Conference is terminated.</p></td>
+<td><p>Conference is completely closed. No further operations are possible. This is the final state.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1030,13 +1057,21 @@ Every 5 seconds, for each participant:
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Conferencecall’s ID.</p></li>
-<li><p>customer_id: Customer’s ID.</p></li>
-<li><p>conference_id: Conference’s ID.</p></li>
-<li><p><em>reference_type</em>: Reference type. See detail <a class="reference internal" href="conference_struct_conferencecall.html#conference-struct-conferencecall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>reference_id: Reference ID.</p></li>
-<li><p><em>status</em>: Conferencecall’s status. See detail <a class="reference internal" href="conference_struct_conferencecall.html#conference-struct-conferencecall-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conferencecall’s unique identifier. Returned when a participant joins a conference or when listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this conferencecall. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conference_id</span></code> (UUID): The conference this participant belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of the referenced resource. See <a class="reference internal" href="conference_struct_conferencecall.html#conference-struct-conferencecall-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the referenced resource (e.g., a call ID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> when <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The conferencecall’s current status. See <a class="reference internal" href="conference_struct_conferencecall.html#conference-struct-conferencecall-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the conferencecall was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to any conferencecall property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the conferencecall was deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the participant record still exists. To remove a participant from a conference, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{id}</span></code>.</p>
+</div>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1056,7 +1091,7 @@ Every 5 seconds, for each participant:
 </section>
 <section id="reference-type">
 <span id="conference-struct-conferencecall-reference-type"></span><h3>Reference type<a class="headerlink" href="#reference-type" title="Link to this heading"></a></h3>
-<p>Reference’s type</p>
+<p>The type of resource participating in the conference (enum string).</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1065,32 +1100,32 @@ Every 5 seconds, for each participant:
 </thead>
 <tbody>
 <tr class="row-even"><td><p>call</p></td>
-<td><p>call</p></td>
+<td><p>The participant is a call. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a call ID obtainable from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="conference-struct-conferencecall-status">
 <span id="id5"></span><h3>Status<a class="headerlink" href="#conference-struct-conferencecall-status" title="Link to this heading"></a></h3>
-<p>Status</p>
+<p>The conferencecall’s current status (enum string). States only move forward, never backward.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>joining</p></td>
-<td><p>The call is joining to the conference.</p></td>
+<td><p>The call is connecting to the conference. Pre-conference flow actions may be executing (e.g., greeting message).</p></td>
 </tr>
 <tr class="row-odd"><td><p>joined</p></td>
-<td><p>The call is joined to the conference.</p></td>
+<td><p>The call is active in the conference. Audio is flowing. The participant can hear and speak with others.</p></td>
 </tr>
 <tr class="row-even"><td><p>leaving</p></td>
-<td><p>The call is leaving from the conference.</p></td>
+<td><p>The call is being disconnected from the conference. Triggered by hangup or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{id}</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>leaved</p></td>
-<td><p>The call is leaved from the conference.</p></td>
+<td><p>The call has fully left the conference. This is the final state. No further changes are possible.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1098,6 +1133,17 @@ Every 5 seconds, for each participant:
 </section>
 <section id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with conferences, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(Optional) A flow ID (UUID) for <code class="docutils literal notranslate"><span class="pre">pre_actions</span></code> or <code class="docutils literal notranslate"><span class="pre">post_actions</span></code>. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+<li><p>(Optional) To add participants, you need an active call. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conferences are created with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> and begin in <code class="docutils literal notranslate"><span class="pre">starting</span></code> status, quickly transitioning to <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. Participants do not join via the conference API directly – they join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>). To remove a participant, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{conferencecall_id}</span></code>. To terminate the entire conference, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferences/{conference_id}</span></code>.</p>
+</div>
 <section id="install-channel-line">
 <h3>Install channel: line<a class="headerlink" href="#install-channel-line" title="Link to this heading"></a></h3>
 <section id="id6">
@@ -1196,24 +1242,66 @@ Every 5 seconds, for each participant:
 </section>
 <section id="kick-the-conferencecall-from-the-conference">
 <h3>Kick the conferencecall from the conference<a class="headerlink" href="#kick-the-conferencecall-from-the-conference" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>You can only kick participants whose status is <code class="docutils literal notranslate"><span class="pre">joining</span></code> or <code class="docutils literal notranslate"><span class="pre">joined</span></code>. Attempting to delete a conferencecall in <code class="docutils literal notranslate"><span class="pre">leaving</span></code> or <code class="docutils literal notranslate"><span class="pre">leaved</span></code> status will fail. Obtain the conferencecall ID from the conference’s <code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> array (via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code>) or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p>
+</div>
 <section id="id10">
 <h4>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,
-    &quot;status&quot;: &quot;leaving&quot;,
-    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,
+    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,   // Conferencecall ID (UUID)
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,   // Customer UUID
+    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,   // Parent conference UUID
+    &quot;reference_type&quot;: &quot;call&quot;,   // enum: call, line
+    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,   // The call&#39;s UUID
+    &quot;status&quot;: &quot;leaving&quot;,   // enum: joining, joined, leaving, leaved
+    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,   // ISO 8601 timestamp
     &quot;tm_update&quot;: &quot;2022-08-09 03:54:10.035297&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;   // 9999-01-01 means not deleted
 }
 </pre></div>
 </div>
 </section>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid conference creation parameters (e.g., missing <code class="docutils literal notranslate"><span class="pre">type</span></code> field).</p></li>
+<li><p><strong>Fix:</strong> Ensure the request body includes <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;conference&quot;</span></code> and a <code class="docutils literal notranslate"><span class="pre">name</span></code> string.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The conference UUID or conferencecall UUID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>409 Conflict (kick participant):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Attempted to kick a participant whose status is <code class="docutils literal notranslate"><span class="pre">leaving</span></code> or <code class="docutils literal notranslate"><span class="pre">leaved</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Check participant status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> before attempting deletion. Only <code class="docutils literal notranslate"><span class="pre">joining</span></code> or <code class="docutils literal notranslate"><span class="pre">joined</span></code> participants can be kicked.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Conference has no participants:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Participants join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>), not through the conference API.</p></li>
+<li><p><strong>Fix:</strong> Create a call with a flow containing a <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> action that references the conference ID.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 </section>
 </section>
@@ -1291,6 +1379,7 @@ Every 5 seconds, for each participant:
 <li><a class="reference internal" href="#id10">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

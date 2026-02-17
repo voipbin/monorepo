@@ -3,6 +3,22 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before using AI features, you need:
+
+* A valid authentication token (String). Obtain via ``POST /auth/login`` or use an accesskey from ``GET /accesskeys``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). Obtain one owned by your account via ``GET /numbers``.
+* A destination phone number in E.164 format or an internal extension.
+* An LLM provider API key (String). Obtain from your provider's dashboard (e.g., OpenAI, Anthropic).
+* (Optional) A pre-created AI configuration (UUID). Create one via ``POST /ais`` or use inline action settings.
+* (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
+
+.. note:: **AI Implementation Hint**
+
+   AI features use three external services: an LLM (e.g., OpenAI), a TTS provider (e.g., ElevenLabs), and an STT provider (e.g., Deepgram). Each incurs costs on both VoIPBIN credits and the external provider's billing. Verify your VoIPBIN balance via ``GET /billing-accounts`` and your provider API key validity before creating AI calls.
+
 Simple AI Voice Assistant
 -------------------------
 
@@ -38,7 +54,21 @@ Create a basic AI voice assistant that answers questions during a call. The AI w
             ]
         }'
 
+Response:
+
+.. code::
+
+    {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",   // Save this as call_id
+        "status": "dialing",
+        "source": {"type": "tel", "target": "+15551234567"},
+        "destination": {"type": "tel", "target": "+15559876543"},
+        "direction": "outgoing",
+        "tm_create": "2026-02-18T10:30:00Z"
+    }
+
 This creates a call with an AI assistant that will:
+
 1. Answer the incoming call
 2. Listen to the user's speech using STT (Speech-to-Text)
 3. Process the input through the AI engine with the given prompt
@@ -79,11 +109,29 @@ Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. T
             ]
         }'
 
+Response:
+
+.. code::
+
+    {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",   // Save this as call_id
+        "status": "dialing",
+        "source": {"type": "tel", "target": "+15551234567"},
+        "destination": {"type": "tel", "target": "+15559876543"},
+        "direction": "outgoing",
+        "tm_create": "2026-02-18T10:31:00Z"
+    }
+
 AI Talk provides:
+
 - **Interruption Detection**: Stops speaking when user talks
 - **Low Latency**: Streams responses in chunks for faster perceived response time
 - **Natural Voice**: Uses ElevenLabs for high-quality voice output
 - **Context Retention**: Remembers previous conversation exchanges
+
+.. note:: **AI Implementation Hint**
+
+   The ``ai_talk`` action type (not ``ai``) enables real-time voice interaction with interruption detection. Use ``ai_talk`` for live conversational AI. The older ``ai`` action type uses a simpler request-response pattern without interruption support and is recommended only for basic Q&A use cases.
 
 AI with Custom Voice ID
 ------------------------
@@ -166,7 +214,7 @@ Generate an AI-powered summary of a call transcription. This is useful for post-
                     }
                 },
                 {
-                    "type": "wait",
+                    "type": "sleep",
                     "option": {
                         "duration": 30000
                     }
@@ -191,7 +239,7 @@ Generate an AI-powered summary of a call transcription. This is useful for post-
 The AI summary will:
 - Process the transcription from ``transcribe_start``
 - Generate a structured summary of key points
-- Store the summary in ``${voipbin.ai_summary.result}``
+- Store the summary in ``${voipbin.ai_summary.content}``
 - Can be accessed via webhook or API after the call
 
 Real-Time AI Summary
@@ -278,5 +326,24 @@ Best Practices
 - Always include fallback actions after AI actions
 - Handle cases where AI may not understand the input
 - Provide clear instructions to users about what they can ask
+
+Troubleshooting
+---------------
+
+* **400 Bad Request:**
+    * **Cause:** Invalid ``engine_model`` format or missing required action fields.
+    * **Fix:** Verify ``engine_model`` uses ``<provider>.<model>`` format (e.g., ``openai.gpt-4o``). Ensure ``initial_prompt`` is provided.
+
+* **402 Payment Required:**
+    * **Cause:** Insufficient VoIPBIN account balance.
+    * **Fix:** Check balance via ``GET /billing-accounts``. Top up before retrying.
+
+* **AI not responding during call:**
+    * **Cause:** LLM provider API key is invalid or rate-limited.
+    * **Fix:** Verify the ``engine_key`` in your AI configuration. Check the provider's status page and rate limits.
+
+* **No audio from AI:**
+    * **Cause:** TTS provider credentials are invalid or the voice ID does not exist.
+    * **Fix:** Verify ``tts_type`` and ``tts_voice_id``. Try using a default voice (omit ``tts_voice_id``).
 
 For more details on AI features and configuration, see :ref:`AI Overview <ai-overview>`.

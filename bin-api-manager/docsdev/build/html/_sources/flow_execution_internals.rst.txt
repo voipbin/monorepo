@@ -5,6 +5,10 @@ Flow Execution Internals
 
 This section provides deep technical details about how VoIPBIN's flow engine executes actions internally, including the interaction between services and the state machine that drives flow execution.
 
+.. note:: **AI Implementation Hint**
+
+   This section describes internal architecture and is primarily useful for understanding how the system works, not for building flows. Key takeaways for API consumers: (1) Actions return one of four result types (``next``, ``wait``, ``block``, ``done``) which determines whether the flow continues immediately or pauses. (2) Variables are stored as a JSON column in the activeflow database record and resolved via ``${...}`` pattern substitution at execution time. (3) Concurrent events for the same activeflow are handled via database-level locking -- the first event wins, later events are discarded as stale.
+
 Flow Manager Architecture
 -------------------------
 

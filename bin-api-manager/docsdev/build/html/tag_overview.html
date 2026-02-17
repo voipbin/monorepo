@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="tag-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Creating and managing tags incurs no charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> returns immediately with the created tag.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Tag API provides a flexible labeling system for organizing and categorizing resources. Tags are primarily used for skill-based routing in queues, but can also categorize agents by teams, departments, languages, or any custom attribute.</p>
 <p>With the Tag API you can:</p>
 <ul class="simple">
@@ -230,6 +239,11 @@
 <li><p><strong>Queue Tags</strong>: Requirements for agents to handle calls</p></li>
 <li><p><strong>Tag Matching</strong>: Process of finding qualified agents</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Queue tag matching uses <strong>AND logic</strong>: an agent must have <strong>all</strong> tags listed in the queue’s <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> to be eligible. If a queue requires <code class="docutils literal notranslate"><span class="pre">[english,</span> <span class="pre">billing]</span></code>, an agent with only <code class="docutils literal notranslate"><span class="pre">[english]</span></code> will not match. Tag names must be unique per customer account.</p>
+</div>
 </section>
 <section id="tag-matching">
 <h2>Tag Matching<a class="headerlink" href="#tag-matching" title="Link to this heading"></a></h2>

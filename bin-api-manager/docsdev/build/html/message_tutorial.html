@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="message-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before sending messages, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). This must be a number you own. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. The <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations</span></code> fields use the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">tel</span></code>.</p>
+</div>
 <section id="send-a-message">
-<h2>Send a message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h2>
+<h3>Send a message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -205,7 +218,7 @@
 </div>
 </section>
 <section id="get-list-of-messages">
-<h2>Get list of messages<a class="headerlink" href="#get-list-of-messages" title="Link to this heading"></a></h2>
+<h3>Get list of messages<a class="headerlink" href="#get-list-of-messages" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
 
 {
@@ -246,6 +259,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -256,8 +270,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#send-a-message">Send a message</a></li>
 <li><a class="reference internal" href="#get-list-of-messages">Get list of messages</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

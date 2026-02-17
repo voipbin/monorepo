@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="billing-account-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before managing billing accounts, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>The billing account ID (UUID). Obtain it via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code> which lists all billing accounts for the authenticated customer.</p></li>
+<li><p>(For adding balance) Admin-level permissions on the account.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">balance</span></code> field in billing account responses is a float representing USD (e.g., <code class="docutils literal notranslate"><span class="pre">69.77263</span></code> = $69.77). When estimating costs, multiply the per-unit rate by billable units. Call durations are ceiling-rounded to the next whole minute for billing purposes (e.g., a 2 minute 15 second call is billed as 3 minutes).</p>
+</div>
 <section id="check-account-balance">
-<h2>Check Account Balance<a class="headerlink" href="#check-account-balance" title="Link to this heading"></a></h2>
+<h3>Check Account Balance<a class="headerlink" href="#check-account-balance" title="Link to this heading"></a></h3>
 <p>Check your billing account balance before initiating calls or sending messages to ensure sufficient funds.</p>
 <p><strong>Get Billing Account:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
@@ -230,7 +243,7 @@
 </div>
 </section>
 <section id="add-balance-admin-only">
-<h2>Add Balance (Admin Only)<a class="headerlink" href="#add-balance-admin-only" title="Link to this heading"></a></h2>
+<h3>Add Balance (Admin Only)<a class="headerlink" href="#add-balance-admin-only" title="Link to this heading"></a></h3>
 <p>Only users with admin permissions can add balance to accounts. This ensures account security and prevents unauthorized access.</p>
 <p><strong>Add Balance:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;/balance?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -257,7 +270,7 @@
 <p><strong>Important:</strong> This operation requires admin permissions. Regular users will receive a permission error.</p>
 </section>
 <section id="understanding-service-rates">
-<h2>Understanding Service Rates<a class="headerlink" href="#understanding-service-rates" title="Link to this heading"></a></h2>
+<h3>Understanding Service Rates<a class="headerlink" href="#understanding-service-rates" title="Link to this heading"></a></h3>
 <p>VoIPBIN uses a hybrid billing model: token-eligible services consume tokens first, then overflow to credits. Credit-only services always charge the credit balance directly. All calls are billed per minute with ceiling rounding.</p>
 <p><strong>Token Rates:</strong></p>
 <table class="docutils align-default">
@@ -349,7 +362,7 @@ Credit cost: 10 x $0.008 = $0.08
 </div>
 </section>
 <section id="check-balance-before-call">
-<h2>Check Balance Before Call<a class="headerlink" href="#check-balance-before-call" title="Link to this heading"></a></h2>
+<h3>Check Balance Before Call<a class="headerlink" href="#check-balance-before-call" title="Link to this heading"></a></h3>
 <p>Programmatically verify balance before initiating calls to ensure successful completion.</p>
 <p><strong>Python Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
@@ -446,7 +459,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 </section>
 <section id="monitor-balance-with-webhooks">
-<h2>Monitor Balance with Webhooks<a class="headerlink" href="#monitor-balance-with-webhooks" title="Link to this heading"></a></h2>
+<h3>Monitor Balance with Webhooks<a class="headerlink" href="#monitor-balance-with-webhooks" title="Link to this heading"></a></h3>
 <p>Set up webhooks to receive notifications when balance changes or falls below a threshold.</p>
 <p><strong>Create Webhook for Billing Events:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -521,7 +534,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 </section>
 <section id="common-use-cases">
-<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Pre-Campaign Cost Estimation:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign cost considering credits.&quot;&quot;&quot;</span>
@@ -581,7 +594,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>1. Balance Verification:</strong></p>
 <ul class="simple">
 <li><p>Always check credit balance before high-cost operations</p></li>
@@ -608,7 +621,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </ul>
 </section>
 <section id="balance-management-workflow">
-<h2>Balance Management Workflow<a class="headerlink" href="#balance-management-workflow" title="Link to this heading"></a></h2>
+<h3>Balance Management Workflow<a class="headerlink" href="#balance-management-workflow" title="Link to this heading"></a></h3>
 <p><strong>1. Initial Setup:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current balance</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_accounts</span><span class="o">/&lt;</span><span class="n">account</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
@@ -637,7 +650,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <p><strong>Common Issues:</strong></p>
 <p><strong>Insufficient balance error:</strong></p>
 <ul class="simple">
@@ -658,6 +671,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <p>For more information about billing account management, see <a class="reference internal" href="billing_account_overview.html#billing-account-overview"><span class="std std-ref">Billing Account Overview</span></a>.</p>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -668,6 +682,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#check-account-balance">Check Account Balance</a></li>
 <li><a class="reference internal" href="#add-balance-admin-only">Add Balance (Admin Only)</a></li>
 <li><a class="reference internal" href="#understanding-service-rates">Understanding Service Rates</a></li>
@@ -677,6 +692,8 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#balance-management-workflow">Balance Management Workflow</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

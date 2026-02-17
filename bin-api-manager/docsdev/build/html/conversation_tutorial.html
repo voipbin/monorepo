@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="conversation-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with conversations, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> value indicating the channel for the conversation (e.g., <code class="docutils literal notranslate"><span class="pre">message</span></code> for SMS/MMS, <code class="docutils literal notranslate"><span class="pre">line</span></code> for Line). See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
+<li><p>(Optional) Participant addresses in the appropriate format for the channel (E.164 phone numbers for SMS, Line user IDs for Line).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Conversations are free to create, but messages sent within them incur per-channel delivery costs (SMS, email, etc.). When sending a message to a conversation via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>, the conversation ID is passed in the URL path, not the request body.</p>
+</div>
 <section id="setup-the-conversation">
-<h2>Setup the conversation<a class="headerlink" href="#setup-the-conversation" title="Link to this heading"></a></h2>
+<h3>Setup the conversation<a class="headerlink" href="#setup-the-conversation" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
@@ -195,9 +208,11 @@
 </div>
 </section>
 <section id="get-list-of-conversations">
-<h2>Get list of conversations<a class="headerlink" href="#get-list-of-conversations" title="Link to this heading"></a></h2>
+<h3>Get list of conversations<a class="headerlink" href="#get-list-of-conversations" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conversations?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -233,12 +248,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="get-detail-of-conversation">
-<h2>Get detail of conversation<a class="headerlink" href="#get-detail-of-conversation" title="Link to this heading"></a></h2>
+<h3>Get detail of conversation<a class="headerlink" href="#get-detail-of-conversation" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id1">
-<h3>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -269,12 +284,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="send-a-message-to-the-conversation">
-<h2>Send a message to the conversation<a class="headerlink" href="#send-a-message-to-the-conversation" title="Link to this heading"></a></h2>
+<h3>Send a message to the conversation<a class="headerlink" href="#send-a-message-to-the-conversation" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id2">
-<h3>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -296,12 +311,12 @@
 }
 </pre></div>
 </div>
-</section>
-</section>
 <section id="get-list-of-conversation-messages">
-<h2>Get list of conversation messages<a class="headerlink" href="#get-list-of-conversation-messages" title="Link to this heading"></a></h2>
+<h3>Get list of conversation messages<a class="headerlink" href="#get-list-of-conversation-messages" title="Link to this heading"></a></h3>
+</section>
+</section>
 <section id="id3">
-<h3>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<h2>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -327,7 +342,6 @@
 </div>
 </section>
 </section>
-</section>
 
 </main>
                         
@@ -338,23 +352,24 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#setup-the-conversation">Setup the conversation</a></li>
-<li><a class="reference internal" href="#get-list-of-conversations">Get list of conversations</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#get-list-of-conversations">Get list of conversations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-detail-of-conversation">Get detail of conversation</a><ul>
-<li><a class="reference internal" href="#id1">Example</a></li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#get-detail-of-conversation">Get detail of conversation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#send-a-message-to-the-conversation">Send a message to the conversation</a><ul>
-<li><a class="reference internal" href="#id2">Example</a></li>
+<li><a class="reference internal" href="#id1">Example</a><ul>
+<li><a class="reference internal" href="#send-a-message-to-the-conversation">Send a message to the conversation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-list-of-conversation-messages">Get list of conversation messages</a><ul>
+<li><a class="reference internal" href="#id2">Example</a><ul>
+<li><a class="reference internal" href="#get-list-of-conversation-messages">Get list of conversation messages</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id3">Example</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

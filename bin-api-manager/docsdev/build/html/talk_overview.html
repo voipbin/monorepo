@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="talk-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free – Talk messaging does not incur per-message charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/talks</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/talks/{id}/messages</span></code> return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.</p>
 <p>With the Talk API you can:</p>
 <ul class="simple">
@@ -316,6 +325,11 @@
         ]
     }&#39;
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Talk uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> endpoint (not <code class="docutils literal notranslate"><span class="pre">/talks</span></code>) for agent-facing operations. The participant’s <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> must be a valid agent UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Only agents who are participants of a talk can send or view messages in that talk.</p>
 </div>
 <p><strong>Add Participant</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/participants?token=&lt;token&gt;&#39; \

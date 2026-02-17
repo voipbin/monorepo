@@ -2,7 +2,11 @@
 
 Sandbox
 =======
-The VoIPBin Sandbox lets you run the entire VoIPBin platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.
+The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.
+
+.. note:: **AI Implementation Hint**
+
+   The Sandbox is a fully functional local VoIPBIN instance. When working with the Sandbox, replace all API URLs from ``https://api.voipbin.net`` to ``https://api.voipbin.test:8443``. The Sandbox uses a self-signed SSL certificate, so add ``-k`` (insecure) flag to curl commands. The default credentials are ``admin@localhost`` / ``admin@localhost``.
 
 Prerequisites
 -------------

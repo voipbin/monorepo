@@ -4,6 +4,13 @@ Queue
 =====
 Queues let you route incoming calls to available agents. Callers hear hold music or messages while waiting for an agent to become available.
 
+Prerequisites
++++++++++++++
+
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* At least one tag ID (UUID). Create tags via ``POST /tags`` or obtain from ``GET /tags``. Tags are used to match agents to queues.
+* At least one agent with the matching tag assigned. Create agents via ``POST /agents`` and assign tags.
+
 Create a queue
 --------------
 This example creates a queue that routes calls randomly to agents matching a specific tag. While callers wait, they hear a text-to-speech greeting followed by a 1-second pause (looped):
@@ -51,10 +58,14 @@ The response includes the created queue with its ID and configuration:
 
 Key parameters:
 
-- **routing_method**: How calls are distributed to agents (``random``, ``round-robin``).
-- **tag_ids**: Agent tags to match. Only agents with matching tags will receive calls from this queue.
-- **wait_actions**: Actions executed while the caller waits (e.g., play messages, music).
-- **timeout_wait**: Maximum time (ms) a caller waits in the queue before timing out.
-- **timeout_service**: Maximum time (ms) for an active call with an agent.
+- ``routing_method`` (enum string): How calls are distributed to agents. One of: ``random`` (random agent selection) or ``round-robin`` (sequential agent selection).
+- ``tag_ids`` (Array of UUID): Tag IDs to match agents. Obtained from the ``id`` field of ``GET /tags``. Only agents with at least one matching tag will receive calls from this queue.
+- ``wait_actions`` (Array of Object): Flow actions executed while the caller waits (e.g., play messages, music). These actions loop until an agent becomes available.
+- ``timeout_wait`` (Integer, milliseconds): Maximum time a caller waits in the queue before timing out. Example: ``100000`` = 100 seconds.
+- ``timeout_service`` (Integer, milliseconds): Maximum time for an active call with an agent before automatic disconnect.
 
-For more details, see the :ref:`Queue tutorial <queue-main>`.
+.. note:: **AI Implementation Hint**
+
+   ``timeout_wait`` and ``timeout_service`` are in milliseconds, not seconds. A common mistake is setting ``timeout_wait: 100`` (0.1 seconds) instead of ``timeout_wait: 100000`` (100 seconds). Always verify the unit when setting timeouts.
+
+For more details, see the :ref:`Queue tutorial <queue-tutorial>`.

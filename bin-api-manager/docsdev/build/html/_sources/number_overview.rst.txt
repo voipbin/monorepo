@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low-Medium
+   * **Cost:** Chargeable for normal numbers (provider purchase fee). Virtual numbers (+899 prefix) are free but subject to tier-based limits.
+   * **Async:** No. ``POST /numbers`` for virtual numbers returns immediately with status ``active``. Normal number provisioning may return ``purchase-pending`` until provider confirms.
+
 VoIPBIN's Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.
 
 With the Number API you can:
@@ -115,6 +122,10 @@ Provisioning Numbers
 --------------------
 Provision numbers through a two-step process: search, then provision.
 
+.. note:: **AI Implementation Hint**
+
+   Normal number provisioning requires a real provider purchase and costs money. For development and testing, use virtual numbers (``type=virtual``) which are free and instantly available. Search with ``GET /available_numbers?type=virtual`` and provision with ``POST /numbers`` using a ``+899`` prefixed number.
+
 **Step 1: Search Available Numbers**
 
 .. code::
@@ -191,6 +202,10 @@ VoIPBIN's Number resource allows you to associate multiple flows with a single n
     +-----------------------------------------------------------------------+
 
 .. image:: _static/images/number-flow_execution.png
+
+.. note:: **AI Implementation Hint**
+
+   A ``call_flow_id`` or ``message_flow_id`` set to ``00000000-0000-0000-0000-000000000000`` means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via ``POST /flows`` first, then assign it to the number via ``PUT /numbers/{id}``.
 
 **Configure Flows**
 

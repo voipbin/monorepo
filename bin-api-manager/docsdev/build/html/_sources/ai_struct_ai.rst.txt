@@ -29,19 +29,30 @@ AI
         "tm_delete": "<string>"
     }
 
-* id: AI's unique identifier (UUID).
-* customer_id: Customer's ID who owns this AI configuration.
-* name: AI's display name.
-* detail: AI's description or additional details.
-* engine_type: AI's engine type (reserved for future use).
-* engine_model: AI's LLM model. Format: ``<provider>.<model>``. See :ref:`Engine Models <ai-struct-ai-engine_model>`.
-* engine_data: Provider-specific configuration data (JSON object).
-* engine_key: API key for the LLM provider.
-* init_prompt: Initial system prompt that defines the AI's behavior and persona.
-* tts_type: Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
-* tts_voice_id: Voice ID for the selected TTS provider.
-* stt_type: Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.
-* tool_names: List of enabled tool functions. See :ref:`Tool Functions <ai-struct-tool>`.
+* ``id`` (UUID): The AI configuration's unique identifier. Returned when creating an AI via ``POST /ais`` or when listing AIs via ``GET /ais``.
+* ``customer_id`` (UUID): The customer that owns this AI configuration. Obtained from the ``id`` field of ``GET /customers``.
+* ``name`` (String, Required): A human-readable name for the AI configuration (e.g., ``"Sales Assistant"``).
+* ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
+* ``engine_type`` (String): Reserved for future use. Leave empty (``""``).
+* ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
+* ``engine_data`` (Object, Optional): Provider-specific configuration as a JSON object. Typically left as ``{}``.
+* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
+* ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
+* ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
+* ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
+* ``stt_type`` (enum string, Required): Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.
+* ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
+* ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
+* ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.
+* ``tm_delete`` (String, ISO 8601): Timestamp when the AI configuration was deleted, if applicable.
+
+.. note:: **AI Implementation Hint**
+
+   The ``engine_key`` field contains the LLM provider's API key. This key is write-only: it is accepted on ``POST /ais`` and ``PUT /ais`` but is **never returned** in ``GET`` responses for security. If you need to change the key, send a full ``PUT`` update with the new key.
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the AI configuration has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent "not yet occurred."
 
 Example
 +++++++

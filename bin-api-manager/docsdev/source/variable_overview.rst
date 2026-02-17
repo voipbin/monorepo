@@ -3,9 +3,19 @@
 Overview
 ========
 
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free -- Variables are part of flow execution and do not incur separate charges.
+   * **Async:** No. Variables are resolved synchronously at the time each flow action executes. There is no separate API endpoint for variables; they are used within flow action definitions.
+
 VoIPBIN provides a powerful feature called Variables, enabling users to define, manipulate, and reference dynamic values throughout the lifecycle of a flow execution. Variables act as flexible placeholders for data that may change over time—such as user input, call metadata, or results from other applications—and can be injected into any compatible action in the flow.
 
 This mechanism introduces contextual awareness and reactivity to flow logic, allowing users to build intelligent, data-driven call and messaging workflows that adapt in real time to current conditions and external inputs.
+
+.. note:: **AI Implementation Hint**
+
+   Variable syntax is ``${voipbin.<category>.<field>}`` for system variables and ``${<custom_key>}`` for user-defined variables. If a variable does not exist or is null, the placeholder is replaced with an empty string. Variables are scoped to the current activeflow instance and do not persist after the flow ends.
 
 .. image:: _static/images/variable_overview_action.png
    :alt: Variable substitution

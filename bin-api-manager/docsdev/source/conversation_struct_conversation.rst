@@ -28,13 +28,20 @@ Conversation
         "tm_delete": "<string>"
     }
 
-* id: Conversation's ID.
-* name: Conversation's name.
-* detail: Conversation's detail.
-* reference_type: Conversation's reference type. See detail :ref:`here <conversation-struct-conversation-reference_type>`.
-* reference_id: Conversation's reference id.
-* source: Conversation's source address. See detail :ref:`here <common-struct-address>`.
-* participants: List of participants. See detail :ref:`here <common-struct-address>`.
+* ``id`` (UUID): The conversation's unique identifier. Returned when creating via ``POST /conversations`` or listing via ``GET /conversations``.
+* ``name`` (String): A human-readable name for the conversation (e.g., "Customer Support #1234").
+* ``detail`` (String): Additional description or context for the conversation.
+* ``reference_type`` (enum string): The channel type that initiated this conversation. See :ref:`Reference type <conversation-struct-conversation-reference_type>`.
+* ``reference_id`` (String): An identifier associated with the reference channel (e.g., a phone number or Line user ID).
+* ``source`` (Object): The conversation's source address. See :ref:`Address <common-struct-address>`.
+* ``participants`` (Array of Object): List of participant addresses in this conversation. See :ref:`Address <common-struct-address>`.
+* ``tm_create`` (string, ISO 8601): Timestamp when the conversation was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update.
+* ``tm_delete`` (string, ISO 8601): Timestamp of deletion (soft delete).
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the conversation has not been deleted.
 
 Example
 +++++++
@@ -81,9 +88,10 @@ Reference type
 --------------
 Conversation's reference type.
 
-================ ============
-Reference type   Description
-================ ============
-message          Message(SMS/MMS).
-line             Line.
-================ ============
++------------------+------------------------------------------------------------------+
+| Reference type   | Description                                                      |
++==================+==================================================================+
+| message          | Conversation initiated via SMS/MMS messaging channel.            |
++------------------+------------------------------------------------------------------+
+| line             | Conversation initiated via Line messaging platform.              |
++------------------+------------------------------------------------------------------+

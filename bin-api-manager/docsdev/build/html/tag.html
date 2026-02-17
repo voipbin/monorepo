@@ -188,6 +188,15 @@
 <span id="tag-main"></span><h1>Tag<a class="headerlink" href="#tag" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="tag-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Creating and managing tags incurs no charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> returns immediately with the created tag.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Tag API provides a flexible labeling system for organizing and categorizing resources. Tags are primarily used for skill-based routing in queues, but can also categorize agents by teams, departments, languages, or any custom attribute.</p>
 <p>With the Tag API you can:</p>
 <ul class="simple">
@@ -234,6 +243,11 @@
 <li><p><strong>Queue Tags</strong>: Requirements for agents to handle calls</p></li>
 <li><p><strong>Tag Matching</strong>: Process of finding qualified agents</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Queue tag matching uses <strong>AND logic</strong>: an agent must have <strong>all</strong> tags listed in the queue’s <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> to be eligible. If a queue requires <code class="docutils literal notranslate"><span class="pre">[english,</span> <span class="pre">billing]</span></code>, an agent with only <code class="docutils literal notranslate"><span class="pre">[english]</span></code> will not match. Tag names must be unique per customer account.</p>
+</div>
 </section>
 <section id="tag-matching">
 <h3>Tag Matching<a class="headerlink" href="#tag-matching" title="Link to this heading"></a></h3>
@@ -558,14 +572,31 @@ use existing tag instead</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Tag’s id.</p></li>
-<li><p>name: Tag’s name.</p></li>
-<li><p>detail: Tag’s detail description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The tag’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the tag. Must be unique per customer account. Used for matching agents to queues.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of what this tag represents.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the tag was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any tag property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the tag was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tag names must be unique within a customer account. When assigning tags to agents via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/tag_ids</span></code>, use the tag’s <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID), not the tag name. A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> is a sentinel meaning the resource has <strong>not</strong> been deleted.</p>
+</div>
 </section>
 </section>
 <section id="tutorial">
 <span id="tag-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with tags, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tag names must be unique within a customer account. After creating a tag, use its <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) when assigning it to agents via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/tag_ids</span></code> or when configuring queue requirements via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code>. Tags by themselves have no effect until assigned to agents and referenced by queues.</p>
+</div>
 <section id="create-a-new-tag">
 <h3>Create a new tag<a class="headerlink" href="#create-a-new-tag" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -575,6 +606,15 @@ use existing tag instead</p></td>
         &quot;name&quot;: &quot;test tag&quot;,
         &quot;detail&quot;: &quot;test tag example&quot;
     }&#39;
+
+{
+    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
+    &quot;name&quot;: &quot;test tag&quot;,
+    &quot;detail&quot;: &quot;test tag example&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>

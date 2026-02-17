@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with recordings, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A call or conference with recording enabled. Start a recording via the ``recording_start`` flow action or via ``POST /calls/{id}/recording_start``.
+* A recording ID (UUID). Obtain from the call's ``recording_ids`` field via ``GET /calls/{id}`` or by listing recordings via ``GET /recordings``.
+
+.. note:: **AI Implementation Hint**
+
+   Recording files are only available for download after the recording reaches ``ended`` status. If you attempt to download immediately after stopping a recording, the file may not be ready. Poll ``GET /recordings/{id}`` and check for ``status: "ended"`` before calling ``GET /recordingfiles/{id}``.
+
 Get list of recordings
 ----------------------
 

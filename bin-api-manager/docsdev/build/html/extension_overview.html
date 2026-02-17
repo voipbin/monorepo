@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="extension-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free. Extensions are internal routing endpoints with no per-unit charges.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions</span></code> returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN’s cloud infrastructure and your SIP devices, softphones, or PBX systems.</p>
 <p>With the Extension API you can:</p>
 <ul class="simple">
@@ -320,6 +329,11 @@
 </div>
 <p><strong>Nonce Purpose</strong></p>
 <p>The nonce value prevents replay attacks by ensuring each authentication attempt is unique.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The SIP registration domain follows the pattern <code class="docutils literal notranslate"><span class="pre">{customer-id}.registrar.voipbin.net</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> is part of your account, not the extension ID. When configuring SIP devices, use the <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> from the extension, and the domain derived from your <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>.</p>
+</div>
 </section>
 <section id="extension-configuration">
 <h2>Extension Configuration<a class="headerlink" href="#extension-configuration" title="Link to this heading"></a></h2>

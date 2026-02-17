@@ -184,10 +184,15 @@
                         <main role="main" id="main">
     <section id="authentication">
 <span id="quickstart-authentication"></span><h1>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h1>
-<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT) or an <strong>Accesskey</strong>. Both serve the same purpose — choose whichever fits your workflow.</p>
+<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT string) or an <strong>Accesskey</strong> (API key string). Both serve the same purpose — choose whichever fits your workflow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use <strong>Token</strong> (JWT) for short-lived, session-based authentication (valid for 7 days). Use <strong>Accesskey</strong> for long-lived, programmatic access with custom expiration. For automated systems and AI agents, Accesskey is recommended because it does not require periodic re-authentication.</p>
+</div>
 <section id="generate-a-token">
 <h2>Generate a Token<a class="headerlink" href="#generate-a-token" title="Link to this heading"></a></h2>
-<p>Send a login request with your username and password to receive a JWT token. The token is valid for 7 days.</p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/login</span></code> with your username (String) and password (String) to receive a JWT token. The token is valid for 7 days.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -221,6 +226,35 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-accesskey&gt;&#39;
 </pre></div>
 </div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>401 Unauthorized:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Token has expired (older than 7 days) or is malformed.</p></li>
+<li><p><strong>Fix:</strong> Generate a new token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>. Ensure the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header uses the format <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code> (with a space after “Bearer”).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized (Accesskey):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Accesskey has expired (past <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code>) or has been deleted.</p></li>
+<li><p><strong>Fix:</strong> Check the accesskey’s expiration via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>. Generate a new one from the admin console if expired.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The authenticated user lacks permission for the requested resource.</p></li>
+<li><p><strong>Fix:</strong> Verify the resource belongs to your customer account. Check your permission level (admin vs. manager).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 <p>For more details, see the full <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey tutorial</span></a>.</p>
 </section>
 </section>
@@ -236,6 +270,7 @@
 <li><a class="reference internal" href="#">Authentication</a><ul>
 <li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
 <li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

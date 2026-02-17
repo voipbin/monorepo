@@ -185,8 +185,15 @@
     <section id="queue">
 <span id="quickstart-queue"></span><h1>Queue<a class="headerlink" href="#queue" title="Link to this heading"></a></h1>
 <p>Queues let you route incoming calls to available agents. Callers hear hold music or messages while waiting for an agent to become available.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags are used to match agents to queues.</p></li>
+<li><p>At least one agent with the matching tag assigned. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags.</p></li>
+</ul>
 <section id="create-a-queue">
-<h2>Create a queue<a class="headerlink" href="#create-a-queue" title="Link to this heading"></a></h2>
+<h3>Create a queue<a class="headerlink" href="#create-a-queue" title="Link to this heading"></a></h3>
 <p>This example creates a queue that routes calls randomly to agents matching a specific tag. While callers wait, they hear a text-to-speech greeting followed by a 1-second pause (looped):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/queues?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -228,13 +235,19 @@
 </div>
 <p>Key parameters:</p>
 <ul class="simple">
-<li><p><strong>routing_method</strong>: How calls are distributed to agents (<code class="docutils literal notranslate"><span class="pre">random</span></code>, <code class="docutils literal notranslate"><span class="pre">round-robin</span></code>).</p></li>
-<li><p><strong>tag_ids</strong>: Agent tags to match. Only agents with matching tags will receive calls from this queue.</p></li>
-<li><p><strong>wait_actions</strong>: Actions executed while the caller waits (e.g., play messages, music).</p></li>
-<li><p><strong>timeout_wait</strong>: Maximum time (ms) a caller waits in the queue before timing out.</p></li>
-<li><p><strong>timeout_service</strong>: Maximum time (ms) for an active call with an agent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">routing_method</span></code> (enum string): How calls are distributed to agents. One of: <code class="docutils literal notranslate"><span class="pre">random</span></code> (random agent selection) or <code class="docutils literal notranslate"><span class="pre">round-robin</span></code> (sequential agent selection).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): Tag IDs to match agents. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Only agents with at least one matching tag will receive calls from this queue.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> (Array of Object): Flow actions executed while the caller waits (e.g., play messages, music). These actions loop until an agent becomes available.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> (Integer, milliseconds): Maximum time a caller waits in the queue before timing out. Example: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout_service</span></code> (Integer, milliseconds): Maximum time for an active call with an agent before automatic disconnect.</p></li>
 </ul>
-<p>For more details, see the <span class="xref std std-ref">Queue tutorial</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> and <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code> are in milliseconds, not seconds. A common mistake is setting <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100</span></code> (0.1 seconds) instead of <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100000</span></code> (100 seconds). Always verify the unit when setting timeouts.</p>
+</div>
+<p>For more details, see the <a class="reference internal" href="queue_tutorial.html#queue-tutorial"><span class="std std-ref">Queue tutorial</span></a>.</p>
+</section>
 </section>
 </section>
 
@@ -247,7 +260,10 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Queue</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-queue">Create a queue</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

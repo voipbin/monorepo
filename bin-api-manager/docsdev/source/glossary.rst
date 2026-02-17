@@ -172,7 +172,7 @@ All timestamps in VoIPBIN follow the format ``YYYY-MM-DD HH:MM:SS.microseconds``
 
 Requirement levels indicator
 ============================
-This document strives to adhere to :rfc:`2119`. In particular should be noted tat:
+This document strives to adhere to :rfc:`2119`. In particular should be noted that:
 
 
 #. MUST   This word, or the terms "REQUIRED" or "SHALL", mean that the

@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="provider-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. Providers are configuration records. Costs are incurred when calls are routed through the configured provider, not when creating the provider entry.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code> returns immediately with the created provider.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.</p>
 <p>With the Provider API you can:</p>
 <ul class="simple">
@@ -281,6 +290,11 @@
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Providers are typically managed by platform administrators. The <code class="docutils literal notranslate"><span class="pre">tech_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">tech_postfix</span></code> fields modify the dialed number before sending to the provider. Most providers do not require these fields (leave as empty strings). The <code class="docutils literal notranslate"><span class="pre">tech_headers</span></code> field is an object of custom SIP headers sent with every call to this provider – use it for provider-specific authentication tokens or routing hints.</p>
 </div>
 </section>
 <section id="provider-types">

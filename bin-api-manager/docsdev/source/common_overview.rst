@@ -3,7 +3,17 @@
 Overview
 ========
 
+.. note:: **AI Context**
+
+   * **Complexity:** Low -- These are shared data structures and conventions used across all VoIPBIN APIs. No API calls are specific to this section.
+   * **Cost:** Free. Common structures are reference documentation only; no operations are performed.
+   * **Async:** N/A. This section documents conventions, not API endpoints.
+
 This section covers common data structures, patterns, and concepts used throughout the VoIPBIN API. Understanding these foundational elements will help you work more effectively with all VoIPBIN resources.
+
+.. note:: **AI Implementation Hint**
+
+   All VoIPBIN timestamps use the format ``YYYY-MM-DD HH:MM:SS.microseconds`` in UTC. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted (sentinel value). When filtering by time ranges, use URL-encoded timestamps as query parameters (e.g., ``?page_token=2022-06-17%2006%3A06%3A14.948432``).
 
 Common Data Structures
 ----------------------

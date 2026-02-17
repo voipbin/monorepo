@@ -185,6 +185,11 @@
     <section id="advanced-call-scenarios">
 <span id="call-scenarios"></span><h1>Advanced Call Scenarios<a class="headerlink" href="#advanced-call-scenarios" title="Link to this heading"></a></h1>
 <p>This section covers real-world call scenarios that combine multiple VoIPBIN features. Each scenario includes the complete flow, API examples, and best practices.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All scenarios in this section involve active outbound calls, which are chargeable. Each <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request creates a billable call. Test your flow logic with a single destination before scaling to production. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call-id}</span></code> to verify call status at each step.</p>
+</div>
 <section id="ivr-menu-with-queue-routing">
 <h2>IVR Menu with Queue Routing<a class="headerlink" href="#ivr-menu-with-queue-routing" title="Link to this heading"></a></h2>
 <p>A common contact center pattern: caller navigates an IVR menu, then enters a queue.</p>
@@ -325,6 +330,11 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">queue_id</span></code> values (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;sales-queue-uuid&quot;</span></code>) must be valid UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">branch</span></code> action’s <code class="docutils literal notranslate"><span class="pre">target_ids</span></code> map DTMF digits to action <code class="docutils literal notranslate"><span class="pre">id</span></code> values within the same flow. If a <code class="docutils literal notranslate"><span class="pre">target_id</span></code> does not match any action <code class="docutils literal notranslate"><span class="pre">id</span></code>, the flow will fail silently. Always include a <code class="docutils literal notranslate"><span class="pre">default_target_id</span></code> to handle unexpected input. The <code class="docutils literal notranslate"><span class="pre">goto</span></code> action’s <code class="docutils literal notranslate"><span class="pre">loop_count</span></code> prevents infinite loops – after the specified number of iterations, execution continues to the next action.</p>
+</div>
 </section>
 <section id="ai-assisted-customer-service">
 <h2>AI-Assisted Customer Service<a class="headerlink" href="#ai-assisted-customer-service" title="Link to this heading"></a></h2>
@@ -392,6 +402,11 @@
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> in the <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action must be a valid UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>. Tool definitions with <code class="docutils literal notranslate"><span class="pre">webhook_url</span></code> will send HTTP POST requests to your server when the AI invokes the tool – ensure your endpoint is publicly accessible and returns responses within 5 seconds. The <code class="docutils literal notranslate"><span class="pre">end_call_phrases</span></code> trigger automatic call hangup when the caller says any of the listed phrases.</p>
 </div>
 </section>
 <section id="outbound-campaign-with-voicemail-detection">
@@ -514,6 +529,11 @@ VoIPBIN             Destination              Voicemail
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">outplan_id</span></code> and <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> must be valid UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code> and <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> respectively. Each call placed by the campaign is individually chargeable. The <code class="docutils literal notranslate"><span class="pre">amd</span></code> (Answering Machine Detection) action analyzes the first few seconds of audio after answer – if it detects a voicemail greeting, execution jumps to the action with <code class="docutils literal notranslate"><span class="pre">id</span></code> matching <code class="docutils literal notranslate"><span class="pre">machine_action</span></code>. The <code class="docutils literal notranslate"><span class="pre">max_concurrent_calls</span></code> limits how many calls the campaign places at the same time.</p>
+</div>
 </section>
 <section id="click-to-call-with-recording">
 <h2>Click-to-Call with Recording<a class="headerlink" href="#click-to-call-with-recording" title="Link to this heading"></a></h2>
@@ -596,6 +616,11 @@ VoIPBIN             Destination              Voicemail
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> must be a phone number you own, verified via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. The <code class="docutils literal notranslate"><span class="pre">early_execution:</span> <span class="pre">false</span></code> setting (default) ensures actions execute only after the destination answers. The <code class="docutils literal notranslate"><span class="pre">record_start</span></code> action must be placed before <code class="docutils literal notranslate"><span class="pre">connect</span></code> in the action list to capture the full conversation. After the call ends, retrieve the recording via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{recording-id}</span></code> using the ID from the call’s <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array.</p>
 </div>
 <p><strong>Webhook Integration:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span><span class="p">:</span> <span class="n">call_hungup</span>
@@ -726,6 +751,11 @@ VoIPBIN             Destination              Voicemail
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">conference_id</span></code> in <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> must be obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/conferences</span></code> response or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The <code class="docutils literal notranslate"><span class="pre">role</span></code> field controls permissions: <code class="docutils literal notranslate"><span class="pre">moderator</span></code> can mute/unmute others, while <code class="docutils literal notranslate"><span class="pre">participant</span></code> can only control their own audio.</p>
+</div>
 </section>
 <section id="call-screening-with-whisper">
 <h2>Call Screening with Whisper<a class="headerlink" href="#call-screening-with-whisper" title="Link to this heading"></a></h2>
@@ -819,6 +849,11 @@ VoIPBIN             Destination              Voicemail
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">whisper</span></code> feature in the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action plays a message only to the agent (the caller cannot hear it). The <code class="docutils literal notranslate"><span class="pre">record_voice</span></code> action stores the recording in a flow variable (<code class="docutils literal notranslate"><span class="pre">caller_name_recording</span></code>) that can be referenced later using <code class="docutils literal notranslate"><span class="pre">{{variable_name}}</span></code> syntax. If the agent presses the <code class="docutils literal notranslate"><span class="pre">reject_key</span></code>, the connect action fails and flow execution continues to the next action – add a fallback (e.g., try another agent or go to voicemail).</p>
+</div>
 </section>
 <section id="warm-transfer-with-context">
 <h2>Warm Transfer with Context<a class="headerlink" href="#warm-transfer-with-context" title="Link to this heading"></a></h2>
@@ -901,6 +936,11 @@ VoIPBIN             Destination              Voicemail
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. The <code class="docutils literal notranslate"><span class="pre">transfer_id</span></code> returned in the response is used for subsequent operations: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code> to finish the transfer, or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code> to abort it. The <code class="docutils literal notranslate"><span class="pre">context</span></code> object is passed through to the <code class="docutils literal notranslate"><span class="pre">transfer_completed</span></code> webhook, allowing Agent B’s application to display caller information. The consult call to Agent B is a separate billable call.</p>
+</div>
 </section>
 <section id="call-with-real-time-transcription">
 <h2>Call with Real-time Transcription<a class="headerlink" href="#call-with-real-time-transcription" title="Link to this heading"></a></h2>
@@ -980,6 +1020,11 @@ VoIPBIN             Destination              Voicemail
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Real-time transcription events are delivered via WebSocket, not webhooks. You must establish a WebSocket connection to <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code> and subscribe to the <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;your-id&gt;:transcript:*</span></code> topic before the call starts to receive all events. The <code class="docutils literal notranslate"><span class="pre">direction</span></code> field in transcript events indicates which party is speaking: <code class="docutils literal notranslate"><span class="pre">in</span></code> for the caller, <code class="docutils literal notranslate"><span class="pre">out</span></code> for the agent/system. Place <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> before <code class="docutils literal notranslate"><span class="pre">connect</span></code> in the action list to capture transcription from the beginning of the conversation.</p>
 </div>
 </section>
 </section>

@@ -184,9 +184,28 @@
                         <main role="main" id="main">
     <section id="tutorial-scenario">
 <span id="flow-tutorial-scenario"></span><h1>Tutorial scenario<a class="headerlink" href="#tutorial-scenario" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before running these scenarios, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>). This must be a number you own. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551112222</span></code>).</p></li>
+<li><p>(Optional) An existing flow to attach to a number. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>These scenarios use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> with inline <code class="docutils literal notranslate"><span class="pre">actions</span></code> arrays. You can also pre-register a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> and then reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> when creating a call. The inline approach is simpler for one-off calls; the flow approach is better when reusing the same logic across multiple calls or numbers. All phone numbers must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p>
+</div>
 <section id="simple-voicemail">
-<span id="flow-tutorial-scenario-simple-voicemail"></span><h2>Simple voicemail<a class="headerlink" href="#simple-voicemail" title="Link to this heading"></a></h2>
-<p>Making a outgoing call for forwarding. If call not answered, leave a voicemail.</p>
+<span id="flow-tutorial-scenario-simple-voicemail"></span><h3>Simple voicemail<a class="headerlink" href="#simple-voicemail" title="Link to this heading"></a></h3>
+<p>Making an outgoing call for forwarding. If the call is not answered, leave a voicemail.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This scenario uses <code class="docutils literal notranslate"><span class="pre">condition_call_status</span></code> (deprecated). For new implementations, use <code class="docutils literal notranslate"><span class="pre">condition_variable</span></code> with <code class="docutils literal notranslate"><span class="pre">variable:</span> <span class="pre">&quot;voipbin.call.status&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">value_string:</span> <span class="pre">&quot;progressing&quot;</span></code> instead. The <code class="docutils literal notranslate"><span class="pre">next_id</span></code> field set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> means “continue to the next action in the array” – it is the same as omitting <code class="docutils literal notranslate"><span class="pre">next_id</span></code>.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>               <span class="n">Start</span>
                  <span class="o">|</span>
                  <span class="o">|</span>
@@ -288,7 +307,7 @@
 </div>
 </section>
 <section id="simple-branch">
-<span id="flow-tutorial-scenario-simple-branch"></span><h2>Simple branch<a class="headerlink" href="#simple-branch" title="Link to this heading"></a></h2>
+<span id="flow-tutorial-scenario-simple-branch"></span><h3>Simple branch<a class="headerlink" href="#simple-branch" title="Link to this heading"></a></h3>
 <p>It will get the digits from the call and will execute the branch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
@@ -413,7 +432,7 @@
 </div>
 </section>
 <section id="simple-message-send">
-<span id="flow-tutorial-scenario-simple-message-send"></span><h2>Simple message send<a class="headerlink" href="#simple-message-send" title="Link to this heading"></a></h2>
+<span id="flow-tutorial-scenario-simple-message-send"></span><h3>Simple message send<a class="headerlink" href="#simple-message-send" title="Link to this heading"></a></h3>
 <p>Send the message to the multiple destinations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span>
   <span class="o">|</span>
@@ -456,7 +475,7 @@
 </div>
 </section>
 <section id="simple-message-send-and-make-a-new-outbound-call">
-<span id="flow-tutorial-scenario-simple-message-send-and-make-a-new-outbound-call"></span><h2>Simple message send and make a new outbound call<a class="headerlink" href="#simple-message-send-and-make-a-new-outbound-call" title="Link to this heading"></a></h2>
+<span id="flow-tutorial-scenario-simple-message-send-and-make-a-new-outbound-call"></span><h3>Simple message send and make a new outbound call<a class="headerlink" href="#simple-message-send-and-make-a-new-outbound-call" title="Link to this heading"></a></h3>
 <p>Send the message to the destination and start a new outbound call with talk action.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span>
   <span class="o">|</span>
@@ -489,36 +508,37 @@
                     <span class="p">}</span>
                 <span class="p">],</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span>
-            <span class="p">},</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
                         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
-                    <span class="p">},</span>
-                    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000003&quot;</span>
+                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000003&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
                         <span class="p">}</span>
-                    <span class="p">],</span>
-                    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-                            <span class="p">}</span>
-                        <span class="p">}</span>
-                    <span class="p">]</span>
-                <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -531,10 +551,13 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial scenario</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-voicemail">Simple voicemail</a></li>
 <li><a class="reference internal" href="#simple-branch">Simple branch</a></li>
 <li><a class="reference internal" href="#simple-message-send">Simple message send</a></li>
 <li><a class="reference internal" href="#simple-message-send-and-make-a-new-outbound-call">Simple message send and make a new outbound call</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

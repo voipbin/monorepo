@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free (customer management operations incur no charges)
+   * **Async:** No. All customer operations are synchronous and return immediately.
+
 VoIPBIN's Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.
 
 With the Customer API you can:
@@ -198,6 +205,10 @@ Every customer account automatically has a guest agent created for administrativ
     +-------------------+
 
 The guest agent ensures every account has at least one administrator for recovery purposes.
+
+.. note:: **AI Implementation Hint**
+
+   The customer ``id`` is the top-level scoping identifier for all resources in VoIPBIN. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass ``customer_id`` explicitly in most creation requests -- it is derived from the authentication token.
 
 
 Common Scenarios

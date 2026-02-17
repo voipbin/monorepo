@@ -197,13 +197,18 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Participant’s unique identifier.</p></li>
-<li><p>customer_id: Customer’s unique identifier.</p></li>
-<li><p>owner_type: Type of the participant (e.g., “agent”).</p></li>
-<li><p>owner_id: Participant’s unique identifier.</p></li>
-<li><p>chat_id: Talk’s unique identifier that this participant belongs to.</p></li>
-<li><p>tm_joined: Timestamp when the participant joined the talk.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The participant’s unique identifier. Returned when adding a participant via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats/{id}/participants</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): Type of the participant. Currently only <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code> is supported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chat_id</span></code> (UUID): The talk’s unique identifier that this participant belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_joined</span></code> (string, ISO 8601): Timestamp when the participant joined the talk.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When a participant is removed and later re-added, a new participant record is created with a new <code class="docutils literal notranslate"><span class="pre">id</span></code> and updated <code class="docutils literal notranslate"><span class="pre">tm_joined</span></code> timestamp. The previous participant record is hard-deleted from the database.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

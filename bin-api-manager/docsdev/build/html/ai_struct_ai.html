@@ -207,20 +207,33 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: AI’s unique identifier (UUID).</p></li>
-<li><p>customer_id: Customer’s ID who owns this AI configuration.</p></li>
-<li><p>name: AI’s display name.</p></li>
-<li><p>detail: AI’s description or additional details.</p></li>
-<li><p>engine_type: AI’s engine type (reserved for future use).</p></li>
-<li><p>engine_model: AI’s LLM model. Format: <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code>. See <a class="reference internal" href="#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
-<li><p>engine_data: Provider-specific configuration data (JSON object).</p></li>
-<li><p>engine_key: API key for the LLM provider.</p></li>
-<li><p>init_prompt: Initial system prompt that defines the AI’s behavior and persona.</p></li>
-<li><p>tts_type: Text-to-Speech provider. See <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
-<li><p>tts_voice_id: Voice ID for the selected TTS provider.</p></li>
-<li><p>stt_type: Speech-to-Text provider. See <a class="reference internal" href="#ai-struct-ai-stt-type"><span class="std std-ref">STT Types</span></a>.</p></li>
-<li><p>tool_names: List of enabled tool functions. See <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The AI configuration’s unique identifier. Returned when creating an AI via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or when listing AIs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this AI configuration. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the AI configuration (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Sales</span> <span class="pre">Assistant&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the AI’s purpose or additional notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine_type</span></code> (String): Reserved for future use. Leave empty (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine_model</span></code> (String, Required): The LLM provider and model. Format: <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>, <code class="docutils literal notranslate"><span class="pre">anthropic.claude-3-5-sonnet</span></code>). See <a class="reference internal" href="#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine_data</span></code> (Object, Optional): Provider-specific configuration as a JSON object. Typically left as <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine_key</span></code> (String, Required): The API key for the LLM provider. Must be a valid key from the provider’s dashboard.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> (String, Required): The system prompt that defines the AI’s behavior, persona, and instructions. No enforced length limit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tts_type</span></code> (enum string, Required): Text-to-Speech provider. See <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code> (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stt_type</span></code> (enum string, Required): Speech-to-Text provider. See <a class="reference internal" href="#ai-struct-ai-stt-type"><span class="std std-ref">STT Types</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tool_names</span></code> (Array of String, Optional): List of enabled tool functions. Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> to enable all tools, <code class="docutils literal notranslate"><span class="pre">[]</span></code> to disable all tools, or list specific tool names. See <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the AI configuration was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the AI configuration was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the AI configuration was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> field contains the LLM provider’s API key. This key is write-only: it is accepted on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais</span></code> but is <strong>never returned</strong> in <code class="docutils literal notranslate"><span class="pre">GET</span></code> responses for security. If you need to change the key, send a full <code class="docutils literal notranslate"><span class="pre">PUT</span></code> update with the new key.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the AI configuration has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

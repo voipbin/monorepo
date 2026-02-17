@@ -50,13 +50,8 @@ Send a subscribe message to receive events for specific topics.
 
 **Fields**
 
-+-------------------+----------+--------------------------------------------------+
-| Field             | Type     | Description                                      |
-+===================+==========+==================================================+
-| type              | string   | Must be "subscribe"                              |
-+-------------------+----------+--------------------------------------------------+
-| topics            | array    | List of topic patterns to subscribe to           |
-+-------------------+----------+--------------------------------------------------+
+* ``type`` (enum string): Must be ``"subscribe"``.
+* ``topics`` (Array of String): List of topic patterns to subscribe to. Each topic follows the format ``<scope>:<scope_id>:<resource_type>:<resource_id>``. Use ``*`` for the resource_id to match all resources of a type.
 
 **Example: Subscribe to all calls**
 
@@ -125,13 +120,8 @@ Send an unsubscribe message to stop receiving events for specific topics.
 
 **Fields**
 
-+-------------------+----------+--------------------------------------------------+
-| Field             | Type     | Description                                      |
-+===================+==========+==================================================+
-| type              | string   | Must be "unsubscribe"                            |
-+-------------------+----------+--------------------------------------------------+
-| topics            | array    | List of topic patterns to unsubscribe from       |
-+-------------------+----------+--------------------------------------------------+
+* ``type`` (enum string): Must be ``"unsubscribe"``.
+* ``topics`` (Array of String): List of topic patterns to unsubscribe from. Must match the exact topic patterns used during subscription.
 
 **Example: Unsubscribe from calls**
 
@@ -168,17 +158,10 @@ Topics follow a consistent format for event filtering.
 
 **Topic Components**
 
-+-------------------+------------------------------------------------------------------+
-| Component         | Description                                                      |
-+===================+==================================================================+
-| scope             | Access level: "customer_id" or "agent_id"                        |
-+-------------------+------------------------------------------------------------------+
-| scope_id          | UUID of the customer or agent                                    |
-+-------------------+------------------------------------------------------------------+
-| resource_type     | Type of resource: call, message, activeflow, conference, etc.    |
-+-------------------+------------------------------------------------------------------+
-| resource_id       | UUID of specific resource or "*" for all                         |
-+-------------------+------------------------------------------------------------------+
+* ``scope`` (enum string): Access level. Either ``"customer_id"`` or ``"agent_id"``.
+* ``scope_id`` (UUID): The UUID of the customer or agent. Obtained from ``GET /customers`` or ``GET /agents``.
+* ``resource_type`` (enum string): Type of resource: ``call``, ``message``, ``activeflow``, ``conference``, ``queue``, ``agent``, ``recording``, ``transcription``.
+* ``resource_id`` (UUID or ``*``): UUID of a specific resource, or ``*`` to match all resources of the given type.
 
 **Valid Scopes**
 
@@ -253,17 +236,14 @@ Events are pushed from the server when subscribed resources change.
 
 **Fields**
 
-+-------------------+----------+--------------------------------------------------+
-| Field             | Type     | Description                                      |
-+===================+==========+==================================================+
-| event_type        | string   | Type of event (e.g., "call.status")              |
-+-------------------+----------+--------------------------------------------------+
-| timestamp         | string   | ISO 8601 timestamp in UTC                        |
-+-------------------+----------+--------------------------------------------------+
-| topic             | string   | Topic pattern that triggered this event          |
-+-------------------+----------+--------------------------------------------------+
-| data              | object   | Resource-specific data payload                   |
-+-------------------+----------+--------------------------------------------------+
+* ``event_type`` (enum string): Type of event (e.g., ``"call.status"``, ``"message.received"``). See :ref:`WebSocket Overview <websocket_overview>` for the full list.
+* ``timestamp`` (string, ISO 8601): When the event occurred, in UTC format.
+* ``topic`` (String): The topic pattern that triggered this event. Matches one of your subscribed topic patterns.
+* ``data`` (Object): Resource-specific data payload. Structure varies by ``event_type`` and corresponds to the relevant resource struct (e.g., :ref:`Call <call-struct-call>` for call events).
+
+.. note:: **AI Implementation Hint**
+
+   Use the ``event_type`` field (not ``type``) to determine the event kind for server-pushed events. The ``type`` field is used only for client-to-server messages (``subscribe``/``unsubscribe``) and server acknowledgments (``ack``/``error``). Always check for both ``type`` and ``event_type`` in your message handler to handle all message categories.
 
 
 Event Type Reference

@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="storage-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Chargeable (per GB stored; default quota is 10 GB per customer)</p></li>
+<li><p><strong>Async:</strong> No. File uploads and downloads are synchronous. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/files</span></code> returns immediately with the file metadata. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> returns file details including a time-limited <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.</p>
 <p>With the Storage API you can:</p>
 <ul class="simple">
@@ -234,6 +243,11 @@
 <section id="file-operations">
 <h2>File Operations<a class="headerlink" href="#file-operations" title="Link to this heading"></a></h2>
 <p>Core file management operations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, fetch fresh file details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> to get a new download URL. Do not cache or persist download URLs for long-term use.</p>
+</div>
 <p><strong>Upload a File</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/files?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: multipart/form-data&#39; \

@@ -188,6 +188,15 @@
 <span id="cusotomer-main"></span><h1>Customer<a class="headerlink" href="#customer" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="customer-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (customer management operations incur no charges)</p></li>
+<li><p><strong>Async:</strong> No. All customer operations are synchronous and return immediately.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.</p>
 <p>With the Customer API you can:</p>
 <ul class="simple">
@@ -380,6 +389,11 @@
 </pre></div>
 </div>
 <p>The guest agent ensures every account has at least one administrator for recovery purposes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The customer <code class="docutils literal notranslate"><span class="pre">id</span></code> is the top-level scoping identifier for all resources in VoIPBIN. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> explicitly in most creation requests – it is derived from the authentication token.</p>
+</div>
 </section>
 <section id="common-scenarios">
 <h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
@@ -548,16 +562,24 @@ fields</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Customer’s ID.</p></li>
-<li><p>username: Customer’s username.</p></li>
-<li><p>name: Name.</p></li>
-<li><p>detail: Detail.</p></li>
-<li><p>webhook_method: Webhook method.</p></li>
-<li><p>webhook_uri: Webhook URI.</p></li>
-<li><p>line_secret: Line’s secret.</p></li>
-<li><p>line_token: Line’s token.</p></li>
-<li><p>permission_ids: List of permission ids.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The customer’s unique identifier. Returned when creating a customer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/customers</span></code> or when listing customers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">username</span></code> (String): The customer’s login username. Must be unique across the platform.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The display name of the customer organization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description or notes about the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string): The HTTP method used for webhook notifications. Typically <code class="docutils literal notranslate"><span class="pre">POST</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String): The URI where webhook event notifications are sent for this customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_secret</span></code> (String): The LINE messaging platform channel secret for LINE integration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_token</span></code> (String): The LINE messaging platform channel access token for LINE integration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">permission_ids</span></code> (Array of UUID): List of default permission IDs for this customer’s resources. Each ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/permissions</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the customer was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the customer was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the customer was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the customer has not been deleted. The <code class="docutils literal notranslate"><span class="pre">line_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">line_token</span></code> fields are only needed if the customer uses LINE messaging integration; they can be left empty for voice-only customers.</p>
+</div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -583,6 +605,17 @@ fields</p></td>
 </section>
 <section id="tutorial">
 <span id="customer-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before managing customers, you need:</p>
+<ul class="simple">
+<li><p>An authentication token with admin permissions. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For creation) A unique <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> for the new customer account.</p></li>
+<li><p>(Optional) A webhook URI to receive event notifications for the customer.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Customer creation requires admin-level permissions. Regular agents cannot create or delete customers. The <code class="docutils literal notranslate"><span class="pre">password</span></code> field is required when creating a customer but is write-only and never returned in API responses. When a customer is created, a guest agent with admin permissions is automatically created for that account.</p>
+</div>
 <section id="get-list-of-customers">
 <h3>Get list of customers<a class="headerlink" href="#get-list-of-customers" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
@@ -671,6 +704,11 @@ fields</p></td>
 </section>
 <section id="delete-customer">
 <h3>Delete customer<a class="headerlink" href="#delete-customer" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting a customer is a destructive operation that removes the customer account and all associated resources (agents, numbers, flows, etc.). This cannot be undone. The API returns the deleted customer object with <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to the deletion timestamp.</p>
+</div>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 

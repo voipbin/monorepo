@@ -184,8 +184,22 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="mediastream-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before using media streaming, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>An active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the call ID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. Or an active conference via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p>A WebSocket client library (not a standard HTTP client). The media stream endpoint upgrades the HTTP connection to WebSocket.</p></li>
+<li><p>Knowledge of the audio format for your chosen encapsulation: <code class="docutils literal notranslate"><span class="pre">rtp</span></code> (G.711 ulaw, 12-byte header + 160-byte payload), <code class="docutils literal notranslate"><span class="pre">sln</span></code> (raw PCM, no headers), or <code class="docutils literal notranslate"><span class="pre">audiosocket</span></code> (Asterisk AudioSocket, 320-byte chunks).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The media stream URL (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code>) is a WebSocket upgrade endpoint. Do not use <code class="docutils literal notranslate"><span class="pre">curl</span></code> or standard HTTP libraries to connect. Use a WebSocket client (e.g., Python <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code>, JavaScript <code class="docutils literal notranslate"><span class="pre">WebSocket</span></code>, Node.js <code class="docutils literal notranslate"><span class="pre">ws</span></code>). Audio data must be sent as binary frames, not text frames.</p>
+</div>
 <section id="bi-directional-media-streaming-for-calls">
-<h2>Bi-Directional Media Streaming for Calls<a class="headerlink" href="#bi-directional-media-streaming-for-calls" title="Link to this heading"></a></h2>
+<h3>Bi-Directional Media Streaming for Calls<a class="headerlink" href="#bi-directional-media-streaming-for-calls" title="Link to this heading"></a></h3>
 <p>Connect to a call’s media stream via WebSocket to send and receive audio in real-time. This allows you to build custom audio processing applications without SIP signaling.</p>
 <p><strong>Establish WebSocket Connection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
@@ -200,7 +214,7 @@
 - <strong>Send audio</strong> to the call (inject audio into the conversation)</p>
 </section>
 <section id="bi-directional-media-streaming-for-conferences">
-<h2>Bi-Directional Media Streaming for Conferences<a class="headerlink" href="#bi-directional-media-streaming-for-conferences" title="Link to this heading"></a></h2>
+<h3>Bi-Directional Media Streaming for Conferences<a class="headerlink" href="#bi-directional-media-streaming-for-conferences" title="Link to this heading"></a></h3>
 <p>Access a conference’s media stream to monitor or participate in the conference audio.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
 </pre></div>
@@ -215,7 +229,7 @@
 - Build custom conference recording or analysis tools</p>
 </section>
 <section id="encapsulation-types">
-<h2>Encapsulation Types<a class="headerlink" href="#encapsulation-types" title="Link to this heading"></a></h2>
+<h3>Encapsulation Types<a class="headerlink" href="#encapsulation-types" title="Link to this heading"></a></h3>
 <p>VoIPBIN supports three encapsulation types for media streaming:</p>
 <p><strong>1. RTP (Real-time Transport Protocol)</strong></p>
 <p>Standard protocol for audio/video over IP networks.</p>
@@ -247,7 +261,7 @@
 <p><strong>Codec:</strong> All formats use <strong>16-bit, 8kHz, mono</strong> audio (ulaw for RTP/SLN, PCM little-endian for AudioSocket)</p>
 </section>
 <section id="websocket-client-examples">
-<h2>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h2>
+<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
 <p><strong>Python Example (RTP Streaming):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
 <span class="kn">import</span> <span class="nn">struct</span>
@@ -407,7 +421,7 @@ ws.on(&#39;close&#39;, function() {
 </div>
 </section>
 <section id="uni-directional-streaming-with-flow-action">
-<h2>Uni-Directional Streaming with Flow Action<a class="headerlink" href="#uni-directional-streaming-with-flow-action" title="Link to this heading"></a></h2>
+<h3>Uni-Directional Streaming with Flow Action<a class="headerlink" href="#uni-directional-streaming-with-flow-action" title="Link to this heading"></a></h3>
 <p>For sending audio to a call without receiving audio back, use the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action.</p>
 <p><strong>Create Call with External Media:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -451,7 +465,7 @@ ws.on(&#39;close&#39;, function() {
 </div>
 </section>
 <section id="common-use-cases">
-<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Real-Time Speech Recognition:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
 <span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -531,7 +545,7 @@ ws.on(&#39;close&#39;, function() {
 </div>
 </section>
 <section id="audio-format-details">
-<h2>Audio Format Details<a class="headerlink" href="#audio-format-details" title="Link to this heading"></a></h2>
+<h3>Audio Format Details<a class="headerlink" href="#audio-format-details" title="Link to this heading"></a></h3>
 <p><strong>RTP Format:</strong>
 - Codec: ulaw (G.711 μ-law)
 - Sample rate: 8 kHz
@@ -552,7 +566,7 @@ ws.on(&#39;close&#39;, function() {
 - Chunk size: 320 bytes (20ms of audio)</p>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>1. Buffer Management:</strong>
 - Maintain audio buffers to handle jitter
 - Send audio in consistent 20ms chunks
@@ -579,7 +593,7 @@ ws.on(&#39;close&#39;, function() {
 - Encrypt sensitive audio data</p>
 </section>
 <section id="connection-lifecycle">
-<h2>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h2>
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
 <p><strong>1. Establish Connection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
 </pre></div>
@@ -602,7 +616,7 @@ ws.on(&#39;close&#39;, function() {
 </div>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <p><strong>Common Issues:</strong></p>
 <p><strong>No audio received:</strong>
 - Check WebSocket connection is established
@@ -623,6 +637,7 @@ ws.on(&#39;close&#39;, function() {
 <p>For more information about media stream configuration, see <a class="reference internal" href="mediastream_overview.html#mediastream-overview"><span class="std std-ref">Media Stream Overview</span></a>.</p>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -633,6 +648,7 @@ ws.on(&#39;close&#39;, function() {
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#bi-directional-media-streaming-for-calls">Bi-Directional Media Streaming for Calls</a></li>
 <li><a class="reference internal" href="#bi-directional-media-streaming-for-conferences">Bi-Directional Media Streaming for Conferences</a></li>
 <li><a class="reference internal" href="#encapsulation-types">Encapsulation Types</a></li>
@@ -643,6 +659,8 @@ ws.on(&#39;close&#39;, function() {
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

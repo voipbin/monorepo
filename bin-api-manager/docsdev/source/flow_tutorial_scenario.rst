@@ -3,12 +3,30 @@
 Tutorial scenario
 =================
 
+Prerequisites
++++++++++++++
+
+Before running these scenarios, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A source phone number in E.164 format (e.g., ``+15559876543``). This must be a number you own. Obtain your numbers via ``GET /numbers``.
+* A destination phone number in E.164 format (e.g., ``+15551112222``).
+* (Optional) An existing flow to attach to a number. Create one via ``POST /flows``.
+
+.. note:: **AI Implementation Hint**
+
+   These scenarios use ``POST /calls`` with inline ``actions`` arrays. You can also pre-register a flow via ``POST /flows`` and then reference it by ``flow_id`` when creating a call. The inline approach is simpler for one-off calls; the flow approach is better when reusing the same logic across multiple calls or numbers. All phone numbers must be in E.164 format (e.g., ``+15559876543``).
+
 .. _flow-tutorial-scenario-simple_voicemail:
 
 Simple voicemail
 ----------------
 
-Making a outgoing call for forwarding. If call not answered, leave a voicemail.
+Making an outgoing call for forwarding. If the call is not answered, leave a voicemail.
+
+.. note:: **AI Implementation Hint**
+
+   This scenario uses ``condition_call_status`` (deprecated). For new implementations, use ``condition_variable`` with ``variable: "voipbin.call.status"`` and ``value_string: "progressing"`` instead. The ``next_id`` field set to ``00000000-0000-0000-0000-000000000000`` means "continue to the next action in the array" -- it is the same as omitting ``next_id``.
 
 .. code::
 
@@ -330,30 +348,30 @@ Send the message to the destination and start a new outbound call with talk acti
                         }
                     ],
                     "text": "hello, this is test message."
-                },
-                {
-                    "type": "call",
-                    "option": {
-                        "source": {
+                }
+            },
+            {
+                "type": "call",
+                "option": {
+                    "source": {
+                        "type": "tel",
+                        "target": "+821100000001"
+                    },
+                    "destinations": [
+                        {
                             "type": "tel",
-                            "target": "+821100000001"
-                        },
-                        "destinations": [
-                            {
-                                "type": "tel",
-                                "target": "+821100000003"
+                            "target": "+821100000003"
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "type": "talk",
+                            "option": {
+                                "text": "hello, this is test message.",
+                                "language": "en-US"
                             }
-                        ],
-                        "actions": [
-                            {
-                                "type": "talk",
-                                "option": {
-                                    "text": "hello, this is test message.",
-                                    "language": "en-US"
-                                }
-                            }
-                        ]
-                    }
+                        }
+                    ]
                 }
             }
         ]

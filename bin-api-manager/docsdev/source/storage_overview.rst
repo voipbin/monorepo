@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Chargeable (per GB stored; default quota is 10 GB per customer)
+   * **Async:** No. File uploads and downloads are synchronous. ``POST /files`` returns immediately with the file metadata. ``GET /files/{id}`` returns file details including a time-limited ``uri_download``.
+
 VoIPBIN's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
 
 With the Storage API you can:
@@ -57,6 +64,10 @@ VoIPBIN storage provides cloud-based file management with quota limits.
 File Operations
 ---------------
 Core file management operations.
+
+.. note:: **AI Implementation Hint**
+
+   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, fetch fresh file details via ``GET /files/{id}`` to get a new download URL. Do not cache or persist download URLs for long-term use.
 
 **Upload a File**
 

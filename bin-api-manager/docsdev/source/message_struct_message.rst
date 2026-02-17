@@ -42,14 +42,19 @@ Message struct
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-* id: Message's ID.
-* *type*: Message's type. See detail :ref:`here <message-struct-message-type>`.
-* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
-* *targets*: List of targets. See detail :ref:`here <message-struct-message-target>`.
-* *destinations*: List of destination addresses info. See detail :ref:`here <common-struct-address-address>`.
-* *targets*: List of targets. See detail :ref:`here <message-struct-message-target>`.
-* text: Message's text.
-* *direction*: Message's direction. See detail :ref:`here <message-struct-message-direction>`.
+* ``id`` (UUID): The message's unique identifier. Returned when creating via ``POST /messages`` or listing via ``GET /messages``.
+* ``type`` (enum string): The message type. See :ref:`Type <message-struct-message-type>`.
+* ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
+* ``targets`` (Array of Object): List of delivery targets with per-destination status. See :ref:`Target <message-struct-message-target>`.
+* ``text`` (String): The message body text content.
+* ``direction`` (enum string): Whether the message is inbound or outbound. See :ref:`Direction <message-struct-message-direction>`.
+* ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last status update.
+* ``tm_delete`` (string, ISO 8601): Timestamp of deletion (soft delete).
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the message has not been deleted.
 
 .. _message-struct-message-target:
 
@@ -72,9 +77,10 @@ Target struct
         "tm_update": "2022-03-13 15:11:06.497184184"
     }
 
-* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
-* status: Message's status for this destination.
-* parts: Number of parted message.
+* ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
+* ``status`` (enum string): Delivery status for this specific destination (e.g., ``sending``, ``sent``, ``delivered``, ``failed``).
+* ``parts`` (Integer): Number of message segments. Long SMS messages are split into multiple parts (153 characters each for GSM-7 encoding).
+* ``tm_update`` (string, ISO 8601): Timestamp of the last status update for this target.
 
 .. _message-struct-message-type:
 
@@ -82,11 +88,12 @@ Type
 ----
 Message's type.
 
-=========== ============
-Type        Description
-=========== ============
-sms         SMS.
-=========== ============
++------------+------------------------------------------------------------------+
+| Type       | Description                                                      |
++============+==================================================================+
+| sms        | Standard SMS text message. Limited to 160 characters per segment |
+|            | (GSM-7 encoding) or 70 characters (Unicode encoding).           |
++------------+------------------------------------------------------------------+
 
 .. _message-struct-message-direction:
 
@@ -94,9 +101,12 @@ Direction
 ---------
 Message's direction.
 
-=========== ============
-Type        Description
-=========== ============
-inbound     Incoming message.
-outbound    Outgoing message.
-=========== ============
++------------+------------------------------------------------------------------+
+| Direction  | Description                                                      |
++============+==================================================================+
+| inbound    | Incoming message received from an external sender to your        |
+|            | VoIPBIN number. Delivered to your application via webhook.       |
++------------+------------------------------------------------------------------+
+| outbound   | Outgoing message sent from your application via the VoIPBIN API  |
+|            | to an external recipient.                                        |
++------------+------------------------------------------------------------------+

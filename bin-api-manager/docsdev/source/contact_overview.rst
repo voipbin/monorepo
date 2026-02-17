@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free (contacts are organizational records with no per-operation charges)
+   * **Async:** No. All contact CRUD operations are synchronous and return the result immediately.
+
 VoIPBIN's Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.
 
 With the Contact API you can:
@@ -97,6 +104,10 @@ Find contacts by phone number or email address. This is useful for enriching inc
     Contact matched → enrich conversation context
 
 Phone numbers are matched in E.164 format for reliable international matching. Email addresses are matched case-insensitively.
+
+.. note:: **AI Implementation Hint**
+
+   When using phone number lookup, the ``+`` character must be URL-encoded as ``%2B``. For example: ``GET /contacts/lookup?phone=%2B15551234567``. Omitting this encoding will result in the ``+`` being interpreted as a space and the lookup will fail.
 
 
 Source Tracking

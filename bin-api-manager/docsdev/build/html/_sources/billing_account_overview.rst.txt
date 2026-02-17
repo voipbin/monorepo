@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Free (reading billing data incurs no charges; adding balance is an admin-only operation)
+   * **Async:** No. All billing account operations are synchronous and return immediately. Balance changes from service usage (calls, SMS) happen asynchronously as services are consumed.
+
 VoIPBIN's Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the **account** holds the live state (current balance and tokens) and the **billings** table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.
 
 With the Billing Account API you can:
@@ -21,6 +28,10 @@ VoIPBIN uses a hybrid billing model with two cost mechanisms: **token balance** 
 Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.
 
 All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.
+
+.. note:: **AI Implementation Hint**
+
+   The ``balance_credit`` field is in micros (int64), not dollars. To convert: divide by 1,000,000 for USD (e.g., ``69772630`` micros = $69.77). When displaying balance to users, always convert from micros to the currency unit. When estimating costs, multiply the rate in micros by the number of billable units.
 
 **Billing Architecture**
 

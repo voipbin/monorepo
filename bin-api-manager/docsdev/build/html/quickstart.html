@@ -194,7 +194,12 @@
 <p>For production use, you can <a class="reference internal" href="quickstart_signup.html#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
 <section id="sandbox">
 <span id="quickstart-sandbox"></span><h2>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading"></a></h2>
-<p>The VoIPBin Sandbox lets you run the entire VoIPBin platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
+<p>The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The Sandbox is a fully functional local VoIPBIN instance. When working with the Sandbox, replace all API URLs from <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code>. The Sandbox uses a self-signed SSL certificate, so add <code class="docutils literal notranslate"><span class="pre">-k</span></code> (insecure) flag to curl commands. The default credentials are <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> / <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code>.</p>
+</div>
 <section id="prerequisites">
 <h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -241,7 +246,7 @@ $ sudo ./voipbin
 </section>
 <section id="signup">
 <span id="quickstart-signup"></span><h2>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h2>
-<p>To use the VoIPBin production API, you need your own account.</p>
+<p>To use the VoIPBIN production API, you need your own account.</p>
 <section id="how-to-sign-up">
 <h3>How to Sign Up<a class="headerlink" href="#how-to-sign-up" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
@@ -257,10 +262,15 @@ $ sudo ./voipbin
 </section>
 <section id="authentication">
 <span id="quickstart-authentication"></span><h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
-<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT) or an <strong>Accesskey</strong>. Both serve the same purpose — choose whichever fits your workflow.</p>
+<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT string) or an <strong>Accesskey</strong> (API key string). Both serve the same purpose — choose whichever fits your workflow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use <strong>Token</strong> (JWT) for short-lived, session-based authentication (valid for 7 days). Use <strong>Accesskey</strong> for long-lived, programmatic access with custom expiration. For automated systems and AI agents, Accesskey is recommended because it does not require periodic re-authentication.</p>
+</div>
 <section id="generate-a-token">
 <h3>Generate a Token<a class="headerlink" href="#generate-a-token" title="Link to this heading"></a></h3>
-<p>Send a login request with your username and password to receive a JWT token. The token is valid for 7 days.</p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/login</span></code> with your username (String) and password (String) to receive a JWT token. The token is valid for 7 days.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -294,12 +304,52 @@ $ sudo ./voipbin
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-accesskey&gt;&#39;
 </pre></div>
 </div>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>401 Unauthorized:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Token has expired (older than 7 days) or is malformed.</p></li>
+<li><p><strong>Fix:</strong> Generate a new token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>. Ensure the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header uses the format <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code> (with a space after “Bearer”).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized (Accesskey):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Accesskey has expired (past <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code>) or has been deleted.</p></li>
+<li><p><strong>Fix:</strong> Check the accesskey’s expiration via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>. Generate a new one from the admin console if expired.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The authenticated user lacks permission for the requested resource.</p></li>
+<li><p><strong>Fix:</strong> Verify the resource belongs to your customer account. Check your permission level (admin vs. manager).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 <p>For more details, see the full <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey tutorial</span></a>.</p>
 </section>
 </section>
 <section id="call">
 <span id="quickstart-call"></span><h2>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h2>
-<p>Make an outbound voice call using the VoIPBin API. You can either define actions inline or reference an existing flow.</p>
+<p>Make an outbound voice call using the VoIPBIN API. You can either define actions inline or reference an existing flow.</p>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
+<li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). If the user provides a local format like <code class="docutils literal notranslate"><span class="pre">010-1234-5678</span></code>, normalize it to E.164 before calling this API. The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>.</p>
+</div>
 <section id="make-a-call-with-inline-actions">
 <h3>Make a call with inline actions<a class="headerlink" href="#make-a-call-with-inline-actions" title="Link to this heading"></a></h3>
 <p>This example initiates a call and plays a text-to-speech message to the recipient:</p>
@@ -320,7 +370,7 @@ $ sudo ./voipbin
             {
                 &quot;type&quot;: &quot;talk&quot;,
                 &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is a VoIPBin test call. Thank you, bye.&quot;,
+                    &quot;text&quot;: &quot;Hello. This is a VoIPBIN test call. Thank you, bye.&quot;,
                     &quot;language&quot;: &quot;en-US&quot;
                 }
             }
@@ -369,12 +419,22 @@ $ sudo ./voipbin
     }&#39;
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID) must reference an existing flow. Obtain one from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. If the flow does not exist, the API returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></code>.</p>
+</div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
 </section>
 <section id="queue">
 <span id="quickstart-queue"></span><h2>Queue<a class="headerlink" href="#queue" title="Link to this heading"></a></h2>
 <p>Queues let you route incoming calls to available agents. Callers hear hold music or messages while waiting for an agent to become available.</p>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags are used to match agents to queues.</p></li>
+<li><p>At least one agent with the matching tag assigned. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags.</p></li>
+</ul>
 <section id="create-a-queue">
 <h3>Create a queue<a class="headerlink" href="#create-a-queue" title="Link to this heading"></a></h3>
 <p>This example creates a queue that routes calls randomly to agents matching a specific tag. While callers wait, they hear a text-to-speech greeting followed by a 1-second pause (looped):</p>
@@ -418,13 +478,18 @@ $ sudo ./voipbin
 </div>
 <p>Key parameters:</p>
 <ul class="simple">
-<li><p><strong>routing_method</strong>: How calls are distributed to agents (<code class="docutils literal notranslate"><span class="pre">random</span></code>, <code class="docutils literal notranslate"><span class="pre">round-robin</span></code>).</p></li>
-<li><p><strong>tag_ids</strong>: Agent tags to match. Only agents with matching tags will receive calls from this queue.</p></li>
-<li><p><strong>wait_actions</strong>: Actions executed while the caller waits (e.g., play messages, music).</p></li>
-<li><p><strong>timeout_wait</strong>: Maximum time (ms) a caller waits in the queue before timing out.</p></li>
-<li><p><strong>timeout_service</strong>: Maximum time (ms) for an active call with an agent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">routing_method</span></code> (enum string): How calls are distributed to agents. One of: <code class="docutils literal notranslate"><span class="pre">random</span></code> (random agent selection) or <code class="docutils literal notranslate"><span class="pre">round-robin</span></code> (sequential agent selection).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): Tag IDs to match agents. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Only agents with at least one matching tag will receive calls from this queue.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> (Array of Object): Flow actions executed while the caller waits (e.g., play messages, music). These actions loop until an agent becomes available.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> (Integer, milliseconds): Maximum time a caller waits in the queue before timing out. Example: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout_service</span></code> (Integer, milliseconds): Maximum time for an active call with an agent before automatic disconnect.</p></li>
 </ul>
-<p>For more details, see the <span class="xref std std-ref">Queue tutorial</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> and <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code> are in milliseconds, not seconds. A common mistake is setting <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100</span></code> (0.1 seconds) instead of <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100000</span></code> (100 seconds). Always verify the unit when setting timeouts.</p>
+</div>
+<p>For more details, see the <a class="reference internal" href="queue_tutorial.html#queue-tutorial"><span class="std std-ref">Queue tutorial</span></a>.</p>
 </section>
 </section>
 <section id="what-s-next">
@@ -469,6 +534,7 @@ $ sudo ./voipbin
 <li><a class="reference internal" href="#authentication">Authentication</a><ul>
 <li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
 <li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#call">Call</a><ul>

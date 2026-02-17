@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Free (conversations are organizational containers; message delivery costs apply per channel)
+   * **Async:** Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.
+
 VoIPBIN's Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.
 
 With the Conversation API you can:
@@ -187,6 +194,10 @@ VoIPBIN automatically organizes messages into distinct conversation rooms based 
 Creating Conversations
 ----------------------
 Create conversations explicitly or let VoIPBIN auto-create them.
+
+.. note:: **AI Implementation Hint**
+
+   Conversations are automatically matched based on participants and channel. Before creating a new conversation, check if an active conversation already exists between the same participants to avoid duplicates. Sending a message to a closed conversation will create a new one.
 
 **Create a Conversation**
 

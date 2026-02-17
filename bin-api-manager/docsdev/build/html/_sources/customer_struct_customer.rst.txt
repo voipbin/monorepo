@@ -28,15 +28,22 @@ Customer
         "tm_delete": "<string>"
     }
 
-* id: Customer's ID.
-* username: Customer's username.
-* name: Name.
-* detail: Detail.
-* webhook_method: Webhook method.
-* webhook_uri: Webhook URI.
-* line_secret: Line's secret.
-* line_token: Line's token.
-* permission_ids: List of permission ids.
+* ``id`` (UUID): The customer's unique identifier. Returned when creating a customer via ``POST /customers`` or when listing customers via ``GET /customers``.
+* ``username`` (String): The customer's login username. Must be unique across the platform.
+* ``name`` (String): The display name of the customer organization.
+* ``detail`` (String): An optional description or notes about the customer account.
+* ``webhook_method`` (enum string): The HTTP method used for webhook notifications. Typically ``POST``.
+* ``webhook_uri`` (String): The URI where webhook event notifications are sent for this customer.
+* ``line_secret`` (String): The LINE messaging platform channel secret for LINE integration.
+* ``line_token`` (String): The LINE messaging platform channel access token for LINE integration.
+* ``permission_ids`` (Array of UUID): List of default permission IDs for this customer's resources. Each ID is obtained from ``GET /permissions``.
+* ``tm_create`` (string, ISO 8601): Timestamp when the customer was created.
+* ``tm_update`` (string, ISO 8601): Timestamp when the customer was last updated.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the customer was deleted, if applicable.
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the customer has not been deleted. The ``line_secret`` and ``line_token`` fields are only needed if the customer uses LINE messaging integration; they can be left empty for voice-only customers.
 
 Example
 +++++++

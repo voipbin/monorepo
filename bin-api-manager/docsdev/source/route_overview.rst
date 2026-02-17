@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free. Routes are configuration rules with no per-unit charges.
+   * **Async:** No. ``POST /routes`` returns immediately with the created route.
+
 VoIPBIN's Route API provides intelligent SIP routing with automatic failover capabilities. Routes determine which provider handles outbound calls and define fallback strategies when primary routes fail.
 
 With the Route API you can:
@@ -153,6 +160,10 @@ Routes can be selected based on various criteria.
 | Destination Route   | Routes based on called number prefix                           |
 +---------------------+----------------------------------------------------------------+
 
+
+.. note:: **AI Implementation Hint**
+
+   A ``customer_id`` of ``00000000-0000-0000-0000-000000000001`` is the system-wide default. Routes with this customer ID apply to all customers unless a customer-specific route exists. A ``target`` of ``"all"`` matches every destination. For country-specific routing, use the E.164 country code prefix (e.g., ``+82`` for South Korea, ``+1`` for US/Canada).
 
 Route Configuration
 -------------------

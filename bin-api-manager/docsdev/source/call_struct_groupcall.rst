@@ -34,14 +34,25 @@ Groupcall
         "tm_delete": "<string>"
     }
 
-* id: Groupcall's ID.
-* customer_id: Customer's ID
-* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
-* *destinations*: List of destination addresses info. See detail :ref:`here <common-struct-address-address>`.
-* *ring_method*: Ring method. See detail :ref:`here <call-struct-groupcall-ring_method>`
-* *answer_method*: Answering method. See detail :ref:`here <call-struct-groupcall-answer_method>`
-* answer_call_id: Represents answered call id.
-* call_ids: List of created call ids.
+* ``id`` (UUID): The groupcall's unique identifier. Returned when creating a groupcall or when listing groupcalls via ``GET /groupcalls``.
+* ``customer_id`` (UUID): The customer who owns this groupcall. Obtained from the ``id`` field of ``GET /customers``.
+* ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
+* ``destinations`` (Array of Object): List of destination addresses to ring. Each entry follows the :ref:`Address <common-struct-address-address>` structure. A destination can also be another groupcall for nested groupcalls.
+* ``ring_method`` (enum string): How destinations are rung. See :ref:`Ring method <call-struct-groupcall-ring_method>`.
+* ``answer_method`` (enum string): What happens when a destination answers. See :ref:`Answer method <call-struct-groupcall-answer_method>`.
+* ``answer_call_id`` (UUID): The call ID of the destination that answered. Set to ``00000000-0000-0000-0000-000000000000`` until a destination answers. Obtained from ``GET /calls``.
+* ``call_ids`` (Array of UUID): List of call IDs created for each destination. Each ID can be used with ``GET /calls/{id}`` to check individual call status.
+* ``tm_create`` (string, ISO 8601): Timestamp when the groupcall was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any groupcall property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the groupcall was deleted.
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the groupcall has not been deleted.
+
+.. note:: **AI Implementation Hint**
+
+   Groupcalls involve active calls to real destinations, which are chargeable. Each destination in the ``destinations`` array results in an individual call being created. With ``ring_all``, all calls are placed simultaneously. Monitor ``call_ids`` to track the status of each individual call.
 
 Example
 +++++++
@@ -89,23 +100,23 @@ Example
 
 Ring method
 -----------
-Groupcall's ringing method.
+Groupcall's ringing method (enum string).
 
 =========== ============
 Type        Description
 =========== ============
-ring_all    Make a call to the all destinations at once.
-linear      Make a call to the destination one-by-one in a linear.
+ring_all    Make a call to all destinations at once. The first destination to answer wins; all other calls are cancelled.
+linear      Make a call to each destination one-by-one in order. If a destination does not answer, the next one is tried.
 =========== ============
 
 .. _call-struct-groupcall-answer_method:
 
 Answer method
 -------------
-Call's status.
+What happens when a destination answers (enum string).
 
 ============= ===================
 Type          Description
 ============= ===================
-hangup_others Hang up the other calls.
+hangup_others Hang up all other unanswered calls when one destination answers.
 ============= ===================

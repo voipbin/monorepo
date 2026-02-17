@@ -184,14 +184,19 @@
                         <main role="main" id="main">
     <section id="variable">
 <span id="variable-variable"></span><h1>Variable<a class="headerlink" href="#variable" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All system variables use the <code class="docutils literal notranslate"><span class="pre">voipbin.</span></code> prefix. Variables are read-only unless explicitly set via the <code class="docutils literal notranslate"><span class="pre">variable_set</span></code> flow action. Use the <code class="docutils literal notranslate"><span class="pre">${voipbin.&lt;category&gt;.&lt;field&gt;}</span></code> syntax to reference them in flow action text fields, webhook URLs, and conditional expressions.</p>
+</div>
 <section id="activeflow">
 <h2>Activeflow<a class="headerlink" href="#activeflow" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.activeflow.id: Activeflow’s ID.</p></li>
-<li><p>voipbin.activeflow.reference_type: Activeflow’s reference type.</p></li>
-<li><p>voipbin.activeflow.reference_id: Activeflow’s reference ID.</p></li>
-<li><p>voipbin.activeflow.reference_activeflow_id: Activeflow’s reference activeflow id.</p></li>
-<li><p>voipbin.activeflow.flow_id: Activeflow’s flow id.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.activeflow.id</span></code> (UUID): The activeflow’s unique identifier. Obtained from the current flow execution context.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.activeflow.reference_type</span></code> (String): The type of resource that triggered this flow (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;message&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.activeflow.reference_id</span></code> (UUID): The ID of the resource that triggered this flow (e.g., the call ID or message ID).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.activeflow.reference_activeflow_id</span></code> (UUID): The parent activeflow’s ID when this flow was triggered from another flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.activeflow.flow_id</span></code> (UUID): The flow template ID used for this execution. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
 </ul>
 </section>
 <section id="call">
@@ -199,29 +204,29 @@
 <section id="source-address">
 <h3>Source address<a class="headerlink" href="#source-address" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.call.source.name: Source address’s name.</p></li>
-<li><p>voipbin.call.source.detail: Source address’s detail.</p></li>
-<li><p>voipbin.call.source.target: Source address’s target.</p></li>
-<li><p>voipbin.call.source.target_name: Source address’s target name.</p></li>
-<li><p>voipbin.call.source.type: Source address’s type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.source.name</span></code> (String): Source address’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.source.detail</span></code> (String): Source address’s detail information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.source.target</span></code> (String): Source address’s target (e.g., phone number in E.164 format like <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.source.target_name</span></code> (String): Source address’s target name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.source.type</span></code> (String): Source address’s type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;tel&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;sip&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="destination-address">
 <h3>Destination address<a class="headerlink" href="#destination-address" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.call.destination.name: Destination address’s name.</p></li>
-<li><p>voipbin.call.destination.detail: Destination address’s detail.</p></li>
-<li><p>voipbin.call.destination.target: Destination address’s target.</p></li>
-<li><p>voipbin.call.destination.target_name: Destination address’s target name.</p></li>
-<li><p>voipbin.call.destination.type: Destination address’s type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.destination.name</span></code> (String): Destination address’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.destination.detail</span></code> (String): Destination address’s detail information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.destination.target</span></code> (String): Destination address’s target (e.g., phone number in E.164 format).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.destination.target_name</span></code> (String): Destination address’s target name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.destination.type</span></code> (String): Destination address’s type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;tel&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;sip&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="others">
 <h3>Others<a class="headerlink" href="#others" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.call.direction: Call’s direction.</p></li>
-<li><p>voipbin.call.master_call_id: Call’s master call id.</p></li>
-<li><p>voipbin.call.digits: Call’s received digits.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.direction</span></code> (enum string): Call’s direction (<code class="docutils literal notranslate"><span class="pre">&quot;incoming&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;outgoing&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.master_call_id</span></code> (UUID): The master call’s ID in a call chain.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.call.digits</span></code> (String): DTMF digits received during the call (e.g., from a <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code> action).</p></li>
 </ul>
 </section>
 </section>
@@ -230,29 +235,29 @@
 <section id="id1">
 <h3>Source address<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.message.source.name: Source address’s name.</p></li>
-<li><p>voipbin.message.source.detail: Source address’s detail.</p></li>
-<li><p>voipbin.message.source.target: Source address’s target.</p></li>
-<li><p>voipbin.message.source.target_name: Source address’s target name.</p></li>
-<li><p>voipbin.message.source.type: Source address’s type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.source.name</span></code> (String): Source address’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.source.detail</span></code> (String): Source address’s detail information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.source.target</span></code> (String): Source address’s target (e.g., phone number in E.164 format).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.source.target_name</span></code> (String): Source address’s target name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.source.type</span></code> (String): Source address’s type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;tel&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="target-destination-address">
 <h3>Target destination address<a class="headerlink" href="#target-destination-address" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.message.target.destination.name: Destination address’s name.</p></li>
-<li><p>voipbin.message.target.destination.detail: Destination address’s detail.</p></li>
-<li><p>voipbin.message.target.destination.target: Destination address’s target.</p></li>
-<li><p>voipbin.message.target.destination.target_name: Destination address’s target name.</p></li>
-<li><p>voipbin.message.target.destination.type: Destination address’s type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.target.destination.name</span></code> (String): Destination address’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.target.destination.detail</span></code> (String): Destination address’s detail information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.target.destination.target</span></code> (String): Destination address’s target (e.g., phone number in E.164 format).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.target.destination.target_name</span></code> (String): Destination address’s target name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.target.destination.type</span></code> (String): Destination address’s type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;tel&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="id2">
 <h3>Message<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.message.id: Message’s id.</p></li>
-<li><p>voipbin.message.text: Message’s text.</p></li>
-<li><p>voipbin.message.direction: Message’s direction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.id</span></code> (UUID): The message’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.text</span></code> (String): The message’s text content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.message.direction</span></code> (enum string): The message’s direction (<code class="docutils literal notranslate"><span class="pre">&quot;incoming&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;outgoing&quot;</span></code>).</p></li>
 </ul>
 </section>
 </section>
@@ -261,123 +266,123 @@
 <section id="queue-info">
 <h3>Queue info<a class="headerlink" href="#queue-info" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.queue.id: Entered Queue’s ID.</p></li>
-<li><p>voipbin.queue.name: Entered Queue’s name.</p></li>
-<li><p>voipbin.queue.detail: Entered Queue’s detail.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queue.id</span></code> (UUID): The entered queue’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queue.name</span></code> (String): The entered queue’s name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queue.detail</span></code> (String): The entered queue’s detail description.</p></li>
 </ul>
 </section>
 <section id="queuecall-info">
 <h3>Queuecall info<a class="headerlink" href="#queuecall-info" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.queuecall.id: Created Queuecall’s ID.</p></li>
-<li><p>voipbin.queuecall.timeout_wait: Created Queuecall’s wait timeout</p></li>
-<li><p>voipbin.queuecall.timeout_service: Created Queuecall’s service timeout.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queuecall.id</span></code> (UUID): The created queuecall’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queuecall.timeout_wait</span></code> (Integer): The queuecall’s wait timeout in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.queuecall.timeout_service</span></code> (Integer): The queuecall’s service timeout in seconds.</p></li>
 </ul>
 </section>
 </section>
 <section id="ai-call">
 <h2>AI Call<a class="headerlink" href="#ai-call" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.aicall.id: Created AI Call’s ID.</p></li>
-<li><p>voipbin.aicall.ai_id: Created AI Call’s AI ID.</p></li>
-<li><p>voipbin.aicall.ai_engine_model: Created AI Call’s AI engine model.</p></li>
-<li><p>voipbin.aicall.confbridge_id: Created AI Call’s confbridge ID.</p></li>
-<li><p>voipbin.aicall.gender: Created AI call’s voice gender.</p></li>
-<li><p>voipbin.aicall.language: Created AI call’s voice language.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.id</span></code> (UUID): The created AI call’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.ai_id</span></code> (UUID): The AI configuration ID used. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.ai_engine_model</span></code> (String): The AI engine model name (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;gpt-4&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.confbridge_id</span></code> (UUID): The conference bridge ID hosting the AI call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.gender</span></code> (enum string): The AI voice gender (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;male&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;female&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.aicall.language</span></code> (String): The AI voice language (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;en-US&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="ai-summary">
 <h2>AI Summary<a class="headerlink" href="#ai-summary" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.ai_summary.id: Created AI Summary’s ID.</p></li>
-<li><p>voipbin.ai_summary.reference_type: Created AI Summary’s reference type.</p></li>
-<li><p>voipbin.ai_summary.reference_id: Created AI Summary’s reference ID.</p></li>
-<li><p>voipbin.ai_summary.language: Created AI Summary’s language.</p></li>
-<li><p>voipbin.ai_summary.content: Created AI Summary’s content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.ai_summary.id</span></code> (UUID): The created AI summary’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.ai_summary.reference_type</span></code> (String): The type of resource summarized (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.ai_summary.reference_id</span></code> (UUID): The ID of the resource that was summarized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.ai_summary.language</span></code> (String): The language of the summary (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;en-US&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.ai_summary.content</span></code> (String): The generated summary text content.</p></li>
 </ul>
 </section>
 <section id="recording">
 <h2>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.recording.id: Created Recording’s ID.</p></li>
-<li><p>voipbin.recording.reference_type: Created Recording’s reference type.</p></li>
-<li><p>voipbin.recording.reference_id: Created Recording’s reference ID.</p></li>
-<li><p>voipbin.recording.format: Created Recording’s format.</p></li>
-<li><p>voipbin.recording.recording_name: Created Recording’s name.</p></li>
-<li><p>voipbin.recording.filenames: Created Recording’s filenames.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.id</span></code> (UUID): The created recording’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.reference_type</span></code> (String): The type of resource being recorded (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.reference_id</span></code> (UUID): The ID of the resource being recorded (e.g., the call ID).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.format</span></code> (String): The recording format (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;wav&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;mp3&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.recording_name</span></code> (String): The recording’s name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.recording.filenames</span></code> (String): The recording’s output filenames.</p></li>
 </ul>
 </section>
 <section id="transcribe">
 <h2>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.transcribe.id: Created Transcribe’s ID.</p></li>
-<li><p>voipbin.transcribe.language: Created Transcribe’s language.</p></li>
-<li><p>voipbin.transcribe.direction: Created Transcribe’s direction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcribe.id</span></code> (UUID): The created transcribe’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcribe.language</span></code> (String): The transcription language (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;en-US&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcribe.direction</span></code> (enum string): The transcription direction (<code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="transcript">
 <h2>Transcript<a class="headerlink" href="#transcript" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.transcript.id: Created Transcript’s ID.</p></li>
-<li><p>voipbin.transcript.transcribe_id: Parent Transcribe’s ID.</p></li>
-<li><p>voipbin.transcript.direction: Transcript’s direction (in/out).</p></li>
-<li><p>voipbin.transcript.message: Transcript’s text content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcript.id</span></code> (UUID): The created transcript’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcript.transcribe_id</span></code> (UUID): The parent transcribe’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcript.direction</span></code> (enum string): The transcript’s direction (<code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> for caller, <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> for callee).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.transcript.message</span></code> (String): The transcript’s text content.</p></li>
 </ul>
 </section>
 <section id="conference">
 <h2>Conference<a class="headerlink" href="#conference" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.conference.id: Created Conference’s ID.</p></li>
-<li><p>voipbin.conference.name: Conference’s name.</p></li>
-<li><p>voipbin.conference.type: Conference’s type (connect/confbridge).</p></li>
-<li><p>voipbin.conference.status: Conference’s status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.conference.id</span></code> (UUID): The created conference’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.conference.name</span></code> (String): The conference’s name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.conference.type</span></code> (enum string): The conference’s type (<code class="docutils literal notranslate"><span class="pre">&quot;connect&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;confbridge&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.conference.status</span></code> (enum string): The conference’s current status.</p></li>
 </ul>
 <section id="confbridge">
 <h3>Confbridge<a class="headerlink" href="#confbridge" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.confbridge.id: Created Confbridge’s ID.</p></li>
-<li><p>voipbin.confbridge.type: Confbridge’s type.</p></li>
-<li><p>voipbin.confbridge.status: Confbridge’s status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.confbridge.id</span></code> (UUID): The created confbridge’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.confbridge.type</span></code> (String): The confbridge’s type.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.confbridge.status</span></code> (enum string): The confbridge’s current status.</p></li>
 </ul>
 </section>
 </section>
 <section id="agent">
 <h2>Agent<a class="headerlink" href="#agent" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.agent.id: Agent’s ID.</p></li>
-<li><p>voipbin.agent.name: Agent’s name.</p></li>
-<li><p>voipbin.agent.detail: Agent’s detail.</p></li>
-<li><p>voipbin.agent.status: Agent’s status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.agent.id</span></code> (UUID): The agent’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.agent.name</span></code> (String): The agent’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.agent.detail</span></code> (String): The agent’s detail description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.agent.status</span></code> (enum string): The agent’s current status (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;available&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;busy&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="webhook-response">
 <h2>Webhook Response<a class="headerlink" href="#webhook-response" title="Link to this heading"></a></h2>
-<p>Variables available after a webhook_send action with sync=true.</p>
+<p>Variables available after a <code class="docutils literal notranslate"><span class="pre">webhook_send</span></code> action with <code class="docutils literal notranslate"><span class="pre">sync=true</span></code>.</p>
 <ul class="simple">
-<li><p>voipbin.webhook.status_code: HTTP response status code.</p></li>
-<li><p>voipbin.webhook.body: HTTP response body as string.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.webhook.status_code</span></code> (Integer): The HTTP response status code (e.g., <code class="docutils literal notranslate"><span class="pre">200</span></code>, <code class="docutils literal notranslate"><span class="pre">404</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.webhook.body</span></code> (String): The HTTP response body as a string.</p></li>
 </ul>
 </section>
 <section id="email">
 <h2>Email<a class="headerlink" href="#email" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.email.id: Created Email’s ID.</p></li>
-<li><p>voipbin.email.status: Email’s status.</p></li>
-<li><p>voipbin.email.subject: Email’s subject.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.email.id</span></code> (UUID): The created email’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.email.status</span></code> (enum string): The email’s delivery status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.email.subject</span></code> (String): The email’s subject line.</p></li>
 </ul>
 </section>
 <section id="outdial">
 <h2>Outdial<a class="headerlink" href="#outdial" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>voipbin.outdial.id: Created Outdial’s ID.</p></li>
-<li><p>voipbin.outdial.status: Outdial’s status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.outdial.id</span></code> (UUID): The created outdial’s unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.outdial.status</span></code> (enum string): The outdial’s current status.</p></li>
 </ul>
 <section id="outdialtarget">
 <h3>Outdialtarget<a class="headerlink" href="#outdialtarget" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>voipbin.outdialtarget.id: Created Outdialtarget’s ID.</p></li>
-<li><p>voipbin.outdialtarget.status: Outdialtarget’s status.</p></li>
-<li><p>voipbin.outdialtarget.try_count: Current try count.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.outdialtarget.id</span></code> (UUID): The created outdialtarget’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.outdialtarget.status</span></code> (enum string): The outdialtarget’s current status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voipbin.outdialtarget.try_count</span></code> (Integer): The current try count for this target.</p></li>
 </ul>
 </section>
 </section>

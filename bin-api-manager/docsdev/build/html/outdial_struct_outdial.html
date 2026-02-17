@@ -199,14 +199,22 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Outdial’s ID.</p></li>
-<li><p>campaign_id: Campaign’s ID.</p></li>
-<li><p>name: outdial’s name.</p></li>
-<li><p>detail: outdial’s detail.</p></li>
-<li><p>data: outdial’s data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The outdial’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">campaign_id</span></code> (UUID): The campaign this outdial is attached to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not attached to any campaign.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the outdial.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the outdial’s purpose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (String): Arbitrary data associated with the outdial. Can be used for custom metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the outdial was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any outdial property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the outdial was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the resource has <strong>not</strong> been deleted. This is a sentinel value, not a real timestamp.</p>
+</div>
 <section id="example">
-<h3>example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
@@ -233,7 +241,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Outdial</a><ul>
 <li><a class="reference internal" href="#outdial-struct-outdial-outdial">Outdial</a><ul>
-<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>

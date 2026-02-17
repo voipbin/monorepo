@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="customer-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before managing customers, you need:</p>
+<ul class="simple">
+<li><p>An authentication token with admin permissions. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(For creation) A unique <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> for the new customer account.</p></li>
+<li><p>(Optional) A webhook URI to receive event notifications for the customer.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Customer creation requires admin-level permissions. Regular agents cannot create or delete customers. The <code class="docutils literal notranslate"><span class="pre">password</span></code> field is required when creating a customer but is write-only and never returned in API responses. When a customer is created, a guest agent with admin permissions is automatically created for that account.</p>
+</div>
 <section id="get-list-of-customers">
-<h2>Get list of customers<a class="headerlink" href="#get-list-of-customers" title="Link to this heading"></a></h2>
+<h3>Get list of customers<a class="headerlink" href="#get-list-of-customers" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -213,7 +226,7 @@
 </div>
 </section>
 <section id="get-detail-of-customer">
-<h2>Get detail of customer<a class="headerlink" href="#get-detail-of-customer" title="Link to this heading"></a></h2>
+<h3>Get detail of customer<a class="headerlink" href="#get-detail-of-customer" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -237,7 +250,7 @@
 </div>
 </section>
 <section id="create-a-new-customer">
-<h2>Create a new customer<a class="headerlink" href="#create-a-new-customer" title="Link to this heading"></a></h2>
+<h3>Create a new customer<a class="headerlink" href="#create-a-new-customer" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -271,7 +284,12 @@
 </div>
 </section>
 <section id="delete-customer">
-<h2>Delete customer<a class="headerlink" href="#delete-customer" title="Link to this heading"></a></h2>
+<h3>Delete customer<a class="headerlink" href="#delete-customer" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting a customer is a destructive operation that removes the customer account and all associated resources (agents, numbers, flows, etc.). This cannot be undone. The API returns the deleted customer object with <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to the deletion timestamp.</p>
+</div>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 
@@ -293,6 +311,7 @@
 </div>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -303,10 +322,13 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-customers">Get list of customers</a></li>
 <li><a class="reference internal" href="#get-detail-of-customer">Get detail of customer</a></li>
 <li><a class="reference internal" href="#create-a-new-customer">Create a new customer</a></li>
 <li><a class="reference internal" href="#delete-customer">Delete customer</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

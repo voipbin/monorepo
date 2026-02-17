@@ -30,19 +30,26 @@ Outplan
         "tm_delete": "<string>"
     }
 
-* id: Outplan's id.
-* name: Outplan's name.
-* detail: Outplan's detail.
-* *source*: Source address. See detail :ref:`here <common-struct-address-address>`.
-* dial_timeout: Timeout for dialing. milliseconds
-* try_interval: Delay time for retry. milliseconds
-* max_try_count_0: Maximum try count for destination 0.
-* max_try_count_1: Maximum try count for destination 1.
-* max_try_count_2: Maximum try count for destination 2.
-* max_try_count_3: Maximum try count for destination 3.
-* max_try_count_4: Maximum try count for destination 4.
+* ``id`` (UUID): The outplan's unique identifier. Returned when creating via ``POST /outplans`` or listing via ``GET /outplans``.
+* ``name`` (String): Human-readable name for the outplan.
+* ``detail`` (String): Detailed description of the outplan's strategy.
+* ``source`` (Object): Source address (caller ID) used when dialing. See :ref:`Address <common-struct-address-address>`.
+* ``dial_timeout`` (Integer): Maximum time in milliseconds to wait for the target to answer before marking as no-answer. For example, ``30000`` = 30 seconds.
+* ``try_interval`` (Integer): Delay time in milliseconds between retry attempts to the same target. For example, ``3600000`` = 1 hour.
+* ``max_try_count_0`` (Integer): Maximum number of dial attempts for ``destination_0`` on outdialtargets.
+* ``max_try_count_1`` (Integer): Maximum number of dial attempts for ``destination_1`` on outdialtargets.
+* ``max_try_count_2`` (Integer): Maximum number of dial attempts for ``destination_2`` on outdialtargets.
+* ``max_try_count_3`` (Integer): Maximum number of dial attempts for ``destination_3`` on outdialtargets.
+* ``max_try_count_4`` (Integer): Maximum number of dial attempts for ``destination_4`` on outdialtargets.
+* ``tm_create`` (string, ISO 8601): Timestamp when the outplan was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any outplan property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the outplan was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
 
-example
+.. note:: **AI Implementation Hint**
+
+   The ``dial_timeout`` and ``try_interval`` fields are in **milliseconds**. Common conversions: 30 seconds = ``30000``, 1 minute = ``60000``, 1 hour = ``3600000``, 2 hours = ``7200000``. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` is a sentinel meaning the resource has **not** been deleted.
+
+Example
 +++++++
 
 .. code::
@@ -72,13 +79,13 @@ example
 
 Try interval
 ------------
-When the VoIPBIN makes a retry dialing, it waits try interval after the previous call's end.
+When VoIPBIN makes a retry dial attempt, it waits the ``try_interval`` duration (in milliseconds) after the previous call ends before dialing again.
 
 .. image:: _static/images/outplan_struct_try_interval.png
 
 
 Max try count
 -------------
-The max try count configs max try count for the given destination.
+The ``max_try_count_N`` fields configure the maximum number of dial attempts for the corresponding ``destination_N`` on outdialtargets.
 
 .. image:: _static/images/outplan_struct_max_try_count.png

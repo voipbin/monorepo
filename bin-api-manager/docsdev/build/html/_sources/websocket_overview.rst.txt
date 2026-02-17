@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium -- Requires persistent connection management, topic subscription, and reconnection logic.
+   * **Cost:** Free -- WebSocket connections and event delivery do not incur charges.
+   * **Async:** Yes. Connect via ``wss://api.voipbin.net/v1.0/ws?token=<token>``, then send subscribe messages to receive events. Events are pushed asynchronously as they occur on subscribed topics.
+
 VoIPBIN's WebSocket API enables real-time, bi-directional communication for receiving instant event notifications. WebSockets maintain persistent connections, allowing immediate delivery of call status changes, message arrivals, flow updates, and other platform events without polling.
 
 The WebSocket API provides:
@@ -51,6 +58,10 @@ WebSocket maintains a persistent connection for instant event delivery.
     | Unlike HTTP (request-response), WebSocket maintains an open channel   |
     | Events are pushed instantly as they occur - no polling needed         |
     +-----------------------------------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   The topic format is ``<scope>:<scope_id>:<resource>:<resource_id>``. Use ``*`` as the ``resource_id`` to subscribe to all resources of a type (e.g., ``customer_id:abc123:call:*`` for all call events). Always implement automatic reconnection with exponential backoff since connections can drop due to network issues or token expiration.
 
 **Key Components**
 

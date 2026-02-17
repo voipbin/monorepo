@@ -236,11 +236,16 @@
 </pre></div>
 </div>
 <p>List Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
-    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;token-for-next-page&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    &quot;result&quot;: [...],
+    &quot;next_page_token&quot;: &quot;token-for-next-page&quot;   // Pass as ?page_token= to get the next page
+}
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>List endpoints return paginated results. If <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is non-empty, pass it as the <code class="docutils literal notranslate"><span class="pre">page_token</span></code> query parameter in the next request to retrieve subsequent pages. When <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is empty or absent, you have reached the last page.</p>
 </div>
 <p>Error Response (4xx, 5xx):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -252,15 +257,68 @@
 </section>
 <section id="common-http-status-codes">
 <h3>Common HTTP Status Codes<a class="headerlink" href="#common-http-status-codes" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When an API call returns an error, parse the JSON response body for the <code class="docutils literal notranslate"><span class="pre">message</span></code> field which contains a human-readable error description. Use the HTTP status code to determine the error category (4xx = client error, 5xx = server error) and the <code class="docutils literal notranslate"><span class="pre">message</span></code> field for specific fix guidance.</p>
+</div>
 <ul class="simple">
-<li><p><strong>200 OK</strong>: Request succeeded</p></li>
-<li><p><strong>201 Created</strong>: Resource created successfully</p></li>
-<li><p><strong>400 Bad Request</strong>: Invalid request parameters</p></li>
-<li><p><strong>401 Unauthorized</strong>: Missing or invalid authentication</p></li>
-<li><p><strong>403 Forbidden</strong>: Insufficient permissions</p></li>
-<li><p><strong>404 Not Found</strong>: Resource does not exist</p></li>
-<li><p><strong>429 Too Many Requests</strong>: Rate limit exceeded</p></li>
-<li><p><strong>500 Internal Server Error</strong>: Server error</p></li>
+<li><p><strong>200 OK</strong>: Request succeeded. Response body contains the requested resource.</p></li>
+<li><p><strong>201 Created</strong>: Resource created successfully. Response body contains the new resource with its assigned <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID).</p></li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request</strong>: Invalid request parameters. Check request body JSON syntax, required fields, and value formats (E.164 for phone numbers, UUID for IDs).</dt><dd><ul>
+<li><p><strong>Common causes:</strong> Missing required fields, invalid phone number format, malformed UUID, invalid enum value.</p></li>
+<li><p><strong>Fix:</strong> Validate all required fields and data types before sending the request.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized</strong>: Missing or invalid authentication token.</dt><dd><ul>
+<li><p><strong>Cause:</strong> JWT token expired (older than 7 days), malformed token, or missing <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header.</p></li>
+<li><p><strong>Fix:</strong> Generate a new token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use a valid accesskey.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>402 Payment Required</strong>: Insufficient account balance for the requested operation.</dt><dd><ul>
+<li><p><strong>Cause:</strong> Operations like calls, messages, and AI sessions deduct credits.</p></li>
+<li><p><strong>Fix:</strong> Check balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code>. Top up the account before retrying.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden</strong>: Insufficient permissions for the requested resource.</dt><dd><ul>
+<li><p><strong>Cause:</strong> The resource belongs to a different customer account, or the agent lacks the required permission level.</p></li>
+<li><p><strong>Fix:</strong> Verify the resource belongs to your account. Check agent permission level (admin vs. manager).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found</strong>: Resource does not exist or has been deleted.</dt><dd><ul>
+<li><p><strong>Cause:</strong> The UUID is invalid, the resource was deleted, or it belongs to another customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span></code> list call.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>429 Too Many Requests</strong>: Rate limit exceeded.</dt><dd><ul>
+<li><p><strong>Fix:</strong> Implement exponential backoff and retry after the duration specified in the <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>500 Internal Server Error</strong>: Server-side error.</dt><dd><ul>
+<li><p><strong>Fix:</strong> Retry the request. If the error persists, contact support with the request details.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 <p>For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.</p>
 </section>

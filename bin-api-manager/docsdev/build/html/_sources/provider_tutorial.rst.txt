@@ -3,6 +3,19 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with providers, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* The provider's SIP hostname (e.g., ``sip.telnyx.com``). This is provided by the telephony service provider.
+* (Optional) Any custom SIP headers or number formatting rules required by the provider.
+
+.. note:: **AI Implementation Hint**
+
+   Providers are typically managed by platform administrators. After creating a provider, you must create at least one route (via ``POST /routes``) that references the provider's ``id`` before outbound calls can use it. The provider alone does not enable call routing.
+
 Get list of providers
 ---------------------
 
@@ -39,28 +52,19 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=<YOUR_AUTH_TOKEN>'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=<YOUR_AUTH_TOKEN>'
 
     {
-        "id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
-        "name": "test outplan",
-        "detail": "outplan for test use.",
-        "source": {
-            "type": "tel",
-            "target": "+15559876543",
-            "target_name": "",
-            "name": "",
-            "detail": ""
-        },
-        "dial_timeout": 30000,
-        "try_interval": 60000,
-        "max_try_count_0": 5,
-        "max_try_count_1": 5,
-        "max_try_count_2": 5,
-        "max_try_count_3": 5,
-        "max_try_count_4": 5,
-        "tm_create": "2022-04-28 01:50:23.414000",
-        "tm_update": "2022-04-30 12:01:13.780469",
+        "id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+        "type": "sip",
+        "hostname": "sip.telnyx.com",
+        "tech_prefix": "",
+        "tech_postfix": "",
+        "tech_headers": {},
+        "name": "telnyx basic",
+        "detail": "telnyx basic",
+        "tm_create": "2022-10-22 16:16:16.874761",
+        "tm_update": "2022-10-24 04:53:14.171374",
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 

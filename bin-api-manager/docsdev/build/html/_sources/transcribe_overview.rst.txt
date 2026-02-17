@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Chargeable (per minute of audio transcribed)
+   * **Async:** Yes. ``POST /transcribes`` returns immediately with status ``progressing``. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription. Poll ``GET /transcribes/{id}`` to check for ``done`` status when complete.
+
 VoIPBIN's Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.
 
 With the Transcription API you can:
@@ -109,6 +116,10 @@ Each transcript segment is delivered as soon as speech is recognized, enabling r
 Starting Transcription
 ----------------------
 VoIPBIN provides two methods to start transcription based on your use case.
+
+.. note:: **AI Implementation Hint**
+
+   The ``language`` parameter uses BCP47 codes (e.g., ``en-US``, ``ko-KR``). Using the wrong language code significantly degrades accuracy. If the speaker's language is unknown, start with the most likely code and consider switching if results are poor. There is no auto-detect mode; you must specify a language explicitly.
 
 **Method 1: Via Flow Action**
 

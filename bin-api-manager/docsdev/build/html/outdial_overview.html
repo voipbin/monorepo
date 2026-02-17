@@ -184,6 +184,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="outdial-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low-Medium</p></li>
+<li><p><strong>Cost:</strong> Free. Creating outdials and targets is free. Costs are incurred when a campaign dials the targets.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outdials/{id}/targets</span></code> return immediately with the created resource.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Outdial API provides a scalable solution for managing outbound call destinations. An outdial is a collection of targets (phone numbers, SIP URIs, email addresses) that campaigns or flows dial sequentially. With built-in retry tracking and status management, the Outdial API handles large-scale outbound operations efficiently.</p>
 <p>With the Outdial API you can:</p>
 <ul class="simple">
@@ -230,6 +239,11 @@
 <li><p><strong>Address</strong>: The destination (phone number, SIP URI, email)</p></li>
 <li><p><strong>Try Count</strong>: Number of dial attempts remaining for this target</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Outdialtargets support up to 5 destination addresses (<code class="docutils literal notranslate"><span class="pre">destination_0</span></code> through <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>). Each destination has its own independent try count. The campaign dials <code class="docutils literal notranslate"><span class="pre">destination_0</span></code> first, and if all retries are exhausted, moves to <code class="docutils literal notranslate"><span class="pre">destination_1</span></code>, and so on. Do not modify targets while the parent campaign is in <code class="docutils literal notranslate"><span class="pre">running</span></code> status.</p>
+</div>
 </section>
 <section id="target-lifecycle">
 <h2>Target Lifecycle<a class="headerlink" href="#target-lifecycle" title="Link to this heading"></a></h2>

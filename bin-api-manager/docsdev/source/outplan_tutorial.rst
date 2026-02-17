@@ -3,6 +3,18 @@
 Tutorial
 ========
 
+Prerequisites
++++++++++++++
+
+Before working with outplans, you need:
+
+* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
+* A source phone number in E.164 format (e.g., ``+15559876543``) to use as the caller ID. This number should be obtained from your provisioned numbers via ``GET /numbers``.
+
+.. note:: **AI Implementation Hint**
+
+   All time values (``dial_timeout`` and ``try_interval``) are in **milliseconds**. A common mistake is to pass seconds instead of milliseconds. For example, a 30-second timeout should be ``30000``, not ``30``. A 10-minute retry interval should be ``600000``.
+
 Get list of outplans
 --------------------
 

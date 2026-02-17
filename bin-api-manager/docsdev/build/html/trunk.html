@@ -188,6 +188,15 @@
 <h1>Trunk<a class="headerlink" href="#trunk" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="trunk-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> High. Trunking involves coordinating providers, routes, and extensions together.</p></li>
+<li><p><strong>Cost:</strong> Outbound calls through trunking incur per-call charges based on the provider. Inbound call registration (extensions) is free.</p></li>
+<li><p><strong>Async:</strong> No. Trunk configuration (providers, routes, extensions) is synchronous. The actual call flow is asynchronous and can be tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Trunk system provides the infrastructure for SIP-based voice communication, supporting both outbound calls (trunking) and inbound calls (registration). Trunks connect VoIPBIN to the PSTN and enable SIP endpoints to communicate with external networks.</p>
 <p>The Trunk system provides:</p>
 <ul class="simple">
@@ -367,6 +376,11 @@
 <span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
 <span class="o">|</span>         <span class="n">Media</span> <span class="p">(</span><span class="n">RTP</span><span class="p">)</span> <span class="o">&lt;-------------------------------------&gt;</span> <span class="o">|</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Setting up a complete trunk system requires three resources created in this order: (1) a provider via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code>, (2) a route via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> referencing the provider ID, and (3) extensions via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions</span></code> for inbound registration. The provider and route handle outbound calls; extensions handle inbound calls. These are separate APIs, not a single trunk creation endpoint.</p>
 </div>
 </section>
 <section id="trunk-configuration">
@@ -641,6 +655,15 @@ consider QoS configuration</p></td>
 </section>
 <section id="trunking">
 <h2>Trunking<a class="headerlink" href="#trunking" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable. Outbound calls through SIP trunking incur per-call charges based on destination and provider rates.</p></li>
+<li><p><strong>Async:</strong> No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+</ul>
+</div>
 <p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>
 <section id="server-address">
 <h3>Server address<a class="headerlink" href="#server-address" title="Link to this heading"></a></h3>
@@ -694,6 +717,11 @@ consider QoS configuration</p></td>
 <span class="o">|&lt;-------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">------------------|</span>                                        <span class="o">|</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The trunk server address format is <code class="docutils literal notranslate"><span class="pre">sip:{your-domain}.trunk.voipbin.net</span></code>. When configuring a SIP client for trunking, use the extension’s <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> for authentication, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication.</p>
+</div>
 </section>
 </section>
 <section id="call-handle">
@@ -741,8 +769,22 @@ It executes the follow features:</p>
 </section>
 <section id="domain-name">
 <span id="trunk-overview-domain-name"></span><h2>Domain name<a class="headerlink" href="#domain-name" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free. SIP domains are automatically generated as part of trunk and extension configuration.</p></li>
+<li><p><strong>Async:</strong> No. Domain names are generated immediately when creating trunks or extensions.</p></li>
+</ul>
+</div>
 <p>The SIP Domain resource in VoIPBIN entails a personalized DNS hostname designed to accept SIP (Session Initiation Protocol) traffic for your account. When a SIP request is directed to this domain, like <a class="reference external" href="sip:alice&#64;example.trunk.voipbin.net">sip:alice&#64;example.trunk.voipbin.net</a>, it is directed to VoIPBIN. Subsequently, VoIPBIN verifies the request’s authenticity and channels it to the designated voice_url linked with the SIP domain.</p>
 <p>This pivotal component facilitates the management of SIP traffic within your VoIPBIN account. It accommodates incoming SIP requests from diverse sources, ensuring seamless communication and integration with VoIPBIN services. Businesses and developers can leverage the SIP Domain resource to create bespoke DNS hostnames, seamlessly integrate VoIPBIN services into existing systems, and construct scalable, reliable SIP-based communication solutions. This capability is particularly beneficial for organizations seeking to manage SIP-based communications securely and efficiently.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN uses two domain patterns: <code class="docutils literal notranslate"><span class="pre">{customer-id}.registrar.voipbin.net</span></code> for SIP device registration (extensions), and <code class="docutils literal notranslate"><span class="pre">{domain-name}.trunk.voipbin.net</span></code> for SIP trunking (outbound calls). The domain is auto-generated – you do not need to create or manage DNS records yourself.</p>
+</div>
 </section>
 </section>
 

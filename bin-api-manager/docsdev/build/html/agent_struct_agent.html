@@ -207,20 +207,28 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>id</em>: Agent’s id.</p></li>
-<li><p><em>username</em>: Agent’s login username.</p></li>
-<li><p><em>name</em>: Agent’s name.</p></li>
-<li><p><em>detail</em>: Agent’s detail description.</p></li>
-<li><p><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="#agent-struct-agent-ring-method"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Agent’s status. See detail <a class="reference internal" href="#agent-struct-agent-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>permission</em>: Agent’s permission.</p></li>
-<li><p><em>tag_ids</em>: List of agent’s tags.</p></li>
-<li><p><em>addresses</em>: List of agent’s addresses. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The agent’s unique identifier. Returned when creating an agent via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> or when listing agents via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">username</span></code> (String): The agent’s login username. Must be unique within the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The agent’s display name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the agent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (enum string): The method used to ring the agent’s addresses when a call is routed. See <a class="reference internal" href="#agent-struct-agent-ring-method"><span class="std std-ref">Ring method</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The agent’s current availability status. See <a class="reference internal" href="#agent-struct-agent-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">permission</span></code> (Integer): The agent’s permission level as a bitmask value. See <a class="reference internal" href="#agent-struct-agent-permission"><span class="std std-ref">Permission</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): List of tag IDs assigned to this agent for skill-based routing. Each ID is obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">addresses</span></code> (Array of Object): List of contact addresses where calls are delivered to this agent. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the agent was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the agent was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the agent was deleted, if applicable.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the agent has not been deleted. When creating an agent, <code class="docutils literal notranslate"><span class="pre">status</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">offline</span></code> and <code class="docutils literal notranslate"><span class="pre">permission</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code> (no permissions). The agent must set their status to <code class="docutils literal notranslate"><span class="pre">available</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/status</span></code> before they can receive queue calls.</p>
+</div>
 </section>
 <section id="ring-method">
 <span id="agent-struct-agent-ring-method"></span><h2>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading"></a></h2>
-<p>Agent’s calling method.</p>
+<p>The method used to ring the agent’s contact addresses when a call is routed.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -229,14 +237,14 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>ringall</p></td>
-<td><p>Dial to the all addresses.</p></td>
+<td><p>Dial all of the agent’s addresses simultaneously. The first address to answer is connected; the rest are cancelled.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="agent-struct-agent-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Agent’s status.</p>
+<p>The agent’s current availability status. Determines whether the agent can receive calls from queues.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -245,26 +253,26 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>available</p></td>
-<td><p>Available.</p></td>
+<td><p>Agent is logged in and ready to receive queue calls.</p></td>
 </tr>
 <tr class="row-odd"><td><p>away</p></td>
-<td><p>Away.</p></td>
+<td><p>Agent is temporarily unavailable (e.g., break, meeting). Cannot receive queue calls.</p></td>
 </tr>
 <tr class="row-even"><td><p>busy</p></td>
-<td><p>Busy.</p></td>
+<td><p>Agent is currently handling a call. Set automatically by the system. Cannot receive additional queue calls.</p></td>
 </tr>
 <tr class="row-odd"><td><p>offline</p></td>
-<td><p>Offline.</p></td>
+<td><p>Agent is logged out of the system. Cannot receive queue calls.</p></td>
 </tr>
 <tr class="row-even"><td><p>ringing</p></td>
-<td><p>Ringing.</p></td>
+<td><p>A call is being delivered to the agent. Set automatically by the system. Cannot receive additional queue calls.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="permission">
-<h2>Permission<a class="headerlink" href="#permission" title="Link to this heading"></a></h2>
-<p>Agent’s permission</p>
+<span id="agent-struct-agent-permission"></span><h2>Permission<a class="headerlink" href="#permission" title="Link to this heading"></a></h2>
+<p>The agent’s permission level, represented as a bitmask integer.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Permission</p></th>
@@ -273,28 +281,28 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>0</p></td>
-<td><p>(0x0000)None.</p></td>
+<td><p>(0x0000) No permissions.</p></td>
 </tr>
 <tr class="row-odd"><td><p>65535</p></td>
-<td><p>(0xFFFF)All permission.</p></td>
+<td><p>(0xFFFF) All permissions.</p></td>
 </tr>
 <tr class="row-even"><td><p>1</p></td>
-<td><p>(0x0001)Permission for voipbin project super admin.</p></td>
+<td><p>(0x0001) VoIPBIN project super admin.</p></td>
 </tr>
 <tr class="row-odd"><td><p>15</p></td>
-<td><p>(0x000F)All permission for project level.</p></td>
+<td><p>(0x000F) All project-level permissions.</p></td>
 </tr>
 <tr class="row-even"><td><p>16</p></td>
-<td><p>(0x0010)Permission for customer level agent</p></td>
+<td><p>(0x0010) Customer-level agent (basic user).</p></td>
 </tr>
 <tr class="row-odd"><td><p>32</p></td>
-<td><p>(0x0020)Permission for customer level admin</p></td>
+<td><p>(0x0020) Customer-level admin (can manage agents and resources).</p></td>
 </tr>
 <tr class="row-even"><td><p>64</p></td>
-<td><p>(0x0040)Permission for customer level manager</p></td>
+<td><p>(0x0040) Customer-level manager.</p></td>
 </tr>
 <tr class="row-odd"><td><p>240</p></td>
-<td><p>(0x00F0)All permission for customer level</p></td>
+<td><p>(0x00F0) All customer-level permissions.</p></td>
 </tr>
 </tbody>
 </table>

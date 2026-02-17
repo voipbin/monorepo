@@ -184,8 +184,22 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="transcribe-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with transcription, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>An active call or conference in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the call ID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or conference ID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p>A BCP47 language code matching the speaker’s language (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>). See <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">Supported Languages</span></a>.</p></li>
+<li><p>(Optional for recording transcription) A recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Transcription can only be started on a call or conference that is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (i.e., answered and active). For recording transcription, the recording must exist and be in <code class="docutils literal notranslate"><span class="pre">ended</span></code> status. The <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter is required and must be a valid BCP47 code; there is no auto-detect mode.</p>
+</div>
 <section id="start-transcription-with-flow-action">
-<h2>Start Transcription with Flow Action<a class="headerlink" href="#start-transcription-with-flow-action" title="Link to this heading"></a></h2>
+<h3>Start Transcription with Flow Action<a class="headerlink" href="#start-transcription-with-flow-action" title="Link to this heading"></a></h3>
 <p>The easiest way to enable transcription is by adding a <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action to your call flow. This automatically begins transcription when the call reaches that action.</p>
 <p><strong>Create Call with Automatic Transcription:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -225,7 +239,7 @@
 <p>Transcription starts when the call reaches the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action and continues until the call ends.</p>
 </section>
 <section id="start-transcription-via-api-manual">
-<h2>Start Transcription via API (Manual)<a class="headerlink" href="#start-transcription-via-api-manual" title="Link to this heading"></a></h2>
+<h3>Start Transcription via API (Manual)<a class="headerlink" href="#start-transcription-via-api-manual" title="Link to this heading"></a></h3>
 <p>For existing calls or conferences, start transcription manually by making an API request.</p>
 <p><strong>Transcribe an Active Call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -271,7 +285,7 @@
 </div>
 </section>
 <section id="get-transcription-results">
-<h2>Get Transcription Results<a class="headerlink" href="#get-transcription-results" title="Link to this heading"></a></h2>
+<h3>Get Transcription Results<a class="headerlink" href="#get-transcription-results" title="Link to this heading"></a></h3>
 <p>Retrieve transcription data after the transcription completes or during real-time transcription.</p>
 <p><strong>Get Transcription by ID:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcribes/8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
@@ -316,7 +330,7 @@
 </div>
 </section>
 <section id="understanding-transcription-direction">
-<h2>Understanding Transcription Direction<a class="headerlink" href="#understanding-transcription-direction" title="Link to this heading"></a></h2>
+<h3>Understanding Transcription Direction<a class="headerlink" href="#understanding-transcription-direction" title="Link to this heading"></a></h3>
 <p>VoIPBIN distinguishes between incoming and outgoing audio:</p>
 <p><strong>Direction: “in”</strong> - Audio from the customer/caller to VoIPBIN</p>
 <p><strong>Direction: “out”</strong> - Audio from VoIPBIN to the customer/caller</p>
@@ -329,7 +343,7 @@
 - <strong>“out”</strong>: What VoIPBIN played (TTS, recordings, or other party in the call)</p>
 </section>
 <section id="real-time-transcription-with-websocket">
-<h2>Real-Time Transcription with WebSocket<a class="headerlink" href="#real-time-transcription-with-websocket" title="Link to this heading"></a></h2>
+<h3>Real-Time Transcription with WebSocket<a class="headerlink" href="#real-time-transcription-with-websocket" title="Link to this heading"></a></h3>
 <p>Subscribe to real-time transcription events via WebSocket to get transcripts as they’re generated during the call.</p>
 <p><strong>1. Connect to WebSocket:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;
@@ -403,7 +417,7 @@
 </div>
 </section>
 <section id="receive-transcripts-via-webhook">
-<h2>Receive Transcripts via Webhook<a class="headerlink" href="#receive-transcripts-via-webhook" title="Link to this heading"></a></h2>
+<h3>Receive Transcripts via Webhook<a class="headerlink" href="#receive-transcripts-via-webhook" title="Link to this heading"></a></h3>
 <p>Configure webhooks to automatically receive transcription events.</p>
 <p><strong>1. Create Webhook:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -470,7 +484,7 @@
 </div>
 </section>
 <section id="supported-languages">
-<h2>Supported Languages<a class="headerlink" href="#supported-languages" title="Link to this heading"></a></h2>
+<h3>Supported Languages<a class="headerlink" href="#supported-languages" title="Link to this heading"></a></h3>
 <p>VoIPBIN supports transcription in multiple languages. See <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
 <p><strong>Common Languages:</strong>
 - <code class="docutils literal notranslate"><span class="pre">en-US</span></code> - English (United States)
@@ -492,7 +506,7 @@
 </div>
 </section>
 <section id="common-use-cases">
-<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Customer Service Quality Assurance:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor customer service calls</span>
 <span class="k">def</span> <span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
@@ -600,7 +614,7 @@
 </div>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
 <p><strong>1. Choose the Right Trigger Method:</strong>
 - <strong>Flow Action</strong>: Use when transcription is always needed for specific flows
 - <strong>Manual API</strong>: Use when transcription is conditional or triggered by user action</p>
@@ -626,7 +640,7 @@
 - Test real-time latency</p>
 </section>
 <section id="transcription-lifecycle">
-<h2>Transcription Lifecycle<a class="headerlink" href="#transcription-lifecycle" title="Link to this heading"></a></h2>
+<h3>Transcription Lifecycle<a class="headerlink" href="#transcription-lifecycle" title="Link to this heading"></a></h3>
 <p><strong>1. Start Transcription:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1.0/transcribes
 → Returns transcribe_id
@@ -650,7 +664,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </div>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <p><strong>Common Issues:</strong></p>
 <p><strong>No transcripts generated:</strong>
 - Verify call has audio
@@ -671,6 +685,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <p>For more information about transcription features and configuration, see <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a>.</p>
 </section>
 </section>
+</section>
 
 </main>
                         
@@ -681,6 +696,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#start-transcription-with-flow-action">Start Transcription with Flow Action</a></li>
 <li><a class="reference internal" href="#start-transcription-via-api-manual">Start Transcription via API (Manual)</a></li>
 <li><a class="reference internal" href="#get-transcription-results">Get Transcription Results</a></li>
@@ -692,6 +708,8 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#transcription-lifecycle">Transcription Lifecycle</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

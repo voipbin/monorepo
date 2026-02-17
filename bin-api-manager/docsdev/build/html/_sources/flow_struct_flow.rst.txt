@@ -23,11 +23,18 @@ Flow
         "tm_delete": "9999-01-01 00:00:00.000000"
     },
 
-* id: Flow's ID.
-* type: Flow's types. See detail :ref:`here <flow-struct-flow-type>`.
-* name: Flow's name.
-* detail: Flow's detail.
-* actions: List of actions. See detail :ref:`here <flow-struct-action>`.
+* ``id`` (UUID): The flow's unique identifier. Returned when creating via ``POST /flows`` or listing via ``GET /flows``.
+* ``type`` (enum string): The flow's type. See detail :ref:`here <flow-struct-flow-type>`.
+* ``name`` (String): The flow's display name.
+* ``detail`` (String): A human-readable description of the flow.
+* ``actions`` (Array of Object): Ordered list of actions to execute. See detail :ref:`here <flow-struct-action>`.
+* ``tm_create`` (String, ISO 8601): Timestamp when the flow was created.
+* ``tm_update`` (String, ISO 8601): Timestamp of the last update to the flow.
+* ``tm_delete`` (String, ISO 8601): Timestamp when the flow was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+
+.. note:: **AI Implementation Hint**
+
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For ``tm_delete``, this means the flow is still active.
 
 **Example**
 .. code::

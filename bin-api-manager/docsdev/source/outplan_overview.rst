@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** Low
+   * **Cost:** Free. Creating and managing outplans is free. Costs are incurred when the associated campaign dials targets.
+   * **Async:** No. ``POST /outplans`` returns immediately with the created outplan.
+
 VoIPBIN's Outplan API provides fine-grained control over dialing strategies for outbound campaigns. An outplan defines how the system should handle dial attempts, including timeouts, retry intervals, and maximum attempt counts. By configuring outplans, you can optimize contact rates while respecting recipient preferences and regulatory requirements.
 
 With the Outplan API you can:
@@ -51,6 +58,10 @@ Outplans define the "when and how" of dialing in campaign operations.
 - **Try Interval**: Time between retry attempts
 - **Max Try Count**: Maximum number of dial attempts per target
 - **Timing Windows**: When dialing is permitted (optional)
+
+.. note:: **AI Implementation Hint**
+
+   The ``dial_timeout`` and ``try_interval`` fields are in **milliseconds**. A 30-second dial timeout is ``30000``, not ``30``. A 2-hour retry interval is ``7200000``. The ``max_try_count_0`` through ``max_try_count_4`` correspond to destination indices on the outdialtarget (``destination_0`` through ``destination_4``), not result types.
 
 
 Outplan Configuration

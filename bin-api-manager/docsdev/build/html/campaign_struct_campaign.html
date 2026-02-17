@@ -208,19 +208,27 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Campaign’s ID.</p></li>
-<li><p><em>type</em>: Campaign’s type. See detail <a class="reference internal" href="#campaign-struct-campaign-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>name: Campaign’s name.</p></li>
-<li><p>detail: Campaign’s detail.</p></li>
-<li><p><em>status</em>: Campaign’s status. See detail <a class="reference internal" href="#campaign-struct-campaign-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>service_level</em>: Campaign’s service level. See detail <a class="reference internal" href="#campaign-struct-campaign-service-level"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>end_handle</em>: Campaign’s outdial list end handle. See detail <a class="reference internal" href="#campaign-struct-campaign-end-handle"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>actions</em>: Campaign’s list of actions. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>outplan_id: Outplan’s ID.</p></li>
-<li><p>outdial_id: Outdial’s ID.</p></li>
-<li><p>queue_id: Queue’s ID.</p></li>
-<li><p>next_campaign_id: Next campaign’s ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The campaign’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/campaigns</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Campaign’s type. See <a class="reference internal" href="#campaign-struct-campaign-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the campaign.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the campaign.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): Campaign’s current status. See <a class="reference internal" href="#campaign-struct-campaign-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_level</span></code> (Integer): Campaign’s service level percentage. Controls the dialing rate relative to available agents. See <a class="reference internal" href="#campaign-struct-campaign-service-level"><span class="std std-ref">Service Level</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">end_handle</span></code> (enum string): What happens when the outdial target list is exhausted. See <a class="reference internal" href="#campaign-struct-campaign-end-handle"><span class="std std-ref">End Handle</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">actions</span></code> (Array of Object): List of flow actions executed when a target answers. Each action follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outplan_id</span></code> (UUID): The outplan controlling dialing strategy. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outdial_id</span></code> (UUID): The outdial containing target destinations. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_id</span></code> (UUID): The queue for routing answered calls to agents. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">next_campaign_id</span></code> (UUID): The campaign to chain after this one finishes. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the campaign was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any campaign property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the campaign was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> means the resource has <strong>not</strong> been deleted. This is a sentinel value, not a real timestamp. When filtering active resources, check for this value.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -256,7 +264,7 @@
 </section>
 <section id="type">
 <span id="campaign-struct-campaign-type"></span><h2>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h2>
-<p>Campaign’s type.</p>
+<p>Campaign’s type. Determines how the campaign communicates with targets.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -265,17 +273,17 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>call</p></td>
-<td><p>The campaign will make a call to the destination with a flow.</p></td>
+<td><p>The campaign will make a voice call to each target destination and execute the configured flow actions upon answer.</p></td>
 </tr>
 <tr class="row-odd"><td><p>flow</p></td>
-<td><p>The campaign will execute flow with a destination.</p></td>
+<td><p>The campaign will execute the configured flow actions directed at each target destination without an explicit voice call setup.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="status">
 <span id="campaign-struct-campaign-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Campaign’s status.</p>
+<p>Campaign’s current operational status. Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;status&quot;:</span> <span class="pre">&quot;run&quot;}</span></code> to start and <code class="docutils literal notranslate"><span class="pre">{&quot;status&quot;:</span> <span class="pre">&quot;stop&quot;}</span></code> to stop the campaign.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -284,13 +292,13 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>stop</p></td>
-<td><p>The campaign stopped.</p></td>
+<td><p>The campaign is stopped. No dialing is occurring. This is the initial state after creation.</p></td>
 </tr>
 <tr class="row-odd"><td><p>stopping</p></td>
-<td><p>The campaign is being stop. Waiting for dialing/process call’s termination.</p></td>
+<td><p>The campaign is transitioning to stopped. Active calls are being terminated before the campaign fully stops. This is a transient state.</p></td>
 </tr>
 <tr class="row-even"><td><p>run</p></td>
-<td><p>The campaign is running. It will create a new call or flow execution.</p></td>
+<td><p>The campaign is actively running. It will create new calls or flow executions based on the outplan and outdial configuration.</p></td>
 </tr>
 </tbody>
 </table>
@@ -306,7 +314,7 @@
 </section>
 <section id="end-handle">
 <span id="campaign-struct-campaign-end-handle"></span><h2>End handle<a class="headerlink" href="#end-handle" title="Link to this heading"></a></h2>
-<p>Campaign’s outdial list end handle.</p>
+<p>Determines what the campaign does when all targets in the outdial have been attempted.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -315,10 +323,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>stop</p></td>
-<td><p>The campaign will stop if the outdial has no more outdial target</p></td>
+<td><p>The campaign will transition to stopped status when the outdial has no more targets to dial. This is the typical setting for one-time campaigns.</p></td>
 </tr>
 <tr class="row-odd"><td><p>continue</p></td>
-<td><p>The campaign will continue to run after outdial has no more outdial target.</p></td>
+<td><p>The campaign will remain in running status after all outdial targets have been attempted. Useful for campaigns where new targets may be added to the outdial dynamically.</p></td>
 </tr>
 </tbody>
 </table>

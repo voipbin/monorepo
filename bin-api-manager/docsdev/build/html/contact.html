@@ -188,6 +188,15 @@
 <span id="contact-main"></span><h1>Contact<a class="headerlink" href="#contact" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="contact-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low</p></li>
+<li><p><strong>Cost:</strong> Free (contacts are organizational records with no per-operation charges)</p></li>
+<li><p><strong>Async:</strong> No. All contact CRUD operations are synchronous and return the result immediately.</p></li>
+</ul>
+</div>
 <p>VoIPBIN’s Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.</p>
 <p>With the Contact API you can:</p>
 <ul class="simple">
@@ -273,6 +282,11 @@ Contact matched → enrich conversation context
 </pre></div>
 </div>
 <p>Phone numbers are matched in E.164 format for reliable international matching. Email addresses are matched case-insensitively.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When using phone number lookup, the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts/lookup?phone=%2B15551234567</span></code>. Omitting this encoding will result in the <code class="docutils literal notranslate"><span class="pre">+</span></code> being interpreted as a space and the lookup will fail.</p>
+</div>
 </section>
 <section id="source-tracking">
 <h3>Source Tracking<a class="headerlink" href="#source-tracking" title="Link to this heading"></a></h3>
@@ -431,21 +445,21 @@ Lookup contact → check tags
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Contact’s unique identifier.</p></li>
-<li><p>customer_id: Customer who owns this contact.</p></li>
-<li><p>first_name: Contact’s first name.</p></li>
-<li><p>last_name: Contact’s last name.</p></li>
-<li><p>display_name: Contact’s display name.</p></li>
-<li><p>company: Contact’s company or organization.</p></li>
-<li><p>job_title: Contact’s job title.</p></li>
-<li><p>source: How the contact was created. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-source"><span class="std std-ref">Source</span></a>.</p></li>
-<li><p>external_id: Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.).</p></li>
-<li><p>phone_numbers: Array of phone numbers. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-phonenumber"><span class="std std-ref">PhoneNumber</span></a>.</p></li>
-<li><p>emails: Array of email addresses. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-email"><span class="std std-ref">Email</span></a>.</p></li>
-<li><p>tag_ids: Array of tag UUIDs assigned to this contact.</p></li>
-<li><p>tm_create: Timestamp of creation.</p></li>
-<li><p>tm_update: Timestamp of last update.</p></li>
-<li><p>tm_delete: Timestamp of deletion (soft delete).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The contact’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contacts</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this contact. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">first_name</span></code> (String): Contact’s first name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">last_name</span></code> (String): Contact’s last name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display_name</span></code> (String): Contact’s display name, typically “First Last”. Used for caller ID enrichment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">company</span></code> (String): Contact’s company or organization name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">job_title</span></code> (String): Contact’s job title or role.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (enum string): How the contact was created. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-source"><span class="std std-ref">Source</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_id</span></code> (String): Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.). Used for deduplication and two-way sync.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phone_numbers</span></code> (Array of Object): Array of phone numbers associated with this contact. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-phonenumber"><span class="std std-ref">PhoneNumber</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emails</span></code> (Array of Object): Array of email addresses associated with this contact. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-email"><span class="std std-ref">Email</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): Array of tag UUIDs assigned to this contact. Each tag ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the contact was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update. <code class="docutils literal notranslate"><span class="pre">null</span></code> if never updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete). <code class="docutils literal notranslate"><span class="pre">null</span></code> if not deleted.</p></li>
 </ul>
 </section>
 <section id="source">
@@ -486,12 +500,12 @@ Lookup contact → check tags
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Phone number’s unique identifier.</p></li>
-<li><p>number: Phone number as originally entered.</p></li>
-<li><p>number_e164: Phone number normalized to E.164 format (e.g., “+15551234567”).</p></li>
-<li><p>type: Phone number type. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-phonenumbertype"><span class="std std-ref">PhoneNumberType</span></a>.</p></li>
-<li><p>is_primary: Whether this is the primary phone number for the contact.</p></li>
-<li><p>tm_create: Timestamp of creation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The phone number entry’s unique identifier. Returned when adding via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contacts/{id}/phone-numbers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> (String): Phone number as originally entered by the user.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_e164</span></code> (String): Phone number normalized to E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Used for lookup matching.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Phone number type. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-phonenumbertype"><span class="std std-ref">PhoneNumberType</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_primary</span></code> (Boolean): Whether this is the primary phone number for the contact. Only one number should be marked primary.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the phone number was added.</p></li>
 </ul>
 <section id="phonenumbertype">
 <span id="contact-struct-contact-phonenumbertype"></span><h4>PhoneNumberType<a class="headerlink" href="#phonenumbertype" title="Link to this heading"></a></h4>
@@ -533,11 +547,11 @@ Lookup contact → check tags
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Email’s unique identifier.</p></li>
-<li><p>address: Email address (stored in lowercase).</p></li>
-<li><p>type: Email address type. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-emailtype"><span class="std std-ref">EmailType</span></a>.</p></li>
-<li><p>is_primary: Whether this is the primary email for the contact.</p></li>
-<li><p>tm_create: Timestamp of creation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The email entry’s unique identifier. Returned when adding via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contacts/{id}/emails</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">address</span></code> (String): Email address (stored and matched in lowercase).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Email address type. See <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-emailtype"><span class="std std-ref">EmailType</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_primary</span></code> (Boolean): Whether this is the primary email for the contact. Only one email should be marked primary.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the email address was added.</p></li>
 </ul>
 <section id="emailtype">
 <span id="contact-struct-contact-emailtype"></span><h4>EmailType<a class="headerlink" href="#emailtype" title="Link to this heading"></a></h4>
@@ -564,6 +578,17 @@ Lookup contact → check tags
 </section>
 <section id="tutorial">
 <span id="contact-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before working with contacts, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(Optional) Tag IDs (UUIDs) for categorization. Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain existing ones from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
+<li><p>(Optional) Phone numbers in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>) for phone number entries.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers are automatically normalized to E.164 format in the <code class="docutils literal notranslate"><span class="pre">number_e164</span></code> field. When using the phone lookup endpoint (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts/lookup?phone=...</span></code>), the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. Contact operations are free and synchronous.</p>
+</div>
 <section id="create-a-contact">
 <h3>Create a contact<a class="headerlink" href="#create-a-contact" title="Link to this heading"></a></h3>
 <p>Create a new contact with phone numbers, emails, and tags.</p>

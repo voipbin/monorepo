@@ -184,8 +184,21 @@
                         <main role="main" id="main">
     <section id="tutorial">
 <span id="provider-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before working with providers, you need:</p>
+<ul class="simple">
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>The provider’s SIP hostname (e.g., <code class="docutils literal notranslate"><span class="pre">sip.telnyx.com</span></code>). This is provided by the telephony service provider.</p></li>
+<li><p>(Optional) Any custom SIP headers or number formatting rules required by the provider.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Providers are typically managed by platform administrators. After creating a provider, you must create at least one route (via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code>) that references the provider’s <code class="docutils literal notranslate"><span class="pre">id</span></code> before outbound calls can use it. The provider alone does not enable call routing.</p>
+</div>
 <section id="get-list-of-providers">
-<h2>Get list of providers<a class="headerlink" href="#get-list-of-providers" title="Link to this heading"></a></h2>
+<h3>Get list of providers<a class="headerlink" href="#get-list-of-providers" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -212,37 +225,28 @@
 </div>
 </section>
 <section id="get-detail-of-provider">
-<h2>Get detail of provider<a class="headerlink" href="#get-detail-of-provider" title="Link to this heading"></a></h2>
+<h3>Get detail of provider<a class="headerlink" href="#get-detail-of-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-    &quot;name&quot;: &quot;test outplan&quot;,
-    &quot;detail&quot;: &quot;outplan for test use.&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15559876543&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
-    },
-    &quot;dial_timeout&quot;: 30000,
-    &quot;try_interval&quot;: 60000,
-    &quot;max_try_count_0&quot;: 5,
-    &quot;max_try_count_1&quot;: 5,
-    &quot;max_try_count_2&quot;: 5,
-    &quot;max_try_count_3&quot;: 5,
-    &quot;max_try_count_4&quot;: 5,
-    &quot;tm_create&quot;: &quot;2022-04-28 01:50:23.414000&quot;,
-    &quot;tm_update&quot;: &quot;2022-04-30 12:01:13.780469&quot;,
+    &quot;id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+    &quot;type&quot;: &quot;sip&quot;,
+    &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+    &quot;tech_prefix&quot;: &quot;&quot;,
+    &quot;tech_postfix&quot;: &quot;&quot;,
+    &quot;tech_headers&quot;: {},
+    &quot;name&quot;: &quot;telnyx basic&quot;,
+    &quot;detail&quot;: &quot;telnyx basic&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;2022-10-24 04:53:14.171374&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
 </section>
 <section id="create-a-new-provider">
-<h2>Create a new provider<a class="headerlink" href="#create-a-new-provider" title="Link to this heading"></a></h2>
+<h3>Create a new provider<a class="headerlink" href="#create-a-new-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -259,7 +263,7 @@
 </div>
 </section>
 <section id="update-provider">
-<h2>Update provider<a class="headerlink" href="#update-provider" title="Link to this heading"></a></h2>
+<h3>Update provider<a class="headerlink" href="#update-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -277,11 +281,12 @@
 </div>
 </section>
 <section id="delete-provider">
-<h2>Delete provider<a class="headerlink" href="#delete-provider" title="Link to this heading"></a></h2>
+<h3>Delete provider<a class="headerlink" href="#delete-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/providers/7efc9379-2d3e-4e54-9d36-23cff676a83e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
@@ -294,11 +299,14 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#get-list-of-providers">Get list of providers</a></li>
 <li><a class="reference internal" href="#get-detail-of-provider">Get detail of provider</a></li>
 <li><a class="reference internal" href="#create-a-new-provider">Create a new provider</a></li>
 <li><a class="reference internal" href="#update-provider">Update provider</a></li>
 <li><a class="reference internal" href="#delete-provider">Delete provider</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

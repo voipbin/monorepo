@@ -2,6 +2,13 @@
 
 Overview
 ========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High. Trunking involves coordinating providers, routes, and extensions together.
+   * **Cost:** Outbound calls through trunking incur per-call charges based on the provider. Inbound call registration (extensions) is free.
+   * **Async:** No. Trunk configuration (providers, routes, extensions) is synchronous. The actual call flow is asynchronous and can be tracked via ``GET /calls/{id}``.
+
 VoIPBIN's Trunk system provides the infrastructure for SIP-based voice communication, supporting both outbound calls (trunking) and inbound calls (registration). Trunks connect VoIPBIN to the PSTN and enable SIP endpoints to communicate with external networks.
 
 The Trunk system provides:
@@ -183,6 +190,10 @@ Inbound calls reach registered SIP devices.
     |                             |                             |
     |         Media (RTP) <-------------------------------------> |
 
+
+.. note:: **AI Implementation Hint**
+
+   Setting up a complete trunk system requires three resources created in this order: (1) a provider via ``POST /providers``, (2) a route via ``POST /routes`` referencing the provider ID, and (3) extensions via ``POST /extensions`` for inbound registration. The provider and route handle outbound calls; extensions handle inbound calls. These are separate APIs, not a single trunk creation endpoint.
 
 Trunk Configuration
 -------------------
