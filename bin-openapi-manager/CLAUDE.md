@@ -187,6 +187,141 @@ When modifying the OpenAPI spec:
 4. **Schema Changes**: Update appropriate schema in `components/schemas` section
 5. **Regenerate**: Always run `go generate ./...` after changes
 
+### AI-Native OpenAPI Specification Rules (Mandatory)
+
+These rules apply to all **NEW or MODIFIED** fields. They ensure our API spec is readable by AI agents (like Claude/ChatGPT) while maintaining compatibility with `oapi-codegen`.
+
+#### Rule 1: Use `oneOf` for Polymorphism
+
+Never use `additionalProperties: true` for fields whose structure depends on a sibling `type` field. Explicitly list allowed schemas using `oneOf`.
+
+**Why:** AI agents hallucinate fields when they see a generic `type: object` without strict options.
+
+**Caution:** Changing a field to `oneOf` changes the generated Go type (e.g., from `map[string]interface{}` to a specific struct wrapper). Always run `go generate ./...` in **both** `bin-openapi-manager` and `bin-api-manager`, then verify builds.
+
+Bad (ambiguous):
+```yaml
+option:
+  type: object
+  additionalProperties: true
+  description: "See FlowManagerActionOptionTalk if type is talk."
+```
+
+Good (AI-native):
+```yaml
+option:
+  oneOf:
+    - $ref: '#/components/schemas/FlowManagerActionOptionTalk'
+    - $ref: '#/components/schemas/FlowManagerActionOptionPlay'
+    - $ref: '#/components/schemas/FlowManagerActionOptionHangup'
+```
+
+#### Rule 2: Strict Structured Strings vs Safe Free Text
+
+Distinguish between identifier/protocol strings and human-readable text.
+
+**Why:** AI needs to know if a string follows a strict protocol or is just a label.
+
+**Type A — Structured Strings (must have `format:` or `pattern:`):**
+- UUIDs: `format: uuid`
+- Timestamps: `format: date-time`
+- Phone numbers: `pattern: "^\+[1-9]\d{1,14}$"`
+- Enums: use `enum` keyword (do not just describe options in text)
+
+**Type B — Free Text (must have `example:`):**
+- Fields like `name`, `description`, `detail`
+- Exempt from `format:`, but must provide a realistic `example:`
+- Add `maxLength:` if the database has a column constraint
+
+Bad:
+```yaml
+id:
+  type: string
+tm_create:
+  type: string
+number:
+  type: string
+```
+
+Good:
+```yaml
+id:
+  type: string
+  format: uuid
+  example: "550e8400-e29b-41d4-a716-446655440000"
+tm_create:
+  type: string
+  format: date-time
+  example: "2026-02-17T12:00:00Z"
+number:
+  type: string
+  pattern: "^\\+[1-9]\\d{1,14}$"
+  example: "+821012345678"
+  description: "E.164 format. Must start with '+'."
+name:
+  type: string
+  example: "My Campaign"
+```
+
+#### Rule 3: Provenance in Descriptions
+
+Every ID field referencing another resource must explicitly state where it comes from.
+
+**Why:** AI agents are stateless and don't know foreign key relationships or execution order.
+
+**Pattern:** `"The [ID Name] returned from the [Endpoint Path] response."`
+
+Bad:
+```yaml
+activeflow_id:
+  type: string
+  description: "Activeflow ID"
+```
+
+Good:
+```yaml
+activeflow_id:
+  type: string
+  format: uuid
+  description: "The unique identifier of the active flow. Returned from the `POST /activeflows` response."
+```
+
+#### Rule 4: Mandatory Realistic Examples
+
+Every new or modified leaf property must have an `example:` with real-looking data.
+
+**Why:** Examples are the most effective "few-shot prompt" for LLMs to understand data formats.
+
+**Constraints:**
+- NEVER use: `"string"`, `"text"`, `null`, `"user_id"`
+- ALWAYS use realistic values: `"+821012345678"`, `"active"`, `"550e8400-e29b-41d4-a716-446655440000"`
+
+```yaml
+email:
+  type: string
+  format: email
+  example: "support@voipbin.net"
+status:
+  type: string
+  enum: ["queued", "sending"]
+  example: "queued"
+```
+
+#### Rule 5: Explicit Array Constraints
+
+Arrays that logically require at least one item must enforce it with `minItems`.
+
+**Why:** AI agents often send empty lists, causing silent failures or validation errors.
+
+```yaml
+destinations:
+  type: array
+  items:
+    $ref: '#/components/schemas/CommonAddress'
+  minItems: 1
+  description: "List of target addresses. Must contain at least one destination."
+```
+
 ### Schema Validation Against Service Models
 
 **CRITICAL: OpenAPI schemas must accurately reflect the public-facing models defined in each service.**
