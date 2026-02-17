@@ -1185,6 +1185,7 @@ components:
     CampaignManagerCampaignEndHandle:
       type: string
       description: Behavior of the campaign after outdial has no more targets.
+      example: "stop"
       enum:
         - stop
         - continue
@@ -1194,6 +1195,7 @@ components:
     CampaignManagerCampaignExecute:
       type: string
       description: Execution action for the campaign.
+      example: "run"
       enum:
         - run
         - stop
@@ -1203,6 +1205,7 @@ components:
     CampaignManagerCampaignStatus:
       type: string
       description: Status of the campaign.
+      example: "run"
       enum:
         - stop
         - stopping
@@ -1214,6 +1217,7 @@ components:
     CampaignManagerCampaignType:
       type: string
       description: Type of campaign.
+      example: "call"
       enum:
         - call
         - flow
@@ -1225,41 +1229,96 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         type:
           $ref: '#/components/schemas/CampaignManagerCampaignType'
+          description: The type of campaign.
+          example: "call"
         name:
           type: string
+          description: Display name of the campaign.
+          example: "Q1 Outbound Campaign"
         detail:
           type: string
+          description: Additional details about the campaign.
+          example: "Quarterly customer outreach campaign"
         status:
           $ref: '#/components/schemas/CampaignManagerCampaignStatus'
+          description: Current status of the campaign.
+          example: "run"
         service_level:
           type: integer
+          description: Target service level percentage.
+          example: 80
         end_handle:
           $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+          description: Behavior when outdial has no more targets.
+          example: "stop"
         actions:
           type: array
           items:
             $ref: '#/components/schemas/FlowManagerAction'
+          description: Ordered list of actions to execute for each campaign call.
         outplan_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outplan.
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
+          x-provenance: "Returned from the `POST /outplans` or `GET /outplans` response."
         outdial_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outdial.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
+          x-provenance: "Returned from the `POST /outdials` or `GET /outdials` response."
         queue_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the queue.
+          example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
+          x-provenance: "Returned from the `POST /queues` or `GET /queues` response."
         next_campaign_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the next campaign to execute after this one completes.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the campaign was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     CampaignManagerCampaigncallReferenceType:
       type: string
+      description: Type of reference for the campaign call.
+      example: "call"
       enum:
         - none
         - call
@@ -1270,6 +1329,8 @@ components:
         - CampaignManagerCampaigncallReferenceTypeFlow
     CampaignManagerCampaigncallResult:
       type: string
+      description: Result of the campaign call attempt.
+      example: "success"
       enum:
         - ""
         - success
@@ -1280,6 +1341,8 @@ components:
         - CampaignManagerCampaigncallResultFail
     CampaignManagerCampaigncallStatus:
       type: string
+      description: Status of the campaign call.
+      example: "progressing"
       enum:
         - dialing
         - progressing
@@ -1293,107 +1356,190 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier of the campaign call.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Identifier of the customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         campaign_id:
           type: string
-          description: Identifier of the campaign.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
+          x-provenance: "Returned from the `POST /campaigns` or `GET /campaigns` response."
         outplan_id:
           type: string
-          description: Identifier of the outbound plan.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outbound plan.
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
+          x-provenance: "Returned from the `POST /outplans` or `GET /outplans` response."
         outdial_id:
           type: string
-          description: Identifier of the outbound dial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outbound dial.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
+          x-provenance: "Returned from the `POST /outdials` or `GET /outdials` response."
         outdial_target_id:
           type: string
-          description: Identifier of the outbound dial target.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outbound dial target.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
+          x-provenance: "Returned from the `GET /outdials/{id}/targets` response."
         queue_id:
           type: string
-          description: Identifier of the queue.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the queue.
+          example: "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
+          x-provenance: "Returned from the `POST /queues` or `GET /queues` response."
         activeflow_id:
           type: string
-          description: Identifier of the activeflow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the activeflow.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /activeflows` response."
         flow_id:
           type: string
-          description: Identifier of the flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `POST /flows` or `GET /flows` response."
         reference_type:
           $ref: '#/components/schemas/CampaignManagerCampaigncallReferenceType'
+          description: Type of reference for the campaign call.
+          example: "call"
         reference_id:
           type: string
-          description: Identifier of the reference.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the reference.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/CampaignManagerCampaigncallStatus'
+          description: Status of the campaign call.
+          example: "progressing"
         result:
           $ref: '#/components/schemas/CampaignManagerCampaigncallResult'
+          description: Result of the campaign call attempt.
+          example: "success"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address of the campaign call.
         destination:
           $ref: '#/components/schemas/CommonAddress'
+          description: Destination address of the campaign call.
         destination_index:
           type: integer
-          description: Index of the destination.
+          description: Index of the current destination being dialed.
+          example: 0
         try_count:
           type: integer
-          description: Number of dialing attempts.
+          description: Number of dialing attempts made.
+          example: 2
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the campaign call was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     CampaignManagerOutplan:
       type: object
       properties:
         id:
           type: string
-          description: Unique identifier of the outplan.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outplan.
+          example: "2b3c4d5e-6f7a-8901-bcde-f12345678901"
         customer_id:
           type: string
-          description: Identifier of the customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         name:
           type: string
           description: Name of the outplan.
+          example: "Standard Outbound Plan"
         detail:
           type: string
           description: Detailed information about the outplan.
+          example: "Default outbound dialing plan for campaigns"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address for outbound calls.
         dial_timeout:
           type: integer
           description: Dial timeout in milliseconds.
+          example: 30000
         try_interval:
           type: integer
           description: Interval between dialing attempts in milliseconds.
+          example: 60000
         max_try_count_0:
           type: integer
           description: Maximum number of tries for level 0.
+          example: 3
         max_try_count_1:
           type: integer
           description: Maximum number of tries for level 1.
+          example: 2
         max_try_count_2:
           type: integer
           description: Maximum number of tries for level 2.
+          example: 1
         max_try_count_3:
           type: integer
           description: Maximum number of tries for level 3.
+          example: 1
         max_try_count_4:
           type: integer
           description: Maximum number of tries for level 4.
+          example: 1
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outplan was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -1402,6 +1548,7 @@ components:
     AIManagerAIEngineType:
       type: string
       description: Type of engine used by the ai.
+      example: "chatGPT"
       enum:
         - chatGPT
         - dialogflow
@@ -1414,6 +1561,7 @@ components:
     AIManagerAIEngineModel:
       type: string
       description: Model of the ai engine.
+      example: "gpt-4o"
       enum:
         - o1-mini
         - o1-preview
@@ -1442,57 +1590,86 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier of the ai.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the AI.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         name:
           type: string
-          description: Name of the ai.
+          description: Name of the AI.
+          example: "Customer Support Bot"
         detail:
           type: string
-          description: Detailed information about the ai.
+          description: Detailed information about the AI.
+          example: "AI assistant for handling customer inquiries"
         engine_type:
           $ref: '#/components/schemas/AIManagerAIEngineType'
+          description: Type of AI engine.
+          example: "chatGPT"
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
+          description: Model of the AI engine.
+          example: "gpt-4o"
         engine_data:
           type: object
           additionalProperties: true
-          description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+          description: Custom key-value configuration data specific to the AI engine type.
         engine_key:
           type: string
-          description: API key or authentication key for the ai engine.
+          description: API key or authentication key for the AI engine. Write-only; not returned in responses.
+          example: "sk-...redacted..."
         init_prompt:
           type: string
-          description: Initial prompt to configure the ai's behavior.
+          description: Initial prompt to configure the AI's behavior.
+          example: "You are a helpful customer support assistant."
         tts_type:
           type: string
-          description: Text-to-speech type used by the ai.
+          description: Text-to-speech provider type.
+          example: "google"
         tts_voice_id:
           type: string
-          description: Identifier for the text-to-speech voice.
+          description: Text-to-speech voice identifier.
+          example: "en-US-Neural2-F"
         stt_type:
           type: string
-          description: Speech-to-text type used by the ai.
+          description: Speech-to-text provider type.
+          example: "google"
         tool_names:
           type: array
           items:
             type: string
           description: List of tool names enabled for this AI. Use ["all"] to enable all available tools.
+          example: ["all"]
         tm_create:
           type: string
-          description: Timestamp when the ai was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Timestamp when the ai was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: Timestamp when the ai was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     AIManagerAIcallGender:
       type: string
       description: Gender associated with the ai call.
+      example: "female"
       enum:
         - male
         - female
@@ -1505,6 +1682,7 @@ components:
     AIManagerAIcallReferenceType:
       type: string
       description: Type of reference associated with the ai call.
+      example: "call"
       enum:
         - ""
         - call
@@ -1515,6 +1693,7 @@ components:
     AIManagerAIcallStatus:
       type: string
       description: Status of the ai call.
+      example: "progressing"
       enum:
         - initiating
         - progressing
@@ -1529,54 +1708,104 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the ai call.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the AI call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         ai_id:
           type: string
-          description: Unique identifier of the associated ai.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the associated AI.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `POST /ais` or `GET /ais` response."
         engine_type:
           $ref: '#/components/schemas/AIManagerAIEngineType'
+          description: Type of AI engine.
+          example: "chatGPT"
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
+          description: Model of the AI engine.
+          example: "gpt-4o"
         activeflow_id:
           type: string
-          description: Unique identifier for the activeflow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the activeflow.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /activeflows` response."
         reference_type:
           $ref: '#/components/schemas/AIManagerAIcallReferenceType'
+          description: Type of reference associated with the AI call.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier for the reference.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the reference.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         confbridge_id:
           type: string
-          description: Unique identifier for the conference bridge.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conference bridge.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /confbridges` response."
         transcribe_id:
           type: string
-          description: Unique identifier for the transcription service.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the transcription service.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /transcribes` response."
         status:
           $ref: '#/components/schemas/AIManagerAIcallStatus'
+          description: Status of the AI call.
+          example: "progressing"
         gender:
           $ref: '#/components/schemas/AIManagerAIcallGender'
+          description: Gender associated with the AI call.
+          example: "female"
         language:
           type: string
-          description: Language used during the ai call.
+          description: Language used during the AI call.
+          example: "en-US"
         tm_end:
           type: string
-          description: Timestamp when the ai call ended.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call ended.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
-          description: Timestamp when the ai call was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Timestamp when the ai call was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: Timestamp when the ai call was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the AI call was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     AIManagerMessageDirection:
       type: string
       description: Direction of the message.
+      example: "incoming"
       enum:
         - incoming
         - outgoing
@@ -1587,6 +1816,7 @@ components:
     AIManagerMessageRole:
       type: string
       description: Role of the entity in the conversation.
+      example: "assistant"
       enum:
         - system
         - user
@@ -1605,28 +1835,46 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         aicall_id:
           type: string
-          description: Unique identifier for the associated ai call.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the associated AI call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /aicalls` response."
         direction:
           $ref: '#/components/schemas/AIManagerMessageDirection'
           description: Direction of the message.
+          example: "incoming"
         role:
           $ref: '#/components/schemas/AIManagerMessageRole'
           description: Role of the entity in the conversation.
+          example: "assistant"
         content:
           type: string
           description: Content of the message.
+          example: "Hello, how can I help you today?"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     AIManagerSummaryReferenceType:
       type: string
+      description: Type of reference for the AI summary.
+      example: "call"
       enum:
         - ""
         - "call"
@@ -1642,6 +1890,8 @@ components:
 
     AIManagerSummaryStatus:
       type: string
+      description: Status of the AI summary generation.
+      example: "progressing"
       enum:
         - ""
         - "progressing"
@@ -1656,38 +1906,71 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the summary.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          x-provenance: "Returned from the `GET /customers` response."
         activeflow_id:
           type: string
-          description: Unique identifier for the activeflow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the activeflow.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `GET /activeflows` response."
         on_end_flow_id:
           type: string
-          description: Unique identifier for the on end flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute when the summary completes.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          x-provenance: "Returned from the `POST /flows` or `GET /flows` response."
         reference_type:
           $ref: '#/components/schemas/AIManagerSummaryReferenceType'
+          description: Type of reference for the AI summary.
+          example: "call"
         reference_id:
           type: string
-          description: Unique identifier for the reference.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the reference.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/AIManagerSummaryStatus'
+          description: Status of the AI summary generation.
+          example: "progressing"
         language:
           type: string
-          description: Language used during the ai call.
+          description: Language used for the AI summary.
+          example: "en-US"
         content:
           type: string
-          description: Content of the message.
+          description: Content of the summary.
+          example: "The customer called to inquire about their account balance and was assisted by the support agent."
         tm_create:
           type: string
-          description: Timestamp when the message was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Timestamp when the message was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: Timestamp when the message was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the summary was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
