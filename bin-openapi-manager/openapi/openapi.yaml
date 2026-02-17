@@ -2443,6 +2443,7 @@ components:
     ConversationManagerAccountType:
       type: string
       description: Type of the account.
+      example: "sms"
       enum:
         - line
         - sms
@@ -2454,37 +2455,59 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the account.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation account.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConversationManagerAccountType'
+          description: Type of messaging platform.
+          example: "sms"
         name:
           type: string
           description: Name of the account.
+          example: "Main SMS Account"
         detail:
           type: string
           description: Detailed information about the account.
+          example: "Primary SMS messaging account"
         secret:
           type: string
-          description: Secret associated with the account.
+          description: Webhook secret for signature verification. Write-only.
+          example: "whsec_...redacted..."
         token:
           type: string
-          description: Token, usually an API token, associated with the account.
+          description: API token for the messaging platform. Write-only.
+          example: "xoxb_...redacted..."
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the account was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     ConversationManagerConversationReferenceType:
       type: string
       description: Type of the reference for the conversation.
+      example: "message"
       enum:
         - ""
         - message
@@ -2498,28 +2521,50 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the conversation.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
+          description: Type of the conversation owner.
+          example: "agent"
         owner_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the conversation owner.
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         account_id:
           type: string
-          description: Unique identifier of the associated account.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conversation account. Returned from the `GET /conversation_accounts` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         name:
           type: string
           description: Name of the conversation.
+          example: "Customer Support Chat"
         detail:
           type: string
           description: Detailed information about the conversation.
+          example: "Support conversation with customer"
         reference_type:
           $ref: '#/components/schemas/ConversationManagerConversationReferenceType'
+          description: Type of the reference for the conversation.
+          example: "message"
         reference_id:
           type: string
-          description: Unique identifier for the reference (e.g., message ID, line ID).
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the referenced resource.
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           description: The source address for the conversation.
           $ref: '#/components/schemas/CommonAddress'
@@ -2530,17 +2575,27 @@ components:
             $ref: '#/components/schemas/CommonAddress'
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the conversation was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     ConversationManagerMediaType:
       type: string
       description: Type of the media.
+      example: "image"
       enum:
         - image
         - video
@@ -2566,28 +2621,47 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the media.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the media.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/ConversationManagerMediaType'
+          description: Type of the media content.
+          example: "image"
         filename:
           type: string
           description: Filename of the media.
+          example: "photo_2026-01-15.jpg"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the media was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     ConversationManagerMessageDirection:
       type: string
       description: Direction of the message (incoming or outgoing).
+      example: "incoming"
       enum:
         - outgoing
         - incoming
@@ -2597,6 +2671,7 @@ components:
     ConversationManagerMessageReferenceType:
       type: string
       description: Type of reference associated with the message (e.g., call, campaign).
+      example: "call"
       enum:
         - none
         - call
@@ -2608,6 +2683,7 @@ components:
     ConversationManagerMessageStatus:
       type: string
       description: Status of the message.
+      example: "sent"
       enum:
         - sending
         - sent
@@ -2623,27 +2699,47 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the message.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         conversation_id:
           type: string
-          description: Unique identifier of the conversation.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the conversation. Returned from the `GET /conversations` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         direction:
           $ref: '#/components/schemas/ConversationManagerMessageDirection'
+          description: Direction of the message.
+          example: "incoming"
         status:
           $ref: '#/components/schemas/ConversationManagerMessageStatus'
+          description: Current delivery status of the message.
+          example: "sent"
         reference_type:
           $ref: '#/components/schemas/ConversationManagerMessageReferenceType'
+          description: Type of reference associated with the message.
+          example: "call"
         reference_id:
           type: string
-          description: The reference ID for the message (e.g., related call ID).
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the referenced resource.
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         source:
           $ref: '#/components/schemas/CommonAddress'
+          description: Source address of the message.
         text:
           type: string
           description: The message content.
+          example: "Hello, how can I help you today?"
         medias:
           type: array
           items:
@@ -2651,13 +2747,22 @@ components:
           description: List of media associated with the message.
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -2668,26 +2773,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the access key.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
+          description: Name of the access key.
+          example: "Production API Key"
         detail:
           type: string
+          description: Additional details about the access key.
+          example: "API key for production environment"
         token:
           type: string
+          description: The access key token. Only returned once at creation time.
+          example: "ak_live_...redacted..."
         tm_expire:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key expires.
+          example: "2027-01-15T09:30:00Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the access key was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     CustomerManagerCustomerWebhookMethod:
       type: string
       description: The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+      example: "POST"
       enum:
         - ""
         - POST
@@ -2703,6 +2839,7 @@ components:
     CustomerManagerCustomerStatus:
       type: string
       description: Account lifecycle status.
+      example: "active"
       enum:
         - active
         - frozen
@@ -2716,49 +2853,77 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the customer.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
           description: Name of the customer.
+          example: "Acme Corporation"
         detail:
           type: string
           description: Details about the customer.
+          example: "Enterprise customer account"
         email:
           type: string
+          format: email
+          x-go-type: string
           description: Email address of the customer.
+          example: "admin@acme.com"
         phone_number:
           type: string
-          description: Phone number of the customer.
+          description: "Customer's contact phone number in E.164 format."
+          example: "+14155551234"
         address:
           type: string
           description: Address of the customer.
+          example: "123 Main St, San Francisco, CA 94105"
         webhook_method:
           $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
           description: Webhook method used by the customer.
+          example: "POST"
         webhook_uri:
           type: string
-          description: URI for the customer's webhook.
+          description: URI where webhook events are delivered.
+          example: "https://api.acme.com/webhooks/voipbin"
         billing_account_id:
           type: string
-          description: The ID of the customer's default billing account.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response."
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         email_verified:
           type: boolean
           description: Whether the customer's email has been verified.
+          example: true
         status:
           $ref: '#/components/schemas/CustomerManagerCustomerStatus'
           description: Account lifecycle status.
+          example: "active"
         tm_deletion_scheduled:
           type: string
-          description: When account deletion was requested (null if not scheduled).
+          format: date-time
+          x-go-type: string
+          description: Timestamp when account deletion was requested. Null if not scheduled.
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the customer was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 #########################################
 # Email Manager
@@ -2766,6 +2931,7 @@ components:
     EmailManagerEmailAttachmentReferenceType:
       type: string
       description: Type of the action.
+      example: "recording"
       enum:
         - ""
         - recording
@@ -2776,6 +2942,7 @@ components:
     EmailManagerEmailStatus:
       type: string
       description: Email status.
+      example: "delivered"
       enum:
         - ""
         - initiated
@@ -2808,9 +2975,13 @@ components:
         reference_type:
           description: Type of the reference.
           $ref: '#/components/schemas/EmailManagerEmailAttachmentReferenceType'
+          example: "recording"
         reference_id:
           type: string
-          description: The identifier of the next item
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource (e.g., recording ID)."
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
       required:
         - reference_type
         - reference_id
@@ -2820,30 +2991,43 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for the email.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the email.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: ID of the customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         activeflow_id:
           type: string
-          description: ID of the associated activeflow.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the activeflow. Returned from the `POST /activeflows` or `GET /activeflows` response."
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         source:
           $ref: '#/components/schemas/CommonAddress'
-          description: The source address of the message.
+          description: The source address of the email.
         destinations:
           type: array
+          minItems: 1
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: List of destination addresses
+          description: List of destination addresses. Must contain at least one destination.
         status:
           $ref: '#/components/schemas/EmailManagerEmailStatus'
-          description: The source address of the message.
+          description: Current delivery status of the email.
+          example: "delivered"
         subject:
           type: string
           description: The subject of the email.
+          example: "Your Call Recording is Ready"
         content:
           type: string
           description: The content of the email.
+          example: "Please find your call recording attached."
         attachments:
           type: array
           items:
@@ -2851,13 +3035,22 @@ components:
           description: List of attachments
         tm_create:
           type: string
-          description: Timestamp when the flow was created.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Timestamp when the flow was last updated.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: Timestamp when the flow was deleted.
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the email was deleted.
+          example: "2026-01-15T09:30:00Z"
       required:
         - id
         - customer_id
