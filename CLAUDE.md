@@ -567,6 +567,8 @@ This applies to any struct that:
 4. **Regenerate API server code** with `go generate ./...` in `bin-api-manager` (it generates server code FROM the openapi.yaml)
 5. **Run verification** for the service, `bin-openapi-manager`, AND `bin-api-manager`
 
+**⚠️ IMPORTANT: Before modifying any OpenAPI schema, you MUST read and follow the AI-Native Specification Rules located in `bin-openapi-manager/CLAUDE.md`.**
+
 **Why api-manager regeneration is required:**
 `bin-api-manager` uses `go generate` to create server code directly from `bin-openapi-manager/openapi/openapi.yaml`. The generated code lives in `bin-api-manager/gens/openapi_server/gen.go`. If you update the OpenAPI spec but don't regenerate api-manager, the API server will use stale types.
 
