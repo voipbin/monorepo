@@ -3965,6 +3965,7 @@ components:
     MessageManagerMessageDirection:
       type: string
       description: Direction of the message.
+      example: "outbound"
       enum:
         - outbound
         - inbound
@@ -3974,6 +3975,7 @@ components:
     MessageManagerMessageProviderName:
       type: string
       description: Name of the message provider.
+      example: "telnyx"
       enum:
         - telnyx
         - twilio
@@ -3985,6 +3987,7 @@ components:
     MessageManagerMessageType:
       type: string
       description: Type of the message.
+      example: "sms"
       enum:
         - sms
       x-enum-varnames:
@@ -3994,13 +3997,20 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: Unique identifier for the message.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Unique identifier for the customer.
+          format: uuid
+          x-go-type: string
+          description: Unique identifier for the customer. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         type:
           $ref: '#/components/schemas/MessageManagerMessageType'
           description: The type of the message.
+          example: "sms"
         source:
           $ref: '#/components/schemas/CommonAddress'
           description: The source address of the message.
@@ -4012,22 +4022,34 @@ components:
         text:
           type: string
           description: The text delivered in the body of the message.
+          example: "Your appointment is confirmed for tomorrow at 2 PM."
         direction:
           $ref: '#/components/schemas/MessageManagerMessageDirection'
           description: The direction of the message (outbound/inbound).
+          example: "outbound"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the message was deleted.
+          example: "2026-01-15T09:30:00Z"
     
     MessageManagerTargetStatus:
       type: string
       description: The status of the message for the target.
+      example: "delivered"
       enum:
         - received
         - queued
@@ -4053,12 +4075,17 @@ components:
         status:
           description: The current status of the message for the target.
           $ref: '#/components/schemas/MessageManagerTargetStatus'
+          example: "delivered"
         parts:
           type: integer
           description: The number of message parts (if the message is split).
+          example: 1
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the target message was last updated.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
@@ -4067,6 +4094,7 @@ components:
     NumberManagerAvailableNumber:
       type: string
       description: A feature supported by the phone number.
+      example: "voice"
       enum:
         - emergency
         - fax
@@ -4084,16 +4112,20 @@ components:
       properties:
         number:
           type: string
-          description: The available phone number.
+          description: The available phone number in E.164 format.
+          example: "+14155551234"
         country:
           type: string
           description: The country where the number is available.
+          example: "US"
         region:
           type: string
           description: The region within the country.
+          example: "California"
         postal_code:
           type: string
           description: The postal code associated with the number.
+          example: "94105"
         features:
           type: array
           items:
@@ -4103,6 +4135,7 @@ components:
     NumberManagerNumberType:
       type: string
       description: The type of the number.
+      example: "normal"
       enum:
         - normal
         - virtual
@@ -4112,6 +4145,7 @@ components:
     NumberManagerNumberProviderName:
       type: string
       description: The provider name for the number.
+      example: "telnyx"
       enum:
         - telnyx
         - twilio
@@ -4123,6 +4157,7 @@ components:
     NumberManagerNumberStatus:
       type: string
       description: The status of the number.
+      example: "active"
       enum:
         - active
         - deleted
@@ -4134,52 +4169,86 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier for the number.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: The customer ID associated with the number.
+          format: uuid
+          x-go-type: string
+          description: The customer ID associated with the number. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         number:
           type: string
-          description: The phone number.
+          description: The phone number in E.164 format (normal) or +899 format (virtual).
+          example: "+14155551234"
         type:
           $ref: '#/components/schemas/NumberManagerNumberType'
           description: The type of the number (normal or virtual).
+          example: "normal"
         call_flow_id:
           type: string
-          description: The ID of the associated call flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute for incoming calls. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         message_flow_id:
           type: string
-          description: The ID of the associated message flow.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the flow to execute for incoming messages. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         name:
           type: string
           description: The name of the number.
+          example: "Main Support Line"
         detail:
           type: string
           description: Additional details about the number.
+          example: "Primary inbound number for customer support"
         status:
           $ref: '#/components/schemas/NumberManagerNumberStatus'
           description: The status of the number.
+          example: "active"
         t38_enabled:
           type: boolean
           description: Whether T38 is enabled for the number.
+          example: false
         emergency_enabled:
           type: boolean
           description: Whether emergency services are enabled for the number.
+          example: false
         tm_purchase:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was purchased.
+          example: "2026-01-15T09:30:00Z"
         tm_renew:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was renewed.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of when the number was deleted.
+          example: "2026-01-15T09:30:00Z"
 
 #########################################
 # Outdial Manager
@@ -4189,35 +4258,57 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier for the outdial.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         customer_id:
           type: string
-          description: The unique identifier for the customer associated with the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier for the customer associated with the outdial. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         campaign_id:
           type: string
-          description: The unique identifier for the campaign associated with the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the campaign. Returned from the `POST /campaigns` or `GET /campaigns` response.
+          example: "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
         name:
           type: string
           description: The name of the outdial.
+          example: "Q1 Target List"
         detail:
           type: string
           description: The detailed description of the outdial.
+          example: "Outbound dial list for Q1 campaign"
         data:
           type: string
           description: The data associated with the outdial.
+          example: "custom-data"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: Timestamp when the outdial was deleted.
+          example: "2026-01-15T09:30:00Z"
 
     OutdialManagerOutdialtargetStatus:
       type: string
       description: The status of the outdial.
+      example: "idle"
       enum:
         - progressing
         - done
@@ -4231,22 +4322,32 @@ components:
       properties:
         id:
           type: string
-          description: The unique identifier for the outdial.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier for the outdial target.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         outdial_id:
           type: string
-          description: The outdial reference ID.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the outdial. Returned from the `POST /outdials` or `GET /outdials` response.
+          example: "3c4d5e6f-7a8b-9012-cdef-012345678901"
         name:
           type: string
-          description: The name of the outdial.
+          description: The name of the outdial target.
+          example: "John Smith"
         detail:
           type: string
-          description: Additional details about the outdial.
+          description: Additional details about the outdial target.
+          example: "Priority customer"
         data:
           type: string
-          description: The data associated with the outdial.
+          description: The data associated with the outdial target.
+          example: "vip-tag"
         status:
           $ref: '#/components/schemas/OutdialManagerOutdialtargetStatus'
-          description: The status of the outdial.
+          description: The status of the outdial target.
+          example: "idle"
         destination_0:
           $ref: '#/components/schemas/CommonAddress'
           description: The destination address 0.
@@ -4265,27 +4366,41 @@ components:
         try_count_0:
           type: integer
           description: The try count for destination 0.
+          example: 0
         try_count_1:
           type: integer
           description: The try count for destination 1.
+          example: 0
         try_count_2:
           type: integer
           description: The try count for destination 2.
+          example: 0
         try_count_3:
           type: integer
           description: The try count for destination 3.
+          example: 0
         try_count_4:
           type: integer
           description: The try count for destination 4.
+          example: 0
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The creation timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The update timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The deletion timestamp.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
