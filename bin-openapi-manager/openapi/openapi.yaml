@@ -204,17 +204,21 @@ components:
     PageSize:
       name: page_size
       in: query
-      description: The size of results.
+      description: "Number of results to return per page."
       required: false
       schema:
         type: integer
+        example: 25
     PageToken:
       name: page_token
       in: query
-      description: The token. tm_create
+      description: "Cursor token for pagination. Use the `next_page_token` value from the previous response."
       required: false
       schema:
         type: string
+        format: date-time
+        x-go-type: string
+        example: "2026-01-15T09:30:00Z"
 
 
   schemas:
@@ -267,7 +271,8 @@ components:
 
     AgentManagerAgentRingMethod:
       type: string
-      description: Represents an agent resource.
+      description: "Method used to ring the agent for incoming calls."
+      example: "ringall"
       enum:
         - ringall
         - linear
@@ -277,7 +282,8 @@ components:
 
     AgentManagerAgentStatus:
       type: string
-      description: Agent's status
+      description: "Current availability status of the agent."
+      example: "available"
       enum:
         - ""
         - available
@@ -299,43 +305,71 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the agent."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this agent. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         username:
           type: string
-          description: Agent's username.
+          description: "Agent's login username, typically an email address."
+          example: "agent@example.com"
         name:
           type: string
-          description: Agent's name.
+          description: "Display name of the agent."
+          example: "John Smith"
         detail:
           type: string
-          description: Agent's detail.
+          description: "Additional detail or notes about the agent."
+          example: "Senior support agent"
         ring_method:
           $ref: '#/components/schemas/AgentManagerAgentRingMethod'
+          description: "Method used to ring the agent for incoming calls."
+          example: "ringall"
         status:
           $ref: '#/components/schemas/AgentManagerAgentStatus'
+          description: "Current availability status of the agent."
+          example: "available"
         permission:
           $ref: '#/components/schemas/AgentManagerAgentPermission'
+          description: "Permission level assigned to the agent."
+          example: 64
         tag_ids:
           type: array
           items:
             type: string
-          description: Agent's tag IDs.
+            format: uuid
+            x-go-type: string
+          description: "List of tag IDs assigned to this agent. Returned from the `POST /tags` or `GET /tags` response."
+          example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
         addresses:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: Agent's endpoint addresses.
+          description: "Agent's endpoint addresses for receiving calls."
         tm_create:
           type: string
-          description: Created timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was created."
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Updated timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was last updated."
+          example: "2026-01-16T14:20:00Z"
         tm_delete:
           type: string
-          description: Deleted timestamp.
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the agent was deleted."
+          example: "2026-01-17T10:00:00Z"
 
 
 #########################################
