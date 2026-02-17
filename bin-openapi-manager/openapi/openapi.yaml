@@ -378,6 +378,7 @@ components:
     BillingManagerAccountPaymentMethod:
       type: string
       description: The method of payment used for the account.
+      example: "credit card"
       enum:
         - ""
         - credit card
@@ -388,6 +389,7 @@ components:
     BillingManagerAccountPaymentType:
       type: string
       description: The type of payment associated with the account.
+      example: "prepaid"
       enum:
         - ""
         - prepaid
@@ -398,6 +400,7 @@ components:
     BillingManagerAccountPlanType:
       type: string
       description: The plan tier of the billing account. Determines resource creation limits.
+      example: "basic"
       enum:
         - free
         - basic
@@ -414,49 +417,81 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier of the account.
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         customer_id:
           type: string
-          description: The unique identifier of the associated customer.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         name:
           type: string
-          description: The name of the account.
+          description: The display name of the billing account.
+          example: "Production Account"
         detail:
           type: string
-          description: Additional details about the account.
+          description: A human-readable note describing the purpose of this account.
+          example: "Main billing account for production services"
         plan_type:
+          description: The plan tier of the billing account.
+          example: "basic"
           $ref: '#/components/schemas/BillingManagerAccountPlanType'
         balance_credit:
           type: integer
           format: int64
           description: The credit balance of the account in micros (1 USD = 1,000,000).
+          example: 1500000
         balance_token:
           type: integer
           format: int64
           description: The token balance of the account.
+          example: 500
         payment_type:
+          description: The type of payment associated with the account.
+          example: "prepaid"
           $ref: '#/components/schemas/BillingManagerAccountPaymentType'
         payment_method:
+          description: The method of payment used for the account.
+          example: "credit card"
           $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
         tm_last_topup:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of the last token top-up.
+          example: "2026-01-15T09:30:00Z"
         tm_next_topup:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp of the next scheduled token top-up.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was created.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was last updated.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The timestamp when the account was deleted, if applicable.
+          example: "2026-01-15T09:30:00Z"
 
     BillingManagerBillingreferenceType:
       type: string
       description: The type of reference associated with this billing.
+      example: "call"
       enum:
         - ""
         - call
@@ -482,6 +517,7 @@ components:
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.
+      example: "progressing"
       enum:
         - progressing
         - end
@@ -496,6 +532,7 @@ components:
     BillingManagerBillingTransactionType:
       type: string
       description: The nature of the ledger entry.
+      example: "usage"
       enum:
         - usage
         - top_up
@@ -512,73 +549,116 @@ components:
       properties:
         id:
           type: string
+          format: uuid
+          x-go-type: string
           description: The unique identifier of the billing.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: The customer's unique identifier.
+          format: uuid
+          x-go-type: string
+          description: "The customer's unique identifier. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         account_id:
           type: string
-          description: The billing account ID.
+          format: uuid
+          x-go-type: string
+          description: "The billing account ID. Returned from the `GET /billing_accounts/{id}` response."
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
         transaction_type:
+          description: The nature of the ledger entry.
+          example: "usage"
           $ref: '#/components/schemas/BillingManagerBillingTransactionType'
         status:
+          description: Status of the billing.
+          example: "progressing"
           $ref: '#/components/schemas/BillingManagerBillingStatus'
         reference_type:
+          description: The type of reference associated with this billing.
+          example: "call"
           $ref: '#/components/schemas/BillingManagerBillingreferenceType'
         reference_id:
           type: string
-          description: The ID of the reference related to this billing.
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the referenced resource."
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         cost_type:
           type: string
           description: The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
+          example: "call_pstn_outgoing"
         usage_duration:
           type: integer
           description: The actual usage duration in seconds.
+          example: 125
         billable_units:
           type: integer
           description: The number of billable units (e.g. minutes, rounded up).
+          example: 3
         rate_token_per_unit:
           type: integer
           format: int64
           description: The token rate per billable unit.
+          example: 10
         rate_credit_per_unit:
           type: integer
           format: int64
           description: The credit rate per billable unit in micros.
+          example: 50000
         amount_token:
           type: integer
           format: int64
           description: The token delta for this transaction (negative for usage, positive for top-up).
+          example: -30
         amount_credit:
           type: integer
           format: int64
           description: The credit delta for this transaction in micros (negative for usage, positive for top-up).
+          example: -150000
         balance_token_snapshot:
           type: integer
           format: int64
           description: The token balance after this transaction.
+          example: 470
         balance_credit_snapshot:
           type: integer
           format: int64
           description: The credit balance after this transaction in micros.
+          example: 1350000
         idempotency_key:
           type: string
           description: A unique key to prevent duplicate transactions.
+          example: "txn-2026-01-15-001"
         tm_billing_start:
           type: string
+          format: date-time
+          x-go-type: string
           description: The start timestamp of the billing period.
+          example: "2026-01-15T09:30:00Z"
         tm_billing_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: The end timestamp of the billing period.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
+          format: date-time
+          x-go-type: string
           description: The creation timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
+          format: date-time
+          x-go-type: string
           description: The last update timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
