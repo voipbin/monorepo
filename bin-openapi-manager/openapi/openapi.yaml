@@ -667,6 +667,7 @@ components:
     CallManagerCallDirection:
       type: string
       description: Call direction
+      example: "outgoing"
       enum:
         - incoming
         - outgoing
@@ -676,6 +677,7 @@ components:
     CallManagerCallHangupBy:
       type: string
       description: Indicates who hung up the call
+      example: "remote"
       enum:
         - ""
         - remote
@@ -687,6 +689,7 @@ components:
     CallManagerCallHangupReason:
       type: string
       description: Reason for call hangup
+      example: "normal"
       enum:
         - ""
         - normal
@@ -710,6 +713,7 @@ components:
     CallManagerCallMuteDirection:
       type: string
       description: Possible mute directions for the call
+      example: "both"
       enum:
         - ""
         - both
@@ -723,6 +727,7 @@ components:
     CallManagerCallStatus:
       type: string
       description: Call status
+      example: "progressing"
       enum:
         - dialing
         - ringing
@@ -740,6 +745,7 @@ components:
     CallManagerCallType:
       type: string
       description: Call type
+      example: "flow"
       enum:
         - ""
         - flow
@@ -755,81 +761,146 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this call. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., agent, queue).
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the resource owner.
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         flow_id:
           type: string
-          description: Flow ID
+          format: uuid
+          x-go-type: string
+          description: The flow ID associated with this call. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         activeflow_id:
           type: string
-          description: Activeflow ID
+          format: uuid
+          x-go-type: string
+          description: The activeflow ID associated with this call. Returned from the `POST /activeflows` or `GET /activeflows` response.
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         type:
+          description: The type of this call.
+          example: "flow"
           $ref: '#/components/schemas/CallManagerCallType'
         master_call_id:
           type: string
-          description: Master call ID
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the master call that initiated this call.
+          example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         chained_call_ids:
           type: array
           items:
             type: string
-          description: Chained call IDs
+            format: uuid
+            x-go-type: string
+          description: Chained call IDs.
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
         recording_id:
           type: string
-          description: Current recording ID
+          format: uuid
+          x-go-type: string
+          description: The current recording ID. Returned from the `GET /recordings` response.
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         recording_ids:
           type: array
           items:
             type: string
-          description: Recording IDs
+            format: uuid
+            x-go-type: string
+          description: Recording IDs associated with this call.
+          example: ["e5f6a7b8-c9d0-1234-5678-90abcdef0123"]
         groupcall_id:
           type: string
-          description: Group call ID, indicates if this call is part of a group call
+          format: uuid
+          x-go-type: string
+          description: Group call ID. Returned from the `POST /groupcalls` or `GET /groupcalls` response. Indicates this call is part of a group call.
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         source:
+          description: Source address of the call.
           $ref: '#/components/schemas/CommonAddress'
         destination:
+          description: Destination address of the call.
           $ref: '#/components/schemas/CommonAddress'
         status:
+          description: Current status of the call.
+          example: "progressing"
           $ref: '#/components/schemas/CallManagerCallStatus'
         action:
+          description: The current action being executed on this call.
           $ref: '#/components/schemas/FlowManagerAction'
         direction:
+          description: Direction of the call.
+          example: "outgoing"
           $ref: '#/components/schemas/CallManagerCallDirection'
         mute_direction:
+          description: Current mute direction of the call.
+          example: "both"
           $ref: '#/components/schemas/CallManagerCallMuteDirection'
         hangup_by:
+          description: Indicates who hung up the call.
+          example: "remote"
           $ref: '#/components/schemas/CallManagerCallHangupBy'
         hangup_reason:
+          description: Reason the call was hung up.
+          example: "normal"
           $ref: '#/components/schemas/CallManagerCallHangupReason'
         tm_progressing:
           type: string
-          description: Timestamp for call progressing
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call progressing.
+          example: "2026-01-15T09:30:00Z"
         tm_ringing:
           type: string
-          description: Timestamp for call ringing
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call ringing.
+          example: "2026-01-15T09:30:00Z"
         tm_hangup:
           type: string
-          description: Timestamp for call hangup
+          format: date-time
+          x-go-type: string
+          description: Timestamp for call hangup.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
-          description: Creation timestamp
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Update timestamp
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: Deletion timestamp
+          format: date-time
+          x-go-type: string
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00Z"
 
     CallManagerGroupcallAnswerMethod:
       type: string
       description: Method to handle answered calls
+      example: "hangup_others"
       enum:
         - ""
         - hangup_others
@@ -839,6 +910,7 @@ components:
     CallManagerGroupcallRingMethod:
       type: string
       description: Method used for dialing
+      example: "ring_all"
       enum:
         - ""
         - ring_all
@@ -850,6 +922,7 @@ components:
     CallManagerGroupcallStatus:
       type: string
       description: Current status of the call or group call
+      example: "progressing"
       enum:
         - progressing
         - hangingup
@@ -864,82 +937,133 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the group call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this group call. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., agent, queue).
+          example: "agent"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the resource owner.
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         status:
+          description: Current status of the group call.
+          example: "progressing"
           $ref: '#/components/schemas/CallManagerGroupcallStatus'
         flow_id:
           type: string
-          description: ID of the associated flow
+          format: uuid
+          x-go-type: string
+          description: The flow ID associated with this group call. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         source:
           $ref: '#/components/schemas/CommonAddress'
           nullable: true
-          description: Source address
+          description: Source address of the group call.
         destinations:
           type: array
           items:
             $ref: '#/components/schemas/CommonAddress'
-          description: List of destination addresses
+          minItems: 1
+          description: List of target addresses. Must contain at least one destination.
         master_call_id:
           type: string
+          format: uuid
+          x-go-type: string
           nullable: true
-          description: ID of the master call, if applicable
+          description: The unique identifier of the master call that initiated this group call.
+          example: "4d5e6f7a-8b9c-0123-def0-123456789012"
         master_groupcall_id:
           type: string
+          format: uuid
+          x-go-type: string
           nullable: true
-          description: ID of the master group call, if applicable
+          description: The unique identifier of the master group call, if applicable.
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         ring_method:
+          description: The method used for dialing destinations.
+          example: "ring_all"
           $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
         answer_method:
+          description: The method to handle answered calls.
+          example: "hangup_others"
           $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
         answer_call_id:
           type: string
-          description: ID of the answered call
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the answered call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
         call_ids:
           type: array
           items:
             type: string
-          description: List of associated call IDs
+            format: uuid
+            x-go-type: string
+          description: List of associated call IDs.
+          example: ["550e8400-e29b-41d4-a716-446655440000"]
         answer_groupcall_id:
           type: string
-          description: ID of the answered group call
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the answered group call.
+          example: "5e6f7a8b-9c0d-1234-ef01-234567890123"
         groupcall_ids:
           type: array
           items:
             type: string
-          description: List of associated group call IDs
+            format: uuid
+            x-go-type: string
+          description: List of associated group call IDs.
+          example: ["5e6f7a8b-9c0d-1234-ef01-234567890123"]
         call_count:
           type: integer
-          description: Number of remaining calls in the current dial
+          description: Number of remaining calls in the current dial.
+          example: 2
         groupcall_count:
           type: integer
-          description: Number of remaining group calls in the current dial
+          description: Number of remaining group calls in the current dial.
+          example: 1
         dial_index:
           type: integer
           nullable: true
-          description: Current dial index, valid only when the ring method is "ring_all"
+          description: Current dial index, valid only when the ring method is "ring_all".
+          example: 0
         tm_create:
           type: string
-          description: Timestamp when the call was created
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: Timestamp when the call was last updated
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
+          format: date-time
+          x-go-type: string
           nullable: true
-          description: Timestamp when the call was deleted
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00Z"
 
     CallManagerRecordingFormat:
       type: string
       description: The format of the recording.
+      example: "wav"
       enum:
         - wav
       x-enum-varnames:
@@ -947,6 +1071,7 @@ components:
     CallManagerRecordingReferenceType:
       type: string
       description: Type of reference for the recording.
+      example: "call"
       enum:
         - call
         - confbridge
@@ -956,6 +1081,7 @@ components:
     CallManagerRecordingStatus:
       type: string
       description: The status of the recording.
+      example: "recording"
       enum:
         - initiating
         - recording
@@ -971,49 +1097,86 @@ components:
       properties:
         id:
           type: string
-          description: Resource identifier
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the recording.
+          example: "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
         customer_id:
           type: string
-          description: Resource's customer ID
+          format: uuid
+          x-go-type: string
+          description: The customer ID that owns this recording. Returned from the `GET /customers` response.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         owner_type:
           type: string
-          description: Resource's owner type
+          description: Type of the resource owner (e.g., call, confbridge).
+          example: "call"
         owner_id:
           type: string
-          description: Resource's owner ID
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the resource owner.
+          example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         reference_type:
           description: The type of reference, either a "call" or a "confbridge".
+          example: "call"
           $ref: '#/components/schemas/CallManagerRecordingReferenceType'
         reference_id:
           type: string
-          description: The UUID of the reference.
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the referenced resource.
+          example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         status:
-          $ref: '#/components/schemas/CallManagerRecordingStatus'
           description: The status of the recording.
+          example: "recording"
+          $ref: '#/components/schemas/CallManagerRecordingStatus'
         format:
-          $ref: '#/components/schemas/CallManagerRecordingFormat'
           description: The format of the recording file (e.g., WAV).
+          example: "wav"
+          $ref: '#/components/schemas/CallManagerRecordingFormat'
         activeflow_id:
           type: string
-          description: Activeflow ID associated with this recording.
+          format: uuid
+          x-go-type: string
+          description: The activeflow ID associated with this recording. Returned from the `POST /activeflows` or `GET /activeflows` response.
+          example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
         on_end_flow_id:
           type: string
-          description: Flow ID to be executed when recording ends.
+          format: uuid
+          x-go-type: string
+          description: Flow ID to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         tm_start:
           type: string
+          format: date-time
+          x-go-type: string
           description: The start timestamp of the recording.
+          example: "2026-01-15T09:30:00Z"
         tm_end:
           type: string
+          format: date-time
+          x-go-type: string
           description: The end timestamp of the recording.
+          example: "2026-01-15T09:30:00Z"
         tm_create:
           type: string
-          description: The creation timestamp of the recording.
+          format: date-time
+          x-go-type: string
+          description: The creation timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_update:
           type: string
-          description: The last update timestamp of the recording.
+          format: date-time
+          x-go-type: string
+          description: The last update timestamp.
+          example: "2026-01-15T09:30:00Z"
         tm_delete:
           type: string
-          description: The timestamp when the recording was deleted.
+          format: date-time
+          x-go-type: string
+          description: The deletion timestamp, if applicable.
+          example: "2026-01-15T09:30:00Z"
 
 
 #########################################
