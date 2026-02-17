@@ -1280,7 +1280,7 @@ type CallManagerCall struct {
 	// MuteDirection Possible mute directions for the call
 	MuteDirection *CallManagerCallMuteDirection `json:"mute_direction,omitempty"`
 
-	// OwnerId The unique identifier of the resource owner. Returned from the `GET /customers` response.
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the resource owner (e.g., agent, queue).
@@ -1382,7 +1382,7 @@ type CallManagerGroupcall struct {
 	// MasterGroupcallId The unique identifier of the master group call, if applicable. Returned from the `POST /groupcalls` or `GET /groupcalls` response.
 	MasterGroupcallId *string `json:"master_groupcall_id"`
 
-	// OwnerId The unique identifier of the resource owner. Returned from the `GET /customers` response.
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the resource owner (e.g., agent, queue).
@@ -1433,7 +1433,7 @@ type CallManagerRecording struct {
 	// OnEndFlowId Flow ID to execute when recording ends. Returned from the `POST /flows` or `GET /flows` response.
 	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
 
-	// OwnerId The unique identifier of the resource owner. Returned from the `GET /customers` response.
+	// OwnerId The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /confbridges`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the resource owner (e.g., call, confbridge).
@@ -1937,7 +1937,7 @@ type ConversationManagerConversation struct {
 	// Name Name of the conversation.
 	Name *string `json:"name,omitempty"`
 
-	// OwnerId The unique identifier of the conversation owner. Returned from the `GET /customers` response.
+	// OwnerId The unique identifier of the conversation owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`).
 	OwnerId *string `json:"owner_id,omitempty"`
 
 	// OwnerType Type of the conversation owner.

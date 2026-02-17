@@ -779,7 +779,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`)."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         flow_id:
           type: string
@@ -955,7 +955,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`, `GET /queues`)."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         status:
           description: Current status of the group call.
@@ -1115,7 +1115,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the resource owner. Returned from the `GET /customers` response."
+          description: "The unique identifier of the resource owner. Returned from the corresponding owner resource endpoint (e.g., `GET /calls`, `GET /confbridges`)."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         reference_type:
           description: The type of reference, either a "call" or a "confbridge".
@@ -2516,7 +2516,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the conversation owner. Returned from the `GET /customers` response."
+          description: "The unique identifier of the conversation owner. Returned from the corresponding owner resource endpoint (e.g., `GET /agents`)."
           example: "c2d3e4f5-a6b7-8901-2cde-f01234567890"
         account_id:
           type: string
