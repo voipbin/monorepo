@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Transcribe &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Transcribe</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/quickstart_transcribe.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="transcribe">
+<span id="quickstart-transcribe"></span><h1>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading"></a></h1>
+<p>Set up real-time speech-to-text transcription on a voice call using the VoIPBIN API. This walkthrough creates a flow that answers a call, starts transcription, speaks a greeting, and pauses — then shows how to receive transcription events via WebSocket and webhook.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or from your admin console profile.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This guide uses virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) which are free and do not require a provider purchase. The TTS <code class="docutils literal notranslate"><span class="pre">talk</span></code> action produces audio that is transcribed as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> (VoIPBIN to caller). If you speak into the call, your speech appears as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> (caller to VoIPBIN). The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> action keeps the call alive for 30 seconds so you can observe transcription events in real time.</p>
+</div>
+<section id="step-1-create-a-transcription-flow">
+<h3>Step 1: Create a transcription flow<a class="headerlink" href="#step-1-create-a-transcription-flow" title="Link to this heading"></a></h3>
+<p>Create a flow that answers the call, starts transcription, speaks a greeting, and then pauses for 30 seconds. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action begins real-time speech-to-text; all subsequent audio (both TTS output and caller speech) is transcribed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;quickstart transcribe flow&quot;,
+        &quot;detail&quot;: &quot;Answer, start transcription, speak greeting, pause 30s&quot;,
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;sleep&quot;,
+                &quot;option&quot;: {
+                    &quot;duration&quot;: 30000
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>The response includes the created flow with a server-generated <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID). Save this — you will need it in the next step:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart transcribe flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Answer, start transcription, speak greeting, pause 30s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000001&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000002&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000003&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000004&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sleep&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">30000</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Key actions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">answer</span></code>: Answers the incoming call. Required before any media actions on inbound calls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code>: Starts real-time speech-to-text. The <code class="docutils literal notranslate"><span class="pre">language</span></code> field (String, BCP47 format) must match the speaker’s language (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>). See <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">Supported Languages</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">talk</span></code>: Generates TTS audio from the <code class="docutils literal notranslate"><span class="pre">text</span></code> field and plays it. This audio is transcribed as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sleep</span></code>: Pauses flow execution for <code class="docutils literal notranslate"><span class="pre">duration</span></code> milliseconds (Integer). <code class="docutils literal notranslate"><span class="pre">30000</span></code> = 30 seconds. Keeps the call alive so you can speak and observe transcription.</p></li>
+</ul>
+</section>
+<section id="step-2-create-a-virtual-number-and-assign-the-flow">
+<h3>Step 2: Create a virtual number and assign the flow<a class="headerlink" href="#step-2-create-a-virtual-number-and-assign-the-flow" title="Link to this heading"></a></h3>
+<p>Create a virtual number (free, <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) and assign the transcription flow to handle inbound calls.</p>
+<p><strong>Create the virtual number:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;number&quot;: &quot;+899100000001&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;virtual&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;t38_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;emergency_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:01:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the number’s <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from the response.</p>
+<p><strong>Assign the flow to the number:</strong></p>
+<p>Update the number’s <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> to point to the flow you created in Step 1. Replace <code class="docutils literal notranslate"><span class="pre">&lt;number-id&gt;</span></code> with the <code class="docutils literal notranslate"><span class="pre">id</span></code> from the response above, and <code class="docutils literal notranslate"><span class="pre">&lt;flow-id&gt;</span></code> with the flow <code class="docutils literal notranslate"><span class="pre">id</span></code> from Step 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;call_flow_id&quot;: &quot;&lt;flow-id&gt;&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;virtual&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Now, any inbound call to <code class="docutils literal notranslate"><span class="pre">+899100000001</span></code> will execute your transcription flow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) are free and routed internally within VoIPBIN. They do not require a provider purchase. If <code class="docutils literal notranslate"><span class="pre">+899100000001</span></code> is already taken, try <code class="docutils literal notranslate"><span class="pre">+899100000002</span></code> or search for available virtual numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/available_numbers?type=virtual</span></code>.</p>
+</div>
+</section>
+<section id="step-3-subscribe-to-transcribe-events-via-websocket">
+<h3>Step 3: Subscribe to transcribe events via WebSocket<a class="headerlink" href="#step-3-subscribe-to-transcribe-events-via-websocket" title="Link to this heading"></a></h3>
+<p>Before making the call, connect to the VoIPBIN WebSocket and subscribe to transcription events. This way you receive transcripts as they are generated during the call.</p>
+<p><strong>Connect to WebSocket:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
+</pre></div>
+</div>
+<p><strong>Send a subscription message</strong> after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all transcriptions under your account.</p>
+<p><strong>Python example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
+<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
+
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span>  <span class="c1"># &quot;in&quot; = caller, &quot;out&quot; = VoIPBIN TTS</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to transcribe events. Waiting for transcripts...&quot;</span><span class="p">)</span>
+
+<span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+    <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
+<span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-make-a-call-to-the-virtual-number">
+<h3>Step 4: Make a call to the virtual number<a class="headerlink" href="#step-4-make-a-call-to-the-virtual-number" title="Link to this heading"></a></h3>
+<p>With the WebSocket connected, make an outbound call to the virtual number. The call’s destination is the virtual number you created; the source is any number owned by your account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+899100000001&quot;
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>The call dials the virtual number, which triggers the transcription flow: answer, start transcription, speak the greeting, and pause for 30 seconds.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> target is the virtual number you created. Since the virtual number has a <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> assigned, VoIPBIN executes the flow when the call is answered. No <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">actions</span></code> field is needed in the call request — the number’s assigned flow handles everything.</p>
+</div>
+</section>
+<section id="step-5-receive-real-time-transcription-events">
+<h3>Step 5: Receive real-time transcription events<a class="headerlink" href="#step-5-receive-real-time-transcription-events" title="Link to this heading"></a></h3>
+<p>Within seconds of the call being answered, the WebSocket begins delivering <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events. The TTS greeting appears first (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code>), followed by any speech from the caller (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code>).</p>
+<p><strong>Example WebSocket event:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:05.233415&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">event_type</span></code> (String): Always <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> for new transcript segments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.transcribe_id</span></code> (UUID): The transcription session ID. Use this to query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum string): <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> = audio from VoIPBIN to the caller (TTS output). <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> = audio from the caller to VoIPBIN (caller speech).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.message</span></code> (String): The transcribed text.</p></li>
+</ul>
+<p>If you run the Python WebSocket example from Step 3, you will see output like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscribed</span> <span class="n">to</span> <span class="n">transcribe</span> <span class="n">events</span><span class="o">.</span> <span class="n">Waiting</span> <span class="k">for</span> <span class="n">transcripts</span><span class="o">...</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="n">Hello</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">VoIPBIN</span> <span class="n">transcription</span> <span class="n">test</span><span class="o">.</span> <span class="n">Everything</span> <span class="n">you</span> <span class="n">say</span> <span class="n">will</span> <span class="n">be</span> <span class="n">transcribed</span> <span class="ow">in</span> <span class="n">real</span> <span class="n">time</span><span class="o">.</span> <span class="n">Please</span> <span class="n">speak</span> <span class="n">now</span><span class="o">.</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span> <span class="n">Hi</span><span class="p">,</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">test</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transcription</span> <span class="n">feature</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="receive-events-via-webhook-alternative">
+<h3>Receive events via webhook (alternative)<a class="headerlink" href="#receive-events-via-webhook-alternative" title="Link to this heading"></a></h3>
+<p>Instead of WebSocket, you can receive transcription events via HTTP webhook. Create a webhook that listens for <code class="docutils literal notranslate"><span class="pre">transcript.created</span></code> events:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Transcription events&quot;,
+        &quot;uri&quot;: &quot;https://your-server.com/webhook&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;event_types&quot;: [
+            &quot;transcript.created&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your endpoint each time a transcript segment is generated:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, this is a test of the transcription feature.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:15.500000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:10.100000&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Webhook delivery requires your <code class="docutils literal notranslate"><span class="pre">uri</span></code> endpoint to be publicly accessible and to return HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds. For local development, use a tunneling tool (e.g., ngrok) to expose your local server. WebSocket is simpler for development and testing since it requires no public endpoint.</p>
+</div>
+</section>
+<section id="step-6-verify-transcription-results">
+<h3>Step 6: Verify transcription results<a class="headerlink" href="#step-6-verify-transcription-results" title="Link to this heading"></a></h3>
+<p>After the call ends, you can retrieve the full transcript via the API. Use the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID) from the WebSocket or webhook events:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;your-token&gt;&amp;transcribe_id=&lt;transcribe-id&gt;&#39;
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:05.233415&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, this is a test of the transcription feature.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:15.500000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:10.100000&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">direction</span></code> field distinguishes speakers: <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> is the TTS greeting played by VoIPBIN, <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> is the caller’s speech.</p>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>No transcription events received:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> WebSocket subscription topic does not match your customer ID, or subscription was sent before the connection opened.</p></li>
+<li><p><strong>Fix:</strong> Verify the customer ID in the topic matches your account (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>). Send the subscribe message only after the <code class="docutils literal notranslate"><span class="pre">on_open</span></code> callback fires.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request on call creation:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your account, or the number format is not E.164.</p></li>
+<li><p><strong>Fix:</strong> Check your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure the source starts with <code class="docutils literal notranslate"><span class="pre">+</span></code> and contains only digits after it.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Transcripts show only “out” direction, no “in”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The call is outbound to a virtual number with no real caller speaking.</p></li>
+<li><p><strong>Fix:</strong> This is expected for the TTS-only portion. If you are connected to the call (e.g., via WebRTC or SIP phone), speak during the 30-second <code class="docutils literal notranslate"><span class="pre">sleep</span></code> period to generate <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> transcripts.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found on number update:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The number ID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the number ID from the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> response. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code> to list your numbers.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For more details, see the full <a class="reference internal" href="transcribe_tutorial.html#transcribe-tutorial"><span class="std std-ref">Transcribe tutorial</span></a> and <a class="reference internal" href="websocket_tutorial.html#websocket-tutorial"><span class="std std-ref">WebSocket tutorial</span></a>.</p>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Transcribe</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#step-1-create-a-transcription-flow">Step 1: Create a transcription flow</a></li>
+<li><a class="reference internal" href="#step-2-create-a-virtual-number-and-assign-the-flow">Step 2: Create a virtual number and assign the flow</a></li>
+<li><a class="reference internal" href="#step-3-subscribe-to-transcribe-events-via-websocket">Step 3: Subscribe to transcribe events via WebSocket</a></li>
+<li><a class="reference internal" href="#step-4-make-a-call-to-the-virtual-number">Step 4: Make a call to the virtual number</a></li>
+<li><a class="reference internal" href="#step-5-receive-real-time-transcription-events">Step 5: Receive real-time transcription events</a></li>
+<li><a class="reference internal" href="#receive-events-via-webhook-alternative">Receive events via webhook (alternative)</a></li>
+<li><a class="reference internal" href="#step-6-verify-transcription-results">Step 6: Verify transcription results</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 7.2.6
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
