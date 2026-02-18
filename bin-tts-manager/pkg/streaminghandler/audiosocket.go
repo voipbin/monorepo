@@ -134,6 +134,10 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	offset := 0
 
 	log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
+
+	start := time.Now()
+	fragmentIndex := 0
+
 	for offset < payloadLen {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -153,14 +157,19 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		}
 
 		offset += fragmentLen
+		fragmentIndex++
 
-		select {
-		case <-time.After(audiosocketWriteDelay):
-			// do nothing
-			continue
-
-		case <-ctx.Done():
-			return ctx.Err()
+		// Wall-clock pacing: calculate when this fragment should have been sent
+		// relative to start time. This compensates for scheduling jitter in K8s
+		// instead of accumulating drift from fixed per-fragment sleeps.
+		target := start.Add(time.Duration(fragmentIndex) * audiosocketWriteDelay)
+		remaining := time.Until(target)
+		if remaining > 0 {
+			select {
+			case <-time.After(remaining):
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		}
 	}
 
