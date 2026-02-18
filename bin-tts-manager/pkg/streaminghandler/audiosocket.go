@@ -133,10 +133,9 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 	payloadLen := len(data)
 	offset := 0
 
-	log.Debugf("Sending %d bytes of audio data in fragments", payloadLen)
-
 	start := time.Now()
 	fragmentIndex := 0
+	var maxDrift time.Duration
 
 	for offset < payloadLen {
 		if ctx.Err() != nil {
@@ -164,6 +163,9 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 		// instead of accumulating drift from fixed per-fragment sleeps.
 		target := start.Add(time.Duration(fragmentIndex) * audiosocketWriteDelay)
 		remaining := time.Until(target)
+		if drift := -remaining; drift > maxDrift {
+			maxDrift = drift
+		}
 		if remaining > 0 {
 			select {
 			case <-time.After(remaining):
@@ -172,6 +174,11 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 			}
 		}
 	}
+
+	elapsed := time.Since(start)
+	expected := time.Duration(fragmentIndex) * audiosocketWriteDelay
+	log.Debugf("Sent %d bytes in %d fragments. expected: %v, actual: %v, drift: %v, max_fragment_drift: %v",
+		payloadLen, fragmentIndex, expected, elapsed, elapsed-expected, maxDrift)
 
 	return nil
 }

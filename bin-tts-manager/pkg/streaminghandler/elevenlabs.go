@@ -256,6 +256,9 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 	// read from elevenlabs websocket
 	go h.readConnWebsock(cf.Ctx, msg.ID, cf.ConnWebsock, msgCh, errCh)
 
+	lastChunkTime := time.Now()
+	chunkIndex := 0
+
 	for {
 		select {
 
@@ -293,6 +296,15 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 					log.Errorf("Could not process PCM data. audio_len: %d, err: %v", len(response.Audio), errProcess)
 					return
 				}
+
+				now := time.Now()
+				gap := now.Sub(lastChunkTime)
+				lastChunkTime = now
+				chunkIndex++
+
+				audioDuration := time.Duration(len(data)/2) * time.Second / time.Duration(8000)
+				log.Debugf("ElevenLabs chunk #%d: raw=%d, converted=%d, audio_duration=%v, gap_since_last=%v",
+					chunkIndex, len(decodedAudio), len(data), audioDuration, gap)
 
 				// TTS play
 				if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {

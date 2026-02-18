@@ -263,6 +263,9 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
 
+	lastChunkTime := time.Now()
+	chunkIndex := 0
+
 	for {
 		select {
 		case <-cf.Ctx.Done():
@@ -292,8 +295,17 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
+		now := time.Now()
+		gap := now.Sub(lastChunkTime)
+		lastChunkTime = now
+		chunkIndex++
+
 		// GCP Chirp3-HD outputs at 24kHz; downsample to 8kHz (factor 3).
 		audioData = downsample(audioData, 3)
+
+		audioDuration := time.Duration(len(audioData)/2) * time.Second / time.Duration(8000)
+		log.Debugf("GCP chunk #%d: raw=%d, downsampled=%d, audio_duration=%v, gap_since_last=%v",
+			chunkIndex, len(resp.GetAudioContent()), len(audioData), audioDuration, gap)
 
 		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
 			promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()
