@@ -200,24 +200,15 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 		},
 
 		// =====================================================================
-		// SMS scenario (token rate = 10 per message)
+		// SMS scenario (credit only)
 		// =====================================================================
 		{
-			name:                 "SMS - has tokens",
+			name:                 "SMS - credit only",
 			balanceToken:         50,
 			billableUnits:        1,
-			rateTokenPerUnit:     10,
+			rateTokenPerUnit:     0,
 			rateCreditPerUnit:    8000,
-			expectTokenDeducted:  10,
-			expectCreditDeducted: 0,
-		},
-		{
-			name:                 "SMS - not enough tokens",
-			balanceToken:         5,
-			billableUnits:        1,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    8000,
-			expectTokenDeducted:  0, // 5 < 10 → 0 full units
+			expectTokenDeducted:  0,
 			expectCreditDeducted: 8000,
 		},
 

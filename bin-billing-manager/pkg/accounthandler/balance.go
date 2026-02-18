@@ -82,11 +82,6 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 		}
 
 	case billing.ReferenceTypeSMS:
-		tokensNeeded := billing.DefaultTokenPerUnitSMS * int64(count)
-		if a.BalanceToken >= tokensNeeded {
-			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
-			return true, nil
-		}
 		expectCost := billing.DefaultCreditPerUnitSMS * int64(count)
 		if a.BalanceCredit >= expectCost {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
