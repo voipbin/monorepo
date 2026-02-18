@@ -204,7 +204,7 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 					Name:         voiceID,
 				},
 				StreamingAudioConfig: &texttospeechpb.StreamingAudioConfig{
-					AudioEncoding:   texttospeechpb.AudioEncoding_LINEAR16,
+					AudioEncoding:   texttospeechpb.AudioEncoding_PCM,
 					SampleRateHertz: defaultGCPStreamingSampleRate,
 				},
 			},
