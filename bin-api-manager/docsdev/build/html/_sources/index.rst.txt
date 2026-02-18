@@ -6,6 +6,10 @@
 Welcome to VoIPBIN's documentation!
 ===================================
 
+.. note:: **AI Implementation Hint**
+
+   For API integration, start with the :ref:`Quickstart <quickstart>` guide. For the full machine-readable API spec, use ``GET https://api.voipbin.net/openapi.json`` (OpenAPI 3.0 JSON). For interactive API reference, see `ReDoc <https://api.voipbin.net/redoc/index.html>`_.
+
 .. toctree::
    :maxdepth: 5
    :caption: Getting Started

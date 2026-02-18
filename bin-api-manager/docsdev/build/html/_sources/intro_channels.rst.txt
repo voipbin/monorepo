@@ -2,6 +2,11 @@
 
 Channels
 ========
+
+.. note:: **AI Context**
+
+   VoIPBIN supports three communication channels: **Voice** (PSTN, WebRTC, SIP — see :ref:`Call API <call-overview>`), **Messaging** (SMS via :ref:`Message API <message-overview>`, conversations via :ref:`Conversation API <conversation-overview>`), and **Video** (WebRTC-based).
+
 VoIPBIN offers a comprehensive range of channels to cater to various communication needs, empowering users to build robust and scalable communication applications.
 
 .. image:: _static/images/intro_feature_feature.png

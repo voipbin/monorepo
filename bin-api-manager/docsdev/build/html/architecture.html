@@ -186,8 +186,19 @@
                         <main role="main" id="main">
     <section id="architecture">
 <span id="architecture-main"></span><h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h1>
+<p>Deep dive into VoIPBIN’s internal architecture, microservices, communication patterns, and deployment.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This section provides comprehensive documentation of VoIPBIN’s system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.</p>
+</div>
 <section id="overview">
 <span id="architecture-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.</p>
+</div>
 <p>VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
 <p>VoIPBIN is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.</p>
 <img alt="_images/architecture_overview_all.png" src="_images/architecture_overview_all.png" />
@@ -563,6 +574,11 @@
 </section>
 <section id="backend-microservices">
 <span id="architecture-backend"></span><h2>Backend Microservices<a class="headerlink" href="#backend-microservices" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s 30+ Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.</p>
+</div>
 <p>VoIPBIN’s backend consists of 30+ specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.</p>
 <section id="microservices-organization">
 <h3>Microservices Organization<a class="headerlink" href="#microservices-organization" title="Link to this heading"></a></h3>
@@ -1444,6 +1460,11 @@ Client                    API Gateway              Backend Service
 </section>
 <section id="inter-service-communication">
 <span id="architecture-communication"></span><h2>Inter-Service Communication<a class="headerlink" href="#inter-service-communication" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), ZeroMQ (high-performance real-time streaming), and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.</p>
+</div>
 <p>VoIPBIN’s microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, ZeroMQ for high-performance events, and WebSocket for real-time client communication.</p>
 <section id="communication-patterns-overview">
 <h3>Communication Patterns Overview<a class="headerlink" href="#communication-patterns-overview" title="Link to this heading"></a></h3>
@@ -2362,6 +2383,11 @@ Max: 7 attempts, ~1 minute total
 </section>
 <section id="data-architecture">
 <span id="architecture-data"></span><h2>Data Architecture<a class="headerlink" href="#data-architecture" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s data layer: shared MySQL database (schema organization, common table patterns, migrations via Alembic), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.</p>
+</div>
 <p>VoIPBIN uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.</p>
 <section id="data-layer-overview">
 <h3>Data Layer Overview<a class="headerlink" href="#data-layer-overview" title="Link to this heading"></a></h3>
@@ -3144,6 +3170,11 @@ EXPIRE key 300         # Set TTL on existing key
 </section>
 <section id="data-flow-diagrams">
 <span id="architecture-dataflow"></span><h2>Data Flow Diagrams<a class="headerlink" href="#data-flow-diagrams" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page illustrates end-to-end data flows through VoIPBIN for common operations: API request lifecycle, event publishing, WebSocket real-time updates, media streaming (audio pipeline), database write patterns, campaign execution, transcription, and webhook delivery. Relevant when an AI agent needs to trace how a request moves through the system or understand data transformations at each stage.</p>
+</div>
 <p>This section illustrates how data flows through VoIPBIN’s components for common operations. Understanding these flows helps developers integrate with the platform and troubleshoot issues.</p>
 <section id="end-to-end-request-flow">
 <h3>End-to-End Request Flow<a class="headerlink" href="#end-to-end-request-flow" title="Link to this heading"></a></h3>
@@ -3859,6 +3890,11 @@ EXPIRE key 300         # Set TTL on existing key
 </section>
 <section id="real-time-communication-rtc">
 <span id="architecture-rtc"></span><h2>Real-Time Communication (RTC)<a class="headerlink" href="#real-time-communication-rtc" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.</p>
+</div>
 <p>VoIPBIN’s RTC architecture handles all real-time voice and video communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
 <section id="voip-stack-overview">
 <h3>VoIP Stack Overview<a class="headerlink" href="#voip-stack-overview" title="Link to this heading"></a></h3>
@@ -4288,6 +4324,11 @@ EXPIRE key 300         # Set TTL on existing key
 </section>
 <section id="system-request-flows">
 <span id="architecture-flow"></span><h2>System Request Flows<a class="headerlink" href="#system-request-flows" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page demonstrates detailed request flows through VoIPBIN: creating a call, reading with cache, event broadcasting, multi-service orchestration, real-time WebSocket notifications, and error handling with retries. Relevant when an AI agent needs to understand the step-by-step processing of API requests, timing breakdowns, caching behavior, or debugging strategies.</p>
+</div>
 <p>This section demonstrates how requests flow through VoIPBIN’s architecture from client to backend services and back. Understanding these flows helps developers build integrations and debug issues.</p>
 <section id="request-flow-overview">
 <h3>Request Flow Overview<a class="headerlink" href="#request-flow-overview" title="Link to this heading"></a></h3>
@@ -4941,6 +4982,11 @@ Issue: Slow Response
 </section>
 <section id="call-flow-sequences">
 <span id="architecture-sequences"></span><h2>Call Flow Sequences<a class="headerlink" href="#call-flow-sequences" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page provides detailed sequence diagrams for VoIPBIN’s core operations: inbound call flow (PSTN to flow execution), outbound campaign flow, AI voice assistant (Pipecat hybrid architecture), call transfer sequences (blind and attended), queue call distribution, conference join, and webhook delivery. Relevant when an AI agent needs to understand the exact component interactions for specific call scenarios or integration points.</p>
+</div>
 <p>This section provides detailed sequence diagrams for VoIPBIN’s core call flows, showing how components interact during real-world scenarios.</p>
 <section id="inbound-call-flow">
 <h3>Inbound Call Flow<a class="headerlink" href="#inbound-call-flow" title="Link to this heading"></a></h3>
@@ -5502,6 +5548,11 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 </section>
 <section id="architecture-deployment">
 <span id="id8"></span><h2>Deployment Architecture<a class="headerlink" href="#architecture-deployment" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.</p>
+</div>
 <p>VoIPBIN runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.</p>
 <section id="infrastructure-overview">
 <h3>Infrastructure Overview<a class="headerlink" href="#infrastructure-overview" title="Link to this heading"></a></h3>
@@ -6220,6 +6271,11 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 </section>
 <section id="security-architecture">
 <span id="architecture-security"></span><h2>Security Architecture<a class="headerlink" href="#security-architecture" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s security architecture: four defense-in-depth layers (edge, API gateway, internal services, data), JWT and Access Key authentication, RBAC authorization model, transport security (TLS, SRTP), Kubernetes secrets management, network isolation (VPC, firewall rules, network policies), input validation, rate limiting, DDoS protection, audit logging, data protection, and compliance frameworks. Relevant when an AI agent needs to understand authentication flows, permission models, or security controls.</p>
+</div>
 <p>VoIPBIN implements defense-in-depth security across all layers, from API authentication to data encryption. This section details the security architecture, authentication flows, and protection mechanisms.</p>
 <section id="security-overview">
 <h3>Security Overview<a class="headerlink" href="#security-overview" title="Link to this heading"></a></h3>

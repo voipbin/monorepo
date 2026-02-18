@@ -3,6 +3,10 @@
 Applications
 ============
 
+.. note:: **AI Context**
+
+   VoIPBIN applications are the building blocks for communication automation: **Flows** for call/message routing logic, **Agents** for queue-based call handling, **Campaigns** for outbound mass calling, **Conferences** for multi-party calls, **Conversations** for threaded messaging, **Queues** for call distribution, **Trunks** for BYOC SIP connectivity, and **Webhooks** for event delivery.
+
 .. _intro-applications-flow:
 
 Flow

@@ -3,6 +3,10 @@
 Real-Time Communication (RTC)
 ==============================
 
+.. note:: **AI Context**
+
+   This page describes VoIPBIN's real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.
+
 VoIPBIN's RTC architecture handles all real-time voice and video communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.
 
 VoIP Stack Overview

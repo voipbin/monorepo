@@ -197,7 +197,7 @@
 <ul class="simple">
 <li><p>Detailed description of the issue or question</p></li>
 <li><p>Your deployment environment (GCP, on-premise, etc.)</p></li>
-<li><p>VoIPBin version or commit hash you’re running</p></li>
+<li><p>VoIPBIN version or commit hash you’re running</p></li>
 <li><p>Relevant log outputs or error messages</p></li>
 <li><p>Steps to reproduce the issue</p></li>
 <li><p>Expected vs actual behavior</p></li>
@@ -208,15 +208,19 @@
 <span id="support-resources"></span><h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Link to this heading"></a></h2>
 <p><strong>Documentation:</strong></p>
 <ul class="simple">
-<li><p><strong>API Reference (Swagger):</strong> <a class="reference external" href="https://api.voipbin.net/swagger/index.html">https://api.voipbin.net/swagger/index.html</a></p></li>
 <li><p><strong>API Reference (ReDoc):</strong> <a class="reference external" href="https://api.voipbin.net/redoc/index.html">https://api.voipbin.net/redoc/index.html</a></p></li>
-<li><p><strong>Developer Docs:</strong> <a class="reference external" href="https://docs.voipbin.net/">https://docs.voipbin.net/</a></p></li>
+<li><p><strong>Developer Docs (Sphinx):</strong> <a class="reference external" href="https://api.voipbin.net/docs/">https://api.voipbin.net/docs/</a></p></li>
 </ul>
 <p><strong>Web Interfaces:</strong></p>
 <ul class="simple">
 <li><p><strong>Admin Console:</strong> <a class="reference external" href="https://admin.voipbin.net/">https://admin.voipbin.net/</a></p></li>
 <li><p><strong>Agent Interface:</strong> <a class="reference external" href="https://talk.voipbin.net/">https://talk.voipbin.net/</a></p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For programmatic debugging, check the resource status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/&lt;resource&gt;/{id}</span></code> and review recent events via WebSocket or webhook logs. Most issues can be diagnosed by examining the call/flow/transcribe status fields.</p>
+</div>
 </section>
 <section id="before-contacting-us">
 <span id="support-troubleshooting-tips"></span><h2>Before Contacting Us<a class="headerlink" href="#before-contacting-us" title="Link to this heading"></a></h2>

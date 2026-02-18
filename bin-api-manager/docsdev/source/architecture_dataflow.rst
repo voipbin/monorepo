@@ -3,6 +3,10 @@
 Data Flow Diagrams
 ==================
 
+.. note:: **AI Context**
+
+   This page illustrates end-to-end data flows through VoIPBIN for common operations: API request lifecycle, event publishing, WebSocket real-time updates, media streaming (audio pipeline), database write patterns, campaign execution, transcription, and webhook delivery. Relevant when an AI agent needs to trace how a request moves through the system or understand data transformations at each stage.
+
 This section illustrates how data flows through VoIPBIN's components for common operations. Understanding these flows helps developers integrate with the platform and troubleshoot issues.
 
 End-to-End Request Flow

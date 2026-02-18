@@ -3,6 +3,10 @@
 Inter-Service Communication
 ============================
 
+.. note:: **AI Context**
+
+   This page describes VoIPBIN's inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), ZeroMQ (high-performance real-time streaming), and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.
+
 VoIPBIN's microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, ZeroMQ for high-performance events, and WebSocket for real-time client communication.
 
 Communication Patterns Overview

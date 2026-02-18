@@ -184,6 +184,11 @@
                         <main role="main" id="main">
     <section id="security-architecture">
 <span id="architecture-security"></span><h1>Security Architecture<a class="headerlink" href="#security-architecture" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s security architecture: four defense-in-depth layers (edge, API gateway, internal services, data), JWT and Access Key authentication, RBAC authorization model, transport security (TLS, SRTP), Kubernetes secrets management, network isolation (VPC, firewall rules, network policies), input validation, rate limiting, DDoS protection, audit logging, data protection, and compliance frameworks. Relevant when an AI agent needs to understand authentication flows, permission models, or security controls.</p>
+</div>
 <p>VoIPBIN implements defense-in-depth security across all layers, from API authentication to data encryption. This section details the security architecture, authentication flows, and protection mechanisms.</p>
 <section id="security-overview">
 <h2>Security Overview<a class="headerlink" href="#security-overview" title="Link to this heading"></a></h2>
