@@ -266,7 +266,18 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Co
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.confbridgeHandler.ExternalMediaStop(ctx, id)
+	var req request.V1DataCallsIDExternalMediaDelete
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not unmarshal the request body. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	if req.ExternalMediaID == uuid.Nil {
+		log.Errorf("The external_media_id is required.")
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.confbridgeHandler.ExternalMediaStop(ctx, id, req.ExternalMediaID)
 	if err != nil {
 		log.Errorf("Could not stop the external media. confbridge_id: %s, err: %v", id, err)
 		return nil, err

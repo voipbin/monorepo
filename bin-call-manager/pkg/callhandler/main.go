@@ -56,7 +56,6 @@ type CallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error)
-	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error)
 	UpdateConfbridgeID(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*call.Call, error)
 
 	CreateCallsOutgoing(
@@ -129,7 +128,7 @@ type CallHandler interface {
 		directionListen externalmedia.Direction,
 		directionSpeak externalmedia.Direction,
 	) (*call.Call, error)
-	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	ExternalMediaStop(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error)
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error

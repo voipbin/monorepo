@@ -35,6 +35,9 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
 	}
+	if res.ExternalMediaIDs == nil {
+		res.ExternalMediaIDs = []uuid.UUID{}
+	}
 	if res.Flags == nil {
 		res.Flags = []confbridge.Flag{}
 	}
@@ -60,6 +63,9 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	}
 	if cb.RecordingIDs == nil {
 		cb.RecordingIDs = []uuid.UUID{}
+	}
+	if cb.ExternalMediaIDs == nil {
+		cb.ExternalMediaIDs = []uuid.UUID{}
 	}
 
 	// Use PrepareFields to get field map
@@ -337,11 +343,60 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	return nil
 }
 
-// ConfbridgeSetExternalMediaID sets the conference's external media id.
-func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
-	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
-		confbridge.FieldExternalMediaID: externalMediaID,
-	})
+// ConfbridgeAddExternalMediaID adds the external media id to the confbridge's external_media_ids.
+func (h *handler) ConfbridgeAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
+	q := `
+	update call_confbridges set
+		external_media_ids = json_array_append(
+			external_media_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeAddExternalMediaID. err: %v", err)
+	}
+
+	_ = h.confbridgeUpdateToCache(ctx, id)
+	return nil
+}
+
+// ConfbridgeRemoveExternalMediaID removes the external media id from the confbridge's external_media_ids.
+func (h *handler) ConfbridgeRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
+	q := `
+	update call_confbridges set
+		external_media_ids = IF(
+			json_search(external_media_ids, 'one', ?) IS NOT NULL,
+			json_remove(
+				external_media_ids, replace(
+					json_search(
+						external_media_ids,
+						'one',
+						?
+					),
+					'"',
+					''
+				)
+			),
+			external_media_ids
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.String(), externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeRemoveExternalMediaID. err: %v", err)
+	}
+
+	_ = h.confbridgeUpdateToCache(ctx, id)
+	return nil
 }
 
 // ConfbridgeAddChannelCallID adds the call/channel id info

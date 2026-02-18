@@ -47,7 +47,6 @@ type ConfbridgeHandler interface {
 		confbridgeType confbridge.Type,
 	) (*confbridge.Confbridge, error)
 	Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
-	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	List(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
@@ -80,7 +79,7 @@ type ConfbridgeHandler interface {
 		connectionType string,
 		format string,
 	) (*confbridge.Confbridge, error)
-	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+	ExternalMediaStop(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 
 	FlagAdd(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)
 	FlagRemove(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)

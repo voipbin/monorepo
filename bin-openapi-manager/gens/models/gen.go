@@ -1250,6 +1250,9 @@ type CallManagerCall struct {
 	// Direction Call direction
 	Direction *CallManagerCallDirection `json:"direction,omitempty"`
 
+	// ExternalMediaIds External media IDs associated with this call. Multiple external media streams (e.g., transcription + TTS) can run simultaneously.
+	ExternalMediaIds *[]string `json:"external_media_ids,omitempty"`
+
 	// FlowId The flow ID associated with this call. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
 

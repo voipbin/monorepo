@@ -21,7 +21,7 @@ create table call_calls(
   recording_ids json,           -- recording ids
 
   -- external media info
-  external_media_id binary(16), -- external media id
+  external_media_ids json, -- external media ids
 
   groupcall_id binary(16),
 
@@ -67,6 +67,5 @@ create index idx_call_calls_create on call_calls(tm_create);
 create index idx_call_calls_hangup on call_calls(tm_hangup);
 create index idx_call_calls_source_target on call_calls(source_target);
 create index idx_call_calls_destination_target on call_calls(destination_target);
-create index idx_call_calls_external_media_id on call_calls(external_media_id);
 create index idx_call_calls_groupcall_id on call_calls(groupcall_id);
 create index idx_call_calls_activeflow_id on call_calls(activeflow_id);

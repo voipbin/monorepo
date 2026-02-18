@@ -19,7 +19,7 @@ create table call_confbridges(
   recording_ids  json,        -- record ids
 
   -- external media info
-  external_media_id binary(16),
+  external_media_ids json,
 
   -- timestamps
   tm_create datetime(6),  --

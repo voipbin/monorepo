@@ -134,8 +134,9 @@ func Test_Create(t *testing.T) {
 				MasterCallID:   uuid.Nil,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingID:    uuid.Nil,
-				RecordingIDs:   []uuid.UUID{},
-				GroupcallID:    uuid.FromStringOrNil("4029e38a-b781-11ed-adc4-6b40017ae4c5"),
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+				GroupcallID:      uuid.FromStringOrNil("4029e38a-b781-11ed-adc4-6b40017ae4c5"),
 
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
@@ -611,7 +612,7 @@ func Test_UpdateRecordingID(t *testing.T) {
 	}
 }
 
-func Test_UpdateExternalMediaID(t *testing.T) {
+func Test_AddExternalMediaID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -660,10 +661,74 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().CallAddExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
-			res, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
+			res, err := h.AddExternalMediaID(ctx, tt.id, tt.externalMediaID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_RemoveExternalMediaID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id              uuid.UUID
+		externalMediaID uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+			uuid.FromStringOrNil("4fb929b0-96f6-11ed-8a11-ef7217d2f4bd"),
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+				},
+			},
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallRemoveExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.RemoveExternalMediaID(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

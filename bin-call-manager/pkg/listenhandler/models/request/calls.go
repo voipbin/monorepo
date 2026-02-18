@@ -85,6 +85,13 @@ type V1DataCallsIDExternalMediaPost struct {
 	DirectionSpeak  externalmedia.Direction `json:"direction_speak,omitempty"`
 }
 
+// V1DataCallsIDExternalMediaDelete is
+// v1 data type for
+// /v1/calls/<call-id>/external-media DELETE
+type V1DataCallsIDExternalMediaDelete struct {
+	ExternalMediaID uuid.UUID `json:"external_media_id,omitempty"`
+}
+
 // V1DataCallsIDDigitsPost is
 // v1 data type for V1DataCallsIDDigitsPost
 // /v1/calls/<call-id>/digits POST

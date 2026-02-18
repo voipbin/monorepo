@@ -262,7 +262,8 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID uuid.UUID
+		callID          uuid.UUID
+		externalMediaID uuid.UUID
 
 		response *sock.Response
 
@@ -273,6 +274,7 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
+			uuid.FromStringOrNil("9d32e114-97d0-11ed-9bb5-bf7c25553a09"),
 
 			&sock.Response{
 				StatusCode: 200,
@@ -281,8 +283,10 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 			},
 
 			&sock.Request{
-				URI:    "/v1/confbridges/8c21d002-97d0-11ed-9bb5-bf7c25553a09/external-media",
-				Method: sock.RequestMethodDelete,
+				URI:      "/v1/confbridges/8c21d002-97d0-11ed-9bb5-bf7c25553a09/external-media",
+				Method:   sock.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     []byte(`{"external_media_id":"9d32e114-97d0-11ed-9bb5-bf7c25553a09"}`),
 			},
 			&cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -306,7 +310,7 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ConfbridgeExternalMediaStop(ctx, tt.callID)
+			res, err := reqHandler.CallV1ConfbridgeExternalMediaStop(ctx, tt.callID, tt.externalMediaID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

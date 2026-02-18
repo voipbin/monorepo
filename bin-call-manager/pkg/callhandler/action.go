@@ -691,7 +691,11 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		log.Errorf("Could not start external media. err: %v", err)
 		return err
 	}
-	log.WithField("call", cc).Debugf("Started external media. external_media_id: %s", cc.ExternalMediaID)
+	if len(cc.ExternalMediaIDs) > 0 {
+		log.WithField("call", cc).Debugf("Started external media. external_media_id: %s", cc.ExternalMediaIDs[len(cc.ExternalMediaIDs)-1])
+	} else {
+		log.WithField("call", cc).Debugf("Started external media.")
+	}
 
 	// send next action request
 	return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
@@ -706,20 +710,19 @@ func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *cal
 		"action_type": c.Action.Type,
 	})
 
-	if c.ExternalMediaID == uuid.Nil {
-		// nothing to do here
+	if len(c.ExternalMediaIDs) == 0 {
 		log.Infof("The call has no external media. call_id: %s", c.ID)
 	} else {
-		// stop the external media
-		tmp, err := h.externalMediaHandler.Stop(ctx, c.ExternalMediaID)
-		if err != nil {
-			log.Errorf("Could not stop the external media. err: %v", err)
-			return err
+		for _, emID := range c.ExternalMediaIDs {
+			tmp, err := h.externalMediaHandler.Stop(ctx, emID)
+			if err != nil {
+				log.Errorf("Could not stop the external media. external_media_id: %s, err: %v", emID, err)
+				continue
+			}
+			log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
 		}
-		log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
 	}
 
-	// send next action request
 	return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
 }
 

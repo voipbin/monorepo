@@ -85,7 +85,7 @@ func (h *callHandler) Create(
 		RecordingIDs:   []uuid.UUID{},
 		GroupcallID:    groupcallID,
 
-		ExternalMediaID: uuid.Nil,
+		ExternalMediaIDs: []uuid.UUID{},
 
 		Source:      *source,
 		Destination: *destination,
@@ -328,20 +328,41 @@ func (h *callHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recor
 	return res, nil
 }
 
-// UpdateExternalMediaID updates the call's external media id.
-func (h *callHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error) {
+// AddExternalMediaID adds an external media ID to the call's external_media_ids array.
+func (h *callHandler) AddExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "UpdateExternalMediaID",
+		"func":              "AddExternalMediaID",
 		"call_id":           id,
 		"external_media_id": externalMediaID,
 	})
 
-	if errSet := h.db.CallSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
-		log.Errorf("Could not set the external media id. err: %v", errSet)
-		return nil, errSet
+	if errAdd := h.db.CallAddExternalMediaID(ctx, id, externalMediaID); errAdd != nil {
+		log.Errorf("Could not add the external media id. err: %v", errAdd)
+		return nil, errAdd
 	}
 
-	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// RemoveExternalMediaID removes an external media ID from the call's external_media_ids array.
+func (h *callHandler) RemoveExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "RemoveExternalMediaID",
+		"call_id":           id,
+		"external_media_id": externalMediaID,
+	})
+
+	if errRemove := h.db.CallRemoveExternalMediaID(ctx, id, externalMediaID); errRemove != nil {
+		log.Errorf("Could not remove the external media id. err: %v", errRemove)
+		return nil, errRemove
+	}
+
 	res, err := h.db.CallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated call. err: %v", err)

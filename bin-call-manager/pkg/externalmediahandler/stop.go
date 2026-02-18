@@ -36,5 +36,17 @@ func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UU
 		return nil, errors.Wrapf(errExtDelete, "could not delete external media info from db")
 	}
 
+	// remove the external media ID from the parent's ExternalMediaIDs array
+	switch res.ReferenceType {
+	case externalmedia.ReferenceTypeCall:
+		if errRemove := h.db.CallRemoveExternalMediaID(ctx, res.ReferenceID, externalMediaID); errRemove != nil {
+			log.Errorf("Could not remove external media id from call. call_id: %s, err: %v", res.ReferenceID, errRemove)
+		}
+	case externalmedia.ReferenceTypeConfbridge:
+		if errRemove := h.db.ConfbridgeRemoveExternalMediaID(ctx, res.ReferenceID, externalMediaID); errRemove != nil {
+			log.Errorf("Could not remove external media id from confbridge. confbridge_id: %s, err: %v", res.ReferenceID, errRemove)
+		}
+	}
+
 	return res, nil
 }
