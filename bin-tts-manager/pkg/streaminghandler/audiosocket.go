@@ -166,3 +166,22 @@ func audiosocketWrite(ctx context.Context, conn net.Conn, data []byte) error {
 
 	return nil
 }
+
+// downsample performs integer decimation on 16-bit PCM audio data.
+// For a factor of N, it keeps every Nth sample (each sample is 2 bytes).
+// For example, factor=3 converts 24kHz to 8kHz.
+func downsample(data []byte, factor int) []byte {
+	if factor <= 1 {
+		return data
+	}
+
+	bytesPerSample := 2
+	step := factor * bytesPerSample
+	out := make([]byte, 0, len(data)/factor)
+
+	for i := 0; i+bytesPerSample <= len(data); i += step {
+		out = append(out, data[i], data[i+1])
+	}
+
+	return out
+}

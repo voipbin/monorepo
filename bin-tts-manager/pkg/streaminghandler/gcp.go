@@ -43,7 +43,7 @@ type GCPConfig struct {
 
 const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
-	defaultGCPStreamingSampleRate = int32(8000)
+	defaultGCPStreamingSampleRate = int32(24000) // Chirp3-HD native rate; downsampled to 8kHz before audiosocket
 	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
 )
 
@@ -291,6 +291,9 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 		if len(audioData) == 0 {
 			continue
 		}
+
+		// GCP Chirp3-HD outputs at 24kHz; downsample to 8kHz (factor 3).
+		audioData = downsample(audioData, 3)
 
 		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
 			promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()

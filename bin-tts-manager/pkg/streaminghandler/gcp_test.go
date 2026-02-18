@@ -1,6 +1,7 @@
 package streaminghandler
 
 import (
+	"bytes"
 	"context"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
@@ -10,6 +11,55 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
+
+func Test_downsample(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     []byte
+		factor   int
+		expected []byte
+	}{
+		{
+			name:     "factor 1 returns original",
+			data:     []byte{0x01, 0x02, 0x03, 0x04},
+			factor:   1,
+			expected: []byte{0x01, 0x02, 0x03, 0x04},
+		},
+		{
+			name:   "factor 3: 24kHz to 8kHz (6 samples -> 2)",
+			data:   []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C},
+			factor: 3,
+			expected: []byte{0x01, 0x02, 0x07, 0x08},
+		},
+		{
+			name:   "factor 2: 16kHz to 8kHz",
+			data:   []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
+			factor: 2,
+			expected: []byte{0x11, 0x22, 0x55, 0x66},
+		},
+		{
+			name:     "empty data",
+			data:     []byte{},
+			factor:   3,
+			expected: []byte{},
+		},
+		{
+			name:     "single sample with factor 3",
+			data:     []byte{0xAA, 0xBB},
+			factor:   3,
+			expected: []byte{0xAA, 0xBB},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := downsample(tt.data, tt.factor)
+			if !bytes.Equal(result, tt.expected) {
+				t.Errorf("got %v, expected %v", result, tt.expected)
+			}
+		})
+	}
+}
 
 func Test_gcpGetVoiceIDByLangGender(t *testing.T) {
 
