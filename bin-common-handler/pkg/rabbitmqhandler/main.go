@@ -143,6 +143,7 @@ func NewRabbit(uri string) Rabbit {
 func (r *rabbit) Connect() {
 	r.connect()
 	go r.reconnector()
+	go r.healthChecker()
 }
 
 // Close close the Queue.
