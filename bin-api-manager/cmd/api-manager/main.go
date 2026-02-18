@@ -184,6 +184,9 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	app.GET("/redoc/*any", func(c *gin.Context) {
 		c.File("gens/openapi_redoc/api.html")
 	})
+	app.GET("/openapi.json", func(c *gin.Context) {
+		c.File("gens/openapi_redoc/openapi.json")
+	})
 
 	// CORS setting
 	// CORS for https://foo.com and https://github.com origins, allowing:

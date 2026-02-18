@@ -68,6 +68,17 @@ The response includes the call details with ``"status": "dialing"``:
         }
     ]
 
+**Call status lifecycle:**
+
+- ``dialing``: The system is currently dialing the destination number.
+- ``ringing``: The destination device is ringing, awaiting answer.
+- ``progressing``: The call is answered. Audio is flowing between parties.
+- ``terminating``: The system is ending the call.
+- ``canceling``: The originator canceled the call before it was answered (outgoing calls only).
+- ``hangup``: The call has ended. This is the final state.
+
+For the full call lifecycle, see :ref:`Call overview <call-overview>`.
+
 Make a call with an existing flow
 ---------------------------------
 If you have already created a flow, you can reference it by ``flow_id`` instead of defining actions inline:
@@ -95,3 +106,18 @@ If you have already created a flow, you can reference it by ``flow_id`` instead 
    The ``flow_id`` (UUID) must reference an existing flow. Obtain one from the ``id`` field of ``GET /flows`` or create one via ``POST /flows``. If the flow does not exist, the API returns ``404 Not Found``.
 
 For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
+
+Troubleshooting
++++++++++++++++
+
+* **400 Bad Request:**
+    * **Cause:** The ``source`` number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.
+    * **Fix:** Verify your numbers via ``GET /numbers``. Ensure all phone numbers start with ``+`` followed by digits only (e.g., ``+15551234567``).
+
+* **404 Not Found (when using ``flow_id``):**
+    * **Cause:** The ``flow_id`` does not reference an existing flow.
+    * **Fix:** Verify the flow exists via ``GET /flows``. Create one via ``POST /flows`` if needed.
+
+* **Call status immediately shows "hangup":**
+    * **Cause:** The destination number is unreachable, or the source number has no telephony provider attached.
+    * **Fix:** For testing, use virtual numbers (``+899`` prefix) as the destination — these are free and route internally within VoIPBIN.

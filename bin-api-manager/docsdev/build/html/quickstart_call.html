@@ -188,7 +188,7 @@
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
 <li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
@@ -246,6 +246,16 @@
 <span class="p">]</span>
 </pre></div>
 </div>
+<p><strong>Call status lifecycle:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dialing</span></code>: The system is currently dialing the destination number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ringing</span></code>: The destination device is ringing, awaiting answer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">progressing</span></code>: The call is answered. Audio is flowing between parties.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">terminating</span></code>: The system is ending the call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: The originator canceled the call before it was answered (outgoing calls only).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hangup</span></code>: The call has ended. This is the final state.</p></li>
+</ul>
+<p>For the full call lifecycle, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a>.</p>
 </section>
 <section id="make-a-call-with-an-existing-flow">
 <h3>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h3>
@@ -275,6 +285,35 @@
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.</p></li>
+<li><p><strong>Fix:</strong> Verify your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure all phone numbers start with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by digits only (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found (when using ``flow_id``):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> does not reference an existing flow.</p></li>
+<li><p><strong>Fix:</strong> Verify the flow exists via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> if needed.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call status immediately shows “hangup”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The destination number is unreachable, or the source number has no telephony provider attached.</p></li>
+<li><p><strong>Fix:</strong> For testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) as the destination — these are free and route internally within VoIPBIN.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 
 </main>
@@ -291,6 +330,7 @@
 <li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

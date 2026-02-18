@@ -69,3 +69,18 @@ Key parameters:
    ``timeout_wait`` and ``timeout_service`` are in milliseconds, not seconds. A common mistake is setting ``timeout_wait: 100`` (0.1 seconds) instead of ``timeout_wait: 100000`` (100 seconds). Always verify the unit when setting timeouts.
 
 For more details, see the :ref:`Queue tutorial <queue-tutorial>`.
+
+Troubleshooting
++++++++++++++++
+
+* **400 Bad Request:**
+    * **Cause:** ``tag_ids`` contains an invalid UUID, or required fields are missing.
+    * **Fix:** Verify tag IDs via ``GET /tags``. Ensure ``tag_ids`` is a non-empty array of valid UUIDs.
+
+* **Queue created but calls are not routed to agents:**
+    * **Cause:** No agents with matching tags are online or in ``available`` status.
+    * **Fix:** Verify agents have matching tags via ``GET /agents``. Check that at least one agent is in ``available`` status.
+
+* **Callers timing out immediately:**
+    * **Cause:** ``timeout_wait`` is set too low. The value is in **milliseconds**, not seconds.
+    * **Fix:** For a 100-second wait, set ``timeout_wait: 100000``. Setting ``100`` means only 0.1 seconds.
