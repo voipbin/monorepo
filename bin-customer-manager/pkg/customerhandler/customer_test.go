@@ -66,6 +66,27 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
+func Test_Delete_GuestCustomer(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	_, err := h.Delete(ctx, customer.GuestCustomerID)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok")
+	}
+}
+
 func Test_validateCreate(t *testing.T) {
 	tests := []struct {
 		name string
