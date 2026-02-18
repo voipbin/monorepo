@@ -2,7 +2,6 @@ package streaminghandler
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -44,7 +43,7 @@ type GCPConfig struct {
 
 const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
-	defaultGCPStreamingSampleRate = int32(24000) // GCP StreamingSynthesize only supports 24kHz LINEAR16
+	defaultGCPStreamingSampleRate = int32(8000)
 	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
 )
 
@@ -293,9 +292,6 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
-		// GCP streams at 24kHz; downsample to 16kHz for the audiosocket channel.
-		audioData = downsample24kTo16k(audioData)
-
 		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
 			promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
@@ -435,35 +431,4 @@ func (h *gcpHandler) extractLangCode(voiceID string, fallbackLang string) string
 	}
 
 	return "en-US"
-}
-
-// downsample24kTo16k converts 24kHz 16-bit PCM (little-endian) to 16kHz
-// using linear interpolation with a 3:2 sample ratio.
-// For every 3 input samples, 2 output samples are produced:
-//   - output[0] = input[0]
-//   - output[1] = lerp(input[1], input[2], 0.5)
-func downsample24kTo16k(data []byte) []byte {
-	// Each sample is 2 bytes; we need groups of 3 samples (6 bytes)
-	if len(data) < 6 {
-		return data
-	}
-
-	numGroups := len(data) / 6
-	out := make([]byte, numGroups*4) // 2 output samples (4 bytes) per group
-
-	for i := 0; i < numGroups; i++ {
-		base := i * 6
-
-		// Output sample 0: copy input sample 0
-		out[i*4] = data[base]
-		out[i*4+1] = data[base+1]
-
-		// Output sample 1: average of input samples 1 and 2
-		s1 := int32(int16(binary.LittleEndian.Uint16(data[base+2:])))
-		s2 := int32(int16(binary.LittleEndian.Uint16(data[base+4:])))
-		avg := int16((s1 + s2) / 2)
-		binary.LittleEndian.PutUint16(out[i*4+2:], uint16(avg))
-	}
-
-	return out
 }

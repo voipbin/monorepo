@@ -69,7 +69,7 @@ const (
 
 	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs(Rachel)
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
-	defaultConvertSampleRate      = 16000                    // Target sample rate for audiosocket (16kHz slin16)
+	defaultConvertSampleRate      = 8000                     // Target sample rate for audiosocket (8kHz slin)
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
 
 	defaultElevenlabsVoiceIDLength = 20

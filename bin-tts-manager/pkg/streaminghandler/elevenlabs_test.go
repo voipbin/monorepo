@@ -23,15 +23,36 @@ func Test_getDataSamples(t *testing.T) {
 
 	tests := []test{
 		{
-			name:       "same sample rate (16000Hz), no change",
-			inputRate:  16000,
+			name:       "same sample rate (8000Hz), no change",
+			inputRate:  8000,
 			inputData:  []byte{0x01, 0x02, 0x03, 0x04},
 			expectData: []byte{0x01, 0x02, 0x03, 0x04},
 			expectErr:  false,
 		},
 		{
-			name:      "48000Hz downsample to 16000Hz (factor 3)",
-			inputRate: 48000,
+			name:      "16000Hz downsample to 8000Hz",
+			inputRate: 16000,
+			inputData: []byte{
+				0x01, 0x02, // sample 1
+				0x03, 0x04, // skip
+				0x05, 0x06, // sample 2
+				0x07, 0x08, // skip
+			},
+			expectData: []byte{
+				0x01, 0x02,
+				0x05, 0x06,
+			},
+			expectErr: false,
+		},
+		{
+			name:      "unsupported rate 11025Hz",
+			inputRate: 11025,
+			inputData: []byte{0x01, 0x02, 0x03, 0x04},
+			expectErr: true,
+		},
+		{
+			name:      "24000Hz downsample to 8000Hz (factor 3)",
+			inputRate: 24000,
 			inputData: []byte{
 				0x01, 0x02, // keep
 				0x03, 0x04, // skip
@@ -45,24 +66,6 @@ func Test_getDataSamples(t *testing.T) {
 				0x07, 0x08,
 			},
 			expectErr: false,
-		},
-		{
-			name:      "unsupported rate 11025Hz",
-			inputRate: 11025,
-			inputData: []byte{0x01, 0x02, 0x03, 0x04},
-			expectErr: true,
-		},
-		{
-			name:      "8000Hz cannot upsample to 16000Hz",
-			inputRate: 8000,
-			inputData: []byte{0x01, 0x02, 0x03, 0x04},
-			expectErr: true,
-		},
-		{
-			name:      "24000Hz non-integer factor to 16000Hz",
-			inputRate: 24000,
-			inputData: []byte{0x01, 0x02, 0x03, 0x04},
-			expectErr: true,
 		},
 	}
 
@@ -220,10 +223,10 @@ func Test_convertAndWrapPCMData(t *testing.T) {
 		expectError bool
 	}{
 		{
-			name:        "valid pcm_16000 input (passthrough)",
+			name:        "valid pcm_16000 input (downsample to 8kHz)",
 			inputFormat: "pcm_16000",
-			rawData:     []byte{0x11, 0x22, 0x33, 0x44}, // 2 samples, no conversion needed
-			expectedRes: []byte{0x11, 0x22, 0x33, 0x44},
+			rawData:     []byte{0x11, 0x22, 0x33, 0x44}, // 2 samples at 16kHz → 1 sample at 8kHz
+			expectedRes: []byte{0x11, 0x22},
 			expectError: false,
 		},
 		{

@@ -1,9 +1,7 @@
 package streaminghandler
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -257,69 +255,6 @@ func Test_gcpGetVoiceID(t *testing.T) {
 			result := h.getVoiceID(ctx, tt.streaming)
 			if result != tt.expected {
 				t.Errorf("got %s, expected %s", result, tt.expected)
-			}
-		})
-	}
-}
-
-func Test_downsample24kTo16k(t *testing.T) {
-	// Helper to encode a slice of int16 samples into little-endian bytes.
-	encode := func(samples []int16) []byte {
-		buf := make([]byte, len(samples)*2)
-		for i, s := range samples {
-			binary.LittleEndian.PutUint16(buf[i*2:], uint16(s))
-		}
-		return buf
-	}
-
-	// Helper to decode little-endian bytes into int16 samples.
-	decode := func(data []byte) []int16 {
-		samples := make([]int16, len(data)/2)
-		for i := range samples {
-			samples[i] = int16(binary.LittleEndian.Uint16(data[i*2:]))
-		}
-		return samples
-	}
-
-	tests := []struct {
-		name     string
-		input    []int16
-		expected []int16
-	}{
-		{
-			name:     "one group of 3 samples",
-			input:    []int16{100, 200, 300},
-			expected: []int16{100, 250}, // sample 0 copied, sample 1 = avg(200,300)
-		},
-		{
-			name:     "two groups of 3 samples",
-			input:    []int16{1000, 2000, 3000, 4000, 5000, 6000},
-			expected: []int16{1000, 2500, 4000, 5500},
-		},
-		{
-			name:     "negative samples",
-			input:    []int16{-100, -200, -300},
-			expected: []int16{-100, -250},
-		},
-		{
-			name:     "fewer than 3 samples returns input unchanged",
-			input:    []int16{100, 200},
-			expected: []int16{100, 200},
-		},
-		{
-			name:     "trailing samples beyond last full group are dropped",
-			input:    []int16{100, 200, 300, 400},
-			expected: []int16{100, 250}, // only first group of 3 processed
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := downsample24kTo16k(encode(tt.input))
-			got := decode(result)
-
-			if !bytes.Equal(encode(got), encode(tt.expected)) {
-				t.Errorf("got %v, expected %v", got, tt.expected)
 			}
 		})
 	}

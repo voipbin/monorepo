@@ -44,7 +44,7 @@ type AWSConfig struct {
 
 const (
 	defaultAWSStreamingRegion     = "eu-central-1"
-	defaultAWSStreamingSampleRate = "16000"
+	defaultAWSStreamingSampleRate = "8000"
 	defaultAWSDefaultVoiceID      = "Joanna"
 	defaultAWSAudioChBuffer       = 64
 )
