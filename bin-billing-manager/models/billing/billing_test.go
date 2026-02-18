@@ -181,7 +181,7 @@ func TestGetCostInfo(t *testing.T) {
 		{"call_vn", CostTypeCallVN, DefaultTokenPerUnitCallVN, DefaultCreditPerUnitCallVN},
 		{"call_extension", CostTypeCallExtension, 0, 0},
 		{"call_direct_ext", CostTypeCallDirectExt, 0, 0},
-		{"sms", CostTypeSMS, DefaultTokenPerUnitSMS, DefaultCreditPerUnitSMS},
+		{"sms", CostTypeSMS, 0, DefaultCreditPerUnitSMS},
 		{"number", CostTypeNumber, 0, DefaultCreditPerUnitNumber},
 		{"number_renew", CostTypeNumberRenew, 0, DefaultCreditPerUnitNumber},
 		{"none", CostTypeNone, 0, 0},

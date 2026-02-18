@@ -224,7 +224,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
 				CostType:          billing.CostTypeSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 			},
 
@@ -240,7 +240,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				ReferenceID:       uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
 				CostType:          billing.CostTypeSMS,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				TMBillingStart:    &tmBillingStart,
 				TMBillingEnd:      nil,
 			},
@@ -275,7 +275,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
 			// billing end - SMS uses BillingConsumeAndRecord atomically
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.responseBilling, tt.responseBilling.AccountID, 1, 0, billing.DefaultTokenPerUnitSMS, billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.responseBilling, tt.responseBilling.AccountID, 1, 0, int64(0), billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination); err != nil {
@@ -337,7 +337,7 @@ func Test_BillingEnd(t *testing.T) {
 			},
 		},
 		{
-			name: "reference type sms - token eligible",
+			name: "reference type sms - credit only",
 
 			billing: &billing.Billing{
 				Identity: commonidentity.Identity{
@@ -347,7 +347,7 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:     billing.ReferenceTypeSMS,
 				CostType:          billing.CostTypeSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
@@ -363,7 +363,7 @@ func Test_BillingEnd(t *testing.T) {
 				AccountID:         uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:     billing.ReferenceTypeSMS,
 				CostType:          billing.CostTypeSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
@@ -720,7 +720,7 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
@@ -733,7 +733,7 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 				ReferenceType:     billing.ReferenceTypeSMS,
 				ReferenceID:       uuid.FromStringOrNil("10000004-0000-0000-0000-000000000001"),
 				CostType:          billing.CostTypeSMS,
-				RateTokenPerUnit:  billing.DefaultTokenPerUnitSMS,
+				RateTokenPerUnit:  0,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitSMS,
 				TMBillingStart:    &tmBillingStart,
 			},
@@ -762,7 +762,7 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(tt.existingBilling, nil)
 
 			// BillingEnd should be called - SMS uses BillingConsumeAndRecord atomically
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.existingBilling, tt.existingBilling.AccountID, 1, 0, billing.DefaultTokenPerUnitSMS, billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.existingBilling, tt.existingBilling.AccountID, 1, 0, int64(0), billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination)

@@ -45,9 +45,9 @@ func Test_GetCostInfo(t *testing.T) {
 			expectCreditPerUnit: 0,
 		},
 		{
-			name:                "sms - token + credit overflow",
+			name:                "sms - credit only",
 			costType:            CostTypeSMS,
-			expectTokenPerUnit:  DefaultTokenPerUnitSMS,
+			expectTokenPerUnit:  0,
 			expectCreditPerUnit: DefaultCreditPerUnitSMS,
 		},
 		{
