@@ -59,9 +59,10 @@ type amqpConnection interface {
 type rabbit struct {
 	uri string
 
-	errorChannel chan *amqp.Error
-	connection   amqpConnection
-	closed       atomic.Bool
+	errorChannel        chan *amqp.Error
+	connection          amqpConnection
+	closed              atomic.Bool
+	healthCheckInterval time.Duration
 
 	// mu protects concurrent access to queues, exchanges, queueBinds, and consumers.
 	// Use RLock for reads and Lock for writes.
@@ -127,11 +128,12 @@ type exchange struct {
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(uri string) Rabbit {
 	res := &rabbit{
-		uri:        uri,
-		queues:     make(map[string]*queue),
-		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
-		consumers:  make([]*consumerRegistration, 0),
+		uri:                 uri,
+		healthCheckInterval: 30 * time.Second,
+		queues:              make(map[string]*queue),
+		exchanges:           make(map[string]*exchange),
+		queueBinds:          make(map[string]*queueBind),
+		consumers:           make([]*consumerRegistration, 0),
 	}
 
 	return res
@@ -233,6 +235,25 @@ func (r *rabbit) checkConnection() error {
 		_ = ch.Close()
 	}
 	return nil
+}
+
+// healthChecker periodically probes the RabbitMQ connection and forces a
+// reconnect if the connection is dead. This detects half-open TCP connections
+// that NotifyClose cannot detect on its own.
+func (r *rabbit) healthChecker() {
+	ticker := time.NewTicker(r.healthCheckInterval)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+		if r.closed.Load() {
+			return
+		}
+		if err := r.checkConnection(); err != nil {
+			logrus.Errorf("Health check failed, forcing reconnect. err: %v", err)
+			_ = r.connection.Close()
+		}
+	}
 }
 
 // redeclareAll recovers the all pre-defined queue/exchange/bind in the channel.
