@@ -222,6 +222,19 @@ func (r *rabbit) connect() {
 	}
 }
 
+// checkConnection probes the RabbitMQ connection by opening and closing a channel.
+// Returns an error if the connection is dead.
+func (r *rabbit) checkConnection() error {
+	ch, err := r.connection.Channel()
+	if err != nil {
+		return err
+	}
+	if ch != nil {
+		_ = ch.Close()
+	}
+	return nil
+}
+
 // redeclareAll recovers the all pre-defined queue/exchange/bind in the channel.
 func (r *rabbit) redeclareAll() {
 	log := logrus.WithField("func", "redeclareAll")

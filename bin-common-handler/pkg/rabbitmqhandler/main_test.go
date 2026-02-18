@@ -1245,3 +1245,42 @@ func Test_reconsumerAll_allRetriesFail(t *testing.T) {
 		t.Errorf("Expected 3 consume calls (all retries), got %d", callCount)
 	}
 }
+
+// ============================================================================
+// checkConnection() Tests
+// ============================================================================
+
+func TestCheckConnection_ReturnsErrorWhenChannelFails(t *testing.T) {
+	mockConn := newMockConnection()
+	mockConn.channelErr = errors.New("connection dead")
+
+	r := &rabbit{
+		connection: mockConn,
+	}
+
+	err := r.checkConnection()
+
+	if err == nil {
+		t.Error("Expected error when Channel() fails")
+	}
+	if mockConn.channelCallCnt != 1 {
+		t.Errorf("Expected 1 Channel() call, got %d", mockConn.channelCallCnt)
+	}
+}
+
+func TestCheckConnection_ReturnsNilOnSuccess(t *testing.T) {
+	mockConn := newMockConnection()
+
+	r := &rabbit{
+		connection: mockConn,
+	}
+
+	err := r.checkConnection()
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if mockConn.channelCallCnt != 1 {
+		t.Errorf("Expected 1 Channel() call, got %d", mockConn.channelCallCnt)
+	}
+}
