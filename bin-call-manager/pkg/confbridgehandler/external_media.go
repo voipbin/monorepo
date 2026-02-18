@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-call-manager/models/externalmedia"
 )
 
+const defaultMaxExternalMediaPerConfbridge = 5
+
 // ExternalMediaStart starts the external media processing
 func (h *confbridgeHandler) ExternalMediaStart(
 	ctx context.Context,
@@ -35,9 +37,9 @@ func (h *confbridgeHandler) ExternalMediaStart(
 		return nil, err
 	}
 
-	if c.ExternalMediaID != uuid.Nil {
-		log.Errorf("The confbridge has external media already. external_media_id: %s", c.ExternalMediaID)
-		return nil, fmt.Errorf("the confbridge has external media already")
+	if len(c.ExternalMediaIDs) >= defaultMaxExternalMediaPerConfbridge {
+		log.Errorf("The confbridge has reached the maximum number of external medias. count: %d", len(c.ExternalMediaIDs))
+		return nil, fmt.Errorf("the confbridge has reached the maximum number of external medias")
 	}
 
 	tmp, err := h.externalMediaHandler.Start(
@@ -59,7 +61,7 @@ func (h *confbridgeHandler) ExternalMediaStart(
 	}
 	log.WithField("external_media", tmp).Debugf("Started external media. external_media_id: %s", tmp.ID)
 
-	res, err := h.UpdateExternalMediaID(ctx, id, tmp.ID)
+	res, err := h.AddExternalMediaID(ctx, id, tmp.ID)
 	if err != nil {
 		log.Errorf("Could not update the external media id. err: %v", err)
 		return nil, err
@@ -68,37 +70,45 @@ func (h *confbridgeHandler) ExternalMediaStart(
 	return res, nil
 }
 
-// ExternalMediaStop stops the external media processing
-func (h *confbridgeHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+// ExternalMediaStop stops a specific external media on the confbridge
+func (h *confbridgeHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "ExternalMediaStop",
-		"confbridge_id": id,
+		"func":              "ExternalMediaStop",
+		"confbridge_id":     id,
+		"external_media_id": externalMediaID,
 	})
 	log.Debug("Stopping the external media.")
 
-	// get confbridge
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get confbridge info. err: %v", err)
 		return nil, err
 	}
 
-	if c.ExternalMediaID == uuid.Nil {
-		log.Errorf("The confbridge has no external media id. confbridge_id: %s", c.ID)
-		return nil, fmt.Errorf("the confbridge has no external media id")
+	found := false
+	for _, emID := range c.ExternalMediaIDs {
+		if emID == externalMediaID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		log.Errorf("The external media id is not in the confbridge's external media ids. external_media_id: %s", externalMediaID)
+		return nil, fmt.Errorf("the external media id is not associated with this confbridge")
 	}
 
-	tmp, err := h.externalMediaHandler.Stop(ctx, c.ExternalMediaID)
+	tmp, err := h.externalMediaHandler.Stop(ctx, externalMediaID)
 	if err != nil {
 		log.Errorf("Could not stop the external media handler. err: %v", err)
 		return nil, err
 	}
 	log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
 
-	// update
-	res, err := h.UpdateExternalMediaID(ctx, id, uuid.Nil)
+	// externalMediaHandler.Stop already removes the ID from the parent's ExternalMediaIDs array,
+	// so we just need to re-fetch the updated confbridge.
+	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Coudl not update the external media to empty. err: %v", err)
+		log.Errorf("Could not get updated confbridge info. err: %v", err)
 		return nil, err
 	}
 

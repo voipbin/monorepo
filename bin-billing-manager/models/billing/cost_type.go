@@ -27,7 +27,6 @@ const (
 // Default token rates per unit (plain integers).
 const (
 	DefaultTokenPerUnitCallVN int64 = 1
-	DefaultTokenPerUnitSMS    int64 = 10
 )
 
 // GetCostInfo returns the token rate and credit rate for a given cost type.
@@ -42,7 +41,7 @@ func GetCostInfo(ct CostType) (tokenPerUnit int64, creditPerUnit int64) {
 	case CostTypeCallExtension, CostTypeCallDirectExt:
 		return 0, 0
 	case CostTypeSMS:
-		return DefaultTokenPerUnitSMS, DefaultCreditPerUnitSMS
+		return 0, DefaultCreditPerUnitSMS
 	case CostTypeNumber, CostTypeNumberRenew:
 		return 0, DefaultCreditPerUnitNumber
 	default:

@@ -71,7 +71,7 @@ func Test_Create(t *testing.T) {
 				RecordingID:  uuid.Nil,
 				RecordingIDs: []uuid.UUID{},
 
-				ExternalMediaID: uuid.Nil,
+				ExternalMediaIDs: []uuid.UUID{},
 			},
 		},
 	}
@@ -252,7 +252,7 @@ func Test_UpdateRecordingID(t *testing.T) {
 	}
 }
 
-func Test_UpdateExternalMediaID(t *testing.T) {
+func Test_AddExternalMediaID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -265,12 +265,6 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 
 			uuid.FromStringOrNil("e6bc4418-9c74-11ed-bd1f-43a5f1baaebe"),
 			uuid.FromStringOrNil("e6e3a12a-9c74-11ed-a0fc-ff1ad2ae6a02"),
-		},
-		{
-			"update to nil",
-
-			uuid.FromStringOrNil("e70f1f3a-9c74-11ed-a5bc-076ae0e2cdbe"),
-			uuid.Nil,
 		},
 	}
 
@@ -300,10 +294,63 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().ConfbridgeAddExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(&confbridge.Confbridge{}, nil)
 
-			_, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
+			_, err := h.AddExternalMediaID(ctx, tt.id, tt.externalMediaID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_RemoveExternalMediaID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id              uuid.UUID
+		externalMediaID uuid.UUID
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("e70f1f3a-9c74-11ed-a5bc-076ae0e2cdbe"),
+			uuid.FromStringOrNil("e6e3a12a-9c74-11ed-a0fc-ff1ad2ae6a02"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &confbridgeHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConfbridgeRemoveExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(&confbridge.Confbridge{}, nil)
+
+			_, err := h.RemoveExternalMediaID(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

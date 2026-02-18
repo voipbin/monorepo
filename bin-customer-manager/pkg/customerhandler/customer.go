@@ -2,6 +2,7 @@ package customerhandler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -19,6 +20,11 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.C
 		"customer_id": id,
 	})
 	log.Debug("Deleteing the customer.")
+
+	// check the customer is deletable
+	if id == customer.GuestCustomerID {
+		return nil, fmt.Errorf("customer is guest customer")
+	}
 
 	// get customer info
 	c, err := h.Get(ctx, id)

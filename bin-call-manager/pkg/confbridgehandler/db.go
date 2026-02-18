@@ -45,7 +45,7 @@ func (h *confbridgeHandler) Create(
 		RecordingID:  uuid.Nil,
 		RecordingIDs: []uuid.UUID{},
 
-		ExternalMediaID: uuid.Nil,
+		ExternalMediaIDs: []uuid.UUID{},
 	}
 
 	// create a confbridge
@@ -130,14 +130,26 @@ func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 	return res, nil
 }
 
-// UpdateExternalMediaID updates the confbridge's external media id.
-func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
-
-	if errSet := h.db.ConfbridgeSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
-		return nil, errors.Wrapf(errSet, "could not set the external media id. confbridge_id: %s, external_media_id: %s", id, externalMediaID)
+// AddExternalMediaID adds an external media ID to the confbridge's external_media_ids array.
+func (h *confbridgeHandler) AddExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
+	if errAdd := h.db.ConfbridgeAddExternalMediaID(ctx, id, externalMediaID); errAdd != nil {
+		return nil, errors.Wrapf(errAdd, "could not add the external media id. confbridge_id: %s, external_media_id: %s", id, externalMediaID)
 	}
 
-	// get updated confbridge
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the updated confbridge. confbridge_id: %s", id)
+	}
+
+	return res, nil
+}
+
+// RemoveExternalMediaID removes an external media ID from the confbridge's external_media_ids array.
+func (h *confbridgeHandler) RemoveExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
+	if errRemove := h.db.ConfbridgeRemoveExternalMediaID(ctx, id, externalMediaID); errRemove != nil {
+		return nil, errors.Wrapf(errRemove, "could not remove the external media id. confbridge_id: %s, external_media_id: %s", id, externalMediaID)
+	}
+
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the updated confbridge. confbridge_id: %s", id)

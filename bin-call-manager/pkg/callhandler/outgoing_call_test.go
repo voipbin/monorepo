@@ -106,8 +106,9 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 				Type:      call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:  []uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
 
 				Status:      call.StatusDialing,
 				Direction:   call.DirectionOutgoing,
@@ -297,9 +298,10 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 				ActiveflowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
 				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-				Status:         call.StatusDialing,
+				ChainedCallIDs:  []uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+				Status:          call.StatusDialing,
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution:            "true",
 					call.DataTypeExecuteNextMasterOnHangup: "true",

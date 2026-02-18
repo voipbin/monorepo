@@ -990,7 +990,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 				tt.expectDirectionListen,
 				tt.expectDirectionSpeak,
 			).Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.call.ID, tt.responseExternalMedia.ID).Return(nil)
+			mockDB.EXPECT().CallAddExternalMediaID(ctx, tt.call.ID, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 			if err := h.actionExecute(ctx, tt.call); err != nil {
@@ -1014,8 +1014,8 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
 				},
-				ChannelID:       "4455e2f4-02f8-11ec-acf9-43a391fce607",
-				ExternalMediaID: uuid.FromStringOrNil("c7e222a4-96ef-11ed-a9c7-731c399f5537"),
+				ChannelID:        "4455e2f4-02f8-11ec-acf9-43a391fce607",
+				ExternalMediaIDs: []uuid.UUID{uuid.FromStringOrNil("c7e222a4-96ef-11ed-a9c7-731c399f5537")},
 				Action: fmaction.Action{
 					Type: fmaction.TypeExternalMediaStop,
 					ID:   uuid.FromStringOrNil("50ff55d4-1aa5-11ec-8d4e-7fc834754547"),
@@ -1047,7 +1047,9 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockExternal.EXPECT().Stop(ctx, tt.call.ExternalMediaID).Return(tt.responseExtMedia, nil)
+			for _, emID := range tt.call.ExternalMediaIDs {
+				mockExternal.EXPECT().Stop(ctx, emID).Return(tt.responseExtMedia, nil)
+			}
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {

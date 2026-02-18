@@ -177,18 +177,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStart(ctx, id, externa
 }
 
 // ExternalMediaStop mocks base method.
-func (m *MockConfbridgeHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) ExternalMediaStop(ctx context.Context, id, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStop", ctx, id)
+	ret := m.ctrl.Call(m, "ExternalMediaStop", ctx, id, externalMediaID)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExternalMediaStop indicates an expected call of ExternalMediaStop.
-func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStop(ctx, id any) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStop(ctx, id, externalMediaID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStop), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStop), ctx, id, externalMediaID)
 }
 
 // FlagAdd mocks base method.
@@ -364,19 +364,4 @@ func (m *MockConfbridgeHandler) Terminating(ctx context.Context, id uuid.UUID) (
 func (mr *MockConfbridgeHandlerMockRecorder) Terminating(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminating", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminating), ctx, id)
-}
-
-// UpdateExternalMediaID mocks base method.
-func (m *MockConfbridgeHandler) UpdateExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateExternalMediaID", ctx, id, externalMediaID)
-	ret0, _ := ret[0].(*confbridge.Confbridge)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateExternalMediaID indicates an expected call of UpdateExternalMediaID.
-func (mr *MockConfbridgeHandlerMockRecorder) UpdateExternalMediaID(ctx, id, externalMediaID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExternalMediaID", reflect.TypeOf((*MockConfbridgeHandler)(nil).UpdateExternalMediaID), ctx, id, externalMediaID)
 }

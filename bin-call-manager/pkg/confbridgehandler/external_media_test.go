@@ -89,7 +89,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 				externalmedia.DirectionBoth,
 				externalmedia.DirectionBoth,
 			).Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
+			mockDB.EXPECT().ConfbridgeAddExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.ExternalMediaStart(
@@ -118,7 +118,8 @@ func Test_ExternalMediaStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id              uuid.UUID
+		externalMediaID uuid.UUID
 
 		responseConfbridge    *confbridge.Confbridge
 		responseExternalMedia *externalmedia.ExternalMedia
@@ -126,13 +127,14 @@ func Test_ExternalMediaStop(t *testing.T) {
 		{
 			name: "normal",
 
-			id: uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
+			id:              uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
+			externalMediaID: uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558"),
 
 			responseConfbridge: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("46086f68-996f-11ed-a311-3bbc19b864b5"),
 				},
-				ExternalMediaID: uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558"),
+				ExternalMediaIDs: []uuid.UUID{uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558")},
 			},
 			responseExternalMedia: &externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("462aa10a-996f-11ed-8cd9-47103a32e558"),
@@ -158,11 +160,10 @@ func Test_ExternalMediaStop(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
-			mockExternal.EXPECT().Stop(ctx, tt.responseConfbridge.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, nil)
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, uuid.Nil).Return(nil)
+			mockExternal.EXPECT().Stop(ctx, tt.externalMediaID).Return(&externalmedia.ExternalMedia{}, nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
-			res, err := h.ExternalMediaStop(ctx, tt.id)
+			res, err := h.ExternalMediaStop(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

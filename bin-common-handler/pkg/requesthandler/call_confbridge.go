@@ -161,10 +161,21 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 // CallV1ConfbridgeExternalMediaStop sends a request to call-manager
 // to stop the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID, externalMediaID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	data := struct {
+		ExternalMediaID uuid.UUID `json:"external_media_id"`
+	}{
+		ExternalMediaID: externalMediaID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

@@ -417,7 +417,7 @@ type RequestHandler interface {
 		directionListen cmexternalmedia.Direction,
 		directionSpeak cmexternalmedia.Direction,
 	) (*cmcall.Call, error)
-	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID, externalMediaID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
 	CallV1CallsCreate(
@@ -514,7 +514,7 @@ type RequestHandler interface {
 		connectionType string, // client,server
 		format string, // ulaw
 	) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID, externalMediaID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)

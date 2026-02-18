@@ -24,7 +24,7 @@ func TestConfbridgeStruct(t *testing.T) {
 		ChannelCallIDs:  map[string]uuid.UUID{"channel-1": uuid.Must(uuid.NewV4())},
 		RecordingID:     recordingID,
 		RecordingIDs:    []uuid.UUID{recordingID},
-		ExternalMediaID: externalMediaID,
+		ExternalMediaIDs: []uuid.UUID{externalMediaID},
 	}
 	c.ID = id
 
@@ -61,8 +61,8 @@ func TestConfbridgeStruct(t *testing.T) {
 	if len(c.RecordingIDs) != 1 {
 		t.Errorf("Confbridge.RecordingIDs length = %v, expected %v", len(c.RecordingIDs), 1)
 	}
-	if c.ExternalMediaID != externalMediaID {
-		t.Errorf("Confbridge.ExternalMediaID = %v, expected %v", c.ExternalMediaID, externalMediaID)
+	if len(c.ExternalMediaIDs) != 1 || c.ExternalMediaIDs[0] != externalMediaID {
+		t.Errorf("Confbridge.ExternalMediaIDs = %v, expected [%v]", c.ExternalMediaIDs, externalMediaID)
 	}
 }
 

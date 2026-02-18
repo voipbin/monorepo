@@ -35,6 +35,9 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
 	}
+	if res.ExternalMediaIDs == nil {
+		res.ExternalMediaIDs = []uuid.UUID{}
+	}
 	if res.Data == nil {
 		res.Data = map[call.DataType]string{}
 	}
@@ -63,6 +66,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	}
 	if c.RecordingIDs == nil {
 		c.RecordingIDs = []uuid.UUID{}
+	}
+	if c.ExternalMediaIDs == nil {
+		c.ExternalMediaIDs = []uuid.UUID{}
 	}
 	if c.Dialroutes == nil {
 		c.Dialroutes = []rmroute.Route{}
@@ -442,11 +448,62 @@ func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID
 	})
 }
 
-// CallSetExternalMediaID sets the call's external_media_id
-func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
-	return h.CallUpdate(ctx, id, map[call.Field]any{
-		call.FieldExternalMediaID: externalMediaID,
-	})
+// CallAddExternalMediaID adds the external media id to the call's external_media_ids.
+func (h *handler) CallAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
+	q := `
+	update call_calls set
+		external_media_ids = json_array_append(
+			external_media_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallAddExternalMediaID. err: %v", err)
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CallRemoveExternalMediaID removes the external media id from the call's external_media_ids.
+func (h *handler) CallRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
+	q := `
+	update call_calls set
+		external_media_ids = IF(
+			json_search(external_media_ids, 'one', ?) IS NOT NULL,
+			json_remove(
+				external_media_ids, replace(
+					json_search(
+						external_media_ids,
+						'one',
+						?
+					),
+					'"',
+					''
+				)
+			),
+			external_media_ids
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.String(), externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallRemoveExternalMediaID. err: %v", err)
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
+
+	return nil
 }
 
 // CallSetForRouteFailover sets the call for route failover.

@@ -20,7 +20,7 @@ const (
 	FieldChainedCallIDs  Field = "chained_call_ids"  // chained_call_ids
 	FieldRecordingID     Field = "recording_id"      // recording_id
 	FieldRecordingIDs    Field = "recording_ids"     // recording_ids
-	FieldExternalMediaID Field = "external_media_id" // external_media_id
+	FieldExternalMediaIDs Field = "external_media_ids" // external_media_ids
 	FieldGroupcallID     Field = "groupcall_id"      // groupcall_id
 
 	FieldSource      Field = "source"      // source

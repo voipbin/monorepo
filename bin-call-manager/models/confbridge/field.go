@@ -21,7 +21,7 @@ const (
 	FieldRecordingID  Field = "recording_id"  // recording_id
 	FieldRecordingIDs Field = "recording_ids" // recording_ids
 
-	FieldExternalMediaID Field = "external_media_id" // external_media_id
+	FieldExternalMediaIDs Field = "external_media_ids" // external_media_ids
 
 	FieldTMCreate Field = "tm_create" // tm_create
 	FieldTMUpdate Field = "tm_update" // tm_update

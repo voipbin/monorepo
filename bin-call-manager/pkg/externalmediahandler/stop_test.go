@@ -42,6 +42,30 @@ func Test_Stop(t *testing.T) {
 				DirectionListen: "",
 			},
 		},
+		{
+			name:            "reference type call removes from parent",
+			externalMediaID: uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+
+			responseExternalMedia: &externalmedia.ExternalMedia{
+				ID:            uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ChannelID:     "b2c3d4e5-1111-2222-3333-444455556666",
+				ReferenceType: externalmedia.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c3d4e5f6-1111-2222-3333-444455556666"),
+			},
+		},
+		{
+			name:            "reference type confbridge removes from parent",
+			externalMediaID: uuid.FromStringOrNil("d4e5f6a7-1111-2222-3333-444455556666"),
+
+			responseExternalMedia: &externalmedia.ExternalMedia{
+				ID:            uuid.FromStringOrNil("d4e5f6a7-1111-2222-3333-444455556666"),
+				AsteriskID:    "42:01:0a:a4:00:05",
+				ChannelID:     "e5f6a7b8-1111-2222-3333-444455556666",
+				ReferenceType: externalmedia.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("f6a7b8c9-1111-2222-3333-444455556666"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -69,6 +93,13 @@ func Test_Stop(t *testing.T) {
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
 			mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
 			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.externalMediaID).Return(nil)
+
+			switch tt.responseExternalMedia.ReferenceType {
+			case externalmedia.ReferenceTypeCall:
+				mockDB.EXPECT().CallRemoveExternalMediaID(ctx, tt.responseExternalMedia.ReferenceID, tt.externalMediaID).Return(nil)
+			case externalmedia.ReferenceTypeConfbridge:
+				mockDB.EXPECT().ConfbridgeRemoveExternalMediaID(ctx, tt.responseExternalMedia.ReferenceID, tt.externalMediaID).Return(nil)
+			}
 
 			res, err := h.Stop(ctx, tt.externalMediaID)
 			if err != nil {

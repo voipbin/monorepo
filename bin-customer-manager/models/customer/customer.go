@@ -60,4 +60,7 @@ var (
 	// voipbin internal service's customer id
 	IDCallManager = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000001")
 	IDAIManager   = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000002")
+
+	// GuestCustomerID is the guest/demo account customer id.
+	GuestCustomerID = uuid.FromStringOrNil("a856c986-4b06-4496-9641-4d0ecbc67df5")
 )
