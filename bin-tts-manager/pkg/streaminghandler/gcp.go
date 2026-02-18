@@ -3,6 +3,7 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -42,7 +43,7 @@ type GCPConfig struct {
 
 const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
-	defaultGCPStreamingSampleRate = int32(8000)
+	defaultGCPStreamingSampleRate = int32(16000)
 	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
 )
 
@@ -279,6 +280,9 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 
 		resp, err := stream.Recv()
 		if err != nil {
+			if err != io.EOF {
+				promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()
+			}
 			log.Infof("GCP stream ended: %v", err)
 			return
 		}
@@ -289,6 +293,7 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 		}
 
 		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
+			promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
 			return
 		}
@@ -319,6 +324,7 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 	}
 
 	if err := cf.Stream.Send(req); err != nil {
+		promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameGCP)).Inc()
 		return errors.Wrapf(err, "failed to send text to GCP stream")
 	}
 

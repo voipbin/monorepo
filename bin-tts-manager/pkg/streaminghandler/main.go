@@ -60,7 +60,7 @@ const (
 	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
 	defaultTransport      = string(cmexternalmedia.TransportTCP)
 	defaultConnectionType = "client"
-	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
+	defaultFormat         = "slin16" // 16kHz, 16bit, mono signed linear PCM
 )
 
 const (

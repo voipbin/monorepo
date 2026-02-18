@@ -44,7 +44,7 @@ type AWSConfig struct {
 
 const (
 	defaultAWSStreamingRegion     = "eu-central-1"
-	defaultAWSStreamingSampleRate = "8000"
+	defaultAWSStreamingSampleRate = "16000"
 	defaultAWSDefaultVoiceID      = "Joanna"
 	defaultAWSAudioChBuffer       = 64
 )
@@ -234,6 +234,7 @@ func (h *awsHandler) runProcess(cf *AWSConfig) {
 			}
 
 			if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
+				promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameAWS)).Inc()
 				log.Errorf("Could not write audio to asterisk: %v", errWrite)
 				return
 			}
@@ -259,6 +260,7 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 
 	resp, err := cf.Client.SynthesizeSpeech(cf.Ctx, input)
 	if err != nil {
+		promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameAWS)).Inc()
 		return errors.Wrapf(err, "failed to synthesize speech via AWS Polly")
 	}
 	defer func() {
@@ -281,6 +283,7 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 		}
 		if readErr != nil {
 			if readErr != io.EOF {
+				promStreamingErrorTotal.WithLabelValues(string(streaming.VendorNameAWS)).Inc()
 				log.Errorf("Error reading AWS Polly audio stream: %v", readErr)
 				return errors.Wrapf(readErr, "error reading AWS Polly audio stream")
 			}

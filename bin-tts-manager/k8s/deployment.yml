@@ -68,7 +68,7 @@ spec:
               containerPort: 2112
           resources:
             limits:
-              cpu: "20m"
+              cpu: "60m"
               memory: "60M"
 
         - name: http-server

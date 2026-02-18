@@ -76,9 +76,10 @@ func (h *streamingHandler) createWithID(
 	h.mapStreaming[id] = res
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingCreated, res)
 
-	// metrics: track creation (vendor is not yet known at this point, use "unknown")
+	// metrics: track creation
+	// Note: vendor is not yet known at creation time. The streaming_active gauge
+	// is updated in SetVendorInfo when the vendor is established.
 	promStreamingCreatedTotal.WithLabelValues("unknown").Inc()
-	promStreamingActive.WithLabelValues("unknown").Inc()
 	promStreamingLanguageTotal.WithLabelValues(language, string(gender)).Inc()
 
 	return res, nil
@@ -109,13 +110,21 @@ func (h *streamingHandler) Delete(ctx context.Context, streamingID uuid.UUID) {
 	delete(h.mapStreaming, streamingID)
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingDeleted, tmp)
 
-	// metrics: track session end
+	// Atomically read and clear the vendor under VendorLock to prevent
+	// double-decrement with a concurrent SetVendorInfo call.
+	tmp.VendorLock.Lock()
 	vendor := string(tmp.VendorName)
+	if tmp.VendorName != streaming.VendorNameNone {
+		promStreamingActive.WithLabelValues(vendor).Dec()
+		tmp.VendorName = streaming.VendorNameNone
+		tmp.VendorConfig = nil
+	}
+	tmp.VendorLock.Unlock()
+
 	if vendor == "" {
 		vendor = "unknown"
 	}
 	promStreamingEndedTotal.WithLabelValues(vendor).Inc()
-	promStreamingActive.WithLabelValues("unknown").Dec()
 	promStreamingDurationSeconds.WithLabelValues(vendor).Observe(time.Since(tmp.CreatedAt).Seconds())
 }
 
@@ -145,10 +154,19 @@ func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst net.Conn
 	return res, nil
 }
 
-func (h *streamingHandler) SetVendorInfo(st *streaming.Streaming, venderName streaming.VendorName, vendorConfig any) {
+func (h *streamingHandler) SetVendorInfo(st *streaming.Streaming, vendorName streaming.VendorName, vendorConfig any) {
 	st.VendorLock.Lock()
 	defer st.VendorLock.Unlock()
 
-	st.VendorName = venderName
+	oldVendor := st.VendorName
+	st.VendorName = vendorName
 	st.VendorConfig = vendorConfig
+
+	// Update the active gauge on vendor transitions
+	if oldVendor != streaming.VendorNameNone {
+		promStreamingActive.WithLabelValues(string(oldVendor)).Dec()
+	}
+	if vendorName != streaming.VendorNameNone {
+		promStreamingActive.WithLabelValues(string(vendorName)).Inc()
+	}
 }
