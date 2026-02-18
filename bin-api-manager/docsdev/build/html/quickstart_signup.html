@@ -184,9 +184,9 @@
                         <main role="main" id="main">
     <section id="signup">
 <span id="quickstart-signup"></span><h1>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h1>
-<p>To use the VoIPBIN production API, you need your own account.</p>
-<section id="how-to-sign-up">
-<h2>How to Sign Up<a class="headerlink" href="#how-to-sign-up" title="Link to this heading"></a></h2>
+<p>To use the VoIPBIN production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).</p>
+<section id="sign-up-via-admin-console">
+<h2>Sign up via Admin Console<a class="headerlink" href="#sign-up-via-admin-console" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Go to the <a class="reference external" href="https://admin.voipbin.net">admin console</a>.</p></li>
 <li><p>Click <strong>Sign Up</strong>.</p></li>
@@ -196,6 +196,82 @@
 <li><p>You will receive a welcome email with instructions to set your password.</p></li>
 </ol>
 <p>Once your password is set, you can log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and start making API requests.</p>
+</section>
+<section id="sign-up-via-api-headless">
+<h2>Sign up via API (Headless)<a class="headerlink" href="#sign-up-via-api-headless" title="Link to this heading"></a></h2>
+<p>For automated systems and AI agents, use the headless signup flow. This requires two API calls: one to initiate signup and one to verify with a 6-digit OTP code sent to your email.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The headless signup path is preferred for AI agents and automated systems. The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/complete-signup</span></code> response includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with an API token that can be used immediately — no need to call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> separately. Note that <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns HTTP 200 regardless of success to prevent email enumeration. An empty <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> in the response may indicate the email is already registered or invalid.</p>
+</div>
+<p><strong>Step 1: Initiate signup</strong></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code> with your email address (String, Required). All other fields are optional.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/signup&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;email&quot;: &quot;your-email@example.com&quot;,
+        &quot;name&quot;: &quot;Your Company Name&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response (always HTTP 200):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;temp_token&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> (String) — you will need it in the next step. A 6-digit OTP verification code is sent to the email address you provided.</p>
+<p><strong>Step 2: Complete signup with OTP</strong></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/complete-signup</span></code> with the <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> (String, Required) from Step 1 and the 6-digit <code class="docutils literal notranslate"><span class="pre">code</span></code> (String, Required) from the verification email.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/complete-signup&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;temp_token&quot;: &quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4&quot;,
+        &quot;code&quot;: &quot;123456&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;accesskey&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;your-api-access-key-token&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>200 OK but empty ``temp_token``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The email may already be registered, or the email format is invalid.</p></li>
+<li><p><strong>Fix:</strong> Try logging in via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> with the email. If the account exists, use the existing credentials. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns 200 to prevent email enumeration.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request on ``/auth/complete-signup``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> has expired or the <code class="docutils literal notranslate"><span class="pre">code</span></code> is incorrect.</p></li>
+<li><p><strong>Fix:</strong> Verify the 6-digit code from the verification email. Codes expire after a limited time — if expired, re-submit <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> to receive a new code.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>429 Too Many Requests on ``/auth/complete-signup``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Too many verification attempts (maximum 5 per <code class="docutils literal notranslate"><span class="pre">temp_token</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Re-submit <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> with the same email to receive a new <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> and verification code, then retry.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 </section>
 
@@ -208,7 +284,9 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Signup</a><ul>
-<li><a class="reference internal" href="#how-to-sign-up">How to Sign Up</a></li>
+<li><a class="reference internal" href="#sign-up-via-admin-console">Sign up via Admin Console</a></li>
+<li><a class="reference internal" href="#sign-up-via-api-headless">Sign up via API (Headless)</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

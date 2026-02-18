@@ -186,12 +186,12 @@
                         <main role="main" id="main">
     <section id="quickstart">
 <span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
-<p>There are two ways to get started with VoIPBin:</p>
+<p>There are two ways to get started with VoIPBIN:</p>
 <ul class="simple">
-<li><p><strong>Try the Demo</strong> — Click the <strong>Try Demo Account</strong> button at <a class="reference external" href="https://admin.voipbin.net">admin.voipbin.net</a> to explore VoIPBin instantly. No setup or sign-up needed.</p></li>
-<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBin platform on your local machine using Docker. See the <a class="reference internal" href="#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
+<li><p><strong>Try the Demo</strong> — Click the <strong>Try Demo Account</strong> button at <a class="reference external" href="https://admin.voipbin.net">admin.voipbin.net</a> to explore VoIPBIN instantly. No setup or sign-up needed.</p></li>
+<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBIN platform on your local machine using Docker. See the <a class="reference internal" href="quickstart_sandbox.html#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
 </ul>
-<p>For production use, you can <a class="reference internal" href="#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
+<p>For production use, you can <a class="reference internal" href="quickstart_signup.html#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
 <section id="sandbox">
 <span id="quickstart-sandbox"></span><h2>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading"></a></h2>
 <p>The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
@@ -243,12 +243,49 @@ $ sudo ./voipbin
 </pre></div>
 </div>
 </section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>“init” or “start” command fails:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Docker daemon is not running or Docker Compose v2 is not installed.</p></li>
+<li><p><strong>Fix:</strong> Verify Docker is running with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">version</span></code>. Must show v2.x or later.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Port 8443 already in use:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Another service is occupying port 8443.</p></li>
+<li><p><strong>Fix:</strong> Stop the conflicting service, or check with <code class="docutils literal notranslate"><span class="pre">ss</span> <span class="pre">-tlnp</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">8443</span></code> (Linux) / <code class="docutils literal notranslate"><span class="pre">lsof</span> <span class="pre">-i</span> <span class="pre">:8443</span></code> (macOS).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>SSL certificate error (without ``-k`` flag):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox uses a self-signed SSL certificate that is not trusted by default.</p></li>
+<li><p><strong>Fix:</strong> Add the <code class="docutils literal notranslate"><span class="pre">-k</span></code> flag to all curl commands when using the Sandbox.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized with default credentials:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox has not fully initialized.</p></li>
+<li><p><strong>Fix:</strong> Run <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">init</span></code> again and wait for it to complete before running <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">start</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 <section id="signup">
 <span id="quickstart-signup"></span><h2>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h2>
-<p>To use the VoIPBIN production API, you need your own account.</p>
-<section id="how-to-sign-up">
-<h3>How to Sign Up<a class="headerlink" href="#how-to-sign-up" title="Link to this heading"></a></h3>
+<p>To use the VoIPBIN production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).</p>
+<section id="sign-up-via-admin-console">
+<h3>Sign up via Admin Console<a class="headerlink" href="#sign-up-via-admin-console" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>Go to the <a class="reference external" href="https://admin.voipbin.net">admin console</a>.</p></li>
 <li><p>Click <strong>Sign Up</strong>.</p></li>
@@ -258,6 +295,82 @@ $ sudo ./voipbin
 <li><p>You will receive a welcome email with instructions to set your password.</p></li>
 </ol>
 <p>Once your password is set, you can log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and start making API requests.</p>
+</section>
+<section id="sign-up-via-api-headless">
+<h3>Sign up via API (Headless)<a class="headerlink" href="#sign-up-via-api-headless" title="Link to this heading"></a></h3>
+<p>For automated systems and AI agents, use the headless signup flow. This requires two API calls: one to initiate signup and one to verify with a 6-digit OTP code sent to your email.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The headless signup path is preferred for AI agents and automated systems. The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/complete-signup</span></code> response includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with an API token that can be used immediately — no need to call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> separately. Note that <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns HTTP 200 regardless of success to prevent email enumeration. An empty <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> in the response may indicate the email is already registered or invalid.</p>
+</div>
+<p><strong>Step 1: Initiate signup</strong></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code> with your email address (String, Required). All other fields are optional.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/signup&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;email&quot;: &quot;your-email@example.com&quot;,
+        &quot;name&quot;: &quot;Your Company Name&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response (always HTTP 200):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;temp_token&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> (String) — you will need it in the next step. A 6-digit OTP verification code is sent to the email address you provided.</p>
+<p><strong>Step 2: Complete signup with OTP</strong></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/complete-signup</span></code> with the <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> (String, Required) from Step 1 and the 6-digit <code class="docutils literal notranslate"><span class="pre">code</span></code> (String, Required) from the verification email.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/complete-signup&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;temp_token&quot;: &quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4&quot;,
+        &quot;code&quot;: &quot;123456&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;accesskey&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;your-api-access-key-token&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+</section>
+<section id="id2">
+<h3>Troubleshooting<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>200 OK but empty ``temp_token``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The email may already be registered, or the email format is invalid.</p></li>
+<li><p><strong>Fix:</strong> Try logging in via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> with the email. If the account exists, use the existing credentials. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns 200 to prevent email enumeration.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request on ``/auth/complete-signup``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> has expired or the <code class="docutils literal notranslate"><span class="pre">code</span></code> is incorrect.</p></li>
+<li><p><strong>Fix:</strong> Verify the 6-digit code from the verification email. Codes expire after a limited time — if expired, re-submit <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> to receive a new code.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>429 Too Many Requests on ``/auth/complete-signup``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Too many verification attempts (maximum 5 per <code class="docutils literal notranslate"><span class="pre">temp_token</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Re-submit <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> with the same email to receive a new <code class="docutils literal notranslate"><span class="pre">temp_token</span></code> and verification code, then retry.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 </section>
 <section id="authentication">
@@ -305,8 +418,8 @@ $ sudo ./voipbin
 </pre></div>
 </div>
 </section>
-<section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<section id="id4">
+<h3>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>401 Unauthorized:</strong></dt><dd><ul>
@@ -334,6 +447,145 @@ $ sudo ./voipbin
 </li>
 </ul>
 <p>For more details, see the full <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey tutorial</span></a>.</p>
+</section>
+</section>
+<section id="receiving-events">
+<span id="quickstart-events"></span><h2>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading"></a></h2>
+<p>VoIPBIN notifies you in real-time when things happen — calls connect, messages arrive, recordings complete, transcriptions finish. There are two delivery methods:</p>
+<ul class="simple">
+<li><p><strong>Webhook</strong> — VoIPBIN sends HTTP POST requests to your server endpoint.</p></li>
+<li><p><strong>WebSocket</strong> — You maintain a persistent connection and receive events instantly.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For AI agents and automated systems, <strong>WebSocket is preferred</strong> because it requires no public server endpoint and delivers events with lower latency. Use <strong>Webhook</strong> when you have a persistent server that needs to process events asynchronously (e.g., updating a database, sending notifications).</p>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Webhook</p></th>
+<th class="head"><p>WebSocket</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Connection</p></td>
+<td><p>Stateless HTTP pushes to your server</p></td>
+<td><p>Persistent bidirectional connection</p></td>
+</tr>
+<tr class="row-odd"><td><p>Setup</p></td>
+<td><p>Register URL via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webhooks</span></code></p></td>
+<td><p>Connect to <code class="docutils literal notranslate"><span class="pre">wss://</span></code> endpoint</p></td>
+</tr>
+<tr class="row-even"><td><p>Best for</p></td>
+<td><p>Server-side integrations, CI/CD pipelines</p></td>
+<td><p>Real-time dashboards, AI agents</p></td>
+</tr>
+<tr class="row-odd"><td><p>Requires</p></td>
+<td><p>Public HTTPS endpoint</p></td>
+<td><p>WebSocket client library</p></td>
+</tr>
+</tbody>
+</table>
+<section id="webhook">
+<h3>Webhook<a class="headerlink" href="#webhook" title="Link to this heading"></a></h3>
+<p>Register an endpoint URL, and VoIPBIN sends HTTP POST requests to it when events occur.</p>
+<p><strong>Create a webhook:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;My webhook&quot;,
+        &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;event_types&quot;: [
+            &quot;call_created&quot;,
+            &quot;call_updated&quot;,
+            &quot;call_hungup&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My webhook&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/voipbin/webhook&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;event_types&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;call_created&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_updated&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_hungup&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-19 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-19 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">uri</span></code> each time a matching event occurs. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Event types in the <code class="docutils literal notranslate"><span class="pre">event_types</span></code> registration and the delivered payload both use underscore notation (e.g., <code class="docutils literal notranslate"><span class="pre">call_created</span></code>, <code class="docutils literal notranslate"><span class="pre">message_received</span></code>). Your endpoint must be publicly accessible — for local development, use a tunneling tool (e.g., ngrok).</p>
+</div>
+<p>For the full webhook guide, see <a class="reference internal" href="webhook.html#webhook-main"><span class="std std-ref">Webhook documentation</span></a>.</p>
+</section>
+<section id="websocket">
+<h3>WebSocket<a class="headerlink" href="#websocket" title="Link to this heading"></a></h3>
+<p>Connect to VoIPBIN’s WebSocket endpoint and subscribe to topics to receive events in real-time.</p>
+<p><strong>Connect:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
+</pre></div>
+</div>
+<p><strong>Subscribe to events</strong> by sending a JSON message after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all calls under your account.</p>
+<p><strong>Python example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
+<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
+
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{}),</span><span class="w"> </span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to call events. Waiting...&quot;</span><span class="p">)</span>
+
+<span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+    <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
+<span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The topic format is <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> as the <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> to subscribe to all resources of a type (e.g., <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:call:*</span></code> for all call events, <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:message:*</span></code> for all message events). If the WebSocket connection drops, all subscriptions are lost — implement automatic reconnection and re-subscribe after reconnecting.</p>
+</div>
+<p>For the full WebSocket guide, see <a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket documentation</span></a>.</p>
 </section>
 </section>
 <section id="call">
@@ -398,6 +650,16 @@ $ sudo ./voipbin
 <span class="p">]</span>
 </pre></div>
 </div>
+<p><strong>Call status lifecycle:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dialing</span></code>: The system is currently dialing the destination number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ringing</span></code>: The destination device is ringing, awaiting answer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">progressing</span></code>: The call is answered. Audio is flowing between parties.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">terminating</span></code>: The system is ending the call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: The originator canceled the call before it was answered (outgoing calls only).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hangup</span></code>: The call has ended. This is the final state.</p></li>
+</ul>
+<p>For the full call lifecycle, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a>.</p>
 </section>
 <section id="make-a-call-with-an-existing-flow">
 <h3>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h3>
@@ -425,6 +687,35 @@ $ sudo ./voipbin
 <p>The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID) must reference an existing flow. Obtain one from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. If the flow does not exist, the API returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></code>.</p>
 </div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
+<section id="id5">
+<h4>Troubleshooting<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.</p></li>
+<li><p><strong>Fix:</strong> Verify your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure all phone numbers start with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by digits only (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found (when using ``flow_id``):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> does not reference an existing flow.</p></li>
+<li><p><strong>Fix:</strong> Verify the flow exists via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> if needed.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call status immediately shows “hangup”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The destination number is unreachable, or the source number has no telephony provider attached.</p></li>
+<li><p><strong>Fix:</strong> For testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) as the destination — these are free and route internally within VoIPBIN.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 </section>
 <section id="queue">
@@ -490,6 +781,35 @@ $ sudo ./voipbin
 <p><code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> and <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code> are in milliseconds, not seconds. A common mistake is setting <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100</span></code> (0.1 seconds) instead of <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100000</span></code> (100 seconds). Always verify the unit when setting timeouts.</p>
 </div>
 <p>For more details, see the <a class="reference internal" href="queue_tutorial.html#queue-tutorial"><span class="std std-ref">Queue tutorial</span></a>.</p>
+<section id="id6">
+<h4>Troubleshooting<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> contains an invalid UUID, or required fields are missing.</p></li>
+<li><p><strong>Fix:</strong> Verify tag IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Ensure <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> is a non-empty array of valid UUIDs.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Queue created but calls are not routed to agents:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> No agents with matching tags are online or in <code class="docutils literal notranslate"><span class="pre">available</span></code> status.</p></li>
+<li><p><strong>Fix:</strong> Verify agents have matching tags via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Check that at least one agent is in <code class="docutils literal notranslate"><span class="pre">available</span></code> status.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Callers timing out immediately:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> is set too low. The value is in <strong>milliseconds</strong>, not seconds.</p></li>
+<li><p><strong>Fix:</strong> For a 100-second wait, set <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100000</span></code>. Setting <code class="docutils literal notranslate"><span class="pre">100</span></code> means only 0.1 seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 </section>
 <section id="transcribe">
@@ -843,8 +1163,8 @@ $ sudo ./voipbin
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">direction</span></code> field distinguishes speakers: <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> is the TTS greeting played by VoIPBIN, <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> is the caller’s speech.</p>
-<section id="id3">
-<h4>Troubleshooting<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<section id="id7">
+<h4>Troubleshooting<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>No transcription events received:</strong></dt><dd><ul>
@@ -885,7 +1205,7 @@ $ sudo ./voipbin
 </section>
 <section id="what-s-next">
 <span id="quickstart-next"></span><h2>What’s Next<a class="headerlink" href="#what-s-next" title="Link to this heading"></a></h2>
-<p>Now that you have made your first API calls, explore the full capabilities of VoIPBin:</p>
+<p>Now that you have made your first API calls, explore the full capabilities of VoIPBIN:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a> — Build programmable voice workflows with the visual flow builder.</p></li>
 <li><p><span class="xref std std-ref">AI</span> — Integrate AI-powered voice agents with real-time speech processing.</p></li>
@@ -893,6 +1213,11 @@ $ sudo ./voipbin
 <li><p><a class="reference internal" href="conversation.html#conversation-main"><span class="std std-ref">Conversation</span></a> — Manage messaging conversations.</p></li>
 </ul>
 <p>For the complete API reference, visit the <a class="reference external" href="https://api.voipbin.net/redoc/index.html">API documentation</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The full OpenAPI 3.0 specification is available as machine-readable JSON at <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/openapi.json</span></code>. Use this for automated client generation, API discovery, and building integrations programmatically.</p>
+</div>
 </section>
 </section>
 
@@ -916,25 +1241,39 @@ $ sudo ./voipbin
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#install-and-run">Install and Run</a></li>
 <li><a class="reference internal" href="#using-tutorials-with-the-sandbox">Using Tutorials with the Sandbox</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#signup">Signup</a><ul>
-<li><a class="reference internal" href="#how-to-sign-up">How to Sign Up</a></li>
+<li><a class="reference internal" href="#sign-up-via-admin-console">Sign up via Admin Console</a></li>
+<li><a class="reference internal" href="#sign-up-via-api-headless">Sign up via API (Headless)</a></li>
+<li><a class="reference internal" href="#id2">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#authentication">Authentication</a><ul>
 <li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
 <li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#receiving-events">Receiving Events</a><ul>
+<li><a class="reference internal" href="#webhook">Webhook</a></li>
+<li><a class="reference internal" href="#websocket">WebSocket</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#call">Call</a><ul>
 <li><a class="reference internal" href="#make-a-call-with-inline-actions">Make a call with inline actions</a></li>
-<li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a></li>
+<li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a><ul>
+<li><a class="reference internal" href="#id5">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#queue">Queue</a><ul>
-<li><a class="reference internal" href="#create-a-queue">Create a queue</a></li>
+<li><a class="reference internal" href="#create-a-queue">Create a queue</a><ul>
+<li><a class="reference internal" href="#id6">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#transcribe">Transcribe</a><ul>
@@ -945,7 +1284,7 @@ $ sudo ./voipbin
 <li><a class="reference internal" href="#step-5-receive-real-time-transcription-events">Step 5: Receive real-time transcription events</a></li>
 <li><a class="reference internal" href="#receive-events-via-webhook-alternative">Receive events via webhook (alternative)</a></li>
 <li><a class="reference internal" href="#step-6-verify-transcription-results">Step 6: Verify transcription results</a><ul>
-<li><a class="reference internal" href="#id3">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id7">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
