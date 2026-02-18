@@ -188,7 +188,7 @@
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags are used to match agents to queues.</p></li>
 <li><p>At least one agent with the matching tag assigned. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags.</p></li>
 </ul>
@@ -249,6 +249,35 @@
 <p>For more details, see the <a class="reference internal" href="queue_tutorial.html#queue-tutorial"><span class="std std-ref">Queue tutorial</span></a>.</p>
 </section>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> contains an invalid UUID, or required fields are missing.</p></li>
+<li><p><strong>Fix:</strong> Verify tag IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Ensure <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> is a non-empty array of valid UUIDs.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Queue created but calls are not routed to agents:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> No agents with matching tags are online or in <code class="docutils literal notranslate"><span class="pre">available</span></code> status.</p></li>
+<li><p><strong>Fix:</strong> Verify agents have matching tags via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Check that at least one agent is in <code class="docutils literal notranslate"><span class="pre">available</span></code> status.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Callers timing out immediately:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code> is set too low. The value is in <strong>milliseconds</strong>, not seconds.</p></li>
+<li><p><strong>Fix:</strong> For a 100-second wait, set <code class="docutils literal notranslate"><span class="pre">timeout_wait:</span> <span class="pre">100000</span></code>. Setting <code class="docutils literal notranslate"><span class="pre">100</span></code> means only 0.1 seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 
 </main>
@@ -264,6 +293,7 @@
 <li><a class="reference internal" href="#create-a-queue">Create a queue</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

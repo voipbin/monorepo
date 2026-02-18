@@ -1245,3 +1245,142 @@ func Test_reconsumerAll_allRetriesFail(t *testing.T) {
 		t.Errorf("Expected 3 consume calls (all retries), got %d", callCount)
 	}
 }
+
+// ============================================================================
+// checkConnection() Tests
+// ============================================================================
+
+func TestCheckConnection_ReturnsErrorWhenChannelFails(t *testing.T) {
+	mockConn := newMockConnection()
+	mockConn.channelErr = errors.New("connection dead")
+
+	r := &rabbit{
+		connection: mockConn,
+	}
+
+	err := r.checkConnection()
+
+	if err == nil {
+		t.Error("Expected error when Channel() fails")
+	}
+	if mockConn.channelCallCnt != 1 {
+		t.Errorf("Expected 1 Channel() call, got %d", mockConn.channelCallCnt)
+	}
+}
+
+func TestCheckConnection_ReturnsNilOnSuccess(t *testing.T) {
+	mockConn := newMockConnection()
+
+	r := &rabbit{
+		connection: mockConn,
+	}
+
+	err := r.checkConnection()
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if mockConn.channelCallCnt != 1 {
+		t.Errorf("Expected 1 Channel() call, got %d", mockConn.channelCallCnt)
+	}
+}
+
+// ============================================================================
+// healthChecker() Tests
+// ============================================================================
+
+func TestHealthChecker_ForcesReconnectOnDeadConnection(t *testing.T) {
+	mockConn := newMockConnection()
+	mockConn.channelErr = errors.New("connection dead")
+
+	r := &rabbit{
+		uri:                 "amqp://localhost",
+		connection:          mockConn,
+		healthCheckInterval: 50 * time.Millisecond,
+		queues:              make(map[string]*queue),
+		exchanges:           make(map[string]*exchange),
+		queueBinds:          make(map[string]*queueBind),
+	}
+
+	done := make(chan struct{})
+	go func() {
+		r.healthChecker()
+		close(done)
+	}()
+
+	// Wait for at least one tick
+	time.Sleep(150 * time.Millisecond)
+	r.closed.Store(true)
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("healthChecker did not exit")
+	}
+
+	if mockConn.closeCalled < 1 {
+		t.Errorf("Expected connection.Close() to be called at least once, got %d", mockConn.closeCalled)
+	}
+}
+
+func TestHealthChecker_ExitsWhenClosed(t *testing.T) {
+	mockConn := newMockConnection()
+
+	r := &rabbit{
+		uri:                 "amqp://localhost",
+		connection:          mockConn,
+		healthCheckInterval: 50 * time.Millisecond,
+		queues:              make(map[string]*queue),
+		exchanges:           make(map[string]*exchange),
+		queueBinds:          make(map[string]*queueBind),
+	}
+
+	r.closed.Store(true)
+
+	done := make(chan struct{})
+	go func() {
+		r.healthChecker()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// healthChecker exited as expected
+	case <-time.After(2 * time.Second):
+		t.Fatal("healthChecker did not exit after closed flag was set")
+	}
+}
+
+func TestHealthChecker_DoesNotCloseHealthyConnection(t *testing.T) {
+	mockConn := newMockConnection()
+	// channelErr is nil — Channel() returns nil, nil (success)
+
+	r := &rabbit{
+		uri:                 "amqp://localhost",
+		connection:          mockConn,
+		healthCheckInterval: 50 * time.Millisecond,
+		queues:              make(map[string]*queue),
+		exchanges:           make(map[string]*exchange),
+		queueBinds:          make(map[string]*queueBind),
+	}
+
+	done := make(chan struct{})
+	go func() {
+		r.healthChecker()
+		close(done)
+	}()
+
+	// Wait for a few ticks
+	time.Sleep(200 * time.Millisecond)
+	r.closed.Store(true)
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("healthChecker did not exit")
+	}
+
+	if mockConn.closeCalled != 0 {
+		t.Errorf("Expected connection.Close() NOT to be called, got %d", mockConn.closeCalled)
+	}
+}

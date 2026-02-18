@@ -233,6 +233,43 @@ $ sudo ./voipbin
 </pre></div>
 </div>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>“init” or “start” command fails:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Docker daemon is not running or Docker Compose v2 is not installed.</p></li>
+<li><p><strong>Fix:</strong> Verify Docker is running with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">version</span></code>. Must show v2.x or later.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Port 8443 already in use:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Another service is occupying port 8443.</p></li>
+<li><p><strong>Fix:</strong> Stop the conflicting service, or check with <code class="docutils literal notranslate"><span class="pre">ss</span> <span class="pre">-tlnp</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">8443</span></code> (Linux) / <code class="docutils literal notranslate"><span class="pre">lsof</span> <span class="pre">-i</span> <span class="pre">:8443</span></code> (macOS).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>SSL certificate error (without ``-k`` flag):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox uses a self-signed SSL certificate that is not trusted by default.</p></li>
+<li><p><strong>Fix:</strong> Add the <code class="docutils literal notranslate"><span class="pre">-k</span></code> flag to all curl commands when using the Sandbox.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized with default credentials:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox has not fully initialized.</p></li>
+<li><p><strong>Fix:</strong> Run <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">init</span></code> again and wait for it to complete before running <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">start</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 
 </main>
@@ -247,6 +284,7 @@ $ sudo ./voipbin
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#install-and-run">Install and Run</a></li>
 <li><a class="reference internal" href="#using-tutorials-with-the-sandbox">Using Tutorials with the Sandbox</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
