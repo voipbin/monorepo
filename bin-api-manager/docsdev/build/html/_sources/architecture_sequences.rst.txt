@@ -3,6 +3,10 @@
 Call Flow Sequences
 ===================
 
+.. note:: **AI Context**
+
+   This page provides detailed sequence diagrams for VoIPBIN's core operations: inbound call flow (PSTN to flow execution), outbound campaign flow, AI voice assistant (Pipecat hybrid architecture), call transfer sequences (blind and attended), queue call distribution, conference join, and webhook delivery. Relevant when an AI agent needs to understand the exact component interactions for specific call scenarios or integration points.
+
 This section provides detailed sequence diagrams for VoIPBIN's core call flows, showing how components interact during real-world scenarios.
 
 Inbound Call Flow

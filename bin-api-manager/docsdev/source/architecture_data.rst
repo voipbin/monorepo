@@ -3,6 +3,10 @@
 Data Architecture
 =================
 
+.. note:: **AI Context**
+
+   This page describes VoIPBIN's data layer: shared MySQL database (schema organization, common table patterns, migrations via Alembic), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.
+
 VoIPBIN uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.
 
 Data Layer Overview

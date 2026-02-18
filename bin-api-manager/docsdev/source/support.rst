@@ -20,7 +20,7 @@ When contacting us, please include:
 
 - Detailed description of the issue or question
 - Your deployment environment (GCP, on-premise, etc.)
-- VoIPBin version or commit hash you're running
+- VoIPBIN version or commit hash you're running
 - Relevant log outputs or error messages
 - Steps to reproduce the issue
 - Expected vs actual behavior
@@ -33,14 +33,17 @@ Additional Resources
 
 **Documentation:**
 
-- **API Reference (Swagger):** https://api.voipbin.net/swagger/index.html
 - **API Reference (ReDoc):** https://api.voipbin.net/redoc/index.html
-- **Developer Docs:** https://docs.voipbin.net/
+- **Developer Docs (Sphinx):** https://api.voipbin.net/docs/
 
 **Web Interfaces:**
 
 - **Admin Console:** https://admin.voipbin.net/
 - **Agent Interface:** https://talk.voipbin.net/
+
+.. note:: **AI Implementation Hint**
+
+   For programmatic debugging, check the resource status via ``GET /<resource>/{id}`` and review recent events via WebSocket or webhook logs. Most issues can be diagnosed by examining the call/flow/transcribe status fields.
 
 .. _support-troubleshooting-tips:
 

@@ -184,6 +184,11 @@
                         <main role="main" id="main">
     <section id="deployment-architecture">
 <span id="architecture-deployment"></span><h1>Deployment Architecture<a class="headerlink" href="#deployment-architecture" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page describes VoIPBIN’s production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.</p>
+</div>
 <p>VoIPBIN runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.</p>
 <section id="infrastructure-overview">
 <h2>Infrastructure Overview<a class="headerlink" href="#infrastructure-overview" title="Link to this heading"></a></h2>

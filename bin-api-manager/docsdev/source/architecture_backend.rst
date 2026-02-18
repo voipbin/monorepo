@@ -3,6 +3,10 @@
 Backend Microservices
 ======================
 
+.. note:: **AI Context**
+
+   This page describes VoIPBIN's 30+ Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
+
 VoIPBIN's backend consists of 30+ specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
 
 Microservices Organization
