@@ -188,8 +188,9 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:  []uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeTel,
@@ -382,8 +383,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:  []uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeTel,
@@ -574,8 +576,9 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:  []uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeTel,

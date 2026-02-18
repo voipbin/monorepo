@@ -36,7 +36,7 @@ type Call struct {
 	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids,omitempty" db:"chained_call_ids,json"` // chained call ids
 	RecordingID     uuid.UUID   `json:"recording_id,omitempty" db:"recording_id,uuid"`         // recording id(current)
 	RecordingIDs    []uuid.UUID `json:"recording_ids,omitempty" db:"recording_ids,json"`       // recording ids
-	ExternalMediaID uuid.UUID   `json:"external_media_id,omitempty" db:"external_media_id,uuid"` // external media id(current)
+	ExternalMediaIDs []uuid.UUID `json:"external_media_ids,omitempty" db:"external_media_ids,json"` // external media ids
 	GroupcallID     uuid.UUID   `json:"groupcall_id,omitempty" db:"groupcall_id,uuid"`           // groupcall id
 
 	// source/destination

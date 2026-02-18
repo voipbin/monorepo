@@ -61,7 +61,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"connect","status":"","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"connect","status":"","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 		{
@@ -78,7 +78,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -141,7 +141,7 @@ func Test_processV1ConfbridgesIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"8bb55e1c-36de-11ec-9c31-afdc9b633856","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"8bb55e1c-36de-11ec-9c31-afdc9b633856","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -334,7 +334,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"594c42fe-97ce-11ed-8d9f-ab7694f63546","customer_id":"474e1f30-98f7-11ed-8c35-dfd5f4d2a313","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"594c42fe-97ce-11ed-8d9f-ab7694f63546","customer_id":"474e1f30-98f7-11ed-8c35-dfd5f4d2a313","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -384,7 +384,8 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectConfbridgeID uuid.UUID
+		expectConfbridgeID    uuid.UUID
+		expectExternalMediaID uuid.UUID
 
 		responseConfbridge *confbridge.Confbridge
 		expectRes          *sock.Response
@@ -394,11 +395,14 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/confbridges/0a3c7a34-97cf-11ed-8adf-4b1653edac02/external-media",
-				Method: sock.RequestMethodDelete,
+				URI:      "/v1/confbridges/0a3c7a34-97cf-11ed-8adf-4b1653edac02/external-media",
+				Method:   sock.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     []byte(`{"external_media_id":"b2c3d4e5-97cf-11ed-8adf-4b1653edac02"}`),
 			},
 
-			expectConfbridgeID: uuid.FromStringOrNil("0a3c7a34-97cf-11ed-8adf-4b1653edac02"),
+			expectConfbridgeID:    uuid.FromStringOrNil("0a3c7a34-97cf-11ed-8adf-4b1653edac02"),
+			expectExternalMediaID: uuid.FromStringOrNil("b2c3d4e5-97cf-11ed-8adf-4b1653edac02"),
 
 			responseConfbridge: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -408,7 +412,7 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"0a3c7a34-97cf-11ed-8adf-4b1653edac02","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"0a3c7a34-97cf-11ed-8adf-4b1653edac02","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -428,7 +432,7 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().ExternalMediaStop(gomock.Any(), tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().ExternalMediaStop(gomock.Any(), tt.expectConfbridgeID, tt.expectExternalMediaID).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -488,7 +492,7 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"99cc7924-996e-11ed-bc44-6fda69332002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"99cc7924-996e-11ed-bc44-6fda69332002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -552,7 +556,7 @@ func Test_processV1ConfbridgesIDRecordingStopPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9a30f390-996e-11ed-8b2b-133b9632eea1","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"9a30f390-996e-11ed-8b2b-133b9632eea1","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -618,7 +622,7 @@ func Test_processV1ConfbridgesIDFlagsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68e83474-d7b7-11ed-a7fb-5b38b6216d42","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"68e83474-d7b7-11ed-a7fb-5b38b6216d42","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -684,7 +688,7 @@ func Test_processV1ConfbridgesIDFlagsDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4e812144-d7b8-11ed-b8c5-cb2f9c49fce6","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"4e812144-d7b8-11ed-b8c5-cb2f9c49fce6","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -746,7 +750,7 @@ func Test_processV1ConfbridgesIDTerminatePost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"78e67099-943b-4067-88b6-337a245acbf1","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"78e67099-943b-4067-88b6-337a245acbf1","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -924,7 +928,7 @@ func Test_processV1ConfbridgesIDGet(t *testing.T) {
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"connect","status":"","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"connect","status":"","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

@@ -22,7 +22,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_channel_call_ids", FieldChannelCallIDs, "channel_call_ids"},
 		{"field_recording_id", FieldRecordingID, "recording_id"},
 		{"field_recording_ids", FieldRecordingIDs, "recording_ids"},
-		{"field_external_media_id", FieldExternalMediaID, "external_media_id"},
+		{"field_external_media_ids", FieldExternalMediaIDs, "external_media_ids"},
 		{"field_tm_create", FieldTMCreate, "tm_create"},
 		{"field_tm_update", FieldTMUpdate, "tm_update"},
 		{"field_tm_delete", FieldTMDelete, "tm_delete"},

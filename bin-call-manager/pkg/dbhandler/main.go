@@ -53,7 +53,8 @@ type DBHandler interface {
 	CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error
-	CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
+	CallAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
+	CallRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
@@ -106,7 +107,8 @@ type DBHandler interface {
 	ConfbridgeUpdate(ctx context.Context, id uuid.UUID, fields map[confbridge.Field]any) error
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
-	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
+	ConfbridgeAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
+	ConfbridgeRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
 	ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error
 	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error

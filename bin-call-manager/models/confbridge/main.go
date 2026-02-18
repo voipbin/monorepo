@@ -29,8 +29,8 @@ type Confbridge struct {
 	RecordingID  uuid.UUID   `json:"recording_id" db:"recording_id,uuid"`
 	RecordingIDs []uuid.UUID `json:"recording_ids" db:"recording_ids,json"` // list of recording ids.
 
-	// current external media id
-	ExternalMediaID uuid.UUID `json:"external_media_id" db:"external_media_id,uuid"`
+	// external media ids
+	ExternalMediaIDs []uuid.UUID `json:"external_media_ids" db:"external_media_ids,json"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`

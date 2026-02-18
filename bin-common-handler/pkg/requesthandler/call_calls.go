@@ -364,10 +364,21 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 // CallV1CallExternalMediaStop sends a request to call-manager
 // to stop the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID, externalMediaID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/external-media", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	data := struct {
+		ExternalMediaID uuid.UUID `json:"external_media_id"`
+	}{
+		ExternalMediaID: externalMediaID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/calls/<call-id>/external-media", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
