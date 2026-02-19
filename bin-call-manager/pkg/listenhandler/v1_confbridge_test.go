@@ -358,6 +358,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 				gomock.Any(),
 				tt.expectConfbridgeID,
 				tt.expectExternalMediaID,
+				gomock.Any(),
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,

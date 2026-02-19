@@ -19,6 +19,7 @@ import (
 func (h *externalMediaHandler) Start(
 	ctx context.Context,
 	id uuid.UUID,
+	typ externalmedia.Type,
 	referenceType externalmedia.ReferenceType,
 	referenceID uuid.UUID,
 	externalHost string,
@@ -41,14 +42,18 @@ func (h *externalMediaHandler) Start(
 		id = h.utilHandler.UUIDCreate()
 	}
 
+	if typ == "" {
+		typ = externalmedia.TypeNormal
+	}
+
 	promExternalMediaStartTotal.WithLabelValues(string(referenceType), string(encapsulation)).Inc()
 
 	switch referenceType {
 	case externalmedia.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, format, directionListen, directionSpeak)
+		return h.startReferenceTypeCall(ctx, id, typ, referenceID, externalHost, encapsulation, transport, format, directionListen, directionSpeak)
 
 	case externalmedia.ReferenceTypeConfbridge:
-		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, format)
+		return h.startReferenceTypeConfbridge(ctx, id, typ, referenceID, externalHost, encapsulation, transport, format)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -59,6 +64,7 @@ func (h *externalMediaHandler) Start(
 func (h *externalMediaHandler) startReferenceTypeCall(
 	ctx context.Context,
 	id uuid.UUID,
+	typ externalmedia.Type,
 	callID uuid.UUID,
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
@@ -126,6 +132,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	res, err := h.startExternalMedia(
 		ctx,
 		id,
+		typ,
 		ch.AsteriskID,
 		br.ID,
 		playbackID,
@@ -150,6 +157,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 func (h *externalMediaHandler) startReferenceTypeConfbridge(
 	ctx context.Context,
 	id uuid.UUID,
+	typ externalmedia.Type,
 	confbridgeID uuid.UUID,
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
@@ -183,6 +191,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 	res, err := h.startExternalMedia(
 		ctx,
 		id,
+		typ,
 		br.AsteriskID,
 		br.ID,
 		"", // playbackID is not used in confbridge
@@ -207,6 +216,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 func (h *externalMediaHandler) startExternalMedia(
 	ctx context.Context,
 	id uuid.UUID,
+	typ externalmedia.Type,
 	asteriskID string,
 	bridgeID string,
 	playbackID string,
@@ -268,6 +278,7 @@ func (h *externalMediaHandler) startExternalMedia(
 	em, err := h.Create(
 		ctx,
 		id,
+		typ,
 		asteriskID,
 		extChannelID,
 		bridgeID,

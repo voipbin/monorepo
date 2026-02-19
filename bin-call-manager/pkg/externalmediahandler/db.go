@@ -13,6 +13,7 @@ import (
 func (h *externalMediaHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
+	typ externalmedia.Type,
 	asteriskID string,
 	channelID string,
 	bridgeID string,
@@ -33,7 +34,8 @@ func (h *externalMediaHandler) Create(
 		id = h.utilHandler.UUIDCreate()
 	}
 	extMedia := &externalmedia.ExternalMedia{
-		ID: id,
+		ID:   id,
+		Type: typ,
 
 		AsteriskID: asteriskID,
 		ChannelID:  channelID,

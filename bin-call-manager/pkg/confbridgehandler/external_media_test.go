@@ -79,6 +79,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 			mockExternal.EXPECT().Start(
 				ctx,
 				tt.externalMediaID,
+				gomock.Any(),
 				externalmedia.ReferenceTypeConfbridge,
 				tt.id,
 				tt.externalHost,
@@ -96,6 +97,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 				ctx,
 				tt.id,
 				tt.externalMediaID,
+				externalmedia.TypeNormal,
 				tt.externalHost,
 				tt.encapsulation,
 				tt.transport,

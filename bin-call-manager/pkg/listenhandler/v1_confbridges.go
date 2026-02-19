@@ -226,6 +226,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 		ctx,
 		id,
 		req.ExternalMediaID,
+		req.Type,
 		req.ExternalHost,
 		externalmedia.Encapsulation(req.Encapsulation),
 		externalmedia.Transport(req.Transport),

@@ -12,6 +12,7 @@ func TestExternalMediaStruct(t *testing.T) {
 
 	e := ExternalMedia{
 		ID:              id,
+		Type:            TypeNormal,
 		AsteriskID:      "asterisk-1",
 		ChannelID:       "channel-123",
 		BridgeID:        "bridge-456",
@@ -32,6 +33,9 @@ func TestExternalMediaStruct(t *testing.T) {
 
 	if e.ID != id {
 		t.Errorf("ExternalMedia.ID = %v, expected %v", e.ID, id)
+	}
+	if e.Type != TypeNormal {
+		t.Errorf("ExternalMedia.Type = %v, expected %v", e.Type, TypeNormal)
 	}
 	if e.AsteriskID != "asterisk-1" {
 		t.Errorf("ExternalMedia.AsteriskID = %v, expected %v", e.AsteriskID, "asterisk-1")
@@ -170,6 +174,25 @@ func TestStatusConstants(t *testing.T) {
 		{"status_running", StatusRunning, "running"},
 		{"status_terminating", StatusTerminating, "terminating"},
 		{"status_terminated", StatusTerminated, "terminated"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
+	}
+}
+
+func TestTypeConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant Type
+		expected string
+	}{
+		{"type_normal", TypeNormal, "normal"},
+		{"type_websocket", TypeWebsocket, "websocket"},
 	}
 
 	for _, tt := range tests {

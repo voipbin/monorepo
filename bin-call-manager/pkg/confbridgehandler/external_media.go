@@ -18,6 +18,7 @@ func (h *confbridgeHandler) ExternalMediaStart(
 	ctx context.Context,
 	id uuid.UUID,
 	externalMediaID uuid.UUID,
+	typ externalmedia.Type,
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
@@ -45,6 +46,7 @@ func (h *confbridgeHandler) ExternalMediaStart(
 	tmp, err := h.externalMediaHandler.Start(
 		ctx,
 		externalMediaID,
+		typ,
 		externalmedia.ReferenceTypeConfbridge,
 		c.ID,
 		externalHost,
