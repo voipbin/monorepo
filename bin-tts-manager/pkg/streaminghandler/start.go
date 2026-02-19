@@ -96,6 +96,7 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
+		"", // transportData
 		defaultConnectionType,
 		defaultFormat,
 		externalmedia.DirectionNone,

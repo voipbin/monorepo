@@ -22,6 +22,7 @@ const (
 	FieldExternalHost    Field = "external_host"    // external_host
 	FieldEncapsulation   Field = "encapsulation"    // payload encapsulation protocol
 	FieldTransport       Field = "transport"        // transport
+	FieldTransportData   Field = "transport_data"   // transport-specific data
 	FieldConnectionType  Field = "connection_type"  // connection_type
 	FieldFormat          Field = "format"           // format
 	FieldDirectionListen Field = "direction_listen" // direction of the external media channel

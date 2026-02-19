@@ -925,6 +925,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 		expectExternalHost    string
 		expectEncapsulation   externalmedia.Encapsulation
 		expectTransport       externalmedia.Transport
+		expectTransportData   string
 		expectConnectionType  string
 		expectFormat          string
 		expectDirectionListen externalmedia.Direction
@@ -955,6 +956,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			expectExternalHost:    "127.0.0.1:5060",
 			expectEncapsulation:   "rtp",
 			expectTransport:       "udp",
+			expectTransportData:   "",
 			expectConnectionType:  "client",
 			expectFormat:          "ulaw",
 			expectDirectionListen: externalmedia.DirectionIn,
@@ -990,6 +992,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
+				tt.expectTransportData,
 				tt.expectConnectionType,
 				tt.expectFormat,
 				tt.expectDirectionListen,

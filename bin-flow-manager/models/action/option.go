@@ -212,6 +212,7 @@ type OptionExternalMediaStart struct {
 	ExternalHost    string `json:"external_host,omitempty"`    // external media target host address
 	Encapsulation   string `json:"encapsulation,omitempty"`    // encapsulation. default: rtp
 	Transport       string `json:"transport,omitempty"`        // transport. default: udp
+	TransportData   string `json:"transport_data,omitempty"`   // transport-specific data
 	ConnectionType  string `json:"connection_type,omitempty"`  // connection type. default: client
 	Format          string `json:"format,omitempty"`           // format default: ulaw
 	DirectionListen string `json:"direction_listen,omitempty"` // direction. default: ""

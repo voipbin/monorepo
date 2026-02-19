@@ -76,6 +76,7 @@ type ConfbridgeHandler interface {
 		externalHost string,
 		encapsulation externalmedia.Encapsulation,
 		transport externalmedia.Transport,
+		transportData string,
 		connectionType string,
 		format string,
 	) (*confbridge.Confbridge, error)

@@ -162,18 +162,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu any)
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format string) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, transportData, connectionType, format string) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format)
+	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalMediaID, externalHost, encapsulation, transport, transportData, connectionType, format)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExternalMediaStart indicates an expected call of ExternalMediaStart.
-func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStart(ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format any) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStart(ctx, id, externalMediaID, externalHost, encapsulation, transport, transportData, connectionType, format any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStart), ctx, id, externalMediaID, externalHost, encapsulation, transport, connectionType, format)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStart), ctx, id, externalMediaID, externalHost, encapsulation, transport, transportData, connectionType, format)
 }
 
 // ExternalMediaStop mocks base method.

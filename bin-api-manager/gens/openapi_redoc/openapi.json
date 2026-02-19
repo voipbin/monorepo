@@ -14454,6 +14454,18 @@
               "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
             ]
           },
+          "external_media_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "External media IDs associated with this call. Multiple external media streams (e.g., transcription + TTS) can run simultaneously.",
+            "example": [
+              "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
+            ]
+          },
           "groupcall_id": {
             "type": "string",
             "format": "uuid",
@@ -17532,6 +17544,11 @@
           "data": {
             "type": "string",
             "description": "Optional data to pass to the external media endpoint.",
+            "example": ""
+          },
+          "transport_data": {
+            "type": "string",
+            "description": "Transport-specific data. For websocket, this is appended to the dialstring.",
             "example": ""
           }
         }

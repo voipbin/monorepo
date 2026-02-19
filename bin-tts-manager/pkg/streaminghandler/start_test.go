@@ -95,6 +95,7 @@ func Test_Start(t *testing.T) {
 				tt.listenAddress,
 				defaultEncapsulation,
 				defaultTransport,
+				"", // transportData
 				defaultConnectionType,
 				defaultFormat,
 				cmexternalmedia.DirectionNone,
@@ -214,6 +215,7 @@ func Test_StartWithID(t *testing.T) {
 					tt.listenAddress,
 					defaultEncapsulation,
 					defaultTransport,
+					"", // transportData
 					defaultConnectionType,
 					defaultFormat,
 					cmexternalmedia.DirectionNone,

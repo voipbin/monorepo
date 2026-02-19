@@ -123,6 +123,7 @@ type CallHandler interface {
 		externalHost string,
 		encapsulation externalmedia.Encapsulation,
 		transport externalmedia.Transport,
+		transportData string,
 		connectionType string,
 		format string,
 		directionListen externalmedia.Direction,

@@ -992,6 +992,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 		externalHost   string
 		encapsulation  string
 		transport      string
+		transportData  string
 		connectionType string
 		format         string
 		direction      string
@@ -1012,6 +1013,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 			"http://test.com/external-sample",
 			"rtp",
 			"udp",
+			"",
 			"client",
 			"ulaw",
 			"both",
@@ -1043,6 +1045,46 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
+		{
+			"with transport_data",
+
+			"00:11:22:33:44:55",
+			"660486e8-ffca-11eb-aef3-6b2e6caea5a5",
+			"http://test.com/external-sample",
+			"rtp",
+			"udp",
+			"ws://example.com/media",
+			"client",
+			"ulaw",
+			"both",
+			"",
+			nil,
+
+			&sock.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id": "660486e8-ffca-11eb-aef3-6b2e6caea5a5","name": "UnicastRTP/127.0.0.1:5090-0x7f6d54035300","state": "Down","caller": {"name": "","number": ""},"connected": {"name": "","number": ""},"accountcode": "","dialplan": {"context": "default","exten": "s","priority": 1,"app_name": "AppDial2","app_data": "(Outgoing Line)"},"creationtime": "2021-08-22T04:10:10.331+0000","language": "en","channelvars": {"UNICASTRTP_LOCAL_PORT": "10492","UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1"}}`),
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&sock.Request{
+				URI:      "/ari/channels/externalMedia",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"channel_id":"660486e8-ffca-11eb-aef3-6b2e6caea5a5","app":"voipbin","external_host":"http://test.com/external-sample","encapsulation":"rtp","transport":"udp","transport_data":"ws://example.com/media","connection_type":"client","format":"ulaw","direction":"both"}`),
+			},
+			&cmchannel.Channel{
+				ID:                "660486e8-ffca-11eb-aef3-6b2e6caea5a5",
+				Name:              "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				Tech:              cmchannel.TechUnicatRTP,
+				DestinationNumber: "s",
+				State:             cmari.ChannelStateDown,
+				Data: map[string]interface{}{
+					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
+					"UNICASTRTP_LOCAL_PORT":    "10492",
+				},
+				StasisData: map[cmchannel.StasisDataType]string{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1058,7 +1100,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.transportData, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

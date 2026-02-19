@@ -42,6 +42,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
+		"", // transportData
 		defaultConnectionType,
 		defaultFormat,
 		externalmedia.Direction(direction),

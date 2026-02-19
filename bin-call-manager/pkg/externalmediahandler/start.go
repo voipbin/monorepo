@@ -24,6 +24,7 @@ func (h *externalMediaHandler) Start(
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
+	transportData string,
 	connectionType string,
 	format string,
 	directionListen externalmedia.Direction,
@@ -45,10 +46,10 @@ func (h *externalMediaHandler) Start(
 
 	switch referenceType {
 	case externalmedia.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, format, directionListen, directionSpeak)
+		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, format, directionListen, directionSpeak)
 
 	case externalmedia.ReferenceTypeConfbridge:
-		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, format)
+		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, format)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -63,6 +64,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
+	transportData string,
 	format string,
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
@@ -134,6 +136,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 		externalHost,
 		encapsulation,
 		transport,
+		transportData,
 		format,
 		directionListen,
 		directionSpeak,
@@ -154,6 +157,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
+	transportData string,
 	format string,
 ) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -191,6 +195,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 		externalHost,
 		encapsulation,
 		transport,
+		transportData,
 		format,
 		externalmedia.DirectionBoth, // confbridge is always both direction
 		externalmedia.DirectionBoth, // confbridge is always both direction
@@ -215,6 +220,7 @@ func (h *externalMediaHandler) startExternalMedia(
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
+	transportData string,
 	format string,
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
@@ -279,6 +285,7 @@ func (h *externalMediaHandler) startExternalMedia(
 		externalHost,
 		encapsulation,
 		transport,
+		transportData,
 		defaultConnectionType,
 		format,
 		directionListen,
@@ -297,6 +304,7 @@ func (h *externalMediaHandler) startExternalMedia(
 		externalHost,
 		string(encapsulation),
 		string(transport),
+		transportData,
 		defaultConnectionType,
 		format,
 		defaultDirection,

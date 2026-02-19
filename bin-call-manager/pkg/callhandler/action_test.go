@@ -915,6 +915,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 		expectHost            string
 		expectEncapsulation   externalmedia.Encapsulation
 		expectTransport       externalmedia.Transport
+		expectTransportData   string
 		expectConnectionType  string
 		expectFormat          string
 		expectDirectionListen externalmedia.Direction
@@ -985,6 +986,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 				tt.expectHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
+				tt.expectTransportData,
 				tt.expectConnectionType,
 				tt.expectFormat,
 				tt.expectDirectionListen,

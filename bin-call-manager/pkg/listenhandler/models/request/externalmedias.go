@@ -16,6 +16,7 @@ type V1DataExternalMediasPost struct {
 	ExternalHost    string                      `json:"external_host,omitempty"`
 	Encapsulation   string                      `json:"encapsulation,omitempty"`
 	Transport       string                      `json:"transport,omitempty"`
+	TransportData   string                      `json:"transport_data,omitempty"`
 	ConnectionType  string                      `json:"connection_type,omitempty"`
 	Format          string                      `json:"format,omitempty"`
 	Direction       string                      `json:"direction,omitempty"`        // in, out, both

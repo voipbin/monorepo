@@ -126,6 +126,7 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 	externalHost string, // external host:port
 	encapsulation string, // rtp
 	transport string, // udp
+	transportData string, // transport-specific data
 	connectionType string, // client,server
 	format string, // ulaw
 ) (*cmconfbridge.Confbridge, error) {
@@ -136,6 +137,7 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 		ExternalHost:    externalHost,
 		Encapsulation:   encapsulation,
 		Transport:       transport,
+		TransportData:   transportData,
 		ConnectionType:  connectionType,
 		Format:          format,
 	}

@@ -300,6 +300,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 		expectExternalHost    string
 		expectEncapsulation   externalmedia.Encapsulation
 		expectTransport       externalmedia.Transport
+		expectTransportData   string
 		expectConnectionType  string
 		expectFormat          string
 
@@ -361,6 +362,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
+				tt.expectTransportData,
 				tt.expectConnectionType,
 				tt.expectFormat,
 			).Return(tt.responseConfbridge, nil)

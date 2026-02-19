@@ -2431,6 +2431,9 @@ type FlowManagerActionOptionExternalMediaStart struct {
 
 	// Transport Transport. Default value is udp.
 	Transport *string `json:"transport,omitempty"`
+
+	// TransportData Transport-specific data. For websocket, this is appended to the dialstring.
+	TransportData *string `json:"transport_data,omitempty"`
 }
 
 // FlowManagerActionOptionExternalMediaStop No options required.
