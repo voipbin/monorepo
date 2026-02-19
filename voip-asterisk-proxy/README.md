@@ -1,60 +1,59 @@
 # asterisk-proxy
-Asterisk proxy
+
+Bidirectional proxy between Asterisk PBX (ARI/AMI) and RabbitMQ. Connects to Asterisk's REST Interface (ARI) via WebSocket and Asterisk Manager Interface (AMI) via TCP, forwarding events to RabbitMQ and handling RPC requests to control Asterisk.
+
+# Configuration
+
+All flags can also be set via environment variables.
+
+| Flag | Env Var | Default | Description |
+|------|---------|---------|-------------|
+| `--ari_address` | `ARI_ADDRESS` | `localhost:8088` | Address of the ARI server |
+| `--ari_account` | `ARI_ACCOUNT` | `asterisk:asterisk` | ARI account (id:password) |
+| `--ari_subscribe_all` | `ARI_SUBSCRIBE_ALL` | `true` | Subscribe to all ARI events |
+| `--ari_application` | `ARI_APPLICATION` | `voipbin` | ARI application name |
+| `--ami_host` | `AMI_HOST` | `127.0.0.1` | AMI server host |
+| `--ami_port` | `AMI_PORT` | `5038` | AMI server port |
+| `--ami_username` | `AMI_USERNAME` | `asterisk` | AMI username |
+| `--ami_password` | `AMI_PASSWORD` | `asterisk` | AMI password |
+| `--ami_event_filter` | `AMI_EVENT_FILTER` | `` | AMI event filter |
+| `--interface_name` | `INTERFACE_NAME` | `eth0` | Network interface for identity (MAC address) |
+| `--rabbitmq_address` | `RABBITMQ_ADDRESS` | `amqp://guest:guest@localhost:5672` | RabbitMQ server address |
+| `--rabbitmq_queue_listen` | `RABBITMQ_QUEUE_LISTEN` | `asterisk.call.request` | RabbitMQ listen queue name |
+| `--redis_address` | `REDIS_ADDRESS` | `localhost:6379` | Redis server address |
+| `--redis_password` | `REDIS_PASSWORD` | `` | Redis password |
+| `--redis_database` | `REDIS_DATABASE` | `1` | Redis database index |
+| `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Prometheus metrics endpoint path |
+| `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Prometheus listen address |
+| `--recording_bucket_name` | `RECORDING_BUCKET_NAME` | `` | GCS bucket name for recordings |
+| `--recording_asterisk_directory` | `RECORDING_ASTERISK_DIRECTORY` | `/var/spool/asterisk/recording` | Asterisk recording directory |
+| `--recording_bucket_directory` | `RECORDING_BUCKET_DIRECTORY` | `/mnt/media/recording` | Bucket recording directory |
+| `--kubernetes_disabled` | `KUBERNETES_DISABLED` | `false` | Disable Kubernetes integration |
 
 # Run
 
-```
-$ ./asterisk-proxy -h
-Usage of ./asterisk-proxy:
-  -ami_event_filter string
-        The list of messages for listen.
-  -ami_host string
-        The host address for AMI connection. (default "127.0.0.1")
-  -ami_password string
-        The password for AMI login. (default "asterisk")
-  -ami_port string
-        The port number for AMI connection. (default "5038")
-  -ami_username string
-        The username for AMI login. (default "asterisk")
-  -ari_account string
-        The asterisk-proxy uses this asterisk ari account info. id:password (default "asterisk:asterisk")
-  -ari_addr string
-        The asterisk-proxy connects to this asterisk ari service address (default "localhost:8088")
-  -ari_application string
-        The asterisk-proxy uses this asterisk ari application name. (default "voipbin")
-  -ari_subscribe_all string
-        The asterisk-proxy uses this asterisk subscribe all option. (default "true")
-  -interface_name string
-        The main interface device name. (default "eth0")
-  -rabbit_addr string
-        The asterisk-proxy connect to rabbitmq address. (default "amqp://guest:guest@localhost:5672")
-  -rabbit_queue_listen string
-        Additional comma separated asterisk-proxy's listen request queue name. (default "asterisk.call.request")
-  -rabbit_queue_publish string
-        The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before. (default "asterisk.all.event")
-  -redis_addr string
-        The redis address for data caching (default "localhost:6379")
-  -redis_db int
-        The redis database for caching
+```bash
+./asterisk-proxy \
+  --ari_address localhost:8088 \
+  --ari_account asterisk:asterisk \
+  --ari_application voipbin \
+  --ari_subscribe_all true \
+  --ami_host 127.0.0.1 \
+  --ami_port 5038 \
+  --ami_username asterisk \
+  --ami_password asterisk \
+  --interface_name eth0 \
+  --rabbitmq_address amqp://guest:guest@localhost:5672 \
+  --rabbitmq_queue_listen asterisk.call.request \
+  --redis_address localhost:6379 \
+  --redis_database 1
 ```
 
-example
+Or use environment variables:
 ```bash
-$ ./asterisk-proxy \
-  -ari_account asterisk:asterisk \
-  -ari_addr localhost:8088 \
-  -ari_application voipbin \
-  -ari_subscribe_all true \
-  -ami_host 127.0.0.1 \
-  -ami_port 5038 \
-  -ami_username asterisk \
-  -ami_password asterisk \
-  -interface_name docker0 \
-  -rabbit_addr amqp://guest:guest@10.164.15.243:5672 \
-  -rabbit_queue_publish asterisk.all.event \
-  -rabbit_queue_listen asterisk.call.request \
-  -redis_addr 10.164.15.220:6379 \
-  -redis_db 1
+export ARI_ADDRESS=localhost:8088
+export RABBITMQ_ADDRESS=amqp://guest:guest@localhost:5672
+./asterisk-proxy
 ```
 
 # RabbitMQ RPC
@@ -67,30 +66,29 @@ Event message
 ```
 
 ARI event
-```
+```json
 {
   "type": "ari_event",
   "data_type": "application/json",
-  "data: "{...}"
+  "data": "{...}"
 }
 ```
 
 AMI event
-```
+```json
 {
   "type": "ami_event",
   "data_type": "application/json",
-  "data: "{...}"
+  "data": "{...}"
 }
 ```
-
 
 RPC requests
 
 ARI request
-```
+```json
 {
-  "uri": "/ari/channels\?api_key=asterisk:asterisk\&endpoint=pjsip/test@sippuas\&app=test",
+  "uri": "/ari/channels?api_key=asterisk:asterisk&endpoint=pjsip/test@sippuas&app=test",
   "method": "POST",
   "data": "data",
   "data_type": "text/plain"
@@ -98,7 +96,7 @@ ARI request
 ```
 
 AMI request
-```
+```json
 {
   "uri": "/ami",
   "method": "",
@@ -108,32 +106,10 @@ AMI request
 ```
 
 RPC response
-```
+```json
 {
   "status_code": 200,
   "data_type": "application/json",
   "data": "{...}"
 }
-```
-
-# Test
-
-```
-$ ssh -L 8088:127.0.0.1:8088 10.164.0.3
-$ ./asterisk-proxy \
-  -ari_account asterisk:asterisk \
-  -ari_addr localhost:8088 \
-  -ari_application voipbin \
-  -ari_subscribe_all true \
-  -ami_host 127.0.0.1 \
-  -ami_port 5038 \
-  -ami_username asterisk \
-  -ami_password asterisk \
-  -rabbit_addr amqp://guest:guest@10.164.15.243:5672 \
-  -rabbit_queue_publish asterisk.all.event \
-  -rabbit_queue_listen asterisk.42:01:0a:a4:0f:d0.request,asterisk.call.request \
-  -asterisk_id 42:01:0a:a4:0f:d0 \
-  -asterisk_address_internal 10.164.15.208 \
-  -redis_addr 10.164.15.220:6379 \
-  -redis_db 1
 ```
