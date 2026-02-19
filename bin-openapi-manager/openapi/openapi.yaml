@@ -3426,6 +3426,10 @@ components:
           type: string
           description: Optional data to pass to the external media endpoint.
           example: ""
+        transport_data:
+          type: string
+          description: Transport-specific data. For websocket, this is appended to the dialstring.
+          example: ""
 
     FlowManagerActionOptionExternalMediaStop:
       type: object
