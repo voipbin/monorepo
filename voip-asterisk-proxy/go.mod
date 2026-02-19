@@ -52,7 +52,13 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 replace monorepo/bin-customer-manager => ../bin-customer-manager
+
+replace monorepo/bin-rag-manager => ../bin-rag-manager
+
+replace monorepo/bin-timeline-manager => ../bin-timeline-manager
 
 require (
 	cloud.google.com/go/storage v1.59.0
@@ -142,6 +148,7 @@ require (
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
+	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -187,6 +194,7 @@ require (
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
@@ -197,11 +205,13 @@ require (
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
+	monorepo/bin-rag-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
