@@ -24,6 +24,7 @@ type ExternalMedia struct {
 	ExternalHost    string        `json:"external_host"`
 	Encapsulation   Encapsulation `json:"encapsulation"` // Payload encapsulation protocol
 	Transport       Transport     `json:"transport"`
+	TransportData   string        `json:"transport_data,omitempty"` // transport-specific data
 	ConnectionType  string        `json:"connection_type"`
 	Format          string        `json:"format"`
 	DirectionListen Direction     `json:"direction_listen,omitempty"` // direction of the external media channel, default is ""
