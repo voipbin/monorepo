@@ -42,6 +42,7 @@ func (h *streamHandler) Start(
 		h.listenAddress,
 		defaultExternalMediaEncapsulation,
 		defaultExternalMediaTransport,
+		"", // transportData
 		defaultExternalMediaConnectionType,
 		defaultExternalMediaFormat,
 		defaultExternalMediaDirectionListen,

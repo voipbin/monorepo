@@ -98,6 +98,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 		h.listenAddress,
 		defaultEncapsulation,
 		defaultTransport,
+		"", // transportData
 		defaultConnectionType,
 		defaultFormat,
 		cmexternalmedia.DirectionIn,
@@ -136,6 +137,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 			h.listenAddress,
 			defaultEncapsulation,
 			defaultTransport,
+			"", // transportData
 			defaultConnectionType,
 			defaultFormat,
 			cmexternalmedia.DirectionIn,

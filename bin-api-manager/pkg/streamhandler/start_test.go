@@ -80,6 +80,7 @@ func Test_Start(t *testing.T) {
 				localhost,
 				defaultExternalMediaEncapsulation,
 				defaultExternalMediaTransport,
+				"", // transportData
 				defaultExternalMediaConnectionType,
 				defaultExternalMediaFormat,
 				defaultExternalMediaDirectionListen,
