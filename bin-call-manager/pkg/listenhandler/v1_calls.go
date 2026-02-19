@@ -484,6 +484,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		ctx,
 		id,
 		req.ExternalMediaID,
+		req.Type,
 		req.ExternalHost,
 		externalmedia.Encapsulation(req.Encapsulation),
 		externalmedia.Transport(req.Transport),

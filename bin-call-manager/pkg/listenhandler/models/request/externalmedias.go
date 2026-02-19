@@ -10,8 +10,9 @@ import (
 // v1 data type request struct for
 // /v1/external-medias POST
 type V1DataExternalMediasPost struct {
-	ID              uuid.UUID                   `json:"id,omitempty"`
-	ReferenceType   externalmedia.ReferenceType `json:"reference_type,omitempty"`
+	ID            uuid.UUID                   `json:"id,omitempty"`
+	Type          externalmedia.Type          `json:"type,omitempty"`
+	ReferenceType externalmedia.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID     uuid.UUID                   `json:"reference_id,omitempty"`
 	ExternalHost    string                      `json:"external_host,omitempty"`
 	Encapsulation   string                      `json:"encapsulation,omitempty"`

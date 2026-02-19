@@ -73,6 +73,7 @@ type ConfbridgeHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		externalMediaID uuid.UUID,
+		typ externalmedia.Type,
 		externalHost string,
 		encapsulation externalmedia.Encapsulation,
 		transport externalmedia.Transport,

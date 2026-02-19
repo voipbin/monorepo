@@ -30,6 +30,7 @@ type ExternalMediaHandler interface {
 	Start(
 		ctx context.Context,
 		id uuid.UUID,
+		typ externalmedia.Type,
 		referenceType externalmedia.ReferenceType,
 		referenceID uuid.UUID,
 		externalHost string,

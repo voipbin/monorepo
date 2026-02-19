@@ -987,6 +987,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				context.Background(),
 				tt.expectCallID,
 				tt.expectExternalMediaID,
+				gomock.Any(),
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,

@@ -118,6 +118,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 		name string
 
 		externalMediaID uuid.UUID
+		typ             cmexternalmedia.Type
 		referenceType   cmexternalmedia.ReferenceType
 		referenceID     uuid.UUID
 		externalHost    string
@@ -137,6 +138,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 			name: "normal",
 
 			externalMediaID: uuid.FromStringOrNil("7f655194-b336-11ef-ad61-e340f855ae0d"),
+			typ:             cmexternalmedia.TypeNormal,
 			referenceType:   cmexternalmedia.ReferenceTypeCall,
 			referenceID:     uuid.FromStringOrNil("94a6ec48-97c2-11ed-bd66-afb196d5c598"),
 			externalHost:    "localhost:5060",
@@ -157,7 +159,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 				URI:      "/v1/external-medias",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"7f655194-b336-11ef-ad61-e340f855ae0d","reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction_listen":"in","direction_speak":"out"}`),
+				Data:     []byte(`{"id":"7f655194-b336-11ef-ad61-e340f855ae0d","type":"normal","reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction_listen":"in","direction_speak":"out"}`),
 			},
 			expectRes: &cmexternalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("e8337d9a-97c2-11ed-93ad-5bcba5332622"),
@@ -182,6 +184,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 			res, err := reqHandler.CallV1ExternalMediaStart(
 				ctx,
 				tt.externalMediaID,
+				tt.typ,
 				tt.referenceType,
 				tt.referenceID,
 				tt.externalHost,

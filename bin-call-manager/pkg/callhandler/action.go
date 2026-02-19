@@ -679,6 +679,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		ctx,
 		c.ID,
 		uuid.Nil,
+		externalmedia.Type(option.Type),
 		option.ExternalHost,
 		externalmedia.Encapsulation(option.Encapsulation),
 		externalmedia.Transport(option.Transport),

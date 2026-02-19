@@ -93,6 +93,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
 		pc.ID,
+		cmexternalmedia.TypeNormal,
 		cmexternalmedia.ReferenceTypeCall,
 		c.ID,
 		h.listenAddress,
@@ -131,6 +132,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		em, err := h.requestHandler.CallV1ExternalMediaStart(
 			ctx,
 			pc.ID,
+			cmexternalmedia.TypeNormal,
 			cmexternalmedia.ReferenceTypeCall,
 			c.ReferenceID,
 			h.listenAddress,

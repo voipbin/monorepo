@@ -37,6 +37,7 @@ func (h *streamHandler) Start(
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
 		ctx,
 		tmp.ID,
+		cmexternalmedia.TypeNormal,
 		referenceType,
 		referenceID,
 		h.listenAddress,
