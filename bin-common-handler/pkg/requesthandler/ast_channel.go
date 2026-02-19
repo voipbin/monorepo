@@ -390,7 +390,7 @@ func (r *requestHandler) AstChannelRecord(ctx context.Context, asteriskID string
 }
 
 // AstChannelExternalMedia creates a external media.
-func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error) {
+func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, transportData string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error) {
 
 	url := "/ari/channels/externalMedia"
 
@@ -400,6 +400,7 @@ func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID
 		ExternalHost   string            `json:"external_host"`
 		Encapsulation  string            `json:"encapsulation,omitempty"`
 		Transport      string            `json:"transport,omitempty"`
+		TransportData  string            `json:"transport_data,omitempty"`
 		ConnectionType string            `json:"connection_type,omitempty"`
 		Format         string            `json:"format"`
 		Direction      string            `json:"direction,omitempty"`
@@ -413,6 +414,7 @@ func (r *requestHandler) AstChannelExternalMedia(ctx context.Context, asteriskID
 		ExternalHost:   externalHost,
 		Encapsulation:  encapsulation,
 		Transport:      transport,
+		TransportData:  transportData,
 		ConnectionType: connectionType,
 		Format:         format,
 		Direction:      direction,

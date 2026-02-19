@@ -327,6 +327,7 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 	externalHost string, // external host:port
 	encapsulation string, // rtp
 	transport string, // udp
+	transportData string, // transport-specific data
 	connectionType string, // client,server
 	format string, // ulaw
 	directionListen cmexternalmedia.Direction,
@@ -339,6 +340,7 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 		ExternalHost:    externalHost,
 		Encapsulation:   encapsulation,
 		Transport:       transport,
+		TransportData:   transportData,
 		ConnectionType:  connectionType,
 		Format:          format,
 		DirectionListen: directionListen,

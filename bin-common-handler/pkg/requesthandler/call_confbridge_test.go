@@ -243,6 +243,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 				tt.externalHost,
 				tt.encapsulation,
 				tt.transport,
+				"",
 				tt.connectionType,
 				tt.format,
 			)

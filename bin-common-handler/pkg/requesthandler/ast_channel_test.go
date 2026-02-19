@@ -1058,7 +1058,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, "", tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

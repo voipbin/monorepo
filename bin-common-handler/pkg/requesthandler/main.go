@@ -311,7 +311,7 @@ type RequestHandler interface {
 	AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper cmchannel.SnoopDirection) (*cmchannel.Channel, error)
 	AstChannelDial(ctx context.Context, asteriskID, channelID, caller string, timeout int) error
 	AstChannelDTMF(ctx context.Context, asteriskID, channelID string, digit string, duration, before, between, after int) error
-	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
+	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, transportData string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
 	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error)
 	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause, delay int) error
 	AstChannelHoldOn(ctx context.Context, asteriskID string, channelID string) error
@@ -412,6 +412,7 @@ type RequestHandler interface {
 		externalHost string,
 		encapsulation string,
 		transport string,
+		transportData string,
 		connectionType string,
 		format string,
 		directionListen cmexternalmedia.Direction,
@@ -511,6 +512,7 @@ type RequestHandler interface {
 		externalHost string, // external host:port
 		encapsulation string, // rtp
 		transport string, // udp
+		transportData string, // transport-specific data
 		connectionType string, // client,server
 		format string, // ulaw
 	) (*cmconfbridge.Confbridge, error)
@@ -527,6 +529,7 @@ type RequestHandler interface {
 		externalHost string,
 		encapsulation string,
 		transport string,
+		transportData string,
 		connectionType string,
 		format string,
 		directionListen cmexternalmedia.Direction,

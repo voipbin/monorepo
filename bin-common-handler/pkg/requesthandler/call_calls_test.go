@@ -891,6 +891,7 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 				tt.externalHost,
 				tt.encapsulation,
 				tt.transport,
+				"",
 				tt.connectionType,
 				tt.format,
 				tt.directionListen,
