@@ -29,6 +29,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 		externalHost    string
 		encapsulation   externalmedia.Encapsulation
 		transport       externalmedia.Transport
+		transportData   string
 		connectionType  string
 		format          string
 		directionListen externalmedia.Direction
@@ -89,6 +90,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 				tt.externalHost,
 				tt.encapsulation,
 				tt.transport,
+				tt.transportData,
 				tt.connectionType,
 				tt.format,
 				tt.directionListen,
@@ -104,6 +106,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 				tt.externalHost,
 				tt.encapsulation,
 				tt.transport,
+				tt.transportData,
 				tt.connectionType,
 				tt.format,
 				tt.directionListen,

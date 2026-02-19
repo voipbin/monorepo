@@ -90,6 +90,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 		req.ExternalHost,
 		externalmedia.Encapsulation(req.Encapsulation),
 		externalmedia.Transport(req.Transport),
+		req.TransportData,
 		req.ConnectionType,
 		req.Format,
 		req.DirectionListen,

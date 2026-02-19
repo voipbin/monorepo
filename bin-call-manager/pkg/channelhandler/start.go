@@ -42,7 +42,7 @@ func (h *channelHandler) StartSnoop(ctx context.Context, id string, snoopID stri
 }
 
 // StartExternalMedia starts a external media channel
-func (h *channelHandler) StartExternalMedia(ctx context.Context, asteriskID string, id string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
+func (h *channelHandler) StartExternalMedia(ctx context.Context, asteriskID string, id string, externalHost string, encapsulation string, transport string, transportData string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "StartExternalMedia",
 		"asterisk_id":     asteriskID,
@@ -50,6 +50,7 @@ func (h *channelHandler) StartExternalMedia(ctx context.Context, asteriskID stri
 		"external_host":   externalHost,
 		"encapsulation":   encapsulation,
 		"transport":       transport,
+		"transport_data":  transportData,
 		"connection_type": connectionType,
 		"format":          format,
 		"direction":       direction,
@@ -57,7 +58,7 @@ func (h *channelHandler) StartExternalMedia(ctx context.Context, asteriskID stri
 		"variables":       variables,
 	})
 
-	res, err := h.reqHandler.AstChannelExternalMedia(ctx, asteriskID, id, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	res, err := h.reqHandler.AstChannelExternalMedia(ctx, asteriskID, id, externalHost, encapsulation, transport, transportData, connectionType, format, direction, data, variables)
 	if err != nil {
 		log.Errorf("Could not create an external media channel. err: %v", err)
 		return nil, errors.Wrap(err, "could not create an external media channel")

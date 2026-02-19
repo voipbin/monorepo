@@ -90,6 +90,7 @@ func Test_StartExternalMedia(t *testing.T) {
 		externalHost   string
 		encapsulation  string
 		transport      string
+		transportData  string
 		connectionType string
 		format         string
 		direction      string
@@ -108,6 +109,7 @@ func Test_StartExternalMedia(t *testing.T) {
 			externalHost:   "example.com",
 			encapsulation:  "rtp",
 			transport:      "udp",
+			transportData:  "",
 			connectionType: "client",
 			format:         "ulaw",
 			direction:      "both",
@@ -142,9 +144,9 @@ func Test_StartExternalMedia(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.transportData, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables).Return(tt.responseChannel, nil)
 
-			res, err := h.StartExternalMedia(ctx, tt.asteriskID, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
+			res, err := h.StartExternalMedia(ctx, tt.asteriskID, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.transportData, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

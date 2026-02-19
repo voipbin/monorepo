@@ -70,7 +70,7 @@ type ChannelHandler interface {
 	StartChannelWithBaseChannel(ctx context.Context, baseChannelID string, id string, appArgs string, endpoint string, otherChannelID string, originator string, formats string, variables map[string]string) (*channel.Channel, error)
 	StartChannel(ctx context.Context, asteriskID string, id string, appArgs string, endpoint string, otherChannelID string, originator string, formats string, variables map[string]string) (*channel.Channel, error)
 	StartSnoop(ctx context.Context, id string, snoopID string, appArgs string, spy channel.SnoopDirection, whisper channel.SnoopDirection) (*channel.Channel, error)
-	StartExternalMedia(ctx context.Context, asteriskID string, id string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
+	StartExternalMedia(ctx context.Context, asteriskID string, id string, externalHost string, encapsulation string, transport string, transportData string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
 
 	DTMFSend(ctx context.Context, id string, digit string, duration int, before int, between int, after int) error
 

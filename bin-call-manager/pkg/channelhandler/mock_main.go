@@ -558,18 +558,18 @@ func (mr *MockChannelHandlerMockRecorder) StartChannelWithBaseChannel(ctx, baseC
 }
 
 // StartExternalMedia mocks base method.
-func (m *MockChannelHandler) StartExternalMedia(ctx context.Context, asteriskID, id, externalHost, encapsulation, transport, connectionType, format, direction, data string, variables map[string]string) (*channel.Channel, error) {
+func (m *MockChannelHandler) StartExternalMedia(ctx context.Context, asteriskID, id, externalHost, encapsulation, transport, transportData, connectionType, format, direction, data string, variables map[string]string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartExternalMedia", ctx, asteriskID, id, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	ret := m.ctrl.Call(m, "StartExternalMedia", ctx, asteriskID, id, externalHost, encapsulation, transport, transportData, connectionType, format, direction, data, variables)
 	ret0, _ := ret[0].(*channel.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StartExternalMedia indicates an expected call of StartExternalMedia.
-func (mr *MockChannelHandlerMockRecorder) StartExternalMedia(ctx, asteriskID, id, externalHost, encapsulation, transport, connectionType, format, direction, data, variables any) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) StartExternalMedia(ctx, asteriskID, id, externalHost, encapsulation, transport, transportData, connectionType, format, direction, data, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartExternalMedia", reflect.TypeOf((*MockChannelHandler)(nil).StartExternalMedia), ctx, asteriskID, id, externalHost, encapsulation, transport, connectionType, format, direction, data, variables)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartExternalMedia", reflect.TypeOf((*MockChannelHandler)(nil).StartExternalMedia), ctx, asteriskID, id, externalHost, encapsulation, transport, transportData, connectionType, format, direction, data, variables)
 }
 
 // StartSnoop mocks base method.

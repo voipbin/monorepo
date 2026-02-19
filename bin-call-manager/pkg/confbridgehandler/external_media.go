@@ -21,6 +21,7 @@ func (h *confbridgeHandler) ExternalMediaStart(
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
+	transportData string,
 	connectionType string,
 	format string,
 ) (*confbridge.Confbridge, error) {
@@ -50,6 +51,7 @@ func (h *confbridgeHandler) ExternalMediaStart(
 		externalHost,
 		encapsulation,
 		transport,
+		transportData,
 		connectionType,
 		format,
 		externalmedia.DirectionBoth,
