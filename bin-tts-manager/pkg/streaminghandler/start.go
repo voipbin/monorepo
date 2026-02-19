@@ -91,7 +91,6 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
 		st.ID,
-		externalmedia.TypeNormal,
 		externalmedia.ReferenceType(st.ReferenceType),
 		st.ReferenceID,
 		h.listenAddress,

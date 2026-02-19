@@ -90,7 +90,6 @@ func Test_Start(t *testing.T) {
 			mockReq.EXPECT().CallV1ExternalMediaStart(
 				ctx,
 				tt.responseUUID,
-				gomock.Any(),
 				cmexternalmedia.ReferenceType(tt.referenceType),
 				tt.referenceID,
 				tt.listenAddress,
@@ -210,7 +209,6 @@ func Test_StartWithID(t *testing.T) {
 				mockReq.EXPECT().CallV1ExternalMediaStart(
 					ctx,
 					tt.id,
-					gomock.Any(),
 					cmexternalmedia.ReferenceType(tt.referenceType),
 					tt.referenceID,
 					tt.listenAddress,

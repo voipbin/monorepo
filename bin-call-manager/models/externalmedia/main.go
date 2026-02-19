@@ -6,8 +6,7 @@ import (
 
 // ExternalMedia defines external media detail info
 type ExternalMedia struct {
-	ID   uuid.UUID `json:"id"`
-	Type Type      `json:"type"` // type of the external media
+	ID uuid.UUID `json:"id"`
 
 	AsteriskID string `json:"asterisk_id"`           // asterisk id
 	ChannelID  string `json:"channel_id"`            // external media channel id
@@ -75,13 +74,4 @@ const (
 	StatusRunning     Status = "running"     // running status
 	StatusTerminating Status = "terminating" // terminating status
 	StatusTerminated  Status = "terminated"  // terminated status
-)
-
-// Type define
-type Type string
-
-// list of Type types
-const (
-	TypeNormal    Type = "normal"
-	TypeWebsocket Type = "websocket"
 )

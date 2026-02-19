@@ -12,5 +12,4 @@ type FieldStruct struct {
 	ReferenceType ReferenceType `filter:"reference_type"`
 	ReferenceID   uuid.UUID     `filter:"reference_id"`
 	Status        Status        `filter:"status"`
-	Type          Type          `filter:"type"`
 }

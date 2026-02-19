@@ -18,7 +18,6 @@ func TestFieldConstants(t *testing.T) {
 		{"field_reference_type", FieldReferenceType, "reference_type"},
 		{"field_reference_id", FieldReferenceID, "reference_id"},
 		{"field_status", FieldStatus, "status"},
-		{"field_type", FieldType, "type"},
 		{"field_local_ip", FieldLocalIP, "local_ip"},
 		{"field_local_port", FieldLocalPort, "local_port"},
 		{"field_external_host", FieldExternalHost, "external_host"},

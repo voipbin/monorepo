@@ -89,7 +89,6 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 			expectPlaybackID:  playback.IDPrefixExternalMedia + "78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b"),
-				Type:            externalmedia.TypeNormal,
 				AsteriskID:      "42:01:0a:a4:00:05",
 				ChannelID:       "488feb00-96e3-11ed-8ae7-1fe9bc7a995f",
 				ReferenceType:   externalmedia.ReferenceTypeCall,
@@ -150,7 +149,6 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 			res, err := h.Start(
 				ctx,
 				tt.id,
-				externalmedia.TypeNormal,
 				tt.referenceType,
 				tt.referenceID,
 				tt.externalHost,
@@ -225,7 +223,6 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			expectChannelData:  "context_type=call,context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f,external_media_id=79076e90-b331-11ef-bc31-33cb17f32724",
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("79076e90-b331-11ef-bc31-33cb17f32724"),
-				Type:            externalmedia.TypeNormal,
 				AsteriskID:      "42:01:0a:a4:00:05",
 				ChannelID:       "548cc82e-97ba-11ed-9f0c-43e1928c2d6e",
 				ReferenceType:   externalmedia.ReferenceTypeConfbridge,
@@ -278,7 +275,6 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			res, err := h.Start(
 				ctx,
 				tt.id,
-				externalmedia.TypeNormal,
 				tt.referenceType,
 				tt.referenceID,
 				tt.externalHost,

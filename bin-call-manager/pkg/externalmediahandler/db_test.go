@@ -64,7 +64,6 @@ func Test_Create(t *testing.T) {
 
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
-				Type:            externalmedia.TypeNormal,
 				AsteriskID:      "3e:50:6b:43:bb:30",
 				ChannelID:       "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
 				BridgeID:        "7f34278a-7d9e-11f0-ba9f-97cef5bed809",
@@ -106,7 +105,6 @@ func Test_Create(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
 			expectExternalMedia: &externalmedia.ExternalMedia{
 				ID:              uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
-				Type:            externalmedia.TypeNormal,
 				AsteriskID:      "3e:50:6b:43:bb:30",
 				ChannelID:       "09d1321e-b330-11ef-ad3e-170da10752c8",
 				BridgeID:        "96b5355c-7d9e-11f0-a2ca-b3875a58d870",
@@ -153,7 +151,6 @@ func Test_Create(t *testing.T) {
 			res, err := h.Create(
 				ctx,
 				tt.id,
-				externalmedia.TypeNormal,
 				tt.asteriskID,
 				tt.channelID,
 				tt.bridgeID,

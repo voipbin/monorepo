@@ -63,7 +63,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
+				Data:       []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}
@@ -84,7 +84,6 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			mockExternal.EXPECT().Start(
 				gomock.Any(),
 				tt.expectID,
-				gomock.Any(),
 				tt.expectReferenceType,
 				tt.expectReferenceID,
 				tt.expectExternalHost,
@@ -139,7 +138,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
+				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
 			},
 		},
 		{
@@ -164,7 +163,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
+				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}]`),
 			},
 		},
 	}
@@ -226,7 +225,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"86d29aa4-97b3-11ed-a086-eb62e01c6736","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
+				Data:       []byte(`{"id":"86d29aa4-97b3-11ed-a086-eb62e01c6736","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}
@@ -286,7 +285,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbfd5cdc-97b3-11ed-8caa-e705f8c7d343","type":"","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
+				Data:       []byte(`{"id":"bbfd5cdc-97b3-11ed-8caa-e705f8c7d343","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":""}`),
 			},
 		},
 	}

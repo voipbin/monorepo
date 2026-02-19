@@ -24,7 +24,6 @@ func (h *callHandler) ExternalMediaStart(
 	ctx context.Context,
 	id uuid.UUID,
 	externalMediaID uuid.UUID,
-	typ externalmedia.Type,
 	externalHost string,
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
@@ -54,7 +53,6 @@ func (h *callHandler) ExternalMediaStart(
 	tmp, err := h.externalMediaHandler.Start(
 		ctx,
 		externalMediaID,
-		typ,
 		externalmedia.ReferenceTypeCall,
 		c.ID,
 		externalHost,

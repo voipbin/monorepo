@@ -210,7 +210,6 @@ type OptionEmpty struct {
 // OptionExternalMediaStart defines action OptionExternalMediaStart's option.
 type OptionExternalMediaStart struct {
 	ExternalHost    string `json:"external_host,omitempty"`    // external media target host address
-	Type            string `json:"type,omitempty"`             // type. default: normal (normal, websocket)
 	Encapsulation   string `json:"encapsulation,omitempty"`    // encapsulation. default: rtp
 	Transport       string `json:"transport,omitempty"`        // transport. default: udp
 	ConnectionType  string `json:"connection_type,omitempty"`  // connection type. default: client

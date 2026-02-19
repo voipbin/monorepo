@@ -15,7 +15,6 @@ const (
 	FieldReferenceID   Field = "reference_id"   // reference_id
 
 	FieldStatus Field = "status" // status of the external media
-	FieldType   Field = "type"   // type of the external media
 
 	FieldLocalIP   Field = "local_ip"   // local_ip
 	FieldLocalPort Field = "local_port" // local_port

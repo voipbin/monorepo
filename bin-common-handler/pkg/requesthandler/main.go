@@ -522,7 +522,6 @@ type RequestHandler interface {
 	CallV1ExternalMediaStart(
 		ctx context.Context,
 		externalMediaID uuid.UUID,
-		typ cmexternalmedia.Type,
 		referenceType cmexternalmedia.ReferenceType,
 		referenceID uuid.UUID,
 		externalHost string,
