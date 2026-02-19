@@ -63,7 +63,6 @@ func (r *requestHandler) CallV1ExternalMediaGet(ctx context.Context, externalMed
 func (r *requestHandler) CallV1ExternalMediaStart(
 	ctx context.Context,
 	externalMediaID uuid.UUID,
-	typ cmexternalmedia.Type,
 	referenceType cmexternalmedia.ReferenceType,
 	referenceID uuid.UUID,
 	externalHost string,
@@ -77,9 +76,8 @@ func (r *requestHandler) CallV1ExternalMediaStart(
 	uri := "/v1/external-medias"
 
 	reqData := &cmrequest.V1DataExternalMediasPost{
-		ID:            externalMediaID,
-		Type:          typ,
-		ReferenceType: referenceType,
+		ID:              externalMediaID,
+		ReferenceType:   referenceType,
 		ReferenceID:     referenceID,
 		ExternalHost:    externalHost,
 		Encapsulation:   encapsulation,

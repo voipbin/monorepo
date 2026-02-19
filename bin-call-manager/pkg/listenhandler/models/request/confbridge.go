@@ -4,7 +4,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-call-manager/models/confbridge"
-	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -23,9 +22,8 @@ type V1DataConfbridgesPost struct {
 // v1 data type for
 // /v1/confbridges/<confbridge-id>/external-media POST
 type V1DataConfbridgesIDExternalMediaPost struct {
-	ExternalMediaID uuid.UUID          `json:"external_media_id,omitempty"`
-	Type            externalmedia.Type `json:"type,omitempty"`
-	ExternalHost    string             `json:"external_host,omitempty"`
+	ExternalMediaID uuid.UUID `json:"external_media_id,omitempty"`
+	ExternalHost    string    `json:"external_host,omitempty"`
 	Encapsulation   string    `json:"encapsulation,omitempty"`
 	Transport       string    `json:"transport,omitempty"`
 	ConnectionType  string    `json:"connection_type,omitempty"`

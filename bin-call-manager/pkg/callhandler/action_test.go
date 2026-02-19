@@ -980,7 +980,6 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			mockExternal.EXPECT().Start(
 				ctx,
 				uuid.Nil,
-				gomock.Any(),
 				externalmedia.ReferenceTypeCall,
 				tt.call.ID,
 				tt.expectHost,

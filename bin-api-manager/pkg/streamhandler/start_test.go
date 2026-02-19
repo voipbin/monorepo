@@ -75,7 +75,6 @@ func Test_Start(t *testing.T) {
 			mockReq.EXPECT().CallV1ExternalMediaStart(
 				ctx,
 				tt.responseUUID,
-				gomock.Any(),
 				tt.referenceType,
 				tt.referenceID,
 				localhost,
