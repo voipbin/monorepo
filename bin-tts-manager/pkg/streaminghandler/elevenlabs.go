@@ -31,8 +31,9 @@ type ElevenlabsConfig struct {
 	Ctx    context.Context    `json:"-"`
 	Cancel context.CancelFunc `json:"-"`
 
-	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
-	ConnAst     *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+	ConnWebsock  *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
+	ConnAst      *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+	ConnAstDone  chan struct{}    `json:"-"` // closed when Asterisk WebSocket disconnects
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
@@ -186,8 +187,9 @@ func (h *elevenlabsHandler) Init(ctx context.Context, st *streaming.Streaming) (
 		Ctx:    ctx,
 		Cancel: cancel,
 
-		ConnWebsock: connWebsock,
-		ConnAst:     st.ConnAst,
+		ConnWebsock:  connWebsock,
+		ConnAst:      st.ConnAst,
+		ConnAstDone:  st.ConnAstDone,
 
 		Message: &message.Message{
 			Identity: commonidentity.Identity{
@@ -226,10 +228,19 @@ func (h *elevenlabsHandler) Run(vendorConfig any) error {
 		return fmt.Errorf("the vendorConfig is not a *ElevenlabsConfig or is nil")
 	}
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "elevenlabsHandler.Run",
+		"streaming_id": cf.Streaming.ID,
+	})
+
 	go h.runProcess(cf)
 	go h.runKeepAlive(cf)
 
-	<-cf.Ctx.Done()
+	select {
+	case <-cf.Ctx.Done():
+	case <-cf.ConnAstDone:
+		log.Infof("Asterisk WebSocket disconnected, tearing down ElevenLabs session")
+	}
 
 	h.terminate(cf)
 

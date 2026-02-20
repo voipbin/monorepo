@@ -104,9 +104,12 @@ func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte) erro
 
 // runWebSocketRead reads from the WebSocket connection to handle ping/pong and
 // close frames. Without a read loop, gorilla/websocket won't acknowledge pings.
-// Returns when the connection is closed or encounters an error.
-func runWebSocketRead(conn *websocket.Conn) {
+// Closes doneCh when the connection is closed or encounters an error, signalling
+// vendor handlers to tear down their sessions.
+func runWebSocketRead(conn *websocket.Conn, doneCh chan struct{}) {
 	log := logrus.WithField("func", "runWebSocketRead")
+
+	defer close(doneCh)
 
 	for {
 		_, _, err := conn.ReadMessage()

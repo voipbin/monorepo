@@ -31,8 +31,9 @@ type Streaming struct {
 	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
 	VendorConfig any        `json:"-"`
 
-	ConnAst   *websocket.Conn `json:"-"` // Connection to the Asterisk for the streaming
-	CreatedAt time.Time `json:"-"` // Timestamp of when the streaming was created (for metrics)
+	ConnAst     *websocket.Conn `json:"-"` // Connection to the Asterisk for the streaming
+	ConnAstDone chan struct{}    `json:"-"` // Closed when ConnAst disconnects (Asterisk gone)
+	CreatedAt   time.Time       `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 
 // // Direction represents the direction of the streaming in a call.
