@@ -293,7 +293,28 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 
 		resp, err := stream.Recv()
 		if err != nil {
-			log.Infof("GCP stream ended: %v", err)
+			// If the per-stream context was cancelled (SayFlush or SayStop),
+			// the stream/client are already nil — just return and let the defer run.
+			select {
+			case <-cf.StreamCtx.Done():
+				log.Infof("GCP stream ended (context cancelled): %v", err)
+				return
+			default:
+			}
+
+			// Stream died server-side (e.g., GCP 5s inactivity timeout).
+			// Nil out the stream so the next SayAdd can reconnect.
+			log.Infof("GCP stream ended, will reconnect on next SayAdd: %v", err)
+			cf.muStream.Lock()
+			if cf.Stream != nil {
+				_ = cf.Stream.CloseSend()
+				cf.Stream = nil
+			}
+			if cf.Client != nil {
+				_ = cf.Client.Close()
+				cf.Client = nil
+			}
+			cf.muStream.Unlock()
 			return
 		}
 
@@ -315,33 +336,19 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 		return fmt.Errorf("vendorConfig is not a *GCPConfig or is nil")
 	}
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "gcpHandler.SayAdd",
+		"streaming_id": cf.Streaming.ID,
+	})
+
 	cf.muStream.Lock()
 	defer cf.muStream.Unlock()
 
-	// Reconnect if stream was flushed
+	// Reconnect if stream is nil (died from GCP timeout, flushed, etc.)
 	if cf.Stream == nil {
-		// Wait for previous runProcess to fully exit before starting a new one.
-		// This prevents concurrent WebSocket writes.
-		// Release the lock first because runProcess acquires muStream to read cf.Stream.
-		cf.muStream.Unlock()
-		<-cf.processDone
-		cf.muStream.Lock()
-
-		// Re-check: another goroutine may have already reconnected while we waited.
-		if cf.Stream == nil {
-			client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
-			if err != nil {
-				return errors.Wrapf(err, "failed to reconnect GCP stream after flush")
-			}
-			cf.Client = client
-			cf.Stream = stream
-
-			streamCtx, streamCancel := context.WithCancel(cf.Ctx)
-			cf.StreamCtx = streamCtx
-			cf.StreamCancel = streamCancel
-
-			cf.processDone = make(chan struct{})
-			go h.runProcess(cf)
+		log.Infof("GCP stream is nil, reconnecting")
+		if err := h.waitAndReconnectLocked(cf); err != nil {
+			return err
 		}
 	}
 
@@ -356,11 +363,61 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 	}
 
 	if err := cf.Stream.Send(req); err != nil {
-		return errors.Wrapf(err, "failed to send text to GCP stream")
+		// Send failed — stream may have died between our nil check and the Send.
+		// Clean up, wait for runProcess to exit, and reconnect once.
+		log.Infof("Send failed, reconnecting: %v", err)
+		if cf.Stream != nil {
+			_ = cf.Stream.CloseSend()
+			cf.Stream = nil
+		}
+		if cf.Client != nil {
+			_ = cf.Client.Close()
+			cf.Client = nil
+		}
+
+		if errReconnect := h.waitAndReconnectLocked(cf); errReconnect != nil {
+			return errors.Wrapf(err, "failed to send text and reconnect GCP stream")
+		}
+
+		if errRetry := cf.Stream.Send(req); errRetry != nil {
+			return errors.Wrapf(errRetry, "failed to send text after GCP stream reconnect")
+		}
 	}
 
 	cf.Message.TotalMessage += text
 	cf.Message.TotalCount++
+
+	return nil
+}
+
+// waitAndReconnectLocked waits for the previous runProcess goroutine to exit,
+// then creates a new GCP client/stream and launches a new runProcess.
+// Must be called with cf.muStream held. Temporarily releases the lock while
+// waiting on processDone to avoid deadlock with runProcess.
+func (h *gcpHandler) waitAndReconnectLocked(cf *GCPConfig) error {
+	// Release lock while waiting — runProcess needs it to read cf.Stream.
+	cf.muStream.Unlock()
+	<-cf.processDone
+	cf.muStream.Lock()
+
+	// Re-check: another goroutine may have already reconnected.
+	if cf.Stream != nil {
+		return nil
+	}
+
+	client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
+	if err != nil {
+		return errors.Wrapf(err, "failed to reconnect GCP stream")
+	}
+	cf.Client = client
+	cf.Stream = stream
+
+	streamCtx, streamCancel := context.WithCancel(cf.Ctx)
+	cf.StreamCtx = streamCtx
+	cf.StreamCancel = streamCancel
+
+	cf.processDone = make(chan struct{})
+	go h.runProcess(cf)
 
 	return nil
 }
