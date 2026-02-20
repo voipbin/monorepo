@@ -463,11 +463,13 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 // Must be called with cf.muStream held. Temporarily releases the lock while
 // waiting on processDone to avoid deadlock with runProcess.
 func (h *gcpHandler) waitAndReconnectLocked(cf *GCPConfig) error {
-	// Release lock while waiting — runProcess needs it to read cf.Stream.
-	// Also watch cf.Ctx so we don't block forever under network partition.
+	// Capture processDone under lock before releasing, to avoid a data race
+	// where another goroutine replaces cf.processDone between our Unlock and
+	// the select operand evaluation.
+	doneCh := cf.processDone
 	cf.muStream.Unlock()
 	select {
-	case <-cf.processDone:
+	case <-doneCh:
 	case <-cf.Ctx.Done():
 		cf.muStream.Lock()
 		return fmt.Errorf("session context cancelled while waiting for stream to exit")
