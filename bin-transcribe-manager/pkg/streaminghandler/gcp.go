@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
 // gcpRun runs the stt process using the gcp
-func (h *streamingHandler) gcpRun(st *streaming.Streaming, conn net.Conn) error {
+func (h *streamingHandler) gcpRun(st *streaming.Streaming) error {
 	if h.gcpClient == nil {
 		return fmt.Errorf("GCP provider not initialized")
 	}
@@ -35,7 +35,7 @@ func (h *streamingHandler) gcpRun(st *streaming.Streaming, conn net.Conn) error 
 	}
 
 	go h.gcpProcessResult(ctx, cancel, st, streamClient)
-	go h.gcpProcessMedia(ctx, cancel, st, conn, streamClient)
+	go h.gcpProcessMedia(ctx, cancel, st, streamClient)
 
 	<-ctx.Done()
 	log.Debugf("Finished the gcp process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
@@ -170,16 +170,16 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 	}
 }
 
-// gcpProcessMedia receives the media from the given the asterisk(conn) then send it to the google stt
-func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn net.Conn, streamClient speechpb.Speech_StreamingRecognizeClient) {
+// gcpProcessMedia receives the media from Asterisk via WebSocket then sends it to the google stt
+func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, streamClient speechpb.Speech_StreamingRecognizeClient) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "gcpProcessMedia",
 		"streaming_id":  st.ID,
 		"transcribe_id": st.TranscribeID,
 	})
-	log.Debugf("Starting gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
+	log.Debugf("Starting gcpProcessMedia. transcribe_id: %s", st.TranscribeID)
 	defer func() {
-		log.Debugf("Finished gcpProcessAudiosocket. transcribe_id: %s", st.TranscribeID)
+		log.Debugf("Finished gcpProcessMedia. transcribe_id: %s", st.TranscribeID)
 		cancel()
 	}()
 
@@ -189,15 +189,23 @@ func (h *streamingHandler) gcpProcessMedia(ctx context.Context, cancel context.C
 			return
 		}
 
-		m, err := h.audiosocketGetNextMedia(conn)
+		msgType, data, err := st.ConnAst.ReadMessage()
 		if err != nil {
-			log.Infof("Connection has closed. err: %v", err)
+			log.Infof("WebSocket connection has closed. err: %v", err)
 			return
+		}
+
+		if msgType != websocket.BinaryMessage {
+			continue
+		}
+
+		if len(data) == 0 {
+			continue
 		}
 
 		if errSend := streamClient.Send(&speechpb.StreamingRecognizeRequest{
 			StreamingRequest: &speechpb.StreamingRecognizeRequest_AudioContent{
-				AudioContent: m.Payload(),
+				AudioContent: data,
 			},
 		}); errSend != nil {
 			if errSend != io.EOF {

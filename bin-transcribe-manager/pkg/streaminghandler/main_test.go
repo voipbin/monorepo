@@ -48,7 +48,6 @@ func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 		mockReq,
 		mockNotify,
 		mockTranscript,
-		"127.0.0.1:8080",
 		"test_access_key",
 		"test_secret_key",
 	)
@@ -71,7 +70,6 @@ func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 		mockReq,
 		mockNotify,
 		mockTranscript,
-		"127.0.0.1:8080",
 		"", // empty AWS credentials
 		"",
 	)

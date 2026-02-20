@@ -68,10 +68,7 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 
-	// Note: CLI doesn't need a real listening address for streaming
-	// Use a placeholder since we're not actually running the streaming server
-	listenAddress := "127.0.0.1:8080"
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 	if streamingHandler == nil {
 		return nil, errors.New("failed to initialize streaming handler: no STT providers available")
 	}

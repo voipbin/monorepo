@@ -6,7 +6,6 @@ import (
 	"context"
 	"strings"
 	"sync"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -49,9 +48,9 @@ type StreamingHandler interface {
 //
 //nolint:deadcode,varcheck
 const (
-	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
-	defaultTransport      = string(cmexternalmedia.TransportTCP)
-	defaultConnectionType = "client"
+	defaultEncapsulation  = string(cmexternalmedia.EncapsulationNone)
+	defaultTransport      = string(cmexternalmedia.TransportWebsocket)
+	defaultConnectionType = "server"
 	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
 )
 
@@ -69,19 +68,11 @@ const (
 	defaultAWSSampleRate = 8000
 )
 
-const (
-	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
-	defaultMaxRetryAttempts  = 3
-	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
-)
-
 type streamingHandler struct {
 	utilHandler       utilhandler.UtilHandler
 	reqHandler        requesthandler.RequestHandler
 	notifyHandler     notifyhandler.NotifyHandler
 	transcriptHandler transcripthandler.TranscriptHandler
-
-	listenAddress string
 
 	gcpClient *speech.Client
 	awsClient *transcribestreaming.Client
@@ -89,7 +80,7 @@ type streamingHandler struct {
 	providerPriority []STTProvider // Validated list of providers in priority order
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
-	muSteaming   sync.Mutex
+	muSteaming  sync.Mutex
 }
 
 // NewStreamingHandler define
@@ -97,8 +88,6 @@ func NewStreamingHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
-
-	listenAddress string,
 	awsAccessKey string,
 	awsSecretKey string,
 ) StreamingHandler {
@@ -144,8 +133,6 @@ func NewStreamingHandler(
 		reqHandler:        reqHandler,
 		notifyHandler:     notifyHandler,
 		transcriptHandler: transcriptHandler,
-
-		listenAddress: listenAddress,
 
 		gcpClient:        gcpClient,
 		awsClient:        awsClient,

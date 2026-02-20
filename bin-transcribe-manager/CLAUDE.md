@@ -20,7 +20,7 @@ The service operates on a request/response pattern using RabbitMQ queues:
 ### Three Core Handlers
 1. **ListenHandler** (`pkg/listenhandler`): Processes REST-style API requests via RabbitMQ. Routes requests based on URL patterns (e.g., `/v1/transcribes`, `/v1/transcripts`)
 2. **SubscribeHandler** (`pkg/subscribehandler`): Listens to events from other services (call hangups, customer deletions) to trigger cleanup
-3. **StreamingHandler** (`pkg/streaminghandler`): Manages real-time audio streaming connections using AudioSocket protocol. Maintains active streaming sessions in memory with mutex-protected map
+3. **StreamingHandler** (`pkg/streaminghandler`): Manages real-time audio streaming connections via WebSocket transport. Dials out to Asterisk's chan_websocket endpoint per-session. Maintains active streaming sessions in memory with mutex-protected map
 
 ### Dual STT Provider Support
 The service supports both Google Cloud Platform and AWS transcription:
@@ -126,8 +126,6 @@ The service uses Cobra and Viper for configuration (see `internal/config/main.go
 - `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
 - `RABBITMQ_ADDRESS`: RabbitMQ connection string
 - `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
-- `POD_IP`: Required. IP address for AudioSocket streaming listener (populated by Kubernetes)
-- `STREAMING_LISTEN_PORT`: Optional. TCP port for AudioSocket streaming listener (default: 8080)
 - `STT_PROVIDER_PRIORITY`: Optional. Comma-separated list of STT providers in priority order (default: "GCP,AWS"). Valid values: GCP, AWS. Examples: "GCP,AWS", "AWS,GCP"
 
 All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
@@ -154,9 +152,10 @@ When adding new transcribe-related endpoints:
 ### Working with Streaming Audio
 The streaming handler maintains active connections in `mapStreaming` (mutex-protected). When modifying streaming logic:
 - Always lock/unlock `muSteaming` when accessing the map
-- Implement proper cleanup in Stop() to prevent resource leaks
+- Implement proper cleanup in Stop() to prevent resource leaks (WebSocket close + external media stop)
 - Use context cancellation for graceful shutdown
-- AudioSocket protocol expects 8kHz, 16-bit mono PCM
+- WebSocket transport delivers raw 8kHz, 16-bit mono signed linear PCM (slin) binary frames
+- Service dials out to Asterisk via `MediaURI` returned from ExternalMediaStart (connectionType: "server", transport: "websocket", encapsulation: "none")
 
 ### Event-Driven Cleanup
 Subscribe handler methods (e.g., `EventCMCallHangup`, `EventCUCustomerDeleted`) ensure resources are cleaned up when parent entities are deleted. When adding new reference types, implement corresponding event handlers.
