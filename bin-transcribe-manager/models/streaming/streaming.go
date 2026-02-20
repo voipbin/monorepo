@@ -2,6 +2,7 @@ package streaming
 
 import (
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -14,4 +15,6 @@ type Streaming struct {
 	TranscribeID uuid.UUID            `json:"transcribe_id"`
 	Language     string               `json:"language"`
 	Direction    transcript.Direction `json:"direction"`
+
+	ConnAst *websocket.Conn `json:"-"` // WebSocket connection to Asterisk
 }

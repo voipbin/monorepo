@@ -135,18 +135,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	hostID := uuid.Must(uuid.NewV4())
 	log.Debugf("Generated host id. host_id: %s", hostID)
 
-	if config.Get().PodIP == "" {
-		return fmt.Errorf("could not get the listen ip address: POD_IP not configured")
-	}
-	listenAddress := fmt.Sprintf("%s:%d", config.Get().PodIP, config.Get().StreamingListenPort)
-	log.Debugf("Listening address... listen_address: %s", listenAddress)
-
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager, "")
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, listenAddress, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 	if streamingHandler == nil {
 		return fmt.Errorf("failed to initialize streaming handler: no STT providers available")
 	}

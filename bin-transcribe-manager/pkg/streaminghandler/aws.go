@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -12,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
 	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming/types"
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -38,7 +38,7 @@ func awsNewClient(accessKey string, secretKey string) (*transcribestreaming.Clie
 }
 
 // awsRun runs the STT process using AWS Transcribe Streaming
-func (h *streamingHandler) awsRun(st *streaming.Streaming, conn net.Conn) error {
+func (h *streamingHandler) awsRun(st *streaming.Streaming) error {
 	if h.awsClient == nil {
 		return fmt.Errorf("AWS provider not initialized")
 	}
@@ -59,7 +59,7 @@ func (h *streamingHandler) awsRun(st *streaming.Streaming, conn net.Conn) error 
 	}
 
 	go h.awsProcessResult(ctx, cancel, st, streamClient)
-	go h.awsProcessMedia(ctx, cancel, st, conn, streamClient)
+	go h.awsProcessMedia(ctx, cancel, st, streamClient)
 
 	<-ctx.Done()
 	log.Debugf("Finished the AWS process. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
@@ -191,8 +191,8 @@ func (h *streamingHandler) awsProcessEvents(ctx context.Context, cancel context.
 	}
 }
 
-// awsProcessMedia receives media from Asterisk and sends it to AWS Transcribe
-func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, conn net.Conn, streamClient *transcribestreaming.StartStreamTranscriptionOutput) {
+// awsProcessMedia receives media from Asterisk via WebSocket and sends it to AWS Transcribe
+func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.CancelFunc, st *streaming.Streaming, streamClient *transcribestreaming.StartStreamTranscriptionOutput) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "awsProcessMedia",
 		"streaming_id":  st.ID,
@@ -215,26 +215,29 @@ func (h *streamingHandler) awsProcessMedia(ctx context.Context, cancel context.C
 			return
 		}
 
-		m, err := h.audiosocketGetNextMedia(conn)
+		msgType, data, err := st.ConnAst.ReadMessage()
 		if err != nil {
-			log.Infof("Connection has closed. err: %v", err)
+			log.Infof("WebSocket connection has closed. err: %v", err)
 			return
 		}
 
-		if m == nil {
+		if msgType != websocket.BinaryMessage {
+			continue
+		}
+
+		if len(data) == 0 {
 			continue
 		}
 
 		if errSend := stream.Send(ctx, &types.AudioStreamMemberAudioEvent{
 			Value: types.AudioEvent{
-				AudioChunk: m.Payload(),
+				AudioChunk: data,
 			},
 		}); errSend != nil {
 			if errSend != io.EOF {
 				log.Errorf("Could not send audio data correctly. err: %v", errSend)
 			}
 			return
-
 		}
 	}
 }
