@@ -167,10 +167,13 @@ func Test_Create_rollback_on_register_failure(t *testing.T) {
 	mockTelnyx.EXPECT().NumberPurchase(num).Return(purchasedProvider, nil)
 
 	// Register fails because number already exists
-	mockDB.EXPECT().NumberList(ctx, uint64(1), "", gomock.Any()).Return([]*number.Number{{Number: num}}, nil)
+	mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: num}).Return([]*number.Number{{Number: num}}, nil)
 
-	// rollback: release the purchased number
-	mockTelnyx.EXPECT().NumberRelease(ctx, gomock.Any()).Return(nil)
+	// rollback: release the purchased number with correct provider reference
+	mockTelnyx.EXPECT().NumberRelease(ctx, &number.Number{
+		ProviderName:        number.ProviderNameTelnyx,
+		ProviderReferenceID: purchasedProvider.ID,
+	}).Return(nil)
 
 	_, err := h.Create(ctx, customerID, num, uuid.Nil, uuid.Nil, "", "")
 	if err == nil {
