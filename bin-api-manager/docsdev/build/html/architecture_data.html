@@ -9,6 +9,7 @@
         <title>Data Architecture &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -612,7 +613,7 @@ EXPIRE key 300         # Set TTL on existing key
 
 <span class="n">Next</span> <span class="n">Read</span><span class="p">:</span>
 <span class="n">o</span> <span class="n">Cache</span> <span class="n">miss</span>
-<span class="n">o</span> <span class="n">Fetch</span> <span class="kn">from</span> <span class="nn">DB</span>
+<span class="n">o</span> <span class="n">Fetch</span> <span class="kn">from</span><span class="w"> </span><span class="nn">DB</span>
 <span class="n">o</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">cache</span> <span class="k">with</span> <span class="n">new</span> <span class="n">data</span>
 </pre></div>
 </div>
@@ -668,7 +669,7 @@ EXPIRE key 300         # Set TTL on existing key
 
 <span class="mf">2.</span> <span class="n">Request</span><span class="p">:</span>
    <span class="o">+----------------------------+</span>
-   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span> <span class="nn">header</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span><span class="w"> </span><span class="nn">header</span>  <span class="o">|</span>
    <span class="o">|</span> <span class="n">Hash</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="n">session_key</span>  <span class="o">|</span>
    <span class="o">|</span> <span class="n">GET</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span>            <span class="o">|</span>
    <span class="o">|</span> <span class="n">Validate</span> <span class="n">session</span> <span class="n">data</span>      <span class="o">|</span>
@@ -677,7 +678,7 @@ EXPIRE key 300         # Set TTL on existing key
 
 <span class="mf">3.</span> <span class="n">Logout</span><span class="p">:</span>
    <span class="o">+----------------------------+</span>
-   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span> <span class="nn">header</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span><span class="w"> </span><span class="nn">header</span>  <span class="o">|</span>
    <span class="o">|</span> <span class="n">Hash</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="n">session_key</span>  <span class="o">|</span>
    <span class="o">|</span> <span class="n">DEL</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span>            <span class="o">|</span>
    <span class="o">+----------------------------+</span>
@@ -827,7 +828,7 @@ EXPIRE key 300         # Set TTL on existing key
    <span class="o">+----------------------------+</span>
    <span class="o">|</span> <span class="n">Failover</span> <span class="n">to</span> <span class="n">replica</span>        <span class="o">|</span>
    <span class="o">|</span> <span class="n">Promote</span> <span class="n">to</span> <span class="n">primary</span>         <span class="o">|</span>
-   <span class="o">|</span> <span class="n">Restore</span> <span class="kn">from</span> <span class="nn">backup</span>        <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Restore</span> <span class="kn">from</span><span class="w"> </span><span class="nn">backup</span>        <span class="o">|</span>
    <span class="o">+----------------------------+</span>
    <span class="n">Recovery</span> <span class="n">time</span><span class="p">:</span> <span class="mi">15</span> <span class="n">minutes</span>
 </pre></div>
@@ -1030,7 +1031,7 @@ EXPIRE key 300         # Set TTL on existing key
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -1038,11 +1039,11 @@ EXPIRE key 300         # Set TTL on existing key
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

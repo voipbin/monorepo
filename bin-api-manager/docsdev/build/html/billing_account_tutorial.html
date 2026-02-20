@@ -9,6 +9,7 @@
         <title>Tutorial &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -365,10 +366,10 @@ Credit cost: 10 x $0.008 = $0.08
 <h3>Check Balance Before Call<a class="headerlink" href="#check-balance-before-call" title="Link to this heading"></a></h3>
 <p>Programmatically verify balance before initiating calls to ensure successful completion.</p>
 <p><strong>Python Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
-<span class="k">def</span> <span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">&quot;vn&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">&quot;vn&quot;</span><span class="p">):</span>
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">}</span>
 
@@ -494,14 +495,14 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </div>
 <p><strong>Process Webhook with Low Balance Alert:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python Flask example</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">LOW_BALANCE_THRESHOLD</span> <span class="o">=</span> <span class="mf">20.00</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook/billing&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">billing_webhook</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">billing_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
 
@@ -516,7 +517,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
-<span class="k">def</span> <span class="nf">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance</span><span class="p">):</span>
     <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Low Balance Alert: $</span><span class="si">{</span><span class="n">balance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    Your billing account credit balance is low.</span>
@@ -536,9 +537,9 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <section id="common-use-cases">
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Pre-Campaign Cost Estimation:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign cost considering credits.&quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">math</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
     <span class="c1"># PSTN calls: always credit</span>
     <span class="n">pstn_total_minutes</span> <span class="o">=</span> <span class="n">pstn_calls</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">pstn_avg_minutes</span><span class="p">)</span>
@@ -566,7 +567,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </pre></div>
 </div>
 <p><strong>2. Plan Tier Comparison:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_sms</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_sms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recommend the most cost-effective plan tier.&quot;&quot;&quot;</span>
     <span class="n">plans</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;free&#39;</span><span class="p">:</span>         <span class="p">{</span><span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>   <span class="s1">&#39;cost&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
@@ -735,7 +736,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -743,11 +744,11 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

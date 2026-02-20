@@ -9,6 +9,7 @@
         <title>Welcome to VoIPBIN’s documentation! &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -244,11 +245,6 @@
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#id4">Troubleshooting</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="quickstart.html#receiving-events">Receiving Events</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#webhook">Webhook</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#websocket">WebSocket</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#call">Call</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-a-call-with-inline-actions">Make a call with inline actions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-a-call-with-an-existing-flow">Make a call with an existing flow</a><ul>
@@ -257,22 +253,20 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="quickstart.html#queue">Queue</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#create-a-queue">Create a queue</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#receiving-events">Receiving Events</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#webhook">Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#websocket">WebSocket</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#real-time-voice-interaction">Real-Time Voice Interaction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-1-create-an-extension">Step 1: Create an extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-2-register-linphone">Step 2: Register Linphone</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-3-subscribe-to-events-via-websocket">Step 3: Subscribe to events via WebSocket</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-4-make-a-call-to-the-extension">Step 4: Make a call to the extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-5-observe-real-time-transcription">Step 5: Observe real-time transcription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-6-create-a-speaking-stream">Step 6: Create a speaking stream</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-7-speak-via-tts-api">Step 7: Speak via TTS API</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="quickstart.html#id6">Troubleshooting</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="quickstart.html#transcribe">Transcribe</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-1-create-a-transcription-flow">Step 1: Create a transcription flow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-2-create-a-virtual-number-and-assign-the-flow">Step 2: Create a virtual number and assign the flow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-3-subscribe-to-transcribe-events-via-websocket">Step 3: Subscribe to transcribe events via WebSocket</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-4-make-a-call-to-the-virtual-number">Step 4: Make a call to the virtual number</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-5-receive-real-time-transcription-events">Step 5: Receive real-time transcription events</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#receive-events-via-webhook-alternative">Receive events via webhook (alternative)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#step-6-verify-transcription-results">Step 6: Verify transcription results</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="quickstart.html#id7">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -2256,7 +2250,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -2264,11 +2258,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>
