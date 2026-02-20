@@ -371,9 +371,9 @@ Common Use Cases
     def recommend_plan(monthly_vn_minutes, monthly_sms):
         """Recommend the most cost-effective plan tier."""
         plans = {
-            'free':         {'tokens': 1000,   'cost': 0},
-            'basic':        {'tokens': 10000,  'cost': 0},   # plan cost TBD
-            'professional': {'tokens': 100000, 'cost': 0},   # plan cost TBD
+            'free':         {'tokens': 100,    'cost': 0},
+            'basic':        {'tokens': 1000,   'cost': 5},
+            'professional': {'tokens': 10000,  'cost': 25},
         }
 
         for plan_name, plan in plans.items():
