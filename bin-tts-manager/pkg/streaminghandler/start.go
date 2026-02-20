@@ -89,6 +89,9 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 		"streaming_id": st.ID,
 	})
 
+	format := formatForProvider(st.Provider)
+	log.Debugf("Using external media format %q for provider %q", format, st.Provider)
+
 	em, err := h.requestHandler.CallV1ExternalMediaStart(
 		ctx,
 		st.ID,
@@ -99,7 +102,7 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 		defaultTransport,
 		"", // transportData
 		defaultConnectionType,
-		defaultFormat,
+		format,
 		externalmedia.DirectionNone,
 		externalmedia.Direction(st.Direction),
 	)

@@ -59,8 +59,35 @@ const (
 	defaultEncapsulation  = string(cmexternalmedia.EncapsulationNone)
 	defaultTransport      = string(cmexternalmedia.TransportWebsocket)
 	defaultConnectionType = "server"
-	defaultFormat         = "ulaw"
 )
+
+// Asterisk external media format strings and their corresponding
+// WebSocket frame sizes for 20ms of audio.
+const (
+	formatUlaw   = "ulaw"   // 8kHz 8-bit µ-law (GCP native output)
+	formatSlin   = "slin"   // 8kHz 16-bit signed linear PCM (AWS Polly native output)
+	formatSlin16 = "slin16" // 16kHz 16-bit signed linear PCM (ElevenLabs native output)
+
+	frameSizeUlaw   = 160 // 8000 * 1 * 0.020
+	frameSizeSlin   = 320 // 8000 * 2 * 0.020
+	frameSizeSlin16 = 640 // 16000 * 2 * 0.020
+)
+
+// formatForProvider returns the Asterisk external media format string
+// matching the vendor's native audio output.
+func formatForProvider(provider string) string {
+	switch streaming.VendorName(provider) {
+	case streaming.VendorNameGCP:
+		return formatUlaw
+	case streaming.VendorNameAWS:
+		return formatSlin
+	case streaming.VendorNameElevenlabs:
+		return formatSlin16
+	default:
+		// Empty provider defaults to ElevenLabs (see getStreamerByProvider).
+		return formatSlin16
+	}
+}
 
 const (
 	variableElevenlabsVoiceID = "voipbin.tts.elevenlabs.voice_id"

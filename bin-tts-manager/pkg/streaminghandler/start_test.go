@@ -84,7 +84,7 @@ func Test_Start(t *testing.T) {
 				defaultTransport,
 				"", // transportData
 				defaultConnectionType,
-				defaultFormat,
+				formatSlin16, // empty provider defaults to ElevenLabs (slin16)
 				cmexternalmedia.DirectionNone,
 				cmexternalmedia.Direction(tt.direction),
 			).Return(tt.responseExternalMedia, nil)
@@ -123,7 +123,7 @@ func Test_StartWithID(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name: "normal - verifies CallV1ExternalMediaStart is called with INCOMING host",
+			name: "elevenlabs provider uses slin16 format",
 
 			id:            uuid.FromStringOrNil("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
@@ -139,6 +139,42 @@ func Test_StartWithID(t *testing.T) {
 			},
 
 			// websocketConnect will fail because there is no real WebSocket server
+			expectErr: true,
+		},
+		{
+			name: "gcp provider uses ulaw format",
+
+			id:            uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
+			referenceType: streaming.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("e24d0934-e9df-11ef-9193-e30e5103f5bd"),
+			language:      "en-US",
+			provider:      "gcp",
+			voiceID:       "en-US-Wavenet-D",
+			direction:     streaming.DirectionIncoming,
+
+			responseExternalMedia: &cmexternalmedia.ExternalMedia{
+				ID: uuid.FromStringOrNil("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			},
+
+			expectErr: true,
+		},
+		{
+			name: "aws provider uses slin format",
+
+			id:            uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
+			referenceType: streaming.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("e24d0934-e9df-11ef-9193-e30e5103f5bd"),
+			language:      "en-US",
+			provider:      "aws",
+			voiceID:       "Joanna",
+			direction:     streaming.DirectionIncoming,
+
+			responseExternalMedia: &cmexternalmedia.ExternalMedia{
+				ID: uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+			},
+
 			expectErr: true,
 		},
 		{
@@ -206,7 +242,7 @@ func Test_StartWithID(t *testing.T) {
 					defaultTransport,
 					"", // transportData
 					defaultConnectionType,
-					defaultFormat,
+					formatForProvider(tt.provider),
 					cmexternalmedia.DirectionNone,
 					cmexternalmedia.Direction(tt.direction),
 				).Return(tt.responseExternalMedia, tt.responseExternalMediaErr)
