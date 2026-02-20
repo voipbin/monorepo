@@ -117,7 +117,7 @@ SMS Messages        10 tokens              Per message
 ========================= ====================== ======================
 Service Type              Cost (USD)             Unit
 ========================= ====================== ======================
-VN Calls (overflow)       $0.0045                Per minute (ceiling)
+VN Calls (overflow)       $0.001                 Per minute (ceiling)
 PSTN Outgoing Calls       $0.0060                Per minute (ceiling)
 PSTN Incoming Calls       $0.0045                Per minute (ceiling)
 SMS (overflow)            $0.008                 Per message
@@ -141,7 +141,7 @@ Extension Calls           Free                   No charge
 
     # Example: 5 minute VN call with no tokens remaining
     Duration: 5 minutes
-    Credit cost: 5 x $0.0045 = $0.0225
+    Credit cost: 5 x $0.001 = $0.005
 
 **Calculate PSTN Call Cost:**
 
@@ -193,8 +193,8 @@ Programmatically verify balance before initiating calls to ensure successful com
 
         if call_type == "vn":
             # VN call: estimate credit cost for overflow scenario
-            estimated_cost = duration * 0.0045
-            print(f"VN call cost (if tokens exhausted): {duration} min x $0.0045 = ${estimated_cost:.4f}")
+            estimated_cost = duration * 0.001
+            print(f"VN call cost (if tokens exhausted): {duration} min x $0.001 = ${estimated_cost:.4f}")
             can_proceed = current_balance >= estimated_cost
 
         elif call_type == "pstn":
@@ -241,7 +241,7 @@ Programmatically verify balance before initiating calls to ensure successful com
 
             if (callType === 'vn') {
                 // VN call: estimate credit cost for overflow scenario
-                const estimatedCost = duration * 0.0045;
+                const estimatedCost = duration * 0.001;
                 console.log(`VN call cost (if tokens exhausted): $${estimatedCost.toFixed(4)}`);
                 canProceed = currentBalance >= estimatedCost;
             } else if (callType === 'pstn') {
@@ -407,7 +407,7 @@ Common Use Cases
             else:
                 overflow = total_tokens - plan['tokens']
                 # Simplified: assume overflow split proportionally
-                overflow_credit = overflow * 0.0045  # approximate
+                overflow_credit = overflow * 0.001  # approximate
 
             print(f"{plan_name}: {plan['tokens']} tokens, "
                   f"need {total_tokens}, overflow credit: ${overflow_credit:.2f}")

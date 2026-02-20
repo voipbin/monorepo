@@ -834,20 +834,51 @@ func Test_getCostTypeForCall(t *testing.T) {
 		expectCostType billing.CostType
 	}{
 		{
-			name: "incoming PSTN call (src=tel, dst=tel)",
+			name: "incoming call to virtual number (dst=tel with +899 prefix)",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:user@example.com",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: nmnumber.VirtualNumberPrefix + "1234567",
+				},
+			},
+			expectCostType: billing.CostTypeCallVN,
+		},
+		{
+			name: "incoming PSTN call (dst=tel, no +899 prefix)",
 			call: &cmcall.Call{
 				Direction: cmcall.DirectionIncoming,
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeTel,
 				},
 				Destination: commonaddress.Address{
-					Type: commonaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
+					Target: "+14155551234",
 				},
 			},
 			expectCostType: billing.CostTypeCallPSTNIncoming,
 		},
 		{
-			name: "incoming call to virtual number",
+			name: "incoming call from SIP to tel (not +899) - free (not PSTN without src=tel)",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:trunk@provider.com",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+14155551234",
+				},
+			},
+			expectCostType: billing.CostTypeCallExtension,
+		},
+		{
+			name: "incoming direct extension (src=sip, dst=extension)",
 			call: &cmcall.Call{
 				Direction: cmcall.DirectionIncoming,
 				Source: commonaddress.Address{
@@ -856,10 +887,10 @@ func Test_getCostTypeForCall(t *testing.T) {
 				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeExtension,
-					Target: nmnumber.VirtualNumberPrefix + "1234567",
+					Target: "1001",
 				},
 			},
-			expectCostType: billing.CostTypeCallVN,
+			expectCostType: billing.CostTypeCallDirectExt,
 		},
 		{
 			name: "incoming call from extension - free",
@@ -947,20 +978,6 @@ func Test_getCostTypeForCall(t *testing.T) {
 				Direction: "",
 			},
 			expectCostType: billing.CostTypeCallPSTNOutgoing,
-		},
-		{
-			name: "incoming PSTN to tel - classified as PSTN incoming",
-			call: &cmcall.Call{
-				Direction: cmcall.DirectionIncoming,
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeTel,
-				},
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+14155551234",
-				},
-			},
-			expectCostType: billing.CostTypeCallPSTNIncoming,
 		},
 	}
 

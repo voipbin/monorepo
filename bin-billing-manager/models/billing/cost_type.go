@@ -19,7 +19,7 @@ const (
 const (
 	DefaultCreditPerUnitCallPSTNOutgoing int64 = 6000    // $0.006/min
 	DefaultCreditPerUnitCallPSTNIncoming int64 = 4500    // $0.0045/min
-	DefaultCreditPerUnitCallVN           int64 = 4500    // $0.0045/min
+	DefaultCreditPerUnitCallVN           int64 = 1000    // $0.001/min
 	DefaultCreditPerUnitSMS              int64 = 8000    // $0.008/msg
 	DefaultCreditPerUnitNumber           int64 = 5000000 // $5.00/number
 )
