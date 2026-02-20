@@ -14897,6 +14897,167 @@
           }
         }
       },
+      "CallManagerExternalMedia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the external media resource.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789"
+          },
+          "asterisk_id": {
+            "type": "string",
+            "description": "The Asterisk instance handling this external media.",
+            "example": "asterisk-01"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "The external media channel ID in Asterisk.",
+            "example": "1643723400.42"
+          },
+          "bridge_id": {
+            "type": "string",
+            "description": "The bridge ID connecting the snoop channel and external media channel.",
+            "example": "bridge-ext-media-001"
+          },
+          "reference_type": {
+            "type": "string",
+            "description": "The type of resource this external media is associated with.",
+            "enum": [
+              "call",
+              "confbridge"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaReferenceTypeCall",
+              "CallManagerExternalMediaReferenceTypeConfbridge"
+            ],
+            "example": "call"
+          },
+          "reference_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint (e.g., `GET /calls` or `GET /conferences`).",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f01234567890"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the external media.",
+            "enum": [
+              "running",
+              "terminating",
+              "terminated"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaStatusRunning",
+              "CallManagerExternalMediaStatusTerminating",
+              "CallManagerExternalMediaStatusTerminated"
+            ],
+            "example": "running"
+          },
+          "local_ip": {
+            "type": "string",
+            "description": "The local IP address assigned for external media streaming.",
+            "example": "10.0.1.5"
+          },
+          "local_port": {
+            "type": "integer",
+            "description": "The local port assigned for external media streaming.",
+            "example": 20000
+          },
+          "external_host": {
+            "type": "string",
+            "description": "The external host address for media streaming.",
+            "example": "media.example.com:10000"
+          },
+          "encapsulation": {
+            "type": "string",
+            "description": "Payload encapsulation protocol.",
+            "enum": [
+              "rtp",
+              "audiosocket",
+              "none"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaEncapsulationRTP",
+              "CallManagerExternalMediaEncapsulationAudioSocket",
+              "CallManagerExternalMediaEncapsulationNone"
+            ],
+            "example": "rtp"
+          },
+          "transport": {
+            "type": "string",
+            "description": "Transport protocol for media streaming.",
+            "enum": [
+              "udp",
+              "tcp",
+              "websocket"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaTransportUDP",
+              "CallManagerExternalMediaTransportTCP",
+              "CallManagerExternalMediaTransportWebsocket"
+            ],
+            "example": "udp"
+          },
+          "transport_data": {
+            "type": "string",
+            "description": "Transport-specific data. For websocket transport, this is appended to the dialstring.",
+            "example": ""
+          },
+          "media_uri": {
+            "type": "string",
+            "description": "WebSocket media URI for connecting to Asterisk. Present only when transport is websocket.",
+            "example": "ws://10.0.1.5:8088/media/abc123"
+          },
+          "connection_type": {
+            "type": "string",
+            "description": "Connection type for media streaming.",
+            "example": "client"
+          },
+          "format": {
+            "type": "string",
+            "description": "Audio format for the media stream.",
+            "example": "ulaw"
+          },
+          "direction_listen": {
+            "type": "string",
+            "description": "The listen direction of the external media channel.",
+            "enum": [
+              "",
+              "both",
+              "in",
+              "out"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaDirectionNone",
+              "CallManagerExternalMediaDirectionBoth",
+              "CallManagerExternalMediaDirectionIn",
+              "CallManagerExternalMediaDirectionOut"
+            ],
+            "example": "both"
+          },
+          "direction_speak": {
+            "type": "string",
+            "description": "The speak direction of the external media channel.",
+            "enum": [
+              "",
+              "both",
+              "in",
+              "out"
+            ],
+            "x-enum-varnames": [
+              "CallManagerExternalMediaDirectionSpeakNone",
+              "CallManagerExternalMediaDirectionSpeakBoth",
+              "CallManagerExternalMediaDirectionSpeakIn",
+              "CallManagerExternalMediaDirectionSpeakOut"
+            ],
+            "example": "both"
+          }
+        }
+      },
       "CampaignManagerCampaignEndHandle": {
         "type": "string",
         "description": "Behavior of the campaign after outdial has no more targets.",
