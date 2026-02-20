@@ -317,7 +317,7 @@ While the call is active, you can inject real-time text-to-speech audio using th
             "direction": "out"
         }'
 
-Response:
+Response (HTTP 201 Created):
 
 .. code::
 
@@ -328,9 +328,13 @@ Response:
         "reference_id": "<call-id-from-step-4>",
         "language": "en-US",
         "provider": "elevenlabs",
+        "voice_id": "",
         "direction": "out",
         "status": "initiating",
-        "tm_create": "2026-02-21T10:06:00.000000Z"
+        "pod_id": "",
+        "tm_create": "2026-02-21T10:06:00.000000Z",
+        "tm_update": "",
+        "tm_delete": ""
     }
 
 Save the speaking ``id`` (UUID) — you will use it in Step 7.
