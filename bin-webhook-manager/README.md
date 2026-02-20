@@ -28,3 +28,5 @@ go build -o ./bin/webhook-control ./cmd/webhook-control
 ```bash
 go test ./...
 ```
+
+<!-- Updated dependencies: 2026-02-20 -->

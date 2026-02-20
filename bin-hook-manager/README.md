@@ -26,3 +26,5 @@ $ cat <your cert file> | base64 -w 0
 * https://hook.voipbin.net/v1.0/emails : email-manager
 * https://hook.voipbin.net/v1.0/messages : message-manager
 * https://hook.voipbin.net/v1.0/conversation : conversation-manager
+
+<!-- Updated dependencies: 2026-02-20 -->

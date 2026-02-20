@@ -16,3 +16,5 @@ The bin-email-manager supports webhook event reception to track email delivery s
 For SendGrid, configure your webhook to point to the following endpoint:
 
 ```Sendgrid: https://hook.voipbin.net/v1.0/emails/sendgrid```
+
+<!-- Updated dependencies: 2026-02-20 -->

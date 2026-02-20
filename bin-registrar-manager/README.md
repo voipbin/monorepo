@@ -52,3 +52,5 @@ bin-manager.registrar-manager.request
 ## Event Notify Queue
 bin-manager.registrar-manager.event
 
+
+<!-- Updated dependencies: 2026-02-20 -->
