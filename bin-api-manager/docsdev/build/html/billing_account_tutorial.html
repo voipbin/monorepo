@@ -301,7 +301,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>VN Calls (overflow)</p></td>
-<td><p>$0.0045</p></td>
+<td><p>$0.001</p></td>
 <td><p>Per minute (ceiling)</p></td>
 </tr>
 <tr class="row-odd"><td><p>PSTN Outgoing Calls</p></td>
@@ -340,7 +340,7 @@ Credit cost: $0.00 (covered by tokens)
 <p><strong>Calculate VN Call Cost (tokens exhausted):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 5 minute VN call with no tokens remaining
 Duration: 5 minutes
-Credit cost: 5 x $0.0045 = $0.0225
+Credit cost: 5 x $0.001 = $0.005
 </pre></div>
 </div>
 <p><strong>Calculate PSTN Call Cost:</strong></p>
@@ -383,8 +383,8 @@ Credit cost: 10 x $0.008 = $0.08
 
     <span class="k">if</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;vn&quot;</span><span class="p">:</span>
         <span class="c1"># VN call: estimate credit cost for overflow scenario</span>
-        <span class="n">estimated_cost</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mf">0.0045</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN call cost (if tokens exhausted): </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x $0.0045 = $</span><span class="si">{</span><span class="n">estimated_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">estimated_cost</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mf">0.001</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN call cost (if tokens exhausted): </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x $0.001 = $</span><span class="si">{</span><span class="n">estimated_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">current_balance</span> <span class="o">&gt;=</span> <span class="n">estimated_cost</span>
 
     <span class="k">elif</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;pstn&quot;</span><span class="p">:</span>
@@ -429,7 +429,7 @@ async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callTy
 
         if (callType === &#39;vn&#39;) {
             // VN call: estimate credit cost for overflow scenario
-            const estimatedCost = duration * 0.0045;
+            const estimatedCost = duration * 0.001;
             console.log(`VN call cost (if tokens exhausted): $${estimatedCost.toFixed(4)}`);
             canProceed = currentBalance &gt;= estimatedCost;
         } else if (callType === &#39;pstn&#39;) {
@@ -584,7 +584,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
         <span class="k">else</span><span class="p">:</span>
             <span class="n">overflow</span> <span class="o">=</span> <span class="n">total_tokens</span> <span class="o">-</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span>
             <span class="c1"># Simplified: assume overflow split proportionally</span>
-            <span class="n">overflow_credit</span> <span class="o">=</span> <span class="n">overflow</span> <span class="o">*</span> <span class="mf">0.0045</span>  <span class="c1"># approximate</span>
+            <span class="n">overflow_credit</span> <span class="o">=</span> <span class="n">overflow</span> <span class="o">*</span> <span class="mf">0.001</span>  <span class="c1"># approximate</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">plan_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> tokens, &quot;</span>
               <span class="sa">f</span><span class="s2">&quot;need </span><span class="si">{</span><span class="n">total_tokens</span><span class="si">}</span><span class="s2">, overflow credit: $</span><span class="si">{</span><span class="n">overflow_credit</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

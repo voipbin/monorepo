@@ -62,7 +62,7 @@ All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to
          | then credit  | then credit  | credit only  | credit only
          v              v              v              v
     +---------+    +---------+    +---------+    +---------+
-    |$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |
+    |$0.001   |    | $0.008  |    |$0.006 ot|    |  $5.00  |
     | /minute |    | /message|    |$0.0045 in|   | /number |
     +---------+    +---------+    +---------+    +---------+
 
@@ -144,7 +144,7 @@ All credit rates are stored internally as int64 micros.
 +----------------------+------------------+------------------+-------------------------+
 | Service              | Rate (USD)       | Rate (micros)    | Unit                    |
 +======================+==================+==================+=========================+
-| VN Calls (overflow)  | $0.0045          | 4,500            | Per minute              |
+| VN Calls (overflow)  | $0.001           | 1,000            | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
 | PSTN Outgoing Calls  | $0.0060          | 6,000            | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
@@ -189,10 +189,10 @@ Each transaction is recorded in the billing ledger with the token and credit amo
     +--------------------------------------------+
     | Duration: 5 minutes                         |
     | Token cost: 0 (exhausted)                   |
-    | Credit cost: 5 x 4,500 = 22,500 micros     |
+    | Credit cost: 5 x 1,000 = 5,000 micros      |
     | Ledger entry:                               |
     |   amount_token: 0                           |
-    |   amount_credit: -22500                     |
+    |   amount_credit: -5000                      |
     +--------------------------------------------+
 
     PSTN Outgoing Call (2 minutes 30 seconds):
@@ -371,8 +371,8 @@ Plan for costs across token-eligible and credit-only services.
     | - Tokens needed: 200 x 3 = 600             |
     | - If 400 tokens available:                 |
     |   - 400 tokens consumed                    |
-    |   - 200 overflow x 3 min x 4,500 micros    |
-    |     = 2,700,000 micros ($2.70)             |
+    |   - 200 overflow x 3 min x 1,000 micros    |
+    |     = 600,000 micros ($0.60)               |
     |                                            |
     | PSTN Calls: 50 calls (avg 2 min)           |
     | - Credit: 50 x 2 x 6,000 = 600,000 micros |
@@ -382,7 +382,7 @@ Plan for costs across token-eligible and credit-only services.
     | - Credit: 100 x 8,000 = 800,000 micros    |
     |   ($0.80)                                  |
     |                                            |
-    | Total credit: 4,100,000 micros ($4.10)     |
+    | Total credit: 2,000,000 micros ($2.00)     |
     +--------------------------------------------+
 
 

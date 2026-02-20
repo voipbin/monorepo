@@ -239,7 +239,7 @@ v                   v     v                   v
      | then credit  | then credit  | credit only  | credit only
      v              v              v              v
 +---------+    +---------+    +---------+    +---------+
-|$0.0045  |    | $0.008  |    |$0.006 ot|    |  $5.00  |
+|$0.001   |    | $0.008  |    |$0.006 ot|    |  $5.00  |
 | /minute |    | /message|    |$0.0045 in|   | /number |
 +---------+    +---------+    +---------+    +---------+
 </pre></div>
@@ -374,8 +374,8 @@ v                   v     v                   v
 </thead>
 <tbody>
 <tr class="row-even"><td><p>VN Calls (overflow)</p></td>
-<td><p>$0.0045</p></td>
-<td><p>4,500</p></td>
+<td><p>$0.001</p></td>
+<td><p>1,000</p></td>
 <td><p>Per minute</p></td>
 </tr>
 <tr class="row-odd"><td><p>PSTN Outgoing Calls</p></td>
@@ -435,10 +435,10 @@ v                   v     v                   v
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">5</span> <span class="n">minutes</span>                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">Token</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">0</span> <span class="p">(</span><span class="n">exhausted</span><span class="p">)</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">5</span> <span class="n">x</span> <span class="mi">4</span><span class="p">,</span><span class="mi">500</span> <span class="o">=</span> <span class="mi">22</span><span class="p">,</span><span class="mi">500</span> <span class="n">micros</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">5</span> <span class="n">x</span> <span class="mi">1</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span>      <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
-<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">22500</span>                     <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">5000</span>                      <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">PSTN</span> <span class="n">Outgoing</span> <span class="n">Call</span> <span class="p">(</span><span class="mi">2</span> <span class="n">minutes</span> <span class="mi">30</span> <span class="n">seconds</span><span class="p">):</span>
@@ -591,8 +591,8 @@ v                   v     v                   v
 | - Tokens needed: 200 x 3 = 600             |
 | - If 400 tokens available:                 |
 |   - 400 tokens consumed                    |
-|   - 200 overflow x 3 min x 4,500 micros    |
-|     = 2,700,000 micros ($2.70)             |
+|   - 200 overflow x 3 min x 1,000 micros    |
+|     = 600,000 micros ($0.60)               |
 |                                            |
 | PSTN Calls: 50 calls (avg 2 min)           |
 | - Credit: 50 x 2 x 6,000 = 600,000 micros |
@@ -602,7 +602,7 @@ v                   v     v                   v
 | - Credit: 100 x 8,000 = 800,000 micros    |
 |   ($0.80)                                  |
 |                                            |
-| Total credit: 4,100,000 micros ($4.10)     |
+| Total credit: 2,000,000 micros ($2.00)     |
 +--------------------------------------------+
 </pre></div>
 </div>
