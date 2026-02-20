@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -10,9 +11,8 @@ import (
 )
 
 const (
-	websocketMaxFragmentSize = 160                   // 160 bytes = 20ms at 8kHz MULAW (8-bit)
-	websocketWriteDelay      = 20 * time.Millisecond // 20ms pacing between frames
-	websocketSubprotocol     = "media"               // chan_websocket subprotocol
+	websocketWriteDelay  = 20 * time.Millisecond // 20ms pacing between frames
+	websocketSubprotocol = "media"               // chan_websocket subprotocol
 )
 
 // websocketConnect dials the Asterisk chan_websocket endpoint and waits for the
@@ -60,10 +60,14 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 }
 
 // websocketWrite fragments and sends raw audio data over a WebSocket connection
-// as binary frames with 20ms pacing.
-func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte) error {
+// as binary frames with 20ms pacing. frameSize is the number of bytes per 20ms
+// frame for the channel's audio format (e.g., 160 for ulaw, 320 for slin, 640 for slin16).
+func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte, frameSize int) error {
 	if len(data) == 0 {
 		return nil
+	}
+	if frameSize <= 0 {
+		return fmt.Errorf("frameSize must be positive, got %d", frameSize)
 	}
 
 	ticker := time.NewTicker(websocketWriteDelay)
@@ -77,7 +81,7 @@ func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte) erro
 			return ctx.Err()
 		}
 
-		fragmentLen := min(websocketMaxFragmentSize, payloadLen-offset)
+		fragmentLen := min(frameSize, payloadLen-offset)
 		fragment := data[offset : offset+fragmentLen]
 
 		if err := conn.WriteMessage(websocket.BinaryMessage, fragment); err != nil {

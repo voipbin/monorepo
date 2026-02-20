@@ -70,20 +70,9 @@ const (
 
 	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs(Rachel)
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
-	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz (telephony standard).
-	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
+	defaultElevenlabsOutputFormat = "pcm_16000"              // PCM S16LE at 16kHz — the minimum raw PCM output from ElevenLabs.
 
 	defaultElevenlabsVoiceIDLength = 20
-)
-
-var (
-	// Map of ElevenLabs output formats to their corresponding sample rates.
-	// https://elevenlabs.io/docs/capabilities/text-to-speech#supported-formats
-	elevenlabsFormatToRate = map[string]int{
-		"pcm_16000": 16000,
-		"pcm_24000": 24000,
-		"pcm_48000": 48000,
-	}
 )
 
 var elevenlabsVoiceIDMap = map[string]string{
@@ -296,17 +285,8 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 					return
 				}
 
-				data, errProcess := h.convertAndWrapPCMData(defaultElevenlabsOutputFormat, decodedAudio)
-				if errProcess != nil {
-					log.Errorf("Could not process PCM data. audio_len: %d, err: %v", len(response.Audio), errProcess)
-					return
-				}
-
-				// TODO: ElevenLabs outputs 16-bit PCM, but the Asterisk channel is configured for MULAW.
-				// A PCM-to-MULAW conversion step is needed here for correct audio output.
-				// Currently only GCP streaming is used in production.
-				if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
-					log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
+				if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, decodedAudio, frameSizeSlin16); errWrite != nil {
+					log.Errorf("Could not write audio data to asterisk connection: %v", errWrite)
 					return
 				}
 			}
@@ -480,32 +460,6 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 	return nil
 }
 
-// convertAndWrapPCMData converts raw PCM data with the given input format into
-// downsampled 16-bit PCM bytes suitable for transmission over WebSocket.
-//
-// inputFormat: the audio format string (must exist in elevenlabsFormatToRate map)
-// data: raw PCM data bytes; must have even length for 16-bit samples.
-//
-// Returns converted PCM bytes or an error on invalid input or processing failure.
-func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byte) ([]byte, error) {
-	if len(data)%2 != 0 {
-		return nil, fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))
-	}
-
-	// Parse sample rate from format string
-	inputRate, ok := elevenlabsFormatToRate[inputFormat]
-	if !ok {
-		return nil, fmt.Errorf("unsupported input format: %s", inputFormat)
-	}
-
-	res, err := h.getDataSamples(inputRate, data)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get samples for format %s", inputFormat)
-	}
-
-	return res, nil
-}
-
 // getVoiceID returns the ElevenLabs voice ID for the tts.
 // Priority order:
 // 1. If VoiceID is explicitly set on the streaming, use it directly
@@ -574,31 +528,6 @@ func (h *elevenlabsHandler) getVoiceIDByLangGender(ctx context.Context, language
 	}
 
 	return ""
-}
-
-// getDataSamples processes 16-bit PCM data with the given inputRate sample rate.
-// If inputRate equals defaultConvertSampleRate, it returns data as is.
-// If inputRate is an integer multiple of defaultConvertSampleRate, it downsamples accordingly.
-// Otherwise, it returns an error because only integer downsampling is supported.
-func (h *elevenlabsHandler) getDataSamples(inputRate int, data []byte) ([]byte, error) {
-	if inputRate == defaultConvertSampleRate {
-		// No conversion needed
-		return data, nil
-	}
-
-	if inputRate%defaultConvertSampleRate != 0 {
-		return nil, fmt.Errorf("cannot convert %d Hz to %d Hz: only integer downsampling supported", inputRate, defaultConvertSampleRate)
-	}
-
-	factor := inputRate / defaultConvertSampleRate
-	res := make([]byte, 0, len(data)/factor)
-
-	// Downsample by selecting every 'factor'-th sample (2 bytes per sample)
-	for i := 0; i+2*factor-1 < len(data); i += 2 * factor {
-		res = append(res, data[i], data[i+1])
-	}
-
-	return res, nil
 }
 
 func (h *elevenlabsHandler) runKeepAlive(cf *ElevenlabsConfig) {

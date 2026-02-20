@@ -348,7 +348,7 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
-		if errWrite := websocketWrite(streamCtx, cf.ConnAst, audioData); errWrite != nil {
+		if errWrite := websocketWrite(streamCtx, cf.ConnAst, audioData, frameSizeUlaw); errWrite != nil {
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
 			return
 		}
