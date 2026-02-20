@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,8 +17,7 @@ import (
 func Test_Start(t *testing.T) {
 
 	tests := []struct {
-		name          string
-		listenAddress string
+		name string
 
 		customerID    uuid.UUID
 		activeflowID  uuid.UUID
@@ -32,12 +30,12 @@ func Test_Start(t *testing.T) {
 		responseUUID          uuid.UUID
 		responseExternalMedia *cmexternalmedia.ExternalMedia
 
-		expectExternalMediaID uuid.UUID
-		expectRes             *streaming.Streaming
+		// startExternalMedia now dials a WebSocket after creating external media,
+		// so the "normal" case will fail at websocketConnect in unit tests.
+		expectErr bool
 	}{
 		{
-			name:          "normal",
-			listenAddress: "localhost:8080",
+			name: "normal - verifies CallV1ExternalMediaStart is called with INCOMING host",
 
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
 			activeflowID:  uuid.FromStringOrNil("dfe51622-87c4-11f0-9fbc-0be63c71e5fc"),
@@ -51,17 +49,8 @@ func Test_Start(t *testing.T) {
 				ID: uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
 			},
 
-			expectExternalMediaID: uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
-			expectRes: &streaming.Streaming{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("e2b13e22-e9df-11ef-81b9-dfb396f7f633"),
-					CustomerID: uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
-				},
-				ReferenceType: streaming.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("e24d0934-e9df-11ef-9193-e30e5103f5bd"),
-				Language:      "en-US",
-				Direction:     streaming.DirectionIncoming,
-			},
+			// websocketConnect will fail because there is no real WebSocket server
+			expectErr: true,
 		},
 	}
 
@@ -80,8 +69,6 @@ func Test_Start(t *testing.T) {
 				requestHandler: mockReq,
 				notifyHandler:  mockNotify,
 				mapStreaming:   make(map[uuid.UUID]*streaming.Streaming),
-
-				listenAddress: tt.listenAddress,
 			}
 			ctx := context.Background()
 
@@ -92,7 +79,7 @@ func Test_Start(t *testing.T) {
 				tt.responseUUID,
 				cmexternalmedia.ReferenceType(tt.referenceType),
 				tt.referenceID,
-				tt.listenAddress,
+				"INCOMING",
 				defaultEncapsulation,
 				defaultTransport,
 				"", // transportData
@@ -103,8 +90,11 @@ func Test_Start(t *testing.T) {
 			).Return(tt.responseExternalMedia, nil)
 
 			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
-			if err != nil {
-				t.Errorf("Wrong match. expected: ok, got: %v", err)
+			if tt.expectErr && err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+			if !tt.expectErr && err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -113,8 +103,7 @@ func Test_Start(t *testing.T) {
 func Test_StartWithID(t *testing.T) {
 
 	tests := []struct {
-		name          string
-		listenAddress string
+		name string
 
 		id            uuid.UUID
 		customerID    uuid.UUID
@@ -131,8 +120,7 @@ func Test_StartWithID(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name:          "normal",
-			listenAddress: "localhost:8080",
+			name: "normal - verifies CallV1ExternalMediaStart is called with INCOMING host",
 
 			id:            uuid.FromStringOrNil("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
@@ -147,11 +135,11 @@ func Test_StartWithID(t *testing.T) {
 				ID: uuid.FromStringOrNil("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 			},
 
-			expectErr: false,
+			// websocketConnect will fail because there is no real WebSocket server
+			expectErr: true,
 		},
 		{
-			name:          "create error duplicate ID",
-			listenAddress: "localhost:8080",
+			name: "create error duplicate ID",
 
 			id:            uuid.FromStringOrNil("f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
@@ -165,8 +153,7 @@ func Test_StartWithID(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:          "external media error",
-			listenAddress: "localhost:8080",
+			name: "external media error",
 
 			id:            uuid.FromStringOrNil("f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
 			customerID:    uuid.FromStringOrNil("e1d034f4-e9df-11ef-990b-2f91a795184b"),
@@ -198,7 +185,6 @@ func Test_StartWithID(t *testing.T) {
 				requestHandler: mockReq,
 				notifyHandler:  mockNotify,
 				mapStreaming:   make(map[uuid.UUID]*streaming.Streaming),
-				listenAddress:  tt.listenAddress,
 			}
 			ctx := context.Background()
 
@@ -212,7 +198,7 @@ func Test_StartWithID(t *testing.T) {
 					tt.id,
 					cmexternalmedia.ReferenceType(tt.referenceType),
 					tt.referenceID,
-					tt.listenAddress,
+					"INCOMING",
 					defaultEncapsulation,
 					defaultTransport,
 					"", // transportData

@@ -33,7 +33,10 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 	}
 
 	// Set a read deadline for the MEDIA_START handshake
-	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	if errDeadline := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); errDeadline != nil {
+		_ = conn.Close()
+		return nil, errors.Wrapf(errDeadline, "could not set read deadline")
+	}
 
 	// Read the MEDIA_START text message from Asterisk
 	msgType, msg, err := conn.ReadMessage()
@@ -43,7 +46,10 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 	}
 
 	// Clear the deadline for subsequent reads
-	conn.SetReadDeadline(time.Time{})
+	if errDeadline := conn.SetReadDeadline(time.Time{}); errDeadline != nil {
+		_ = conn.Close()
+		return nil, errors.Wrapf(errDeadline, "could not clear read deadline")
+	}
 	if msgType != websocket.TextMessage {
 		_ = conn.Close()
 		return nil, errors.Errorf("expected text message for MEDIA_START, got type %d", msgType)
