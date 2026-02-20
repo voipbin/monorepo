@@ -124,10 +124,9 @@ func run(db *sql.DB) error {
 
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
-	listenAddress := fmt.Sprintf("%s:8080", localAddress)
 
 	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, listenAddress, podID, config.Get().ElevenlabsAPIKey, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, podID, config.Get().ElevenlabsAPIKey, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 
 	// initialize cache and db handlers
 	cacheHandler := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDB)
@@ -139,7 +138,6 @@ func run(db *sql.DB) error {
 
 	// run listener
 	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID)
-	go runStreaming(streamingHandler)
 
 	log.Debug("All handlers started successfully")
 	return nil
@@ -181,13 +179,3 @@ func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTS
 	return nil
 }
 
-func runStreaming(streamingHandler streaminghandler.StreamingHandler) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runStreaming",
-	})
-
-	log.Debugf("Starting streaming handler.")
-	if errRun := streamingHandler.Run(); errRun != nil {
-		panic(errors.Wrapf(errRun, "could not run streaming handler"))
-	}
-}

@@ -73,7 +73,7 @@ func initCallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (callhandle
 
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
-	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
+	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler, cache, config.Get().AsteriskWSPort)
 	recordingHandlerInst := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)

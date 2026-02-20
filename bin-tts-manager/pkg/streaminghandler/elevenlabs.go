@@ -7,22 +7,22 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/message"
 	"monorepo/bin-tts-manager/models/streaming"
-	"net"
-	"strings"
-	"sync"
-	"time"
+
+	"net/url"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"net/url"
 )
 
 type ElevenlabsConfig struct {
@@ -32,7 +32,7 @@ type ElevenlabsConfig struct {
 	Cancel context.CancelFunc `json:"-"`
 
 	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
-	ConnAst     net.Conn        `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+	ConnAst     *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
@@ -69,7 +69,7 @@ const (
 
 	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs(Rachel)
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
-	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
+	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz (telephony standard).
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
 
 	defaultElevenlabsVoiceIDLength = 20
@@ -263,7 +263,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			return
 
 		case err := <-errCh:
-			if errors.Cause(err) == net.ErrClosed {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 				return
 			}
 
@@ -291,8 +291,10 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 					return
 				}
 
-				// TTS play
-				if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
+				// TODO: ElevenLabs outputs 16-bit PCM, but the Asterisk channel is configured for MULAW.
+				// A PCM-to-MULAW conversion step is needed here for correct audio output.
+				// Currently only GCP streaming is used in production.
+				if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
 					log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
 					return
 				}
@@ -468,12 +470,12 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 }
 
 // convertAndWrapPCMData converts raw PCM data with the given input format into
-// audiosocket-wrapped 16-bit PCM bytes suitable for transmission.
+// downsampled 16-bit PCM bytes suitable for transmission over WebSocket.
 //
 // inputFormat: the audio format string (must exist in elevenlabsFormatToRate map)
 // data: raw PCM data bytes; must have even length for 16-bit samples.
 //
-// Returns wrapped PCM bytes or an error on invalid input or processing failure.
+// Returns converted PCM bytes or an error on invalid input or processing failure.
 func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
 		return nil, fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))

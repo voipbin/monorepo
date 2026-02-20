@@ -29,6 +29,7 @@ func (h *externalMediaHandler) Create(
 	format string,
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
+	mediaURI string,
 ) (*externalmedia.ExternalMedia, error) {
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
@@ -56,6 +57,7 @@ func (h *externalMediaHandler) Create(
 		Format:          format,
 		DirectionListen: directionListen,
 		DirectionSpeak:  directionSpeak,
+		MediaURI:        mediaURI,
 	}
 
 	if errDB := h.db.ExternalMediaSet(ctx, extMedia); errDB != nil {

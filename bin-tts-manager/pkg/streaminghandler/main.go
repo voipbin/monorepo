@@ -5,7 +5,6 @@ package streaminghandler
 import (
 	"context"
 	"sync"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -57,14 +56,10 @@ type StreamingHandler interface {
 //
 //nolint:deadcode,varcheck
 const (
-	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
-	defaultTransport      = string(cmexternalmedia.TransportTCP)
-	defaultConnectionType = "client"
-	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
-)
-
-const (
-	defaultSilenceFeedInterval = 20 * time.Millisecond // 20ms matches Asterisk's media loop timing
+	defaultEncapsulation  = string(cmexternalmedia.EncapsulationNone)
+	defaultTransport      = string(cmexternalmedia.TransportWebsocket)
+	defaultConnectionType = "server"
+	defaultFormat         = "ulaw"
 )
 
 const (
@@ -175,8 +170,7 @@ type streamingHandler struct {
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 
-	listenAddress string
-	podID         string
+	podID string
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
 	muStreaming  sync.Mutex
@@ -191,7 +185,6 @@ func NewStreamingHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 
-	listenAddress string,
 	podID string,
 	elevenlabsAPIKey string,
 	awsAccessKey string,
@@ -207,8 +200,7 @@ func NewStreamingHandler(
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
 
-		listenAddress: listenAddress,
-		podID:         podID,
+		podID: podID,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
 		muStreaming:  sync.Mutex{},

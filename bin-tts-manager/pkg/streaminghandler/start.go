@@ -81,7 +81,8 @@ func (h *streamingHandler) StartWithID(
 	return res, nil
 }
 
-// startExternalMedia sends request to call-manager to start the external media channel.
+// startExternalMedia sends request to call-manager to start the external media channel
+// and connects to the Asterisk WebSocket endpoint.
 func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming.Streaming) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "startExternalMedia",
@@ -93,7 +94,7 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 		st.ID,
 		externalmedia.ReferenceType(st.ReferenceType),
 		st.ReferenceID,
-		h.listenAddress,
+		"INCOMING",
 		defaultEncapsulation,
 		defaultTransport,
 		"", // transportData
@@ -107,7 +108,29 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 		promStreamingErrorTotal.WithLabelValues("unknown").Inc()
 		return err
 	}
-	log.WithField("external_media", em).Debugf("Started external media. external_media_id: %s, host_addr: %s, media_ip: %s, media_port: %d", em.ID, h.listenAddress, em.LocalIP, em.LocalPort)
+	log.WithField("external_media", em).Debugf("Started external media. external_media_id: %s, media_uri: %s", em.ID, em.MediaURI)
+
+	// Connect to Asterisk via WebSocket
+	conn, err := websocketConnect(ctx, em.MediaURI)
+	if err != nil {
+		log.Errorf("Could not connect WebSocket to Asterisk. err: %v", err)
+		// Clean up the orphaned external media channel in Asterisk
+		if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
+			log.Errorf("Could not stop orphaned external media. err: %v", errStop)
+		}
+		return err
+	}
+	log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
+
+	// Store the WebSocket connection on the streaming record
+	if _, errUpdate := h.UpdateConnAst(st.ID, conn); errUpdate != nil {
+		_ = conn.Close()
+		return errUpdate
+	}
+
+	// Spawn read goroutine for WebSocket lifecycle (ping/pong/close).
+	// Exits when conn is closed (by Stop() or Asterisk).
+	go runWebSocketRead(conn)
 
 	return nil
 }

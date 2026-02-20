@@ -3,7 +3,6 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
-	"net"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
@@ -31,13 +31,20 @@ type GCPConfig struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc
 
+	StreamCtx    context.Context    // per-stream sub-context, cancelled by SayFlush
+	StreamCancel context.CancelFunc
+
 	Client  *texttospeech.Client
 	Stream  texttospeechpb.TextToSpeech_StreamingSynthesizeClient
-	ConnAst net.Conn
+	ConnAst *websocket.Conn
+
+	VoiceID  string // stored for reconnect after flush
+	LangCode string // stored for reconnect after flush
 
 	Message *message.Message
 
-	muStream sync.Mutex // protects Stream
+	processDone chan struct{} // closed when runProcess exits
+	muStream    sync.Mutex   // protects Stream, Client, StreamCtx/StreamCancel
 }
 
 const (
@@ -147,14 +154,20 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		return nil, errors.Wrapf(err, "failed to initialize GCP StreamingSynthesize")
 	}
 
-	cfCtx, cancel := context.WithCancel(context.Background())
+	cfCtx, cfCancel := context.WithCancel(context.Background())
+	streamCtx, streamCancel := context.WithCancel(cfCtx)
+
 	res := &GCPConfig{
-		Streaming: st,
-		Ctx:       cfCtx,
-		Cancel:    cancel,
-		Client:    client,
-		Stream:    stream,
-		ConnAst:   st.ConnAst,
+		Streaming:    st,
+		Ctx:          cfCtx,
+		Cancel:       cfCancel,
+		StreamCtx:    streamCtx,
+		StreamCancel: streamCancel,
+		Client:       client,
+		Stream:       stream,
+		ConnAst:      st.ConnAst,
+		VoiceID:      voiceID,
+		LangCode:     langCode,
 		Message: &message.Message{
 			Identity: commonidentity.Identity{
 				ID:         st.MessageID,
@@ -162,7 +175,8 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 			},
 			StreamingID: st.ID,
 		},
-		muStream: sync.Mutex{},
+		processDone: make(chan struct{}),
+		muStream:    sync.Mutex{},
 	}
 
 	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message)
@@ -202,7 +216,7 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 					Name:         voiceID,
 				},
 				StreamingAudioConfig: &texttospeechpb.StreamingAudioConfig{
-					AudioEncoding:   texttospeechpb.AudioEncoding_LINEAR16,
+					AudioEncoding:   texttospeechpb.AudioEncoding_MULAW,
 					SampleRateHertz: defaultGCPStreamingSampleRate,
 				},
 			},
@@ -242,7 +256,6 @@ func (h *gcpHandler) Run(vendorConfig any) error {
 	go h.runProcess(cf)
 
 	<-cf.Ctx.Done()
-
 	h.terminate(cf)
 
 	return nil
@@ -258,13 +271,14 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
 
 	defer func() {
-		cf.Cancel()
+		cf.StreamCancel()
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
+		close(cf.processDone)
 	}()
 
 	for {
 		select {
-		case <-cf.Ctx.Done():
+		case <-cf.StreamCtx.Done():
 			return
 		default:
 		}
@@ -288,7 +302,7 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
-		if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
+		if errWrite := websocketWrite(cf.StreamCtx, cf.ConnAst, audioData); errWrite != nil {
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
 			return
 		}
@@ -304,8 +318,31 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 	cf.muStream.Lock()
 	defer cf.muStream.Unlock()
 
+	// Reconnect if stream was flushed
 	if cf.Stream == nil {
-		return fmt.Errorf("GCP stream is nil")
+		// Wait for previous runProcess to fully exit before starting a new one.
+		// This prevents concurrent WebSocket writes.
+		// Release the lock first because runProcess acquires muStream to read cf.Stream.
+		cf.muStream.Unlock()
+		<-cf.processDone
+		cf.muStream.Lock()
+
+		// Re-check: another goroutine may have already reconnected while we waited.
+		if cf.Stream == nil {
+			client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
+			if err != nil {
+				return errors.Wrapf(err, "failed to reconnect GCP stream after flush")
+			}
+			cf.Client = client
+			cf.Stream = stream
+
+			streamCtx, streamCancel := context.WithCancel(cf.Ctx)
+			cf.StreamCtx = streamCtx
+			cf.StreamCancel = streamCancel
+
+			cf.processDone = make(chan struct{})
+			go h.runProcess(cf)
+		}
 	}
 
 	req := &texttospeechpb.StreamingSynthesizeRequest{
@@ -334,9 +371,21 @@ func (h *gcpHandler) SayFlush(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *GCPConfig or is nil")
 	}
 
-	// GCP gRPC bidirectional streaming doesn't have a flush concept.
-	// Audio is delivered as soon as it's synthesized by the server.
-	_ = cf
+	cf.muStream.Lock()
+	defer cf.muStream.Unlock()
+
+	cf.StreamCancel()
+
+	if cf.Stream != nil {
+		_ = cf.Stream.CloseSend()
+		cf.Stream = nil
+	}
+
+	if cf.Client != nil {
+		_ = cf.Client.Close()
+		cf.Client = nil
+	}
+
 	return nil
 }
 

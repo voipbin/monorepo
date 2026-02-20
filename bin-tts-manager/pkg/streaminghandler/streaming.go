@@ -3,11 +3,11 @@ package streaminghandler
 import (
 	"context"
 	"fmt"
-	"net"
 	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -132,7 +132,7 @@ func (h *streamingHandler) UpdateMessageID(ctx context.Context, streamingID uuid
 	return res, nil
 }
 
-func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst net.Conn) (*streaming.Streaming, error) {
+func (h *streamingHandler) UpdateConnAst(streamingID uuid.UUID, connAst *websocket.Conn) (*streaming.Streaming, error) {
 	h.muStreaming.Lock()
 	defer h.muStreaming.Unlock()
 

@@ -220,6 +220,49 @@ const (
 	CallManagerCallTypeSIPService CallManagerCallType = "sip-service"
 )
 
+// Defines values for CallManagerExternalMediaDirectionListen.
+const (
+	CallManagerExternalMediaDirectionBoth CallManagerExternalMediaDirectionListen = "both"
+	CallManagerExternalMediaDirectionIn   CallManagerExternalMediaDirectionListen = "in"
+	CallManagerExternalMediaDirectionNone CallManagerExternalMediaDirectionListen = ""
+	CallManagerExternalMediaDirectionOut  CallManagerExternalMediaDirectionListen = "out"
+)
+
+// Defines values for CallManagerExternalMediaDirectionSpeak.
+const (
+	CallManagerExternalMediaDirectionSpeakBoth CallManagerExternalMediaDirectionSpeak = "both"
+	CallManagerExternalMediaDirectionSpeakIn   CallManagerExternalMediaDirectionSpeak = "in"
+	CallManagerExternalMediaDirectionSpeakNone CallManagerExternalMediaDirectionSpeak = ""
+	CallManagerExternalMediaDirectionSpeakOut  CallManagerExternalMediaDirectionSpeak = "out"
+)
+
+// Defines values for CallManagerExternalMediaEncapsulation.
+const (
+	CallManagerExternalMediaEncapsulationAudioSocket CallManagerExternalMediaEncapsulation = "audiosocket"
+	CallManagerExternalMediaEncapsulationNone        CallManagerExternalMediaEncapsulation = "none"
+	CallManagerExternalMediaEncapsulationRTP         CallManagerExternalMediaEncapsulation = "rtp"
+)
+
+// Defines values for CallManagerExternalMediaReferenceType.
+const (
+	CallManagerExternalMediaReferenceTypeCall       CallManagerExternalMediaReferenceType = "call"
+	CallManagerExternalMediaReferenceTypeConfbridge CallManagerExternalMediaReferenceType = "confbridge"
+)
+
+// Defines values for CallManagerExternalMediaStatus.
+const (
+	CallManagerExternalMediaStatusRunning     CallManagerExternalMediaStatus = "running"
+	CallManagerExternalMediaStatusTerminated  CallManagerExternalMediaStatus = "terminated"
+	CallManagerExternalMediaStatusTerminating CallManagerExternalMediaStatus = "terminating"
+)
+
+// Defines values for CallManagerExternalMediaTransport.
+const (
+	CallManagerExternalMediaTransportTCP       CallManagerExternalMediaTransport = "tcp"
+	CallManagerExternalMediaTransportUDP       CallManagerExternalMediaTransport = "udp"
+	CallManagerExternalMediaTransportWebsocket CallManagerExternalMediaTransport = "websocket"
+)
+
 // Defines values for CallManagerGroupcallAnswerMethod.
 const (
 	CallManagerGroupcallAnswerMethodHangupOthers CallManagerGroupcallAnswerMethod = "hangup_others"
@@ -1340,6 +1383,81 @@ type CallManagerCallStatus string
 
 // CallManagerCallType Call type
 type CallManagerCallType string
+
+// CallManagerExternalMedia defines model for CallManagerExternalMedia.
+type CallManagerExternalMedia struct {
+	// AsteriskId The Asterisk instance handling this external media.
+	AsteriskId *string `json:"asterisk_id,omitempty"`
+
+	// BridgeId The bridge ID connecting the snoop channel and external media channel.
+	BridgeId *string `json:"bridge_id,omitempty"`
+
+	// ChannelId The external media channel ID in Asterisk.
+	ChannelId *string `json:"channel_id,omitempty"`
+
+	// ConnectionType Connection type for media streaming.
+	ConnectionType *string `json:"connection_type,omitempty"`
+
+	// DirectionListen The listen direction of the external media channel.
+	DirectionListen *CallManagerExternalMediaDirectionListen `json:"direction_listen,omitempty"`
+
+	// DirectionSpeak The speak direction of the external media channel.
+	DirectionSpeak *CallManagerExternalMediaDirectionSpeak `json:"direction_speak,omitempty"`
+
+	// Encapsulation Payload encapsulation protocol.
+	Encapsulation *CallManagerExternalMediaEncapsulation `json:"encapsulation,omitempty"`
+
+	// ExternalHost The external host address for media streaming.
+	ExternalHost *string `json:"external_host,omitempty"`
+
+	// Format Audio format for the media stream.
+	Format *string `json:"format,omitempty"`
+
+	// Id The unique identifier of the external media resource.
+	Id *string `json:"id,omitempty"`
+
+	// LocalIp The local IP address assigned for external media streaming.
+	LocalIp *string `json:"local_ip,omitempty"`
+
+	// LocalPort The local port assigned for external media streaming.
+	LocalPort *int `json:"local_port,omitempty"`
+
+	// MediaUri WebSocket media URI for connecting to Asterisk. Present only when transport is websocket.
+	MediaUri *string `json:"media_uri,omitempty"`
+
+	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint (e.g., `GET /calls` or `GET /conferences`).
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType The type of resource this external media is associated with.
+	ReferenceType *CallManagerExternalMediaReferenceType `json:"reference_type,omitempty"`
+
+	// Status The current status of the external media.
+	Status *CallManagerExternalMediaStatus `json:"status,omitempty"`
+
+	// Transport Transport protocol for media streaming.
+	Transport *CallManagerExternalMediaTransport `json:"transport,omitempty"`
+
+	// TransportData Transport-specific data. For websocket transport, this is appended to the dialstring.
+	TransportData *string `json:"transport_data,omitempty"`
+}
+
+// CallManagerExternalMediaDirectionListen The listen direction of the external media channel.
+type CallManagerExternalMediaDirectionListen string
+
+// CallManagerExternalMediaDirectionSpeak The speak direction of the external media channel.
+type CallManagerExternalMediaDirectionSpeak string
+
+// CallManagerExternalMediaEncapsulation Payload encapsulation protocol.
+type CallManagerExternalMediaEncapsulation string
+
+// CallManagerExternalMediaReferenceType The type of resource this external media is associated with.
+type CallManagerExternalMediaReferenceType string
+
+// CallManagerExternalMediaStatus The current status of the external media.
+type CallManagerExternalMediaStatus string
+
+// CallManagerExternalMediaTransport Transport protocol for media streaming.
+type CallManagerExternalMediaTransport string
 
 // CallManagerGroupcall Call or group call information
 type CallManagerGroupcall struct {
