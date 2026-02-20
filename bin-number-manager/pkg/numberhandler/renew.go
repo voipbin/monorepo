@@ -59,7 +59,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	}
 
 	// renew the numbers
-	var res []*number.Number
+	res := []*number.Number{}
 	for _, n := range numbers {
 
 		valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)

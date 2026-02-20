@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -148,7 +149,7 @@ func runServiceListen(sockHandler sockhandler.SockHandler, numberHandler numberh
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameNumberRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		return fmt.Errorf("could not run the listenhandler: %w", err)
 	}
 
 	return nil
