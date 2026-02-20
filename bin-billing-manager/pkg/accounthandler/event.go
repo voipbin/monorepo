@@ -74,7 +74,8 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 	// set default plan type for new account
 	if _, errPlan := h.dbUpdatePlanType(ctx, b.ID, account.PlanTypeFree); errPlan != nil {
 		log.Errorf("Could not set default plan type. err: %v", errPlan)
-		// non-fatal: account is created, customer can still use the platform
+		// non-fatal: account is created, but skip topup since plan type is required for future monthly topups
+		return nil
 	}
 
 	// initial token topup for new customer

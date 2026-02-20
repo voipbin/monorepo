@@ -260,12 +260,10 @@ func Test_EventCUCustomerCreated_plan_type_error(t *testing.T) {
 	mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, accountID).Return(customer, nil)
 
 	// plan type update fails — should NOT cause EventCUCustomerCreated to return error
+	// topup should be skipped since plan type is required for future monthly topups
 	mockDB.EXPECT().AccountUpdate(ctx, accountID, map[account.Field]any{
 		account.FieldPlanType: account.PlanTypeFree,
 	}).Return(fmt.Errorf("plan type update failed"))
-
-	// topup still executes
-	mockDB.EXPECT().AccountTopUpTokens(ctx, accountID, customerID, int64(1000), string(account.PlanTypeFree)).Return(nil)
 
 	err := h.EventCUCustomerCreated(ctx, customer)
 	if err != nil {
