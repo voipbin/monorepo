@@ -55,29 +55,26 @@ func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
 func getCostTypeForCall(c *cmcall.Call) billing.CostType {
 	switch c.Direction {
 	case cmcall.DirectionIncoming:
-		// Incoming PSTN: src=tel, dst=tel
-		if c.Source.Type == commonaddress.TypeTel && c.Destination.Type == commonaddress.TypeTel {
-			return billing.CostTypeCallPSTNIncoming
+		if c.Destination.Type == commonaddress.TypeTel {
+			if strings.HasPrefix(c.Destination.Target, nmnumber.VirtualNumberPrefix) {
+				return billing.CostTypeCallVN
+			}
+			if c.Source.Type == commonaddress.TypeTel {
+				return billing.CostTypeCallPSTNIncoming
+			}
 		}
-		// Incoming to virtual number
-		if strings.HasPrefix(c.Destination.Target, nmnumber.VirtualNumberPrefix) {
-			return billing.CostTypeCallVN
+		if c.Source.Type == commonaddress.TypeSIP && c.Destination.Type == commonaddress.TypeExtension {
+			return billing.CostTypeCallDirectExt
 		}
-		// TODO: Add CostTypeCallDirectExt for incoming SIP-to-extension calls
-		// (src type=sip, dst type=extension). Currently classified as extension (free).
-
-		// All other incoming calls are extension (free)
 		return billing.CostTypeCallExtension
 
 	case cmcall.DirectionOutgoing:
-		// Outgoing to PSTN: dst=tel
 		if c.Destination.Type == commonaddress.TypeTel {
 			return billing.CostTypeCallPSTNOutgoing
 		}
 		return billing.CostTypeCallExtension
 
 	default:
-		// safe fallback: charge it as outgoing PSTN
 		return billing.CostTypeCallPSTNOutgoing
 	}
 }
