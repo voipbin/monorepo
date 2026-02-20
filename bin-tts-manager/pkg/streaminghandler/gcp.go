@@ -285,13 +285,14 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 	cf.muStream.Lock()
 	doneCh := cf.processDone
 	streamCtx := cf.StreamCtx
+	streamCancel := cf.StreamCancel
 	cf.muStream.Unlock()
 
 	msg := cf.Message
 	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
 
 	defer func() {
-		cf.StreamCancel()
+		streamCancel()
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 		close(doneCh)
 	}()
@@ -463,8 +464,14 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 // waiting on processDone to avoid deadlock with runProcess.
 func (h *gcpHandler) waitAndReconnectLocked(cf *GCPConfig) error {
 	// Release lock while waiting — runProcess needs it to read cf.Stream.
+	// Also watch cf.Ctx so we don't block forever under network partition.
 	cf.muStream.Unlock()
-	<-cf.processDone
+	select {
+	case <-cf.processDone:
+	case <-cf.Ctx.Done():
+		cf.muStream.Lock()
+		return fmt.Errorf("session context cancelled while waiting for stream to exit")
+	}
 	cf.muStream.Lock()
 
 	// Re-check: another goroutine may have already reconnected.
