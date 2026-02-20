@@ -1,13 +1,13 @@
 package streaming
 
 import (
-	"net"
 	"sync"
 	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type Streaming struct {
@@ -31,7 +31,7 @@ type Streaming struct {
 	VendorName   VendorName `json:"-"` // Vendor of the service (e.g., gcp, aws)
 	VendorConfig any        `json:"-"`
 
-	ConnAst   net.Conn  `json:"-"` // Connection to the Asterisk for the streaming
+	ConnAst   *websocket.Conn `json:"-"` // Connection to the Asterisk for the streaming
 	CreatedAt time.Time `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 

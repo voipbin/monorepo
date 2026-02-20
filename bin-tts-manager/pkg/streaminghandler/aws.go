@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"strings"
 	"sync"
 
@@ -20,6 +19,7 @@ import (
 	"monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -32,7 +32,7 @@ type AWSConfig struct {
 	Cancel context.CancelFunc
 
 	Client  *polly.Client
-	ConnAst net.Conn
+	ConnAst *websocket.Conn
 	VoiceID string
 
 	Message *message.Message
@@ -233,7 +233,7 @@ func (h *awsHandler) runProcess(cf *AWSConfig) {
 				continue
 			}
 
-			if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
+			if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
 				log.Errorf("Could not write audio to asterisk: %v", errWrite)
 				return
 			}

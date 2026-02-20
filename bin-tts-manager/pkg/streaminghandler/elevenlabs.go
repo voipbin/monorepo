@@ -7,22 +7,22 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/message"
 	"monorepo/bin-tts-manager/models/streaming"
-	"net"
-	"strings"
-	"sync"
-	"time"
+
+	"net/url"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"net/url"
 )
 
 type ElevenlabsConfig struct {
@@ -32,7 +32,7 @@ type ElevenlabsConfig struct {
 	Cancel context.CancelFunc `json:"-"`
 
 	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
-	ConnAst     net.Conn        `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+	ConnAst     *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
@@ -263,7 +263,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 			return
 
 		case err := <-errCh:
-			if errors.Cause(err) == net.ErrClosed {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 				return
 			}
 
@@ -292,7 +292,7 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 				}
 
 				// TTS play
-				if errWrite := audiosocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
+				if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
 					log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
 					return
 				}
