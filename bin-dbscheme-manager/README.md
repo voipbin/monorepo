@@ -199,3 +199,4 @@ cd /home/pchero/gittmp/asterisk
 git pull
 cp /home/pchero/gittmp/asterisk/contrib/ast-db-manage/config/versions/* /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/asterisk_config/config/versions
 ```
+<!-- Updated dependencies: 2026-02-20 -->

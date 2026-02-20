@@ -38,3 +38,5 @@ Usage of ./storage-manager:
 	-rabbit_queue_listen "bin-manager.storage-manager.request" \
 	-rabbit_queue_notify "bin-manager.storage-manager.event"
 ```
+
+<!-- Updated dependencies: 2026-02-20 -->

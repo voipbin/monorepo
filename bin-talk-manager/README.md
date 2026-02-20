@@ -1,4 +1,3 @@
-bin-openapi-manager
+# talk-manager
 
-$ go generate ./...
 <!-- Updated dependencies: 2026-02-20 -->

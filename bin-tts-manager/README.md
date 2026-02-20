@@ -43,3 +43,5 @@ Usage of ./tts-manager:
 	-rabbit_queue_listen "bin-manager.tts-manager.request" \
 	-rabbit_queue_notify "bin-manager.tts-manager.event"
 ```
+
+<!-- Updated dependencies: 2026-02-20 -->

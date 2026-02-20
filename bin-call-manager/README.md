@@ -103,3 +103,5 @@ Notification event for call's status updating.
 Notification event for call's hangup.
 
 # Note
+
+<!-- Updated dependencies: 2026-02-20 -->

@@ -77,3 +77,5 @@ Agent has status.
 # Tag
 Represents agent's skills and groups.
 
+
+<!-- Updated dependencies: 2026-02-20 -->

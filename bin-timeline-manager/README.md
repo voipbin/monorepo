@@ -1,4 +1,3 @@
-bin-openapi-manager
+# timeline-manager
 
-$ go generate ./...
 <!-- Updated dependencies: 2026-02-20 -->
