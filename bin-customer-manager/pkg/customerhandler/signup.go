@@ -393,10 +393,15 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
 			"Your verification code is: %s\n\n"+
-			"API Users: POST this code with your temp_token to /v1/auth/complete-signup\n\n"+
+			"To complete signup via API:\n\n"+
+			"POST %s/auth/complete-signup\n"+
+			"Content-Type: application/json\n"+
+			"{\"temp_token\": \"<from signup response>\", \"code\": \"%s\"}\n\n"+
 			"Or click the link below to verify via browser (expires in 1 hour):\n\n"+
 			"%s\n\n"+
 			"If you did not create this account, you can safely ignore this email.",
+		otpCode,
+		cfg.EmailVerifyBaseURL,
 		otpCode,
 		verifyLink,
 	)
