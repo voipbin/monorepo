@@ -434,3 +434,55 @@ func TestPostCustomerCompleteSignup_InvalidBody(t *testing.T) {
 		t.Errorf("Expected 400 for invalid JSON, got: %d", w.Code)
 	}
 }
+
+func TestPostCustomerCompleteSignup_MissingFields(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name         string
+		body         string
+		expectStatus int
+	}{
+		{
+			name:         "missing temp_token",
+			body:         `{"code": "123456"}`,
+			expectStatus: 400,
+		},
+		{
+			name:         "missing code",
+			body:         `{"temp_token": "tmp_abc123"}`,
+			expectStatus: 400,
+		},
+		{
+			name:         "empty body",
+			body:         `{}`,
+			expectStatus: 400,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+			})
+			r.POST("/auth/complete-signup", PostCustomerCompleteSignup)
+
+			req, _ := http.NewRequest("POST", "/auth/complete-signup", bytes.NewBuffer([]byte(tt.body)))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+
+			if w.Code != tt.expectStatus {
+				t.Errorf("Expected status %d, got: %d", tt.expectStatus, w.Code)
+			}
+		})
+	}
+}
