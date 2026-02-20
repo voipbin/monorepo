@@ -327,19 +327,22 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 		<-cf.processDone
 		cf.muStream.Lock()
 
-		client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
-		if err != nil {
-			return errors.Wrapf(err, "failed to reconnect GCP stream after flush")
+		// Re-check: another goroutine may have already reconnected while we waited.
+		if cf.Stream == nil {
+			client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
+			if err != nil {
+				return errors.Wrapf(err, "failed to reconnect GCP stream after flush")
+			}
+			cf.Client = client
+			cf.Stream = stream
+
+			streamCtx, streamCancel := context.WithCancel(cf.Ctx)
+			cf.StreamCtx = streamCtx
+			cf.StreamCancel = streamCancel
+
+			cf.processDone = make(chan struct{})
+			go h.runProcess(cf)
 		}
-		cf.Client = client
-		cf.Stream = stream
-
-		streamCtx, streamCancel := context.WithCancel(cf.Ctx)
-		cf.StreamCtx = streamCtx
-		cf.StreamCancel = streamCancel
-
-		cf.processDone = make(chan struct{})
-		go h.runProcess(cf)
 	}
 
 	req := &texttospeechpb.StreamingSynthesizeRequest{
