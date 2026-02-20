@@ -36,7 +36,8 @@ type GCPConfig struct {
 
 	Client  *texttospeech.Client
 	Stream  texttospeechpb.TextToSpeech_StreamingSynthesizeClient
-	ConnAst *websocket.Conn
+	ConnAst     *websocket.Conn
+	ConnAstDone chan struct{} // closed when Asterisk WebSocket disconnects
 
 	VoiceID  string // stored for reconnect after flush
 	LangCode string // stored for reconnect after flush
@@ -171,6 +172,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		Client:       client,
 		Stream:       stream,
 		ConnAst:      st.ConnAst,
+		ConnAstDone:  st.ConnAstDone,
 		VoiceID:      voiceID,
 		LangCode:     langCode,
 		Message: &message.Message{
@@ -264,10 +266,19 @@ func (h *gcpHandler) Run(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *GCPConfig or is nil")
 	}
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "gcpHandler.Run",
+		"streaming_id": cf.Streaming.ID,
+	})
+
 	go h.runProcess(cf)
 	go h.runKeepalive(cf)
 
-	<-cf.Ctx.Done()
+	select {
+	case <-cf.Ctx.Done():
+	case <-cf.ConnAstDone:
+		log.Infof("Asterisk WebSocket disconnected, tearing down GCP session")
+	}
 	h.terminate(cf)
 
 	return nil

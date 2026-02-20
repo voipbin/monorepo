@@ -31,9 +31,10 @@ type AWSConfig struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc
 
-	Client  *polly.Client
-	ConnAst *websocket.Conn
-	VoiceID string
+	Client      *polly.Client
+	ConnAst     *websocket.Conn
+	ConnAstDone chan struct{} // closed when Asterisk WebSocket disconnects
+	VoiceID     string
 
 	Message *message.Message
 
@@ -157,9 +158,10 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		Streaming: st,
 		Ctx:       cfCtx,
 		Cancel:    cancel,
-		Client:    client,
-		ConnAst:   st.ConnAst,
-		VoiceID:   voiceID,
+		Client:      client,
+		ConnAst:     st.ConnAst,
+		ConnAstDone: st.ConnAstDone,
+		VoiceID:     voiceID,
 		Message: &message.Message{
 			Identity: commonidentity.Identity{
 				ID:         st.MessageID,
@@ -198,9 +200,19 @@ func (h *awsHandler) Run(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *AWSConfig or is nil")
 	}
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "awsHandler.Run",
+		"streaming_id": cf.Streaming.ID,
+	})
+
 	go h.runProcess(cf)
 
-	<-cf.Ctx.Done()
+	select {
+	case <-cf.Ctx.Done():
+	case <-cf.ConnAstDone:
+		log.Infof("Asterisk WebSocket disconnected, tearing down AWS session")
+	}
+	cf.Cancel()
 
 	return nil
 }

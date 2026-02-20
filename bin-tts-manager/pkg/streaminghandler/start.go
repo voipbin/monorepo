@@ -122,6 +122,10 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 	}
 	log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
 
+	// Create a done channel that will be closed when the WebSocket disconnects.
+	// Vendor handlers select on this to tear down their sessions.
+	st.ConnAstDone = make(chan struct{})
+
 	// Store the WebSocket connection on the streaming record
 	if _, errUpdate := h.UpdateConnAst(st.ID, conn); errUpdate != nil {
 		_ = conn.Close()
@@ -129,8 +133,8 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 	}
 
 	// Spawn read goroutine for WebSocket lifecycle (ping/pong/close).
-	// Exits when conn is closed (by Stop() or Asterisk).
-	go runWebSocketRead(conn)
+	// Closes ConnAstDone when conn is closed (by Stop() or Asterisk).
+	go runWebSocketRead(conn, st.ConnAstDone)
 
 	return nil
 }
