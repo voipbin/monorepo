@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
@@ -50,6 +51,7 @@ type ExternalMediaHandler interface {
 const (
 	ChannelValiableExternalMediaLocalPort    = "UNICASTRTP_LOCAL_PORT"
 	ChannelValiableExternalMediaLocalAddress = "UNICASTRTP_LOCAL_ADDRESS"
+	ChannelVariableWebSocketConnectionID    = "MEDIA_WEBSOCKET_CONNECTION_ID"
 )
 
 const (
@@ -100,6 +102,8 @@ type externalMediaHandler struct {
 
 	channelHandler channelhandler.ChannelHandler
 	bridgeHandler  bridgehandler.BridgeHandler
+	cache          cachehandler.CacheHandler
+	asteriskWSPort int
 }
 
 // NewExternalMediaHandler returns new service handler
@@ -109,6 +113,8 @@ func NewExternalMediaHandler(
 	db dbhandler.DBHandler,
 	channelHandler channelhandler.ChannelHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
+	cache cachehandler.CacheHandler,
+	asteriskWSPort int,
 ) ExternalMediaHandler {
 
 	h := &externalMediaHandler{
@@ -118,6 +124,8 @@ func NewExternalMediaHandler(
 		db:             db,
 		channelHandler: channelHandler,
 		bridgeHandler:  bridgeHandler,
+		cache:          cache,
+		asteriskWSPort: asteriskWSPort,
 	}
 
 	return h

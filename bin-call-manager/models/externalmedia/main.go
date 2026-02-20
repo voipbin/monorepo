@@ -25,6 +25,7 @@ type ExternalMedia struct {
 	Encapsulation   Encapsulation `json:"encapsulation"` // Payload encapsulation protocol
 	Transport       Transport     `json:"transport"`
 	TransportData   string        `json:"transport_data,omitempty"` // transport-specific data
+	MediaURI        string        `json:"media_uri,omitempty"`
 	ConnectionType  string        `json:"connection_type"`
 	Format          string        `json:"format"`
 	DirectionListen Direction     `json:"direction_listen,omitempty"` // direction of the external media channel, default is ""
@@ -47,6 +48,7 @@ type Encapsulation string
 const (
 	EncapsulationRTP         Encapsulation = "rtp"
 	EncapsulationAudioSocket Encapsulation = "audiosocket"
+	EncapsulationNone        Encapsulation = "none"
 )
 
 // Transport define
@@ -54,8 +56,9 @@ type Transport string
 
 // list of Transport types
 const (
-	TransportUDP Transport = "udp"
-	TransportTCP Transport = "tcp"
+	TransportUDP       Transport = "udp"
+	TransportTCP       Transport = "tcp"
+	TransportWebsocket Transport = "websocket"
 )
 
 // Direction define

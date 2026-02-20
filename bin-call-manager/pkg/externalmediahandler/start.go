@@ -46,10 +46,10 @@ func (h *externalMediaHandler) Start(
 
 	switch referenceType {
 	case externalmedia.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, format, directionListen, directionSpeak)
+		return h.startReferenceTypeCall(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, connectionType, format, directionListen, directionSpeak)
 
 	case externalmedia.ReferenceTypeConfbridge:
-		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, format)
+		return h.startReferenceTypeConfbridge(ctx, id, referenceID, externalHost, encapsulation, transport, transportData, connectionType, format)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -65,6 +65,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
 	transportData string,
+	connectionType string,
 	format string,
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
@@ -137,6 +138,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 		encapsulation,
 		transport,
 		transportData,
+		connectionType,
 		format,
 		directionListen,
 		directionSpeak,
@@ -158,6 +160,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
 	transportData string,
+	connectionType string,
 	format string,
 ) (*externalmedia.ExternalMedia, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -196,6 +199,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(
 		encapsulation,
 		transport,
 		transportData,
+		connectionType,
 		format,
 		externalmedia.DirectionBoth, // confbridge is always both direction
 		externalmedia.DirectionBoth, // confbridge is always both direction
@@ -221,6 +225,7 @@ func (h *externalMediaHandler) startExternalMedia(
 	encapsulation externalmedia.Encapsulation,
 	transport externalmedia.Transport,
 	transportData string,
+	connectionType string,
 	format string,
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
@@ -244,6 +249,10 @@ func (h *externalMediaHandler) startExternalMedia(
 	if transport == "" {
 		log.Debugf("The requested transport has no transport. Use the default. default_transport: %s", defaultTransport)
 		transport = defaultTransport
+	}
+
+	if connectionType == "" {
+		connectionType = defaultConnectionType
 	}
 
 	if format == "" {
@@ -286,10 +295,11 @@ func (h *externalMediaHandler) startExternalMedia(
 		encapsulation,
 		transport,
 		transportData,
-		defaultConnectionType,
+		connectionType,
 		format,
 		directionListen,
 		directionSpeak,
+		"",
 	)
 	if err != nil {
 		log.Errorf("Could not create a external media. err: %v", err)
@@ -305,7 +315,7 @@ func (h *externalMediaHandler) startExternalMedia(
 		string(encapsulation),
 		string(transport),
 		transportData,
-		defaultConnectionType,
+		connectionType,
 		format,
 		defaultDirection,
 		chData,
@@ -330,6 +340,27 @@ func (h *externalMediaHandler) startExternalMedia(
 	if err != nil {
 		log.Errorf("Could not update the local address. err: %v", err)
 		return nil, err
+	}
+
+	// For WebSocket transport, construct the media URI from Asterisk's internal address
+	if transport == externalmedia.TransportWebsocket {
+		connectionID, ok := extCh.Data[ChannelVariableWebSocketConnectionID].(string)
+		if !ok || connectionID == "" {
+			return nil, fmt.Errorf("could not get WebSocket connection ID from channel variables")
+		}
+
+		asteriskIP, errCache := h.cache.AsteriskAddressInternalGet(ctx, asteriskID)
+		if errCache != nil {
+			return nil, errors.Wrapf(errCache, "could not get asterisk internal address. asterisk_id: %s", asteriskID)
+		}
+
+		mediaURI := fmt.Sprintf("ws://%s:%d/media/%s", asteriskIP, h.asteriskWSPort, connectionID)
+		res.MediaURI = mediaURI
+
+		// persist the updated MediaURI
+		if errDB := h.db.ExternalMediaSet(ctx, res); errDB != nil {
+			return nil, errors.Wrapf(errDB, "could not update external media with media URI")
+		}
 	}
 
 	return res, nil

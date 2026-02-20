@@ -268,7 +268,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 
 			// startExternalMedia
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
-			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, string(tt.encapsulation), string(tt.transport), tt.transportData, defaultConnectionType, defaultFormat, defaultDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, string(tt.encapsulation), string(tt.transport), tt.transportData, tt.connectionType, defaultFormat, defaultDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
