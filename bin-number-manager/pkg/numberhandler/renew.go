@@ -51,45 +51,60 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 		"tm_renew": tmRenew,
 	})
 
-	// get list of numbers
-	numbers, err := h.dbListByTMRenew(ctx, tmRenew)
-	if err != nil {
-		log.Errorf("Could not get list of numbers. err: %v", err)
-		return nil, errors.Wrap(err, "could not get list of numbers")
-	}
-
-	// renew the numbers
 	res := []*number.Number{}
-	for _, n := range numbers {
-
-		valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
+	for {
+		// get list of numbers
+		numbers, err := h.dbListByTMRenew(ctx, tmRenew)
 		if err != nil {
-			log.Errorf("Could not validate the customer balance. err: %v", err)
-			continue
+			log.Errorf("Could not get list of numbers. err: %v", err)
+			return nil, errors.Wrap(err, "could not get list of numbers")
 		}
 
-		if !valid {
-			log.WithField("number", n).Errorf("The customer has not enough balance for number renew.")
-			tmp, err := h.Delete(ctx, n.ID)
+		if len(numbers) == 0 {
+			break
+		}
+
+		// renew the numbers
+		processed := 0
+		for _, n := range numbers {
+
+			valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
 			if err != nil {
-				log.Errorf("Could not release the number. err: %v", err)
+				log.Errorf("Could not validate the customer balance. err: %v", err)
 				continue
 			}
-			log.WithField("number", tmp).Debugf("Deleted number.")
+
+			if !valid {
+				log.WithField("number", n).Errorf("The customer has not enough balance for number renew.")
+				tmp, err := h.Delete(ctx, n.ID)
+				if err != nil {
+					log.Errorf("Could not release the number. err: %v", err)
+				} else {
+					log.WithField("number", tmp).Debugf("Deleted number.")
+				}
+				processed++
+				continue
+			}
+
+			log.WithField("number", n).Debugf("Renewing the number. number_id: %s, number: %s", n.ID, n.Number)
+
+			fields := map[number.Field]any{
+				number.FieldTMRenew: h.utilHandler.TimeNow(),
+			}
+			tmp, err := h.dbUpdate(ctx, n.ID, fields, number.EventTypeNumberRenewed)
+			if err != nil {
+				log.Errorf("Could not update the number's renew info. err: %v", err)
+				continue
+			}
+			log.WithField("number", n).Debugf("Renewed the number info. number_id: %s, number: %s", n.ID, n.Number)
+			res = append(res, tmp)
+			processed++
 		}
 
-		log.WithField("number", n).Debugf("Renewing the number. number_id: %s, number: %s", n.ID, n.Number)
-
-		fields := map[number.Field]any{
-			number.FieldTMRenew: h.utilHandler.TimeNow(),
+		if processed == 0 {
+			log.Warnf("No numbers processed in batch of %d, stopping pagination to avoid infinite loop", len(numbers))
+			break
 		}
-		tmp, err := h.dbUpdate(ctx, n.ID, fields, number.EventTypeNumberRenewed)
-		if err != nil {
-			log.Errorf("Could not update the number's renew info. err: %v", err)
-			continue
-		}
-		log.WithField("number", n).Debugf("Renewed the number info. number_id: %s, number: %s", n.ID, n.Number)
-		res = append(res, tmp)
 	}
 
 	return res, nil
@@ -103,7 +118,7 @@ func (h *numberHandler) renewNumbersByDays(ctx context.Context, days int) ([]*nu
 	})
 
 	tmRenew := h.utilHandler.TimeGetCurTimeAdd(-(time.Hour * 24 * time.Duration(days)))
-	log.Debugf("Renwing numbers. tm_renew: %s", tmRenew)
+	log.Debugf("Renewing numbers. tm_renew: %s", tmRenew)
 
 	res, err := h.renewNumbersByTMRenew(ctx, tmRenew)
 	if err != nil {
@@ -114,7 +129,7 @@ func (h *numberHandler) renewNumbersByDays(ctx context.Context, days int) ([]*nu
 	return res, nil
 }
 
-// renewNumbersByDays renew the numbers by tm_renew
+// renewNumbersByHours renew the numbers by hours
 func (h *numberHandler) renewNumbersByHours(ctx context.Context, hours int) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "renewNumbersByHours",
@@ -122,7 +137,7 @@ func (h *numberHandler) renewNumbersByHours(ctx context.Context, hours int) ([]*
 	})
 
 	tmRenew := h.utilHandler.TimeGetCurTimeAdd(-(time.Hour * time.Duration(hours)))
-	log.Debugf("Renwing numbers. tm_renew: %s", tmRenew)
+	log.Debugf("Renewing numbers. tm_renew: %s", tmRenew)
 
 	res, err := h.renewNumbersByTMRenew(ctx, tmRenew)
 	if err != nil {

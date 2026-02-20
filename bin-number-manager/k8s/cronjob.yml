@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: number-renew
 spec:
-  schedule: "* 1 * * *"
+  schedule: "0 1 * * *"
   jobTemplate:
     spec:
       template:
