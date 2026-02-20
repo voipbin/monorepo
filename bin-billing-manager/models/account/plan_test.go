@@ -141,9 +141,9 @@ func TestPlanTokenMap(t *testing.T) {
 		planType PlanType
 		expected int64
 	}{
-		{"free plan", PlanTypeFree, 1000},
-		{"basic plan", PlanTypeBasic, 10000},
-		{"professional plan", PlanTypeProfessional, 100000},
+		{"free plan", PlanTypeFree, 100},
+		{"basic plan", PlanTypeBasic, 1000},
+		{"professional plan", PlanTypeProfessional, 10000},
 		{"unlimited plan", PlanTypeUnlimited, 0},
 	}
 
