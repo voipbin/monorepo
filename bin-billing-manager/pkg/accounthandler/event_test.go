@@ -159,10 +159,117 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customer.ID, tt.responseAccount.ID).Return(tt.customer, nil)
 
+			mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+				account.FieldPlanType: account.PlanTypeFree,
+			}).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountTopUpTokens(ctx, tt.responseAccount.ID, tt.customer.ID, int64(1000), string(account.PlanTypeFree)).Return(nil)
+
 			if err := h.EventCUCustomerCreated(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_EventCUCustomerCreated_topup_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("a1b2c3d4-e5f6-11ef-a1b2-c3d4e5f6a7b8")
+	accountID := uuid.FromStringOrNil("b2c3d4e5-f6a7-11ef-b2c3-d4e5f6a7b8c9")
+
+	customer := &cucustomer.Customer{
+		ID: customerID,
+	}
+	responseAccount := &account.Account{
+		Identity: commonidentity.Identity{
+			ID: accountID,
+		},
+	}
+
+	// account creation + link succeed
+	mockUtil.EXPECT().UUIDCreate().Return(accountID)
+	mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(responseAccount, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, responseAccount)
+	mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, accountID).Return(customer, nil)
+
+	// plan type update succeeds
+	mockDB.EXPECT().AccountUpdate(ctx, accountID, map[account.Field]any{
+		account.FieldPlanType: account.PlanTypeFree,
+	}).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(responseAccount, nil)
+
+	// topup fails — should NOT cause EventCUCustomerCreated to return error
+	mockDB.EXPECT().AccountTopUpTokens(ctx, accountID, customerID, int64(1000), string(account.PlanTypeFree)).Return(fmt.Errorf("topup failed"))
+
+	err := h.EventCUCustomerCreated(ctx, customer)
+	if err != nil {
+		t.Errorf("Expected nil error (topup failure is non-fatal), got: %v", err)
+	}
+}
+
+func Test_EventCUCustomerCreated_plan_type_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := accountHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("c3d4e5f6-a7b8-11ef-c3d4-e5f6a7b8c9d0")
+	accountID := uuid.FromStringOrNil("d4e5f6a7-b8c9-11ef-d4e5-f6a7b8c9d0e1")
+
+	customer := &cucustomer.Customer{
+		ID: customerID,
+	}
+	responseAccount := &account.Account{
+		Identity: commonidentity.Identity{
+			ID: accountID,
+		},
+	}
+
+	// account creation + link succeed
+	mockUtil.EXPECT().UUIDCreate().Return(accountID)
+	mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AccountGet(ctx, accountID).Return(responseAccount, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, responseAccount)
+	mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, accountID).Return(customer, nil)
+
+	// plan type update fails — should NOT cause EventCUCustomerCreated to return error
+	mockDB.EXPECT().AccountUpdate(ctx, accountID, map[account.Field]any{
+		account.FieldPlanType: account.PlanTypeFree,
+	}).Return(fmt.Errorf("plan type update failed"))
+
+	// topup still executes
+	mockDB.EXPECT().AccountTopUpTokens(ctx, accountID, customerID, int64(1000), string(account.PlanTypeFree)).Return(nil)
+
+	err := h.EventCUCustomerCreated(ctx, customer)
+	if err != nil {
+		t.Errorf("Expected nil error (plan type update failure is non-fatal), got: %v", err)
 	}
 }
 
