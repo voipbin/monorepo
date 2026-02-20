@@ -188,7 +188,6 @@ const emailVerifyHTML = `<!DOCTYPE html>
     btn.disabled = true;
     btn.textContent = 'Verifying...';
     msgEl.className = 'message';
-    msgEl.style.display = 'none';
 
     fetch('/auth/email-verify', {
       method: 'POST',
@@ -200,10 +199,9 @@ const emailVerifyHTML = `<!DOCTYPE html>
         msgEl.className = 'message success';
         btn.style.display = 'none';
       } else {
-        msgEl.textContent = 'Invalid or expired verification link. Please sign up again.';
+        msgEl.textContent = 'Your verification link has expired or is invalid. Please sign up again.';
         msgEl.className = 'message error';
-        btn.disabled = false;
-        btn.textContent = 'Verify Email';
+        btn.textContent = 'Verification Failed';
       }
     }).catch(function() {
       msgEl.textContent = 'An error occurred. Please try again.';

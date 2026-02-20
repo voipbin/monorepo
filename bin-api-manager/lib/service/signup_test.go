@@ -486,3 +486,38 @@ func TestPostCustomerCompleteSignup_MissingFields(t *testing.T) {
 		})
 	}
 }
+
+func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.GET("/auth/email-verify", GetCustomerEmailVerify)
+
+	req, _ := http.NewRequest("GET", "/auth/email-verify?token=a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != 200 {
+		t.Fatalf("Expected status 200, got: %d", w.Code)
+	}
+
+	body := w.Body.String()
+
+	// Verify the inline style bug is NOT present.
+	if strings.Contains(body, "msgEl.style.display") {
+		t.Error("HTML should not set inline style.display - it overrides CSS class-based visibility")
+	}
+
+	// Verify error case disables button permanently (not re-enabled).
+	// Only the catch (network error) case should re-enable.
+	count := strings.Count(body, "btn.disabled = false")
+	if count > 1 {
+		t.Errorf("Expected btn.disabled = false at most once (in catch block only), found %d", count)
+	}
+
+	// Verify "Verification Failed" text appears for error case
+	if !strings.Contains(body, "Verification Failed") {
+		t.Error("Expected 'Verification Failed' button text in error handler")
+	}
+}
