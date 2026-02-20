@@ -46,13 +46,17 @@ New flow:
 1. `Start()` creates streaming record, calls `ExternalMediaStart` with `INCOMING` host
 2. `Start()` dials WebSocket using returned `MediaURI`
 3. `Start()` stores `*websocket.Conn` on streaming record
-4. `Start()` spawns `runWebSocketRead()` goroutine for ping/pong/close handling
-5. `Start()` spawns STT processing goroutine (provider selection + handler)
-6. `Start()` returns immediately; STT handler runs until WebSocket closes
+4. `Start()` spawns `runSTT()` goroutine (provider selection + handler)
+5. `Start()` returns immediately; STT handler runs until WebSocket closes
 
-The key difference: STT processing is triggered from `Start()` instead of from the TCP
-listener. The provider selection logic moves from `runStart()` into a helper called by
-`Start()`.
+No separate read goroutine is needed. The STT media processor's `ReadMessage()` loop
+is the sole reader on the connection — gorilla/websocket handles ping/pong/close frames
+internally within any `ReadMessage()` call, unlike the tts-manager which needs a dedicated
+`runWebSocketRead()` because its main loop writes to the WebSocket.
+
+The key difference from the old flow: STT processing is triggered from `Start()` instead
+of from the TCP listener. The provider selection logic moves from `runStart()` into
+`runSTT()`.
 
 ### WebSocket Protocol
 
@@ -61,25 +65,27 @@ Matching the tts-manager's implementation:
 - **Subprotocol**: `"media"` (chan_websocket)
 - **Handshake**: Asterisk sends `MEDIA_START` text message after connection
 - **Audio data**: Binary frames containing raw slin PCM bytes
-- **Close detection**: `runWebSocketRead()` goroutine reads messages to handle ping/pong;
-  when connection closes, it closes a `ConnAstDone` channel
-- **Cleanup**: `Stop()` calls `ExternalMediaStop`, then `conn.Close()`
+- **Close detection**: The STT media processor's `ReadMessage()` loop is the sole reader;
+  gorilla/websocket handles ping/pong/close frames internally within `ReadMessage()`.
+  When the connection closes, `ReadMessage()` returns an error and the loop exits.
+- **Cleanup**: `Stop()` calls `ExternalMediaStop`, then `conn.Close()` to release the
+  file descriptor and unblock the media processor's `ReadMessage()` loop
 
 ### Error Handling
 
-If `websocketConnect()` fails after `ExternalMediaStart` succeeds, clean up the orphaned
-external media by calling `ExternalMediaStop`. This matches the tts-manager pattern in
-`start.go:116-121`.
+If `websocketConnect()` fails after `ExternalMediaStart` succeeds, clean up both the
+orphaned external media channel (via `ExternalMediaStop`) and the in-memory streaming
+record (via `h.Delete()`). This prevents stale "started" entries from remaining in the
+map.
 
 ### Streaming Model Changes
 
 Add to `models/streaming/streaming.go`:
 - `ConnAst *websocket.Conn` — WebSocket connection to Asterisk
-- `ConnAstDone chan struct{}` — closed when WebSocket disconnects
 
-The GCP/AWS media processing loops will read audio from `st.ConnAst` via
-`conn.ReadMessage()`. When the connection closes, `ReadMessage()` returns an error and
-the loop exits, same as the current behavior with AudioSocket read errors.
+No done channel is needed. Unlike the tts-manager (which uses `ConnAstDone` to signal its
+write loop), the transcribe-manager has no write loop — the STT media processor's
+`ReadMessage()` naturally unblocks with an error when the connection closes.
 
 ### GCP/AWS Handler Changes
 
@@ -107,7 +113,8 @@ The connection is accessed via `st.ConnAst`. The media processing functions repl
 
 ### What Gets Added
 
-- `websocket.go` — `websocketConnect()` and `runWebSocketRead()` (ported from tts-manager)
+- `websocket.go` — `websocketConnect()` (adapted from tts-manager; `runWebSocketRead()` omitted
+  because the STT media processor is the sole reader)
 - `github.com/gorilla/websocket` dependency
 
 ### Config Impact
@@ -119,29 +126,29 @@ The connection is accessed via `st.ConnAst`. The media processing functions repl
 
 ### Test Impact
 
-- `start_test.go` — rewrite: `Start()` now also dials WebSocket and spawns STT. Test
-  scope changes to verify ExternalMediaStart call with new parameters (INCOMING host,
-  websocket transport, none encapsulation)
-- `run_test.go` — delete `runKeepAlive` test and `MockConn`, `Run()` is now a no-op
-- `gcp_test.go` — `gcpProcessResult` tests unaffected (they test STT result processing).
-  `gcpProcessMedia` tests need WebSocket mock
-- `aws_test.go` — same as gcp_test.go
+- `start_test.go` — rewrite: tests the error path where `websocketConnect()` fails.
+  Verifies ExternalMediaStart is called with new parameters (`INCOMING` host, `websocket`
+  transport, `none` encapsulation), and verifies cleanup of both the orphaned external
+  media (`ExternalMediaStop`) and the streaming record (`Delete`) on failure
+- `run_test.go` — delete `runKeepAlive` test and `MockConn`, replace with `Run()` no-op test
+- `gcp_test.go` — no changes needed (existing tests cover `gcpProcessResult` only)
+- `aws_test.go` — no changes needed (existing tests cover `awsProcessResult` only)
 - `main_test.go` — update `NewStreamingHandler` tests (remove listenAddress param)
 
 ## Files Changed
 
 | File | Change |
 |---|---|
-| `models/streaming/streaming.go` | Add ConnAst, ConnAstDone fields |
-| `pkg/streaminghandler/main.go` | Update constants, remove listenAddress, add websocket import |
-| `pkg/streaminghandler/websocket.go` | New: websocketConnect, runWebSocketRead |
-| `pkg/streaminghandler/start.go` | Rewrite: dial WebSocket, spawn STT processing |
+| `models/streaming/streaming.go` | Add ConnAst field |
+| `pkg/streaminghandler/main.go` | Update constants, remove listenAddress, remove keep-alive constants |
+| `pkg/streaminghandler/websocket.go` | New: websocketConnect |
+| `pkg/streaminghandler/start.go` | Rewrite: dial WebSocket, spawn runSTT, cleanup on failure |
 | `pkg/streaminghandler/run.go` | Run() becomes no-op, remove runStart/keepalive |
 | `pkg/streaminghandler/gcp.go` | Read from st.ConnAst instead of net.Conn param |
 | `pkg/streaminghandler/aws.go` | Read from st.ConnAst instead of net.Conn param |
-| `pkg/streaminghandler/stop.go` | Add conn.Close() |
-| `pkg/streaminghandler/streaming.go` | No changes |
+| `pkg/streaminghandler/stop.go` | Add conn.Close() to release fd and unblock ReadMessage |
 | `pkg/streaminghandler/audiosocket.go` | Delete |
 | `cmd/transcribe-manager/main.go` | Remove POD_IP validation, listenAddress, update constructor |
+| `cmd/transcribe-control/main.go` | Remove listenAddress placeholder, update constructor |
 | `internal/config/main.go` | No changes (keep fields for backwards compat) |
-| Tests | Rewrite start_test, delete run_test keepalive, update gcp/aws media tests |
+| Tests | Rewrite start_test (error path + cleanup), delete run_test keepalive, update main_test |
