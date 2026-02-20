@@ -43,14 +43,19 @@ type GCPConfig struct {
 
 	Message *message.Message
 
-	processDone chan struct{} // closed when runProcess exits
-	muStream    sync.Mutex   // protects Stream, Client, StreamCtx/StreamCancel
+	lastSendTime time.Time    // last time we sent input to GCP stream (for keepalive)
+	processDone  chan struct{} // closed when runProcess exits
+	muStream     sync.Mutex   // protects Stream, Client, StreamCtx/StreamCancel, lastSendTime
 }
 
 const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
 	defaultGCPStreamingSampleRate = int32(8000)
 	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
+
+	// gcpKeepaliveInterval is the interval between keepalive pings to prevent
+	// GCP's 5-second inactivity timeout on StreamingSynthesize.
+	gcpKeepaliveInterval = 4 * time.Second
 )
 
 var gcpVoiceIDMap = map[string]string{
@@ -175,8 +180,9 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 			},
 			StreamingID: st.ID,
 		},
-		processDone: make(chan struct{}),
-		muStream:    sync.Mutex{},
+		lastSendTime: time.Now(),
+		processDone:  make(chan struct{}),
+		muStream:     sync.Mutex{},
 	}
 
 	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message)
@@ -230,10 +236,9 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 	return client, stream, nil
 }
 
-func (h *gcpHandler) terminate(cf *GCPConfig) {
-	cf.muStream.Lock()
-	defer cf.muStream.Unlock()
-
+// closeStreamLocked closes and nils the GCP stream and client.
+// Must be called with cf.muStream held.
+func closeStreamLocked(cf *GCPConfig) {
 	if cf.Stream != nil {
 		_ = cf.Stream.CloseSend()
 		cf.Stream = nil
@@ -243,6 +248,12 @@ func (h *gcpHandler) terminate(cf *GCPConfig) {
 		_ = cf.Client.Close()
 		cf.Client = nil
 	}
+}
+
+func (h *gcpHandler) terminate(cf *GCPConfig) {
+	cf.muStream.Lock()
+	closeStreamLocked(cf)
+	cf.muStream.Unlock()
 
 	cf.Cancel()
 }
@@ -254,6 +265,7 @@ func (h *gcpHandler) Run(vendorConfig any) error {
 	}
 
 	go h.runProcess(cf)
+	go h.runKeepalive(cf)
 
 	<-cf.Ctx.Done()
 	h.terminate(cf)
@@ -267,18 +279,26 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 		"streaming_id": cf.Streaming.ID,
 	})
 
+	// Capture per-generation values under lock so defers and selects use the
+	// channels from this specific runProcess invocation, not a replacement
+	// created by a later waitAndReconnectLocked call.
+	cf.muStream.Lock()
+	doneCh := cf.processDone
+	streamCtx := cf.StreamCtx
+	cf.muStream.Unlock()
+
 	msg := cf.Message
 	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
 
 	defer func() {
 		cf.StreamCancel()
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
-		close(cf.processDone)
+		close(doneCh)
 	}()
 
 	for {
 		select {
-		case <-cf.StreamCtx.Done():
+		case <-streamCtx.Done():
 			return
 		default:
 		}
@@ -296,7 +316,7 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			// If the per-stream context was cancelled (SayFlush or SayStop),
 			// the stream/client are already nil — just return and let the defer run.
 			select {
-			case <-cf.StreamCtx.Done():
+			case <-streamCtx.Done():
 				log.Infof("GCP stream ended (context cancelled): %v", err)
 				return
 			default:
@@ -304,16 +324,9 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 
 			// Stream died server-side (e.g., GCP 5s inactivity timeout).
 			// Nil out the stream so the next SayAdd can reconnect.
-			log.Infof("GCP stream ended, will reconnect on next SayAdd: %v", err)
+			log.Debugf("GCP stream ended, will reconnect on next SayAdd: %v", err)
 			cf.muStream.Lock()
-			if cf.Stream != nil {
-				_ = cf.Stream.CloseSend()
-				cf.Stream = nil
-			}
-			if cf.Client != nil {
-				_ = cf.Client.Close()
-				cf.Client = nil
-			}
+			closeStreamLocked(cf)
 			cf.muStream.Unlock()
 			return
 		}
@@ -323,10 +336,70 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
-		if errWrite := websocketWrite(cf.StreamCtx, cf.ConnAst, audioData); errWrite != nil {
+		if errWrite := websocketWrite(streamCtx, cf.ConnAst, audioData); errWrite != nil {
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
 			return
 		}
+	}
+}
+
+// runKeepalive sends periodic input to the GCP stream to prevent the 5-second
+// inactivity timeout. Skips sending when SayAdd has sent text recently.
+// Exits when the per-stream context is cancelled or the stream dies.
+func (h *gcpHandler) runKeepalive(cf *GCPConfig) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "gcpHandler.runKeepalive",
+		"streaming_id": cf.Streaming.ID,
+	})
+
+	// Capture per-generation StreamCtx under lock so we watch the context
+	// for this specific stream, not a replacement from waitAndReconnectLocked.
+	cf.muStream.Lock()
+	streamCtx := cf.StreamCtx
+	cf.muStream.Unlock()
+
+	ticker := time.NewTicker(gcpKeepaliveInterval)
+	defer ticker.Stop()
+
+	keepaliveReq := &texttospeechpb.StreamingSynthesizeRequest{
+		StreamingRequest: &texttospeechpb.StreamingSynthesizeRequest_Input{
+			Input: &texttospeechpb.StreamingSynthesisInput{
+				InputSource: &texttospeechpb.StreamingSynthesisInput_Text{
+					Text: " ",
+				},
+			},
+		},
+	}
+
+	for {
+		select {
+		case <-streamCtx.Done():
+			return
+		case <-ticker.C:
+		}
+
+		cf.muStream.Lock()
+
+		if cf.Stream == nil {
+			cf.muStream.Unlock()
+			return
+		}
+
+		// Skip if SayAdd sent text recently.
+		if time.Since(cf.lastSendTime) < gcpKeepaliveInterval {
+			cf.muStream.Unlock()
+			continue
+		}
+
+		if err := cf.Stream.Send(keepaliveReq); err != nil {
+			log.Debugf("Keepalive send failed, stream will reconnect on next SayAdd: %v", err)
+			closeStreamLocked(cf)
+			cf.muStream.Unlock()
+			return
+		}
+
+		cf.lastSendTime = time.Now()
+		cf.muStream.Unlock()
 	}
 }
 
@@ -366,17 +439,10 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 		// Send failed — stream may have died between our nil check and the Send.
 		// Clean up, wait for runProcess to exit, and reconnect once.
 		log.Infof("Send failed, reconnecting: %v", err)
-		if cf.Stream != nil {
-			_ = cf.Stream.CloseSend()
-			cf.Stream = nil
-		}
-		if cf.Client != nil {
-			_ = cf.Client.Close()
-			cf.Client = nil
-		}
+		closeStreamLocked(cf)
 
 		if errReconnect := h.waitAndReconnectLocked(cf); errReconnect != nil {
-			return errors.Wrapf(err, "failed to send text and reconnect GCP stream")
+			return errors.Wrapf(errReconnect, "failed to send text and reconnect GCP stream")
 		}
 
 		if errRetry := cf.Stream.Send(req); errRetry != nil {
@@ -384,6 +450,7 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 		}
 	}
 
+	cf.lastSendTime = time.Now()
 	cf.Message.TotalMessage += text
 	cf.Message.TotalCount++
 
@@ -416,8 +483,10 @@ func (h *gcpHandler) waitAndReconnectLocked(cf *GCPConfig) error {
 	cf.StreamCtx = streamCtx
 	cf.StreamCancel = streamCancel
 
+	cf.lastSendTime = time.Now()
 	cf.processDone = make(chan struct{})
 	go h.runProcess(cf)
+	go h.runKeepalive(cf)
 
 	return nil
 }
@@ -432,16 +501,7 @@ func (h *gcpHandler) SayFlush(vendorConfig any) error {
 	defer cf.muStream.Unlock()
 
 	cf.StreamCancel()
-
-	if cf.Stream != nil {
-		_ = cf.Stream.CloseSend()
-		cf.Stream = nil
-	}
-
-	if cf.Client != nil {
-		_ = cf.Client.Close()
-		cf.Client = nil
-	}
+	closeStreamLocked(cf)
 
 	return nil
 }
