@@ -71,6 +71,22 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 	}
 	log.WithField("customer", tmp).Debugf("Updated customer's billing account id. customer_id: %s, billing_account_id: %s", tmp.ID, tmp.BillingAccountID)
 
+	// set default plan type for new account
+	if _, errPlan := h.dbUpdatePlanType(ctx, b.ID, account.PlanTypeFree); errPlan != nil {
+		log.Errorf("Could not set default plan type. err: %v", errPlan)
+		// non-fatal: account is created, but skip topup since plan type is required for future monthly topups
+		return nil
+	}
+
+	// initial token topup for new customer
+	tokenAmount, ok := account.PlanTokenMap[account.PlanTypeFree]
+	if ok && tokenAmount > 0 {
+		if errTopup := h.db.AccountTopUpTokens(ctx, b.ID, cu.ID, tokenAmount, string(account.PlanTypeFree)); errTopup != nil {
+			log.Errorf("Could not perform initial token topup. err: %v", errTopup)
+			// non-fatal: account is created, tokens can be topped up later
+		}
+	}
+
 	return nil
 }
 
