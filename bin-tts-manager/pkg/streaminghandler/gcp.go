@@ -43,7 +43,8 @@ type GCPConfig struct {
 
 	Message *message.Message
 
-	muStream sync.Mutex // protects Stream, Client, StreamCtx/StreamCancel
+	processDone chan struct{} // closed when runProcess exits
+	muStream    sync.Mutex   // protects Stream, Client, StreamCtx/StreamCancel
 }
 
 const (
@@ -174,7 +175,8 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 			},
 			StreamingID: st.ID,
 		},
-		muStream: sync.Mutex{},
+		processDone: make(chan struct{}),
+		muStream:    sync.Mutex{},
 	}
 
 	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message)
@@ -271,6 +273,7 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 	defer func() {
 		cf.StreamCancel()
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
+		close(cf.processDone)
 	}()
 
 	for {
@@ -317,6 +320,13 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 
 	// Reconnect if stream was flushed
 	if cf.Stream == nil {
+		// Wait for previous runProcess to fully exit before starting a new one.
+		// This prevents concurrent WebSocket writes.
+		// Release the lock first because runProcess acquires muStream to read cf.Stream.
+		cf.muStream.Unlock()
+		<-cf.processDone
+		cf.muStream.Lock()
+
 		client, stream, err := h.connect(cf.Ctx, cf.VoiceID, cf.LangCode)
 		if err != nil {
 			return errors.Wrapf(err, "failed to reconnect GCP stream after flush")
@@ -328,6 +338,7 @@ func (h *gcpHandler) SayAdd(vendorConfig any, text string) error {
 		cf.StreamCtx = streamCtx
 		cf.StreamCancel = streamCancel
 
+		cf.processDone = make(chan struct{})
 		go h.runProcess(cf)
 	}
 

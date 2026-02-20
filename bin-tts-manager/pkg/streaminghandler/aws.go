@@ -233,6 +233,9 @@ func (h *awsHandler) runProcess(cf *AWSConfig) {
 				continue
 			}
 
+			// TODO: AWS Polly outputs raw PCM, but the Asterisk channel is configured for MULAW.
+			// A PCM-to-MULAW conversion step is needed here for correct audio output.
+			// Currently only GCP streaming is used in production.
 			if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, audioData); errWrite != nil {
 				log.Errorf("Could not write audio to asterisk: %v", errWrite)
 				return

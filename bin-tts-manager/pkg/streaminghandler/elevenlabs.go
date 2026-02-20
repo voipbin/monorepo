@@ -69,7 +69,7 @@ const (
 
 	defaultElevenlabsVoiceID      = "EXAVITQu4vr4xnSDxMaL"   // Default voice ID for ElevenLabs(Rachel)
 	defaultElevenlabsModelID      = "eleven_multilingual_v2" // Default model ID for ElevenLabs
-	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
+	defaultConvertSampleRate      = 8000                     // Default sample rate for conversion to 8kHz (telephony standard).
 	defaultElevenlabsOutputFormat = "pcm_16000"              // Default output format for ElevenLabs. PCM (S16LE - Signed 16-bit Little Endian), Sample rate: 16kHz, Bit depth: 16-bit as it's the minimum raw PCM output from ElevenLabs.
 
 	defaultElevenlabsVoiceIDLength = 20
@@ -291,7 +291,9 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 					return
 				}
 
-				// TTS play
+				// TODO: ElevenLabs outputs 16-bit PCM, but the Asterisk channel is configured for MULAW.
+				// A PCM-to-MULAW conversion step is needed here for correct audio output.
+				// Currently only GCP streaming is used in production.
 				if errWrite := websocketWrite(cf.Ctx, cf.ConnAst, data); errWrite != nil {
 					log.Errorf("Could not write processed audio data to asterisk connection: %v", errWrite)
 					return

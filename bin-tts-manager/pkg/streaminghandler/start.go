@@ -114,6 +114,10 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 	conn, err := websocketConnect(ctx, em.MediaURI)
 	if err != nil {
 		log.Errorf("Could not connect WebSocket to Asterisk. err: %v", err)
+		// Clean up the orphaned external media channel in Asterisk
+		if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
+			log.Errorf("Could not stop orphaned external media. err: %v", errStop)
+		}
 		return err
 	}
 	log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
@@ -125,11 +129,8 @@ func (h *streamingHandler) startExternalMedia(ctx context.Context, st *streaming
 	}
 
 	// Spawn read goroutine for WebSocket lifecycle (ping/pong/close).
-	go func() {
-		readCtx, readCancel := context.WithCancel(context.Background())
-		defer readCancel()
-		runWebSocketRead(readCtx, readCancel, conn)
-	}()
+	// Exits when conn is closed (by Stop() or Asterisk).
+	go runWebSocketRead(conn)
 
 	return nil
 }

@@ -89,6 +89,9 @@ func Test_Start(t *testing.T) {
 				cmexternalmedia.Direction(tt.direction),
 			).Return(tt.responseExternalMedia, nil)
 
+			// websocketConnect fails in tests, so the cleanup path calls ExternalMediaStop
+			mockReq.EXPECT().CallV1ExternalMediaStop(ctx, tt.responseExternalMedia.ID).Return(tt.responseExternalMedia, nil)
+
 			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if tt.expectErr && err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
@@ -207,6 +210,12 @@ func Test_StartWithID(t *testing.T) {
 					cmexternalmedia.DirectionNone,
 					cmexternalmedia.Direction(tt.direction),
 				).Return(tt.responseExternalMedia, tt.responseExternalMediaErr)
+
+				// websocketConnect fails in tests when ExternalMediaStart succeeds,
+				// so the cleanup path calls ExternalMediaStop
+				if tt.responseExternalMediaErr == nil && tt.responseExternalMedia != nil {
+					mockReq.EXPECT().CallV1ExternalMediaStop(ctx, tt.responseExternalMedia.ID).Return(tt.responseExternalMedia, nil)
+				}
 			}
 
 			_, err := h.StartWithID(ctx, tt.id, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.provider, tt.voiceID, tt.direction)
