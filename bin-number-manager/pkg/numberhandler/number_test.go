@@ -135,6 +135,52 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 	}
 }
 
+func Test_Create_rollback_on_register_failure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+
+	h := numberHandler{
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		notifyHandler:       mockNotify,
+		numberHandlerTelnyx: mockTelnyx,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f")
+	num := "+821021656521"
+
+	purchasedProvider := &providernumber.ProviderNumber{
+		ID:     "7dfbe2b4-1f4e-11ee-8502-23ddd1432a09",
+		Status: number.StatusActive,
+	}
+
+	// billing check passes
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+
+	// purchase succeeds
+	mockTelnyx.EXPECT().NumberPurchase(num).Return(purchasedProvider, nil)
+
+	// Register fails because number already exists
+	mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: num}).Return([]*number.Number{{Number: num}}, nil)
+
+	// rollback: release the purchased number with correct provider reference
+	mockTelnyx.EXPECT().NumberRelease(ctx, &number.Number{
+		ProviderName:        number.ProviderNameTelnyx,
+		ProviderReferenceID: purchasedProvider.ID,
+	}).Return(nil)
+
+	_, err := h.Create(ctx, customerID, num, uuid.Nil, uuid.Nil, "", "")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
+
 func Test_Register(t *testing.T) {
 
 	tests := []struct {

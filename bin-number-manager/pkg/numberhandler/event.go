@@ -78,7 +78,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			}
 		}
 
-		if len(numbs) < 100 {
+		if len(numbs) < 1000 {
 			// no more list
 			break
 		}
@@ -106,7 +106,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			}
 		}
 
-		if len(numbs) < 100 {
+		if len(numbs) < 1000 {
 			// no more list
 			break
 		}

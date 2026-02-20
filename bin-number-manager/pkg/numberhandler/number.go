@@ -66,6 +66,16 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	)
 	if err != nil {
 		log.Errorf("Could not create the number record. err: %v", err)
+
+		// rollback: release the purchased number from the provider
+		releaseNum := &number.Number{
+			ProviderName:        number.ProviderNameTelnyx,
+			ProviderReferenceID: tmp.ID,
+		}
+		if errRelease := h.numberHandlerTelnyx.NumberRelease(ctx, releaseNum); errRelease != nil {
+			log.Errorf("Could not rollback purchased number from provider. provider_reference_id: %s, err: %v", tmp.ID, errRelease)
+		}
+
 		return nil, errors.Wrap(err, "could not create the number record")
 	}
 	log.WithField("number", res).Debugf("Created number correctly. number_id: %s", res.ID)

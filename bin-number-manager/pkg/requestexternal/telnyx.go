@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -13,6 +14,10 @@ import (
 	"monorepo/bin-number-manager/pkg/requestexternal/models/response"
 	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
+
+var telnyxHTTPClient = &http.Client{
+	Timeout: 30 * time.Second,
+}
 
 func (h *requestExternal) TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {
 
@@ -42,7 +47,7 @@ func (h *requestExternal) TelnyxAvailableNumberGets(token, countryCode, locality
 		return nil, fmt.Errorf("could not create a http request. err: %v", err)
 	}
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
@@ -114,7 +119,7 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
@@ -161,7 +166,7 @@ func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number str
 		return nil, fmt.Errorf("could not create a http request. err: %v", err)
 	}
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
@@ -190,6 +195,9 @@ func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number str
 		return nil, err
 	}
 
+	if len(resParse.Data) == 0 {
+		return nil, fmt.Errorf("no phone number found for number: %s", number)
+	}
 	return &resParse.Data[0], nil
 }
 
@@ -204,7 +212,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.Pho
 		return nil, fmt.Errorf("could not create a http request. err: %v", err)
 	}
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
@@ -246,7 +254,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.
 		return nil, fmt.Errorf("could not create a http request. err: %v", err)
 	}
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
@@ -298,7 +306,7 @@ func (h *requestExternal) TelnyxPhoneNumbersGet(token string, size uint, tag, nu
 		return nil, fmt.Errorf("could not create a http request. err: %v", err)
 	}
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
@@ -359,7 +367,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDUpdate(token, id string, data map[
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := telnyxHTTPClient
 	authToken := fmt.Sprintf("Bearer %s", token)
 	req.Header.Add("Authorization", authToken)
 
