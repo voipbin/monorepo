@@ -32,12 +32,18 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 		return nil, errors.Wrapf(err, "could not dial WebSocket. media_uri: %s", mediaURI)
 	}
 
+	// Set a read deadline for the MEDIA_START handshake
+	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+
 	// Read the MEDIA_START text message from Asterisk
 	msgType, msg, err := conn.ReadMessage()
 	if err != nil {
 		_ = conn.Close()
 		return nil, errors.Wrapf(err, "could not read MEDIA_START message")
 	}
+
+	// Clear the deadline for subsequent reads
+	conn.SetReadDeadline(time.Time{})
 	if msgType != websocket.TextMessage {
 		_ = conn.Close()
 		return nil, errors.Errorf("expected text message for MEDIA_START, got type %d", msgType)
@@ -53,6 +59,9 @@ func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte) erro
 	if len(data) == 0 {
 		return nil
 	}
+
+	ticker := time.NewTicker(websocketWriteDelay)
+	defer ticker.Stop()
 
 	offset := 0
 	payloadLen := len(data)
@@ -71,8 +80,13 @@ func websocketWrite(ctx context.Context, conn *websocket.Conn, data []byte) erro
 
 		offset += fragmentLen
 
+		// Don't pace after the last fragment
+		if offset >= payloadLen {
+			break
+		}
+
 		select {
-		case <-time.After(websocketWriteDelay):
+		case <-ticker.C:
 			continue
 		case <-ctx.Done():
 			return ctx.Err()

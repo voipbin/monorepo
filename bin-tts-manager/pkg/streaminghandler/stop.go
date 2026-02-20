@@ -43,5 +43,11 @@ func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (resultSt *st
 	}
 	log.WithField("external_media", em).Debugf("Stopped external media. external_media_id: %s", em.ID)
 
+	// Close the Asterisk WebSocket connection to release the file descriptor
+	// and unblock the runWebSocketRead goroutine.
+	if res.ConnAst != nil {
+		_ = res.ConnAst.Close()
+	}
+
 	return res, nil
 }

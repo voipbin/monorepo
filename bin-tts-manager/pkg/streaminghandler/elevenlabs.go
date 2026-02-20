@@ -468,12 +468,12 @@ func (h *elevenlabsHandler) SayFinish(vendorConfig any) error {
 }
 
 // convertAndWrapPCMData converts raw PCM data with the given input format into
-// audiosocket-wrapped 16-bit PCM bytes suitable for transmission.
+// downsampled 16-bit PCM bytes suitable for transmission over WebSocket.
 //
 // inputFormat: the audio format string (must exist in elevenlabsFormatToRate map)
 // data: raw PCM data bytes; must have even length for 16-bit samples.
 //
-// Returns wrapped PCM bytes or an error on invalid input or processing failure.
+// Returns converted PCM bytes or an error on invalid input or processing failure.
 func (h *elevenlabsHandler) convertAndWrapPCMData(inputFormat string, data []byte) ([]byte, error) {
 	if len(data)%2 != 0 {
 		return nil, fmt.Errorf("PCM data length must be even for 16-bit samples (received %d bytes)", len(data))
