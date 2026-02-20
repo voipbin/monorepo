@@ -1900,6 +1900,90 @@
         }
       }
     },
+    "/auth/unregister": {
+      "post": {
+        "summary": "Schedule account deletion (self-service freeze).",
+        "description": "Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.\nActive calls are terminated and new operations are blocked.\nThe customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.\n\nExactly one of `password` or `confirmation_phrase` must be provided:\n- Password-based accounts: provide `password` for re-authentication.\n- SSO or API-key authenticated requests: provide `confirmation_phrase` set to `\"DELETE\"`.\n",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [
+          {
+            "name": "accesskey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthUnregisterPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account frozen successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- Neither `password` nor `confirmation_phrase` was provided.\n- Both `password` and `confirmation_phrase` were provided (exactly one required).\n- Password validation failed.\n- `confirmation_phrase` is not `\"DELETE\"`.\n"
+          },
+          "401": {
+            "description": "Authentication failed. Invalid or missing access key / bearer token."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel account deletion (self-service recover).",
+        "description": "Cancels a scheduled deletion and restores the authenticated customer's account to active state.\nOnly works during the 30-day grace period while the account is in 'frozen' status.\nNo request body required.\n",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [
+          {
+            "name": "accesskey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account recovered successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Recovery failed. Account may not be in frozen state."
+          },
+          "401": {
+            "description": "Authentication failed. Invalid or missing access key / bearer token."
+          }
+        }
+      }
+    },
     "/available_numbers": {
       "get": {
         "summary": "List available numbers",
@@ -19825,6 +19909,22 @@
             "items": {
               "$ref": "#/components/schemas/RagManagerSource"
             }
+          }
+        }
+      },
+      "RequestBodyAuthUnregisterPOST": {
+        "type": "object",
+        "description": "Request body for POST /auth/unregister (self-service account deletion).\nExactly one of `password` or `confirmation_phrase` must be provided.\n",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`.",
+            "example": "mySecurePassword123"
+          },
+          "confirmation_phrase": {
+            "type": "string",
+            "description": "Must be exactly \"DELETE\". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.",
+            "example": "DELETE"
           }
         }
       }
