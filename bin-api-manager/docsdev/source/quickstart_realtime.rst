@@ -24,7 +24,7 @@ Prerequisites
 
 Step 1: Create an extension
 ----------------------------
-Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension. The ``username`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
+Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension for dialing. The ``extension`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
 
 .. code::
 
@@ -33,7 +33,7 @@ Create a SIP extension that your softphone will register to. The ``name`` (Strin
         --data-raw '{
             "name": "quickstart-phone",
             "detail": "Quickstart softphone extension",
-            "username": "quickstart1",
+            "extension": "quickstart1",
             "password": "your-secure-password-here"
         }'
 
@@ -46,7 +46,9 @@ Response:
         "customer_id": "550e8400-e29b-41d4-a716-446655440000",
         "name": "quickstart-phone",
         "detail": "Quickstart softphone extension",
+        "extension": "quickstart1",
         "username": "quickstart1",
+        "domain_name": "550e8400-e29b-41d4-a716-446655440000",
         "tm_create": "2026-02-21T10:00:00.000000Z",
         "tm_update": "",
         "tm_delete": ""
@@ -56,7 +58,7 @@ The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /ext
 
 .. note:: **AI Implementation Hint**
 
-   The ``username`` and ``password`` are SIP credentials, not VoIPBIN login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). Choose a memorable ``username`` and a strong ``password``.
+   The ``extension`` and ``password`` are SIP credentials, not VoIPBIN login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). The response includes both ``extension`` and ``username`` fields — they contain the same value (``username`` is a Kamailio-internal mirror of ``extension``). Choose a memorable ``extension`` value and a strong ``password``.
 
 Step 2: Register Linphone
 --------------------------
@@ -67,7 +69,7 @@ Configure your Linphone softphone to register with VoIPBIN using the extension c
 +-------------------+------------------------------------------------------------+
 | Field             | Value                                                      |
 +===================+============================================================+
-| Username          | ``quickstart1`` (from Step 1 ``username``)                 |
+| Username          | ``quickstart1`` (from Step 1 ``extension``)                |
 +-------------------+------------------------------------------------------------+
 | Password          | The password you set in Step 1                             |
 +-------------------+------------------------------------------------------------+
@@ -296,7 +298,7 @@ While the call is active, you can inject real-time text-to-speech audio using th
 - ``reference_id`` (UUID, Required): The call ``id`` from Step 4 response
 - ``language`` (String, Optional): BCP47 language code (e.g., ``"en-US"``)
 - ``provider`` (String, Optional): TTS provider. Use ``"elevenlabs"`` for high-quality streaming TTS
-- ``direction`` (enum String, Optional): Audio direction. One of: ``"in"`` (caller hears, other side does not), ``"out"`` (other side hears, caller does not), ``"both"`` (both sides hear). Use ``"out"`` so the Linphone user hears the TTS.
+- ``direction`` (enum String, Optional): Controls which side of the call hears the TTS audio. One of: ``"out"`` (the call's destination hears the TTS), ``"in"`` (the call's source hears the TTS), ``"both"`` (both sides hear). In this scenario, use ``"out"`` so the Linphone user (destination) hears the TTS.
 
 .. code::
 
@@ -385,12 +387,12 @@ Troubleshooting
 +++++++++++++++
 
 * **Extension creation returns 400 Bad Request:**
-    * **Cause:** Missing required fields (``name``, ``username``, ``password``).
+    * **Cause:** Missing required fields (``name``, ``extension``, ``password``).
     * **Fix:** Ensure all three fields are present in the request body.
 
 * **Linphone shows "Registration failed" or "408 Timeout":**
-    * **Cause:** Incorrect domain, username, or password. The domain must include your customer ID.
-    * **Fix:** Verify the domain is ``<your-customer-id>.registrar.voipbin.net``. Double-check the ``username`` and ``password`` match exactly what was set in Step 1. Ensure UDP port 5060 is not blocked by your firewall.
+    * **Cause:** Incorrect domain, extension/username, or password. The domain must include your customer ID.
+    * **Fix:** Verify the domain is ``<your-customer-id>.registrar.voipbin.net``. Double-check the ``extension`` and ``password`` match exactly what was set in Step 1. Ensure UDP port 5060 is not blocked by your firewall.
 
 * **Call created but Linphone does not ring:**
     * **Cause:** Linphone is not registered, or the ``target_name`` does not match the extension ``name``.

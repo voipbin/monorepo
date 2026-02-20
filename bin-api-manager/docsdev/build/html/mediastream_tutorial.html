@@ -9,7 +9,6 @@
         <title>Tutorial &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -264,10 +263,10 @@
 <section id="websocket-client-examples">
 <h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
 <p><strong>Python Example (RTP Streaming):</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
+<span class="kn">import</span> <span class="nn">struct</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Receive audio data from the call&quot;&quot;&quot;</span>
     <span class="c1"># message contains RTP packets</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes of audio&quot;</span><span class="p">)</span>
@@ -278,7 +277,7 @@
     <span class="c1"># - Analyze audio</span>
     <span class="n">process_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Connection established, can start sending audio&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Media stream connected&quot;</span><span class="p">)</span>
 
@@ -287,10 +286,10 @@
     <span class="n">audio_data</span> <span class="o">=</span> <span class="n">generate_audio</span><span class="p">()</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">audio_data</span><span class="p">,</span> <span class="n">opcode</span><span class="o">=</span><span class="n">websocket</span><span class="o">.</span><span class="n">ABNF</span><span class="o">.</span><span class="n">OPCODE_BINARY</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_error</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_error</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_close</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">close_status_code</span><span class="p">,</span> <span class="n">close_msg</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_close</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">close_status_code</span><span class="p">,</span> <span class="n">close_msg</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection closed: </span><span class="si">{</span><span class="n">close_status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># Connect to media stream</span>
@@ -308,7 +307,7 @@
 
 <span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">process_audio</span><span class="p">(</span><span class="n">rtp_packet</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">process_audio</span><span class="p">(</span><span class="n">rtp_packet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process received RTP audio&quot;&quot;&quot;</span>
     <span class="c1"># Extract payload from RTP packet</span>
     <span class="c1"># RTP header is typically 12 bytes</span>
@@ -318,7 +317,7 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;received_audio.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_audio</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">generate_audio</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate RTP packets to send&quot;&quot;&quot;</span>
     <span class="c1"># This is a simplified example</span>
     <span class="c1"># In production, properly construct RTP packets</span>
@@ -469,7 +468,7 @@ ws.on(&#39;close&#39;, function() {
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>1. Real-Time Speech Recognition:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="c1"># Extract audio from RTP packet</span>
     <span class="n">audio</span> <span class="o">=</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
@@ -495,14 +494,14 @@ ws.on(&#39;close&#39;, function() {
 </div>
 <p><strong>3. Conference Recording:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="c1"># Save all conference audio</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;conference_</span><span class="si">{</span><span class="n">conference_id</span><span class="si">}</span><span class="s1">.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
 </pre></div>
 </div>
 <p><strong>4. Real-Time Audio Analysis:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">audio</span> <span class="o">=</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
     <span class="c1"># Detect emotion</span>
@@ -703,7 +702,7 @@ ws.on(&#39;close&#39;, function() {
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -711,11 +710,11 @@ ws.on(&#39;close&#39;, function() {
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>
