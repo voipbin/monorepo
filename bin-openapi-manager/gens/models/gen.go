@@ -743,14 +743,6 @@ const (
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
 )
 
-// Defines values for PostAuthSignupJSONBodyWebhookMethod.
-const (
-	DELETE PostAuthSignupJSONBodyWebhookMethod = "DELETE"
-	GET    PostAuthSignupJSONBodyWebhookMethod = "GET"
-	POST   PostAuthSignupJSONBodyWebhookMethod = "POST"
-	PUT    PostAuthSignupJSONBodyWebhookMethod = "PUT"
-)
-
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
 const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
@@ -1132,15 +1124,6 @@ type AgentManagerAgentRingMethod string
 
 // AgentManagerAgentStatus Current availability status of the agent.
 type AgentManagerAgentStatus string
-
-// AuthLoginResponse Authentication response containing JWT token
-type AuthLoginResponse struct {
-	// Token JWT token for API access
-	Token string `json:"token"`
-
-	// Username The authenticated username
-	Username string `json:"username"`
-}
 
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
@@ -3956,84 +3939,6 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
-// PostAuthCompleteSignupJSONBody defines parameters for PostAuthCompleteSignup.
-type PostAuthCompleteSignupJSONBody struct {
-	// Code 6-digit verification code from email
-	Code string `json:"code"`
-
-	// TempToken Temporary token returned from POST /auth/signup
-	TempToken string `json:"temp_token"`
-}
-
-// GetAuthEmailVerifyParams defines parameters for GetAuthEmailVerify.
-type GetAuthEmailVerifyParams struct {
-	// Token The email verification token from the signup email (64-character hex string)
-	Token string `form:"token" json:"token"`
-}
-
-// PostAuthEmailVerifyJSONBody defines parameters for PostAuthEmailVerify.
-type PostAuthEmailVerifyJSONBody struct {
-	// Token The email verification token from the signup email (64-character hex string)
-	Token string `json:"token"`
-}
-
-// PostAuthLoginJSONBody defines parameters for PostAuthLogin.
-type PostAuthLoginJSONBody struct {
-	// Password The user password
-	Password string `json:"password"`
-
-	// Username The username (agent username or customer email)
-	Username string `json:"username"`
-}
-
-// PostAuthPasswordForgotJSONBody defines parameters for PostAuthPasswordForgot.
-type PostAuthPasswordForgotJSONBody struct {
-	// Username The agent's username (email address)
-	Username string `json:"username"`
-}
-
-// GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
-type GetAuthPasswordResetParams struct {
-	// Token The password reset token from the email link
-	Token string `form:"token" json:"token"`
-}
-
-// PostAuthPasswordResetJSONBody defines parameters for PostAuthPasswordReset.
-type PostAuthPasswordResetJSONBody struct {
-	// Password The new password
-	Password string `json:"password"`
-
-	// Token The password reset token from the email link
-	Token string `json:"token"`
-}
-
-// PostAuthSignupJSONBody defines parameters for PostAuthSignup.
-type PostAuthSignupJSONBody struct {
-	// Address Address of the customer
-	Address *string `json:"address,omitempty"`
-
-	// Detail Details about the customer
-	Detail *string `json:"detail,omitempty"`
-
-	// Email Email address for the customer account
-	Email string `json:"email"`
-
-	// Name Name of the customer
-	Name *string `json:"name,omitempty"`
-
-	// PhoneNumber Phone number of the customer
-	PhoneNumber *string `json:"phone_number,omitempty"`
-
-	// WebhookMethod HTTP method for webhook notifications
-	WebhookMethod *PostAuthSignupJSONBodyWebhookMethod `json:"webhook_method,omitempty"`
-
-	// WebhookUri URI for receiving webhook notifications
-	WebhookUri *string `json:"webhook_uri,omitempty"`
-}
-
-// PostAuthSignupJSONBodyWebhookMethod defines parameters for PostAuthSignup.
-type PostAuthSignupJSONBodyWebhookMethod string
-
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize Number of results to return per page.
@@ -5625,24 +5530,6 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
-
-// PostAuthCompleteSignupJSONRequestBody defines body for PostAuthCompleteSignup for application/json ContentType.
-type PostAuthCompleteSignupJSONRequestBody PostAuthCompleteSignupJSONBody
-
-// PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
-type PostAuthEmailVerifyJSONRequestBody PostAuthEmailVerifyJSONBody
-
-// PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
-type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
-
-// PostAuthPasswordForgotJSONRequestBody defines body for PostAuthPasswordForgot for application/json ContentType.
-type PostAuthPasswordForgotJSONRequestBody PostAuthPasswordForgotJSONBody
-
-// PostAuthPasswordResetJSONRequestBody defines body for PostAuthPasswordReset for application/json ContentType.
-type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
-
-// PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
-type PostAuthSignupJSONRequestBody PostAuthSignupJSONBody
 
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody

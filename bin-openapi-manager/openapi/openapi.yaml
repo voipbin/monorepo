@@ -221,25 +221,6 @@ components:
   schemas:
 
 #########################################
-# Auth
-#########################################
-    AuthLoginResponse:
-      type: object
-      description: Authentication response containing JWT token
-      required:
-        - username
-        - token
-      properties:
-        username:
-          type: string
-          description: The authenticated username
-          example: "user@example.com"
-        token:
-          type: string
-          description: JWT token for API access
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-
-#########################################
 # Agent Manager
 #########################################
     AgentManagerAgentPermission:
@@ -5816,19 +5797,6 @@ components:
 # Path
 ###########################################################################################################################
 paths:
-  /auth/login:
-    $ref: './paths/auth/login.yaml'
-  /auth/password-forgot:
-    $ref: './paths/auth/password-forgot.yaml'
-  /auth/password-reset:
-    $ref: './paths/auth/password-reset.yaml'
-  /auth/signup:
-    $ref: './paths/auth/signup.yaml'
-  /auth/email-verify:
-    $ref: './paths/auth/email-verify.yaml'
-  /auth/complete-signup:
-    $ref: './paths/auth/complete-signup.yaml'
-
   /accesskeys:
     $ref: './paths/accesskeys/main.yaml'
   /accesskeys/{id}:

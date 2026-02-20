@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -8,6 +9,7 @@ import (
 
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -111,6 +113,44 @@ func GetCustomerEmailVerify(c *gin.Context) {
 
 	html := fmt.Sprintf(emailVerifyHTML, token)
 	c.Data(200, "text/html; charset=utf-8", []byte(html))
+}
+
+// RequestBodyCompleteSignupPOST is request body for POST /auth/complete-signup
+type RequestBodyCompleteSignupPOST struct {
+	TempToken string `json:"temp_token" binding:"required"`
+	Code      string `json:"code" binding:"required"`
+}
+
+// PostCustomerCompleteSignup handles POST /auth/complete-signup request.
+// It validates an OTP code and completes the headless signup flow.
+func PostCustomerCompleteSignup(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCustomerCompleteSignup",
+		"request_address": c.ClientIP,
+	})
+	log.Debug("Processing complete signup.")
+
+	var req RequestBodyCompleteSignupPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Warnf("Could not bind the request body. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	sh := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	res, err := sh.CustomerCompleteSignup(c.Request.Context(), req.TempToken, req.Code)
+	if err != nil {
+		log.Debugf("Complete signup failed. err: %v", err)
+		if errors.Is(err, requesthandler.ErrTooManyRequests) {
+			c.AbortWithStatus(429)
+			return
+		}
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 }
 
 const emailVerifyHTML = `<!DOCTYPE html>
