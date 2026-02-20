@@ -150,7 +150,13 @@ func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.
 	}
 	randomPassword := hex.EncodeToString(randomBytes)
 
-	a, err := h.Create(
+	// skip if admin agent already exists (idempotency for event redelivery)
+	if _, err := h.db.AgentGetByUsername(ctx, cu.Email); err == nil {
+		log.Debugf("Admin agent already exists for customer. customer_id: %s", cu.ID)
+		return nil
+	}
+
+	a, err := h.dbCreate(
 		ctx,
 		cu.ID,
 		cu.Email,
