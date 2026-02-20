@@ -24,7 +24,7 @@ Prerequisites
 
 Step 1: Create an extension
 ----------------------------
-Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension for dialing. The ``extension`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
+Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension for dialing. The ``detail`` (String, Required) is a description. The ``extension`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
 
 .. code::
 
@@ -48,7 +48,9 @@ Response:
         "detail": "Quickstart softphone extension",
         "extension": "quickstart1",
         "username": "quickstart1",
+        "password": "your-secure-password-here",
         "domain_name": "550e8400-e29b-41d4-a716-446655440000",
+        "direct_hash": "a8f3b2c1d4e5",
         "tm_create": "2026-02-21T10:00:00.000000Z",
         "tm_update": "",
         "tm_delete": ""
@@ -198,25 +200,28 @@ Response:
 
 .. code::
 
-    [
-        {
-            "id": "e2a65df2-4e50-4e37-8628-df07b3cec579",
-            "source": {
-                "type": "tel",
-                "target": "<your-source-number>",
-                "target_name": ""
-            },
-            "destination": {
-                "type": "extension",
-                "target_name": "quickstart-phone"
-            },
-            "status": "dialing",
-            "direction": "outgoing",
-            ...
-        }
-    ]
+    {
+        "calls": [
+            {
+                "id": "e2a65df2-4e50-4e37-8628-df07b3cec579",
+                "source": {
+                    "type": "tel",
+                    "target": "<your-source-number>",
+                    "target_name": ""
+                },
+                "destination": {
+                    "type": "extension",
+                    "target_name": "quickstart-phone"
+                },
+                "status": "dialing",
+                "direction": "outgoing",
+                ...
+            }
+        ],
+        "groupcalls": []
+    }
 
-Save the call ``id`` (UUID) from the response — you will need it in Step 6.
+Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will need it in Step 6.
 
 **Call status lifecycle** (enum string):
 
@@ -387,8 +392,8 @@ Troubleshooting
 +++++++++++++++
 
 * **Extension creation returns 400 Bad Request:**
-    * **Cause:** Missing required fields (``name``, ``extension``, ``password``).
-    * **Fix:** Ensure all three fields are present in the request body.
+    * **Cause:** Missing required fields (``name``, ``detail``, ``extension``, ``password``).
+    * **Fix:** Ensure all four fields are present in the request body.
 
 * **Linphone shows "Registration failed" or "408 Timeout":**
     * **Cause:** Incorrect domain, extension/username, or password. The domain must include your customer ID.

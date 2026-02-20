@@ -194,7 +194,7 @@
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or from your admin console profile.</p></li>
 <li><p>Linphone softphone installed on your computer or mobile device. Download from <a class="reference external" href="https://www.linphone.org/">linphone.org</a>.</p></li>
@@ -206,7 +206,7 @@
 </div>
 <section id="step-1-create-an-extension">
 <h3>Step 1: Create an extension<a class="headerlink" href="#step-1-create-an-extension" title="Link to this heading"></a></h3>
-<p>Create a SIP extension that your softphone will register to. The <code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required) identifies the extension for dialing. The <code class="docutils literal notranslate"><span class="pre">extension</span></code> (String, Required) and <code class="docutils literal notranslate"><span class="pre">password</span></code> (String, Required) are used for SIP authentication.</p>
+<p>Create a SIP extension that your softphone will register to. The <code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required) identifies the extension for dialing. The <code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Required) is a description. The <code class="docutils literal notranslate"><span class="pre">extension</span></code> (String, Required) and <code class="docutils literal notranslate"><span class="pre">password</span></code> (String, Required) are used for SIP authentication.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -225,7 +225,9 @@
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Quickstart softphone extension&quot;</span><span class="p">,</span>
     <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;your-secure-password-here&quot;</span><span class="p">,</span>
     <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a8f3b2c1d4e5&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:00:00.000000Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
@@ -372,26 +374,29 @@
 </pre></div>
 </div>
 <p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">}</span>
-<span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>Save the call <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from the response — you will need it in Step 6.</p>
+<p>Save the call <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from <code class="docutils literal notranslate"><span class="pre">calls[0].id</span></code> in the response — you will need it in Step 6.</p>
 <p><strong>Call status lifecycle</strong> (enum string):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">dialing</span></code>: The system is currently dialing the destination extension.</p></li>
@@ -553,8 +558,8 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>Extension creation returns 400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">extension</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>).</p></li>
-<li><p><strong>Fix:</strong> Ensure all three fields are present in the request body.</p></li>
+<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">extension</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Ensure all four fields are present in the request body.</p></li>
 </ul>
 </dd>
 </dl>

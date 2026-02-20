@@ -52,7 +52,7 @@ Title: "Real-Time Voice Interaction"
 Steps:
 
 **Step 1: Create an extension**
-- `POST /extensions` with name, username, password
+- `POST /extensions` with name, detail, extension, password
 - Show full request and response
 - AI hint: extension name is used in SIP registration address
 
@@ -110,7 +110,7 @@ Steps:
 Recommend Linphone (open-source, cross-platform) with brief setup instructions:
 1. Download from linphone.org
 2. Create SIP account with:
-   - Username: `<extension-username>`
+   - Username: `<extension-value>` (the `extension` field from Step 1)
    - Password: `<extension-password>`
    - Domain: `<customer-id>.registrar.voipbin.net`
 3. Verify registration shows "Registered" status
