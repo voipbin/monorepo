@@ -2,6 +2,7 @@ package numberhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -56,6 +57,11 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:            "empty result",
+			tmRenew:         "2021-02-26T18:26:49.000Z",
+			responseNumbers: []*number.Number{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -78,7 +84,14 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
+			if len(tt.responseNumbers) > 0 {
+				gomock.InOrder(
+					mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil),
+					mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil),
+				)
+			} else {
+				mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil)
+			}
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockUtil.EXPECT().TimeNow().Return(&testCurTime)
@@ -92,7 +105,11 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.responseNumbers, res) {
+			if len(tt.responseNumbers) == 0 {
+				if !reflect.DeepEqual([]*number.Number{}, res) {
+					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", []*number.Number{}, res)
+				}
+			} else if !reflect.DeepEqual(tt.responseNumbers, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseNumbers, res)
 			}
 		})
@@ -161,7 +178,10 @@ func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
+			gomock.InOrder(
+				mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil),
+				mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil),
+			)
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockUtil.EXPECT().TimeNow().Return(&testCurTime)
@@ -244,7 +264,10 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
+			gomock.InOrder(
+				mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil),
+				mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil),
+			)
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockUtil.EXPECT().TimeNow().Return(&testCurTime)
@@ -262,5 +285,239 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseNumbers, res)
 			}
 		})
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByTMRenew_insufficientBalance(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := numberHandler{
+		utilHandler:         mockUtil,
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		notifyHandler:       mockNotify,
+		numberHandlerTelnyx: mockTelnyx,
+	}
+
+	ctx := context.Background()
+	tmRenew := "2021-02-26T18:26:49.000Z"
+
+	n := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("aaa00000-0000-0000-0000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000001"),
+		},
+	}
+	deletedN := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         n.ID,
+			CustomerID: n.CustomerID,
+		},
+		Status: number.StatusDeleted,
+	}
+
+	// First query returns one number
+	firstQuery := mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{n}, nil)
+
+	// Balance check returns invalid
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, nil)
+
+	// Delete chain: Get -> provider release (ProviderNameNone = no-op) -> dbDelete -> Get -> PublishWebhookEvent
+	getForDelete := mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
+	mockDB.EXPECT().NumberDelete(ctx, n.ID).Return(nil)
+	mockDB.EXPECT().NumberGet(ctx, n.ID).Return(deletedN, nil).After(getForDelete)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, n.CustomerID, number.EventTypeNumberDeleted, deletedN)
+
+	// Pagination: second query returns empty
+	mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil).After(firstQuery)
+
+	res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	expected := []*number.Number{}
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("Expected empty result, got: %v", res)
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByTMRenew_balanceCheckError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := numberHandler{
+		utilHandler:         mockUtil,
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		notifyHandler:       mockNotify,
+		numberHandlerTelnyx: mockTelnyx,
+	}
+
+	ctx := context.Background()
+	tmRenew := "2021-02-26T18:26:49.000Z"
+
+	n := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("bbb00000-0000-0000-0000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000001"),
+		},
+	}
+
+	mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{n}, nil)
+
+	// Balance check returns error — number skipped, processed stays 0, loop breaks
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, fmt.Errorf("billing service unavailable"))
+
+	res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	expected := []*number.Number{}
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("Expected empty result, got: %v", res)
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByTMRenew_dbUpdateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := numberHandler{
+		utilHandler:         mockUtil,
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		notifyHandler:       mockNotify,
+		numberHandlerTelnyx: mockTelnyx,
+	}
+
+	ctx := context.Background()
+	tmRenew := "2021-02-26T18:26:49.000Z"
+
+	n := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("ddd00000-0000-0000-0000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000001"),
+		},
+	}
+
+	mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{n}, nil)
+
+	// Balance is valid
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+	mockUtil.EXPECT().TimeNow().Return(&testCurTime)
+
+	// DB update fails — processed stays 0, loop breaks
+	mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any()).Return(fmt.Errorf("database error"))
+
+	res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	expected := []*number.Number{}
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("Expected empty result, got: %v", res)
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByTMRenew_mixed(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := numberHandler{
+		utilHandler:         mockUtil,
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		notifyHandler:       mockNotify,
+		numberHandlerTelnyx: mockTelnyx,
+	}
+
+	ctx := context.Background()
+	tmRenew := "2021-02-26T18:26:49.000Z"
+
+	n1 := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("eee00000-0000-0000-0000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000001"),
+		},
+	}
+	n2 := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("eee00000-0000-0000-0000-000000000002"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000002"),
+		},
+	}
+	n2Deleted := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         n2.ID,
+			CustomerID: n2.CustomerID,
+		},
+		Status: number.StatusDeleted,
+	}
+	n3 := &number.Number{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("eee00000-0000-0000-0000-000000000003"),
+			CustomerID: uuid.FromStringOrNil("ccc00000-0000-0000-0000-000000000003"),
+		},
+	}
+
+	// First query returns 3 numbers
+	firstQuery := mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{n1, n2, n3}, nil)
+
+	// n1: valid balance -> renewed
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n1.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+	mockUtil.EXPECT().TimeNow().Return(&testCurTime)
+	mockDB.EXPECT().NumberUpdate(ctx, n1.ID, gomock.Any()).Return(nil)
+	mockDB.EXPECT().NumberGet(ctx, n1.ID).Return(n1, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n1)
+
+	// n2: insufficient balance -> deleted
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n2.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, nil)
+	getN2ForDelete := mockDB.EXPECT().NumberGet(ctx, n2.ID).Return(n2, nil)
+	mockDB.EXPECT().NumberDelete(ctx, n2.ID).Return(nil)
+	mockDB.EXPECT().NumberGet(ctx, n2.ID).Return(n2Deleted, nil).After(getN2ForDelete)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, n2.CustomerID, number.EventTypeNumberDeleted, n2Deleted)
+
+	// n3: valid balance -> renewed
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, n3.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+	mockUtil.EXPECT().TimeNow().Return(&testCurTime)
+	mockDB.EXPECT().NumberUpdate(ctx, n3.ID, gomock.Any()).Return(nil)
+	mockDB.EXPECT().NumberGet(ctx, n3.ID).Return(n3, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n3)
+
+	// Pagination: second query returns empty
+	mockDB.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return([]*number.Number{}, nil).After(firstQuery)
+
+	res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	expected := []*number.Number{n1, n3}
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("Wrong result.\nexpect: %v\ngot: %v", expected, res)
 	}
 }
