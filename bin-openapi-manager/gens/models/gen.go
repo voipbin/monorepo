@@ -3223,6 +3223,16 @@ type RegistrarManagerTrunk struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// RequestBodyAuthUnregisterPOST Request body for POST /auth/unregister (self-service account deletion).
+// Exactly one of `password` or `confirmation_phrase` must be provided.
+type RequestBodyAuthUnregisterPOST struct {
+	// ConfirmationPhrase Must be exactly "DELETE". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.
+	ConfirmationPhrase *string `json:"confirmation_phrase,omitempty"`
+
+	// Password Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`.
+	Password *string `json:"password,omitempty"`
+}
+
 // RouteManagerProvider defines model for RouteManagerProvider.
 type RouteManagerProvider struct {
 	// Detail The details about the provider.
@@ -3937,6 +3947,18 @@ type PostAisummariesJSONBody struct {
 
 	// ReferenceType Type of reference for the AI summary.
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
+// DeleteAuthUnregisterParams defines parameters for DeleteAuthUnregister.
+type DeleteAuthUnregisterParams struct {
+	// Accesskey API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication.
+	Accesskey *string `form:"accesskey,omitempty" json:"accesskey,omitempty"`
+}
+
+// PostAuthUnregisterParams defines parameters for PostAuthUnregister.
+type PostAuthUnregisterParams struct {
+	// Accesskey API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication.
+	Accesskey *string `form:"accesskey,omitempty" json:"accesskey,omitempty"`
 }
 
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
@@ -5530,6 +5552,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
+type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST
 
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody

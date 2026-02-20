@@ -3232,6 +3232,16 @@ type RegistrarManagerTrunk struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// RequestBodyAuthUnregisterPOST Request body for POST /auth/unregister (self-service account deletion).
+// Exactly one of `password` or `confirmation_phrase` must be provided.
+type RequestBodyAuthUnregisterPOST struct {
+	// ConfirmationPhrase Must be exactly "DELETE". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.
+	ConfirmationPhrase *string `json:"confirmation_phrase,omitempty"`
+
+	// Password Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`.
+	Password *string `json:"password,omitempty"`
+}
+
 // RouteManagerProvider defines model for RouteManagerProvider.
 type RouteManagerProvider struct {
 	// Detail The details about the provider.
@@ -3946,6 +3956,18 @@ type PostAisummariesJSONBody struct {
 
 	// ReferenceType Type of reference for the AI summary.
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
+// DeleteAuthUnregisterParams defines parameters for DeleteAuthUnregister.
+type DeleteAuthUnregisterParams struct {
+	// Accesskey API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication.
+	Accesskey *string `form:"accesskey,omitempty" json:"accesskey,omitempty"`
+}
+
+// PostAuthUnregisterParams defines parameters for PostAuthUnregister.
+type PostAuthUnregisterParams struct {
+	// Accesskey API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication.
+	Accesskey *string `form:"accesskey,omitempty" json:"accesskey,omitempty"`
 }
 
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
@@ -5540,6 +5562,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
+type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST
+
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody
 
@@ -5935,6 +5960,12 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Cancel account deletion (self-service recover).
+	// (DELETE /auth/unregister)
+	DeleteAuthUnregister(c *gin.Context, params DeleteAuthUnregisterParams)
+	// Schedule account deletion (self-service freeze).
+	// (POST /auth/unregister)
+	PostAuthUnregister(c *gin.Context, params PostAuthUnregisterParams)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
@@ -7621,6 +7652,58 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// DeleteAuthUnregister operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAuthUnregister(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteAuthUnregisterParams
+
+	// ------------- Optional query parameter "accesskey" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "accesskey", c.Request.URL.Query(), &params.Accesskey)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter accesskey: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteAuthUnregister(c, params)
+}
+
+// PostAuthUnregister operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthUnregister(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostAuthUnregisterParams
+
+	// ------------- Optional query parameter "accesskey" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "accesskey", c.Request.URL.Query(), &params.Accesskey)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter accesskey: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthUnregister(c, params)
 }
 
 // GetAvailableNumbers operation middleware
@@ -14059,6 +14142,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.DELETE(options.BaseURL+"/auth/unregister", wrapper.DeleteAuthUnregister)
+	router.POST(options.BaseURL+"/auth/unregister", wrapper.PostAuthUnregister)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
 	router.PUT(options.BaseURL+"/billing_accounts/:id", wrapper.PutBillingAccountsId)
@@ -15033,6 +15118,73 @@ func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w 
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAuthUnregisterRequestObject struct {
+	Params DeleteAuthUnregisterParams
+}
+
+type DeleteAuthUnregisterResponseObject interface {
+	VisitDeleteAuthUnregisterResponse(w http.ResponseWriter) error
+}
+
+type DeleteAuthUnregister200JSONResponse CustomerManagerCustomer
+
+func (response DeleteAuthUnregister200JSONResponse) VisitDeleteAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAuthUnregister400Response struct {
+}
+
+func (response DeleteAuthUnregister400Response) VisitDeleteAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type DeleteAuthUnregister401Response struct {
+}
+
+func (response DeleteAuthUnregister401Response) VisitDeleteAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostAuthUnregisterRequestObject struct {
+	Params PostAuthUnregisterParams
+	Body   *PostAuthUnregisterJSONRequestBody
+}
+
+type PostAuthUnregisterResponseObject interface {
+	VisitPostAuthUnregisterResponse(w http.ResponseWriter) error
+}
+
+type PostAuthUnregister200JSONResponse CustomerManagerCustomer
+
+func (response PostAuthUnregister200JSONResponse) VisitPostAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthUnregister400Response struct {
+}
+
+func (response PostAuthUnregister400Response) VisitPostAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthUnregister401Response struct {
+}
+
+func (response PostAuthUnregister401Response) VisitPostAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
 }
 
 type GetAvailableNumbersRequestObject struct {
@@ -20058,6 +20210,12 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Cancel account deletion (self-service recover).
+	// (DELETE /auth/unregister)
+	DeleteAuthUnregister(ctx context.Context, request DeleteAuthUnregisterRequestObject) (DeleteAuthUnregisterResponseObject, error)
+	// Schedule account deletion (self-service freeze).
+	// (POST /auth/unregister)
+	PostAuthUnregister(ctx context.Context, request PostAuthUnregisterRequestObject) (PostAuthUnregisterResponseObject, error)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
@@ -21935,6 +22093,68 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteAuthUnregister operation middleware
+func (sh *strictHandler) DeleteAuthUnregister(ctx *gin.Context, params DeleteAuthUnregisterParams) {
+	var request DeleteAuthUnregisterRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteAuthUnregister(ctx, request.(DeleteAuthUnregisterRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteAuthUnregister")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteAuthUnregisterResponseObject); ok {
+		if err := validResponse.VisitDeleteAuthUnregisterResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthUnregister operation middleware
+func (sh *strictHandler) PostAuthUnregister(ctx *gin.Context, params PostAuthUnregisterParams) {
+	var request PostAuthUnregisterRequestObject
+
+	request.Params = params
+
+	var body PostAuthUnregisterJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthUnregister(ctx, request.(PostAuthUnregisterRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthUnregister")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthUnregisterResponseObject); ok {
+		if err := validResponse.VisitPostAuthUnregisterResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

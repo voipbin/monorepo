@@ -1,0 +1,68 @@
+post:
+  summary: Schedule account deletion (self-service freeze).
+  description: |
+    Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.
+    Active calls are terminated and new operations are blocked.
+    The customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.
+
+    Exactly one of `password` or `confirmation_phrase` must be provided:
+    - Password-based accounts: provide `password` for re-authentication.
+    - SSO or API-key authenticated requests: provide `confirmation_phrase` set to `"DELETE"`.
+  tags:
+    - Auth
+  parameters:
+    - name: accesskey
+      in: query
+      required: false
+      schema:
+        type: string
+      description: "API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication."
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthUnregisterPOST'
+  responses:
+    '200':
+      description: Account frozen successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'
+    '400':
+      description: |
+        Bad request. Possible causes:
+        - Neither `password` nor `confirmation_phrase` was provided.
+        - Both `password` and `confirmation_phrase` were provided (exactly one required).
+        - Password validation failed.
+        - `confirmation_phrase` is not `"DELETE"`.
+    '401':
+      description: Authentication failed. Invalid or missing access key / bearer token.
+
+delete:
+  summary: Cancel account deletion (self-service recover).
+  description: |
+    Cancels a scheduled deletion and restores the authenticated customer's account to active state.
+    Only works during the 30-day grace period while the account is in 'frozen' status.
+    No request body required.
+  tags:
+    - Auth
+  parameters:
+    - name: accesskey
+      in: query
+      required: false
+      schema:
+        type: string
+      description: "API access key token. Returned from the `GET /accesskeys` response. Alternative to Bearer token authentication."
+  responses:
+    '200':
+      description: Account recovered successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'
+    '400':
+      description: Recovery failed. Account may not be in frozen state.
+    '401':
+      description: Authentication failed. Invalid or missing access key / bearer token.

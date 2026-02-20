@@ -5793,6 +5793,22 @@ components:
             $ref: '#/components/schemas/RagManagerSource'
 
 
+    RequestBodyAuthUnregisterPOST:
+      type: object
+      description: |
+        Request body for POST /auth/unregister (self-service account deletion).
+        Exactly one of `password` or `confirmation_phrase` must be provided.
+      properties:
+        password:
+          type: string
+          description: "Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`."
+          example: "mySecurePassword123"
+        confirmation_phrase:
+          type: string
+          description: "Must be exactly \"DELETE\". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`."
+          example: "DELETE"
+
+
 ###########################################################################################################################
 # Path
 ###########################################################################################################################
@@ -5843,6 +5859,9 @@ paths:
     $ref: './paths/aisummaries/id.yaml'
   /aisummaries:
     $ref: './paths/aisummaries/main.yaml'
+
+  /auth/unregister:
+    $ref: './paths/auth/unregister.yaml'
 
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'
