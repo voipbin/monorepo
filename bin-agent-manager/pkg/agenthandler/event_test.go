@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	bmaccount "monorepo/bin-billing-manager/models/account"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -273,10 +272,10 @@ func Test_EventCustomerCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// agent Create expectations
-			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customer.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
-			mockUtil.EXPECT().EmailIsValid(tt.customer.Email).Return(true)
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
+			// idempotency check - agent does not exist yet
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf("not found"))
+
+			// agent dbCreate expectations
 			mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return(tt.responseHash, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
@@ -330,10 +329,10 @@ func Test_EventCustomerCreated_Headless(t *testing.T) {
 		Username: "headless@voipbin.net",
 	}
 
-	// agent Create expectations
-	mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, cu.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
-	mockUtil.EXPECT().EmailIsValid(cu.Email).Return(true)
-	mockDB.EXPECT().AgentGetByUsername(ctx, cu.Email).Return(nil, fmt.Errorf(""))
+	// idempotency check - agent does not exist yet
+	mockDB.EXPECT().AgentGetByUsername(ctx, cu.Email).Return(nil, fmt.Errorf("not found"))
+
+	// agent dbCreate expectations
 	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
 	mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
@@ -381,10 +380,10 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 		Username: "test@voipbin.net",
 	}
 
-	// agent Create expectations
-	mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customer.ID, bmaccount.ResourceTypeAgent).Return(true, nil)
-	mockUtil.EXPECT().EmailIsValid(customer.Email).Return(true)
-	mockDB.EXPECT().AgentGetByUsername(ctx, customer.Email).Return(nil, fmt.Errorf(""))
+	// idempotency check - agent does not exist yet
+	mockDB.EXPECT().AgentGetByUsername(ctx, customer.Email).Return(nil, fmt.Errorf("not found"))
+
+	// agent dbCreate expectations
 	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
 	mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
@@ -396,6 +395,42 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 
 	// EventCustomerCreated should still succeed even though PasswordForgot failed
 	if err := h.EventCustomerCreated(ctx, customer, false); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EventCustomerCreated_AlreadyExists(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &agentHandler{
+		db:          mockDB,
+		utilHandler: mockUtil,
+	}
+	ctx := context.Background()
+
+	cu := &cmcustomer.Customer{
+		ID:    uuid.FromStringOrNil("9c0ea002-c8e4-11ef-bfbd-3316b71b50ac"),
+		Email: "test@voipbin.net",
+	}
+
+	existingAgent := &agent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+		},
+		Username: "test@voipbin.net",
+	}
+
+	// idempotency check - agent already exists
+	mockDB.EXPECT().AgentGetByUsername(ctx, cu.Email).Return(existingAgent, nil)
+
+	// no dbCreate or PasswordForgot calls expected
+
+	if err := h.EventCustomerCreated(ctx, cu, false); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
