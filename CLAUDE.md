@@ -458,6 +458,37 @@ log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch
 - Include the key identifier in the message for quick scanning
 - Add logs after EVERY successful data retrieval, not just errors
 
+### WebhookMessage Pattern for External API Responses (MANDATORY)
+
+**CRITICAL: All external-facing API responses MUST use the `WebhookMessage` pattern. Never return raw internal model structs directly to external clients.**
+
+Internal model structs (e.g., `Speaking`, `Call`, `Recording`) may contain infrastructure details, internal routing fields, or implementation-specific data that must not be exposed. The `WebhookMessage` struct serves as the external-facing representation.
+
+**Pattern:**
+1. Define `WebhookMessage` in `models/<entity>/webhook.go` — includes only fields safe for external clients
+2. Add `ConvertWebhookMessage()` method on the internal struct
+3. In `bin-api-manager/pkg/servicehandler/`, call `.ConvertWebhookMessage()` before returning to the HTTP layer
+4. The private helper (e.g., `speakingGet()`) returns the internal struct for internal use (routing, permission checks)
+5. The public method (e.g., `SpeakingGet()`) returns `*WebhookMessage` for the API response
+
+**Example:**
+```go
+// Private — returns internal struct with all fields (e.g., PodID for routing)
+func (h *serviceHandler) speakingGet(ctx context.Context, id uuid.UUID) (*tmspeaking.Speaking, error) { ... }
+
+// Public — returns WebhookMessage without internal fields
+func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*tmspeaking.WebhookMessage, error) {
+    tmp, err := h.speakingGet(ctx, id)
+    ...
+    return tmp.ConvertWebhookMessage(), nil
+}
+```
+
+**When adding a new API resource:**
+- Create `webhook.go` alongside the model definition
+- Omit any fields that are infrastructure-specific or internal-only
+- Update the OpenAPI schema to match `WebhookMessage` fields (not the internal struct)
+
 ### Common Gotchas
 
 #### Updating Shared Library Function Signatures
