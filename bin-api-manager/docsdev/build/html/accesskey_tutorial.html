@@ -217,13 +217,19 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">token</span></code> field is only returned in this creation response. <strong>Store it securely and immediately.</strong> You will not be able to retrieve the full token again. If the token is lost, delete the key via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/accesskeys/{id}</span></code> and create a new one. Use <code class="docutils literal notranslate"><span class="pre">token_prefix</span></code> to identify which key is which in subsequent requests.</p>
 </div>
 </li>
 <li><p><strong>Get a List of Accesskeys</strong></p>
@@ -239,11 +245,11 @@
             <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
             <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+            <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xK&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="n">null</span>
@@ -262,11 +268,11 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3yTqk5F4ABCD2xy9&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-12-01 10:15:30.123456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xK&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
