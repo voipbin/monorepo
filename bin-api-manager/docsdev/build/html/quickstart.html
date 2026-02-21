@@ -189,9 +189,9 @@
 <p>There are two ways to get started with VoIPBIN:</p>
 <ul class="simple">
 <li><p><strong>Try the Demo</strong> — Click the <strong>Try Demo Account</strong> button at <a class="reference external" href="https://admin.voipbin.net">admin.voipbin.net</a> to explore VoIPBIN instantly. No setup or sign-up needed.</p></li>
-<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBIN platform on your local machine using Docker. See the <a class="reference internal" href="#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
+<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBIN platform on your local machine using Docker. See the <a class="reference internal" href="quickstart_sandbox.html#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
 </ul>
-<p>For production use, you can <a class="reference internal" href="#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
+<p>For production use, you can <a class="reference internal" href="quickstart_signup.html#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
 <p>This quickstart walks you through three progressive scenarios:</p>
 <ol class="arabic simple">
 <li><p><strong>Your First Call</strong> — Sign up, authenticate, and make an outbound voice call with text-to-speech.</p></li>
@@ -352,7 +352,7 @@ $ sudo ./voipbin
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
 </section>
 <section id="id2">
 <h3>Troubleshooting<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
@@ -464,7 +464,7 @@ $ sudo ./voipbin
 <span id="quickstart-call"></span><h2>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h2>
 <p>Make an outbound voice call using the VoIPBIN API. You can either define actions inline or reference an existing flow.</p>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
 <li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
@@ -739,7 +739,7 @@ $ sudo ./voipbin
 <li><p>Real-time text-to-speech injected into the call via the Speaking API</p></li>
 </ul>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or from your admin console profile.</p></li>
 <li><p>Linphone softphone installed on your computer or mobile device. Download from <a class="reference external" href="https://www.linphone.org/">linphone.org</a>.</p></li>

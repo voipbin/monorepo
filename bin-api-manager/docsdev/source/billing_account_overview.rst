@@ -123,6 +123,8 @@ Tokens are replenished at the scheduled top-up date. The current token balance i
 - The current plan tier is returned in the ``plan_type`` field of the billing account.
 
 
+.. _billing_account_rate_structure:
+
 Rate Structure
 --------------
 VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) and per-unit billing for other services.
