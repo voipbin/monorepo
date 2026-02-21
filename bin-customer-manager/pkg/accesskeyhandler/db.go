@@ -58,8 +58,10 @@ func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "GetByToken")
 
+	tokenHash := h.utilHandler.HashSHA256Hex(token)
+
 	filter := map[accesskey.Field]any{
-		accesskey.FieldToken: token,
+		accesskey.FieldTokenHash: tokenHash,
 	}
 
 	tmp, err := h.db.AccesskeyList(ctx, 100, "", filter)
@@ -91,9 +93,18 @@ func (h *accesskeyHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	tmExpire := h.utilHandler.TimeNowAdd(expire)
 
-	token, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
+	randomPart, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
 	if err != nil {
 		log.Errorf("Could not generate the token. err: %v", err)
+		return nil, fmt.Errorf("could not generate token: %w", err)
+	}
+	token := defaultTokenPrefix + randomPart
+
+	tokenHash := h.utilHandler.HashSHA256Hex(token)
+
+	tokenPrefix := token
+	if len(tokenPrefix) > defaultTokenPrefixLen {
+		tokenPrefix = tokenPrefix[:defaultTokenPrefixLen]
 	}
 
 	a := &accesskey.Accesskey{
@@ -103,21 +114,25 @@ func (h *accesskeyHandler) Create(
 		Name:   name,
 		Detail: detail,
 
-		Token: token,
+		TokenHash:   tokenHash,
+		TokenPrefix: tokenPrefix,
 
 		TMExpire: tmExpire,
 	}
 
 	if err := h.db.AccesskeyCreate(ctx, a); err != nil {
-		log.Errorf("Could not create a new customer. err: %v", err)
+		log.Errorf("Could not create a new accesskey. err: %v", err)
 		return nil, err
 	}
 
 	res, err := h.db.AccesskeyGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get created customer info. err: %v", err)
+		log.Errorf("Could not get created accesskey info. err: %v", err)
 		return nil, err
 	}
+
+	// Set raw token for one-time return
+	res.RawToken = token
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, res)

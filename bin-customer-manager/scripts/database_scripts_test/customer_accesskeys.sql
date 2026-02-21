@@ -5,7 +5,8 @@ create table customer_accesskeys (
     name varchar(255),
     detail text,
 
-    token varchar(1023),
+    token_hash varchar(64),
+    token_prefix varchar(16),
 
     tm_expire datetime(6), -- Expiry timestamp
 
@@ -17,4 +18,4 @@ create table customer_accesskeys (
 );
 
 create index idx_customer_accesskeys_customer_id on customer_accesskeys(customer_id);
-create index idx_customer_accesskeys_token on customer_accesskeys(token);
+create index idx_customer_accesskeys_token_hash on customer_accesskeys(token_hash);

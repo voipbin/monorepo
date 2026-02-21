@@ -10,7 +10,8 @@ const (
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
 
-	FieldToken Field = "token"
+	FieldTokenHash   Field = "token_hash"
+	FieldTokenPrefix Field = "token_prefix"
 
 	FieldTMExpire Field = "tm_expire"
 

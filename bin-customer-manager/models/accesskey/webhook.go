@@ -15,7 +15,8 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	Token string `json:"token"`
+	Token       string `json:"token,omitempty"`
+	TokenPrefix string `json:"token_prefix,omitempty"`
 
 	TMExpire *time.Time `json:"tm_expire"`
 
@@ -33,7 +34,8 @@ func (h *Accesskey) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Detail: h.Detail,
 
-		Token: h.Token,
+		Token:       h.RawToken,
+		TokenPrefix: h.TokenPrefix,
 
 		TMExpire: h.TMExpire,
 

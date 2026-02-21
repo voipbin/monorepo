@@ -25,7 +25,19 @@ func TestNewAccesskeyHandler(t *testing.T) {
 }
 
 func TestDefaultLenToken(t *testing.T) {
-	if defaultLenToken != 16 {
-		t.Errorf("defaultLenToken = %d, expected 16", defaultLenToken)
+	if defaultLenToken != 32 {
+		t.Errorf("defaultLenToken = %d, expected 32", defaultLenToken)
+	}
+}
+
+func TestDefaultTokenPrefix(t *testing.T) {
+	if defaultTokenPrefix != "vb_" {
+		t.Errorf("defaultTokenPrefix = %s, expected vb_", defaultTokenPrefix)
+	}
+}
+
+func TestDefaultTokenPrefixLen(t *testing.T) {
+	if defaultTokenPrefixLen != 11 {
+		t.Errorf("defaultTokenPrefixLen = %d, expected 11", defaultTokenPrefixLen)
 	}
 }

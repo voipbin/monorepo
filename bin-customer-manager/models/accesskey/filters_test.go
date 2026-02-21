@@ -14,7 +14,7 @@ func TestFieldStruct(t *testing.T) {
 		ID:         id,
 		CustomerID: customerID,
 		Name:       "test-name",
-		Token:      "test-token",
+		TokenHash:  "test-token-hash",
 		Deleted:    false,
 	}
 
@@ -27,8 +27,8 @@ func TestFieldStruct(t *testing.T) {
 	if fs.Name != "test-name" {
 		t.Errorf("FieldStruct.Name = %v, expected %v", fs.Name, "test-name")
 	}
-	if fs.Token != "test-token" {
-		t.Errorf("FieldStruct.Token = %v, expected %v", fs.Token, "test-token")
+	if fs.TokenHash != "test-token-hash" {
+		t.Errorf("FieldStruct.TokenHash = %v, expected %v", fs.TokenHash, "test-token-hash")
 	}
 	if fs.Deleted != false {
 		t.Errorf("FieldStruct.Deleted = %v, expected %v", fs.Deleted, false)

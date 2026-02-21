@@ -15,7 +15,9 @@ import (
 )
 
 const (
-	defaultLenToken = 16
+	defaultLenToken       = 32
+	defaultTokenPrefix    = "vb_"
+	defaultTokenPrefixLen = 11
 )
 
 // AccesskeyHandler interface

@@ -8,6 +8,6 @@ type FieldStruct struct {
 	ID         uuid.UUID `filter:"id"`
 	CustomerID uuid.UUID `filter:"customer_id"`
 	Name       string    `filter:"name"`
-	Token      string    `filter:"token"`
+	TokenHash  string    `filter:"token_hash"`
 	Deleted    bool      `filter:"deleted"`
 }

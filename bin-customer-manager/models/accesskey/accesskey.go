@@ -14,7 +14,12 @@ type Accesskey struct {
 	Name   string `json:"name,omitempty" db:"name"`
 	Detail string `json:"detail,omitempty" db:"detail"`
 
-	Token string `json:"token" db:"token"`
+	TokenHash   string `json:"-" db:"token_hash"`
+	TokenPrefix string `json:"token_prefix" db:"token_prefix"`
+
+	// RawToken holds the plain-text token temporarily during creation.
+	// NOT stored in the database. Travels via RPC for one-time return to API.
+	RawToken string `json:"raw_token,omitempty" db:"-"`
 
 	TMExpire *time.Time `json:"tm_expire" db:"tm_expire"`
 
