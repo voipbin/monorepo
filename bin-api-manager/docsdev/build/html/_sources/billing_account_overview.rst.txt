@@ -95,7 +95,7 @@ Each billing account is assigned a plan tier that determines both resource creat
 +----------------------+---------+---------+--------------+-----------+
 | Plan                 | Free    | Basic   | Professional | Unlimited |
 +======================+=========+=========+==============+===========+
-| Tokens per month     |   1,000 |  10,000 |      100,000 | unlimited |
+| Tokens per month     |     100 |   1,000 |       10,000 | unlimited |
 +----------------------+---------+---------+--------------+-----------+
 
 Tokens are replenished at the scheduled top-up date. The current token balance is available in the ``balance_token`` field of the account.
@@ -212,9 +212,9 @@ Each transaction is recorded in the billing ledger with the token and credit amo
     | Transaction type: top_up                    |
     | Reference type: monthly_allowance           |
     | Ledger entry:                               |
-    |   amount_token: +1000                       |
+    |   amount_token: +100                        |
     |   amount_credit: 0                          |
-    |   balance_token_snapshot: 1000              |
+    |   balance_token_snapshot: 100               |
     +--------------------------------------------+
 
 Note: Rates are subject to change. Check the API for current pricing.
@@ -239,7 +239,7 @@ Check and manage your account balance.
         "customer_id": "customer-uuid-456",
         "plan_type": "free",
         "balance_credit": 150500000,
-        "balance_token": 650,
+        "balance_token": 70,
         "tm_last_topup": "2024-01-01T00:00:00Z",
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
@@ -285,7 +285,7 @@ Account balance changes through specific operations. Token balances are replenis
              v                         v
     +-------------------+     +-------------------+
     |  balance_credit   |     |  balance_token    |
-    |  150,500,000      |     |    1,000          |
+    |  150,500,000      |     |      100          |
     +--------+----------+     +--------+----------+
              |                         |
              | PSTN calls,             | VN calls,
@@ -337,28 +337,23 @@ Track token consumption via the billing ledger.
 
 ::
 
-    Monthly Usage (Free Plan, 1000 tokens):
+    Monthly Usage (Free Plan, 100 tokens):
     +--------------------------------------------+
     | Week 1:                                    |
-    | - 50 VN calls (avg 3 min) = 150 tokens     |
-    | - 20 SMS = 200 tokens                      |
-    | balance_token: 650                         |
+    | - 10 VN calls (avg 3 min) = 30 tokens      |
+    | - 5 SMS = 50 tokens                        |
+    | balance_token: 20                          |
     |                                            |
     | Week 2:                                    |
-    | - 40 VN calls (avg 2 min) = 80 tokens      |
-    | - 30 SMS = 300 tokens                      |
-    | balance_token: 270                         |
+    | - 5 VN calls (avg 2 min) = 10 tokens       |
+    | - 1 SMS = 10 tokens                        |
+    | balance_token: 0                           |
     |                                            |
-    | Week 3:                                    |
-    | - 30 VN calls (avg 3 min) = 90 tokens      |
-    | - 15 SMS = 150 tokens                      |
-    | balance_token: 30                          |
-    |                                            |
-    | Week 4 (tokens nearly exhausted):          |
-    | - 10 VN calls (avg 3 min) = 30 tokens      |
-    |   (uses last tokens)                       |
-    | - 5 SMS = overflow to credit               |
-    |   5 x 8,000 = 40,000 micros credit charge  |
+    | Week 3 (tokens exhausted):                 |
+    | - 5 VN calls (avg 3 min) = overflow        |
+    |   5 x 3 x 1,000 = 15,000 micros credit    |
+    | - 2 SMS = overflow to credit               |
+    |   2 x 8,000 = 16,000 micros credit charge  |
     +--------------------------------------------+
 
 **Scenario 2: Mixed Token and Credit Usage**
@@ -367,11 +362,11 @@ Plan for costs across token-eligible and credit-only services.
 
 ::
 
-    Campaign: Customer Outreach
+    Campaign: Customer Outreach (Basic plan, 1000 tokens)
     +--------------------------------------------+
     | VN Calls: 200 calls (avg 3 min)            |
     | - Tokens needed: 200 x 3 = 600             |
-    | - If 400 tokens available:                 |
+    | - If 400 tokens remaining:                 |
     |   - 400 tokens consumed                    |
     |   - 200 overflow x 3 min x 1,000 micros    |
     |     = 600,000 micros ($0.60)               |

@@ -14,7 +14,7 @@ Before managing billing accounts, you need:
 
 .. note:: **AI Implementation Hint**
 
-   The ``balance`` field in billing account responses is a float representing USD (e.g., ``69.77263`` = $69.77). When estimating costs, multiply the per-unit rate by billable units. Call durations are ceiling-rounded to the next whole minute for billing purposes (e.g., a 2 minute 15 second call is billed as 3 minutes).
+   The ``balance_credit`` field is in micros (int64), not dollars. To convert: divide by 1,000,000 for USD (e.g., ``69772630`` micros = $69.77). The ``balance_token`` field is a plain integer representing remaining tokens. When estimating costs, multiply the per-unit rate in micros by billable units. Call durations are ceiling-rounded to the next whole minute for billing purposes (e.g., a 2 minute 15 second call is billed as 3 minutes).
 
 Check Account Balance
 ----------------------
@@ -33,15 +33,17 @@ Check your billing account balance before initiating calls or sending messages t
         "name": "Primary Account",
         "detail": "Main billing account",
         "plan_type": "free",
-        "balance": 69.77263,
+        "balance_credit": 69772630,
+        "balance_token": 70,
         "payment_type": "",
         "payment_method": "",
-        "tm_create": "2013-06-17 00:00:00.000000",
-        "tm_update": "2023-06-30 19:18:08.466742",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_last_topup": "2024-01-01T00:00:00Z",
+        "tm_next_topup": "2024-02-01T00:00:00Z",
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:30:00Z"
     }
 
-The ``balance`` field shows the remaining credit balance in USD.
+The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_token`` field is the current token count.
 
 **List All Billing Accounts:**
 
@@ -57,12 +59,14 @@ The ``balance`` field shows the remaining credit balance in USD.
                 "name": "Primary Account",
                 "detail": "Main billing account",
                 "plan_type": "free",
-                "balance": 69.77263,
+                "balance_credit": 69772630,
+                "balance_token": 70,
                 "payment_type": "",
                 "payment_method": "",
-                "tm_create": "2013-06-17 00:00:00.000000",
-                "tm_update": "2023-06-30 19:18:08.466742",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_last_topup": "2024-01-01T00:00:00Z",
+                "tm_next_topup": "2024-02-01T00:00:00Z",
+                "tm_create": "2024-01-01T00:00:00Z",
+                "tm_update": "2024-01-15T10:30:00Z"
             }
         ]
     }
@@ -88,12 +92,14 @@ Only users with admin permissions can add balance to accounts. This ensures acco
         "name": "Primary Account",
         "detail": "Main billing account",
         "plan_type": "free",
-        "balance": 169.77263,
+        "balance_credit": 169772630,
+        "balance_token": 70,
         "payment_type": "",
         "payment_method": "",
-        "tm_create": "2013-06-17 00:00:00.000000",
-        "tm_update": "2023-06-30 19:20:15.123456",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_last_topup": "2024-01-01T00:00:00Z",
+        "tm_next_topup": "2024-02-01T00:00:00Z",
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:30:00Z"
     }
 
 **Important:** This operation requires admin permissions. Regular users will receive a permission error.
@@ -167,26 +173,33 @@ Programmatically verify balance before initiating calls to ensure successful com
             params=params
         ).json()
 
-        current_balance = account['balance']
+        balance_credit = account['balance_credit']  # int64 micros
+        balance_token = account['balance_token']     # int64 token count
         duration = math.ceil(call_duration_minutes)  # ceiling-rounded
 
         if call_type == "vn":
-            # VN call: estimate credit cost for overflow scenario
-            estimated_cost = duration * 0.001
-            print(f"VN call cost (if tokens exhausted): {duration} min x $0.001 = ${estimated_cost:.4f}")
-            can_proceed = current_balance >= estimated_cost
+            # VN call: check tokens first, then credit for overflow
+            tokens_needed = duration * 1  # 1 token per minute
+            if balance_token >= tokens_needed:
+                print(f"VN call covered by tokens: {tokens_needed} tokens")
+                return True
+            # Tokens insufficient — estimate credit overflow
+            overflow_minutes = duration - balance_token
+            estimated_cost_micros = overflow_minutes * 1000  # 1,000 micros/min
+            print(f"VN call overflow: {overflow_minutes} min x 1,000 = {estimated_cost_micros} micros")
+            can_proceed = balance_credit >= estimated_cost_micros
 
         elif call_type == "pstn":
             # PSTN call: always credit
-            estimated_cost = duration * 0.006
-            print(f"PSTN call cost: {duration} min x $0.006 = ${estimated_cost:.4f}")
-            can_proceed = current_balance >= estimated_cost
+            estimated_cost_micros = duration * 6000  # 6,000 micros/min
+            print(f"PSTN call cost: {duration} min x 6,000 = {estimated_cost_micros} micros")
+            can_proceed = balance_credit >= estimated_cost_micros
 
         if not can_proceed:
-            print(f"Insufficient balance: ${current_balance:.2f}")
+            print(f"Insufficient credit: {balance_credit} micros (${balance_credit / 1_000_000:.2f})")
             return False
 
-        print(f"Balance OK: ${current_balance:.2f}")
+        print(f"Balance OK: {balance_credit} micros (${balance_credit / 1_000_000:.2f})")
         return True
 
     # Check for a 10 minute VN call
@@ -213,29 +226,36 @@ Programmatically verify balance before initiating calls to ensure successful com
             );
             const account = accountResponse.data;
 
-            const currentBalance = account.balance;
+            const balanceCredit = account.balance_credit;  // int64 micros
+            const balanceToken = account.balance_token;     // int64 token count
             const duration = Math.ceil(callDurationMinutes);  // ceiling-rounded
 
             let canProceed = false;
 
             if (callType === 'vn') {
-                // VN call: estimate credit cost for overflow scenario
-                const estimatedCost = duration * 0.001;
-                console.log(`VN call cost (if tokens exhausted): $${estimatedCost.toFixed(4)}`);
-                canProceed = currentBalance >= estimatedCost;
+                // VN call: check tokens first, then credit for overflow
+                const tokensNeeded = duration * 1;  // 1 token per minute
+                if (balanceToken >= tokensNeeded) {
+                    console.log(`VN call covered by tokens: ${tokensNeeded} tokens`);
+                    return true;
+                }
+                const overflowMinutes = duration - balanceToken;
+                const estimatedCostMicros = overflowMinutes * 1000;  // 1,000 micros/min
+                console.log(`VN call overflow: ${overflowMinutes} min x 1,000 = ${estimatedCostMicros} micros`);
+                canProceed = balanceCredit >= estimatedCostMicros;
             } else if (callType === 'pstn') {
                 // PSTN call: always credit
-                const estimatedCost = duration * 0.006;
-                console.log(`PSTN call cost: $${estimatedCost.toFixed(4)}`);
-                canProceed = currentBalance >= estimatedCost;
+                const estimatedCostMicros = duration * 6000;  // 6,000 micros/min
+                console.log(`PSTN call cost: ${duration} min x 6,000 = ${estimatedCostMicros} micros`);
+                canProceed = balanceCredit >= estimatedCostMicros;
             }
 
             if (!canProceed) {
-                console.log(`Insufficient balance: $${currentBalance.toFixed(2)}`);
+                console.log(`Insufficient credit: ${balanceCredit} micros ($${(balanceCredit / 1000000).toFixed(2)})`);
                 return null;
             }
 
-            console.log(`Balance OK: $${currentBalance.toFixed(2)}`);
+            console.log(`Balance OK: ${balanceCredit} micros ($${(balanceCredit / 1000000).toFixed(2)})`);
             return true;
 
         } catch (error) {
@@ -250,7 +270,7 @@ Programmatically verify balance before initiating calls to ensure successful com
 Monitor Balance with Webhooks
 ------------------------------
 
-Set up webhooks to receive notifications when balance changes or falls below a threshold.
+Set up webhooks to receive notifications when billing account state changes. You can implement client-side low balance alerts by checking the balance in the webhook payload.
 
 **Create Webhook for Billing Events:**
 
@@ -263,8 +283,7 @@ Set up webhooks to receive notifications when balance changes or falls below a t
             "uri": "https://your-server.com/webhook/billing",
             "method": "POST",
             "event_types": [
-                "billing_account.updated",
-                "billing_account.low_balance"
+                "account_updated"
             ]
         }'
 
@@ -275,15 +294,15 @@ Set up webhooks to receive notifications when balance changes or falls below a t
     POST https://your-server.com/webhook/billing
 
     {
-        "event_type": "billing_account.updated",
-        "timestamp": "2023-06-30T19:20:15.000000Z",
+        "event_type": "account_updated",
+        "timestamp": "2024-01-15T10:30:00Z",
         "data": {
             "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
             "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "name": "Primary Account",
-            "balance": 15.50,
-            "previous_balance": 25.50,
-            "change": -10.00
+            "plan_type": "free",
+            "balance_credit": 15500000,
+            "balance_token": 20
         }
     }
 
@@ -296,32 +315,36 @@ Set up webhooks to receive notifications when balance changes or falls below a t
 
     app = Flask(__name__)
 
-    LOW_BALANCE_THRESHOLD = 20.00
+    LOW_BALANCE_THRESHOLD_MICROS = 20_000_000  # $20.00 in micros
 
     @app.route('/webhook/billing', methods=['POST'])
     def billing_webhook():
         payload = request.get_json()
         event_type = payload.get('event_type')
 
-        if event_type == 'billing_account.updated':
+        if event_type == 'account_updated':
             data = payload['data']
-            balance = data['balance']
+            balance_credit = data['balance_credit']  # int64 micros
+            balance_token = data['balance_token']     # int64 token count
             account_id = data['id']
 
-            # Check if balance is low
-            if balance < LOW_BALANCE_THRESHOLD:
-                send_low_balance_alert(account_id, balance)
+            # Check if credit balance is low
+            if balance_credit < LOW_BALANCE_THRESHOLD_MICROS:
+                send_low_balance_alert(account_id, balance_credit, balance_token)
 
         return jsonify({'status': 'received'}), 200
 
-    def send_low_balance_alert(account_id, balance):
-        subject = f"Low Balance Alert: ${balance:.2f}"
+    def send_low_balance_alert(account_id, balance_credit, balance_token):
+        balance_usd = balance_credit / 1_000_000
+        threshold_usd = LOW_BALANCE_THRESHOLD_MICROS / 1_000_000
+        subject = f"Low Balance Alert: ${balance_usd:.2f}"
         body = f"""
         Your billing account credit balance is low.
 
         Account ID: {account_id}
-        Current Balance: ${balance:.2f}
-        Threshold: ${LOW_BALANCE_THRESHOLD:.2f}
+        Current Credit Balance: ${balance_usd:.2f} ({balance_credit} micros)
+        Current Token Balance: {balance_token}
+        Threshold: ${threshold_usd:.2f}
 
         Note: Token-eligible services (VN calls, SMS) will continue
         working as long as monthly tokens are available. Credit balance
@@ -337,22 +360,22 @@ Common Use Cases
 .. code::
 
     def estimate_campaign_cost(pstn_calls, pstn_avg_minutes, sms_count):
-        """Estimate campaign cost considering credits."""
+        """Estimate campaign credit cost in micros (1 USD = 1,000,000 micros)."""
         import math
 
-        # PSTN calls: always credit
+        # PSTN calls: always credit (6,000 micros/min outgoing)
         pstn_total_minutes = pstn_calls * math.ceil(pstn_avg_minutes)
-        pstn_credit = pstn_total_minutes * 0.006
+        pstn_credit_micros = pstn_total_minutes * 6000
 
-        # SMS: credit cost when tokens exhausted
-        sms_credit = sms_count * 0.008
+        # SMS: credit cost when tokens exhausted (8,000 micros/msg)
+        sms_credit_micros = sms_count * 8000
 
-        total_credit = pstn_credit + sms_credit
+        total_micros = pstn_credit_micros + sms_credit_micros
 
         return {
-            'pstn_credit': pstn_credit,
-            'sms_credit': sms_credit,
-            'total_credit_needed': total_credit
+            'pstn_credit_micros': pstn_credit_micros,
+            'sms_credit_micros': sms_credit_micros,
+            'total_credit_micros': total_micros
         }
 
     # Example: mixed campaign
@@ -360,36 +383,42 @@ Common Use Cases
         pstn_calls=50, pstn_avg_minutes=2,
         sms_count=200
     )
-    print(f"PSTN credit: ${costs['pstn_credit']:.2f}")
-    print(f"SMS credit: ${costs['sms_credit']:.2f}")
-    print(f"Total credit needed: ${costs['total_credit_needed']:.2f}")
+    print(f"PSTN credit: {costs['pstn_credit_micros']} micros (${costs['pstn_credit_micros'] / 1_000_000:.2f})")
+    print(f"SMS credit: {costs['sms_credit_micros']} micros (${costs['sms_credit_micros'] / 1_000_000:.2f})")
+    print(f"Total credit needed: {costs['total_credit_micros']} micros (${costs['total_credit_micros'] / 1_000_000:.2f})")
 
 **2. Plan Tier Comparison:**
 
 .. code::
 
     def recommend_plan(monthly_vn_minutes, monthly_sms):
-        """Recommend the most cost-effective plan tier."""
+        """Recommend the plan tier with the least overflow credit cost."""
         plans = {
-            'free':         {'tokens': 1000,   'cost': 0},
-            'basic':        {'tokens': 10000,  'cost': 0},   # plan cost TBD
-            'professional': {'tokens': 100000, 'cost': 0},   # plan cost TBD
+            'free':         {'tokens': 100},
+            'basic':        {'tokens': 1000},
+            'professional': {'tokens': 10000},
         }
 
         for plan_name, plan in plans.items():
-            vn_tokens = monthly_vn_minutes * 1
-            sms_tokens = monthly_sms * 10
+            vn_tokens = monthly_vn_minutes * 1   # 1 token per minute
+            sms_tokens = monthly_sms * 10         # 10 tokens per message
             total_tokens = vn_tokens + sms_tokens
 
             if total_tokens <= plan['tokens']:
-                overflow_credit = 0.00
+                overflow_micros = 0
             else:
-                overflow = total_tokens - plan['tokens']
-                # Simplified: assume overflow split proportionally
-                overflow_credit = overflow * 0.001  # approximate
+                # When tokens run out, remaining usage overflows to credit.
+                # Calculate worst-case: all overflow as VN minutes (1,000 micros/min)
+                # and SMS (8,000 micros/msg). Split proportionally.
+                overflow_tokens = total_tokens - plan['tokens']
+                vn_ratio = vn_tokens / total_tokens if total_tokens > 0 else 0
+                overflow_vn_micros = int(overflow_tokens * vn_ratio) * 1000
+                overflow_sms_micros = int(overflow_tokens * (1 - vn_ratio) / 10) * 8000
+                overflow_micros = overflow_vn_micros + overflow_sms_micros
 
             print(f"{plan_name}: {plan['tokens']} tokens, "
-                  f"need {total_tokens}, overflow credit: ${overflow_credit:.2f}")
+                  f"need {total_tokens}, overflow: {overflow_micros} micros "
+                  f"(${overflow_micros / 1_000_000:.2f})")
 
     recommend_plan(monthly_vn_minutes=500, monthly_sms=100)
 
@@ -432,7 +461,7 @@ Balance Management Workflow
 
     # Set up webhook for balance monitoring
     POST /v1.0/webhooks
-    -> Configure billing_account.updated events
+    -> Configure account_updated events
 
 **2. Before Operations:**
 
@@ -454,8 +483,8 @@ Balance Management Workflow
 
 .. code::
 
-    # Review credit charges
-    actual_credit = initial_balance - current_balance
+    # Review credit charges (in micros)
+    actual_credit_micros = initial_balance_credit - current_balance_credit
 
 Troubleshooting
 ---------------
