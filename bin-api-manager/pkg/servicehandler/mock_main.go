@@ -3986,10 +3986,10 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantList(ctx, a
 }
 
 // SpeakingCreate mocks base method.
-func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingCreate", ctx, a, referenceType, referenceID, language, provider, voiceID, direction)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4001,10 +4001,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingCreate(ctx, a, referenceType, 
 }
 
 // SpeakingDelete mocks base method.
-func (m *MockServiceHandler) SpeakingDelete(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingDelete(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingDelete", ctx, a, speakingID)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4016,10 +4016,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingDelete(ctx, a, speakingID any)
 }
 
 // SpeakingFlush mocks base method.
-func (m *MockServiceHandler) SpeakingFlush(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingFlush(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingFlush", ctx, a, speakingID)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4031,10 +4031,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingFlush(ctx, a, speakingID any) 
 }
 
 // SpeakingGet mocks base method.
-func (m *MockServiceHandler) SpeakingGet(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingGet(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingGet", ctx, a, speakingID)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4046,10 +4046,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingGet(ctx, a, speakingID any) *g
 }
 
 // SpeakingList mocks base method.
-func (m *MockServiceHandler) SpeakingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingList", ctx, a, size, token)
-	ret0, _ := ret[0].([]*speaking.Speaking)
+	ret0, _ := ret[0].([]*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4061,10 +4061,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingList(ctx, a, size, token any) 
 }
 
 // SpeakingSay mocks base method.
-func (m *MockServiceHandler) SpeakingSay(ctx context.Context, a *agent.Agent, speakingID uuid.UUID, text string) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingSay(ctx context.Context, a *agent.Agent, speakingID uuid.UUID, text string) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingSay", ctx, a, speakingID, text)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4076,10 +4076,10 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingSay(ctx, a, speakingID, text a
 }
 
 // SpeakingStop mocks base method.
-func (m *MockServiceHandler) SpeakingStop(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.Speaking, error) {
+func (m *MockServiceHandler) SpeakingStop(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingStop", ctx, a, speakingID)
-	ret0, _ := ret[0].(*speaking.Speaking)
+	ret0, _ := ret[0].(*speaking.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
