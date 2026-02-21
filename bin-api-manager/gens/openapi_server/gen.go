@@ -3677,9 +3677,6 @@ type TtsManagerSpeaking struct {
 	// Language TTS language (e.g. en-US)
 	Language *string `json:"language,omitempty"`
 
-	// PodId Kubernetes pod hosting this session
-	PodId *string `json:"pod_id,omitempty"`
-
 	// Provider TTS provider (elevenlabs)
 	Provider *string `json:"provider,omitempty"`
 
