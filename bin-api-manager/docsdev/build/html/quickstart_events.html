@@ -183,87 +183,47 @@
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
     <section id="receiving-events">
-<span id="quickstart-events"></span><h1>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading"></a></h1>
-<p>VoIPBIN notifies you in real-time when things happen — calls connect, messages arrive, recordings complete, transcriptions finish. There are two delivery methods:</p>
+<span id="quickstart-event-subscription"></span><span id="quickstart-events"></span><h1>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading"></a></h1>
+<p>VoIPBIN notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:</p>
 <ul class="simple">
-<li><p><strong>Webhook</strong> — VoIPBIN sends HTTP POST requests to your server endpoint.</p></li>
-<li><p><strong>WebSocket</strong> — You maintain a persistent connection and receive events instantly.</p></li>
+<li><p><strong>WebSocket</strong> — Maintain a persistent connection and receive events instantly. No public server needed.</p></li>
+<li><p><strong>Customer Webhook</strong> — Configure a webhook URI on your customer account to receive all events via HTTP POST.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>For AI agents and automated systems, <strong>WebSocket is preferred</strong> because it requires no public server endpoint and delivers events with lower latency. Use <strong>Webhook</strong> when you have a persistent server that needs to process events asynchronously (e.g., updating a database, sending notifications).</p>
+<p>For AI agents and automated systems, <strong>WebSocket is preferred</strong> because it requires no public server endpoint and delivers events with lower latency. Use <strong>Customer Webhook</strong> when you have a persistent server that needs to process events asynchronously.</p>
 </div>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"></th>
-<th class="head"><p>Webhook</p></th>
 <th class="head"><p>WebSocket</p></th>
+<th class="head"><p>Customer Webhook</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Connection</p></td>
-<td><p>Stateless HTTP pushes to your server</p></td>
 <td><p>Persistent bidirectional connection</p></td>
+<td><p>Stateless HTTP pushes to your server</p></td>
 </tr>
 <tr class="row-odd"><td><p>Setup</p></td>
-<td><p>Register URL via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webhooks</span></code></p></td>
 <td><p>Connect to <code class="docutils literal notranslate"><span class="pre">wss://</span></code> endpoint</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/customer</span></code> with webhook URI</p></td>
 </tr>
-<tr class="row-even"><td><p>Best for</p></td>
-<td><p>Server-side integrations, CI/CD pipelines</p></td>
+<tr class="row-even"><td><p>Filtering</p></td>
+<td><p>Subscribe to specific topics</p></td>
+<td><p>Receives <strong>all</strong> events (no filtering)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Best for</p></td>
 <td><p>Real-time dashboards, AI agents</p></td>
+<td><p>Server-side catch-all processing</p></td>
 </tr>
-<tr class="row-odd"><td><p>Requires</p></td>
-<td><p>Public HTTPS endpoint</p></td>
+<tr class="row-even"><td><p>Requires</p></td>
 <td><p>WebSocket client library</p></td>
+<td><p>Public HTTPS endpoint</p></td>
 </tr>
 </tbody>
 </table>
-<section id="webhook">
-<h2>Webhook<a class="headerlink" href="#webhook" title="Link to this heading"></a></h2>
-<p>Register an endpoint URL, and VoIPBIN sends HTTP POST requests to it when events occur.</p>
-<p><strong>Create a webhook:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;My webhook&quot;,
-        &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
-        &quot;method&quot;: &quot;POST&quot;,
-        &quot;event_types&quot;: [
-            &quot;call_created&quot;,
-            &quot;call_updated&quot;,
-            &quot;call_hungup&quot;
-        ]
-    }&#39;
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My webhook&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/voipbin/webhook&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;event_types&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;call_created&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;call_updated&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;call_hungup&quot;</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-19 10:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-19 10:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">uri</span></code> each time a matching event occurs. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>Event types in the <code class="docutils literal notranslate"><span class="pre">event_types</span></code> registration and the delivered payload both use underscore notation (e.g., <code class="docutils literal notranslate"><span class="pre">call_created</span></code>, <code class="docutils literal notranslate"><span class="pre">message_received</span></code>). Your endpoint must be publicly accessible — for local development, use a tunneling tool (e.g., ngrok).</p>
-</div>
-<p>For the full webhook guide, see <a class="reference internal" href="webhook.html#webhook-main"><span class="std std-ref">Webhook documentation</span></a>.</p>
-</section>
 <section id="websocket">
 <h2>WebSocket<a class="headerlink" href="#websocket" title="Link to this heading"></a></h2>
 <p>Connect to VoIPBIN’s WebSocket endpoint and subscribe to topics to receive events in real-time.</p>
@@ -271,16 +231,17 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
 </pre></div>
 </div>
-<p><strong>Subscribe to events</strong> by sending a JSON message after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>:</p>
+<p><strong>Subscribe</strong> by sending a JSON message after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
     <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:*&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all calls under your account.</p>
+<p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all resources of that type under your account.</p>
 <p><strong>Python example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
 <span class="kn">import</span> <span class="nn">json</span>
@@ -292,18 +253,24 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{}),</span><span class="w"> </span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;transcript&quot;</span> <span class="ow">in</span> <span class="n">event_type</span><span class="p">:</span>
+            <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;direction&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[TRANSCRIBE </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
         <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to call events. Waiting...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to call and transcribe events. Waiting...&quot;</span><span class="p">)</span>
 
 <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -316,9 +283,71 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The topic format is <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> as the <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> to subscribe to all resources of a type (e.g., <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:call:*</span></code> for all call events, <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:message:*</span></code> for all message events). If the WebSocket connection drops, all subscriptions are lost — implement automatic reconnection and re-subscribe after reconnecting.</p>
+<p>The topic format is <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> as the <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> to subscribe to all resources of a type (e.g., <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:call:*</span></code> for all call events, <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:transcribe:*</span></code> for all transcription events). If the WebSocket connection drops, all subscriptions are lost — implement automatic reconnection and re-subscribe after reconnecting.</p>
 </div>
 <p>For the full WebSocket guide, see <a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket documentation</span></a>.</p>
+</section>
+<section id="customer-webhook">
+<h2>Customer Webhook<a class="headerlink" href="#customer-webhook" title="Link to this heading"></a></h2>
+<p>Configure a webhook URI on your customer account. VoIPBIN sends HTTP POST requests to this URI for <strong>all</strong> events associated with your account — no per-event-type filtering is needed.</p>
+<p><strong>Update your customer’s webhook configuration:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_method&quot;: &quot;POST&quot;,
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/voipbin/events&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/voipbin/events&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Once configured, VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> each time any event occurs for your account. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
+<p><strong>Fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum String): The HTTP method used for webhook delivery. Use <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String): The URI where event notifications are sent. Must be publicly accessible.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The customer webhook receives <strong>all</strong> event types for your account — there is no filtering by event type. For local development, use a tunneling tool (e.g., ngrok) to expose your local server. To stop receiving events, set <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> to an empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p>
+</div>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>No events received via WebSocket:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Subscription topic does not match your customer ID, or subscription was sent before the connection opened.</p></li>
+<li><p><strong>Fix:</strong> Verify the customer ID in the topic matches your account (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>). Send the subscribe message only after the <code class="docutils literal notranslate"><span class="pre">on_open</span></code> callback fires.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>No events received via customer webhook:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> is not publicly accessible, or the endpoint does not return HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p></li>
+<li><p><strong>Fix:</strong> Verify the URI is reachable from the internet. For local development, use a tunneling tool (e.g., ngrok). Check your server logs for incoming requests.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden on customer update:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The authenticated user lacks admin permission to update the customer.</p></li>
+<li><p><strong>Fix:</strong> Verify you are using an admin-level token. Regular agents cannot modify customer settings.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 </section>
 
@@ -331,8 +360,11 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Receiving Events</a><ul>
-<li><a class="reference internal" href="#webhook">Webhook</a></li>
 <li><a class="reference internal" href="#websocket">WebSocket</a></li>
+<li><a class="reference internal" href="#customer-webhook">Customer Webhook</a><ul>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

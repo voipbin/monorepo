@@ -228,6 +228,33 @@ When the destination answers the call, it will speak the given text message.</p>
 </pre></div>
 </div>
 </section>
+<section id="simple-outbound-call-with-an-existing-flow">
+<h3>Simple outbound call with an existing flow<a class="headerlink" href="#simple-outbound-call-with-an-existing-flow" title="Link to this heading"></a></h3>
+<p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
+            }
+        ],
+        &quot;flow_id&quot;: &quot;&lt;your-flow-id&gt;&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID) must reference an existing flow. Obtain one from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. If the flow does not exist, the API returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></code>.</p>
+</div>
+<p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
+</section>
 <section id="simple-outbound-call-with-media-file-play">
 <h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h3>
 <p>Making an outbound call with media file play action.
@@ -837,6 +864,7 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
+<li><a class="reference internal" href="#simple-outbound-call-with-an-existing-flow">Simple outbound call with an existing flow</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-talk-and-digits-send">Simple outbound call with talk and digits_send</a></li>

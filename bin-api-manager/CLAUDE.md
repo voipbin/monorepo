@@ -194,6 +194,23 @@ AI models cannot infer context. Every piece of information must be self-containe
 - `<resource>_tutorial.rst` - Step-by-step guide
 - `<resource>_struct_<type>.rst` - Data structure reference
 
+##### API Endpoint References in Documentation
+
+**Rule: Use user-facing endpoints with FQDNs. Never use admin-only endpoints in user documentation.**
+
+1. **Always use fully qualified URLs** — Write `GET https://api.voipbin.net/v1.0/customer`, not `GET /customer` or `GET /customers`.
+2. **Use `/customer` (singular) for normal users** — The `/customer` endpoint returns the authenticated user's own customer info. The `/customers` (plural) and `/customers/{id}` endpoints are admin-only and must NOT appear in user-facing documentation (quickstart, tutorials, overviews).
+3. **Use `/customer` for webhook configuration** — Write `PUT https://api.voipbin.net/v1.0/customer` (not `PUT /customers/{id}`) when documenting webhook setup or customer profile updates.
+
+| Context | Correct | Wrong |
+|---|---|---|
+| Get customer info | ``GET https://api.voipbin.net/v1.0/customer`` | ``GET /customers``, ``GET /customers/{id}`` |
+| Update webhook | ``PUT https://api.voipbin.net/v1.0/customer`` | ``PUT /customers/{id}`` |
+| Get numbers | ``GET https://api.voipbin.net/v1.0/numbers`` | ``GET /numbers`` |
+| Create a call | ``POST https://api.voipbin.net/v1.0/calls`` | ``POST /calls`` |
+
+**Exception:** Admin documentation (if it exists separately) may reference `/customers/{id}`.
+
 ##### The 5 Commandments
 
 **Rule 1: Data Provenance (Where Do IDs Come From?)**

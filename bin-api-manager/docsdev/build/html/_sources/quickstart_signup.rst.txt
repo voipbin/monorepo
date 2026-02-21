@@ -1,11 +1,11 @@
 .. _quickstart_signup:
 
 Signup
-======
+------
 To use the VoIPBIN production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).
 
 Sign up via Admin Console
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 1. Go to the `admin console <https://admin.voipbin.net>`_.
 2. Click **Sign Up**.
 3. Enter your email address and submit.
@@ -16,7 +16,7 @@ Sign up via Admin Console
 Once your password is set, you can log in to the `admin console <https://admin.voipbin.net>`_ and start making API requests.
 
 Sign up via API (Headless)
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 For automated systems and AI agents, use the headless signup flow. This requires two API calls: one to initiate signup and one to verify with a 6-digit OTP code sent to your email.
 
 .. note:: **AI Implementation Hint**
@@ -74,7 +74,7 @@ Response:
 The ``accesskey.token`` (String) is your API key. Use it immediately for authentication — see :ref:`Authentication <quickstart_authentication>`.
 
 Troubleshooting
----------------
+~~~~~~~~~~~~~~~
 
 * **200 OK but empty ``temp_token``:**
     * **Cause:** The email may already be registered, or the email format is invalid.

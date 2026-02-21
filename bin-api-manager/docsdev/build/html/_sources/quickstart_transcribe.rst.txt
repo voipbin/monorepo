@@ -9,7 +9,7 @@ Prerequisites
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
-* Your customer ID (UUID). Obtained from ``GET /customers`` or from your admin console profile.
+* Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
 
 .. note:: **AI Implementation Hint**
 
@@ -176,7 +176,7 @@ Before making the call, connect to the VoIPBIN WebSocket and subscribe to transc
 
     wss://api.voipbin.net/v1.0/ws?token=<your-token>
 
-**Send a subscription message** after connecting. Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET /customers``:
+**Send a subscription message** after connecting. Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET https://api.voipbin.net/v1.0/customer``:
 
 .. code::
 
@@ -389,7 +389,7 @@ Troubleshooting
 
 * **No transcription events received:**
     * **Cause:** WebSocket subscription topic does not match your customer ID, or subscription was sent before the connection opened.
-    * **Fix:** Verify the customer ID in the topic matches your account (from ``GET /customers``). Send the subscribe message only after the ``on_open`` callback fires.
+    * **Fix:** Verify the customer ID in the topic matches your account (from ``GET https://api.voipbin.net/v1.0/customer``). Send the subscribe message only after the ``on_open`` callback fires.
 
 * **400 Bad Request on call creation:**
     * **Cause:** The ``source`` number is not owned by your account, or the number format is not E.164.
