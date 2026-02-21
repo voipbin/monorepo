@@ -16,6 +16,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	ememail "monorepo/bin-email-manager/models/email"
 	mmmessage "monorepo/bin-message-manager/models/message"
 	mmtarget "monorepo/bin-message-manager/models/target"
 
@@ -1250,6 +1251,276 @@ func Test_EventNMNumberCreated_billing_error(t *testing.T) {
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(nil, fmt.Errorf("account not found"))
 
 			err := h.EventNMNumberCreated(ctx, tt.number)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EventEMEmailCreated(t *testing.T) {
+
+	type test struct {
+		name string
+
+		email *ememail.Email
+
+		responseAccount  *account.Account
+		responseUUIDs    []uuid.UUID
+		responseBillings []*billing.Billing
+		responseConsumed []*billing.Billing
+	}
+
+	tests := []test{
+		{
+			name: "single destination",
+
+			email: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000001"),
+				},
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "from@example.com",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "to@example.com",
+					},
+				},
+			},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000002-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("e0000003-0000-0000-0000-000000000001"),
+			},
+			responseBillings: []*billing.Billing{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000003-0000-0000-0000-000000000001"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000002-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusProgressing,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+			},
+			responseConsumed: []*billing.Billing{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000003-0000-0000-0000-000000000001"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000002-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusEnd,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+			},
+		},
+		{
+			name: "multiple destinations",
+
+			email: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000004-0000-0000-0000-000000000001"),
+				},
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "from@example.com",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "to1@example.com",
+					},
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "to2@example.com",
+					},
+				},
+			},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000005-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000001"),
+				uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000002"),
+			},
+			responseBillings: []*billing.Billing{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000001"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000005-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusProgressing,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000002"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000005-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusProgressing,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+			},
+			responseConsumed: []*billing.Billing{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000001"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000005-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusEnd,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e0000006-0000-0000-0000-000000000002"),
+					},
+					AccountID:         uuid.FromStringOrNil("e0000005-0000-0000-0000-000000000001"),
+					TransactionType:   billing.TransactionTypeUsage,
+					Status:            billing.StatusEnd,
+					ReferenceType:     billing.ReferenceTypeEmail,
+					CostType:          billing.CostTypeEmail,
+					RateTokenPerUnit:  0,
+					RateCreditPerUnit: billing.DefaultCreditPerUnitEmail,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			for i := range tt.email.Destinations {
+				// per-destination deterministic reference ID
+				targetRefID := uuid.NewV5(tt.email.ID, fmt.Sprintf("target-%d", i))
+
+				// idempotency check
+				mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeEmail, targetRefID).Return(nil, dbhandler.ErrNotFound)
+
+				// BillingStart -> Create
+				mockAccount.EXPECT().GetByCustomerID(ctx, tt.email.CustomerID).Return(tt.responseAccount, nil)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
+				mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i]).Return(tt.responseBillings[i], nil)
+				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBillings[i])
+
+				// BillingEnd - atomic consume and record (Email: 1 billable unit, 0 usage duration)
+				mockDB.EXPECT().BillingConsumeAndRecord(
+					ctx,
+					tt.responseBillings[i],
+					tt.responseBillings[i].AccountID,
+					1, // billableUnits
+					0, // usageDuration
+					billing.GetCostInfo(tt.responseBillings[i].CostType),
+					gomock.Any(), // tmBillingEnd
+				).Return(tt.responseConsumed[i], nil)
+				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumed[i])
+			}
+
+			if err := h.EventEMEmailCreated(ctx, tt.email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventEMEmailCreated_billing_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		email *ememail.Email
+	}{
+		{
+			name: "BillingStart fails - returns error",
+
+			email: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000007-0000-0000-0000-000000000001"),
+				},
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "from@example.com",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEmail,
+						Target: "to@example.com",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// First destination: idempotency check passes, but GetByCustomerID fails
+			targetRefID := uuid.NewV5(tt.email.ID, "target-0")
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeEmail, targetRefID).Return(nil, dbhandler.ErrNotFound)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.email.CustomerID).Return(nil, fmt.Errorf("account not found"))
+
+			// Should return error immediately
+
+			err := h.EventEMEmailCreated(ctx, tt.email)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: nil")
 			}
