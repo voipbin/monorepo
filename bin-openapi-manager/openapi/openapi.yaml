@@ -5491,10 +5491,6 @@ components:
           type: string
           description: Session status (initiating, active, stopped)
           example: "active"
-        pod_id:
-          type: string
-          description: Kubernetes pod hosting this session
-          example: "tts-manager-7b8f9c0d-pod1"
         tm_create:
           type: string
           format: date-time
