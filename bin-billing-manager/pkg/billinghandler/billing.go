@@ -49,7 +49,7 @@ func (h *billingHandler) BillingStart(
 		// billing exists but not completed — re-run end phase for immediate-end types
 		log.WithField("billing", existing).Debugf("Billing exists but not completed. status: %s", existing.Status)
 		switch referenceType {
-		case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
+		case billing.ReferenceTypeSMS, billing.ReferenceTypeEmail, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 			if errBilling := h.BillingEnd(ctx, existing, tmBillingStart, source, destination); errBilling != nil {
 				return errors.Wrap(errBilling, "could not complete billing on retry")
 			}
@@ -69,7 +69,7 @@ func (h *billingHandler) BillingStart(
 	switch referenceType {
 	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension:
 		flagEnd = false
-	case billing.ReferenceTypeSMS:
+	case billing.ReferenceTypeSMS, billing.ReferenceTypeEmail:
 		flagEnd = true
 	case billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		flagEnd = true
@@ -143,7 +143,7 @@ func (h *billingHandler) BillingEnd(
 			usageDuration = int(tmBillingEnd.Sub(*bill.TMBillingStart).Seconds())
 			billableUnits = billing.CalculateBillableUnits(usageDuration)
 		}
-	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
+	case billing.ReferenceTypeSMS, billing.ReferenceTypeEmail, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		usageDuration = 0
 		billableUnits = 1
 	default:
