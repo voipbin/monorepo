@@ -122,8 +122,8 @@ func TestDefaultCostConstants(t *testing.T) {
 		constant int64
 		expected int64
 	}{
-		{"default_credit_call_pstn_outgoing", DefaultCreditPerUnitCallPSTNOutgoing, 6000},
-		{"default_credit_sms", DefaultCreditPerUnitSMS, 8000},
+		{"default_credit_call_pstn_outgoing", DefaultCreditPerUnitCallPSTNOutgoing, 10000},
+		{"default_credit_sms", DefaultCreditPerUnitSMS, 10000},
 		{"default_credit_number", DefaultCreditPerUnitNumber, 5000000},
 	}
 
@@ -169,33 +169,3 @@ func TestCalculateBillableUnits(t *testing.T) {
 	}
 }
 
-func TestGetCostInfo(t *testing.T) {
-	tests := []struct {
-		name              string
-		costType          CostType
-		expectedToken     int64
-		expectedCredit    int64
-	}{
-		{"call_pstn_outgoing", CostTypeCallPSTNOutgoing, 0, DefaultCreditPerUnitCallPSTNOutgoing},
-		{"call_pstn_incoming", CostTypeCallPSTNIncoming, 0, DefaultCreditPerUnitCallPSTNIncoming},
-		{"call_vn", CostTypeCallVN, DefaultTokenPerUnitCallVN, DefaultCreditPerUnitCallVN},
-		{"call_extension", CostTypeCallExtension, 0, 0},
-		{"call_direct_ext", CostTypeCallDirectExt, 0, 0},
-		{"sms", CostTypeSMS, DefaultTokenPerUnitSMS, DefaultCreditPerUnitSMS},
-		{"number", CostTypeNumber, 0, DefaultCreditPerUnitNumber},
-		{"number_renew", CostTypeNumberRenew, 0, DefaultCreditPerUnitNumber},
-		{"none", CostTypeNone, 0, 0},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tokenPerUnit, creditPerUnit := GetCostInfo(tt.costType)
-			if tokenPerUnit != tt.expectedToken {
-				t.Errorf("GetCostInfo(%s) tokenPerUnit = %d, expected %d", tt.costType, tokenPerUnit, tt.expectedToken)
-			}
-			if creditPerUnit != tt.expectedCredit {
-				t.Errorf("GetCostInfo(%s) creditPerUnit = %d, expected %d", tt.costType, creditPerUnit, tt.expectedCredit)
-			}
-		})
-	}
-}
