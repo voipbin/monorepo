@@ -477,7 +477,7 @@ v                   v     v                   v
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
     <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
-    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
+    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
     <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
@@ -580,11 +580,11 @@ v                   v     v                   v
 </div>
 <p><strong>Scenario 2: Mixed Token and Credit Usage</strong></p>
 <p>Plan for costs across token-eligible and credit-only services.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Campaign: Customer Outreach
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Campaign: Customer Outreach (Basic plan, 1000 tokens)
 +--------------------------------------------+
 | VN Calls: 200 calls (avg 3 min)            |
 | - Tokens needed: 200 x 3 = 600             |
-| - If 400 tokens available:                 |
+| - If 400 tokens remaining:                 |
 |   - 400 tokens consumed                    |
 |   - 200 overflow x 3 min x 1,000 micros    |
 |     = 600,000 micros ($0.60)               |

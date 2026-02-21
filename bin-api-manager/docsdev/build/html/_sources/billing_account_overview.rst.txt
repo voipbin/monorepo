@@ -239,7 +239,7 @@ Check and manage your account balance.
         "customer_id": "customer-uuid-456",
         "plan_type": "free",
         "balance_credit": 150500000,
-        "balance_token": 650,
+        "balance_token": 70,
         "tm_last_topup": "2024-01-01T00:00:00Z",
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
@@ -362,11 +362,11 @@ Plan for costs across token-eligible and credit-only services.
 
 ::
 
-    Campaign: Customer Outreach
+    Campaign: Customer Outreach (Basic plan, 1000 tokens)
     +--------------------------------------------+
     | VN Calls: 200 calls (avg 3 min)            |
     | - Tokens needed: 200 x 3 = 600             |
-    | - If 400 tokens available:                 |
+    | - If 400 tokens remaining:                 |
     |   - 400 tokens consumed                    |
     |   - 200 overflow x 3 min x 1,000 micros    |
     |     = 600,000 micros ($0.60)               |
