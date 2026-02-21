@@ -2176,8 +2176,11 @@ type CustomerManagerAccesskey struct {
 	// TmUpdate Timestamp when the access key was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// Token The access key token. Only returned once at creation time.
+	// Token The access key token. Only returned once at creation time via `POST /accesskeys`. Subsequent `GET` requests will not include this field. Store it securely immediately after creation.
 	Token *string `json:"token,omitempty"`
+
+	// TokenPrefix A short prefix of the access key token for identification purposes. Always returned in `GET` responses.
+	TokenPrefix *string `json:"token_prefix,omitempty"`
 }
 
 // CustomerManagerCustomer defines model for CustomerManagerCustomer.
