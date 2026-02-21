@@ -162,6 +162,7 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameMessageEvent),
+		string(commonoutline.QueueNameEmailEvent),
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameNumberEvent),
 	}

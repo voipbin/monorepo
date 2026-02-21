@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cscustomer "monorepo/bin-customer-manager/models/customer"
+	ememail "monorepo/bin-email-manager/models/email"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
@@ -159,6 +160,11 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	// message
 	case m.Publisher == string(commonoutline.ServiceNameMessageManager) && m.Type == mmmessage.EventTypeMessageCreated:
 		err = h.processEventMMMessageCreated(ctx, m)
+
+	//// email-manager
+	// email
+	case m.Publisher == string(commonoutline.ServiceNameEmailManager) && m.Type == ememail.EventTypeCreated:
+		err = h.processEventEMEmailCreated(ctx, m)
 
 	//// customer-manager
 	// customer

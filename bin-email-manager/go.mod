@@ -75,6 +75,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	go.uber.org/mock v0.6.0
+	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
@@ -95,6 +96,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -129,13 +131,13 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93 // indirect
+	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/genproto v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
-	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect

@@ -42,7 +42,7 @@ type DBHandler interface {
 	BillingList(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
 	BillingUpdate(ctx context.Context, id uuid.UUID, fields map[billing.Field]any) error
 	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billableUnits int, usageDuration int, amountToken int64, amountCredit int64, balanceTokenSnapshot int64, balanceCreditSnapshot int64, tmBillingEnd *time.Time) error
-	BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, rateTokenPerUnit int64, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error)
+	BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, costInfo billing.CostInfo, tmBillingEnd *time.Time) (*billing.Billing, error)
 	BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error
 	BillingDelete(ctx context.Context, id uuid.UUID) error
 

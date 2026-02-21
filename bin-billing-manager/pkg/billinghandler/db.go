@@ -33,7 +33,7 @@ func (h *billingHandler) Create(
 		"tm_billing_start": tmBillingStart,
 	})
 
-	tokenPerUnit, creditPerUnit := billing.GetCostInfo(costType)
+	costInfo := billing.GetCostInfo(costType)
 
 	id := h.utilHandler.UUIDCreate()
 	c := &billing.Billing{
@@ -47,8 +47,8 @@ func (h *billingHandler) Create(
 		ReferenceType:     referenceType,
 		ReferenceID:       referenceID,
 		CostType:          costType,
-		RateTokenPerUnit:  tokenPerUnit,
-		RateCreditPerUnit: creditPerUnit,
+		RateTokenPerUnit:  costInfo.TokenPerUnit,
+		RateCreditPerUnit: costInfo.CreditPerUnit,
 		TMBillingStart:    tmBillingStart,
 	}
 

@@ -2,6 +2,7 @@ package emailhandler
 
 import (
 	"context"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-email-manager/models/email"
@@ -25,6 +26,15 @@ func (h *emailHandler) Create(
 		if !h.validateEmailAddress(destination) {
 			return nil, errors.New("destination is not valid")
 		}
+	}
+
+	// validate balance before sending
+	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeEmail, "", len(destinations))
+	if err != nil {
+		return nil, errors.Wrap(err, "could not validate the customer's balance")
+	}
+	if !valid {
+		return nil, errors.New("insufficient balance for email")
 	}
 
 	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, subject, content, attachments)

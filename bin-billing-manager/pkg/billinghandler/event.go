@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	ememail "monorepo/bin-email-manager/models/email"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
@@ -95,6 +96,25 @@ func (h *billingHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) 
 
 	if errEnd := h.BillingEnd(ctx, b, c.TMHangup, &c.Source, &c.Destination); errEnd != nil {
 		return errors.Wrapf(errEnd, "could not end the billing. billing_id: %s, call_id: %s, err: %v", b.ID, c.ID, errEnd)
+	}
+
+	return nil
+}
+
+// EventEMEmailCreated handles the email-manager's email_created event
+func (h *billingHandler) EventEMEmailCreated(ctx context.Context, e *ememail.Email) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventEMEmailCreated",
+		"email": e,
+	})
+	log.Debugf("Received email_created event. email_id: %s", e.ID)
+
+	for i, dest := range e.Destinations {
+		targetRefID := uuid.NewV5(e.ID, fmt.Sprintf("target-%d", i))
+		log.WithField("destination", dest).Debugf("Creating billing for email. destination: %v, target_ref_id: %s", dest, targetRefID)
+		if errBilling := h.BillingStart(ctx, e.CustomerID, billing.ReferenceTypeEmail, targetRefID, billing.CostTypeEmail, e.TMCreate, e.Source, &dest); errBilling != nil {
+			return errors.Wrapf(errBilling, "could not create a billing. destination: %v", dest)
+		}
 	}
 
 	return nil

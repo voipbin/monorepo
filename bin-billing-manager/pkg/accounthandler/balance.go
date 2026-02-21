@@ -70,31 +70,38 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 
 	switch billingType {
 	case billing.ReferenceTypeCall:
-		// Optimistic: tokens available OR sufficient credit
+		// Calls can be VN (TokenFirst) or PSTN (CreditOnly).
+		// Optimistic: accept if tokens exist (might be VN) OR enough credit for worst-case PSTN rate.
 		if a.BalanceToken > 0 {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 			return true, nil
 		}
-		expectCost := billing.DefaultCreditPerUnitCallPSTNOutgoing * int64(count)
+		costInfo := billing.GetCostInfo(billing.CostTypeCallPSTNOutgoing)
+		expectCost := costInfo.CreditPerUnit * int64(count)
 		if a.BalanceCredit >= expectCost {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 			return true, nil
 		}
 
 	case billing.ReferenceTypeSMS:
-		// Optimistic: tokens available OR sufficient credit
-		if a.BalanceToken > 0 {
+		costInfo := billing.GetCostInfo(billing.CostTypeSMS)
+		expectCost := costInfo.CreditPerUnit * int64(count)
+		if a.BalanceCredit >= expectCost {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 			return true, nil
 		}
-		expectCost := billing.DefaultCreditPerUnitSMS * int64(count)
+
+	case billing.ReferenceTypeEmail:
+		costInfo := billing.GetCostInfo(billing.CostTypeEmail)
+		expectCost := costInfo.CreditPerUnit * int64(count)
 		if a.BalanceCredit >= expectCost {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 			return true, nil
 		}
 
 	case billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
-		expectCost := billing.DefaultCreditPerUnitNumber * int64(count)
+		costInfo := billing.GetCostInfo(billing.CostTypeNumber)
+		expectCost := costInfo.CreditPerUnit * int64(count)
 		if a.BalanceCredit >= expectCost {
 			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
 			return true, nil

@@ -85,9 +85,9 @@ Each billing record is an immutable ledger entry recording a single transaction.
 * ``account_id`` (UUID): The billing account this entry belongs to. Obtained from the ``id`` field of ``GET /billing_accounts``.
 * ``transaction_type`` (enum string): The nature of the transaction. Values: ``usage`` (service consumption), ``top_up`` (token replenishment), ``adjustment`` (manual correction), ``refund`` (credit return).
 * ``status`` (enum string): The billing entry status. Values: ``progressing`` (in progress), ``end`` (completed), ``pending`` (awaiting processing), ``finished`` (finalized).
-* ``reference_type`` (enum string): The source of the transaction. Values: ``call``, ``call_extension``, ``sms``, ``number``, ``number_renew``, ``credit_free_tier``, ``monthly_allowance``.
+* ``reference_type`` (enum string): The source of the transaction. Values: ``call``, ``call_extension``, ``sms``, ``email``, ``number``, ``number_renew``, ``credit_free_tier``, ``monthly_allowance``.
 * ``reference_id`` (UUID): The ID of the originating resource (e.g., call ID, number ID). Obtained from the ``id`` field of the corresponding resource endpoint (e.g., ``GET /calls/{id}``).
-* ``cost_type`` (enum string): Classification of the billing cost. Values include: ``call_pstn_outgoing``, ``call_pstn_incoming``, ``call_vn``, ``call_extension``, ``call_direct_ext``, ``sms``, ``number``, ``number_renew``.
+* ``cost_type`` (enum string): Classification of the billing cost. Values include: ``call_pstn_outgoing``, ``call_pstn_incoming``, ``call_vn``, ``call_extension``, ``call_direct_ext``, ``sms``, ``email``, ``number``, ``number_renew``.
 * ``usage_duration`` (Integer): Actual usage duration in seconds (for calls). Not applicable for non-call services.
 * ``billable_units`` (Integer): Number of billable units after ceiling rounding (e.g., 135 seconds becomes 3 minutes for call billing).
 * ``rate_token_per_unit`` (Integer, int64): Token rate per billable unit. Set to ``0`` for credit-only services.
