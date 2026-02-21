@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -465,6 +466,107 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerSignup(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customerName  string
+		detail        string
+		email         string
+		phoneNumber   string
+		address       string
+		webhookMethod cscustomer.WebhookMethod
+		webhookURI    string
+		clientIP      string
+
+		responseSignup *cscustomer.SignupResult
+		expectRes      *cscustomer.SignupResultWebhookMessage
+	}{
+		{
+			name:          "normal",
+			customerName:  "Test Corp",
+			detail:        "test detail",
+			email:         "test@example.com",
+			phoneNumber:   "+1234567890",
+			address:       "123 Test St",
+			webhookMethod: cscustomer.WebhookMethodPost,
+			webhookURI:    "https://example.com/webhook",
+			clientIP:      "192.168.1.1",
+
+			responseSignup: &cscustomer.SignupResult{
+				Customer: &cscustomer.Customer{
+					ID:                 uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+					Name:               "Test Corp",
+					Email:              "test@example.com",
+					TermsAgreedVersion: "2026-02-22T00:00:00Z",
+					TermsAgreedIP:      "192.168.1.1",
+				},
+				TempToken: "tmp_abc123",
+			},
+			expectRes: &cscustomer.SignupResultWebhookMessage{
+				Customer: &cscustomer.WebhookMessage{
+					ID:    uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+					Name:  "Test Corp",
+					Email: "test@example.com",
+				},
+				TempToken: "tmp_abc123",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerSignup(
+				ctx, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.clientIP,
+			).Return(tt.responseSignup, nil)
+
+			res, err := h.CustomerSignup(ctx, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.clientIP)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			// Verify terms fields are excluded from JSON output
+			b, err := json.Marshal(res)
+			if err != nil {
+				t.Fatalf("Failed to marshal: %v", err)
+			}
+
+			var raw map[string]any
+			if err := json.Unmarshal(b, &raw); err != nil {
+				t.Fatalf("Failed to unmarshal: %v", err)
+			}
+
+			customerRaw, ok := raw["customer"].(map[string]any)
+			if !ok {
+				t.Fatal("Expected customer field in JSON output")
+			}
+
+			if _, exists := customerRaw["terms_agreed_version"]; exists {
+				t.Error("terms_agreed_version should not leak in API response")
+			}
+			if _, exists := customerRaw["terms_agreed_ip"]; exists {
+				t.Error("terms_agreed_ip should not leak in API response")
 			}
 		})
 	}

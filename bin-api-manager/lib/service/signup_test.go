@@ -17,6 +17,8 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func boolPtr(b bool) *bool { return &b }
+
 func TestPostCustomerSignup(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -36,6 +38,7 @@ func TestPostCustomerSignup(t *testing.T) {
 				Address:       "123 Test St",
 				WebhookMethod: "POST",
 				WebhookURI:    "https://example.com/webhook",
+				AcceptedTOS:   boolPtr(true),
 			},
 			mockSetup: func(m *servicehandler.MockServiceHandler) {
 				m.EXPECT().CustomerSignup(
@@ -47,7 +50,8 @@ func TestPostCustomerSignup(t *testing.T) {
 					"123 Test St",
 					cscustomer.WebhookMethod("POST"),
 					"https://example.com/webhook",
-				).Return(&cscustomer.SignupResult{}, nil)
+					gomock.Any(),
+				).Return(&cscustomer.SignupResultWebhookMessage{}, nil)
 			},
 			expectStatus: 200,
 		},
@@ -61,6 +65,7 @@ func TestPostCustomerSignup(t *testing.T) {
 				Address:       "123 Test St",
 				WebhookMethod: "POST",
 				WebhookURI:    "https://example.com/webhook",
+				AcceptedTOS:   boolPtr(true),
 			},
 			mockSetup: func(m *servicehandler.MockServiceHandler) {
 				m.EXPECT().CustomerSignup(
@@ -72,9 +77,20 @@ func TestPostCustomerSignup(t *testing.T) {
 					gomock.Any(),
 					gomock.Any(),
 					gomock.Any(),
+					gomock.Any(),
 				).Return(nil, errors.New("email already exists"))
 			},
 			expectStatus: 200, // Returns 200 to prevent email enumeration
+		},
+		{
+			name: "rejected - accepted_tos false",
+			reqBody: RequestBodySignupPOST{
+				Name:        "Test",
+				Email:       "test@example.com",
+				AcceptedTOS: boolPtr(false),
+			},
+			mockSetup:    func(m *servicehandler.MockServiceHandler) {},
+			expectStatus: 400,
 		},
 	}
 
@@ -134,6 +150,32 @@ func TestPostCustomerSignup_InvalidBody(t *testing.T) {
 	}
 }
 
+func TestPostCustomerSignup_MissingAcceptedTOS(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set(common.OBJServiceHandler, mockSvc)
+	})
+	r.POST("/auth/signup", PostCustomerSignup)
+
+	req, _ := http.NewRequest("POST", "/auth/signup", bytes.NewBuffer([]byte(`{"email":"test@example.com"}`)))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != 400 {
+		t.Errorf("Expected 400 for missing accepted_tos, got: %d", w.Code)
+	}
+}
+
 func TestPostCustomerEmailVerify(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -149,7 +191,7 @@ func TestPostCustomerEmailVerify(t *testing.T) {
 				Token: "valid_token_64_chars_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			},
 			mockSetup: func(m *servicehandler.MockServiceHandler) {
-				m.EXPECT().CustomerEmailVerify(gomock.Any(), gomock.Any()).Return(&cscustomer.EmailVerifyResult{}, nil)
+				m.EXPECT().CustomerEmailVerify(gomock.Any(), gomock.Any()).Return(&cscustomer.EmailVerifyResultWebhookMessage{}, nil)
 			},
 			expectStatus: 200,
 		},
@@ -341,7 +383,7 @@ func TestPostCustomerCompleteSignup(t *testing.T) {
 					gomock.Any(),
 					"tmp_abcdef123",
 					"123456",
-				).Return(&cscustomer.CompleteSignupResult{
+				).Return(&cscustomer.CompleteSignupResultWebhookMessage{
 					CustomerID: "550e8400-e29b-41d4-a716-446655440000",
 				}, nil)
 			},

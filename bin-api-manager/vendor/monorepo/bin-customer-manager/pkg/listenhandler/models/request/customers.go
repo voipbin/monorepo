@@ -52,6 +52,8 @@ type V1DataCustomersSignupPost struct {
 
 	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
 	WebhookURI    string                 `json:"webhook_uri,omitempty"`
+
+	ClientIP string `json:"client_ip,omitempty"`
 }
 
 // V1DataCustomersEmailVerifyPost is request struct for POST /v1/customers/email_verify

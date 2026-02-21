@@ -53,6 +53,7 @@ func (h *customerHandler) Signup(
 	address string,
 	webhookMethod customer.WebhookMethod,
 	webhookURI string,
+	clientIP string,
 ) (*customer.SignupResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Signup",
@@ -84,7 +85,11 @@ func (h *customerHandler) Signup(
 		WebhookURI:    webhookURI,
 
 		EmailVerified: false,
+
+		TermsAgreedVersion: time.Now().UTC().Format(time.RFC3339),
+		TermsAgreedIP:      clientIP,
 	}
+	log.Debugf("Recording terms agreement. client_ip: %s", clientIP)
 
 	if err := h.db.CustomerCreate(ctx, u); err != nil {
 		log.Errorf("Could not create customer. err: %v", err)

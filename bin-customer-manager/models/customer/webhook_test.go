@@ -54,6 +54,20 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				TMDelete:         &tmDelete,
 			},
 		},
+		{
+			name: "terms fields excluded",
+			customer: Customer{
+				ID:                 uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+				Name:               "test name",
+				TermsAgreedVersion: "2026-02-22T00:00:00Z",
+				TermsAgreedIP:      "192.168.1.1",
+			},
+
+			expectRes: &WebhookMessage{
+				ID:   uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+				Name: "test name",
+			},
+		},
 	}
 
 	for _, tt := range tests {

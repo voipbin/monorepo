@@ -31,7 +31,7 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 				URI:      "/v1/customers/signup",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
+				Data:     []byte(`{"name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","client_ip":"10.0.0.1"}`),
 			},
 
 			responseSignupResult: &customer.SignupResult{
@@ -79,6 +79,7 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 				"somewhere",
 				customer.WebhookMethod("POST"),
 				"test.com",
+				"10.0.0.1",
 			).Return(tt.responseSignupResult, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -145,7 +146,7 @@ func Test_processV1CustomersSignupPost_signupError(t *testing.T) {
 		Data:     []byte(`{"name":"test","email":"test@voipbin.net"}`),
 	}
 
-	mockCustomer.EXPECT().Signup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("signup failed"))
+	mockCustomer.EXPECT().Signup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("signup failed"))
 
 	res, err := h.processRequest(req)
 	if err != nil {

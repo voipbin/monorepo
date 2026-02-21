@@ -26,6 +26,7 @@ type RequestBodySignupPOST struct {
 	Address       string `json:"address"`
 	WebhookMethod string `json:"webhook_method"`
 	WebhookURI    string `json:"webhook_uri"`
+	AcceptedTOS   *bool  `json:"accepted_tos" binding:"required"`
 }
 
 // PostCustomerSignup handles POST /auth/signup request.
@@ -33,12 +34,18 @@ type RequestBodySignupPOST struct {
 func PostCustomerSignup(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostCustomerSignup",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	var req RequestBodySignupPOST
 	if err := c.BindJSON(&req); err != nil {
 		log.Warnf("Could not bind the request body. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	if !*req.AcceptedTOS {
+		log.Infof("Terms of service not accepted.")
 		c.AbortWithStatus(400)
 		return
 	}
@@ -59,6 +66,7 @@ func PostCustomerSignup(c *gin.Context) {
 		req.Address,
 		cscustomer.WebhookMethod(req.WebhookMethod),
 		req.WebhookURI,
+		c.ClientIP(),
 	)
 	if err != nil {
 		log.Debugf("Customer signup failed. err: %v", err)
@@ -79,7 +87,7 @@ type RequestBodyEmailVerifyPOST struct {
 func PostCustomerEmailVerify(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostCustomerEmailVerify",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 	log.Debug("Processing email verification.")
 
@@ -126,7 +134,7 @@ type RequestBodyCompleteSignupPOST struct {
 func PostCustomerCompleteSignup(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostCustomerCompleteSignup",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 	log.Debug("Processing complete signup.")
 

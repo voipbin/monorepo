@@ -3521,18 +3521,18 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerRecover(ctx, custome
 }
 
 // CustomerV1CustomerSignup mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.SignupResult, error) {
+func (m *MockRequestHandler) CustomerV1CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI, clientIP string) (*customer.SignupResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerSignup", ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	ret := m.ctrl.Call(m, "CustomerV1CustomerSignup", ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP)
 	ret0, _ := ret[0].(*customer.SignupResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerV1CustomerSignup indicates an expected call of CustomerV1CustomerSignup.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerSignup", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerSignup), ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerSignup", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerSignup), ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP)
 }
 
 // CustomerV1CustomerUpdate mocks base method.

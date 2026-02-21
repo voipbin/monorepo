@@ -385,25 +385,26 @@ func (h *serviceHandler) CustomerSignup(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-) (*cscustomer.SignupResult, error) {
+	clientIP string,
+) (*cscustomer.SignupResultWebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "CustomerSignup",
 		"email": email,
 	})
 	log.Debug("Processing customer signup.")
 
-	res, err := h.reqHandler.CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	res, err := h.reqHandler.CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP)
 	if err != nil {
 		log.Errorf("Could not signup customer. err: %v", err)
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerEmailVerify validates a verification token and activates the customer.
 // This is a public endpoint — no authentication required.
-func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error) {
+func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResultWebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "CustomerEmailVerify",
 	})
@@ -415,12 +416,12 @@ func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) 
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerCompleteSignup validates OTP and returns an auto-provisioned AccessKey.
 // This is a public endpoint — no authentication required.
-func (h *serviceHandler) CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error) {
+func (h *serviceHandler) CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResultWebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "CustomerCompleteSignup",
 	})
@@ -432,7 +433,7 @@ func (h *serviceHandler) CustomerCompleteSignup(ctx context.Context, tempToken s
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // convertCustomerFilters converts map[string]string to map[cscustomer.Field]any

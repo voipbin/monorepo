@@ -70,6 +70,7 @@ const (
 	ReferenceTypeCall             ReferenceType = "call"
 	ReferenceTypeCallExtension    ReferenceType = "call_extension"
 	ReferenceTypeSMS              ReferenceType = "sms"
+	ReferenceTypeEmail            ReferenceType = "email"
 	ReferenceTypeNumber           ReferenceType = "number"
 	ReferenceTypeNumberRenew      ReferenceType = "number_renew"
 	ReferenceTypeCreditFreeTier    ReferenceType = "credit_free_tier"

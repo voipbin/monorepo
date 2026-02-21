@@ -2174,6 +2174,14 @@ type CustomerManagerAccesskey struct {
 	TokenPrefix *string `json:"token_prefix,omitempty"`
 }
 
+// CustomerManagerCompleteSignupResult Result of a successful headless signup completion. Contains the customer ID and a provisioned access key.
+type CustomerManagerCompleteSignupResult struct {
+	Accesskey *CustomerManagerAccesskey `json:"accesskey,omitempty"`
+
+	// CustomerId The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details.
+	CustomerId string `json:"customer_id"`
+}
+
 // CustomerManagerCustomer defines model for CustomerManagerCustomer.
 type CustomerManagerCustomer struct {
 	// Address Address of the customer.
@@ -2227,6 +2235,20 @@ type CustomerManagerCustomerStatus string
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
+
+// CustomerManagerEmailVerifyResult Result of a successful email verification. Contains the verified customer and a provisioned access key.
+type CustomerManagerEmailVerifyResult struct {
+	Accesskey CustomerManagerAccesskey `json:"accesskey"`
+	Customer  CustomerManagerCustomer  `json:"customer"`
+}
+
+// CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.
+type CustomerManagerSignupResult struct {
+	Customer *CustomerManagerCustomer `json:"customer,omitempty"`
+
+	// TempToken Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification.
+	TempToken *string `json:"temp_token,omitempty"`
+}
 
 // EmailManagerEmail defines model for EmailManagerEmail.
 type EmailManagerEmail struct {
@@ -3224,6 +3246,48 @@ type RegistrarManagerTrunk struct {
 
 	// Username The SIP username for authentication.
 	Username *string `json:"username,omitempty"`
+}
+
+// RequestBodyAuthCompleteSignupPOST Request body for POST /auth/complete-signup (headless OTP verification).
+type RequestBodyAuthCompleteSignupPOST struct {
+	// Code One-time password (OTP) code sent to the customer for verification.
+	Code string `json:"code"`
+
+	// TempToken Temporary token returned from the `POST /auth/signup` response.
+	TempToken string `json:"temp_token"`
+}
+
+// RequestBodyAuthEmailVerifyPOST Request body for POST /auth/email-verify (email verification).
+type RequestBodyAuthEmailVerifyPOST struct {
+	// Token 64-character lowercase hexadecimal verification token. Sent to the customer's email after `POST /auth/signup`.
+	Token string `json:"token"`
+}
+
+// RequestBodyAuthSignupPOST Request body for POST /auth/signup (self-service customer registration).
+type RequestBodyAuthSignupPOST struct {
+	// AcceptedTos Must be `true` to confirm acceptance of the Terms of Service. Requests with `false` or missing value are rejected with HTTP 400.
+	AcceptedTos bool `json:"accepted_tos"`
+
+	// Address Mailing address of the customer.
+	Address *string `json:"address,omitempty"`
+
+	// Detail Additional details about the customer.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address for the new customer account. Must be unique across all customers.
+	Email string `json:"email"`
+
+	// Name Display name for the customer account.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Contact phone number in E.164 format.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// WebhookMethod HTTP method for webhook delivery. One of: POST, GET, PUT, DELETE.
+	WebhookMethod *string `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI where webhook events will be delivered.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // RequestBodyAuthUnregisterPOST Request body for POST /auth/unregister (self-service account deletion).
@@ -5552,6 +5616,15 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAuthCompleteSignupJSONRequestBody defines body for PostAuthCompleteSignup for application/json ContentType.
+type PostAuthCompleteSignupJSONRequestBody = RequestBodyAuthCompleteSignupPOST
+
+// PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
+type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST
+
+// PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
+type PostAuthSignupJSONRequestBody = RequestBodyAuthSignupPOST
 
 // PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
 type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST

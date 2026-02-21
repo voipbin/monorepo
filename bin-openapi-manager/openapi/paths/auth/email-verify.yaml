@@ -1,0 +1,28 @@
+post:
+  summary: Verify customer email address.
+  description: |
+    Validates the email verification token sent to the customer's email during signup.
+    On success, the customer's email is marked as verified and an access key is provisioned.
+
+    The `token` is a 64-character lowercase hexadecimal string included in the verification email.
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthEmailVerifyPOST'
+  responses:
+    '200':
+      description: Email verified successfully. Returns the customer and a provisioned access key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerEmailVerifyResult'
+    '400':
+      description: |
+        Bad request. Possible causes:
+        - Token is invalid, expired, or already used.
+        - Request body is malformed JSON.
+        - `token` field is missing.

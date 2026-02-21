@@ -93,7 +93,15 @@ func Test_Signup(t *testing.T) {
 
 			// create customer
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, c *customer.Customer) error {
+				if c.TermsAgreedIP != "192.168.1.1" {
+					t.Errorf("Expected TermsAgreedIP=192.168.1.1, got: %s", c.TermsAgreedIP)
+				}
+				if c.TermsAgreedVersion == "" {
+					t.Errorf("Expected TermsAgreedVersion to be set, got empty")
+				}
+				return nil
+			})
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(tt.responseCustomer, nil)
 
 			// token + signup session + email
@@ -101,7 +109,7 @@ func Test_Signup(t *testing.T) {
 			mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 
-			res, err := h.Signup(ctx, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := h.Signup(ctx, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, "192.168.1.1")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -140,7 +148,7 @@ func Test_Signup_invalidEmail(t *testing.T) {
 
 	mockUtil.EXPECT().EmailIsValid("invalid-email").Return(false)
 
-	_, err := h.Signup(ctx, "test", "detail", "invalid-email", "", "", "", "")
+	_, err := h.Signup(ctx, "test", "detail", "invalid-email", "", "", "", "", "192.168.1.1")
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -172,7 +180,7 @@ func Test_Signup_duplicateEmail(t *testing.T) {
 		{ID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")},
 	}, nil)
 
-	_, err := h.Signup(ctx, "test", "detail", "existing@voipbin.net", "", "", "", "")
+	_, err := h.Signup(ctx, "test", "detail", "existing@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -355,7 +363,7 @@ func Test_Signup_customerCreateError(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001"))
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(fmt.Errorf("db create error"))
 
-	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -396,7 +404,7 @@ func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
 	// Redis EmailVerifyTokenSet fails
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(fmt.Errorf("redis error"))
 
-	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -440,7 +448,7 @@ func Test_Signup_signupSessionSetError(t *testing.T) {
 	// Redis SignupSessionSet fails
 	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("redis session error"))
 
-	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
@@ -489,7 +497,7 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	// email send FAILS — should be non-fatal
 	mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("email service down"))
 
-	res, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "")
+	res, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err != nil {
 		t.Errorf("Wrong match. expect: ok (email failure non-fatal), got: %v", err)
 	}

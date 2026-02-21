@@ -34,7 +34,11 @@ type Customer struct {
 
 	EmailVerified bool `json:"email_verified" db:"email_verified"`
 
-	Status              Status     `json:"status" db:"status"`
+	Status Status `json:"status" db:"status"`
+
+	TermsAgreedVersion string `json:"terms_agreed_version,omitempty" db:"terms_agreed_version"`
+	TermsAgreedIP      string `json:"terms_agreed_ip,omitempty" db:"terms_agreed_ip"`
+
 	TMDeletionScheduled *time.Time `json:"tm_deletion_scheduled" db:"tm_deletion_scheduled"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.

@@ -22,6 +22,9 @@ const (
 	FieldStatus              Field = "status"
 	FieldTMDeletionScheduled Field = "tm_deletion_scheduled"
 
+	FieldTermsAgreedVersion Field = "terms_agreed_version"
+	FieldTermsAgreedIP      Field = "terms_agreed_ip"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"

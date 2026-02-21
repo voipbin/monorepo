@@ -60,6 +60,7 @@ type CustomerHandler interface {
 		address string,
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
+		clientIP string,
 	) (*customer.SignupResult, error)
 	EmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error)
 	CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error)
