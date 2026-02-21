@@ -36,7 +36,7 @@ func Test_SpeakingCreate(t *testing.T) {
 
 		responseSpeaking *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -64,7 +64,7 @@ func Test_SpeakingCreate(t *testing.T) {
 				Status: tmspeaking.StatusActive,
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -150,7 +150,7 @@ func Test_SpeakingGet(t *testing.T) {
 
 		responseSpeaking *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -173,7 +173,7 @@ func Test_SpeakingGet(t *testing.T) {
 				Status: tmspeaking.StatusActive,
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -254,7 +254,7 @@ func Test_SpeakingList(t *testing.T) {
 
 		expectToken   string
 		expectFilters map[tmspeaking.Field]any
-		expectRes     []*tmspeaking.Speaking
+		expectRes     []*tmspeaking.WebhookMessage
 	}{
 		{
 			name: "normal with token",
@@ -282,7 +282,7 @@ func Test_SpeakingList(t *testing.T) {
 				tmspeaking.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				tmspeaking.FieldDeleted:    false,
 			},
-			expectRes: []*tmspeaking.Speaking{
+			expectRes: []*tmspeaking.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
@@ -317,7 +317,7 @@ func Test_SpeakingList(t *testing.T) {
 				tmspeaking.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				tmspeaking.FieldDeleted:    false,
 			},
-			expectRes: []*tmspeaking.Speaking{
+			expectRes: []*tmspeaking.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
@@ -373,7 +373,7 @@ func Test_SpeakingSay(t *testing.T) {
 		responseSpeakingGet *tmspeaking.Speaking
 		responseSpeakingSay *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -406,12 +406,11 @@ func Test_SpeakingSay(t *testing.T) {
 				Status: tmspeaking.StatusActive,
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				PodID:  "tts-pod-1",
 				Status: tmspeaking.StatusActive,
 			},
 			expectErr: false,
@@ -491,7 +490,7 @@ func Test_SpeakingFlush(t *testing.T) {
 		responseSpeakingGet   *tmspeaking.Speaking
 		responseSpeakingFlush *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -523,12 +522,11 @@ func Test_SpeakingFlush(t *testing.T) {
 				Status: tmspeaking.StatusActive,
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				PodID:  "tts-pod-1",
 				Status: tmspeaking.StatusActive,
 			},
 			expectErr: false,
@@ -607,7 +605,7 @@ func Test_SpeakingStop(t *testing.T) {
 		responseSpeakingGet  *tmspeaking.Speaking
 		responseSpeakingStop *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -639,12 +637,11 @@ func Test_SpeakingStop(t *testing.T) {
 				Status: tmspeaking.StatusStopped,
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				PodID:  "tts-pod-1",
 				Status: tmspeaking.StatusStopped,
 			},
 			expectErr: false,
@@ -724,7 +721,7 @@ func Test_SpeakingDelete(t *testing.T) {
 		responseSpeakingStop   *tmspeaking.Speaking
 		responseSpeakingDelete *tmspeaking.Speaking
 
-		expectRes *tmspeaking.Speaking
+		expectRes *tmspeaking.WebhookMessage
 		expectErr bool
 	}{
 		{
@@ -762,7 +759,7 @@ func Test_SpeakingDelete(t *testing.T) {
 				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -799,7 +796,7 @@ func Test_SpeakingDelete(t *testing.T) {
 				TMDelete: func() *time.Time { t := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
-			expectRes: &tmspeaking.Speaking{
+			expectRes: &tmspeaking.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),

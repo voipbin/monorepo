@@ -277,9 +277,9 @@ v                   v     v                   v
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Tokens per month</p></td>
+<td><p>100</p></td>
 <td><p>1,000</p></td>
 <td><p>10,000</p></td>
-<td><p>100,000</p></td>
 <td><p>unlimited</p></td>
 </tr>
 </tbody>
@@ -456,9 +456,9 @@ v                   v     v                   v
 <span class="o">|</span> <span class="n">Transaction</span> <span class="nb">type</span><span class="p">:</span> <span class="n">top_up</span>                    <span class="o">|</span>
 <span class="o">|</span> <span class="n">Reference</span> <span class="nb">type</span><span class="p">:</span> <span class="n">monthly_allowance</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
-<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">+</span><span class="mi">1000</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">+</span><span class="mi">100</span>                        <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="mi">0</span>                          <span class="o">|</span>
-<span class="o">|</span>   <span class="n">balance_token_snapshot</span><span class="p">:</span> <span class="mi">1000</span>              <span class="o">|</span>
+<span class="o">|</span>   <span class="n">balance_token_snapshot</span><span class="p">:</span> <span class="mi">100</span>               <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
@@ -477,7 +477,7 @@ v                   v     v                   v
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
     <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
-    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
+    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
     <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
@@ -513,7 +513,7 @@ v                   v     v                   v
          <span class="n">v</span>                         <span class="n">v</span>
 <span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
 <span class="o">|</span>  <span class="n">balance_credit</span>   <span class="o">|</span>     <span class="o">|</span>  <span class="n">balance_token</span>    <span class="o">|</span>
-<span class="o">|</span>  <span class="mi">150</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">000</span>      <span class="o">|</span>     <span class="o">|</span>    <span class="mi">1</span><span class="p">,</span><span class="mi">000</span>          <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">150</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">000</span>      <span class="o">|</span>     <span class="o">|</span>      <span class="mi">100</span>          <span class="o">|</span>
 <span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
          <span class="o">|</span>                         <span class="o">|</span>
          <span class="o">|</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="p">,</span>             <span class="o">|</span> <span class="n">VN</span> <span class="n">calls</span><span class="p">,</span>
@@ -558,38 +558,33 @@ v                   v     v                   v
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
 <p><strong>Scenario 1: Token-Based Monthly Usage</strong></p>
 <p>Track token consumption via the billing ledger.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Monthly</span> <span class="n">Usage</span> <span class="p">(</span><span class="n">Free</span> <span class="n">Plan</span><span class="p">,</span> <span class="mi">1000</span> <span class="n">tokens</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Monthly</span> <span class="n">Usage</span> <span class="p">(</span><span class="n">Free</span> <span class="n">Plan</span><span class="p">,</span> <span class="mi">100</span> <span class="n">tokens</span><span class="p">):</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Week</span> <span class="mi">1</span><span class="p">:</span>                                    <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">50</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">150</span> <span class="n">tokens</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">20</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">200</span> <span class="n">tokens</span>                      <span class="o">|</span>
-<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">650</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">10</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">30</span> <span class="n">tokens</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">50</span> <span class="n">tokens</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">20</span>                          <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
 <span class="o">|</span> <span class="n">Week</span> <span class="mi">2</span><span class="p">:</span>                                    <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">40</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">2</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">80</span> <span class="n">tokens</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">30</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">300</span> <span class="n">tokens</span>                      <span class="o">|</span>
-<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">270</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">2</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">10</span> <span class="n">tokens</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">1</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">10</span> <span class="n">tokens</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
-<span class="o">|</span> <span class="n">Week</span> <span class="mi">3</span><span class="p">:</span>                                    <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">30</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">90</span> <span class="n">tokens</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">15</span> <span class="n">SMS</span> <span class="o">=</span> <span class="mi">150</span> <span class="n">tokens</span>                      <span class="o">|</span>
-<span class="o">|</span> <span class="n">balance_token</span><span class="p">:</span> <span class="mi">30</span>                          <span class="o">|</span>
-<span class="o">|</span>                                            <span class="o">|</span>
-<span class="o">|</span> <span class="n">Week</span> <span class="mi">4</span> <span class="p">(</span><span class="n">tokens</span> <span class="n">nearly</span> <span class="n">exhausted</span><span class="p">):</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">10</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="mi">30</span> <span class="n">tokens</span>      <span class="o">|</span>
-<span class="o">|</span>   <span class="p">(</span><span class="n">uses</span> <span class="n">last</span> <span class="n">tokens</span><span class="p">)</span>                       <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">SMS</span> <span class="o">=</span> <span class="n">overflow</span> <span class="n">to</span> <span class="n">credit</span>               <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">5</span> <span class="n">x</span> <span class="mi">8</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span> <span class="n">credit</span> <span class="n">charge</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Week</span> <span class="mi">3</span> <span class="p">(</span><span class="n">tokens</span> <span class="n">exhausted</span><span class="p">):</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">VN</span> <span class="n">calls</span> <span class="p">(</span><span class="n">avg</span> <span class="mi">3</span> <span class="nb">min</span><span class="p">)</span> <span class="o">=</span> <span class="n">overflow</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">5</span> <span class="n">x</span> <span class="mi">3</span> <span class="n">x</span> <span class="mi">1</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span> <span class="n">credit</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">2</span> <span class="n">SMS</span> <span class="o">=</span> <span class="n">overflow</span> <span class="n">to</span> <span class="n">credit</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">2</span> <span class="n">x</span> <span class="mi">8</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span> <span class="n">credit</span> <span class="n">charge</span>  <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Scenario 2: Mixed Token and Credit Usage</strong></p>
 <p>Plan for costs across token-eligible and credit-only services.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Campaign: Customer Outreach
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Campaign: Customer Outreach (Basic plan, 1000 tokens)
 +--------------------------------------------+
 | VN Calls: 200 calls (avg 3 min)            |
 | - Tokens needed: 200 x 3 = 600             |
-| - If 400 tokens available:                 |
+| - If 400 tokens remaining:                 |
 |   - 400 tokens consumed                    |
 |   - 200 overflow x 3 min x 1,000 micros    |
 |     = 600,000 micros ($0.60)               |

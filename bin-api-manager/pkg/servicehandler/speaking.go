@@ -23,7 +23,7 @@ func (h *serviceHandler) speakingGet(ctx context.Context, speakingID uuid.UUID) 
 }
 
 // SpeakingCreate creates a new speaking session.
-func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingCreate",
 		"customer_id": a.CustomerID,
@@ -42,11 +42,11 @@ func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, r
 	}
 	log.WithField("speaking", tmp).Debugf("Created speaking. speaking_id: %s", tmp.ID)
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // SpeakingGet retrieves a speaking session.
-func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingGet",
 		"customer_id": a.CustomerID,
@@ -65,11 +65,11 @@ func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, spea
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // SpeakingList retrieves a list of speaking sessions.
-func (h *serviceHandler) SpeakingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingList",
 		"customer_id": a.CustomerID,
@@ -96,11 +96,15 @@ func (h *serviceHandler) SpeakingList(ctx context.Context, a *amagent.Agent, siz
 		return nil, err
 	}
 
-	return tmps, nil
+	res := make([]*tmspeaking.WebhookMessage, len(tmps))
+	for i, s := range tmps {
+		res[i] = s.ConvertWebhookMessage()
+	}
+	return res, nil
 }
 
 // SpeakingSay sends text to be spoken. Pod-targeted.
-func (h *serviceHandler) SpeakingSay(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID, text string) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingSay(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID, text string) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingSay",
 		"customer_id": a.CustomerID,
@@ -126,11 +130,11 @@ func (h *serviceHandler) SpeakingSay(ctx context.Context, a *amagent.Agent, spea
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // SpeakingFlush flushes pending text from the speaking queue. Pod-targeted.
-func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingFlush",
 		"customer_id": a.CustomerID,
@@ -156,11 +160,11 @@ func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *amagent.Agent, sp
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // SpeakingStop stops the speaking session. Pod-targeted.
-func (h *serviceHandler) SpeakingStop(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingStop(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingStop",
 		"customer_id": a.CustomerID,
@@ -186,12 +190,12 @@ func (h *serviceHandler) SpeakingStop(ctx context.Context, a *amagent.Agent, spe
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // SpeakingDelete soft-deletes a speaking session.
 // Stops the streaming session first (pod-targeted) before deleting the DB record (shared queue).
-func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.Speaking, error) {
+func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingDelete",
 		"customer_id": a.CustomerID,
@@ -223,5 +227,5 @@ func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *amagent.Agent, s
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }

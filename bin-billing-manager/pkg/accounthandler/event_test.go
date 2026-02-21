@@ -163,7 +163,7 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 				account.FieldPlanType: account.PlanTypeFree,
 			}).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
-			mockDB.EXPECT().AccountTopUpTokens(ctx, tt.responseAccount.ID, tt.customer.ID, int64(1000), string(account.PlanTypeFree)).Return(nil)
+			mockDB.EXPECT().AccountTopUpTokens(ctx, tt.responseAccount.ID, tt.customer.ID, int64(100), string(account.PlanTypeFree)).Return(nil)
 
 			if err := h.EventCUCustomerCreated(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -215,7 +215,7 @@ func Test_EventCUCustomerCreated_topup_error(t *testing.T) {
 	mockDB.EXPECT().AccountGet(ctx, accountID).Return(responseAccount, nil)
 
 	// topup fails — should NOT cause EventCUCustomerCreated to return error
-	mockDB.EXPECT().AccountTopUpTokens(ctx, accountID, customerID, int64(1000), string(account.PlanTypeFree)).Return(fmt.Errorf("topup failed"))
+	mockDB.EXPECT().AccountTopUpTokens(ctx, accountID, customerID, int64(100), string(account.PlanTypeFree)).Return(fmt.Errorf("topup failed"))
 
 	err := h.EventCUCustomerCreated(ctx, customer)
 	if err != nil {
