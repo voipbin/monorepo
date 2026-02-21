@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	ememail "monorepo/bin-email-manager/models/email"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
@@ -40,6 +41,7 @@ type BillingHandler interface {
 
 	EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call) error
+	EventEMEmailCreated(ctx context.Context, e *ememail.Email) error
 	EventMMMessageCreated(ctx context.Context, m *mmmessage.Message) error
 	EventNMNumberCreated(ctx context.Context, n *nmnumber.Number) error
 	EventNMNumberRenewed(ctx context.Context, n *nmnumber.Number) error

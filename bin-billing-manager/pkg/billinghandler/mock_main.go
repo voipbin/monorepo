@@ -13,6 +13,7 @@ import (
 	context "context"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
+	email "monorepo/bin-email-manager/models/email"
 	message "monorepo/bin-message-manager/models/message"
 	number "monorepo/bin-number-manager/models/number"
 	reflect "reflect"
@@ -87,6 +88,20 @@ func (m *MockBillingHandler) EventCMCallProgressing(ctx context.Context, c *call
 func (mr *MockBillingHandlerMockRecorder) EventCMCallProgressing(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallProgressing", reflect.TypeOf((*MockBillingHandler)(nil).EventCMCallProgressing), ctx, c)
+}
+
+// EventEMEmailCreated mocks base method.
+func (m *MockBillingHandler) EventEMEmailCreated(ctx context.Context, e *email.Email) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventEMEmailCreated", ctx, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventEMEmailCreated indicates an expected call of EventEMEmailCreated.
+func (mr *MockBillingHandlerMockRecorder) EventEMEmailCreated(ctx, e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventEMEmailCreated", reflect.TypeOf((*MockBillingHandler)(nil).EventEMEmailCreated), ctx, e)
 }
 
 // EventMMMessageCreated mocks base method.
