@@ -16515,7 +16515,7 @@
           "token": {
             "type": "string",
             "description": "The access key token. Only returned once at creation time via `POST /accesskeys`. Subsequent `GET` requests will not include this field. Store it securely immediately after creation.",
-            "example": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW"
+            "example": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
           },
           "token_prefix": {
             "type": "string",

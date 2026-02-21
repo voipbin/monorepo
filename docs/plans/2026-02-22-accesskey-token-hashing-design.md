@@ -22,7 +22,7 @@ vb_<32-char base64url random>
 - Prefix: `vb_` (identifiable in logs, secret scanners)
 - Random part: 32 characters of base64url-encoded `crypto/rand` bytes (~192 bits entropy)
 - Total length: 35 characters
-- Example: `vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW`
+- Example: `vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe`
 
 ## Database Changes
 
@@ -137,7 +137,7 @@ type WebhookMessage struct {
     "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
     "name": "My API Key",
     "detail": "For accessing reporting APIs",
-    "token": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
+    "token": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
     "token_prefix": "vb_a3Bf9xKm",
     "tm_expire": "2027-02-22T01:41:40.503790Z",
     "tm_create": "2026-02-22T01:41:40.503790Z",

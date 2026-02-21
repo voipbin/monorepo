@@ -42,7 +42,7 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
           "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
           "name": "My New Accesskey",
           "detail": "This key is used for reporting",
-          "token": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
+          "token": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
           "token_prefix": "vb_a3Bf9xKm",
           "tm_expire": "2027-12-01T10:15:30.123456Z",
           "tm_create": "2026-12-01T10:15:30.123456Z",

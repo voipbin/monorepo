@@ -23,7 +23,7 @@ Example Request
 ~~~~~~~~~~~~~~~
 .. code::
 
-   curl --location 'https://api.voipbin.net/v1.0/calls?accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW'
+   curl --location 'https://api.voipbin.net/v1.0/calls?accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe'
 
 Description of Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~

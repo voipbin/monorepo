@@ -48,7 +48,7 @@ func Test_HashSHA256Hex(t *testing.T) {
 		},
 		{
 			name:   "token format",
-			input:  "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
+			input:  "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
 			expect: "", // will compute and verify length is 64
 		},
 	}
@@ -466,7 +466,7 @@ func Test_Create(t *testing.T) {
 			responseUUID:       uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 			responseRandomPart: "a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
 			responseExpire:     &expireTime,
-			expectTokenHash:    utilhandler.HashSHA256Hex("vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW"),
+			expectTokenHash:    utilhandler.HashSHA256Hex("vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"),
 			expectTokenPrefix:  "vb_a3Bf9xKm",
 		},
 	}
@@ -546,7 +546,7 @@ func Test_GetByToken(t *testing.T) {
 		{
 			name: "normal",
 
-			token: "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
+			token: "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
 
 			responseAccesskeys: []*accesskey.Accesskey{
 				{
@@ -554,7 +554,7 @@ func Test_GetByToken(t *testing.T) {
 				},
 			},
 			expectFilter: map[accesskey.Field]any{
-				accesskey.FieldTokenHash: utilhandler.HashSHA256Hex("vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW"),
+				accesskey.FieldTokenHash: utilhandler.HashSHA256Hex("vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"),
 			},
 			expectRes: &accesskey.Accesskey{
 				ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
@@ -804,7 +804,7 @@ In `bin-openapi-manager/openapi/openapi.yaml`, update the `CustomerManagerAccess
         token:
           type: string
           description: "The access key token. Only returned once at creation time via `POST /accesskeys`. Subsequent `GET` requests will not include this field. Store it securely immediately after creation."
-          example: "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW"
+          example: "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
         token_prefix:
           type: string
           description: "A short prefix of the access key token for identification purposes. Always returned in `GET` responses. Example: `vb_a3Bf9xKm`."
@@ -1003,7 +1003,7 @@ Add AI Implementation Hint about one-time visibility.
 
 **Step 3: Update accesskey_overview.rst**
 
-- Update example query parameter: `accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW`
+- Update example query parameter: `accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe`
 - Add security note about server-side hashing
 - Update Authentication section
 

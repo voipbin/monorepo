@@ -22,7 +22,7 @@ func Test_HashSHA256Hex(t *testing.T) {
 		},
 		{
 			name:   "token format",
-			input:  "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW",
+			input:  "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
 			expect: "", // just verify length is 64
 		},
 	}
