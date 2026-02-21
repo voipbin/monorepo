@@ -46,7 +46,7 @@ Single migration file with:
 **upgrade():**
 1. Add `token_hash CHAR(64)` column (nullable initially)
 2. Add `token_prefix VARCHAR(16)` column (nullable initially)
-3. Backfill: `UPDATE customer_accesskeys SET token_hash = SHA2(token, 256), token_prefix = LEFT(token, 8) WHERE token IS NOT NULL`
+3. Backfill: `UPDATE customer_accesskeys SET token_hash = SHA2(token, 256), token_prefix = LEFT(token, 11) WHERE token IS NOT NULL`
 4. Add index on `token_hash`
 5. Drop index on `token`
 6. Drop `token` column

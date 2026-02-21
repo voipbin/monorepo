@@ -352,6 +352,53 @@ func Test_GetByToken(t *testing.T) {
 	}
 }
 
+func Test_GetByToken_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().HashSHA256Hex("vb_nonexistenttoken").Return("somehash")
+	mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", gomock.Any()).Return([]*accesskey.Accesskey{}, nil)
+
+	_, err := h.GetByToken(ctx, "vb_nonexistenttoken")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_GetByToken_MultipleMatches(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().HashSHA256Hex("vb_duplicatetoken").Return("somehash")
+	mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", gomock.Any()).Return([]*accesskey.Accesskey{
+		{ID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")},
+		{ID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000002")},
+	}, nil)
+
+	_, err := h.GetByToken(ctx, "vb_duplicatetoken")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_Delete(t *testing.T) {
 	tests := []struct {
 		name string
