@@ -3,6 +3,7 @@ package emailhandler
 import (
 	"context"
 	"errors"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -137,6 +138,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
 			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
@@ -155,6 +157,56 @@ func Test_Create(t *testing.T) {
 			}
 
 			time.Sleep(100 * time.Millisecond)
+		})
+	}
+}
+
+func Test_Create_InsufficientBalance(t *testing.T) {
+	tests := []struct {
+		name         string
+		customerID   uuid.UUID
+		activeflowID uuid.UUID
+		destinations []commonaddress.Address
+	}{
+		{
+			name:         "insufficient balance returns error",
+			customerID:   uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
+			activeflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
+			destinations: []commonaddress.Address{
+				{
+					Type:       commonaddress.TypeEmail,
+					Target:     "test@voipbin.net",
+					TargetName: "test name",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(false, nil)
+
+			_, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.destinations, "test subject", "test content", []email.Attachment{})
+			if err == nil {
+				t.Errorf("Expected error for insufficient balance")
+			}
 		})
 	}
 }
