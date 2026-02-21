@@ -150,10 +150,11 @@ func Test_Create(t *testing.T) {
 		detail     string
 		expire     time.Duration
 
-		responseUUID    uuid.UUID
-		responseToken   string
-		responseExpire  *time.Time
-		expectAccesskey *accesskey.Accesskey
+		responseUUID       uuid.UUID
+		responseRandomPart string
+		responseExpire     *time.Time
+		responseTokenHash  string
+		expectAccesskey    *accesskey.Accesskey
 	}{
 		{
 			name: "normal",
@@ -163,15 +164,17 @@ func Test_Create(t *testing.T) {
 			detail:     "detail1",
 			expire:     time.Duration(time.Hour * 24 * 365),
 
-			responseUUID:   uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
-			responseToken:  "test_token",
-			responseExpire: &expireTime,
+			responseUUID:       uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
+			responseRandomPart: "abcdefghijklmnopqrstuvwxyz012345",
+			responseExpire:     &expireTime,
+			responseTokenHash:  "fakehash64chars0000000000000000000000000000000000000000000000000",
 			expectAccesskey: &accesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 				CustomerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
 				Name:       "test1",
 				Detail:     "detail1",
-				Token:      "test_token",
+				TokenHash:  "fakehash64chars0000000000000000000000000000000000000000000000000",
+				TokenPrefix: "vb_abcdefgh",
 				TMExpire:   &expireTime,
 			},
 		},
@@ -195,16 +198,35 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			token := defaultTokenPrefix + tt.responseRandomPart
+
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeNowAdd(tt.expire).Return(tt.responseExpire)
-			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return(tt.responseToken, nil)
+			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return(tt.responseRandomPart, nil)
+			mockUtil.EXPECT().HashSHA256Hex(token).Return(tt.responseTokenHash)
 			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
 			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Return()
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Do(
+				func(_ context.Context, _ string, data any) {
+					ak, ok := data.(*accesskey.Accesskey)
+					if !ok {
+						t.Errorf("Expected *accesskey.Accesskey, got: %T", data)
+						return
+					}
+					if ak.RawToken != "" {
+						t.Errorf("Event should not contain RawToken, got: %s", ak.RawToken)
+					}
+				},
+			).Return()
 
-			_, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
+			res, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+
+			// Verify RawToken is set for one-time return
+			if res.RawToken != token {
+				t.Errorf("Wrong RawToken. expect: %s, got: %s", token, res.RawToken)
 			}
 		})
 	}
@@ -272,6 +294,7 @@ func Test_GetByToken(t *testing.T) {
 
 		token string
 
+		responseTokenHash  string
 		responseAccesskeys []*accesskey.Accesskey
 		expectFilter       map[accesskey.Field]any
 		expectRes          *accesskey.Accesskey
@@ -281,13 +304,14 @@ func Test_GetByToken(t *testing.T) {
 
 			token: "8043e3fa-ab11-11ef-ba54-cf942545cefe",
 
+			responseTokenHash: "fakehash64chars0000000000000000000000000000000000000000000000000",
 			responseAccesskeys: []*accesskey.Accesskey{
 				{
 					ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
 				},
 			},
 			expectFilter: map[accesskey.Field]any{
-				accesskey.FieldToken: "8043e3fa-ab11-11ef-ba54-cf942545cefe",
+				accesskey.FieldTokenHash: "fakehash64chars0000000000000000000000000000000000000000000000000",
 			},
 			expectRes: &accesskey.Accesskey{
 				ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
@@ -313,6 +337,7 @@ func Test_GetByToken(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().HashSHA256Hex(tt.token).Return(tt.responseTokenHash)
 			mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.GetByToken(ctx, tt.token)
@@ -324,6 +349,53 @@ func Test_GetByToken(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_GetByToken_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().HashSHA256Hex("vb_nonexistenttoken").Return("somehash")
+	mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", gomock.Any()).Return([]*accesskey.Accesskey{}, nil)
+
+	_, err := h.GetByToken(ctx, "vb_nonexistenttoken")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_GetByToken_MultipleMatches(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &accesskeyHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().HashSHA256Hex("vb_duplicatetoken").Return("somehash")
+	mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", gomock.Any()).Return([]*accesskey.Accesskey{
+		{ID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")},
+		{ID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000002")},
+	}, nil)
+
+	_, err := h.GetByToken(ctx, "vb_duplicatetoken")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
 
@@ -525,7 +597,8 @@ func Test_Create_Error(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(id)
 	mockUtil.EXPECT().TimeNowAdd(gomock.Any()).Return(nil)
-	mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return("", nil)
+	mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return("randompart000000000000000000000000", nil)
+	mockUtil.EXPECT().HashSHA256Hex(gomock.Any()).Return("fakehash")
 
 	mockDB.EXPECT().AccesskeyCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 

@@ -16,15 +16,17 @@ func TestAccesskeyStruct(t *testing.T) {
 	tmUpdate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	a := Accesskey{
-		ID:         id,
-		CustomerID: customerID,
-		Name:       "Test Accesskey",
-		Detail:     "Test accesskey details",
-		Token:      "test-token-12345",
-		TMExpire:   &tmExpire,
-		TMCreate:   &tmCreate,
-		TMUpdate:   &tmUpdate,
-		TMDelete:   nil,
+		ID:          id,
+		CustomerID:  customerID,
+		Name:        "Test Accesskey",
+		Detail:      "Test accesskey details",
+		TokenHash:   "abc123hash",
+		TokenPrefix: "vb_test1234",
+		RawToken:    "vb_test1234fulltoken",
+		TMExpire:    &tmExpire,
+		TMCreate:    &tmCreate,
+		TMUpdate:    &tmUpdate,
+		TMDelete:    nil,
 	}
 
 	if a.ID != id {
@@ -36,7 +38,13 @@ func TestAccesskeyStruct(t *testing.T) {
 	if a.Name != "Test Accesskey" {
 		t.Errorf("Accesskey.Name = %v, expected %v", a.Name, "Test Accesskey")
 	}
-	if a.Token != "test-token-12345" {
-		t.Errorf("Accesskey.Token = %v, expected %v", a.Token, "test-token-12345")
+	if a.TokenHash != "abc123hash" {
+		t.Errorf("Accesskey.TokenHash = %v, expected %v", a.TokenHash, "abc123hash")
+	}
+	if a.TokenPrefix != "vb_test1234" {
+		t.Errorf("Accesskey.TokenPrefix = %v, expected %v", a.TokenPrefix, "vb_test1234")
+	}
+	if a.RawToken != "vb_test1234fulltoken" {
+		t.Errorf("Accesskey.RawToken = %v, expected %v", a.RawToken, "vb_test1234fulltoken")
 	}
 }

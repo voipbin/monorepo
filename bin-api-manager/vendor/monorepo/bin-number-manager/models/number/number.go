@@ -1,0 +1,69 @@
+package number
+
+import (
+	"time"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
+
+// Type represents the number type
+type Type string
+
+// list of number types
+const (
+	TypeNormal  Type = "normal"
+	TypeVirtual Type = "virtual"
+)
+
+// Number struct represent number information
+type Number struct {
+	commonidentity.Identity
+
+	Number string `json:"number" db:"number"`
+	Type   Type   `json:"type" db:"type"`
+
+	CallFlowID    uuid.UUID `json:"call_flow_id" db:"call_flow_id,uuid"`
+	MessageFlowID uuid.UUID `json:"message_flow_id" db:"message_flow_id,uuid"`
+
+	Name   string `json:"name" db:"name"`
+	Detail string `json:"detail" db:"detail"`
+
+	ProviderName        ProviderName `json:"provider_name" db:"provider_name"`
+	ProviderReferenceID string       `json:"provider_reference_id" db:"provider_reference_id"`
+
+	Status Status `json:"status" db:"status"`
+
+	T38Enabled       bool `json:"t38_enabled" db:"t38_enabled"`
+	EmergencyEnabled bool `json:"emergency_enabled" db:"emergency_enabled"`
+
+	// timestamp
+	TMPurchase *time.Time `json:"tm_purchase" db:"tm_purchase"`
+	TMRenew    *time.Time `json:"tm_renew" db:"tm_renew"`
+
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
+}
+
+// ProviderName type
+type ProviderName string
+
+// list of NumberProvider
+const (
+	ProviderNameNone        ProviderName = ""
+	ProviderNameTelnyx      ProviderName = "telnyx"
+	ProviderNameTwilio      ProviderName = "twilio"
+	ProviderNameMessagebird ProviderName = "messagebird"
+)
+
+// Status type
+type Status string
+
+// List of NumberStatus types
+const (
+	StatusNone    Status = ""
+	StatusActive  Status = "active"
+	StatusDeleted Status = "deleted"
+)

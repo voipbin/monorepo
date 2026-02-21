@@ -92,10 +92,13 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 		"func": "AccesskeyGetByToken",
 	})
 
+	// Hash the token before lookup
+	tokenHash := h.utilHandler.HashSHA256Hex(token)
+
 	// filters
 	filters := map[csaccesskey.Field]any{
-		csaccesskey.FieldToken:   token,
-		csaccesskey.FieldDeleted: false,
+		csaccesskey.FieldTokenHash: tokenHash,
+		csaccesskey.FieldDeleted:   false,
 	}
 
 	tmps, err := h.reqHandler.CustomerV1AccesskeyList(ctx, "", 10, filters)
@@ -106,6 +109,10 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 
 	if len(tmps) == 0 {
 		return nil, fmt.Errorf("not found")
+	}
+	if len(tmps) > 1 {
+		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")
+		return nil, fmt.Errorf("ambiguous token")
 	}
 
 	res := tmps[0]

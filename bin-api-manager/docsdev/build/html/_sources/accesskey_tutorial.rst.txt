@@ -42,12 +42,17 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
           "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
           "name": "My New Accesskey",
           "detail": "This key is used for reporting",
-          "token": "3yTqk5F4ABCD2xy9",
-          "tm_expire": "2025-12-01 10:15:30.123456",
-          "tm_create": "2024-12-01 10:15:30.123456",
-          "tm_update": "2024-12-01 10:15:30.123456",
-          "tm_delete": "9999-01-01 00:00:00.000000"
+          "token": "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe",
+          "token_prefix": "vb_a3Bf9xKm",
+          "tm_expire": "2027-12-01T10:15:30.123456Z",
+          "tm_create": "2026-12-01T10:15:30.123456Z",
+          "tm_update": "2026-12-01T10:15:30.123456Z",
+          "tm_delete": "9999-01-01T00:00:00.000000Z"
       }
+
+   .. note:: **AI Implementation Hint**
+
+      The ``token`` field is only returned in this creation response. **Store it securely and immediately.** You will not be able to retrieve the full token again. If the token is lost, delete the key via ``DELETE /accesskeys/{id}`` and create a new one. Use ``token_prefix`` to identify which key is which in subsequent requests.
 
 2. **Get a List of Accesskeys**
 
@@ -68,11 +73,11 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
                   "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
                   "name": "My New Accesskey",
                   "detail": "This key is used for reporting",
-                  "token": "3yTqk5F4ABCD2xy9",
-                  "tm_expire": "2025-12-01 10:15:30.123456",
-                  "tm_create": "2024-12-01 10:15:30.123456",
-                  "tm_update": "2024-12-01 10:15:30.123456",
-                  "tm_delete": "9999-01-01 00:00:00.000000"
+                  "token_prefix": "vb_a3Bf9xKm",
+                  "tm_expire": "2027-12-01T10:15:30.123456Z",
+                  "tm_create": "2026-12-01T10:15:30.123456Z",
+                  "tm_update": "2026-12-01T10:15:30.123456Z",
+                  "tm_delete": "9999-01-01T00:00:00.000000Z"
               }
           ],
           "next_page_token": null
@@ -95,9 +100,9 @@ This tutorial demonstrates how to create an access key, retrieve a list of acces
           "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
           "name": "My New Accesskey",
           "detail": "This key is used for reporting",
-          "token": "3yTqk5F4ABCD2xy9",
-          "tm_expire": "2025-12-01 10:15:30.123456",
-          "tm_create": "2024-12-01 10:15:30.123456",
-          "tm_update": "2024-12-01 10:15:30.123456",
-          "tm_delete": "9999-01-01 00:00:00.000000"
+          "token_prefix": "vb_a3Bf9xKm",
+          "tm_expire": "2027-12-01T10:15:30.123456Z",
+          "tm_create": "2026-12-01T10:15:30.123456Z",
+          "tm_update": "2026-12-01T10:15:30.123456Z",
+          "tm_delete": "9999-01-01T00:00:00.000000Z"
       }

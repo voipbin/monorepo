@@ -204,20 +204,20 @@
 <p>To use the Accesskey, pass the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> in the query parameters of your API requests. Below is an example usage:</p>
 <section id="example-request">
 <h3>Example Request<a class="headerlink" href="#example-request" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="description-of-parameters">
 <h3>Description of Parameters<a class="headerlink" href="#description-of-parameters" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><strong>Accesskey</strong>: The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
+<li><p><strong>Accesskey</strong>: The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request. Tokens are prefixed with <code class="docutils literal notranslate"><span class="pre">vb_</span></code> for identification.</p></li>
 </ul>
 </section>
 </section>
 <section id="authentication">
 <h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> serves as the authentication credential. Tokens are hashed server-side using SHA-256 before storage. The full token is only shown once at creation time. Store it securely and avoid exposing it in client-side code or public repositories.</p>
 </section>
 <section id="lifecycles-and-expiry">
 <h2>Lifecycles and Expiry<a class="headerlink" href="#lifecycles-and-expiry" title="Link to this heading"></a></h2>
@@ -239,6 +239,7 @@
 <ul class="simple">
 <li><p>Always use HTTPS to ensure secure communication.</p></li>
 <li><p>Tokens should be rotated periodically to enhance security.</p></li>
+<li><p>If a token is lost, delete the key and create a new one. The full token cannot be retrieved after creation.</p></li>
 </ul>
 </section>
 </section>

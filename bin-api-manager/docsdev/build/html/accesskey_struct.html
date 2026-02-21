@@ -191,29 +191,35 @@
    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My API Key&quot;</span><span class="p">,</span>
    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;For accessing reporting APIs&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;DuRWq5T4DAK32dw4&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+   <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-04-28T01:41:40.503790Z&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-28T01:41:40.503790Z&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-28T01:41:40.503790Z&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The accesskey’s unique identifier. Returned when creating an accesskey via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code> or when listing accesskeys via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this accesskey. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the accesskey’s intended use or purpose.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String): The API token credential used to authenticate requests. Must be stored securely and never exposed in client-side code.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> (string, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the accesskey was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the accesskey was last updated.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the accesskey was deleted, if applicable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Optional): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): An optional description of the accesskey’s intended use or purpose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String, Optional): The full API token credential. <strong>Only returned once at creation time</strong> via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code>. Store it securely and immediately. If lost, delete the key and create a new one.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token_prefix</span></code> (String): A short prefix of the token (e.g., <code class="docutils literal notranslate"><span class="pre">vb_a3Bf9xKm</span></code>) for identification. Always returned in <code class="docutils literal notranslate"><span class="pre">GET</span></code> responses.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> (String, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the accesskey was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the accesskey was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the accesskey was deleted, if applicable.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the accesskey has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01T00:00:00.000000Z</span></code> indicates the accesskey has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">token</span></code> field is only present in the response to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code> (creation). All subsequent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code> and <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys/{id}</span></code> responses will NOT include the <code class="docutils literal notranslate"><span class="pre">token</span></code> field. Use <code class="docutils literal notranslate"><span class="pre">token_prefix</span></code> to identify which key is which. If the token is lost, delete the key via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/accesskeys/{id}</span></code> and create a new one.</p>
 </div>
 </section>
 </section>

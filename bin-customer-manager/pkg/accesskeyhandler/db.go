@@ -58,14 +58,23 @@ func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "GetByToken")
 
+	tokenHash := h.utilHandler.HashSHA256Hex(token)
+
 	filter := map[accesskey.Field]any{
-		accesskey.FieldToken: token,
+		accesskey.FieldTokenHash: tokenHash,
 	}
 
 	tmp, err := h.db.AccesskeyList(ctx, 100, "", filter)
-	if err != nil || len(tmp) == 0 || len(tmp) > 1 {
+	if err != nil {
 		log.Errorf("Could not get accesskeys info. err: %v", err)
 		return nil, err
+	}
+	if len(tmp) == 0 {
+		return nil, fmt.Errorf("accesskey not found")
+	}
+	if len(tmp) > 1 {
+		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")
+		return nil, fmt.Errorf("ambiguous token")
 	}
 
 	res := tmp[0]
@@ -91,9 +100,18 @@ func (h *accesskeyHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	tmExpire := h.utilHandler.TimeNowAdd(expire)
 
-	token, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
+	randomPart, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
 	if err != nil {
 		log.Errorf("Could not generate the token. err: %v", err)
+		return nil, fmt.Errorf("could not generate token: %w", err)
+	}
+	token := defaultTokenPrefix + randomPart
+
+	tokenHash := h.utilHandler.HashSHA256Hex(token)
+
+	tokenPrefix := token
+	if len(tokenPrefix) > defaultTokenPrefixLen {
+		tokenPrefix = tokenPrefix[:defaultTokenPrefixLen]
 	}
 
 	a := &accesskey.Accesskey{
@@ -103,24 +121,28 @@ func (h *accesskeyHandler) Create(
 		Name:   name,
 		Detail: detail,
 
-		Token: token,
+		TokenHash:   tokenHash,
+		TokenPrefix: tokenPrefix,
 
 		TMExpire: tmExpire,
 	}
 
 	if err := h.db.AccesskeyCreate(ctx, a); err != nil {
-		log.Errorf("Could not create a new customer. err: %v", err)
+		log.Errorf("Could not create a new accesskey. err: %v", err)
 		return nil, err
 	}
 
 	res, err := h.db.AccesskeyGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get created customer info. err: %v", err)
+		log.Errorf("Could not get created accesskey info. err: %v", err)
 		return nil, err
 	}
 
-	// notify
+	// notify before setting RawToken to avoid leaking plain-text token in event
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, res)
+
+	// Set raw token for one-time return (after event publish)
+	res.RawToken = token
 
 	return res, nil
 }

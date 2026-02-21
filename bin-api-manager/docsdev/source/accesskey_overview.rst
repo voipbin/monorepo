@@ -23,15 +23,15 @@ Example Request
 ~~~~~~~~~~~~~~~
 .. code::
 
-   curl --location 'https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4'
+   curl --location 'https://api.voipbin.net/v1.0/calls?accesskey=vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe'
 
 Description of Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-- **Accesskey**: The ``accesskey`` query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.
+- **Accesskey**: The ``accesskey`` query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request. Tokens are prefixed with ``vb_`` for identification.
 
 Authentication
 --------------
-The ``accesskey`` serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.
+The ``accesskey`` serves as the authentication credential. Tokens are hashed server-side using SHA-256 before storage. The full token is only shown once at creation time. Store it securely and avoid exposing it in client-side code or public repositories.
 
 Lifecycles and Expiry
 ---------------------
@@ -50,3 +50,4 @@ Notes
 -----
 - Always use HTTPS to ensure secure communication.
 - Tokens should be rotated periodically to enhance security.
+- If a token is lost, delete the key and create a new one. The full token cannot be retrieved after creation.
