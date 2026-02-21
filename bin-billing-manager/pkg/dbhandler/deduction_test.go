@@ -2,6 +2,8 @@ package dbhandler
 
 import (
 	"testing"
+
+	"monorepo/bin-billing-manager/models/billing"
 )
 
 func Test_CalculateTokenCreditDeduction(t *testing.T) {
@@ -9,10 +11,9 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 	tests := []struct {
 		name string
 
-		balanceToken     int64
-		billableUnits    int
-		rateTokenPerUnit int64
-		rateCreditPerUnit int64
+		balanceToken  int64
+		billableUnits int
+		costInfo      billing.CostInfo
 
 		expectTokenDeducted  int64
 		expectCreditDeducted int64
@@ -24,17 +25,15 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "zero billable units",
 			balanceToken:         100,
 			billableUnits:        0,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 6000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 0,
 		},
 		{
-			name:                 "zero rates",
+			name:                 "free mode - zero deduction",
 			balanceToken:         100,
 			billableUnits:        5,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    0,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeFree},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 0,
 		},
@@ -42,21 +41,27 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "negative billable units",
 			balanceToken:         100,
 			billableUnits:        -3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 6000},
+			expectTokenDeducted:  0,
+			expectCreditDeducted: 0,
+		},
+		{
+			name:                 "disabled mode - zero deduction",
+			balanceToken:         100,
+			billableUnits:        5,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeDisabled},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 0,
 		},
 
 		// =====================================================================
-		// Credit-only cost types (rateTokenPerUnit = 0)
+		// Credit-only cost types
 		// =====================================================================
 		{
 			name:                 "credit only - PSTN outgoing",
 			balanceToken:         1000,
 			billableUnits:        2,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 6000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 12000,
 		},
@@ -64,8 +69,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "credit only - number purchase",
 			balanceToken:         500,
 			billableUnits:        1,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    5000000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 5000000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 5000000,
 		},
@@ -73,21 +77,19 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "credit only - zero token balance irrelevant",
 			balanceToken:         0,
 			billableUnits:        3,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    8000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 8000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 24000,
 		},
 
 		// =====================================================================
-		// Token-only cost types (rateCreditPerUnit = 0, rateTokenPerUnit > 0)
+		// Token-only cost types (TokenFirst with CreditPerUnit=0)
 		// =====================================================================
 		{
 			name:                 "token only - exact match",
 			balanceToken:         10,
 			billableUnits:        1,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    0,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 0},
 			expectTokenDeducted:  10,
 			expectCreditDeducted: 0,
 		},
@@ -95,8 +97,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "token only - surplus tokens",
 			balanceToken:         100,
 			billableUnits:        2,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    0,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 0},
 			expectTokenDeducted:  20,
 			expectCreditDeducted: 0,
 		},
@@ -104,8 +105,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "token only - insufficient (partial, zero credit rate)",
 			balanceToken:         15,
 			billableUnits:        2,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    0,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 0},
 			expectTokenDeducted:  10,
 			expectCreditDeducted: 0, // remaining 1 unit * 0 credit = 0
 		},
@@ -113,8 +113,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "token only - zero balance (zero credit rate)",
 			balanceToken:         0,
 			billableUnits:        3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    0,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 0},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 0, // 3 units * 0 credit = 0
 		},
@@ -126,8 +125,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - tokens cover all units",
 			balanceToken:         100,
 			billableUnits:        3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 4500},
 			expectTokenDeducted:  30,
 			expectCreditDeducted: 0,
 		},
@@ -135,8 +133,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - exact token match",
 			balanceToken:         30,
 			billableUnits:        3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 4500},
 			expectTokenDeducted:  30,
 			expectCreditDeducted: 0,
 		},
@@ -144,8 +141,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - partial tokens overflow to credit",
 			balanceToken:         25,
 			billableUnits:        3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 4500},
 			expectTokenDeducted:  20, // 2 full units @ 10 tokens each
 			expectCreditDeducted: 4500, // 1 remaining unit @ 4500 credit
 		},
@@ -153,8 +149,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - zero tokens all to credit",
 			balanceToken:         0,
 			billableUnits:        3,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 4500},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 13500, // 3 units @ 4500 credit each
 		},
@@ -162,8 +157,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - 1 token less than 1 unit",
 			balanceToken:         9,
 			billableUnits:        2,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 6000},
 			expectTokenDeducted:  0, // 9 < 10 → 0 full units
 			expectCreditDeducted: 12000, // 2 units @ 6000
 		},
@@ -171,8 +165,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "both rates - single unit exact token",
 			balanceToken:         1,
 			billableUnits:        1,
-			rateTokenPerUnit:     1,
-			rateCreditPerUnit:    8000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 1, CreditPerUnit: 8000},
 			expectTokenDeducted:  1,
 			expectCreditDeducted: 0,
 		},
@@ -184,8 +177,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "VN call - 2 min call with 100 tokens at rate 1",
 			balanceToken:         100,
 			billableUnits:        2,
-			rateTokenPerUnit:     1,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 1, CreditPerUnit: 4500},
 			expectTokenDeducted:  2,
 			expectCreditDeducted: 0,
 		},
@@ -193,8 +185,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "VN call - 3 min call with 1 token left",
 			balanceToken:         1,
 			billableUnits:        3,
-			rateTokenPerUnit:     1,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 1, CreditPerUnit: 4500},
 			expectTokenDeducted:  1,
 			expectCreditDeducted: 9000, // 2 remaining * 4500
 		},
@@ -206,10 +197,21 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "SMS - credit only",
 			balanceToken:         50,
 			billableUnits:        1,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    8000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 8000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 8000,
+		},
+
+		// =====================================================================
+		// Email scenario (credit only)
+		// =====================================================================
+		{
+			name:                 "email credit only at $0.01",
+			balanceToken:         50,
+			billableUnits:        1,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 10000},
+			expectTokenDeducted:  0,
+			expectCreditDeducted: 10000,
 		},
 
 		// =====================================================================
@@ -219,8 +221,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "negative token balance - all overflows to credit",
 			balanceToken:         -5,
 			billableUnits:        2,
-			rateTokenPerUnit:     10,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 6000},
 			expectTokenDeducted:  0, // Go int division: -5/10 = 0 full units
 			expectCreditDeducted: 12000,
 		},
@@ -228,8 +229,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "negative token balance with rate 1",
 			balanceToken:         -3,
 			billableUnits:        5,
-			rateTokenPerUnit:     1,
-			rateCreditPerUnit:    4500,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 1, CreditPerUnit: 4500},
 			expectTokenDeducted:  0, // negative balance → skip tokens, all to credit
 			expectCreditDeducted: 22500,
 		},
@@ -241,8 +241,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "large token balance",
 			balanceToken:         1000000000,
 			billableUnits:        1000,
-			rateTokenPerUnit:     100,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 100, CreditPerUnit: 6000},
 			expectTokenDeducted:  100000,
 			expectCreditDeducted: 0,
 		},
@@ -250,8 +249,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			name:                 "large credit values (micros)",
 			balanceToken:         0,
 			billableUnits:        60,
-			rateTokenPerUnit:     0,
-			rateCreditPerUnit:    6000,
+			costInfo:             billing.CostInfo{Mode: billing.CostModeCreditOnly, CreditPerUnit: 6000},
 			expectTokenDeducted:  0,
 			expectCreditDeducted: 360000,
 		},
@@ -259,7 +257,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := CalculateTokenCreditDeduction(tt.balanceToken, tt.billableUnits, tt.rateTokenPerUnit, tt.rateCreditPerUnit)
+			result := CalculateTokenCreditDeduction(tt.balanceToken, tt.billableUnits, tt.costInfo)
 
 			if result.TokenDeducted != tt.expectTokenDeducted {
 				t.Errorf("TokenDeducted = %d, expected %d", result.TokenDeducted, tt.expectTokenDeducted)

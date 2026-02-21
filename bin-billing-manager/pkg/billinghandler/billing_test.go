@@ -275,7 +275,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
 			// billing end - SMS uses BillingConsumeAndRecord atomically
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.responseBilling, tt.responseBilling.AccountID, 1, 0, int64(0), billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.responseBilling, tt.responseBilling.AccountID, 1, 0, billing.GetCostInfo(tt.responseBilling.CostType), tt.tmBillingStart).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination); err != nil {
@@ -400,7 +400,7 @@ func Test_BillingEnd(t *testing.T) {
 				expectBillableUnits = 1
 			}
 
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, expectBillableUnits, expectUsageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, expectBillableUnits, expectUsageDuration, billing.GetCostInfo(tt.billing.CostType), tt.tmBillingEnd).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
@@ -613,7 +613,7 @@ func Test_BillingEnd_consume_error(t *testing.T) {
 			// BillingConsumeAndRecord returns error
 			usageDuration := int(tt.tmBillingEnd.Sub(*tt.billing.TMBillingStart).Seconds())
 			billableUnits := billing.CalculateBillableUnits(usageDuration)
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(nil, fmt.Errorf("insufficient balance"))
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, billing.GetCostInfo(tt.billing.CostType), tt.tmBillingEnd).Return(nil, fmt.Errorf("insufficient balance"))
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {
@@ -762,7 +762,7 @@ func Test_BillingStart_idempotent_retry_sms(t *testing.T) {
 			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(tt.existingBilling, nil)
 
 			// BillingEnd should be called - SMS uses BillingConsumeAndRecord atomically
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.existingBilling, tt.existingBilling.AccountID, 1, 0, int64(0), billing.DefaultCreditPerUnitSMS, tt.tmBillingStart).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.existingBilling, tt.existingBilling.AccountID, 1, 0, billing.GetCostInfo(tt.existingBilling.CostType), tt.tmBillingStart).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, tt.tmBillingStart, tt.source, tt.destination)
@@ -1109,7 +1109,7 @@ func Test_BillingEnd_nil_timestamps(t *testing.T) {
 			ctx := context.Background()
 
 			// nil timestamps: usageDuration=0, billableUnits=0
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, 0, 0, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, (*time.Time)(nil)).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, 0, 0, billing.GetCostInfo(tt.billing.CostType), (*time.Time)(nil)).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseBilling)
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
@@ -1227,7 +1227,7 @@ func Test_BillingEnd_set_status_end_error(t *testing.T) {
 
 			usageDuration := int(tt.tmBillingEnd.Sub(*tt.billing.TMBillingStart).Seconds())
 			billableUnits := billing.CalculateBillableUnits(usageDuration)
-			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, tt.billing.RateTokenPerUnit, tt.billing.RateCreditPerUnit, tt.tmBillingEnd).Return(nil, fmt.Errorf("connection timeout"))
+			mockDB.EXPECT().BillingConsumeAndRecord(ctx, tt.billing, tt.billing.AccountID, billableUnits, usageDuration, billing.GetCostInfo(tt.billing.CostType), tt.tmBillingEnd).Return(nil, fmt.Errorf("connection timeout"))
 
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {

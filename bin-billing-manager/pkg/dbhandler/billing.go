@@ -353,32 +353,42 @@ type DeductionResult struct {
 }
 
 // CalculateTokenCreditDeduction computes how many tokens and credits to deduct
-// for a given billing operation. Tokens are consumed first (whole units only);
-// any remaining units overflow to credits.
-func CalculateTokenCreditDeduction(balanceToken int64, billableUnits int, rateTokenPerUnit int64, rateCreditPerUnit int64) DeductionResult {
+// for a given billing operation using the cost type's mode.
+func CalculateTokenCreditDeduction(balanceToken int64, billableUnits int, costInfo billing.CostInfo) DeductionResult {
 	if billableUnits <= 0 {
 		return DeductionResult{}
 	}
 
-	totalTokenCost := int64(billableUnits) * rateTokenPerUnit
-	totalCreditCost := int64(billableUnits) * rateCreditPerUnit
+	switch costInfo.Mode {
+	case billing.CostModeFree, billing.CostModeDisabled:
+		return DeductionResult{}
 
-	if totalTokenCost > 0 && balanceToken > 0 {
-		if balanceToken >= totalTokenCost {
-			return DeductionResult{TokenDeducted: totalTokenCost, CreditDeducted: 0}
+	case billing.CostModeCreditOnly:
+		return DeductionResult{
+			TokenDeducted:  0,
+			CreditDeducted: int64(billableUnits) * costInfo.CreditPerUnit,
 		}
-		fullUnitsInTokens := balanceToken / rateTokenPerUnit
-		tokenDeducted := fullUnitsInTokens * rateTokenPerUnit
-		remainingUnits := int64(billableUnits) - fullUnitsInTokens
-		creditDeducted := remainingUnits * rateCreditPerUnit
-		return DeductionResult{TokenDeducted: tokenDeducted, CreditDeducted: creditDeducted}
+
+	case billing.CostModeTokenFirst:
+		totalTokenCost := int64(billableUnits) * costInfo.TokenPerUnit
+		if totalTokenCost > 0 && balanceToken > 0 {
+			if balanceToken >= totalTokenCost {
+				return DeductionResult{TokenDeducted: totalTokenCost, CreditDeducted: 0}
+			}
+			fullUnitsInTokens := balanceToken / costInfo.TokenPerUnit
+			tokenDeducted := fullUnitsInTokens * costInfo.TokenPerUnit
+			remainingUnits := int64(billableUnits) - fullUnitsInTokens
+			creditDeducted := remainingUnits * costInfo.CreditPerUnit
+			return DeductionResult{TokenDeducted: tokenDeducted, CreditDeducted: creditDeducted}
+		}
+		return DeductionResult{TokenDeducted: 0, CreditDeducted: int64(billableUnits) * costInfo.CreditPerUnit}
 	}
 
-	return DeductionResult{TokenDeducted: 0, CreditDeducted: totalCreditCost}
+	return DeductionResult{}
 }
 
 // BillingConsumeAndRecord atomically deducts from account and records in billing ledger.
-func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, rateTokenPerUnit int64, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error) {
+func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits int, usageDuration int, costInfo billing.CostInfo, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("BillingConsumeAndRecord: could not begin transaction. err: %v", err)
@@ -398,7 +408,7 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 	}
 
 	// Calculate token and credit deductions
-	d := CalculateTokenCreditDeduction(balanceToken, billableUnits, rateTokenPerUnit, rateCreditPerUnit)
+	d := CalculateTokenCreditDeduction(balanceToken, billableUnits, costInfo)
 	tokenDeducted := d.TokenDeducted
 	creditDeducted := d.CreditDeducted
 
@@ -436,8 +446,8 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 		billing.StatusEnd,
 		usageDuration,
 		billableUnits,
-		rateTokenPerUnit,
-		rateCreditPerUnit,
+		costInfo.TokenPerUnit,
+		costInfo.CreditPerUnit,
 		-tokenDeducted,   // Negative: usage deducts
 		-creditDeducted,  // Negative: usage deducts
 		newBalanceToken,

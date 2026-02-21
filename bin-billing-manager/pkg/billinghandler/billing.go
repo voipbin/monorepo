@@ -152,7 +152,8 @@ func (h *billingHandler) BillingEnd(
 	}
 
 	// Use atomic consume-and-record transaction
-	res, err := h.db.BillingConsumeAndRecord(ctx, bill, bill.AccountID, billableUnits, usageDuration, bill.RateTokenPerUnit, bill.RateCreditPerUnit, tmBillingEnd)
+	costInfo := billing.GetCostInfo(bill.CostType)
+	res, err := h.db.BillingConsumeAndRecord(ctx, bill, bill.AccountID, billableUnits, usageDuration, costInfo, tmBillingEnd)
 	if err != nil {
 		log.Errorf("Could not consume and record billing. err: %v", err)
 		return fmt.Errorf("could not consume and record billing. err: %v", err)

@@ -226,8 +226,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				tt.responseBilling.AccountID,
 				1,  // billableUnits
 				60, // usageDuration (seconds)
-				tt.responseBilling.RateTokenPerUnit,
-				tt.responseBilling.RateCreditPerUnit,
+				billing.GetCostInfo(tt.responseBilling.CostType),
 				tt.call.TMHangup,
 			).Return(tt.responseConsumedBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumedBilling)
@@ -373,8 +372,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 					tt.responseBillings[i].AccountID,
 					1, // billableUnits
 					0, // usageDuration
-					tt.responseBillings[i].RateTokenPerUnit,
-					tt.responseBillings[i].RateCreditPerUnit,
+					billing.GetCostInfo(tt.responseBillings[i].CostType),
 					gomock.Any(), // tmBillingEnd
 				).Return(tt.responseConsumed[i], nil)
 				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumed[i])
@@ -479,8 +477,7 @@ func Test_EventNMNumberCreated(t *testing.T) {
 				tt.responseBilling.AccountID,
 				1, // billableUnits
 				0, // usageDuration
-				tt.responseBilling.RateTokenPerUnit,
-				tt.responseBilling.RateCreditPerUnit,
+				billing.GetCostInfo(tt.responseBilling.CostType),
 				gomock.Any(), // tmBillingEnd
 			).Return(tt.responseConsumed, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumed)
@@ -630,8 +627,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 				tt.responseBilling.AccountID,
 				1, // billableUnits
 				0, // usageDuration
-				tt.responseBilling.RateTokenPerUnit,
-				tt.responseBilling.RateCreditPerUnit,
+				billing.GetCostInfo(tt.responseBilling.CostType),
 				gomock.Any(), // tmBillingEnd
 			).Return(tt.responseConsumed, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumed)

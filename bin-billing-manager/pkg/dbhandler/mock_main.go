@@ -245,18 +245,18 @@ func (mr *MockDBHandlerMockRecorder) AccountUpdate(ctx, id, fields any) *gomock.
 }
 
 // BillingConsumeAndRecord mocks base method.
-func (m *MockDBHandler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits, usageDuration int, rateTokenPerUnit, rateCreditPerUnit int64, tmBillingEnd *time.Time) (*billing.Billing, error) {
+func (m *MockDBHandler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Billing, accountID uuid.UUID, billableUnits, usageDuration int, costInfo billing.CostInfo, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingConsumeAndRecord", ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd)
+	ret := m.ctrl.Call(m, "BillingConsumeAndRecord", ctx, bill, accountID, billableUnits, usageDuration, costInfo, tmBillingEnd)
 	ret0, _ := ret[0].(*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BillingConsumeAndRecord indicates an expected call of BillingConsumeAndRecord.
-func (mr *MockDBHandlerMockRecorder) BillingConsumeAndRecord(ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) BillingConsumeAndRecord(ctx, bill, accountID, billableUnits, usageDuration, costInfo, tmBillingEnd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingConsumeAndRecord", reflect.TypeOf((*MockDBHandler)(nil).BillingConsumeAndRecord), ctx, bill, accountID, billableUnits, usageDuration, rateTokenPerUnit, rateCreditPerUnit, tmBillingEnd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingConsumeAndRecord", reflect.TypeOf((*MockDBHandler)(nil).BillingConsumeAndRecord), ctx, bill, accountID, billableUnits, usageDuration, costInfo, tmBillingEnd)
 }
 
 // BillingCreate mocks base method.
