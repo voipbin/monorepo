@@ -234,7 +234,7 @@ func Test_EmailVerify(t *testing.T) {
 			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).Return(nil)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseUpdated, nil)
-			mockAccesskey.EXPECT().Create(ctx, tt.responseCustomerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
+			mockAccesskey.EXPECT().Create(ctx, tt.responseCustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 			res, err := h.EmailVerify(ctx, tt.token)
