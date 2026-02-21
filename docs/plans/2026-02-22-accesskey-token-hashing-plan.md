@@ -807,8 +807,8 @@ In `bin-openapi-manager/openapi/openapi.yaml`, update the `CustomerManagerAccess
           example: "vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xW"
         token_prefix:
           type: string
-          description: "A short prefix of the access key token for identification purposes. Always returned in `GET` responses. Example: `vb_a3Bf9xK`."
-          example: "vb_a3Bf9xK"
+          description: "A short prefix of the access key token for identification purposes. Always returned in `GET` responses. Example: `vb_a3Bf9xKm`."
+          example: "vb_a3Bf9xKm"
         tm_expire:
           type: string
           format: date-time
@@ -966,7 +966,7 @@ Accesskey
       "customer_id": "a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840",
       "name": "My API Key",
       "detail": "For accessing reporting APIs",
-      "token_prefix": "vb_a3Bf9xK",
+      "token_prefix": "vb_a3Bf9xKm",
       "tm_expire": "2027-04-28T01:41:40.503790Z",
       "tm_create": "2026-04-28T01:41:40.503790Z",
       "tm_update": "2026-04-28T01:41:40.503790Z",
@@ -978,7 +978,7 @@ Accesskey
 * ``name`` (String, Optional): An optional human-readable name for the accesskey. Useful for identification in multi-key environments.
 * ``detail`` (String, Optional): An optional description of the accesskey's intended use or purpose.
 * ``token`` (String, Optional): The full API token credential. **Only returned once at creation time** via ``POST /accesskeys``. Store it securely and immediately. If lost, delete the key and create a new one.
-* ``token_prefix`` (String): A short prefix of the token (e.g., ``vb_a3Bf9xK``) for identification. Always returned in ``GET`` responses.
+* ``token_prefix`` (String): A short prefix of the token (e.g., ``vb_a3Bf9xKm``) for identification. Always returned in ``GET`` responses.
 * ``tm_expire`` (String, ISO 8601): Timestamp when the accesskey will expire. After this time, the key will no longer be valid for authentication.
 * ``tm_create`` (String, ISO 8601): Timestamp when the accesskey was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the accesskey was last updated.

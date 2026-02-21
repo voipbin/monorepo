@@ -16520,7 +16520,7 @@
           "token_prefix": {
             "type": "string",
             "description": "A short prefix of the access key token for identification purposes. Always returned in `GET` responses.",
-            "example": "vb_a3Bf9xK"
+            "example": "vb_a3Bf9xKm"
           },
           "tm_expire": {
             "type": "string",
