@@ -95,7 +95,7 @@ func Test_CompleteSignup(t *testing.T) {
 			mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 
 			// create access key (now before Redis cleanup)
-			mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
+			mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
 				ID: accesskeyID,
 			}, nil)
 
@@ -203,7 +203,7 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 		EmailVerified: false,
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{}, nil)
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
@@ -384,7 +384,7 @@ func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
 	// AccessKey creation fails — Redis keys should NOT be cleaned up (user can retry)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(nil, fmt.Errorf("accesskey creation failed"))
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(nil, fmt.Errorf("accesskey creation failed"))
 
 	_, err := h.CompleteSignup(ctx, "tmp_ak_err", "123456")
 	if err == nil {
@@ -429,7 +429,7 @@ func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
 		EmailVerified: false,
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
 		ID: accesskeyID,
 	}, nil)
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_get_fail").Return(nil)
@@ -488,7 +488,7 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	}, nil)
 	// AccessKey creation attempt in already-verified guard
 	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(&accesskey.Accesskey{
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
 		ID: accesskeyID,
 	}, nil)
 	// Redis cleanup on early return
@@ -584,7 +584,7 @@ func Test_EmailVerify_accesskeyCreateError(t *testing.T) {
 		EmailVerified: true,
 	}, nil)
 	// AccessKey creation fails — should be non-fatal
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", time.Duration(0)).Return(nil, fmt.Errorf("accesskey error"))
+	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(nil, fmt.Errorf("accesskey error"))
 	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 	res, err := h.EmailVerify(ctx, "token_ak_fail")

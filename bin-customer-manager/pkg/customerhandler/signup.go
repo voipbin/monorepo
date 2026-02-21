@@ -21,10 +21,11 @@ import (
 )
 
 const (
-	emailVerifyTokenTTL = time.Hour
-	emailVerifyTokenLen = 32 // 32 bytes = 64 hex chars
-	tempTokenLen        = 16 // 16 bytes = 32 hex chars
-	maxSignupAttempts   = 5
+	emailVerifyTokenTTL       = time.Hour
+	emailVerifyTokenLen       = 32 // 32 bytes = 64 hex chars
+	tempTokenLen              = 16 // 16 bytes = 32 hex chars
+	maxSignupAttempts         = 5
+	defaultAccesskeyExpire    = 365 * 24 * time.Hour // 1 year
 )
 
 func cryptoRandInt(min, max int) (int, error) {
@@ -231,7 +232,7 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	log.WithField("customer", res).Debugf("Customer verified. customer_id: %s", res.ID)
 
 	// Create AccessKey (auto-provisioning)
-	ak, err := h.accesskeyHandler.Create(ctx, customerID, "default", "Auto-provisioned API key", 0)
+	ak, err := h.accesskeyHandler.Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
 	if err != nil {
 		log.Errorf("Could not create access key during email verify. err: %v", err)
 		// Non-fatal — customer is verified but key creation failed
@@ -317,7 +318,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 
 		// Attempt AccessKey creation in case a previous call verified the customer
 		// but failed at AccessKey creation. Non-fatal if it fails (key may already exist).
-		ak, akErr := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
+		ak, akErr := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
 		if akErr != nil {
 			log.Infof("Could not create access key for already-verified customer (may already exist). err: %v", akErr)
 		}
@@ -344,7 +345,7 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 
 	// Create AccessKey BEFORE cleaning up Redis keys, so if this fails
 	// the user can retry with the same temp_token and OTP code.
-	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", 0)
+	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
 	if err != nil {
 		log.Errorf("Could not create access key. err: %v", err)
 		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
