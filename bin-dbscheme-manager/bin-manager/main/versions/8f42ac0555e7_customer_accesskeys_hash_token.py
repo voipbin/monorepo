@@ -25,7 +25,7 @@ def upgrade():
     op.execute("""
         UPDATE customer_accesskeys
         SET token_hash = SHA2(token, 256),
-            token_prefix = LEFT(token, 8)
+            token_prefix = LEFT(token, 11)
         WHERE token IS NOT NULL AND token != '';
     """)
 

@@ -5,7 +5,7 @@ create table customer_accesskeys (
     name varchar(255),
     detail text,
 
-    token_hash varchar(64),
+    token_hash char(64),
     token_prefix varchar(16),
 
     tm_expire datetime(6), -- Expiry timestamp

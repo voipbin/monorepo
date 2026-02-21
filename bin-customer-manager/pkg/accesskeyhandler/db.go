@@ -65,9 +65,16 @@ func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*acces
 	}
 
 	tmp, err := h.db.AccesskeyList(ctx, 100, "", filter)
-	if err != nil || len(tmp) == 0 || len(tmp) > 1 {
+	if err != nil {
 		log.Errorf("Could not get accesskeys info. err: %v", err)
 		return nil, err
+	}
+	if len(tmp) == 0 {
+		return nil, fmt.Errorf("accesskey not found")
+	}
+	if len(tmp) > 1 {
+		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")
+		return nil, fmt.Errorf("ambiguous token")
 	}
 
 	res := tmp[0]
@@ -131,11 +138,11 @@ func (h *accesskeyHandler) Create(
 		return nil, err
 	}
 
-	// Set raw token for one-time return
-	res.RawToken = token
-
-	// notify
+	// notify before setting RawToken to avoid leaking plain-text token in event
 	h.notifyHandler.PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, res)
+
+	// Set raw token for one-time return (after event publish)
+	res.RawToken = token
 
 	return res, nil
 }

@@ -206,7 +206,18 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().HashSHA256Hex(token).Return(tt.responseTokenHash)
 			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
 			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Return()
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Do(
+				func(_ context.Context, _ string, data any) {
+					ak, ok := data.(*accesskey.Accesskey)
+					if !ok {
+						t.Errorf("Expected *accesskey.Accesskey, got: %T", data)
+						return
+					}
+					if ak.RawToken != "" {
+						t.Errorf("Event should not contain RawToken, got: %s", ak.RawToken)
+					}
+				},
+			).Return()
 
 			res, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
 			if err != nil {
