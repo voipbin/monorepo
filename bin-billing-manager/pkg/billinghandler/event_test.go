@@ -1528,6 +1528,53 @@ func Test_EventEMEmailCreated_billing_error(t *testing.T) {
 	}
 }
 
+func Test_EventEMEmailCreated_empty_destinations(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		email *ememail.Email
+	}{
+		{
+			name: "empty destinations - should return nil",
+
+			email: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000009-0000-0000-0000-000000000001"),
+				},
+				Destinations: []commonaddress.Address{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// NO DB or account calls expected
+
+			err := h.EventEMEmailCreated(ctx, tt.email)
+			if err != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_EventNMNumberRenewed_billing_error(t *testing.T) {
 
 	now := time.Date(2026, 2, 12, 10, 0, 0, 0, time.UTC)
