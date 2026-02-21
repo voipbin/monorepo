@@ -17,6 +17,7 @@ type UtilHandler interface {
 	// hash
 	HashCheckPassword(password, hashString string) bool
 	HashGenerate(org string, cost int) (string, error)
+	HashSHA256Hex(input string) string
 
 	// uuid helpers
 	UUIDCreate() uuid.UUID

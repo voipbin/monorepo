@@ -85,6 +85,20 @@ func (mr *MockUtilHandlerMockRecorder) HashGenerate(org, cost any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashGenerate", reflect.TypeOf((*MockUtilHandler)(nil).HashGenerate), org, cost)
 }
 
+// HashSHA256Hex mocks base method.
+func (m *MockUtilHandler) HashSHA256Hex(input string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HashSHA256Hex", input)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// HashSHA256Hex indicates an expected call of HashSHA256Hex.
+func (mr *MockUtilHandlerMockRecorder) HashSHA256Hex(input any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashSHA256Hex", reflect.TypeOf((*MockUtilHandler)(nil).HashSHA256Hex), input)
+}
+
 // IsDeleted mocks base method.
 func (m *MockUtilHandler) IsDeleted(t *time.Time) bool {
 	m.ctrl.T.Helper()
