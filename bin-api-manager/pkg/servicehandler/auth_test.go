@@ -201,6 +201,7 @@ func Test_AuthAccesskeyParse(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().HashSHA256Hex(tt.accesskey).Return("hashed_" + tt.accesskey)
 			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
@@ -277,6 +278,7 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().HashSHA256Hex(tt.accesskey).Return("hashed_" + tt.accesskey)
 			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
 
 			_, err := h.AuthAccesskeyParse(ctx, tt.accesskey)

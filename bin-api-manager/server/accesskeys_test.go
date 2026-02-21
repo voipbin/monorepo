@@ -53,7 +53,7 @@ func Test_GetAccesskeys(t *testing.T) {
 
 			expectedPageSize:  100,
 			expectedPageToken: "",
-			expectedRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "1 item",
@@ -75,7 +75,7 @@ func Test_GetAccesskeys(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -105,7 +105,7 @@ func Test_GetAccesskeys(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -176,7 +176,7 @@ func Test_PostAccesskeys(t *testing.T) {
 			expectedName:   "test name",
 			expectedDetail: "test detail",
 			expectedExpire: 86400000,
-			expectedRes:    `{"id":"18e018ae-ab4e-11ef-8be3-9b5666a5e592","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:    `{"id":"18e018ae-ab4e-11ef-8be3-9b5666a5e592","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "empty",
@@ -196,7 +196,7 @@ func Test_PostAccesskeys(t *testing.T) {
 			expectedName:   "",
 			expectedDetail: "",
 			expectedExpire: 0,
-			expectedRes:    `{"id":"4684c4c0-d363-11ef-acc4-f31a48cce971","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:    `{"id":"4684c4c0-d363-11ef-acc4-f31a48cce971","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -268,7 +268,7 @@ func Test_GetAccesskeysId(t *testing.T) {
 			},
 
 			expectedAccesskeyID: uuid.FromStringOrNil("14a2e40a-ab4f-11ef-a837-63a93a15cd69"),
-			expectRes:           `{"id":"14a2e40a-ab4f-11ef-a837-63a93a15cd69","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"14a2e40a-ab4f-11ef-a837-63a93a15cd69","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -334,7 +334,7 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 			},
 
 			expectAccesskeyID: uuid.FromStringOrNil("3629227e-ab4f-11ef-bcdb-ebc17777d865"),
-			expectRes:         `{"id":"3629227e-ab4f-11ef-bcdb-ebc17777d865","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:         `{"id":"3629227e-ab4f-11ef-bcdb-ebc17777d865","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -405,7 +405,7 @@ func Test_PutAccesskeysId(t *testing.T) {
 			expectedAccesskeyID: uuid.FromStringOrNil("a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e"),
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedRes:         `{"id":"a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e","customer_id":"00000000-0000-0000-0000-000000000000","token":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e","customer_id":"00000000-0000-0000-0000-000000000000","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
