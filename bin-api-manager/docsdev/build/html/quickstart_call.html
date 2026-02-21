@@ -184,23 +184,22 @@
                         <main role="main" id="main">
     <section id="call">
 <span id="quickstart-call"></span><h1>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h1>
-<p>Make an outbound voice call using the VoIPBIN API. You can either define actions inline or reference an existing flow.</p>
+<p>Make an outbound voice call to the extension you created in <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
-<li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
-<li><p>(Optional) A flow ID (UUID). Create via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
+<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). If the user provides a local format like <code class="docutils literal notranslate"><span class="pre">010-1234-5678</span></code>, normalize it to E.164 before calling this API. The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>.</p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
 </div>
-<section id="make-a-call-with-inline-actions">
-<h3>Make a call with inline actions<a class="headerlink" href="#make-a-call-with-inline-actions" title="Link to this heading"></a></h3>
-<p>This example initiates a call and plays a text-to-speech message to the recipient:</p>
+<section id="make-your-first-call">
+<h3>Make your first call<a class="headerlink" href="#make-your-first-call" title="Link to this heading"></a></h3>
+<p>This example calls your registered extension and plays a text-to-speech greeting. Make sure Linphone is registered and ready to receive the call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -210,8 +209,8 @@
         },
         &quot;destinations&quot;: [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
+                &quot;type&quot;: &quot;extension&quot;,
+                &quot;target_name&quot;: &quot;quickstart-phone&quot;
             }
         ],
         &quot;actions&quot;: [
@@ -226,63 +225,42 @@
     }&#39;
 </pre></div>
 </div>
-<p>The response includes the call details with <code class="docutils literal notranslate"><span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;dialing&quot;</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6cbaa351-b112-452d-84c2-01488671013d&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-destination-number&gt;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">}</span>
-<span class="p">]</span>
+<p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> entry (the system creates a group call to ring the extension):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;8dfb3692-9403-49d5-b2b2-031ef7f52d9d&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;ring_all&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup_others&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;98146643-1b81-498c-a3e2-9dd480899945&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;call_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Call status lifecycle:</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dialing</span></code>: The system is currently dialing the destination number.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ringing</span></code>: The destination device is ringing, awaiting answer.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">progressing</span></code>: The call is answered. Audio is flowing between parties.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">terminating</span></code>: The system is ending the call.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: The originator canceled the call before it was answered (outgoing calls only).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">hangup</span></code>: The call has ended. This is the final state.</p></li>
-</ul>
-<p>For the full call lifecycle, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a>.</p>
-</section>
-<section id="make-a-call-with-an-existing-flow">
-<h3>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h3>
-<p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
-        },
-        &quot;destinations&quot;: [
-            {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
-            }
-        ],
-        &quot;flow_id&quot;: &quot;&lt;your-flow-id&gt;&quot;
-    }&#39;
-</pre></div>
-</div>
+<p>Linphone rings — <strong>answer the call</strong> to hear the TTS greeting.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID) must reference an existing flow. Obtain one from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> or create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. If the flow does not exist, the API returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">Not</span> <span class="pre">Found</span></code>.</p>
+<p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> array (not <code class="docutils literal notranslate"><span class="pre">calls</span></code>). The <code class="docutils literal notranslate"><span class="pre">groupcalls[0].id</span></code> (UUID) is the group call ID. The individual call IDs are in <code class="docutils literal notranslate"><span class="pre">groupcalls[0].call_ids</span></code> — use these with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to check call status or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/calls/{id}</span></code> to hang up. The <code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (String) controls how multiple devices are rung (<code class="docutils literal notranslate"><span class="pre">ring_all</span></code> rings all registered devices simultaneously). For the full call lifecycle and advanced call scenarios, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a> and <a class="reference internal" href="call_tutorial.html#call-tutorial"><span class="std std-ref">Call tutorial</span></a>.</p>
 </div>
-<p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
 </section>
 <section id="troubleshooting">
@@ -297,17 +275,17 @@
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>404 Not Found (when using ``flow_id``):</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> does not reference an existing flow.</p></li>
-<li><p><strong>Fix:</strong> Verify the flow exists via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> if needed.</p></li>
+<dt><strong>Call created but Linphone does not ring:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Linphone is not registered, or the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match the extension <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive).</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt><strong>Call status immediately shows “hangup”:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The destination number is unreachable, or the source number has no telephony provider attached.</p></li>
-<li><p><strong>Fix:</strong> For testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) as the destination — these are free and route internally within VoIPBIN.</p></li>
+<li><p><strong>Cause:</strong> The destination extension has no registered devices, or the source number has no telephony provider attached.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone is registered. Check extension status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/extensions</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -326,8 +304,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Call</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#make-a-call-with-inline-actions">Make a call with inline actions</a></li>
-<li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a></li>
+<li><a class="reference internal" href="#make-your-first-call">Make your first call</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
