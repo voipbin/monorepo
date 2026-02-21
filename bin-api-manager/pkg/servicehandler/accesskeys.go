@@ -110,6 +110,10 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 	if len(tmps) == 0 {
 		return nil, fmt.Errorf("not found")
 	}
+	if len(tmps) > 1 {
+		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")
+		return nil, fmt.Errorf("ambiguous token")
+	}
 
 	res := tmps[0]
 	return &res, nil
