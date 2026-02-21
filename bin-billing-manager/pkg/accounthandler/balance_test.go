@@ -282,7 +282,7 @@ func Test_IsValidBalance(t *testing.T) {
 			expectRes: true,
 		},
 		{
-			name: "sms with tokens but no credit returns false",
+			name: "sms with tokens but no credit returns true",
 
 			accountID:   uuid.FromStringOrNil("a8b8c8d8-8888-11ee-86c6-888888888888"),
 			billingType: billing.ReferenceTypeSMS,
@@ -294,6 +294,23 @@ func Test_IsValidBalance(t *testing.T) {
 				},
 				BalanceToken:  1000,
 				BalanceCredit: 0,
+				TMDelete:      nil,
+			},
+			expectRes: true,
+		},
+		{
+			name: "sms with no tokens and insufficient credit returns false",
+
+			accountID:   uuid.FromStringOrNil("a9b9c9d9-9999-11ee-86c6-999999999999"),
+			billingType: billing.ReferenceTypeSMS,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a9b9c9d9-9999-11ee-86c6-999999999999"),
+				},
+				BalanceToken:  0,
+				BalanceCredit: 1,
 				TMDelete:      nil,
 			},
 			expectRes: false,

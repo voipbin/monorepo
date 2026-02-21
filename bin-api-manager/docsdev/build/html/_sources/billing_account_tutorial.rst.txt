@@ -103,28 +103,7 @@ Understanding Service Rates
 
 VoIPBIN uses a hybrid billing model: token-eligible services consume tokens first, then overflow to credits. Credit-only services always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
 
-**Token Rates:**
-
-=================== ====================== ======================
-Service Type        Token Cost             Unit
-=================== ====================== ======================
-VN Calls            1 token                Per minute (ceiling)
-SMS Messages        10 tokens              Per message
-=================== ====================== ======================
-
-**Credit Rates (Overflow and Credit-Only):**
-
-========================= ====================== ======================
-Service Type              Cost (USD)             Unit
-========================= ====================== ======================
-VN Calls (overflow)       $0.001                 Per minute (ceiling)
-PSTN Outgoing Calls       $0.0060                Per minute (ceiling)
-PSTN Incoming Calls       $0.0045                Per minute (ceiling)
-SMS (overflow)            $0.008                 Per message
-Number Purchase           $5.00                  Per number
-Number Renewal            $5.00                  Per number
-Extension Calls           Free                   No charge
-========================= ====================== ======================
+For the complete rate table, see :ref:`Rate Structure <billing_account_rate_structure>`.
 
 **Calculate VN Call Cost (with tokens):**
 
