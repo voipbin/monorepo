@@ -224,7 +224,7 @@ $ sudo ./voipbin
 <li><p><strong>Sandbox</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code></p></li>
 </ul>
 <p>For example, to generate a token using the sandbox:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.test:8443/auth/login&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request POST &#39;https://api.voipbin.test:8443/auth/login&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;username&quot;: &quot;admin@localhost&quot;,

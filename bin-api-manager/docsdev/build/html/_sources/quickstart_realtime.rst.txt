@@ -1,12 +1,11 @@
 .. _quickstart_realtime:
 
 Real-Time Voice Interaction
-===========================
-This scenario walks through creating a SIP extension, registering a softphone, making a call with live transcription, and speaking into the call using the real-time TTS API.
+---------------------------
+This scenario walks through making a call with live transcription and speaking into the call using the real-time TTS API.
 
 By the end, you will have:
 
-- A SIP extension registered with a softphone (Linphone)
 - A live call with real-time speech-to-text transcription
 - Real-time text-to-speech injected into the call via the Speaking API
 
@@ -15,147 +14,17 @@ Prerequisites
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
-* Your customer ID (UUID). Obtained from ``GET /customers`` or from your admin console profile.
-* Linphone softphone installed on your computer or mobile device. Download from `linphone.org <https://www.linphone.org/>`_.
+* Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
+* A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart_extension>`.
+* Event subscription set up (WebSocket or customer webhook). See :ref:`Receiving Events <quickstart_events>`.
 
 .. note:: **AI Implementation Hint**
 
-   This scenario requires a real SIP phone (Linphone) to answer the call and speak. AI agents cannot complete this scenario fully autonomously — the SIP registration and call answering steps require a human with a softphone. AI agents can execute all API calls (Steps 1, 3, 4, 6, 7) and instruct the human for Steps 2 and 5.
+   This scenario requires a registered softphone (Linphone) to answer the call and speak. AI agents can execute all API calls and instruct the human for answering the call on Linphone. Set up event delivery before starting — you will need it to observe transcription events during the call.
 
-Step 1: Create an extension
-----------------------------
-Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension for dialing. The ``detail`` (String, Required) is a description. The ``extension`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
-
-.. code::
-
-    $ curl --request POST 'https://api.voipbin.net/v1.0/extensions?token=<your-token>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "name": "quickstart-phone",
-            "detail": "Quickstart softphone extension",
-            "extension": "quickstart1",
-            "password": "your-secure-password-here"
-        }'
-
-Response:
-
-.. code::
-
-    {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "customer_id": "550e8400-e29b-41d4-a716-446655440000",
-        "name": "quickstart-phone",
-        "detail": "Quickstart softphone extension",
-        "extension": "quickstart1",
-        "username": "quickstart1",
-        "password": "your-secure-password-here",
-        "domain_name": "550e8400-e29b-41d4-a716-446655440000",
-        "direct_hash": "a8f3b2c1d4e5",
-        "tm_create": "2026-02-21T10:00:00.000000Z",
-        "tm_update": "",
-        "tm_delete": ""
-    }
-
-The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /extensions/{id}``, ``PUT /extensions/{id}``, or ``DELETE /extensions/{id}`` operations. For dialing, use the ``name`` field instead. Save the ``name`` (String) — you will use it as the call destination in Step 4.
-
-.. note:: **AI Implementation Hint**
-
-   The ``extension`` and ``password`` are SIP credentials, not VoIPBIN login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). The response includes both ``extension`` and ``username`` fields — they contain the same value (``username`` is a Kamailio-internal mirror of ``extension``). Choose a memorable ``extension`` value and a strong ``password``.
-
-Step 2: Register Linphone
---------------------------
-Configure your Linphone softphone to register with VoIPBIN using the extension credentials from Step 1.
-
-**Linphone configuration:**
-
-+-------------------+------------------------------------------------------------+
-| Field             | Value                                                      |
-+===================+============================================================+
-| Username          | ``quickstart1`` (from Step 1 ``extension``)                |
-+-------------------+------------------------------------------------------------+
-| Password          | The password you set in Step 1                             |
-+-------------------+------------------------------------------------------------+
-| Domain            | ``<your-customer-id>.registrar.voipbin.net``               |
-+-------------------+------------------------------------------------------------+
-| Transport         | UDP                                                        |
-+-------------------+------------------------------------------------------------+
-
-Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET /customers``. For example, if your customer ID is ``550e8400-e29b-41d4-a716-446655440000``, the domain is ``550e8400-e29b-41d4-a716-446655440000.registrar.voipbin.net``.
-
-**Setup steps (Linphone desktop):**
-
-1. Open Linphone and go to **Preferences** > **Account** (or **SIP Account** on mobile).
-2. Select **I already have a SIP account** (or **Use SIP account**).
-3. Enter the username, password, and domain from the table above.
-4. Save. Linphone should show **Registered** status within a few seconds.
-
-If registration succeeds, the status indicator turns green. If it fails, see Troubleshooting below.
-
-Step 3: Subscribe to events via WebSocket
-------------------------------------------
-Before making the call, connect to the VoIPBIN WebSocket to receive real-time transcription and call events.
-
-**Connect:**
-
-.. code::
-
-    wss://api.voipbin.net/v1.0/ws?token=<your-token>
-
-**Subscribe** by sending this JSON message after connecting. Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET /customers``:
-
-.. code::
-
-    {
-        "type": "subscribe",
-        "topics": [
-            "customer_id:<your-customer-id>:call:*",
-            "customer_id:<your-customer-id>:transcribe:*"
-        ]
-    }
-
-**Python example:**
-
-.. code::
-
-    import websocket
-    import json
-
-    token = "<your-token>"
-    customer_id = "<your-customer-id>"
-
-    def on_message(ws, message):
-        data = json.loads(message)
-        event_type = data.get("event_type")
-        if event_type:
-            if "transcript" in event_type:
-                transcript = data["data"]
-                direction = transcript.get("direction", "?")
-                text = transcript.get("message", "")
-                print(f"[TRANSCRIBE {direction}] {text}")
-            else:
-                print(f"[EVENT] {event_type}")
-
-    def on_open(ws):
-        subscription = {
-            "type": "subscribe",
-            "topics": [
-                f"customer_id:{customer_id}:call:*",
-                f"customer_id:{customer_id}:transcribe:*"
-            ]
-        }
-        ws.send(json.dumps(subscription))
-        print("Subscribed to call and transcribe events. Waiting...")
-
-    ws = websocket.WebSocketApp(
-        f"wss://api.voipbin.net/v1.0/ws?token={token}",
-        on_open=on_open,
-        on_message=on_message
-    )
-    ws.run_forever()
-
-Step 4: Make a call to the extension
---------------------------------------
-With the WebSocket connected and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.
+Make a call to the extension
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With event subscription configured and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.
 
 .. code::
 
@@ -221,7 +90,7 @@ Response:
         "groupcalls": []
     }
 
-Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will need it in Step 6.
+Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will need it when creating a speaking stream.
 
 **Call status lifecycle** (enum string):
 
@@ -241,11 +110,11 @@ Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will ne
 
 .. note:: **AI Implementation Hint**
 
-   The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from Step 1. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
+   The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart_extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
 
-Step 5: Observe real-time transcription
-----------------------------------------
-After answering the call on Linphone, your WebSocket receives transcription events.
+Observe real-time transcription
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.
 
 **The TTS greeting appears first** (``direction: "out"`` — VoIPBIN to caller):
 
@@ -284,7 +153,7 @@ After answering the call on Linphone, your WebSocket receives transcription even
         }
     }
 
-If you run the Python WebSocket example from Step 3, you will see output like:
+If you run the Python WebSocket example from :ref:`Receiving Events <quickstart_events>`, you will see output like:
 
 .. code::
 
@@ -293,14 +162,14 @@ If you run the Python WebSocket example from Step 3, you will see output like:
     [TRANSCRIBE out] Hello. This is the VoIPBIN real-time voice interaction test...
     [TRANSCRIBE in] Hi, this is a test of the transcription feature.
 
-Step 6: Create a speaking stream
-----------------------------------
+Create a speaking stream
+~~~~~~~~~~~~~~~~~~~~~~~~~
 While the call is active, you can inject real-time text-to-speech audio using the Speaking API. Create a speaking stream attached to the call.
 
 ``POST /speakings`` with:
 
 - ``reference_type`` (String, Required): ``"call"``
-- ``reference_id`` (UUID, Required): The call ``id`` from Step 4 response
+- ``reference_id`` (UUID, Required): The call ``id`` from the call response above
 - ``language`` (String, Optional): BCP47 language code (e.g., ``"en-US"``)
 - ``provider`` (String, Optional): TTS provider. Use ``"elevenlabs"`` for high-quality streaming TTS
 - ``direction`` (enum String, Optional): Controls which side of the call hears the TTS audio. One of: ``"out"`` (the call's destination hears the TTS), ``"in"`` (the call's source hears the TTS), ``"both"`` (both sides hear). In this scenario, use ``"out"`` so the Linphone user (destination) hears the TTS.
@@ -311,7 +180,7 @@ While the call is active, you can inject real-time text-to-speech audio using th
         --header 'Content-Type: application/json' \
         --data-raw '{
             "reference_type": "call",
-            "reference_id": "<call-id-from-step-4>",
+            "reference_id": "<call-id>",
             "language": "en-US",
             "provider": "elevenlabs",
             "direction": "out"
@@ -325,7 +194,7 @@ Response (HTTP 201 Created):
         "id": "f1e103d2-0429-4170-83b3-e95e29bb0ca8",
         "customer_id": "550e8400-e29b-41d4-a716-446655440000",
         "reference_type": "call",
-        "reference_id": "<call-id-from-step-4>",
+        "reference_id": "<call-id>",
         "language": "en-US",
         "provider": "elevenlabs",
         "voice_id": "",
@@ -337,7 +206,7 @@ Response (HTTP 201 Created):
         "tm_delete": ""
     }
 
-Save the speaking ``id`` (UUID) — you will use it in Step 7.
+Save the speaking ``id`` (UUID) — you will use it to send text-to-speech.
 
 **Speaking status lifecycle** (enum string):
 
@@ -349,8 +218,8 @@ Save the speaking ``id`` (UUID) — you will use it in Step 7.
 
    The speaking stream must be created while the call is in ``progressing`` status (answered and audio flowing). If the call has already hung up, the API returns ``400 Bad Request``. The ``direction`` field controls which side of the call hears the TTS: ``"out"`` means the called party (Linphone) hears it. The ``status`` transitions from ``initiating`` to ``active`` once the TTS provider connects.
 
-Step 7: Speak via TTS API
----------------------------
+Speak via TTS API
+~~~~~~~~~~~~~~~~~~~
 Send text to the speaking stream to have it spoken into the call in real time.
 
 ``POST /speakings/{id}/say`` with:
@@ -390,26 +259,18 @@ You should hear the text spoken through Linphone within a second or two. You can
 
 .. note:: **AI Implementation Hint**
 
-   You can call ``POST /speakings/{id}/say`` multiple times. Each call queues text for sequential playback. If you need to interrupt, call ``POST /speakings/{id}/flush`` first, then ``POST /speakings/{id}/say`` with new text. The ``text`` field has a 5000-character limit per request. Since transcription is still active (from Step 4), the TTS output will also appear in transcription events as ``direction: "out"``.
+   You can call ``POST /speakings/{id}/say`` multiple times. Each call queues text for sequential playback. If you need to interrupt, call ``POST /speakings/{id}/flush`` first, then ``POST /speakings/{id}/say`` with new text. The ``text`` field has a 5000-character limit per request. Since transcription is still active, the TTS output will also appear in transcription events as ``direction: "out"``.
 
 Troubleshooting
 +++++++++++++++
 
-* **Extension creation returns 400 Bad Request:**
-    * **Cause:** Missing required fields (``name``, ``detail``, ``extension``, ``password``).
-    * **Fix:** Ensure all four fields are present in the request body.
-
-* **Linphone shows "Registration failed" or "408 Timeout":**
-    * **Cause:** Incorrect domain, extension/username, or password. The domain must include your customer ID.
-    * **Fix:** Verify the domain is ``<your-customer-id>.registrar.voipbin.net``. Double-check the ``extension`` and ``password`` match exactly what was set in Step 1. Ensure UDP port 5060 is not blocked by your firewall.
-
 * **Call created but Linphone does not ring:**
     * **Cause:** Linphone is not registered, or the ``target_name`` does not match the extension ``name``.
-    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from Step 1 exactly (case-sensitive).
+    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from the :ref:`Extension & Softphone Setup <quickstart_extension>` exactly (case-sensitive). See :ref:`Extension troubleshooting <quickstart_extension>` for registration issues.
 
-* **No transcription events in WebSocket:**
-    * **Cause:** WebSocket subscription topic does not match your customer ID, or subscription was sent before the connection opened.
-    * **Fix:** Verify the customer ID in the topic matches your account (from ``GET /customers``). Send the subscribe message only after the ``on_open`` callback fires.
+* **No transcription events received:**
+    * **Cause:** Event subscription is not set up, or configuration is incorrect.
+    * **Fix:** See :ref:`Event Subscription troubleshooting <quickstart_event_subscription>`.
 
 * **Speaking creation returns 400 Bad Request:**
     * **Cause:** The call is not in ``progressing`` status (not yet answered or already hung up), or the ``reference_id`` is invalid.

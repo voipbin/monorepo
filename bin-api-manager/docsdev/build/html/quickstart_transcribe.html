@@ -190,7 +190,7 @@
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
-<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> or from your admin console profile.</p></li>
+<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -344,7 +344,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
 </pre></div>
 </div>
-<p><strong>Send a subscription message</strong> after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>:</p>
+<p><strong>Send a subscription message</strong> after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
     <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -543,7 +543,7 @@
 <li><dl class="simple">
 <dt><strong>No transcription events received:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> WebSocket subscription topic does not match your customer ID, or subscription was sent before the connection opened.</p></li>
-<li><p><strong>Fix:</strong> Verify the customer ID in the topic matches your account (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>). Send the subscribe message only after the <code class="docutils literal notranslate"><span class="pre">on_open</span></code> callback fires.</p></li>
+<li><p><strong>Fix:</strong> Verify the customer ID in the topic matches your account (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>). Send the subscribe message only after the <code class="docutils literal notranslate"><span class="pre">on_open</span></code> callback fires.</p></li>
 </ul>
 </dd>
 </dl>

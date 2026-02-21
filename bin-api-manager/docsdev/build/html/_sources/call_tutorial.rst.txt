@@ -50,6 +50,35 @@ When the destination answers the call, it will speak the given text message.
         }'
 
 
+Simple outbound call with an existing flow
+-------------------------------------------
+
+If you have already created a flow, you can reference it by ``flow_id`` instead of defining actions inline:
+
+.. code::
+
+    $ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "source": {
+                "type": "tel",
+                "target": "<your-source-number>"
+            },
+            "destinations": [
+                {
+                    "type": "tel",
+                    "target": "<your-destination-number>"
+                }
+            ],
+            "flow_id": "<your-flow-id>"
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   The ``flow_id`` (UUID) must reference an existing flow. Obtain one from the ``id`` field of ``GET /flows`` or create one via ``POST /flows``. If the flow does not exist, the API returns ``404 Not Found``.
+
+For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
+
 Simple outbound call with media file play
 -----------------------------------------
 
