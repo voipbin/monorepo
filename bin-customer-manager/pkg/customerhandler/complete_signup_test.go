@@ -91,8 +91,18 @@ func Test_CompleteSignup(t *testing.T) {
 				EmailVerified: false,
 			}, nil)
 
-			// customer update
-			mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
+			// customer update — verify status=active and email_verified=true
+			mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).DoAndReturn(
+				func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
+					if fields[customer.FieldStatus] != string(customer.StatusActive) {
+						t.Errorf("Expected status=active, got: %v", fields[customer.FieldStatus])
+					}
+					if fields[customer.FieldEmailVerified] != true {
+						t.Errorf("Expected email_verified=true, got: %v", fields[customer.FieldEmailVerified])
+					}
+					return nil
+				},
+			)
 
 			// create access key (now before Redis cleanup)
 			mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
