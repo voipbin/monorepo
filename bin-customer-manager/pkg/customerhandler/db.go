@@ -82,6 +82,7 @@ func (h *customerHandler) Create(
 		WebhookURI:    webhookURI,
 
 		EmailVerified: true,
+		Status:        customer.StatusActive,
 	}
 
 	if err := h.db.CustomerCreate(ctx, u); err != nil {
