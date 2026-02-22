@@ -285,7 +285,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 			// PasswordForgot expectations (welcome email)
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(tt.responseAgent, nil)
 			mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), tt.responseAgent.ID, passwordResetTokenTTL).Return(nil)
-			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, []commonaddress.Address{
+			mockReq.EXPECT().EmailV1EmailSend(ctx, cmcustomer.IDSystem, uuid.Nil, []commonaddress.Address{
 				{Type: commonaddress.TypeEmail, Target: tt.customer.Email},
 			}, "Welcome to VoIPBin - Set Your Password", gomock.Any(), gomock.Nil()).Return(nil, nil)
 

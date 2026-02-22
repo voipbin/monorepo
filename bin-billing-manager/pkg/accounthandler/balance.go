@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 )
 
 // IsValidBalanceByCustomerID returns false if the given customer's balance is not valid
@@ -20,6 +21,11 @@ func (h *accountHandler) IsValidBalanceByCustomerID(ctx context.Context, custome
 		"billing_type": billingType,
 		"country":      country,
 	})
+
+	// System operations bypass balance validation.
+	if customerID == cmcustomer.IDSystem {
+		return true, nil
+	}
 
 	a, err := h.GetByCustomerID(ctx, customerID)
 	if err != nil {

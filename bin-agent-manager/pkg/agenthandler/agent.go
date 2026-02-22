@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-agent-manager/pkg/metricshandler"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -490,7 +491,7 @@ func (h *agentHandler) PasswordForgot(ctx context.Context, username string, emai
 	}
 
 	rpcStart := time.Now()
-	_, err = h.reqHandler.EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, destinations, subject, content, nil)
+	_, err = h.reqHandler.EmailV1EmailSend(ctx, cmcustomer.IDSystem, uuid.Nil, destinations, subject, content, nil)
 	metricshandler.RPCCallDuration.WithLabelValues("email-manager", "EmailSend").Observe(float64(time.Since(rpcStart).Milliseconds()))
 	if err != nil {
 		metricshandler.RPCCallTotal.WithLabelValues("email-manager", "EmailSend", "failure").Inc()

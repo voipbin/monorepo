@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -85,7 +86,7 @@ func Test_PasswordForgot(t *testing.T) {
 
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(tt.responseAgent, tt.responseErr)
 			mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), tt.responseAgent.ID, passwordResetTokenTTL).Return(nil)
-			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, []commonaddress.Address{
+			mockReq.EXPECT().EmailV1EmailSend(ctx, cmcustomer.IDSystem, uuid.Nil, []commonaddress.Address{
 				{Type: commonaddress.TypeEmail, Target: tt.username},
 			}, tt.expectedSubject, gomock.Any(), gomock.Nil()).Return(nil, nil)
 
@@ -181,7 +182,7 @@ func Test_PasswordForgot_EmailSendError(t *testing.T) {
 
 	mockDB.EXPECT().AgentGetByUsername(ctx, "test@voipbin.net").Return(responseAgent, nil)
 	mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), responseAgent.ID, passwordResetTokenTTL).Return(nil)
-	mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, []commonaddress.Address{
+	mockReq.EXPECT().EmailV1EmailSend(ctx, cmcustomer.IDSystem, uuid.Nil, []commonaddress.Address{
 		{Type: commonaddress.TypeEmail, Target: "test@voipbin.net"},
 	}, "VoIPBin Password Reset", gomock.Any(), gomock.Nil()).Return(nil, fmt.Errorf("email send failed"))
 
