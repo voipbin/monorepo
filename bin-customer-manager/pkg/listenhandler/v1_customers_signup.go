@@ -34,6 +34,7 @@ func (h *listenHandler) processV1CustomersSignupPost(ctx context.Context, m *soc
 		reqData.Address,
 		reqData.WebhookMethod,
 		reqData.WebhookURI,
+		reqData.ClientIP,
 	)
 	if err != nil {
 		log.Errorf("Could not signup customer. err: %v", err)

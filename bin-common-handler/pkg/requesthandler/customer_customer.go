@@ -173,6 +173,7 @@ func (r *requestHandler) CustomerV1CustomerSignup(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
+	clientIP string,
 ) (*cscustomer.SignupResult, error) {
 	uri := "/v1/customers/signup"
 
@@ -184,6 +185,7 @@ func (r *requestHandler) CustomerV1CustomerSignup(
 		Address:       address,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
+		ClientIP:      clientIP,
 	}
 
 	m, err := json.Marshal(reqData)

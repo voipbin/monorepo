@@ -1,0 +1,35 @@
+post:
+  summary: Create a new customer account (self-service signup).
+  description: |
+    Initiates a new customer account registration. The request must include `accepted_tos: true`
+    to confirm Terms of Service agreement.
+
+    On success, returns a customer object and a temporary token. On failure (e.g., duplicate email),
+    still returns HTTP 200 with an empty body to prevent email enumeration attacks.
+
+    After signup, the customer receives a verification email. Use `POST /auth/email-verify` with the
+    token from the email to verify the account.
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthSignupPOST'
+  responses:
+    '200':
+      description: |
+        Signup initiated successfully, or silently ignored if the email already exists (to prevent enumeration).
+        On success, the response contains the customer object and a temporary token.
+        On failure, the response body is an empty JSON object `{}`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerSignupResult'
+    '400':
+      description: |
+        Bad request. Possible causes:
+        - `accepted_tos` is `false` or missing.
+        - `email` is missing.
+        - Request body is malformed JSON.

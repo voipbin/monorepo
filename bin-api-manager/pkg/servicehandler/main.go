@@ -477,9 +477,10 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.SignupResult, error)
-	CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error)
-	CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error)
+		clientIP string,
+	) (*cscustomer.SignupResultWebhookMessage, error)
+	CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResultWebhookMessage, error)
+	CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResultWebhookMessage, error)
 
 	// extension handlers
 	ExtensionCreate(ctx context.Context, a *amagent.Agent, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error)

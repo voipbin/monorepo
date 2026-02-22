@@ -696,6 +696,7 @@ type RequestHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
+		clientIP string,
 	) (*cscustomer.SignupResult, error)
 	CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error)
 	CustomerV1CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error)

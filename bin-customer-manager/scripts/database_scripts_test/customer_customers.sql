@@ -18,6 +18,10 @@ create table customer_customers(
   email_verified boolean not null default false,
 
   status varchar(16) not null default 'active',
+
+  terms_agreed_version varchar(64) not null default '',
+  terms_agreed_ip varchar(45) not null default '',
+
   tm_deletion_scheduled datetime(6),
 
   tm_create datetime(6),

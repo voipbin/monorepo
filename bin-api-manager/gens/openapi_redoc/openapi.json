@@ -1900,6 +1900,111 @@
         }
       }
     },
+    "/auth/signup": {
+      "post": {
+        "summary": "Create a new customer account (self-service signup).",
+        "description": "Initiates a new customer account registration. The request must include `accepted_tos: true`\nto confirm Terms of Service agreement.\n\nOn success, returns a customer object and a temporary token. On failure (e.g., duplicate email),\nstill returns HTTP 200 with an empty body to prevent email enumeration attacks.\n\nAfter signup, the customer receives a verification email. Use `POST /auth/email-verify` with the\ntoken from the email to verify the account.\n",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthSignupPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signup initiated successfully, or silently ignored if the email already exists (to prevent enumeration).\nOn success, the response contains the customer object and a temporary token.\nOn failure, the response body is an empty JSON object `{}`.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerSignupResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- `accepted_tos` is `false` or missing.\n- `email` is missing.\n- Request body is malformed JSON.\n"
+          }
+        }
+      }
+    },
+    "/auth/email-verify": {
+      "post": {
+        "summary": "Verify customer email address.",
+        "description": "Validates the email verification token sent to the customer's email during signup.\nOn success, the customer's email is marked as verified and an access key is provisioned.\n\nThe `token` is a 64-character lowercase hexadecimal string included in the verification email.\n",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthEmailVerifyPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully. Returns the customer and a provisioned access key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerEmailVerifyResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- Token is invalid, expired, or already used.\n- Request body is malformed JSON.\n- `token` field is missing.\n"
+          }
+        }
+      }
+    },
+    "/auth/complete-signup": {
+      "post": {
+        "summary": "Complete headless signup with OTP verification.",
+        "description": "Completes a headless (API-based) signup flow by validating a one-time password (OTP) code.\nThe `temp_token` is returned from `POST /auth/signup` and the `code` is the OTP sent to the customer.\n\nOn success, returns the customer ID and a provisioned access key.\n",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthCompleteSignupPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signup completed successfully. Returns the customer ID and access key credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCompleteSignupResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- `temp_token` is invalid or expired.\n- `code` is incorrect.\n- Request body is malformed JSON.\n- Required fields are missing.\n"
+          },
+          "429": {
+            "description": "Too many OTP verification attempts. Try again later."
+          }
+        }
+      }
+    },
     "/auth/unregister": {
       "post": {
         "summary": "Schedule account deletion (self-service freeze).",
@@ -19909,6 +20014,141 @@
             "items": {
               "$ref": "#/components/schemas/RagManagerSource"
             }
+          }
+        }
+      },
+      "RequestBodyAuthSignupPOST": {
+        "type": "object",
+        "required": [
+          "email",
+          "accepted_tos"
+        ],
+        "description": "Request body for POST /auth/signup (self-service customer registration).",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name for the customer account.",
+            "example": "Acme Corporation"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Additional details about the customer.",
+            "example": "Enterprise customer account"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "x-go-type": "string",
+            "description": "Email address for the new customer account. Must be unique across all customers.",
+            "example": "admin@acme.com"
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "Contact phone number in E.164 format.",
+            "example": "+14155551234"
+          },
+          "address": {
+            "type": "string",
+            "description": "Mailing address of the customer.",
+            "example": "123 Main St, San Francisco, CA 94105"
+          },
+          "webhook_method": {
+            "type": "string",
+            "description": "HTTP method for webhook delivery. One of: POST, GET, PUT, DELETE.",
+            "example": "POST"
+          },
+          "webhook_uri": {
+            "type": "string",
+            "description": "URI where webhook events will be delivered.",
+            "example": "https://api.acme.com/webhooks/voipbin"
+          },
+          "accepted_tos": {
+            "type": "boolean",
+            "description": "Must be `true` to confirm acceptance of the Terms of Service. Requests with `false` or missing value are rejected with HTTP 400.",
+            "example": true
+          }
+        }
+      },
+      "RequestBodyAuthEmailVerifyPOST": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "description": "Request body for POST /auth/email-verify (email verification).",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "64-character lowercase hexadecimal verification token. Sent to the customer's email after `POST /auth/signup`.",
+            "example": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd"
+          }
+        }
+      },
+      "RequestBodyAuthCompleteSignupPOST": {
+        "type": "object",
+        "required": [
+          "temp_token",
+          "code"
+        ],
+        "description": "Request body for POST /auth/complete-signup (headless OTP verification).",
+        "properties": {
+          "temp_token": {
+            "type": "string",
+            "description": "Temporary token returned from the `POST /auth/signup` response.",
+            "example": "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
+          },
+          "code": {
+            "type": "string",
+            "description": "One-time password (OTP) code sent to the customer for verification.",
+            "example": "123456"
+          }
+        }
+      },
+      "CustomerManagerSignupResult": {
+        "type": "object",
+        "description": "Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerManagerCustomer"
+          },
+          "temp_token": {
+            "type": "string",
+            "description": "Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification.",
+            "example": "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
+          }
+        }
+      },
+      "CustomerManagerEmailVerifyResult": {
+        "type": "object",
+        "required": [
+          "customer",
+          "accesskey"
+        ],
+        "description": "Result of a successful email verification. Contains the verified customer and a provisioned access key.",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerManagerCustomer"
+          },
+          "accesskey": {
+            "$ref": "#/components/schemas/CustomerManagerAccesskey"
+          }
+        }
+      },
+      "CustomerManagerCompleteSignupResult": {
+        "type": "object",
+        "required": [
+          "customer_id"
+        ],
+        "description": "Result of a successful headless signup completion. Contains the customer ID and a provisioned access key.",
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "accesskey": {
+            "$ref": "#/components/schemas/CustomerManagerAccesskey"
           }
         }
       },

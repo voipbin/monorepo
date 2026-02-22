@@ -2183,6 +2183,14 @@ type CustomerManagerAccesskey struct {
 	TokenPrefix *string `json:"token_prefix,omitempty"`
 }
 
+// CustomerManagerCompleteSignupResult Result of a successful headless signup completion. Contains the customer ID and a provisioned access key.
+type CustomerManagerCompleteSignupResult struct {
+	Accesskey *CustomerManagerAccesskey `json:"accesskey,omitempty"`
+
+	// CustomerId The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details.
+	CustomerId string `json:"customer_id"`
+}
+
 // CustomerManagerCustomer defines model for CustomerManagerCustomer.
 type CustomerManagerCustomer struct {
 	// Address Address of the customer.
@@ -2236,6 +2244,20 @@ type CustomerManagerCustomerStatus string
 
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
+
+// CustomerManagerEmailVerifyResult Result of a successful email verification. Contains the verified customer and a provisioned access key.
+type CustomerManagerEmailVerifyResult struct {
+	Accesskey CustomerManagerAccesskey `json:"accesskey"`
+	Customer  CustomerManagerCustomer  `json:"customer"`
+}
+
+// CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.
+type CustomerManagerSignupResult struct {
+	Customer *CustomerManagerCustomer `json:"customer,omitempty"`
+
+	// TempToken Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification.
+	TempToken *string `json:"temp_token,omitempty"`
+}
 
 // EmailManagerEmail defines model for EmailManagerEmail.
 type EmailManagerEmail struct {
@@ -3233,6 +3255,48 @@ type RegistrarManagerTrunk struct {
 
 	// Username The SIP username for authentication.
 	Username *string `json:"username,omitempty"`
+}
+
+// RequestBodyAuthCompleteSignupPOST Request body for POST /auth/complete-signup (headless OTP verification).
+type RequestBodyAuthCompleteSignupPOST struct {
+	// Code One-time password (OTP) code sent to the customer for verification.
+	Code string `json:"code"`
+
+	// TempToken Temporary token returned from the `POST /auth/signup` response.
+	TempToken string `json:"temp_token"`
+}
+
+// RequestBodyAuthEmailVerifyPOST Request body for POST /auth/email-verify (email verification).
+type RequestBodyAuthEmailVerifyPOST struct {
+	// Token 64-character lowercase hexadecimal verification token. Sent to the customer's email after `POST /auth/signup`.
+	Token string `json:"token"`
+}
+
+// RequestBodyAuthSignupPOST Request body for POST /auth/signup (self-service customer registration).
+type RequestBodyAuthSignupPOST struct {
+	// AcceptedTos Must be `true` to confirm acceptance of the Terms of Service. Requests with `false` or missing value are rejected with HTTP 400.
+	AcceptedTos bool `json:"accepted_tos"`
+
+	// Address Mailing address of the customer.
+	Address *string `json:"address,omitempty"`
+
+	// Detail Additional details about the customer.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address for the new customer account. Must be unique across all customers.
+	Email string `json:"email"`
+
+	// Name Display name for the customer account.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Contact phone number in E.164 format.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// WebhookMethod HTTP method for webhook delivery. One of: POST, GET, PUT, DELETE.
+	WebhookMethod *string `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI where webhook events will be delivered.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // RequestBodyAuthUnregisterPOST Request body for POST /auth/unregister (self-service account deletion).
@@ -5562,6 +5626,15 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthCompleteSignupJSONRequestBody defines body for PostAuthCompleteSignup for application/json ContentType.
+type PostAuthCompleteSignupJSONRequestBody = RequestBodyAuthCompleteSignupPOST
+
+// PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
+type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST
+
+// PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
+type PostAuthSignupJSONRequestBody = RequestBodyAuthSignupPOST
+
 // PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
 type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST
 
@@ -5960,6 +6033,15 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Complete headless signup with OTP verification.
+	// (POST /auth/complete-signup)
+	PostAuthCompleteSignup(c *gin.Context)
+	// Verify customer email address.
+	// (POST /auth/email-verify)
+	PostAuthEmailVerify(c *gin.Context)
+	// Create a new customer account (self-service signup).
+	// (POST /auth/signup)
+	PostAuthSignup(c *gin.Context)
 	// Cancel account deletion (self-service recover).
 	// (DELETE /auth/unregister)
 	DeleteAuthUnregister(c *gin.Context, params DeleteAuthUnregisterParams)
@@ -7652,6 +7734,45 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// PostAuthCompleteSignup operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthCompleteSignup(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthCompleteSignup(c)
+}
+
+// PostAuthEmailVerify operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthEmailVerify(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthEmailVerify(c)
+}
+
+// PostAuthSignup operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthSignup(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthSignup(c)
 }
 
 // DeleteAuthUnregister operation middleware
@@ -14142,6 +14263,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.POST(options.BaseURL+"/auth/complete-signup", wrapper.PostAuthCompleteSignup)
+	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
+	router.POST(options.BaseURL+"/auth/signup", wrapper.PostAuthSignup)
 	router.DELETE(options.BaseURL+"/auth/unregister", wrapper.DeleteAuthUnregister)
 	router.POST(options.BaseURL+"/auth/unregister", wrapper.PostAuthUnregister)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
@@ -15118,6 +15242,89 @@ func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w 
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthCompleteSignupRequestObject struct {
+	Body *PostAuthCompleteSignupJSONRequestBody
+}
+
+type PostAuthCompleteSignupResponseObject interface {
+	VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error
+}
+
+type PostAuthCompleteSignup200JSONResponse CustomerManagerCompleteSignupResult
+
+func (response PostAuthCompleteSignup200JSONResponse) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthCompleteSignup400Response struct {
+}
+
+func (response PostAuthCompleteSignup400Response) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthCompleteSignup429Response struct {
+}
+
+func (response PostAuthCompleteSignup429Response) VisitPostAuthCompleteSignupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(429)
+	return nil
+}
+
+type PostAuthEmailVerifyRequestObject struct {
+	Body *PostAuthEmailVerifyJSONRequestBody
+}
+
+type PostAuthEmailVerifyResponseObject interface {
+	VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error
+}
+
+type PostAuthEmailVerify200JSONResponse CustomerManagerEmailVerifyResult
+
+func (response PostAuthEmailVerify200JSONResponse) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthEmailVerify400Response struct {
+}
+
+func (response PostAuthEmailVerify400Response) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthSignupRequestObject struct {
+	Body *PostAuthSignupJSONRequestBody
+}
+
+type PostAuthSignupResponseObject interface {
+	VisitPostAuthSignupResponse(w http.ResponseWriter) error
+}
+
+type PostAuthSignup200JSONResponse CustomerManagerSignupResult
+
+func (response PostAuthSignup200JSONResponse) VisitPostAuthSignupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthSignup400Response struct {
+}
+
+func (response PostAuthSignup400Response) VisitPostAuthSignupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type DeleteAuthUnregisterRequestObject struct {
@@ -20210,6 +20417,15 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Complete headless signup with OTP verification.
+	// (POST /auth/complete-signup)
+	PostAuthCompleteSignup(ctx context.Context, request PostAuthCompleteSignupRequestObject) (PostAuthCompleteSignupResponseObject, error)
+	// Verify customer email address.
+	// (POST /auth/email-verify)
+	PostAuthEmailVerify(ctx context.Context, request PostAuthEmailVerifyRequestObject) (PostAuthEmailVerifyResponseObject, error)
+	// Create a new customer account (self-service signup).
+	// (POST /auth/signup)
+	PostAuthSignup(ctx context.Context, request PostAuthSignupRequestObject) (PostAuthSignupResponseObject, error)
 	// Cancel account deletion (self-service recover).
 	// (DELETE /auth/unregister)
 	DeleteAuthUnregister(ctx context.Context, request DeleteAuthUnregisterRequestObject) (DeleteAuthUnregisterResponseObject, error)
@@ -22093,6 +22309,105 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthCompleteSignup operation middleware
+func (sh *strictHandler) PostAuthCompleteSignup(ctx *gin.Context) {
+	var request PostAuthCompleteSignupRequestObject
+
+	var body PostAuthCompleteSignupJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthCompleteSignup(ctx, request.(PostAuthCompleteSignupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthCompleteSignup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthCompleteSignupResponseObject); ok {
+		if err := validResponse.VisitPostAuthCompleteSignupResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthEmailVerify operation middleware
+func (sh *strictHandler) PostAuthEmailVerify(ctx *gin.Context) {
+	var request PostAuthEmailVerifyRequestObject
+
+	var body PostAuthEmailVerifyJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthEmailVerify(ctx, request.(PostAuthEmailVerifyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthEmailVerify")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthEmailVerifyResponseObject); ok {
+		if err := validResponse.VisitPostAuthEmailVerifyResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthSignup operation middleware
+func (sh *strictHandler) PostAuthSignup(ctx *gin.Context) {
+	var request PostAuthSignupRequestObject
+
+	var body PostAuthSignupJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthSignup(ctx, request.(PostAuthSignupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthSignup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthSignupResponseObject); ok {
+		if err := validResponse.VisitPostAuthSignupResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

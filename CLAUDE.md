@@ -484,6 +484,12 @@ func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, id u
 }
 ```
 
+**Compound result structs (e.g., `SignupResult`, `EmailVerifyResult`):**
+- If a result struct embeds an internal model (e.g., `*Customer`), it MUST also have a `WebhookMessage` variant
+- The variant replaces the internal model with its `*WebhookMessage` counterpart
+- Example: `SignupResult{Customer *Customer}` → `SignupResultWebhookMessage{Customer *WebhookMessage}`
+- The `ConvertWebhookMessage()` method must recursively convert embedded models
+
 **When adding a new API resource:**
 - Create `webhook.go` alongside the model definition
 - Omit any fields that are infrastructure-specific or internal-only

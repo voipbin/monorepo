@@ -5793,6 +5793,113 @@ components:
             $ref: '#/components/schemas/RagManagerSource'
 
 
+    RequestBodyAuthSignupPOST:
+      type: object
+      required:
+        - email
+        - accepted_tos
+      description: Request body for POST /auth/signup (self-service customer registration).
+      properties:
+        name:
+          type: string
+          description: Display name for the customer account.
+          example: "Acme Corporation"
+        detail:
+          type: string
+          description: Additional details about the customer.
+          example: "Enterprise customer account"
+        email:
+          type: string
+          format: email
+          x-go-type: string
+          description: Email address for the new customer account. Must be unique across all customers.
+          example: "admin@acme.com"
+        phone_number:
+          type: string
+          description: "Contact phone number in E.164 format."
+          example: "+14155551234"
+        address:
+          type: string
+          description: Mailing address of the customer.
+          example: "123 Main St, San Francisco, CA 94105"
+        webhook_method:
+          type: string
+          description: "HTTP method for webhook delivery. One of: POST, GET, PUT, DELETE."
+          example: "POST"
+        webhook_uri:
+          type: string
+          description: URI where webhook events will be delivered.
+          example: "https://api.acme.com/webhooks/voipbin"
+        accepted_tos:
+          type: boolean
+          description: "Must be `true` to confirm acceptance of the Terms of Service. Requests with `false` or missing value are rejected with HTTP 400."
+          example: true
+
+    RequestBodyAuthEmailVerifyPOST:
+      type: object
+      required:
+        - token
+      description: Request body for POST /auth/email-verify (email verification).
+      properties:
+        token:
+          type: string
+          description: "64-character lowercase hexadecimal verification token. Sent to the customer's email after `POST /auth/signup`."
+          example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd"
+
+    RequestBodyAuthCompleteSignupPOST:
+      type: object
+      required:
+        - temp_token
+        - code
+      description: Request body for POST /auth/complete-signup (headless OTP verification).
+      properties:
+        temp_token:
+          type: string
+          description: "Temporary token returned from the `POST /auth/signup` response."
+          example: "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
+        code:
+          type: string
+          description: One-time password (OTP) code sent to the customer for verification.
+          example: "123456"
+
+    CustomerManagerSignupResult:
+      type: object
+      description: "Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`."
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerManagerCustomer'
+        temp_token:
+          type: string
+          description: "Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification."
+          example: "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
+
+    CustomerManagerEmailVerifyResult:
+      type: object
+      required:
+        - customer
+        - accesskey
+      description: Result of a successful email verification. Contains the verified customer and a provisioned access key.
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerManagerCustomer'
+        accesskey:
+          $ref: '#/components/schemas/CustomerManagerAccesskey'
+
+    CustomerManagerCompleteSignupResult:
+      type: object
+      required:
+        - customer_id
+      description: "Result of a successful headless signup completion. Contains the customer ID and a provisioned access key."
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        accesskey:
+          $ref: '#/components/schemas/CustomerManagerAccesskey'
+
     RequestBodyAuthUnregisterPOST:
       type: object
       description: |
@@ -5860,6 +5967,12 @@ paths:
   /aisummaries:
     $ref: './paths/aisummaries/main.yaml'
 
+  /auth/signup:
+    $ref: './paths/auth/signup.yaml'
+  /auth/email-verify:
+    $ref: './paths/auth/email-verify.yaml'
+  /auth/complete-signup:
+    $ref: './paths/auth/complete-signup.yaml'
   /auth/unregister:
     $ref: './paths/auth/unregister.yaml'
 

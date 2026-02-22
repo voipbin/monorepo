@@ -1886,10 +1886,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversatio
 }
 
 // CustomerCompleteSignup mocks base method.
-func (m *MockServiceHandler) CustomerCompleteSignup(ctx context.Context, tempToken, code string) (*customer.CompleteSignupResult, error) {
+func (m *MockServiceHandler) CustomerCompleteSignup(ctx context.Context, tempToken, code string) (*customer.CompleteSignupResultWebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerCompleteSignup", ctx, tempToken, code)
-	ret0, _ := ret[0].(*customer.CompleteSignupResult)
+	ret0, _ := ret[0].(*customer.CompleteSignupResultWebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1931,10 +1931,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerDelete(ctx, a, customerID any)
 }
 
 // CustomerEmailVerify mocks base method.
-func (m *MockServiceHandler) CustomerEmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error) {
+func (m *MockServiceHandler) CustomerEmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResultWebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerEmailVerify", ctx, token)
-	ret0, _ := ret[0].(*customer.EmailVerifyResult)
+	ret0, _ := ret[0].(*customer.EmailVerifyResultWebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2036,18 +2036,18 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfRecover(ctx, a any) *gomoc
 }
 
 // CustomerSignup mocks base method.
-func (m *MockServiceHandler) CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.SignupResult, error) {
+func (m *MockServiceHandler) CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI, clientIP string) (*customer.SignupResultWebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSignup", ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
-	ret0, _ := ret[0].(*customer.SignupResult)
+	ret := m.ctrl.Call(m, "CustomerSignup", ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP)
+	ret0, _ := ret[0].(*customer.SignupResultWebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerSignup indicates an expected call of CustomerSignup.
-func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSignup", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSignup), ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSignup", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSignup), ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, clientIP)
 }
 
 // CustomerUpdate mocks base method.

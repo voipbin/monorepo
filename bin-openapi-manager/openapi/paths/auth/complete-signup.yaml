@@ -1,0 +1,31 @@
+post:
+  summary: Complete headless signup with OTP verification.
+  description: |
+    Completes a headless (API-based) signup flow by validating a one-time password (OTP) code.
+    The `temp_token` is returned from `POST /auth/signup` and the `code` is the OTP sent to the customer.
+
+    On success, returns the customer ID and a provisioned access key.
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthCompleteSignupPOST'
+  responses:
+    '200':
+      description: Signup completed successfully. Returns the customer ID and access key credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCompleteSignupResult'
+    '400':
+      description: |
+        Bad request. Possible causes:
+        - `temp_token` is invalid or expired.
+        - `code` is incorrect.
+        - Request body is malformed JSON.
+        - Required fields are missing.
+    '429':
+      description: Too many OTP verification attempts. Try again later.
