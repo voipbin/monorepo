@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -268,6 +269,50 @@ func Test_SendWebhookToCustomerEmptyWebhookURI(t *testing.T) {
 			}
 
 			time.Sleep(100 * time.Millisecond)
+		})
+	}
+}
+
+func Test_SendWebhookToCustomer_system_customer(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		dataType   webhook.DataType
+		data       json.RawMessage
+	}{
+		{
+			name:       "system customer - should skip webhook",
+			customerID: cscustomer.IDSystem,
+			dataType:   "application/json",
+			data:       []byte(`{"type":"email_created","data":{"id":"test"}}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &webhookHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				accoutHandler: mockMessageTargethandler,
+			}
+
+			ctx := context.Background()
+
+			// NO account Get or PublishEvent calls expected - should return early
+
+			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

@@ -10,6 +10,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -1232,6 +1233,79 @@ func Test_BillingEnd_set_status_end_error(t *testing.T) {
 			err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingStart_system_customer(t *testing.T) {
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		referenceType billing.ReferenceType
+		referenceID   uuid.UUID
+		costType      billing.CostType
+	}{
+		{
+			name: "system customer email - should skip billing",
+
+			customerID:    cmcustomer.IDSystem,
+			referenceType: billing.ReferenceTypeEmail,
+			referenceID:   uuid.FromStringOrNil("20000001-0000-0000-0000-000000000001"),
+			costType:      billing.CostTypeEmail,
+		},
+		{
+			name: "system customer call - should skip billing",
+
+			customerID:    cmcustomer.IDSystem,
+			referenceType: billing.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("20000002-0000-0000-0000-000000000001"),
+			costType:      billing.CostTypeCallPSTNOutgoing,
+		},
+		{
+			name: "system customer sms - should skip billing",
+
+			customerID:    cmcustomer.IDSystem,
+			referenceType: billing.ReferenceTypeSMS,
+			referenceID:   uuid.FromStringOrNil("20000003-0000-0000-0000-000000000001"),
+			costType:      billing.CostTypeSMS,
+		},
+		{
+			name: "system customer number - should skip billing",
+
+			customerID:    cmcustomer.IDSystem,
+			referenceType: billing.ReferenceTypeNumber,
+			referenceID:   uuid.FromStringOrNil("20000004-0000-0000-0000-000000000001"),
+			costType:      billing.CostTypeNumber,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := billingHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			// NO DB or account calls expected - should return early
+
+			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.costType, &tmBillingStart, &commonaddress.Address{}, &commonaddress.Address{}); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
