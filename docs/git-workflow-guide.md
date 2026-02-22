@@ -275,3 +275,13 @@ Claude: "I'll push the current branch to remote. Should I also merge it to main,
 - "merge to main"
 - "merge it to main and push"
 - "yes, merge to main" (in response to your question)
+
+### After PR is Merged
+
+**After a PR is merged on GitHub, ALWAYS sync the local main branch:**
+
+```bash
+cd ~/gitvoipbin/monorepo && git pull origin main
+```
+
+This keeps the main repository directory in sync with remote so new worktrees start from the latest code.

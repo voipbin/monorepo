@@ -240,12 +240,20 @@ git push -u origin NOJIRA-descriptive-change-summary
 
 **CRITICAL: Before creating a PR or merging, ALWAYS pull the latest `main` and check for conflicts.**
 
-This is mandatory — no exceptions. Follow this sequence:
+This is mandatory — no exceptions. Run these steps **from the worktree directory** (where your feature branch lives):
 1. **Fetch latest main:** `git fetch origin main`
 2. **Check for conflicts:** `git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"`
 3. **Review what changed on main:** `git log --oneline HEAD..origin/main`
 4. **If conflicts exist:** Rebase or merge main into your branch, resolve conflicts, and re-run the full verification workflow before proceeding.
 5. **If no conflicts:** Proceed with PR creation or merge.
+
+**CRITICAL: After a PR is merged on GitHub, ALWAYS sync the local main branch:**
+
+```bash
+cd ~/gitvoipbin/monorepo && git pull origin main
+```
+
+This keeps the main repository directory in sync with remote so new worktrees start from the latest code.
 
 **For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
