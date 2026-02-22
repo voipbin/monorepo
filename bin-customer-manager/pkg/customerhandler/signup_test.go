@@ -525,6 +525,69 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	}
 }
 
+func Test_EmailVerify_updateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000001")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_update_err").Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
+		Status:        customer.StatusInitial,
+	}, nil)
+	// CustomerUpdate fails — status transition to active fails
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(fmt.Errorf("db update error"))
+
+	_, err := h.EmailVerify(ctx, "token_update_err")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_EmailVerify_lockNotAcquired(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000002")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_lock_fail").Return(customerID, nil)
+	// lock not acquired — concurrent verification in progress
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(false, nil)
+
+	_, err := h.EmailVerify(ctx, "token_lock_fail")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_EmailVerify_customerGetError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
