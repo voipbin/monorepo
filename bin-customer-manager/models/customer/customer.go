@@ -65,9 +65,13 @@ var (
 	IDCallManager = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000001")
 	IDAIManager   = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000002")
 
+	// IDBasicRoute is the customer ID for system-wide default routes.
+	// Used by route-manager to look up fallback routes when no customer-specific route exists.
+	IDBasicRoute = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
+
 	// IDSystem is the customer ID used for system-generated operations
 	// (e.g., signup verification emails, password reset emails).
-	IDSystem = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
+	IDSystem = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002")
 
 	// GuestCustomerID is the guest/demo account customer id.
 	GuestCustomerID = uuid.FromStringOrNil("a856c986-4b06-4496-9641-4d0ecbc67df5")
