@@ -1,6 +1,6 @@
 """customer_customers fix empty status values
 
-Revision ID: a1b2c3d4e5f7
+Revision ID: ebbb033028db
 Revises: 455debd049b2
 Create Date: 2026-02-23 00:00:00.000000
 
@@ -9,7 +9,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = 'a1b2c3d4e5f7'
+revision = 'ebbb033028db'
 down_revision = '455debd049b2'
 branch_labels = None
 depends_on = None
