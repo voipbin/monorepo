@@ -428,7 +428,7 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 
 	if _, err := h.reqHandler.EmailV1EmailSend(
 		ctx,
-		uuid.Nil,
+		customer.IDSystem,
 		uuid.Nil,
 		destinations,
 		subject,

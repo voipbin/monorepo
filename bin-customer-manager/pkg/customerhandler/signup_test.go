@@ -107,7 +107,7 @@ func Test_Signup(t *testing.T) {
 			// token + signup session + email
 			mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), tt.responseUUID, gomock.Any()).Return(nil)
 			mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, customer.IDSystem, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 
 			res, err := h.Signup(ctx, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, "192.168.1.1")
 			if err != nil {
@@ -495,7 +495,7 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	// email send FAILS — should be non-fatal
-	mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("email service down"))
+	mockReq.EXPECT().EmailV1EmailSend(ctx, customer.IDSystem, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("email service down"))
 
 	res, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
 	if err != nil {
@@ -625,7 +625,7 @@ func Test_sendVerificationEmail(t *testing.T) {
 
 	mockReq.EXPECT().EmailV1EmailSend(
 		ctx,
-		uuid.Nil,
+		customer.IDSystem,
 		uuid.Nil,
 		[]commonaddress.Address{
 			{

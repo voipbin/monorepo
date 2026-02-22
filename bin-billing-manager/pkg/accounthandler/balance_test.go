@@ -37,6 +37,15 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 
 	tests := []test{
 		{
+			name:             "system customer ID bypasses balance validation",
+			customerID:       cmcustomer.IDSystem,
+			billingType:      billing.ReferenceTypeEmail,
+			count:            1,
+			responseCustomer: nil,
+			responseAccount:  nil,
+			expectRes:        true,
+		},
+		{
 			name: "account has enough balance",
 
 			customerID:  uuid.FromStringOrNil("87abc36a-09f5-11ee-9b1c-d3d80f26eacd"),
@@ -106,6 +115,17 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
+
+			if tt.name == "system customer ID bypasses balance validation" {
+				res, err := h.IsValidBalanceByCustomerID(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+				if res != tt.expectRes {
+					t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				}
+				return
+			}
 
 			if tt.name == "customer not found error" {
 				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(nil, fmt.Errorf("customer not found"))
