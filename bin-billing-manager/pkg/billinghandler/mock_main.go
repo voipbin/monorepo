@@ -16,6 +16,7 @@ import (
 	email "monorepo/bin-email-manager/models/email"
 	message "monorepo/bin-message-manager/models/message"
 	number "monorepo/bin-number-manager/models/number"
+	speaking "monorepo/bin-tts-manager/models/speaking"
 	reflect "reflect"
 	time "time"
 
@@ -144,6 +145,34 @@ func (m *MockBillingHandler) EventNMNumberRenewed(ctx context.Context, n *number
 func (mr *MockBillingHandlerMockRecorder) EventNMNumberRenewed(ctx, n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventNMNumberRenewed", reflect.TypeOf((*MockBillingHandler)(nil).EventNMNumberRenewed), ctx, n)
+}
+
+// EventTTSSpeakingStarted mocks base method.
+func (m *MockBillingHandler) EventTTSSpeakingStarted(ctx context.Context, s *speaking.Speaking) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventTTSSpeakingStarted", ctx, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventTTSSpeakingStarted indicates an expected call of EventTTSSpeakingStarted.
+func (mr *MockBillingHandlerMockRecorder) EventTTSSpeakingStarted(ctx, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTTSSpeakingStarted", reflect.TypeOf((*MockBillingHandler)(nil).EventTTSSpeakingStarted), ctx, s)
+}
+
+// EventTTSSpeakingStopped mocks base method.
+func (m *MockBillingHandler) EventTTSSpeakingStopped(ctx context.Context, s *speaking.Speaking) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventTTSSpeakingStopped", ctx, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventTTSSpeakingStopped indicates an expected call of EventTTSSpeakingStopped.
+func (mr *MockBillingHandlerMockRecorder) EventTTSSpeakingStopped(ctx, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTTSSpeakingStopped", reflect.TypeOf((*MockBillingHandler)(nil).EventTTSSpeakingStopped), ctx, s)
 }
 
 // Get mocks base method.

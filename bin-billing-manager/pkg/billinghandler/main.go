@@ -15,6 +15,7 @@ import (
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
+	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,6 +46,8 @@ type BillingHandler interface {
 	EventMMMessageCreated(ctx context.Context, m *mmmessage.Message) error
 	EventNMNumberCreated(ctx context.Context, n *nmnumber.Number) error
 	EventNMNumberRenewed(ctx context.Context, n *nmnumber.Number) error
+	EventTTSSpeakingStarted(ctx context.Context, s *tmspeaking.Speaking) error
+	EventTTSSpeakingStopped(ctx context.Context, s *tmspeaking.Speaking) error
 }
 
 type billingHandler struct {
