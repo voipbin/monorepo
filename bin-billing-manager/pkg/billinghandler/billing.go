@@ -6,6 +6,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -34,6 +35,12 @@ func (h *billingHandler) BillingStart(
 		"cost_type":        costType,
 		"tm_billing_start": tmBillingStart,
 	})
+
+	// system customers have no billing
+	if customerID == cmcustomer.IDSystem {
+		log.Debugf("Skipping billing for system customer. customer_id: %s", customerID)
+		return nil
+	}
 
 	// idempotency check — return early if billing already exists for this reference
 	existing, err := h.db.BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID)
