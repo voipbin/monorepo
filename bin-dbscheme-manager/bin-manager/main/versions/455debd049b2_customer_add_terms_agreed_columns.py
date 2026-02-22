@@ -1,6 +1,6 @@
 """customer_add_terms_agreed_columns
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 455debd049b2
 Revises: 8f42ac0555e7
 Create Date: 2026-02-22 00:00:00.000000
 
@@ -9,7 +9,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = 'a1b2c3d4e5f6'
+revision = '455debd049b2'
 down_revision = '8f42ac0555e7'
 branch_labels = None
 depends_on = None
