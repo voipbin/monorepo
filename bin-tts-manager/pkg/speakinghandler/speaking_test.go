@@ -8,6 +8,7 @@ import (
 	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"
 	"monorepo/bin-tts-manager/pkg/dbhandler"
@@ -202,10 +203,12 @@ func Test_Create(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &speakingHandler{
 				db:               mockDB,
 				streamingHandler: mockStreaming,
+				notifyHandler:    mockNotify,
 				podID:            "test-pod",
 			}
 			ctx := context.Background()
@@ -269,6 +272,10 @@ func Test_Create(t *testing.T) {
 						}).Return(tt.responseUpdateErr)
 
 						mockDB.EXPECT().SpeakingGet(ctx, gomock.Any()).Return(tt.responseGet, tt.responseGetErr)
+
+						if tt.responseGetErr == nil {
+							mockNotify.EXPECT().PublishEvent(ctx, speaking.EventTypeSpeakingStarted, tt.responseGet)
+						}
 					}
 				}
 			}
@@ -555,10 +562,12 @@ func Test_Say(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &speakingHandler{
 				db:               mockDB,
 				streamingHandler: mockStreaming,
+				notifyHandler:    mockNotify,
 			}
 			ctx := context.Background()
 
@@ -666,10 +675,12 @@ func Test_Flush(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &speakingHandler{
 				db:               mockDB,
 				streamingHandler: mockStreaming,
+				notifyHandler:    mockNotify,
 			}
 			ctx := context.Background()
 
@@ -781,10 +792,12 @@ func Test_Stop(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &speakingHandler{
 				db:               mockDB,
 				streamingHandler: mockStreaming,
+				notifyHandler:    mockNotify,
 			}
 			ctx := context.Background()
 
@@ -799,6 +812,10 @@ func Test_Stop(t *testing.T) {
 
 				if tt.responseUpdateErr == nil {
 					mockDB.EXPECT().SpeakingGet(ctx, tt.id).Return(tt.responseGetAfter, tt.responseGetAfterErr)
+
+					if tt.responseGetAfterErr == nil {
+						mockNotify.EXPECT().PublishEvent(ctx, speaking.EventTypeSpeakingStopped, tt.responseGetAfter)
+					}
 				}
 			}
 

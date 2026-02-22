@@ -134,7 +134,7 @@ func run(db *sql.DB) error {
 		logrus.Fatalf("Could not connect to cache. err: %v", err)
 	}
 	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
-	speakingHandler := speakinghandler.NewSpeakingHandler(dbHandler, streamingHandler, podID)
+	speakingHandler := speakinghandler.NewSpeakingHandler(dbHandler, streamingHandler, notifyHandler, podID)
 
 	// run listener
 	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID)

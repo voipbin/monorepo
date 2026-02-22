@@ -126,6 +126,8 @@ func (h *speakingHandler) Create(
 		return spk, nil
 	}
 
+	h.notifyHandler.PublishEvent(ctx, speaking.EventTypeSpeakingStarted, res)
+
 	return res, nil
 }
 
@@ -263,6 +265,8 @@ func (h *speakingHandler) Stop(ctx context.Context, id uuid.UUID) (*speaking.Spe
 		log.Errorf("Could not get speaking after stop. err: %v", errGet)
 		return spk, nil
 	}
+
+	h.notifyHandler.PublishEvent(ctx, speaking.EventTypeSpeakingStopped, res)
 
 	return res, nil
 }

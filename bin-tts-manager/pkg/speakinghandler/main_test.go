@@ -3,6 +3,7 @@ package speakinghandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-tts-manager/pkg/dbhandler"
 	"monorepo/bin-tts-manager/pkg/streaminghandler"
 
@@ -15,8 +16,9 @@ func Test_NewSpeakingHandler(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	h := NewSpeakingHandler(mockDB, mockStreaming, "test-pod")
+	h := NewSpeakingHandler(mockDB, mockStreaming, mockNotify, "test-pod")
 	if h == nil {
 		t.Fatal("expected handler, got nil")
 	}
@@ -31,6 +33,9 @@ func Test_NewSpeakingHandler(t *testing.T) {
 	}
 	if sh.streamingHandler == nil {
 		t.Error("streamingHandler should not be nil")
+	}
+	if sh.notifyHandler == nil {
+		t.Error("notifyHandler should not be nil")
 	}
 	if sh.podID != "test-pod" {
 		t.Errorf("expected podID test-pod, got %s", sh.podID)
