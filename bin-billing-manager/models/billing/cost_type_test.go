@@ -79,6 +79,13 @@ func Test_GetCostInfo(t *testing.T) {
 			expectCreditPerUnit: DefaultCreditPerUnitNumber,
 		},
 		{
+			name:                "tts - token first",
+			costType:            CostTypeTTS,
+			expectMode:          CostModeTokenFirst,
+			expectTokenPerUnit:  DefaultTokenPerUnitTTS,
+			expectCreditPerUnit: DefaultCreditPerUnitTTS,
+		},
+		{
 			name:                "none - disabled",
 			costType:            CostTypeNone,
 			expectMode:          CostModeDisabled,
