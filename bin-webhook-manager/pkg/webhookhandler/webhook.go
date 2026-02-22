@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -21,6 +23,12 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		"data_type": dataType,
 		"data":      data,
 	}).Debugf("Sending an webhook. customer_id: %s", customerID)
+
+	// system customers have no webhook configuration
+	if customerID == cscustomer.IDSystem {
+		log.Debugf("Skipping webhook for system customer. customer_id: %s", customerID)
+		return nil
+	}
 
 	m, err := h.accoutHandler.Get(ctx, customerID)
 	if err != nil {
