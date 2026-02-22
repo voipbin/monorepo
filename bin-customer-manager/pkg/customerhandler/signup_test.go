@@ -100,6 +100,9 @@ func Test_Signup(t *testing.T) {
 				if c.TermsAgreedVersion == "" {
 					t.Errorf("Expected TermsAgreedVersion to be set, got empty")
 				}
+				if c.Status != customer.StatusInitial {
+					t.Errorf("Expected Status=initial, got: %s", c.Status)
+				}
 				return nil
 			})
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(tt.responseCustomer, nil)
