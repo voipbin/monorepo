@@ -242,7 +242,17 @@ func Test_EmailVerify(t *testing.T) {
 			mockCache.EXPECT().VerifyLockAcquire(ctx, tt.responseCustomerID, 30*time.Second).Return(true, nil)
 			mockCache.EXPECT().VerifyLockRelease(ctx, tt.responseCustomerID).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseCustomer, nil)
-			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
+				if fields[customer.FieldStatus] != string(customer.StatusActive) {
+					t.Errorf("Expected status=active, got: %v", fields[customer.FieldStatus])
+				}
+				if fields[customer.FieldEmailVerified] != true {
+					t.Errorf("Expected email_verified=true, got: %v", fields[customer.FieldEmailVerified])
+				}
+				return nil
+			},
+		)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseUpdated, nil)
 			mockAccesskey.EXPECT().Create(ctx, tt.responseCustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)

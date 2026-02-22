@@ -2,6 +2,7 @@ package customerhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -89,4 +90,23 @@ func Test_cleanupUnverified(t *testing.T) {
 			h.cleanupUnverified(ctx)
 		})
 	}
+}
+
+func Test_cleanupUnverified_listError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &customerHandler{
+		db:          mockDB,
+		utilHandler: mockUtil,
+	}
+	ctx := context.Background()
+
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("db error"))
+
+	// should not panic
+	h.cleanupUnverified(ctx)
 }
