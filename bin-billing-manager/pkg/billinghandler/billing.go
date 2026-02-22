@@ -74,7 +74,7 @@ func (h *billingHandler) BillingStart(
 	// determine if this is an immediate-end type
 	var flagEnd bool
 	switch referenceType {
-	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension:
+	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension, billing.ReferenceTypeSpeaking:
 		flagEnd = false
 	case billing.ReferenceTypeSMS, billing.ReferenceTypeEmail:
 		flagEnd = true
@@ -145,7 +145,7 @@ func (h *billingHandler) BillingEnd(
 	var usageDuration int
 	var billableUnits int
 	switch bill.ReferenceType {
-	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension:
+	case billing.ReferenceTypeCall, billing.ReferenceTypeCallExtension, billing.ReferenceTypeSpeaking:
 		if bill.TMBillingStart != nil && tmBillingEnd != nil {
 			usageDuration = int(tmBillingEnd.Sub(*bill.TMBillingStart).Seconds())
 			billableUnits = billing.CalculateBillableUnits(usageDuration)
