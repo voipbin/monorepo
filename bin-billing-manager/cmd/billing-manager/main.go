@@ -165,6 +165,7 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 		string(commonoutline.QueueNameEmailEvent),
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameNumberEvent),
+		string(commonoutline.QueueNameTTSEvent),
 	}
 
 	// create subscribe handler first, then wire the failed event handler with a circular reference
