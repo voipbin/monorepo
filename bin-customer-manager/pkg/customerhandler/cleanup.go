@@ -52,13 +52,19 @@ func (h *customerHandler) cleanupUnverified(ctx context.Context) {
 	}
 
 	for _, c := range customers {
-		log.Infof("Deleting expired unverified customer. customer_id: %s, email: %s", c.ID, c.Email)
-		if err := h.db.CustomerHardDelete(ctx, c.ID); err != nil {
-			log.Errorf("Could not hard-delete customer. customer_id: %s, err: %v", c.ID, err)
+		log.Infof("Expiring unverified customer. customer_id: %s, email: %s", c.ID, c.Email)
+
+		now := h.utilHandler.TimeNow()
+		fields := map[customer.Field]any{
+			customer.FieldStatus:   string(customer.StatusExpired),
+			customer.FieldTMDelete: now,
+		}
+		if err := h.db.CustomerUpdate(ctx, c.ID, fields); err != nil {
+			log.Errorf("Could not expire customer. customer_id: %s, err: %v", c.ID, err)
 		}
 	}
 
 	if len(customers) > 0 {
-		log.Infof("Cleanup completed. deleted: %d", len(customers))
+		log.Infof("Cleanup completed. expired: %d", len(customers))
 	}
 }

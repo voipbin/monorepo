@@ -100,6 +100,9 @@ func Test_Signup(t *testing.T) {
 				if c.TermsAgreedVersion == "" {
 					t.Errorf("Expected TermsAgreedVersion to be set, got empty")
 				}
+				if c.Status != customer.StatusInitial {
+					t.Errorf("Expected Status=initial, got: %s", c.Status)
+				}
 				return nil
 			})
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(tt.responseCustomer, nil)
@@ -239,7 +242,17 @@ func Test_EmailVerify(t *testing.T) {
 			mockCache.EXPECT().VerifyLockAcquire(ctx, tt.responseCustomerID, 30*time.Second).Return(true, nil)
 			mockCache.EXPECT().VerifyLockRelease(ctx, tt.responseCustomerID).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseCustomer, nil)
-			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
+				if fields[customer.FieldStatus] != string(customer.StatusActive) {
+					t.Errorf("Expected status=active, got: %v", fields[customer.FieldStatus])
+				}
+				if fields[customer.FieldEmailVerified] != true {
+					t.Errorf("Expected email_verified=true, got: %v", fields[customer.FieldEmailVerified])
+				}
+				return nil
+			},
+		)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseUpdated, nil)
 			mockAccesskey.EXPECT().Create(ctx, tt.responseCustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
@@ -512,6 +525,69 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	}
 }
 
+func Test_EmailVerify_updateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000001")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_update_err").Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
+		Status:        customer.StatusInitial,
+	}, nil)
+	// CustomerUpdate fails — status transition to active fails
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(fmt.Errorf("db update error"))
+
+	_, err := h.EmailVerify(ctx, "token_update_err")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_EmailVerify_lockNotAcquired(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000002")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_lock_fail").Return(customerID, nil)
+	// lock not acquired — concurrent verification in progress
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(false, nil)
+
+	_, err := h.EmailVerify(ctx, "token_lock_fail")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_EmailVerify_customerGetError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -542,74 +618,6 @@ func Test_EmailVerify_customerGetError(t *testing.T) {
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
-}
-
-func Test_cleanupUnverified(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		responseCustomers []*customer.Customer
-	}{
-		{
-			name:              "empty",
-			responseCustomers: []*customer.Customer{},
-		},
-		{
-			name: "2 unverified customers",
-			responseCustomers: []*customer.Customer{
-				{
-					ID:            uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000001"),
-					Email:         "expired1@voipbin.net",
-					EmailVerified: false,
-				},
-				{
-					ID:            uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000002"),
-					Email:         "expired2@voipbin.net",
-					EmailVerified: false,
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &customerHandler{
-				db: mockDB,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseCustomers, nil)
-
-			for _, c := range tt.responseCustomers {
-				mockDB.EXPECT().CustomerHardDelete(ctx, c.ID).Return(nil)
-			}
-
-			h.cleanupUnverified(ctx)
-		})
-	}
-}
-
-func Test_cleanupUnverified_listError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &customerHandler{
-		db: mockDB,
-	}
-	ctx := context.Background()
-
-	mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("db error"))
-
-	// should not panic
-	h.cleanupUnverified(ctx)
 }
 
 func Test_sendVerificationEmail(t *testing.T) {

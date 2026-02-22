@@ -10,9 +10,11 @@ import (
 type Status string
 
 const (
+	StatusInitial Status = "initial"
 	StatusActive  Status = "active"
 	StatusFrozen  Status = "frozen"
 	StatusDeleted Status = "deleted"
+	StatusExpired Status = "expired"
 )
 
 // Customer defines

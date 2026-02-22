@@ -164,6 +164,7 @@ func Test_Create(t *testing.T) {
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.Nil,
 				EmailVerified:    true,
+				Status:           customer.StatusActive,
 			},
 		},
 	}

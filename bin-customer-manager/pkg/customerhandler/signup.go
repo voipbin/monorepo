@@ -85,6 +85,7 @@ func (h *customerHandler) Signup(
 		WebhookURI:    webhookURI,
 
 		EmailVerified: false,
+		Status:        customer.StatusInitial,
 
 		TermsAgreedVersion: time.Now().UTC().Format(time.RFC3339),
 		TermsAgreedIP:      clientIP,
@@ -211,9 +212,10 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 		return &customer.EmailVerifyResult{Customer: c}, nil
 	}
 
-	// mark as verified
+	// mark as verified and activate
 	fields := map[customer.Field]any{
 		customer.FieldEmailVerified: true,
+		customer.FieldStatus:        string(customer.StatusActive),
 	}
 	if err := h.db.CustomerUpdate(ctx, customerID, fields); err != nil {
 		log.Errorf("Could not update customer. err: %v", err)
@@ -338,9 +340,10 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 		}, nil
 	}
 
-	// Mark customer as verified
+	// Mark customer as verified and activate
 	fields := map[customer.Field]any{
 		customer.FieldEmailVerified: true,
+		customer.FieldStatus:        string(customer.StatusActive),
 	}
 	if err := h.db.CustomerUpdate(ctx, session.CustomerID, fields); err != nil {
 		log.Errorf("Could not update customer. err: %v", err)
