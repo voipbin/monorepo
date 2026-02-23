@@ -127,16 +127,14 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
 
-	// Start WebSocket read lifecycle goroutine
-	go runWebSocketAsteriskRead(conn, connAstDone)
-
 	// Start pipecat runner
 	go func() {
 		defer se.Cancel()
 		h.RunnerStart(pc, se)
 	}()
 
-	// Start media handler (reads audio from Asterisk WebSocket, sends to Python)
+	// Start media handler — sole reader on the Asterisk WebSocket.
+	// Closes connAstDone on exit to signal the lifecycle monitor.
 	go func() {
 		defer se.Cancel()
 		h.runAsteriskReceivedMediaHandle(se)
@@ -209,16 +207,14 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
 
-		// Start WebSocket read lifecycle goroutine
-		go runWebSocketAsteriskRead(conn, connAstDone)
-
 		// Start pipecat runner
 		go func() {
 			defer se.Cancel()
 			h.RunnerStart(pc, se)
 		}()
 
-		// Start media handler (reads audio from Asterisk WebSocket, sends to Python)
+		// Start media handler — sole reader on the Asterisk WebSocket.
+		// Closes connAstDone on exit to signal the lifecycle monitor.
 		go func() {
 			defer se.Cancel()
 			h.runAsteriskReceivedMediaHandle(se)

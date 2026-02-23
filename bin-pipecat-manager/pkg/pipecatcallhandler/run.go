@@ -24,6 +24,13 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Sess
 		return
 	}
 
+	// This goroutine is the sole reader on se.ConnAst. gorilla/websocket supports
+	// only one concurrent reader, so no other goroutine should read from this
+	// connection. Close ConnAstDone on exit to signal the lifecycle monitor.
+	if se.ConnAstDone != nil {
+		defer close(se.ConnAstDone)
+	}
+
 	packetID := uint64(0)
 	for {
 		if se.Ctx.Err() != nil {
