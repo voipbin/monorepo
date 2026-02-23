@@ -126,17 +126,15 @@ The service uses Cobra and Viper for configuration (see `internal/config/main.go
 - `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
 - `RABBITMQ_ADDRESS`: RabbitMQ connection string
 - `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
-- `STT_PROVIDER_PRIORITY`: Optional. Comma-separated list of STT providers in priority order (default: "GCP,AWS"). Valid values: GCP, AWS. Examples: "GCP,AWS", "AWS,GCP"
-
 All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
 
 **STT Provider Requirements:**
 - At least one STT provider must be configured (GCP or AWS)
 - GCP: Uses Application Default Credentials (ADC) - can be from service account key, gcloud CLI, GKE metadata server, etc.
 - AWS: Requires both `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables
-- Provider priority can be configured via `STT_PROVIDER_PRIORITY` (default: "GCP,AWS")
-- All providers listed in `STT_PROVIDER_PRIORITY` must be properly configured, or service will fail to start
-- Service fails to start if no providers are available or if priority configuration is invalid
+- Default provider order is hard-coded as GCP → AWS (no env var needed)
+- At startup, all providers with valid credentials are initialized; at least one must be available
+- Per-request provider selection: callers can pass `provider` ("gcp" or "aws") to try a specific provider first, with fallback to the default order
 
 **Configuration Pattern:**
 Uses singleton pattern with `config.Get()` for thread-safe access. Configuration is loaded once at startup in the Cobra `PersistentPreRunE` hook.
