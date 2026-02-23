@@ -79,6 +79,7 @@ func Test_TranscribeStart(t *testing.T) {
 				tt.responseConference.ConfbridgeID,
 				tt.lang,
 				tmtranscribe.DirectionIn,
+				tmtranscribe.ProviderEmpty,
 				30000,
 			).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ConferenceUpdate(ctx, tt.responseConference.ID, map[conference.Field]any{
