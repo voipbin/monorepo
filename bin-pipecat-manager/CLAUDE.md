@@ -85,7 +85,7 @@ This service uniquely combines Go and Python components:
 1. **Go Service (Port 8080)** - Main orchestration layer
    - HTTP endpoints for WebSocket connections from Pipecat Python runners
    - RabbitMQ RPC request handler for creating/managing pipecat calls
-   - Audiosocket connections to Asterisk for real-time audio streaming
+   - WebSocket external media connections to Asterisk for real-time audio streaming
    - Session lifecycle management and state coordination
    - Database and cache operations
 
@@ -102,10 +102,11 @@ This service uniquely combines Go and Python components:
 1. **cmd/pipecat-manager/** - Main entry point with Cobra/Viper configuration
 2. **pkg/pipecatcallhandler/** - Core orchestration logic
    - `pythonrunner.go` - HTTP client communicating with Python FastAPI service
-   - `audiosocket.go` - Handles Audiosocket protocol for Asterisk audio streaming
-   - `websocket.go` - WebSocket server for Pipecat client connections
+   - `audiosocket.go` - Audio resampling utility (safety net for non-16kHz audio)
+   - `websocket.go` - WebSocket handling for both Asterisk external media and Pipecat client connections
    - `pipecatframe.go` - Protobuf frame serialization/deserialization
    - `session.go` - Manages active pipecat call sessions
+   - `start.go` - Call startup: external media creation, WebSocket dial to Asterisk, session setup
    - `run.go`, `runner.go` - Pipeline execution coordination
 3. **pkg/listenhandler/** - RabbitMQ RPC handler with regex-based routing
 4. **pkg/httphandler/** - HTTP endpoints for WebSocket upgrades and tool callbacks
@@ -132,7 +133,7 @@ This service uniquely combines Go and Python components:
 - **HTTP/WebSocket**:
   - Go → Python: HTTP POST to `localhost:8000/run` and `/stop`
   - Python → Go: WebSocket client to `<POD_IP>:8080` for bidirectional frame streaming
-- **Audiosocket**: TCP connection to Asterisk for 8kHz PCM audio streaming
+- **WebSocket External Media**: Go dials Asterisk's `chan_websocket` endpoint for 16kHz slin16 audio streaming
 - **Monorepo**: Sibling services referenced via `replace` directives in go.mod pointing to `../bin-*-manager`
 
 ### Request Flow: Starting a Pipecat Call
@@ -144,6 +145,10 @@ listenhandler.processV1PipecatcallsPost
   ↓
 pipecatcallhandler.Start
   ├─→ Create DB record
+  ├─→ Create external media via call-manager RPC (CallV1ExternalMediaStart)
+  │    → Returns em.MediaURI (ws://asterisk:port/ws)
+  ├─→ websocketAsteriskConnect(em.MediaURI)
+  │    → Dials with "media" subprotocol, waits for MEDIA_START text message
   ├─→ pythonrunner.Start (HTTP POST to Python :8000/run)
   │    ↓
   │   Python run_pipeline creates:
@@ -152,28 +157,29 @@ pipecatcallhandler.Start
   │    ├─ TTS service (Cartesia, ElevenLabs)
   │    └─ WebSocket client → connects to Go :8080
   │         ↓
-  └─→ pipecatcallhandler.Run (goroutine)
-       └─→ Accepts Audiosocket from Asterisk
-            └─→ Bidirectional audio bridge:
-                 Asterisk (8kHz) ←audiosocket→ Go ←websocket/protobuf→ Python/Pipecat
+  └─→ Goroutines:
+       ├─ runWebSocketAsteriskRead (closes ConnAstDone on WS disconnect)
+       ├─ RunnerStart (Python Pipecat pipeline)
+       ├─ runAsteriskReceivedMediaHandle (Asterisk → Pipecat audio bridge)
+       └─ Lifecycle monitor (waits on ConnAstDone, triggers cleanup)
 ```
 
 ### Audio Flow Architecture
 
 ```
-Asterisk PBX (8kHz SLIN)
-  ↓ [Audiosocket TCP]
-Go audiosocketHandler.GetNextMedia() → 8kHz PCM bytes
-  ↓ [Upsample to 16kHz if needed]
+Asterisk PBX (16kHz slin16)
+  ↓ [WebSocket binary frames, "media" subprotocol]
+Go runAsteriskReceivedMediaHandle → 16kHz PCM bytes
+  ↓ [No resampling needed — 16kHz end-to-end]
 Go pipecatframeHandler.CreateAudioRawFrame() → Protobuf AudioRawFrame
-  ↓ [WebSocket]
+  ↓ [WebSocket to Python]
 Python Pipecat pipeline:
   AudioRawFrame → STT → LLMContext → LLM → TTS → AudioRawFrame
-  ↓ [WebSocket]
+  ↓ [WebSocket to Go]
 Go pipecatframeHandler.Parse() → Extract PCM bytes
-  ↓ [Downsample 16kHz → 8kHz if needed]
-Go audiosocketHandler.Write() → 8kHz PCM bytes
-  ↓ [Audiosocket TCP]
+  ↓ [No resampling needed — 16kHz end-to-end]
+Go websocketAsteriskWrite() → 640-byte frames with 20ms pacing
+  ↓ [WebSocket binary frames]
 Asterisk PBX
 ```
 
@@ -181,9 +187,11 @@ Asterisk PBX
 
 - **Interface-based mocking**: All handlers use interfaces with `//go:generate mockgen` for testability
 - **Protobuf frames**: Custom proto definitions in `proto/frames.proto` for efficient WebSocket communication
-- **Session management**: `pipecatcall.Session` tracks active connections (Audiosocket, WebSocket, contexts)
-- **Dual transport**: Asterisk uses Audiosocket (8kHz), Pipecat uses WebSocket+Protobuf (16kHz)
-- **Sample rate conversion**: `Upsample8kTo16k` and downsample for audio quality matching
+- **Session management**: `pipecatcall.Session` tracks active connections (`ConnAst` for Asterisk WebSocket, `ConnAstDone` channel for disconnect signalling)
+- **WebSocket external media**: Go dials Asterisk's `chan_websocket` endpoint as a client (encapsulation: none, transport: websocket, connection_type: server, format: slin16)
+- **16kHz end-to-end**: Audio flows at 16kHz slin16 between Asterisk and Pipecat with no sample rate conversion needed
+- **Frame pacing**: `websocketAsteriskWrite` sends 640-byte binary frames with 20ms inter-frame delay (matching 16kHz slin16 timing)
+- **ConnAstDone pattern**: `runWebSocketAsteriskRead` goroutine closes `ConnAstDone` channel on WebSocket disconnect, used by lifecycle monitor for cleanup
 - **Context propagation**: All handler methods accept `context.Context` for cancellation
 - **UUID-based IDs**: Using `github.com/gofrs/uuid` throughout
 
@@ -216,9 +224,9 @@ Python environment variables (in `.env` or exported):
 ### Important Implementation Notes
 
 1. **Audio Sample Rates**:
-   - Asterisk/Audiosocket: 8kHz SLIN (signed linear 16-bit PCM)
-   - Pipecat/WebSocket: 16kHz (some services require higher quality)
-   - Conversion handled in `audiosocketHandler.GetDataSamples()` and `Upsample8kTo16k()`
+   - Asterisk/WebSocket external media: 16kHz slin16 (signed linear 16-bit PCM)
+   - Pipecat/WebSocket: 16kHz — same rate, no conversion needed end-to-end
+   - Safety net resampling via `audiosocketHandler.GetDataSamples()` for non-16kHz audio (rarely used)
 
 2. **Protobuf Frame Protocol**:
    - All WebSocket messages between Go and Python use protobuf-serialized frames
@@ -226,10 +234,11 @@ Python environment variables (in `.env` or exported):
 
 3. **Session Lifecycle**:
    - Created in DB on `/v1/pipecatcalls POST`
-   - Python runner started asynchronously
-   - Audiosocket connection expected from Asterisk
-   - WebSocket connection from Python Pipecat client
-   - All cleaned up on `/v1/pipecatcalls/<id>/stop POST`
+   - External media created via call-manager RPC, returns `em.MediaURI`
+   - Go dials Asterisk WebSocket at `em.MediaURI`, waits for `MEDIA_START` text message
+   - Python runner started, connects back to Go via WebSocket
+   - `ConnAstDone` channel closed when Asterisk WebSocket disconnects, triggering cleanup
+   - All cleaned up on `/v1/pipecatcalls/<id>/stop POST` or on WebSocket disconnect
 
 4. **Tool Execution Flow**:
    - Python Pipecat LLM makes function call
