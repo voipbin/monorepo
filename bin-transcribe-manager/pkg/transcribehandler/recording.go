@@ -12,7 +12,7 @@ import (
 
 // startRecording transcribe the recoring
 // returns created transcribe
-func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.UUID, activeflowID uuid.UUID, onEndFlowID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.UUID, activeflowID uuid.UUID, onEndFlowID uuid.UUID, recordingID uuid.UUID, language string, provider transcribe.Provider) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "startRecording",
 		"recording_id": recordingID,
@@ -38,6 +38,7 @@ func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.
 		recordingID,
 		language,
 		transcribe.DirectionBoth,
+		provider,
 		[]uuid.UUID{},
 	)
 	if err != nil {

@@ -37,6 +37,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 		direction     transcribe.Direction
+		provider      transcribe.Provider
 
 		responseCall       *cmcall.Call
 		responseUUID       uuid.UUID
@@ -56,6 +57,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 			language:      "en-US",
 			direction:     transcribe.DirectionBoth,
+			provider:      transcribe.ProviderEmpty,
 
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -95,6 +97,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 				Status:        transcribe.StatusProgressing,
 				Language:      "en-US",
 				Direction:     transcribe.DirectionBoth,
+				Provider:      transcribe.ProviderEmpty,
 				StreamingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
 					uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
@@ -137,10 +140,10 @@ func Test_Start_referencetype_call(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
 			if tt.direction == transcribe.DirectionBoth {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn).Return(tt.responseStreamings[0], nil)
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut).Return(tt.responseStreamings[1], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn, tt.provider).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut, tt.provider).Return(tt.responseStreamings[1], nil)
 			} else {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider).Return(tt.responseStreamings[0], nil)
 			}
 
 			// create
@@ -149,7 +152,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
-			res, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -258,6 +261,7 @@ func Test_startLive(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 		direction     transcribe.Direction
+		provider      transcribe.Provider
 
 		responseUUID       uuid.UUID
 		responseStreamings []*streaming.Streaming
@@ -275,6 +279,7 @@ func Test_startLive(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5"),
 			language:      "en-US",
 			direction:     transcribe.DirectionBoth,
+			provider:      transcribe.ProviderEmpty,
 
 			responseUUID: uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"),
 			responseStreamings: []*streaming.Streaming{
@@ -334,13 +339,13 @@ func Test_startLive(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 
 			if tt.direction == transcribe.DirectionBoth {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn).Return(tt.responseStreamings[0], nil)
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut).Return(tt.responseStreamings[1], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn, tt.provider).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut, tt.provider).Return(tt.responseStreamings[1], nil)
 			} else {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider).Return(tt.responseStreamings[0], nil)
 			}
 
-			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

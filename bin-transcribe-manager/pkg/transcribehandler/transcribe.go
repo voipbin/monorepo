@@ -53,6 +53,7 @@ func (h *transcribeHandler) Create(
 	referenceID uuid.UUID,
 	language string,
 	direction transcribe.Direction,
+	provider transcribe.Provider,
 	streamingIDs []uuid.UUID,
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -65,6 +66,7 @@ func (h *transcribeHandler) Create(
 		"reference_id":   referenceID,
 		"language":       language,
 		"direction":      direction,
+		"provider":       provider,
 	})
 
 	tmp := &transcribe.Transcribe{
@@ -83,6 +85,7 @@ func (h *transcribeHandler) Create(
 		HostID:    h.hostID,
 		Language:  language,
 		Direction: direction,
+		Provider:  provider,
 
 		StreamingIDs: streamingIDs,
 	}

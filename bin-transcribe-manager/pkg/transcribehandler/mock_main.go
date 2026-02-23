@@ -160,18 +160,18 @@ func (mr *MockTranscribeHandlerMockRecorder) List(ctx, size, token, filters any)
 }
 
 // Start mocks base method.
-func (m *MockTranscribeHandler) Start(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.Transcribe, error) {
+func (m *MockTranscribeHandler) Start(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction, provider transcribe.Provider) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction)
+	ret := m.ctrl.Call(m, "Start", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockTranscribeHandlerMockRecorder) Start(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction any) *gomock.Call {
+func (mr *MockTranscribeHandlerMockRecorder) Start(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTranscribeHandler)(nil).Start), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTranscribeHandler)(nil).Start), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider)
 }
 
 // Stop mocks base method.
