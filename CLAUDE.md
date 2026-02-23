@@ -644,6 +644,34 @@ TalkManagerMedia:
 
 **For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
 
+#### Feature Changes Require RST Documentation Updates
+
+**CRITICAL: The RST docs in `bin-api-manager/docsdev/source/` are the primary user-facing documentation and the single source of truth for how the platform works. When adding or changing any user-visible feature, you MUST update the relevant RST docs.**
+
+The RST documentation at `bin-api-manager/docsdev/source/` is what customers, developers, and integrators rely on to understand VoIPbin's APIs, billing, features, and behavior. If the docs don't reflect reality, users have no way to know a feature exists or how it works. Stale docs are worse than no docs — they actively mislead.
+
+**This applies when you:**
+- Add a new billable service type (update rate tables, diagrams, examples in `billing_account_overview.rst`)
+- Add or modify API endpoints (update the relevant resource's `*_overview.rst`, `*_tutorial.rst`, `*_struct.rst`)
+- Change pricing, rates, or billing behavior
+- Add new event types that affect user-visible webhooks
+- Add new resource types, statuses, or fields
+- Change any behavior documented in the existing RST files
+
+**When updating RST docs:**
+1. **Edit the RST source** in `bin-api-manager/docsdev/source/`
+2. **Clean rebuild the HTML**: `cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build`
+3. **Force-add the build output**: `git add -f bin-api-manager/docsdev/build/` (root `.gitignore` excludes `build/`)
+4. **Commit both RST source and built HTML together**
+
+**IMPORTANT:** Always do a clean rebuild (`rm -rf build` first). Incremental Sphinx builds may miss cross-page references. The built HTML is tracked in git and must stay in sync with the RST sources.
+
+**Why this matters:**
+- RST docs are the single source of truth for external users
+- Customers cannot discover undocumented features
+- Stale rate tables cause billing confusion and support tickets
+- The built HTML is deployed directly — if it's not committed, the live site is out of date
+
 ## Where to Document New Information
 
 Use this decision tree when adding new documentation:
