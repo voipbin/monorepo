@@ -225,7 +225,8 @@ Python environment variables (in `.env` or exported):
 
 1. **Audio Sample Rates**:
    - Asterisk/WebSocket external media: 16kHz slin16 (signed linear 16-bit PCM)
-   - Pipecat/WebSocket: 16kHz — same rate, no conversion needed end-to-end
+   - Pipecat pipeline: `audio_out_sample_rate=16000` in PipelineParams — TTS generates 16kHz natively, matching Asterisk end-to-end with zero resampling
+   - **CRITICAL**: Pipecat defaults to 24kHz output. Without the explicit 16kHz setting, Go's per-chunk resampler creates boundary artifacts (robotic audio). Always keep `audio_out_sample_rate=16000`.
    - Safety net resampling via `audiosocketHandler.GetDataSamples()` for non-16kHz audio (rarely used)
 
 2. **Protobuf Frame Protocol**:
