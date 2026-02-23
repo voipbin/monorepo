@@ -169,17 +169,13 @@ pipecatcallhandler.Start
 ```
 Asterisk PBX (16kHz slin16)
   ↓ [WebSocket binary frames, "media" subprotocol]
-Go runAsteriskReceivedMediaHandle → 16kHz PCM bytes
-  ↓ [No resampling needed — 16kHz end-to-end]
-Go pipecatframeHandler.CreateAudioRawFrame() → Protobuf AudioRawFrame
-  ↓ [WebSocket to Python]
-Python Pipecat pipeline:
-  AudioRawFrame → STT → LLMContext → LLM → TTS → AudioRawFrame
-  ↓ [WebSocket to Go]
-Go pipecatframeHandler.Parse() → Extract PCM bytes
-  ↓ [No resampling needed — 16kHz end-to-end]
-Go WriteMessage() → forward PCM directly to Asterisk (Pipecat handles timing)
-  ↓ [WebSocket binary frames]
+Go runAsteriskReceivedMediaHandle → 16kHz PCM bytes (forwarded as-is)
+  ↓ [Protobuf AudioRawFrame, WebSocket to Python]
+Python Pipecat pipeline (audio_out_sample_rate=16000):
+  AudioRawFrame → STT → LLMContext → LLM → TTS(16kHz) → AudioRawFrame
+  ↓ [Protobuf AudioRawFrame, WebSocket to Go]
+Go runnerWebsocketHandleAudio → 16kHz PCM passthrough (no resampling)
+  ↓ [Single WriteMessage per chunk, Pipecat handles timing]
 Asterisk PBX
 ```
 
@@ -189,9 +185,9 @@ Asterisk PBX
 - **Protobuf frames**: Custom proto definitions in `proto/frames.proto` for efficient WebSocket communication
 - **Session management**: `pipecatcall.Session` tracks active connections (`ConnAst` for Asterisk WebSocket, `ConnAstDone` channel for disconnect signalling)
 - **WebSocket external media**: Go dials Asterisk's `chan_websocket` endpoint as a client (encapsulation: none, transport: websocket, connection_type: server, format: slin16)
-- **16kHz end-to-end**: Audio flows at 16kHz slin16 between Asterisk and Pipecat with no sample rate conversion needed
-- **Audio passthrough**: Pipecat-to-Asterisk audio is forwarded as-is via a single `WriteMessage` call per chunk — no fragmentation, no pacing (Pipecat's output transport already delivers audio at real-time rate)
-- **ConnAstDone pattern**: `runWebSocketAsteriskRead` goroutine closes `ConnAstDone` channel on WebSocket disconnect, used by lifecycle monitor for cleanup
+- **16kHz end-to-end**: `audio_out_sample_rate=16000` in PipelineParams ensures TTS generates 16kHz natively, matching Asterisk slin16 with zero resampling. Pipecat defaults to 24kHz — always keep the explicit 16kHz setting.
+- **Audio passthrough**: Pipecat-to-Asterisk audio is forwarded as-is via a single `WriteMessage` call per chunk — no fragmentation, no pacing (Pipecat's output transport already delivers audio at real-time rate via `_write_audio_sleep()`)
+- **ConnAstDone pattern**: `runAsteriskReceivedMediaHandle` goroutine closes `ConnAstDone` channel on WebSocket disconnect, used by lifecycle monitor for cleanup
 - **Context propagation**: All handler methods accept `context.Context` for cancellation
 - **UUID-based IDs**: Using `github.com/gofrs/uuid` throughout
 
