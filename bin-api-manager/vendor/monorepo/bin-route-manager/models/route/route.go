@@ -3,6 +3,8 @@ package route
 import (
 	"time"
 
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -30,7 +32,7 @@ const (
 	TargetAll = "all" // route target for all destination.
 )
 
-// list of defined customer id
-var (
-	CustomerIDBasicRoute uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
-)
+// CustomerIDBasicRoute is the customer ID for system-wide default routes.
+// Deprecated: Use cmcustomer.IDBasicRoute from bin-customer-manager/models/customer instead.
+// Kept as an alias for backward compatibility.
+var CustomerIDBasicRoute = cmcustomer.IDBasicRoute
