@@ -494,12 +494,12 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		}
 	}
 
-	if se.ConnAst == nil {
+	if se.ConnAst == nil || len(audioData) == 0 {
 		return nil
 	}
 
-	if errWrite := h.websocketAsteriskWrite(se.Ctx, se.ConnAst, audioData, websocketAsteriskFrameSize); errWrite != nil {
-		return errors.Wrapf(errWrite, "could not write audio data to asterisk websocket")
+	if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, audioData); err != nil {
+		return errors.Wrapf(err, "could not write audio data to asterisk websocket")
 	}
 
 	return nil

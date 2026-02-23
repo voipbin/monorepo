@@ -171,6 +171,7 @@ async def run_pipeline(
     task = PipelineTask(
         pipeline,
         params=PipelineParams(
+            audio_out_sample_rate=16000,
             enable_metrics=True,
             enable_usage_metrics=True,
         ),
