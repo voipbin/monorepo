@@ -78,10 +78,28 @@ func Test_websocketAsteriskWrite(t *testing.T) {
 			expectErr:        false,
 		},
 		{
+			name: "unaligned data (960 bytes, 1 full + 1 partial frame)",
+
+			data:      make([]byte, 960),
+			frameSize: 640,
+
+			expectWriteCalls: 2,
+			expectErr:        false,
+		},
+		{
 			name: "invalid frame size (0)",
 
 			data:      make([]byte, 640),
 			frameSize: 0,
+
+			expectWriteCalls: 0,
+			expectErr:        true,
+		},
+		{
+			name: "negative frame size",
+
+			data:      make([]byte, 640),
+			frameSize: -1,
 
 			expectWriteCalls: 0,
 			expectErr:        true,
@@ -118,6 +136,25 @@ func Test_websocketAsteriskWrite(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
+	}
+}
+
+func Test_websocketAsteriskWrite_contextAlreadyCancelled(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockWS := NewMockWebsocketHandler(mc)
+
+	h := &pipecatcallHandler{
+		websocketHandler: mockWS,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancel before calling
+
+	err := h.websocketAsteriskWrite(ctx, nil, make([]byte, 640), 640)
+	if err != context.Canceled {
+		t.Errorf("expected context.Canceled, got: %v", err)
 	}
 }
 

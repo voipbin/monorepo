@@ -15,7 +15,6 @@ import (
 
 const (
 	websocketAsteriskSubprotocol = "media"
-	websocketAsteriskWriteDelay  = 20 * time.Millisecond
 	websocketAsteriskFrameSize   = 640 // 16000 Hz * 2 bytes * 20ms
 )
 
@@ -92,8 +91,9 @@ func (h *pipecatcallHandler) websocketAsteriskConnect(ctx context.Context, media
 }
 
 // websocketAsteriskWrite fragments and sends raw audio data over a WebSocket
-// connection as binary frames with 20ms pacing. frameSize is the number of
-// bytes per 20ms frame for the channel's audio format.
+// connection as binary frames. frameSize is the number of bytes per frame for
+// the channel's audio format. No inter-frame pacing is applied because the
+// upstream Pipecat transport already delivers audio at real-time rate.
 func (h *pipecatcallHandler) websocketAsteriskWrite(ctx context.Context, conn *websocket.Conn, data []byte, frameSize int) error {
 	if len(data) == 0 {
 		return nil
@@ -102,35 +102,14 @@ func (h *pipecatcallHandler) websocketAsteriskWrite(ctx context.Context, conn *w
 		return fmt.Errorf("frameSize must be positive, got %d", frameSize)
 	}
 
-	ticker := time.NewTicker(websocketAsteriskWriteDelay)
-	defer ticker.Stop()
-
-	offset := 0
-	payloadLen := len(data)
-
-	for offset < payloadLen {
+	for offset := 0; offset < len(data); offset += frameSize {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 
-		fragmentLen := min(frameSize, payloadLen-offset)
-		fragment := data[offset : offset+fragmentLen]
-
-		if err := h.websocketHandler.WriteMessage(conn, websocket.BinaryMessage, fragment); err != nil {
+		end := min(offset+frameSize, len(data))
+		if err := h.websocketHandler.WriteMessage(conn, websocket.BinaryMessage, data[offset:end]); err != nil {
 			return errors.Wrapf(err, "failed to write WebSocket binary frame")
-		}
-
-		offset += fragmentLen
-
-		if offset >= payloadLen {
-			break
-		}
-
-		select {
-		case <-ticker.C:
-			continue
-		case <-ctx.Done():
-			return ctx.Err()
 		}
 	}
 

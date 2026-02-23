@@ -178,7 +178,7 @@ Python Pipecat pipeline:
   ↓ [WebSocket to Go]
 Go pipecatframeHandler.Parse() → Extract PCM bytes
   ↓ [No resampling needed — 16kHz end-to-end]
-Go websocketAsteriskWrite() → 640-byte frames with 20ms pacing
+Go websocketAsteriskWrite() → 640-byte frames (no pacing, Pipecat handles timing)
   ↓ [WebSocket binary frames]
 Asterisk PBX
 ```
@@ -190,7 +190,7 @@ Asterisk PBX
 - **Session management**: `pipecatcall.Session` tracks active connections (`ConnAst` for Asterisk WebSocket, `ConnAstDone` channel for disconnect signalling)
 - **WebSocket external media**: Go dials Asterisk's `chan_websocket` endpoint as a client (encapsulation: none, transport: websocket, connection_type: server, format: slin16)
 - **16kHz end-to-end**: Audio flows at 16kHz slin16 between Asterisk and Pipecat with no sample rate conversion needed
-- **Frame pacing**: `websocketAsteriskWrite` sends 640-byte binary frames with 20ms inter-frame delay (matching 16kHz slin16 timing)
+- **Frame fragmentation**: `websocketAsteriskWrite` fragments audio into 640-byte binary frames without inter-frame delay (Pipecat's output transport already paces audio at real-time rate)
 - **ConnAstDone pattern**: `runWebSocketAsteriskRead` goroutine closes `ConnAstDone` channel on WebSocket disconnect, used by lifecycle monitor for cleanup
 - **Context propagation**: All handler methods accept `context.Context` for cancellation
 - **UUID-based IDs**: Using `github.com/gofrs/uuid` throughout
