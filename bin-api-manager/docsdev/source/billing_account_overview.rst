@@ -53,25 +53,25 @@ All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to
     +--------+----------+     +--------+----------+
     |                   |     |                   |
     v                   v     v                   v
-    +----------+   +----------+   +----------+   +----------+
-    | VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |
-    | 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |
-    +----------+   +----------+   +----------+   +----------+
-         |              |              |              |
-         | token first  | token first  |              |
-         | then credit  | then credit  | credit only  | credit only
-         v              v              v              v
-    +---------+    +---------+    +---------+    +---------+
-    |$0.001   |    | $0.008  |    |$0.006 ot|    |  $5.00  |
-    | /minute |    | /message|    |$0.0045 in|   | /number |
-    +---------+    +---------+    +---------+    +---------+
+    +----------+  +----------+  +----------+  +----------+  +----------+
+    | VN Calls |  |   SMS    |  |PSTN Calls|  | Numbers  |  |   TTS    |
+    | 1 tok/min|  |10 tok/msg|  | per min  |  | per num  |  | 3 tok/min|
+    +----------+  +----------+  +----------+  +----------+  +----------+
+         |             |             |             |              |
+         | token first | token first |             |              | token first
+         | then credit | then credit | credit only | credit only  | then credit
+         v             v             v             v              v
+    +---------+   +---------+   +---------+   +---------+   +---------+
+    |$0.001   |   | $0.008  |   |$0.006 ot|   |  $5.00  |   |  $0.03  |
+    | /minute |   | /message|   |$0.0045 in|  | /number |   | /minute |
+    +---------+   +---------+   +---------+   +---------+   +---------+
 
 **Key Components**
 
 - **Account State**: The ``billing_accounts`` table holds the live ``balance_credit`` (int64 micros) and ``balance_token`` (int64). This is the single source of truth for current balances.
 - **Billing Ledger**: The ``billing_billings`` table records every transaction as an immutable entry with signed deltas (``amount_token``, ``amount_credit``) and post-transaction snapshots (``balance_token_snapshot``, ``balance_credit_snapshot``).
 - **Monthly Token Top-Up**: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a ``top_up`` transaction in the ledger.
-- **Token-Eligible Services**: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.
+- **Token-Eligible Services**: VN calls (1 token/minute), SMS (10 tokens/message), and TTS (3 tokens/minute) consume tokens first, then overflow to credits.
 - **Credit-Only Services**: PSTN calls and number purchases always use credits directly.
 - **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
 
@@ -138,6 +138,8 @@ VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) 
 +----------------------+------------------+----------------------------------------+
 | SMS Messages         | 10 tokens        | Per message                            |
 +----------------------+------------------+----------------------------------------+
+| TTS (Text-to-Speech) | 3 tokens         | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
 
 **Credit Rates (Overflow and Credit-Only)**
 
@@ -158,12 +160,14 @@ All credit rates are stored internally as int64 micros.
 +----------------------+------------------+------------------+-------------------------+
 | Number Renewal       | $5.00            | 5,000,000        | Per number              |
 +----------------------+------------------+------------------+-------------------------+
+| TTS (overflow)       | $0.03            | 30,000           | Per minute              |
++----------------------+------------------+------------------+-------------------------+
 | Extension Calls      | Free             | 0                | No charge               |
 +----------------------+------------------+------------------+-------------------------+
 
 **How Token Consumption Works**
 
-When a token-eligible service is used (VN call or SMS):
+When a token-eligible service is used (VN call, SMS, or TTS):
 
 1. The system checks the account's ``balance_token``.
 2. If tokens are available, they are consumed first.
@@ -205,6 +209,17 @@ Each transaction is recorded in the billing ledger with the token and credit amo
     | Ledger entry:                               |
     |   amount_token: 0                           |
     |   amount_credit: -18000                     |
+    +--------------------------------------------+
+
+    TTS Session (1 minute 15 seconds) with tokens available:
+    +--------------------------------------------+
+    | Duration: 1 min 15 sec -> 2 minutes        |
+    | (ceiling-rounded to next whole minute)      |
+    | Token cost: 2 x 3 = 6 tokens               |
+    | Credit cost: 0 micros (covered by tokens)   |
+    | Ledger entry:                               |
+    |   amount_token: -6                          |
+    |   amount_credit: 0                          |
     +--------------------------------------------+
 
     Monthly Token Top-Up (Free plan):
@@ -289,13 +304,14 @@ Account balance changes through specific operations. Token balances are replenis
     +--------+----------+     +--------+----------+
              |                         |
              | PSTN calls,             | VN calls,
-             | numbers,                | SMS
+             | numbers,                | SMS, TTS
              | overflow                |
              v                         v
     +-------------------+     +-------------------+
     |   Credit Charges  |     |  Token Usage      |
     | - 18000 PSTN call |     | - 3 tokens call   |
     | - 5000000 number  |     | - 10 tokens SMS   |
+    | - 3 tokens TTS/min|
     +--------+----------+     +--------+----------+
              |                         |
              v                         | exhausted

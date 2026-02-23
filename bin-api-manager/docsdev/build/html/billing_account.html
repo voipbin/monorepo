@@ -236,18 +236,18 @@
 +--------+----------+     +--------+----------+
 |                   |     |                   |
 v                   v     v                   v
-+----------+   +----------+   +----------+   +----------+
-| VN Calls |   |   SMS    |   |PSTN Calls|   | Numbers  |
-| 1 tok/min|   |10 tok/msg|   | per min  |   | per num  |
-+----------+   +----------+   +----------+   +----------+
-     |              |              |              |
-     | token first  | token first  |              |
-     | then credit  | then credit  | credit only  | credit only
-     v              v              v              v
-+---------+    +---------+    +---------+    +---------+
-|$0.001   |    | $0.008  |    |$0.006 ot|    |  $5.00  |
-| /minute |    | /message|    |$0.0045 in|   | /number |
-+---------+    +---------+    +---------+    +---------+
++----------+  +----------+  +----------+  +----------+  +----------+
+| VN Calls |  |   SMS    |  |PSTN Calls|  | Numbers  |  |   TTS    |
+| 1 tok/min|  |10 tok/msg|  | per min  |  | per num  |  | 3 tok/min|
++----------+  +----------+  +----------+  +----------+  +----------+
+     |             |             |             |              |
+     | token first | token first |             |              | token first
+     | then credit | then credit | credit only | credit only  | then credit
+     v             v             v             v              v
++---------+   +---------+   +---------+   +---------+   +---------+
+|$0.001   |   | $0.008  |   |$0.006 ot|   |  $5.00  |   |  $0.03  |
+| /minute |   | /message|   |$0.0045 in|  | /number |   | /minute |
++---------+   +---------+   +---------+   +---------+   +---------+
 </pre></div>
 </div>
 <p><strong>Key Components</strong></p>
@@ -255,7 +255,7 @@ v                   v     v                   v
 <li><p><strong>Account State</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_accounts</span></code> table holds the live <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (int64 micros) and <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (int64). This is the single source of truth for current balances.</p></li>
 <li><p><strong>Billing Ledger</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_billings</span></code> table records every transaction as an immutable entry with signed deltas (<code class="docutils literal notranslate"><span class="pre">amount_token</span></code>, <code class="docutils literal notranslate"><span class="pre">amount_credit</span></code>) and post-transaction snapshots (<code class="docutils literal notranslate"><span class="pre">balance_token_snapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">balance_credit_snapshot</span></code>).</p></li>
 <li><p><strong>Monthly Token Top-Up</strong>: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a <code class="docutils literal notranslate"><span class="pre">top_up</span></code> transaction in the ledger.</p></li>
-<li><p><strong>Token-Eligible Services</strong>: VN calls (1 token/minute) and SMS (10 tokens/message) consume tokens first, then overflow to credits.</p></li>
+<li><p><strong>Token-Eligible Services</strong>: VN calls (1 token/minute), SMS (10 tokens/message), and TTS (3 tokens/minute) consume tokens first, then overflow to credits.</p></li>
 <li><p><strong>Credit-Only Services</strong>: PSTN calls and number purchases always use credits directly.</p></li>
 <li><p><strong>Free Services</strong>: Extension-to-extension calls and direct extension calls incur no charges.</p></li>
 </ul>
@@ -366,6 +366,10 @@ v                   v     v                   v
 <td><p>10 tokens</p></td>
 <td><p>Per message</p></td>
 </tr>
+<tr class="row-even"><td><p>TTS (Text-to-Speech)</p></td>
+<td><p>3 tokens</p></td>
+<td><p>Per minute (ceiling-rounded)</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Credit Rates (Overflow and Credit-Only)</strong></p>
@@ -409,7 +413,12 @@ v                   v     v                   v
 <td><p>5,000,000</p></td>
 <td><p>Per number</p></td>
 </tr>
-<tr class="row-even"><td><p>Extension Calls</p></td>
+<tr class="row-even"><td><p>TTS (overflow)</p></td>
+<td><p>$0.03</p></td>
+<td><p>30,000</p></td>
+<td><p>Per minute</p></td>
+</tr>
+<tr class="row-odd"><td><p>Extension Calls</p></td>
 <td><p>Free</p></td>
 <td><p>0</p></td>
 <td><p>No charge</p></td>
@@ -417,7 +426,7 @@ v                   v     v                   v
 </tbody>
 </table>
 <p><strong>How Token Consumption Works</strong></p>
-<p>When a token-eligible service is used (VN call or SMS):</p>
+<p>When a token-eligible service is used (VN call, SMS, or TTS):</p>
 <ol class="arabic simple">
 <li><p>The system checks the account’s <code class="docutils literal notranslate"><span class="pre">balance_token</span></code>.</p></li>
 <li><p>If tokens are available, they are consumed first.</p></li>
@@ -455,6 +464,17 @@ v                   v     v                   v
 <span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">18000</span>                     <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">TTS</span> <span class="n">Session</span> <span class="p">(</span><span class="mi">1</span> <span class="n">minute</span> <span class="mi">15</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">with</span> <span class="n">tokens</span> <span class="n">available</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">1</span> <span class="nb">min</span> <span class="mi">15</span> <span class="n">sec</span> <span class="o">-&gt;</span> <span class="mi">2</span> <span class="n">minutes</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">ceiling</span><span class="o">-</span><span class="n">rounded</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">whole</span> <span class="n">minute</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Token</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">2</span> <span class="n">x</span> <span class="mi">3</span> <span class="o">=</span> <span class="mi">6</span> <span class="n">tokens</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">0</span> <span class="n">micros</span> <span class="p">(</span><span class="n">covered</span> <span class="n">by</span> <span class="n">tokens</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">-</span><span class="mi">6</span>                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="mi">0</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Monthly</span> <span class="n">Token</span> <span class="n">Top</span><span class="o">-</span><span class="n">Up</span> <span class="p">(</span><span class="n">Free</span> <span class="n">plan</span><span class="p">):</span>
@@ -523,13 +543,14 @@ v                   v     v                   v
 <span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
          <span class="o">|</span>                         <span class="o">|</span>
          <span class="o">|</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="p">,</span>             <span class="o">|</span> <span class="n">VN</span> <span class="n">calls</span><span class="p">,</span>
-         <span class="o">|</span> <span class="n">numbers</span><span class="p">,</span>                <span class="o">|</span> <span class="n">SMS</span>
+         <span class="o">|</span> <span class="n">numbers</span><span class="p">,</span>                <span class="o">|</span> <span class="n">SMS</span><span class="p">,</span> <span class="n">TTS</span>
          <span class="o">|</span> <span class="n">overflow</span>                <span class="o">|</span>
          <span class="n">v</span>                         <span class="n">v</span>
 <span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
 <span class="o">|</span>   <span class="n">Credit</span> <span class="n">Charges</span>  <span class="o">|</span>     <span class="o">|</span>  <span class="n">Token</span> <span class="n">Usage</span>      <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="mi">18000</span> <span class="n">PSTN</span> <span class="n">call</span> <span class="o">|</span>     <span class="o">|</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">tokens</span> <span class="n">call</span>   <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="mi">5000000</span> <span class="n">number</span>  <span class="o">|</span>     <span class="o">|</span> <span class="o">-</span> <span class="mi">10</span> <span class="n">tokens</span> <span class="n">SMS</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">tokens</span> <span class="n">TTS</span><span class="o">/</span><span class="nb">min</span><span class="o">|</span>
 <span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
          <span class="o">|</span>                         <span class="o">|</span>
          <span class="n">v</span>                         <span class="o">|</span> <span class="n">exhausted</span>

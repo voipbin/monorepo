@@ -3,6 +3,7 @@ package speakinghandler
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"
 	"monorepo/bin-tts-manager/pkg/dbhandler"
@@ -27,6 +28,7 @@ type SpeakingHandler interface {
 type speakingHandler struct {
 	db               dbhandler.DBHandler
 	streamingHandler streaminghandler.StreamingHandler
+	notifyHandler    notifyhandler.NotifyHandler
 	podID            string
 }
 
@@ -34,11 +36,13 @@ type speakingHandler struct {
 func NewSpeakingHandler(
 	db dbhandler.DBHandler,
 	streamingHandler streaminghandler.StreamingHandler,
+	notifyHandler notifyhandler.NotifyHandler,
 	podID string,
 ) SpeakingHandler {
 	return &speakingHandler{
 		db:               db,
 		streamingHandler: streamingHandler,
+		notifyHandler:    notifyHandler,
 		podID:            podID,
 	}
 }

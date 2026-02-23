@@ -18,6 +18,7 @@ import (
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
+	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -187,6 +188,14 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	case m.Publisher == string(commonoutline.ServiceNameNumberManager) && m.Type == nmnumber.EventTypeNumberRenewed:
 		err = h.processEventNMNumberRenewed(ctx, m)
+
+	//// tts-manager
+	// speaking
+	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == tmspeaking.EventTypeSpeakingStarted:
+		err = h.processEventTTSSpeakingStarted(ctx, m)
+
+	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == tmspeaking.EventTypeSpeakingStopped:
+		err = h.processEventTTSSpeakingStopped(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
