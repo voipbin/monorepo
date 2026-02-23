@@ -20,6 +20,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_host_id", FieldHostID, "host_id"},
 		{"field_language", FieldLanguage, "language"},
 		{"field_direction", FieldDirection, "direction"},
+		{"field_provider", FieldProvider, "provider"},
 		{"field_streaming_ids", FieldStreamingIDs, "streaming_ids"},
 		{"field_tm_create", FieldTMCreate, "tm_create"},
 		{"field_tm_update", FieldTMUpdate, "tm_update"},
