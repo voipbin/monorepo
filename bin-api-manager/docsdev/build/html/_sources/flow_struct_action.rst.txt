@@ -1211,11 +1211,13 @@ Parameters
     {
         "type": "transcribe_recording",
         "option": {
-            "language": "<string>"
+            "language": "<string>",
+            "provider": "<string>"
         }
     }
 
 * ``language`` (String): Language in BCP47 format (e.g., ``en-US``).
+* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
 
 Example
 +++++++
@@ -1224,7 +1226,8 @@ Example
     {
         "type": "transcribe_recording",
         "option": {
-            "language": "en-US"
+            "language": "en-US",
+            "provider": "gcp"
         }
     }
 
@@ -1242,10 +1245,12 @@ Parameters
         "type": "transcribe_start",
         "option": {
             "language": "<string>",
+            "provider": "<string>"
         }
     }
 
 * ``language`` (String): Language in BCP47 format. Examples: ``en-US``, ``ko-KR``. The value may be a two-letter language code (e.g., ``en``) or language code with country/region (e.g., ``en-US``).
+* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
 
 Example
 +++++++
@@ -1255,6 +1260,7 @@ Example
         "type": "transcribe_start",
         "option": {
             "language": "en-US",
+            "provider": "gcp"
         }
     }
 

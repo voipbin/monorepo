@@ -221,7 +221,7 @@
 <p><strong>Key Components</strong></p>
 <ul class="simple">
 <li><p><strong>Audio Source</strong>: The call or conference being transcribed</p></li>
-<li><p><strong>STT Engine</strong>: Google Cloud Speech-to-Text for accurate recognition</p></li>
+<li><p><strong>STT Engine</strong>: Google Cloud Speech-to-Text or Amazon Transcribe (selectable per request)</p></li>
 <li><p><strong>Delivery</strong>: Webhooks (push) or WebSocket (subscribe) to your application</p></li>
 </ul>
 <p><strong>Transcription Types</strong></p>
@@ -367,32 +367,12 @@ speaker relative to conference)</p></td>
         &quot;reference_type&quot;: &quot;call&quot;,
         &quot;reference_id&quot;: &quot;8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5&quot;,
         &quot;language&quot;: &quot;en-US&quot;,
-        &quot;direction&quot;: &quot;both&quot;
+        &quot;direction&quot;: &quot;both&quot;,
+        &quot;provider&quot;: &quot;gcp&quot;
     }&#39;
 </pre></div>
 </div>
 <p><strong>Parameters:</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Parameter</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>reference_type</p></td>
-<td><p>Type of resource: <code class="docutils literal notranslate"><span class="pre">call</span></code> or <code class="docutils literal notranslate"><span class="pre">conference</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>reference_id</p></td>
-<td><p>UUID of the call or conference</p></td>
-</tr>
-<tr class="row-even"><td><p>language</p></td>
-<td><p>Language code (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>)</p></td>
-</tr>
-<tr class="row-odd"><td><p>direction</p></td>
-<td><p>Which audio to transcribe: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, or <code class="docutils literal notranslate"><span class="pre">both</span></code></p></td>
-</tr>
-</tbody>
-</table>
 <p><strong>When to Use Each Method</strong></p>
 <table class="docutils align-default">
 <thead>

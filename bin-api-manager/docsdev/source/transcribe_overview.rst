@@ -42,7 +42,7 @@ When you start transcription, VoIPBIN captures audio from the call or conference
 **Key Components**
 
 - **Audio Source**: The call or conference being transcribed
-- **STT Engine**: Google Cloud Speech-to-Text for accurate recognition
+- **STT Engine**: Google Cloud Speech-to-Text or Amazon Transcribe (selectable per request)
 - **Delivery**: Webhooks (push) or WebSocket (subscribe) to your application
 
 **Transcription Types**
@@ -191,7 +191,8 @@ Start transcription on an active call or conference programmatically.
             "reference_type": "call",
             "reference_id": "8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5",
             "language": "en-US",
-            "direction": "both"
+            "direction": "both",
+            "provider": "gcp"
         }'
 
 **Parameters:**
@@ -206,6 +207,9 @@ Start transcription on an active call or conference programmatically.
 | language         | Language code (e.g., ``en-US``, ``ko-KR``)                     |
 +------------------+----------------------------------------------------------------+
 | direction        | Which audio to transcribe: ``in``, ``out``, or ``both``        |
++------------------+----------------------------------------------------------------+
+| provider         | (Optional) STT provider: ``gcp`` or ``aws``. If omitted,      |
+|                  | VoIPBIN selects the best available provider automatically.     |
 +------------------+----------------------------------------------------------------+
 
 **When to Use Each Method**
