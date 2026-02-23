@@ -4,7 +4,6 @@ package pipecatcallhandler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -15,7 +14,6 @@ import (
 
 const (
 	websocketAsteriskSubprotocol = "media"
-	websocketAsteriskFrameSize   = 640 // 16000 Hz * 2 bytes * 20ms
 )
 
 type WebsocketHandler interface {
@@ -88,32 +86,6 @@ func (h *pipecatcallHandler) websocketAsteriskConnect(ctx context.Context, media
 	}
 
 	return conn, nil
-}
-
-// websocketAsteriskWrite fragments and sends raw audio data over a WebSocket
-// connection as binary frames. frameSize is the number of bytes per frame for
-// the channel's audio format. No inter-frame pacing is applied because the
-// upstream Pipecat transport already delivers audio at real-time rate.
-func (h *pipecatcallHandler) websocketAsteriskWrite(ctx context.Context, conn *websocket.Conn, data []byte, frameSize int) error {
-	if len(data) == 0 {
-		return nil
-	}
-	if frameSize <= 0 {
-		return fmt.Errorf("frameSize must be positive, got %d", frameSize)
-	}
-
-	for offset := 0; offset < len(data); offset += frameSize {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-
-		end := min(offset+frameSize, len(data))
-		if err := h.websocketHandler.WriteMessage(conn, websocket.BinaryMessage, data[offset:end]); err != nil {
-			return errors.Wrapf(err, "failed to write WebSocket binary frame")
-		}
-	}
-
-	return nil
 }
 
 // runWebSocketAsteriskRead reads from the WebSocket connection to handle

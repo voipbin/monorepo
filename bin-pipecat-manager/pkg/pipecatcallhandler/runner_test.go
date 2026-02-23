@@ -115,9 +115,8 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 			websocketHandler: mockWS,
 		}
 
-		// ConnAst is non-nil so websocketAsteriskWrite will be called.
-		// Data is 4 bytes which is smaller than websocketAsteriskFrameSize (640),
-		// so it will be written as a single fragment.
+		// ConnAst is non-nil so WriteMessage will be called to forward
+		// the audio data directly to Asterisk.
 		conn := &websocket.Conn{}
 		se := &pipecatcall.Session{
 			Ctx:     context.Background(),
@@ -201,7 +200,7 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 			ConnAst: conn,
 		}
 
-		// websocketAsteriskWrite returns nil for empty data without calling WriteMessage
+		// Empty data returns nil without calling WriteMessage
 		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, []byte{}); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
