@@ -13,6 +13,7 @@ create table transcribe_transcribes(
   host_id       binary(16),   -- host id
   language      varchar(16),  -- BCP47 type's language code. en-US
   direction     varchar(255),
+  provider      varchar(16) default '',
 
   streaming_ids json,
 
