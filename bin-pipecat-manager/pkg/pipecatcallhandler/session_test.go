@@ -1,14 +1,18 @@
 package pipecatcallhandler
 
 import (
-	"net"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -75,7 +79,7 @@ func TestSessionCreate(t *testing.T) {
 				h.mapPipecatcallSession[tt.existingSession.ID] = tt.existingSession
 			}
 
-			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, tt.llmKey)
+			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, nil, tt.llmKey)
 
 			if tt.expectErr {
 				if err == nil {
@@ -193,51 +197,6 @@ func TestSessionGet(t *testing.T) {
 	}
 }
 
-func TestSessionsetAsteriskInfo(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h := &pipecatcallHandler{}
-
-	pc := &pipecatcall.Session{
-		Identity: commonidentity.Identity{
-			ID: uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
-		},
-	}
-
-	streamingID := uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d")
-
-	// Create a mock connection
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatalf("Failed to create listener: %v", err)
-	}
-	defer listener.Close()
-
-	go func() {
-		conn, _ := listener.Accept()
-		if conn != nil {
-			defer conn.Close()
-		}
-	}()
-
-	conn, err := net.Dial("tcp", listener.Addr().String())
-	if err != nil {
-		t.Fatalf("Failed to dial: %v", err)
-	}
-	defer conn.Close()
-
-	h.SessionsetAsteriskInfo(pc, streamingID, conn)
-
-	if pc.AsteriskStreamingID != streamingID {
-		t.Errorf("SessionsetAsteriskInfo() AsteriskStreamingID = %v, want %v", pc.AsteriskStreamingID, streamingID)
-	}
-
-	if pc.AsteriskConn != conn {
-		t.Errorf("SessionsetAsteriskInfo() AsteriskConn mismatch")
-	}
-}
-
 func TestSessionDelete(t *testing.T) {
 	id := uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8")
 
@@ -322,5 +281,66 @@ func TestSessionStop(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestSessionStop_closesWebSocket(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockPythonRunner := NewMockPythonRunner(mc)
+
+	id := uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8")
+
+	// Create a real WebSocket server/client pair so ConnAst.Close() works on
+	// an actual connection.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		up := websocket.Upgrader{}
+		c, err := up.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		// Keep server side alive until the client disconnects
+		for {
+			if _, _, err := c.ReadMessage(); err != nil {
+				return
+			}
+		}
+	}))
+	defer srv.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(srv.URL, "http")
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to dial test ws: %v", err)
+	}
+
+	h := &pipecatcallHandler{
+		pythonRunner:          mockPythonRunner,
+		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		muPipecatcallSession:  sync.Mutex{},
+	}
+
+	h.mapPipecatcallSession[id] = &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID: id,
+		},
+		ConnAst: conn,
+	}
+
+	mockPythonRunner.EXPECT().Stop(gomock.Any(), id).Return(nil)
+
+	h.SessionStop(id)
+
+	// Verify the WebSocket connection was closed: a subsequent read should fail.
+	_ = conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, _, readErr := conn.ReadMessage()
+	if readErr == nil {
+		t.Errorf("expected read error after SessionStop closed the WebSocket, but got nil")
+	}
+
+	// Verify session was removed
+	if _, ok := h.mapPipecatcallSession[id]; ok {
+		t.Errorf("session should be deleted after SessionStop")
 	}
 }

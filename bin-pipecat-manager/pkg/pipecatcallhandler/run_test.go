@@ -2,48 +2,160 @@ package pipecatcallhandler
 
 import (
 	"context"
-	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"reflect"
+	"fmt"
 	"testing"
-	"time"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
+	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_runKeepAlive(t *testing.T) {
+func Test_runAsteriskReceivedMediaHandle(t *testing.T) {
 	tests := []struct {
-		name        string
-		session     *pipecatcall.Session
-		interval    time.Duration
-		streamingID uuid.UUID
+		name string
+
+		readMessages []struct {
+			msgType int
+			data    []byte
+			err     error
+		}
+
+		expectAudioFrames int
 	}{
 		{
-			name:        "send keep-alive once",
-			session:     &pipecatcall.Session{},
-			interval:    10 * time.Millisecond,
-			streamingID: uuid.FromStringOrNil("10c6616e-af26-11f0-9407-e352eaba2dd0"),
+			name: "receives binary audio frames",
+			readMessages: []struct {
+				msgType int
+				data    []byte
+				err     error
+			}{
+				{msgType: websocket.BinaryMessage, data: make([]byte, 640), err: nil},
+				{msgType: websocket.BinaryMessage, data: make([]byte, 640), err: nil},
+				{msgType: 0, data: nil, err: fmt.Errorf("connection closed")},
+			},
+			expectAudioFrames: 2,
+		},
+		{
+			name: "skips non-binary messages",
+			readMessages: []struct {
+				msgType int
+				data    []byte
+				err     error
+			}{
+				{msgType: websocket.TextMessage, data: []byte("text"), err: nil},
+				{msgType: websocket.BinaryMessage, data: make([]byte, 640), err: nil},
+				{msgType: 0, data: nil, err: fmt.Errorf("connection closed")},
+			},
+			expectAudioFrames: 1,
+		},
+		{
+			name: "skips empty binary messages",
+			readMessages: []struct {
+				msgType int
+				data    []byte
+				err     error
+			}{
+				{msgType: websocket.BinaryMessage, data: []byte{}, err: nil},
+				{msgType: websocket.BinaryMessage, data: make([]byte, 640), err: nil},
+				{msgType: 0, data: nil, err: fmt.Errorf("connection closed")},
+			},
+			expectAudioFrames: 1,
+		},
+		{
+			name:              "nil ConnAst returns immediately",
+			readMessages:      nil,
+			expectAudioFrames: 0,
+		},
+		{
+			name: "websocket close normal closure",
+			readMessages: []struct {
+				msgType int
+				data    []byte
+				err     error
+			}{
+				{msgType: websocket.BinaryMessage, data: make([]byte, 640), err: nil},
+				{msgType: 0, data: nil, err: &websocket.CloseError{Code: websocket.CloseNormalClosure, Text: "normal"}},
+			},
+			expectAudioFrames: 1,
+		},
+		{
+			name: "websocket close going away",
+			readMessages: []struct {
+				msgType int
+				data    []byte
+				err     error
+			}{
+				{msgType: 0, data: nil, err: &websocket.CloseError{Code: websocket.CloseGoingAway, Text: "going away"}},
+			},
+			expectAudioFrames: 0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &pipecatcallHandler{}
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-			defer cancel()
+			mockWS := NewMockWebsocketHandler(mc)
+			mockPF := NewMockPipecatframeHandler(mc)
 
-			tt.session.Ctx = ctx
-			conn := &DummyConn{}
-			h.runAsteriskKeepAlive(tt.session, conn, tt.interval, tt.streamingID)
-
-			expectMessage := []byte{0x10, 0x00, 0x01, 0x00}
-			if !reflect.DeepEqual(conn.Written[0], expectMessage) {
-				t.Errorf("KeepAlive message mismatch.\nexpect: %v\ngot:    %v", expectMessage, conn.Written)
+			var conn *websocket.Conn
+			if tt.readMessages != nil {
+				conn = &websocket.Conn{}
+				for _, msg := range tt.readMessages {
+					mockWS.EXPECT().ReadMessage(conn).Return(msg.msgType, msg.data, msg.err)
+				}
 			}
 
-			if len(conn.Written) == 0 {
-				t.Errorf("No keep-alive messages were written to DummyConn")
+			if tt.expectAudioFrames > 0 {
+				mockPF.EXPECT().SendAudio(gomock.Any(), gomock.Any(), gomock.Any()).Times(tt.expectAudioFrames).Return(nil)
 			}
+
+			se := &pipecatcall.Session{
+				Identity: commonidentity.Identity{
+					ID: uuid.Must(uuid.NewV4()),
+				},
+				Ctx:     context.Background(),
+				ConnAst: conn,
+			}
+
+			h := &pipecatcallHandler{
+				websocketHandler:    mockWS,
+				pipecatframeHandler: mockPF,
+			}
+
+			h.runAsteriskReceivedMediaHandle(se)
 		})
 	}
+}
+
+func Test_runAsteriskReceivedMediaHandle_contextCancelled(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockWS := NewMockWebsocketHandler(mc)
+	mockPF := NewMockPipecatframeHandler(mc)
+	// No ReadMessage expectations — context is cancelled before any read
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancel immediately
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID: uuid.Must(uuid.NewV4()),
+		},
+		Ctx:     ctx,
+		ConnAst: &websocket.Conn{},
+	}
+
+	h := &pipecatcallHandler{
+		websocketHandler:    mockWS,
+		pipecatframeHandler: mockPF,
+	}
+
+	h.runAsteriskReceivedMediaHandle(se)
+	// Should return without panic or hanging
 }

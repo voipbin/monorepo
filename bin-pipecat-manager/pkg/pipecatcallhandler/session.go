@@ -5,16 +5,17 @@ import (
 	"fmt"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"net"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
 
 func (h *pipecatcallHandler) SessionCreate(
 	pc *pipecatcall.Pipecatcall,
 	asteriskStreamingID uuid.UUID,
-	asteriskConn net.Conn,
+	connAst *websocket.Conn,
+	connAstDone chan struct{},
 	llmKey string,
 ) (*pipecatcall.Session, error) {
 
@@ -34,7 +35,8 @@ func (h *pipecatcallHandler) SessionCreate(
 		RunnerWebsocketChan: make(chan *pipecatcall.SessionFrame, defaultRunnerWebsocketChanBufferSize),
 
 		AsteriskStreamingID: asteriskStreamingID,
-		AsteriskConn:        asteriskConn,
+		ConnAst:             connAst,
+		ConnAstDone:         connAstDone,
 
 		LLMKey: llmKey,
 	}
@@ -63,11 +65,6 @@ func (h *pipecatcallHandler) SessionGet(id uuid.UUID) (*pipecatcall.Session, err
 	return res, nil
 }
 
-func (h *pipecatcallHandler) SessionsetAsteriskInfo(pc *pipecatcall.Session, streamingID uuid.UUID, conn net.Conn) {
-	pc.AsteriskConn = conn
-	pc.AsteriskStreamingID = streamingID
-}
-
 func (h *pipecatcallHandler) sessionDelete(id uuid.UUID) {
 	h.muPipecatcallSession.Lock()
 	defer h.muPipecatcallSession.Unlock()
@@ -88,8 +85,8 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		return
 	}
 
-	if pc.AsteriskConn != nil {
-		if errClose := pc.AsteriskConn.Close(); errClose != nil {
+	if pc.ConnAst != nil {
+		if errClose := pc.ConnAst.Close(); errClose != nil {
 			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
 		} else {
 			log.Infof("Closed the asterisk connection.")

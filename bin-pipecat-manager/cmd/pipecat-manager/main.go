@@ -116,8 +116,6 @@ func run() error {
 	if listenIP == "" {
 		return fmt.Errorf("could not get the listen ip address")
 	}
-	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
-
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName, "")
 
@@ -127,19 +125,13 @@ func run() error {
 		log.Warnf("Could not fetch tools from ai-manager: %v. Continuing with empty tool set.", err)
 	}
 
-	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenAddress, listenIP)
+	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenIP)
 	httpHandler := httphandler.NewHttpHandler(requestHandler, pipecatcallHandler)
 
 	// run listen
 	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errors.Wrapf(errListen, "could not start runListen")
-	}
-
-	// run streaming
-	if errStreaming := runStreaming(pipecatcallHandler); errStreaming != nil {
-		log.Errorf("Could not start runStreaming. err: %v", errStreaming)
-		return errors.Wrapf(errStreaming, "could not start runStreaming")
 	}
 
 	// run http
@@ -164,20 +156,6 @@ func runListen(
 	if err := listenHandler.Run(string("bin-manager.pipecat-manager.request"), listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
 		return errors.Wrapf(err, "could not run the listenhandler correctly")
 	}
-
-	return nil
-}
-
-func runStreaming(pipecatcallHandler pipecatcallhandler.PipecatcallHandler) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runStreaming",
-	})
-
-	go func() {
-		if errRun := pipecatcallHandler.Run(); errRun != nil {
-			log.Errorf("Could not run the streaming handler correctly. err: %v", errRun)
-		}
-	}()
 
 	return nil
 }

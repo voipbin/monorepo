@@ -66,7 +66,7 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, "")
 	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
-	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, toolHandler, "localhost:0", "cli-host"), nil
+	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, toolHandler, "cli-host"), nil
 }
 
 func initCommand() *cobra.Command {

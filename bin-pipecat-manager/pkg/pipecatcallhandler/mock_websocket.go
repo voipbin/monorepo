@@ -10,6 +10,7 @@
 package pipecatcallhandler
 
 import (
+	context "context"
 	http "net/http"
 	reflect "reflect"
 
@@ -39,6 +40,22 @@ func NewMockWebsocketHandler(ctrl *gomock.Controller) *MockWebsocketHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockWebsocketHandler) EXPECT() *MockWebsocketHandlerMockRecorder {
 	return m.recorder
+}
+
+// DialContext mocks base method.
+func (m *MockWebsocketHandler) DialContext(ctx context.Context, urlStr string, requestHeader http.Header) (*websocket.Conn, *http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DialContext", ctx, urlStr, requestHeader)
+	ret0, _ := ret[0].(*websocket.Conn)
+	ret1, _ := ret[1].(*http.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DialContext indicates an expected call of DialContext.
+func (mr *MockWebsocketHandlerMockRecorder) DialContext(ctx, urlStr, requestHeader any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialContext", reflect.TypeOf((*MockWebsocketHandler)(nil).DialContext), ctx, urlStr, requestHeader)
 }
 
 // ReadMessage mocks base method.

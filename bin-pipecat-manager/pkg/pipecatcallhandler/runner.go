@@ -485,13 +485,21 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		return errors.Errorf("only mono audio is supported. num_channels: %d", numChannels)
 	}
 
-	audioData, err := h.audiosocketHandler.GetDataSamples(sampleRate, data)
-	if err != nil {
-		return errors.Wrapf(err, "could not get audio data samples")
+	audioData := data
+	if sampleRate != defaultMediaSampleRate {
+		var err error
+		audioData, err = h.audiosocketHandler.GetDataSamples(sampleRate, data)
+		if err != nil {
+			return errors.Wrapf(err, "could not resample audio data")
+		}
 	}
 
-	if errWrite := h.audiosocketHandler.Write(se.Ctx, se.AsteriskConn, audioData); errWrite != nil {
-		return errors.Wrapf(errWrite, "could not write processed audio data to asterisk connection")
+	if se.ConnAst == nil {
+		return nil
+	}
+
+	if errWrite := h.websocketAsteriskWrite(se.Ctx, se.ConnAst, audioData, websocketAsteriskFrameSize); errWrite != nil {
+		return errors.Wrapf(errWrite, "could not write audio data to asterisk websocket")
 	}
 
 	return nil

@@ -3,9 +3,9 @@ package pipecatcall
 import (
 	"context"
 	"monorepo/bin-common-handler/models/identity"
-	"net"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type Session struct {
@@ -21,8 +21,9 @@ type Session struct {
 	RunnerWebsocketChan chan *SessionFrame `json:"-"`
 
 	// asterisk info
-	AsteriskStreamingID uuid.UUID `json:"-"`
-	AsteriskConn        net.Conn  `json:"-"`
+	AsteriskStreamingID uuid.UUID       `json:"-"`
+	ConnAst             *websocket.Conn `json:"-"`
+	ConnAstDone         chan struct{}    `json:"-"`
 
 	// llm
 	LLMKey     string `json:"-"`

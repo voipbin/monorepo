@@ -10,12 +10,8 @@
 package pipecatcallhandler
 
 import (
-	context "context"
-	net "net"
 	reflect "reflect"
 
-	audiosocket "github.com/CyCoreSystems/audiosocket"
-	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -56,78 +52,4 @@ func (m *MockAudiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]b
 func (mr *MockAudiosocketHandlerMockRecorder) GetDataSamples(inputRate, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDataSamples", reflect.TypeOf((*MockAudiosocketHandler)(nil).GetDataSamples), inputRate, data)
-}
-
-// GetNextMedia mocks base method.
-func (m *MockAudiosocketHandler) GetNextMedia(conn net.Conn) (audiosocket.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNextMedia", conn)
-	ret0, _ := ret[0].(audiosocket.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNextMedia indicates an expected call of GetNextMedia.
-func (mr *MockAudiosocketHandlerMockRecorder) GetNextMedia(conn any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextMedia", reflect.TypeOf((*MockAudiosocketHandler)(nil).GetNextMedia), conn)
-}
-
-// GetStreamingID mocks base method.
-func (m *MockAudiosocketHandler) GetStreamingID(conn net.Conn) (uuid.UUID, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStreamingID", conn)
-	ret0, _ := ret[0].(uuid.UUID)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetStreamingID indicates an expected call of GetStreamingID.
-func (mr *MockAudiosocketHandlerMockRecorder) GetStreamingID(conn any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStreamingID", reflect.TypeOf((*MockAudiosocketHandler)(nil).GetStreamingID), conn)
-}
-
-// Upsample8kTo16k mocks base method.
-func (m *MockAudiosocketHandler) Upsample8kTo16k(data []byte) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upsample8kTo16k", data)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Upsample8kTo16k indicates an expected call of Upsample8kTo16k.
-func (mr *MockAudiosocketHandlerMockRecorder) Upsample8kTo16k(data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsample8kTo16k", reflect.TypeOf((*MockAudiosocketHandler)(nil).Upsample8kTo16k), data)
-}
-
-// WrapDataPCM16Bit mocks base method.
-func (m *MockAudiosocketHandler) WrapDataPCM16Bit(data []byte) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WrapDataPCM16Bit", data)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// WrapDataPCM16Bit indicates an expected call of WrapDataPCM16Bit.
-func (mr *MockAudiosocketHandlerMockRecorder) WrapDataPCM16Bit(data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WrapDataPCM16Bit", reflect.TypeOf((*MockAudiosocketHandler)(nil).WrapDataPCM16Bit), data)
-}
-
-// Write mocks base method.
-func (m *MockAudiosocketHandler) Write(ctx context.Context, conn net.Conn, data []byte) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Write", ctx, conn, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Write indicates an expected call of Write.
-func (mr *MockAudiosocketHandlerMockRecorder) Write(ctx, conn, data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockAudiosocketHandler)(nil).Write), ctx, conn, data)
 }

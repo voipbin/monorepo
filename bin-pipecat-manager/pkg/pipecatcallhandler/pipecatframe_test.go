@@ -3,38 +3,12 @@ package pipecatcallhandler
 import (
 	"context"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"net"
 	reflect "reflect"
 	"testing"
-	"time"
 
 	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
 )
-
-type DummyConn struct {
-	Written [][]byte
-}
-
-func NewDummyConn() *DummyConn {
-	return &DummyConn{
-		Written: make([][]byte, 0),
-	}
-}
-
-func (d *DummyConn) Write(b []byte) (n int, err error) {
-	cpy := make([]byte, len(b))
-	copy(cpy, b)
-	d.Written = append(d.Written, cpy)
-	return len(b), nil
-}
-func (d *DummyConn) Read(b []byte) (n int, err error)   { return 0, nil }
-func (d *DummyConn) Close() error                       { return nil }
-func (d *DummyConn) LocalAddr() net.Addr                { return nil }
-func (d *DummyConn) RemoteAddr() net.Addr               { return nil }
-func (d *DummyConn) SetDeadline(t time.Time) error      { return nil }
-func (d *DummyConn) SetReadDeadline(t time.Time) error  { return nil }
-func (d *DummyConn) SetWriteDeadline(t time.Time) error { return nil }
 
 func Test_SendData(t *testing.T) {
 
