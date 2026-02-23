@@ -53,6 +53,9 @@ spec:
               protocol: "TCP"
               containerPort: 2112
           resources:
+            requests:
+              cpu: "3m"
+              memory: "2M"
             limits:
               cpu: "30m"
               memory: "20M"

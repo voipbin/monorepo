@@ -40,6 +40,9 @@ spec:
               protocol: "TCP"
               containerPort: 80
           resources:
+            requests:
+              cpu: "3m"
+              memory: "2Mi"
             limits:
               cpu: "30m"
               memory: "20Mi"

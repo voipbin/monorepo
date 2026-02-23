@@ -55,6 +55,9 @@ spec:
             - name: STT_PROVIDER_PRIORITY
               value: "GCP,AWS"
           resources:
+            requests:
+              cpu: "6m"
+              memory: "8M"
             limits:
               cpu: "60m"
               memory: "80M"
