@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -111,8 +110,7 @@ func (h *streamingHandler) awsProcessEvents(ctx context.Context, cancel context.
 		cancel()
 	}()
 
-	speaking := false
-	t1 := time.Now()
+	rp := newResultProcessor(st, h.notifyHandler, h.transcriptHandler)
 	for {
 		select {
 		case <-ctx.Done():
@@ -131,61 +129,11 @@ func (h *streamingHandler) awsProcessEvents(ctx context.Context, cancel context.
 			}
 
 			for _, result := range transcriptEvent.Value.Transcript.Results {
-				if len(result.Alternatives) == 0 {
-					continue
+				message := ""
+				if len(result.Alternatives) > 0 && result.Alternatives[0].Transcript != nil {
+					message = *result.Alternatives[0].Transcript
 				}
-
-				if result.IsPartial {
-					// partial result — publish VAD events
-					message := ""
-					if result.Alternatives[0].Transcript != nil {
-						message = *result.Alternatives[0].Transcript
-					}
-
-					if !speaking {
-						speaking = true
-						now := time.Now()
-						webhookMsg := st.ConvertWebhookMessage("", &now)
-						h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechStarted, webhookMsg)
-						log.Debugf("Published speech_started. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
-					}
-
-					now := time.Now()
-					webhookMsg := st.ConvertWebhookMessage(message, &now)
-					h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechInterim, webhookMsg)
-					log.Debugf("Published speech_interim. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
-					continue
-				}
-
-				// final result — publish speech_ended if was speaking
-				if speaking {
-					speaking = false
-					now := time.Now()
-					webhookMsg := st.ConvertWebhookMessage("", &now)
-					h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechEnded, webhookMsg)
-					log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
-				}
-
-				if result.Alternatives[0].Transcript == nil {
-					continue
-				}
-				message := *result.Alternatives[0].Transcript
-				if len(message) == 0 {
-					continue
-				}
-				log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
-
-				t2 := time.Now()
-				t3 := t2.Sub(t1)
-				tmGap := time.Time{}.Add(t3)
-
-				// create transcript
-				ts, err := h.transcriptHandler.Create(ctx, st.CustomerID, st.TranscribeID, st.Direction, message, &tmGap)
-				if err != nil {
-					log.Errorf("Could not create transript. err: %v", err)
-					break
-				}
-				log.WithField("transcript", ts).Debugf("Created transcript. transcribe_id: %s, direction: %s", ts.TranscribeID, ts.Direction)
+				rp.process(ctx, sttResult{isFinal: !result.IsPartial, message: message})
 			}
 		}
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	"cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/gorilla/websocket"
@@ -98,75 +97,26 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, cancel context.
 		cancel()
 	}()
 
-	speaking := false
-	t1 := time.Now()
+	rp := newResultProcessor(st, h.notifyHandler, h.transcriptHandler)
 	for {
 		if ctx.Err() != nil {
-			log.Debugf("Context has finsished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
+			log.Debugf("Context has finished. transcribe_id: %s, streaming_id: %s", st.TranscribeID, st.ID)
 			return
 		}
 
-		tmp, err := streamClient.Recv()
+		resp, err := streamClient.Recv()
 		if err != nil {
 			log.Debugf("Could not received the result. Consider this hangup. err: %v", err)
 			return
-		} else if len(tmp.Results) == 0 {
-			// no result
-			continue
 		}
 
-		if !tmp.Results[0].IsFinal {
-			// interim result — publish VAD events
+		for _, result := range resp.Results {
 			message := ""
-			if len(tmp.Results[0].Alternatives) > 0 {
-				message = tmp.Results[0].Alternatives[0].Transcript
+			if len(result.Alternatives) > 0 {
+				message = result.Alternatives[0].Transcript
 			}
-
-			if !speaking {
-				speaking = true
-				now := time.Now()
-				webhookMsg := st.ConvertWebhookMessage("", &now)
-				h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechStarted, webhookMsg)
-				log.Debugf("Published speech_started. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
-			}
-
-			now := time.Now()
-			webhookMsg := st.ConvertWebhookMessage(message, &now)
-			h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechInterim, webhookMsg)
-			log.Debugf("Published speech_interim. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
-			continue
+			rp.process(ctx, sttResult{isFinal: result.IsFinal, message: message})
 		}
-
-		// final result — publish speech_ended if was speaking
-		if speaking {
-			speaking = false
-			now := time.Now()
-			webhookMsg := st.ConvertWebhookMessage("", &now)
-			h.notifyHandler.PublishWebhookEvent(ctx, st.CustomerID, streaming.EventTypeSpeechEnded, webhookMsg)
-			log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", st.TranscribeID, st.Direction)
-		}
-
-		// get transcript message and create transcript
-		if len(tmp.Results[0].Alternatives) == 0 {
-			continue
-		}
-		message := tmp.Results[0].Alternatives[0].Transcript
-		if len(message) == 0 {
-			continue
-		}
-		log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", st.TranscribeID, st.Direction, message)
-
-		t2 := time.Now()
-		t3 := t2.Sub(t1)
-		tmGap := time.Time{}.Add(t3)
-
-		// create transcript
-		ts, err := h.transcriptHandler.Create(ctx, st.CustomerID, st.TranscribeID, st.Direction, message, &tmGap)
-		if err != nil {
-			log.Errorf("Could not create transript. err: %v", err)
-			break
-		}
-		log.WithField("transcript", ts).Debugf("Created transcript. transcribe_id: %s, direction: %s", ts.TranscribeID, ts.Direction)
 	}
 }
 

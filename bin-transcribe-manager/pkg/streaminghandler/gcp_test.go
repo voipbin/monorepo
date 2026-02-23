@@ -323,6 +323,166 @@ func Test_gcpProcessResult_FinalWithEmptyTranscript(t *testing.T) {
 	h.gcpProcessResult(ctx, cancel, st, streamClient)
 }
 
+func Test_gcpProcessResult_MultipleResultsInSingleResponse(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
+	transcribeID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001")
+	streamingID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")
+
+	st := &streaming.Streaming{
+		Identity: commonidentity.Identity{
+			ID:         streamingID,
+			CustomerID: customerID,
+		},
+		TranscribeID: transcribeID,
+		Language:     "en-US",
+		Direction:    transcript.DirectionIn,
+	}
+
+	h := &streamingHandler{
+		notifyHandler:     mockNotify,
+		transcriptHandler: mockTranscript,
+	}
+
+	// Single response with TWO results: an interim and a final
+	// This tests the "for _, result := range resp.Results" loop
+	streamClient := newMockGCPStreamClient([]*speechpb.StreamingRecognizeResponse{
+		{
+			Results: []*speechpb.StreamingRecognitionResult{
+				{
+					IsFinal: false,
+					Alternatives: []*speechpb.SpeechRecognitionAlternative{
+						{Transcript: "hello"},
+					},
+				},
+				{
+					IsFinal: true,
+					Alternatives: []*speechpb.SpeechRecognitionAlternative{
+						{Transcript: "hello world"},
+					},
+				},
+			},
+		},
+	})
+
+	ctx := context.Background()
+	_, cancel := context.WithCancel(ctx)
+
+	gomock.InOrder(
+		// Interim result → speech_started + speech_interim
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechStarted, gomock.Any()),
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechInterim, gomock.Any()),
+		// Final result in same response → speech_ended + transcript
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechEnded, gomock.Any()),
+		mockTranscript.EXPECT().Create(gomock.Any(), customerID, transcribeID, transcript.DirectionIn, "hello world", gomock.Any()).Return(&transcript.Transcript{}, nil),
+	)
+
+	h.gcpProcessResult(ctx, cancel, st, streamClient)
+}
+
+func Test_gcpProcessResult_ResultWithNoAlternatives(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
+	transcribeID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001")
+	streamingID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")
+
+	st := &streaming.Streaming{
+		Identity: commonidentity.Identity{
+			ID:         streamingID,
+			CustomerID: customerID,
+		},
+		TranscribeID: transcribeID,
+		Language:     "en-US",
+		Direction:    transcript.DirectionIn,
+	}
+
+	h := &streamingHandler{
+		notifyHandler:     mockNotify,
+		transcriptHandler: mockTranscript,
+	}
+
+	// Final result with empty alternatives — treated as message="" → no transcript.Create
+	streamClient := newMockGCPStreamClient([]*speechpb.StreamingRecognizeResponse{
+		{
+			Results: []*speechpb.StreamingRecognitionResult{
+				{
+					IsFinal:      true,
+					Alternatives: []*speechpb.SpeechRecognitionAlternative{},
+				},
+			},
+		},
+	})
+
+	ctx := context.Background()
+	_, cancel := context.WithCancel(ctx)
+
+	// No mock expectations — empty message final with no speaking state → nothing happens
+	h.gcpProcessResult(ctx, cancel, st, streamClient)
+}
+
+func Test_gcpProcessResult_TranscriptCreateError_Continues(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
+	transcribeID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001")
+	streamingID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")
+
+	st := &streaming.Streaming{
+		Identity: commonidentity.Identity{
+			ID:         streamingID,
+			CustomerID: customerID,
+		},
+		TranscribeID: transcribeID,
+		Language:     "en-US",
+		Direction:    transcript.DirectionIn,
+	}
+
+	h := &streamingHandler{
+		notifyHandler:     mockNotify,
+		transcriptHandler: mockTranscript,
+	}
+
+	// First utterance fails, second succeeds — verifies processing continues
+	streamClient := newMockGCPStreamClient([]*speechpb.StreamingRecognizeResponse{
+		gcpInterimResponse("test"),
+		gcpFinalResponse("test message"),
+		gcpInterimResponse("second"),
+		gcpFinalResponse("second message"),
+	})
+
+	ctx := context.Background()
+	_, cancel := context.WithCancel(ctx)
+
+	gomock.InOrder(
+		// First utterance — create fails
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechStarted, gomock.Any()),
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechInterim, gomock.Any()),
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechEnded, gomock.Any()),
+		mockTranscript.EXPECT().Create(gomock.Any(), customerID, transcribeID, transcript.DirectionIn, "test message", gomock.Any()).Return(nil, fmt.Errorf("db error")),
+		// Second utterance — still processes (continues on error)
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechStarted, gomock.Any()),
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechInterim, gomock.Any()),
+		mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, streaming.EventTypeSpeechEnded, gomock.Any()),
+		mockTranscript.EXPECT().Create(gomock.Any(), customerID, transcribeID, transcript.DirectionIn, "second message", gomock.Any()).Return(&transcript.Transcript{}, nil),
+	)
+
+	h.gcpProcessResult(ctx, cancel, st, streamClient)
+}
+
 func Test_gcpProcessResult_TranscriptCreateError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
