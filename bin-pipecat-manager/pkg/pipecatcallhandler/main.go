@@ -22,8 +22,6 @@ import (
 )
 
 type PipecatcallHandler interface {
-	Run() error
-
 	Start(
 		ctx context.Context,
 		id uuid.UUID,
@@ -53,20 +51,16 @@ type PipecatcallHandler interface {
 //
 //nolint:deadcode,varcheck
 const (
-	defaultEncapsulation  = string(cmexternalmedia.EncapsulationAudioSocket)
-	defaultTransport      = string(cmexternalmedia.TransportTCP)
-	defaultConnectionType = "client"
-	defaultFormat         = "slin" // 8kHz, 16bit, mono signed linear PCM
+	defaultEncapsulation  = string(cmexternalmedia.EncapsulationNone)
+	defaultTransport      = string(cmexternalmedia.TransportWebsocket)
+	defaultConnectionType = "server"
+	defaultFormat         = "slin16" // 16kHz, 16bit, mono signed linear PCM
 )
 
 const (
-	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
-	defaultMaxRetryAttempts  = 3
-	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
-	defaultPushFrameTimeout  = 50 * time.Millisecond  // 50ms for real-time audio
+	defaultPushFrameTimeout = 50 * time.Millisecond // 50ms for real-time audio
 
 	defaultRunnerWebsocketChanBufferSize = 150 // ~3 seconds at 50fps
-	defaultRunnerWebsocketListenAddress  = "localhost:0"
 )
 
 type pipecatcallHandler struct {
@@ -81,8 +75,7 @@ type pipecatcallHandler struct {
 	websocketHandler    WebsocketHandler
 	pipecatframeHandler PipecatframeHandler
 
-	listenAddress string
-	hostID        string
+	hostID string
 
 	mapPipecatcallSession map[uuid.UUID]*pipecatcall.Session
 	muPipecatcallSession  sync.Mutex
@@ -94,7 +87,6 @@ func NewPipecatcallHandler(
 	dbHandler dbhandler.DBHandler,
 	toolHandler toolhandler.ToolHandler,
 
-	listenAddress string,
 	hostID string,
 ) PipecatcallHandler {
 	return &pipecatcallHandler{
@@ -109,8 +101,7 @@ func NewPipecatcallHandler(
 		websocketHandler:    NewWebsocketHandler(),
 		pipecatframeHandler: NewPipecatframeHandler(),
 
-		listenAddress: listenAddress,
-		hostID:        hostID,
+		hostID: hostID,
 
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},

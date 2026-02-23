@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -104,64 +105,105 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 }
 
 func Test_runnerWebsocketHandleAudio(t *testing.T) {
-	tests := []struct {
-		name string
 
-		se          *pipecatcall.Session
-		sampleRate  int
-		numChannels int
-		data        []byte
+	t.Run("16kHz mono audio passes through without resampling", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
 
-		responseDataSamples []byte
-		expectWriteData     []byte
-	}{
-		{
-			name: "normal mono audio",
+		mockWS := NewMockWebsocketHandler(mc)
+		h := &pipecatcallHandler{
+			websocketHandler: mockWS,
+		}
 
-			se: &pipecatcall.Session{
-				AsteriskConn: NewDummyConn(),
-				Ctx:          context.Background(),
-			},
-			sampleRate:  16000,
-			numChannels: 1,
-			data:        []byte{0x01, 0x02, 0x03, 0x04},
+		// ConnAst is non-nil so websocketAsteriskWrite will be called.
+		// Data is 4 bytes which is smaller than websocketAsteriskFrameSize (640),
+		// so it will be written as a single fragment.
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
 
-			responseDataSamples: []byte{0x10, 0x20, 0x30, 0x40},
-			expectWriteData:     []byte{0x10, 0x20, 0x30, 0x40},
-		},
-		{
-			name: "empty data",
+		data := []byte{0x01, 0x02, 0x03, 0x04}
+		mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, data).Return(nil)
 
-			se: &pipecatcall.Session{
-				AsteriskConn: NewDummyConn(),
-				Ctx:          context.Background(),
-			},
-			sampleRate:  8000,
-			numChannels: 1,
-			data:        []byte{},
+		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, data); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
 
-			responseDataSamples: []byte{},
-			expectWriteData:     []byte{},
-		},
-	}
+	t.Run("non-16kHz audio is resampled before writing", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+		mockAudio := NewMockAudiosocketHandler(mc)
+		mockWS := NewMockWebsocketHandler(mc)
+		h := &pipecatcallHandler{
+			audiosocketHandler: mockAudio,
+			websocketHandler:   mockWS,
+		}
 
-			mockAudio := NewMockAudiosocketHandler(mc)
-			h := &pipecatcallHandler{
-				audiosocketHandler: mockAudio,
-			}
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
 
-			mockAudio.EXPECT().GetDataSamples(tt.sampleRate, tt.data).Return(tt.responseDataSamples, nil)
-			mockAudio.EXPECT().Write(tt.se.Ctx, tt.se.AsteriskConn, tt.expectWriteData).Return(nil)
+		inputData := []byte{0x01, 0x02, 0x03, 0x04}
+		resampledData := []byte{0x10, 0x20}
 
-			if err := h.runnerWebsocketHandleAudio(tt.se, tt.sampleRate, tt.numChannels, tt.data); err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
+		mockAudio.EXPECT().GetDataSamples(8000, inputData).Return(resampledData, nil)
+		mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, resampledData).Return(nil)
 
-		})
-	}
+		if err := h.runnerWebsocketHandleAudio(se, 8000, 1, inputData); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("stereo audio is rejected", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &pipecatcallHandler{}
+		se := &pipecatcall.Session{
+			Ctx: context.Background(),
+		}
+
+		err := h.runnerWebsocketHandleAudio(se, 16000, 2, []byte{0x01, 0x02})
+		if err == nil {
+			t.Errorf("expected error for stereo audio, got nil")
+		}
+	})
+
+	t.Run("nil ConnAst returns nil without writing", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &pipecatcallHandler{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: nil,
+		}
+
+		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, []byte{0x01, 0x02}); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("empty data returns nil", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &pipecatcallHandler{}
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
+
+		// websocketAsteriskWrite returns nil for empty data without calling WriteMessage
+		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, []byte{}); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
 }

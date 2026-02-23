@@ -59,20 +59,6 @@ func (mr *MockPipecatcallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPipecatcallHandler)(nil).Get), ctx, id)
 }
 
-// Run mocks base method.
-func (m *MockPipecatcallHandler) Run() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Run indicates an expected call of Run.
-func (mr *MockPipecatcallHandlerMockRecorder) Run() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockPipecatcallHandler)(nil).Run))
-}
-
 // RunnerToolHandle mocks base method.
 func (m *MockPipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) error {
 	m.ctrl.T.Helper()
