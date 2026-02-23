@@ -43,6 +43,8 @@ post:
               description: The language of the transcription.
             direction:
               $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+            provider:
+              $ref: '#/components/schemas/TranscribeManagerTranscribeProvider'
             on_end_flow_id:
               type: string
               description: The ID of the flow to be executed when the transcription ends.
