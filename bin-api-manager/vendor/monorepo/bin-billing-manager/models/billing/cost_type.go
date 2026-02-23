@@ -31,6 +31,7 @@ const (
 	CostTypeEmail            CostType = "email"
 	CostTypeNumber           CostType = "number"
 	CostTypeNumberRenew      CostType = "number_renew"
+	CostTypeTTS              CostType = "tts"
 )
 
 // Default credit rates per unit in micros (1 dollar = 1,000,000 micros).
@@ -41,11 +42,13 @@ const (
 	DefaultCreditPerUnitSMS              int64 = 10000   // $0.01/msg
 	DefaultCreditPerUnitEmail            int64 = 10000   // $0.01/msg
 	DefaultCreditPerUnitNumber           int64 = 5000000 // $5.00/number
+	DefaultCreditPerUnitTTS              int64 = 30000   // $0.03/min
 )
 
 // Default token rates per unit (plain integers).
 const (
-	DefaultTokenPerUnitCallVN int64 = 1
+	DefaultTokenPerUnitCallVN  int64 = 1
+	DefaultTokenPerUnitTTS     int64 = 3
 )
 
 // GetCostInfo returns the billing mode and rates for a given cost type.
@@ -65,6 +68,8 @@ func GetCostInfo(ct CostType) CostInfo {
 		return CostInfo{CostModeCreditOnly, 0, DefaultCreditPerUnitEmail}
 	case CostTypeNumber, CostTypeNumberRenew:
 		return CostInfo{CostModeCreditOnly, 0, DefaultCreditPerUnitNumber}
+	case CostTypeTTS:
+		return CostInfo{CostModeTokenFirst, DefaultTokenPerUnitTTS, DefaultCreditPerUnitTTS}
 	default:
 		return CostInfo{CostModeDisabled, 0, 0}
 	}

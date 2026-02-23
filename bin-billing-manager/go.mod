@@ -81,6 +81,7 @@ require (
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183
+	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996
 )
 
 require (
@@ -149,6 +150,5 @@ require (
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
-	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )
