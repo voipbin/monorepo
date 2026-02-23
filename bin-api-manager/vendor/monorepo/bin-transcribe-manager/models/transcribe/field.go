@@ -17,6 +17,7 @@ const (
 	FieldHostID    Field = "host_id"   // host_id
 	FieldLanguage  Field = "language"  // language
 	FieldDirection Field = "direction" // direction
+	FieldProvider  Field = "provider"  // provider
 
 	FieldStreamingIDs Field = "streaming_ids" // streaming_ids
 

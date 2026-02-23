@@ -1258,6 +1258,7 @@ type RequestHandler interface {
 		referenceID uuid.UUID,
 		language string,
 		direction tmtranscribe.Direction,
+		provider tmtranscribe.Provider,
 		timeout int,
 	) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)

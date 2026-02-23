@@ -69,6 +69,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 	referenceID uuid.UUID,
 	language string,
 	direction tmtranscribe.Direction,
+	provider tmtranscribe.Provider,
 	timeout int,
 ) (*tmtranscribe.Transcribe, error) {
 	uri := "/v1/transcribes"
@@ -81,6 +82,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 		ReferenceID:   referenceID,
 		Language:      language,
 		Direction:     direction,
+		Provider:      provider,
 	}
 
 	m, err := json.Marshal(data)
