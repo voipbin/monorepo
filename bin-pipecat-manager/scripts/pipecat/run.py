@@ -16,6 +16,8 @@ from pipecat.services.google.tts import GoogleTTSService
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from deepgram import LiveOptions
 from pipecat.services.whisper.stt import Model, WhisperSTTService
+from pipecat.services.google.stt import GoogleSTTService
+from pipecat.transcriptions.language import Language
 from pipecat.processors.filters.stt_mute_filter import STTMuteConfig, STTMuteFilter, STTMuteStrategy
 
 # llm
@@ -226,6 +228,14 @@ async def run_pipeline(
         logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
 
 
+def _parse_language(language_str: str) -> Language:
+    """Convert language string (e.g., 'en-US') to pipecat Language enum."""
+    try:
+        return Language[language_str.replace("-", "_").upper()]
+    except (KeyError, AttributeError):
+        return Language.EN_US
+
+
 def create_tts_service(name: str, **options):
     name = name.lower()
     voice_id = options.get("voice_id") or "default_voice_id"
@@ -239,9 +249,13 @@ def create_tts_service(name: str, **options):
         )
     elif name == "elevenlabs":
         return ElevenLabsTTSService(
-            api_key=os.getenv("ELEVENLABS_API_KEY"), 
+            api_key=os.getenv("ELEVENLABS_API_KEY"),
             voice_id=voice_id,
             language=language,
+        )
+    elif name == "google":
+        return GoogleTTSService(
+            voice_id=voice_id,
         )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
@@ -259,6 +273,16 @@ def create_stt_service(name: str, **options):
         return DeepgramSTTService(
             api_key=os.getenv("DEEPGRAM_API_KEY"),
             live_options=live_options,
+        )
+    elif name == "google":
+        lang = _parse_language(language) if language else Language.EN_US
+        return GoogleSTTService(
+            params=GoogleSTTService.InputParams(
+                languages=[lang],
+                model="latest_long",
+                enable_automatic_punctuation=True,
+                enable_interim_results=True,
+            ),
         )
     else:
         raise ValueError(f"Unsupported STT service: {name}")
