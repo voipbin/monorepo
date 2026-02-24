@@ -73,15 +73,20 @@ const (
 
 // Defines values for AIManagerAIcallReferenceType.
 const (
-	AIManagerAIcallReferenceTypeCall AIManagerAIcallReferenceType = "call"
-	AIManagerAIcallReferenceTypeNone AIManagerAIcallReferenceType = ""
+	AIManagerAIcallReferenceTypeCall         AIManagerAIcallReferenceType = "call"
+	AIManagerAIcallReferenceTypeConversation AIManagerAIcallReferenceType = "conversation"
+	AIManagerAIcallReferenceTypeNone         AIManagerAIcallReferenceType = ""
+	AIManagerAIcallReferenceTypeTask         AIManagerAIcallReferenceType = "task"
 )
 
 // Defines values for AIManagerAIcallStatus.
 const (
-	AIManagerAIcallStatusEnd         AIManagerAIcallStatus = "end"
 	AIManagerAIcallStatusInitiating  AIManagerAIcallStatus = "initiating"
+	AIManagerAIcallStatusPausing     AIManagerAIcallStatus = "pausing"
 	AIManagerAIcallStatusProgressing AIManagerAIcallStatus = "progressing"
+	AIManagerAIcallStatusResuming    AIManagerAIcallStatus = "resuming"
+	AIManagerAIcallStatusTerminated  AIManagerAIcallStatus = "terminated"
+	AIManagerAIcallStatusTerminating AIManagerAIcallStatus = "terminating"
 )
 
 // Defines values for AIManagerMessageDirection.

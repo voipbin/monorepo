@@ -48,11 +48,29 @@ func TestConvertWebhookMessage(t *testing.T) {
 				if wh.AIID != ac.AIID {
 					t.Errorf("Wrong AIID. expect: %s, got: %s", ac.AIID, wh.AIID)
 				}
+				if wh.AIEngineModel != ac.AIEngineModel {
+					t.Errorf("Wrong AIEngineModel. expect: %s, got: %s", ac.AIEngineModel, wh.AIEngineModel)
+				}
+				if wh.AIEngineData["key"] != ac.AIEngineData["key"] {
+					t.Errorf("Wrong AIEngineData. expect: %v, got: %v", ac.AIEngineData, wh.AIEngineData)
+				}
+				if wh.AITTSType != ac.AITTSType {
+					t.Errorf("Wrong AITTSType. expect: %s, got: %s", ac.AITTSType, wh.AITTSType)
+				}
+				if wh.AITTSVoiceID != ac.AITTSVoiceID {
+					t.Errorf("Wrong AITTSVoiceID. expect: %s, got: %s", ac.AITTSVoiceID, wh.AITTSVoiceID)
+				}
+				if wh.AISTTType != ac.AISTTType {
+					t.Errorf("Wrong AISTTType. expect: %s, got: %s", ac.AISTTType, wh.AISTTType)
+				}
 				if wh.Status != ac.Status {
 					t.Errorf("Wrong Status. expect: %s, got: %s", ac.Status, wh.Status)
 				}
 				if wh.Gender != ac.Gender {
 					t.Errorf("Wrong Gender. expect: %s, got: %s", ac.Gender, wh.Gender)
+				}
+				if wh.Language != ac.Language {
+					t.Errorf("Wrong Language. expect: %s, got: %s", ac.Language, wh.Language)
 				}
 			},
 		},

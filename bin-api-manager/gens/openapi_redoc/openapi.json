@@ -15321,11 +15321,15 @@
         "example": "call",
         "enum": [
           "",
-          "call"
+          "call",
+          "conversation",
+          "task"
         ],
         "x-enum-varnames": [
           "AIManagerAIcallReferenceTypeNone",
-          "AIManagerAIcallReferenceTypeCall"
+          "AIManagerAIcallReferenceTypeCall",
+          "AIManagerAIcallReferenceTypeConversation",
+          "AIManagerAIcallReferenceTypeTask"
         ]
       },
       "AIManagerAIcallStatus": {
@@ -15335,12 +15339,18 @@
         "enum": [
           "initiating",
           "progressing",
-          "end"
+          "pausing",
+          "resuming",
+          "terminating",
+          "terminated"
         ],
         "x-enum-varnames": [
           "AIManagerAIcallStatusInitiating",
           "AIManagerAIcallStatusProgressing",
-          "AIManagerAIcallStatusEnd"
+          "AIManagerAIcallStatusPausing",
+          "AIManagerAIcallStatusResuming",
+          "AIManagerAIcallStatusTerminating",
+          "AIManagerAIcallStatusTerminated"
         ]
       },
       "AIManagerAITTSType": {
