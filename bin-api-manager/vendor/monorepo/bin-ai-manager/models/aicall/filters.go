@@ -10,7 +10,6 @@ import (
 type FieldStruct struct {
 	CustomerID    uuid.UUID      `filter:"customer_id"`
 	AIID          uuid.UUID      `filter:"ai_id"`
-	AIEngineType  ai.EngineType  `filter:"ai_engine_type"`
 	AIEngineModel ai.EngineModel `filter:"ai_engine_model"`
 	ActiveflowID  uuid.UUID      `filter:"activeflow_id"`
 	ReferenceType ReferenceType  `filter:"reference_type"`
