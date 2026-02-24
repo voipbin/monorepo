@@ -1684,43 +1684,47 @@ components:
 #########################################
     AIManagerAIEngineType:
       type: string
-      description: Type of engine used by the ai.
-      example: "chatGPT"
+      description: Type of engine used by the AI. Currently only empty string is defined in the backend.
+      example: ""
       enum:
-        - chatGPT
-        - dialogflow
-        - clova
+        - ""
       x-enum-varnames:
-        - AIManagerAIEngineTypeChatGPT
-        - AIManagerAIEngineTypeDialogFlow
-        - AIManagerAIEngineTypeClova
+        - AIManagerAIEngineTypeNone
 
     AIManagerAIEngineModel:
       type: string
-      description: Model of the ai engine.
-      example: "gpt-4o"
+      description: "Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot."
+      example: "openai.gpt-4o"
       enum:
-        - o1-mini
-        - o1-preview
-        - o1
-        - o3-mini
-        - gpt-4o
-        - gpt-4o-mini
-        - gpt-4-turbo
-        - gpt-4-vision-preview
-        - gpt-4
-        - gpt-3.5-turbo
+        - openai.o1-mini
+        - openai.o1-preview
+        - openai.o1
+        - openai.o3-mini
+        - openai.gpt-4o
+        - openai.gpt-4o-mini
+        - openai.gpt-4-turbo
+        - openai.gpt-4-vision-preview
+        - openai.gpt-4
+        - openai.gpt-3.5-turbo
+        - dialogflow.cx
+        - dialogflow.es
+        - grok.grok-3
+        - grok.grok-3-mini
       x-enum-varnames:
-        - AIManagerAIEngineModelChatGPTO1Mini
-        - AIManagerAIEngineModelChatGPTO1Preview
-        - AIManagerAIEngineModelChatGPTO1
-        - AIManagerAIEngineModelChatGPTO3Mini
-        - AIManagerAIEngineModelChatGPT4O
-        - AIManagerAIEngineModelChatGPT4OMini
-        - AIManagerAIEngineModelChatGPT4Turbo
-        - AIManagerAIEngineModelChatGPT4VisionPreview
-        - AIManagerAIEngineModelChatGPT4
-        - AIManagerAIEngineModelChatGPT3Dot5Turbo
+        - AIManagerAIEngineModelOpenaiO1Mini
+        - AIManagerAIEngineModelOpenaiO1Preview
+        - AIManagerAIEngineModelOpenaiO1
+        - AIManagerAIEngineModelOpenaiO3Mini
+        - AIManagerAIEngineModelOpenaiGPT4O
+        - AIManagerAIEngineModelOpenaiGPT4OMini
+        - AIManagerAIEngineModelOpenaiGPT4Turbo
+        - AIManagerAIEngineModelOpenaiGPT4VisionPreview
+        - AIManagerAIEngineModelOpenaiGPT4
+        - AIManagerAIEngineModelOpenaiGPT3Dot5Turbo
+        - AIManagerAIEngineModelDialogflowCX
+        - AIManagerAIEngineModelDialogflowES
+        - AIManagerAIEngineModelGrok3
+        - AIManagerAIEngineModelGrok3Mini
 
     AIManagerAI:
       type: object
@@ -1766,7 +1770,7 @@ components:
           description: Initial prompt to configure the AI's behavior.
           example: "You are a helpful customer support assistant."
         tts_type:
-          type: string
+          $ref: '#/components/schemas/AIManagerAITTSType'
           description: Text-to-speech provider type.
           example: "google"
         tts_voice_id:
@@ -1774,9 +1778,9 @@ components:
           description: Text-to-speech voice identifier.
           example: "en-US-Neural2-F"
         stt_type:
-          type: string
+          $ref: '#/components/schemas/AIManagerAISTTType'
           description: Speech-to-text provider type.
-          example: "google"
+          example: "deepgram"
         tool_names:
           type: array
           items:
@@ -1804,13 +1808,15 @@ components:
 
     AIManagerAIcallGender:
       type: string
-      description: Gender associated with the ai call.
+      description: Gender associated with the AI call.
       example: "female"
       enum:
+        - ""
         - male
         - female
         - neutral
       x-enum-varnames:
+        - AIManagerAIcallGenderNone
         - AIManagerAIcallGenderMale
         - AIManagerAIcallGenderFemale
         - AIManagerAIcallGenderNeutral
@@ -2023,9 +2029,11 @@ components:
       description: Direction of the message.
       example: "incoming"
       enum:
+        - ""
         - incoming
         - outgoing
       x-enum-varnames:
+        - AIManagerMessageDirectionNone
         - AIManagerMessageDirectionIncoming
         - AIManagerMessageDirectionOutgoing
 
@@ -2034,12 +2042,14 @@ components:
       description: Role of the entity in the conversation.
       example: "assistant"
       enum:
+        - ""
         - system
         - user
         - assistant
         - function
         - tool
       x-enum-varnames:
+        - AIManagerMessageRoleNone
         - AIManagerMessageRoleSystem
         - AIManagerMessageRoleUser
         - AIManagerMessageRoleAssistant
@@ -2055,16 +2065,18 @@ components:
           x-go-type: string
           description: The unique identifier of the message.
           example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
         aicall_id:
           type: string
           format: uuid
           x-go-type: string
           description: "The unique identifier of the associated AI call. Returned from the `GET /aicalls` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
-        direction:
-          $ref: '#/components/schemas/AIManagerMessageDirection'
-          description: Direction of the message.
-          example: "incoming"
         role:
           $ref: '#/components/schemas/AIManagerMessageRole'
           description: Role of the entity in the conversation.
@@ -2073,17 +2085,45 @@ components:
           type: string
           description: Content of the message.
           example: "Hello, how can I help you today?"
+        direction:
+          $ref: '#/components/schemas/AIManagerMessageDirection'
+          description: Direction of the message.
+          example: "incoming"
+        tool_calls:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The unique identifier of the tool call.
+                example: "call_abc123"
+              type:
+                type: string
+                description: The type of tool call.
+                example: "function"
+              function:
+                type: object
+                description: The function call details.
+                properties:
+                  name:
+                    type: string
+                    description: The name of the function to call.
+                    example: "get_weather"
+                  arguments:
+                    type: string
+                    description: The arguments to pass to the function as a JSON string.
+                    example: "{\"location\": \"San Francisco\"}"
+          description: List of tool calls made during the message.
+        tool_call_id:
+          type: string
+          description: The tool call ID this message is responding to.
+          example: "call_abc123"
         tm_create:
           type: string
           format: date-time
           x-go-type: string
           description: Timestamp when the message was created.
-          example: "2026-01-15T09:30:00.000000Z"
-        tm_delete:
-          type: string
-          format: date-time
-          x-go-type: string
-          description: Timestamp when the message was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
     AIManagerSummaryReferenceType:

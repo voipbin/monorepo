@@ -11,23 +11,25 @@ import (
 
 // Defines values for AIManagerAIEngineModel.
 const (
-	AIManagerAIEngineModelChatGPT3Dot5Turbo     AIManagerAIEngineModel = "gpt-3.5-turbo"
-	AIManagerAIEngineModelChatGPT4              AIManagerAIEngineModel = "gpt-4"
-	AIManagerAIEngineModelChatGPT4O             AIManagerAIEngineModel = "gpt-4o"
-	AIManagerAIEngineModelChatGPT4OMini         AIManagerAIEngineModel = "gpt-4o-mini"
-	AIManagerAIEngineModelChatGPT4Turbo         AIManagerAIEngineModel = "gpt-4-turbo"
-	AIManagerAIEngineModelChatGPT4VisionPreview AIManagerAIEngineModel = "gpt-4-vision-preview"
-	AIManagerAIEngineModelChatGPTO1             AIManagerAIEngineModel = "o1"
-	AIManagerAIEngineModelChatGPTO1Mini         AIManagerAIEngineModel = "o1-mini"
-	AIManagerAIEngineModelChatGPTO1Preview      AIManagerAIEngineModel = "o1-preview"
-	AIManagerAIEngineModelChatGPTO3Mini         AIManagerAIEngineModel = "o3-mini"
+	AIManagerAIEngineModelDialogflowCX            AIManagerAIEngineModel = "dialogflow.cx"
+	AIManagerAIEngineModelDialogflowES            AIManagerAIEngineModel = "dialogflow.es"
+	AIManagerAIEngineModelGrok3                   AIManagerAIEngineModel = "grok.grok-3"
+	AIManagerAIEngineModelGrok3Mini               AIManagerAIEngineModel = "grok.grok-3-mini"
+	AIManagerAIEngineModelOpenaiGPT3Dot5Turbo     AIManagerAIEngineModel = "openai.gpt-3.5-turbo"
+	AIManagerAIEngineModelOpenaiGPT4              AIManagerAIEngineModel = "openai.gpt-4"
+	AIManagerAIEngineModelOpenaiGPT4O             AIManagerAIEngineModel = "openai.gpt-4o"
+	AIManagerAIEngineModelOpenaiGPT4OMini         AIManagerAIEngineModel = "openai.gpt-4o-mini"
+	AIManagerAIEngineModelOpenaiGPT4Turbo         AIManagerAIEngineModel = "openai.gpt-4-turbo"
+	AIManagerAIEngineModelOpenaiGPT4VisionPreview AIManagerAIEngineModel = "openai.gpt-4-vision-preview"
+	AIManagerAIEngineModelOpenaiO1                AIManagerAIEngineModel = "openai.o1"
+	AIManagerAIEngineModelOpenaiO1Mini            AIManagerAIEngineModel = "openai.o1-mini"
+	AIManagerAIEngineModelOpenaiO1Preview         AIManagerAIEngineModel = "openai.o1-preview"
+	AIManagerAIEngineModelOpenaiO3Mini            AIManagerAIEngineModel = "openai.o3-mini"
 )
 
 // Defines values for AIManagerAIEngineType.
 const (
-	AIManagerAIEngineTypeChatGPT    AIManagerAIEngineType = "chatGPT"
-	AIManagerAIEngineTypeClova      AIManagerAIEngineType = "clova"
-	AIManagerAIEngineTypeDialogFlow AIManagerAIEngineType = "dialogflow"
+	AIManagerAIEngineTypeNone AIManagerAIEngineType = ""
 )
 
 // Defines values for AIManagerAISTTType.
@@ -69,6 +71,7 @@ const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
 	AIManagerAIcallGenderMale    AIManagerAIcallGender = "male"
 	AIManagerAIcallGenderNeutral AIManagerAIcallGender = "neutral"
+	AIManagerAIcallGenderNone    AIManagerAIcallGender = ""
 )
 
 // Defines values for AIManagerAIcallReferenceType.
@@ -92,6 +95,7 @@ const (
 // Defines values for AIManagerMessageDirection.
 const (
 	AIManagerMessageDirectionIncoming AIManagerMessageDirection = "incoming"
+	AIManagerMessageDirectionNone     AIManagerMessageDirection = ""
 	AIManagerMessageDirectionOutgoing AIManagerMessageDirection = "outgoing"
 )
 
@@ -99,6 +103,7 @@ const (
 const (
 	AIManagerMessageRoleAssistant AIManagerMessageRole = "assistant"
 	AIManagerMessageRoleFunction  AIManagerMessageRole = "function"
+	AIManagerMessageRoleNone      AIManagerMessageRole = ""
 	AIManagerMessageRoleSystem    AIManagerMessageRole = "system"
 	AIManagerMessageRoleTool      AIManagerMessageRole = "tool"
 	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
@@ -955,10 +960,10 @@ type AIManagerAI struct {
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
 
 	// Id The unique identifier of the AI.
@@ -971,7 +976,7 @@ type AIManagerAI struct {
 	Name *string `json:"name,omitempty"`
 
 	// SttType Speech-to-text provider type.
-	SttType *string `json:"stt_type,omitempty"`
+	SttType *AIManagerAISTTType `json:"stt_type,omitempty"`
 
 	// TmCreate Timestamp when the AI was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -986,16 +991,16 @@ type AIManagerAI struct {
 	ToolNames *[]string `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech provider type.
-	TtsType *string `json:"tts_type,omitempty"`
+	TtsType *AIManagerAITTSType `json:"tts_type,omitempty"`
 
 	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 }
 
-// AIManagerAIEngineModel Model of the ai engine.
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
 
-// AIManagerAIEngineType Type of engine used by the ai.
+// AIManagerAIEngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 type AIManagerAIEngineType string
 
 // AIManagerAISTTType Speech-to-text provider type.
@@ -1012,7 +1017,7 @@ type AIManagerAIcall struct {
 	// AiEngineData Custom key-value configuration data specific to the AI engine type.
 	AiEngineData *map[string]interface{} `json:"ai_engine_data,omitempty"`
 
-	// AiEngineModel Model of the ai engine.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
 	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
@@ -1033,7 +1038,7 @@ type AIManagerAIcall struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
 	// Id The unique identifier of the AI call.
@@ -1064,7 +1069,7 @@ type AIManagerAIcall struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
-// AIManagerAIcallGender Gender associated with the ai call.
+// AIManagerAIcallGender Gender associated with the AI call.
 type AIManagerAIcallGender string
 
 // AIManagerAIcallReferenceType Type of reference associated with the ai call.
@@ -1081,6 +1086,9 @@ type AIManagerMessage struct {
 	// Content Content of the message.
 	Content *string `json:"content,omitempty"`
 
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
 	// Direction Direction of the message.
 	Direction *AIManagerMessageDirection `json:"direction,omitempty"`
 
@@ -1093,8 +1101,26 @@ type AIManagerMessage struct {
 	// TmCreate Timestamp when the message was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the message was deleted.
-	TmDelete *string `json:"tm_delete,omitempty"`
+	// ToolCallId The tool call ID this message is responding to.
+	ToolCallId *string `json:"tool_call_id,omitempty"`
+
+	// ToolCalls List of tool calls made during the message.
+	ToolCalls *[]struct {
+		// Function The function call details.
+		Function *struct {
+			// Arguments The arguments to pass to the function as a JSON string.
+			Arguments *string `json:"arguments,omitempty"`
+
+			// Name The name of the function to call.
+			Name *string `json:"name,omitempty"`
+		} `json:"function,omitempty"`
+
+		// Id The unique identifier of the tool call.
+		Id *string `json:"id,omitempty"`
+
+		// Type The type of tool call.
+		Type *string `json:"type,omitempty"`
+	} `json:"tool_calls,omitempty"`
 }
 
 // AIManagerMessageDirection Direction of the message.
@@ -2457,7 +2483,7 @@ type FlowManagerActionOptionAITalk struct {
 	// Duration Maximum duration of the AI talk session in seconds.
 	Duration *int `json:"duration,omitempty"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
 	// Language BCP47 language code (e.g., en-US).
@@ -3975,7 +4001,7 @@ type GetAicallsParams struct {
 type PostAicallsJSONBody struct {
 	AiId string `json:"ai_id"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender      AIManagerAIcallGender `json:"gender"`
 	Language    string                `json:"language"`
 	ReferenceId string                `json:"reference_id"`
@@ -4024,10 +4050,10 @@ type PostAisJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
@@ -4055,10 +4081,10 @@ type PutAisIdJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
