@@ -17,7 +17,6 @@ func (h *aiHandler) dbCreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
 	engineKey string,
@@ -37,7 +36,6 @@ func (h *aiHandler) dbCreate(
 		Name:   name,
 		Detail: detail,
 
-		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
 		EngineKey:   engineKey,
@@ -106,7 +104,6 @@ func (h *aiHandler) dbUpdate(
 	id uuid.UUID,
 	name string,
 	detail string,
-	engineType ai.EngineType,
 	engineModel ai.EngineModel,
 	engineData map[string]any,
 	engineKey string,
@@ -119,7 +116,6 @@ func (h *aiHandler) dbUpdate(
 	fields := map[ai.Field]any{
 		ai.FieldName:        name,
 		ai.FieldDetail:      detail,
-		ai.FieldEngineType:  engineType,
 		ai.FieldEngineModel: engineModel,
 		ai.FieldEngineData:  engineData,
 		ai.FieldEngineKey:   engineKey,

@@ -31,7 +31,6 @@ func Test_PostAis(t *testing.T) {
 
 		expectedName        string
 		expectedDetail      string
-		expectedEngineType  amai.EngineType
 		expectedEngineModel amai.EngineModel
 		expectedEngineData  map[string]any
 		expectedEngineKey   string
@@ -51,7 +50,7 @@ func Test_PostAis(t *testing.T) {
 			},
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -61,7 +60,6 @@ func Test_PostAis(t *testing.T) {
 
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedEngineType:  amai.EngineTypeNone,
 			expectedEngineModel: amai.EngineModelOpenaiGPT4,
 			expectedEngineData: map[string]any{
 				"key1": "val1",
@@ -83,7 +81,7 @@ func Test_PostAis(t *testing.T) {
 			},
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -93,7 +91,6 @@ func Test_PostAis(t *testing.T) {
 
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedEngineType:  amai.EngineTypeNone,
 			expectedEngineModel: amai.EngineModelOpenaiGPT4,
 			expectedEngineData: map[string]any{
 				"key1": "val1",
@@ -115,7 +112,7 @@ func Test_PostAis(t *testing.T) {
 			},
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["all"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["all"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -125,7 +122,6 @@ func Test_PostAis(t *testing.T) {
 
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedEngineType:  amai.EngineTypeNone,
 			expectedEngineModel: amai.EngineModelOpenaiGPT4,
 			expectedEngineData: map[string]any{
 				"key1": "val1",
@@ -166,7 +162,6 @@ func Test_PostAis(t *testing.T) {
 				&tt.agent,
 				tt.expectedName,
 				tt.expectedDetail,
-				tt.expectedEngineType,
 				tt.expectedEngineModel,
 				tt.expectedEngineData,
 				tt.expectedEngineKey,
@@ -448,7 +443,6 @@ func Test_PutAisId(t *testing.T) {
 		expectedAIID        uuid.UUID
 		expectedName        string
 		expectedDetail      string
-		expectedEngineType  amai.EngineType
 		epxectedEngineModel amai.EngineModel
 		expectedEngineData  map[string]any
 		expectedEngineKey   string
@@ -468,7 +462,7 @@ func Test_PutAisId(t *testing.T) {
 			},
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -479,7 +473,6 @@ func Test_PutAisId(t *testing.T) {
 			expectedAIID:        uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedEngineType:  amai.EngineTypeNone,
 			epxectedEngineModel: amai.EngineModelOpenaiGPT4,
 			expectedEngineData: map[string]any{
 				"key1": "val1",
@@ -501,7 +494,7 @@ func Test_PutAisId(t *testing.T) {
 			},
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -512,7 +505,6 @@ func Test_PutAisId(t *testing.T) {
 			expectedAIID:        uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			expectedName:        "test name",
 			expectedDetail:      "test detail",
-			expectedEngineType:  amai.EngineTypeNone,
 			epxectedEngineModel: amai.EngineModelOpenaiGPT4,
 			expectedEngineData: map[string]any{
 				"key1": "val1",
@@ -554,7 +546,6 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedAIID,
 				tt.expectedName,
 				tt.expectedDetail,
-				tt.expectedEngineType,
 				tt.epxectedEngineModel,
 				tt.expectedEngineData,
 				tt.expectedEngineKey,

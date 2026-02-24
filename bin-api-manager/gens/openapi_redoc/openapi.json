@@ -1544,9 +1544,6 @@
                   "detail": {
                     "type": "string"
                   },
-                  "engine_type": {
-                    "$ref": "#/components/schemas/AIManagerAIEngineType"
-                  },
                   "engine_model": {
                     "$ref": "#/components/schemas/AIManagerAIEngineModel"
                   },
@@ -1585,7 +1582,6 @@
                 "required": [
                   "name",
                   "detail",
-                  "engine_type",
                   "engine_model",
                   "engine_data",
                   "engine_key",
@@ -1674,9 +1670,6 @@
                   "detail": {
                     "type": "string"
                   },
-                  "engine_type": {
-                    "$ref": "#/components/schemas/AIManagerAIEngineType"
-                  },
                   "engine_model": {
                     "$ref": "#/components/schemas/AIManagerAIEngineModel"
                   },
@@ -1715,7 +1708,6 @@
                 "required": [
                   "name",
                   "detail",
-                  "engine_type",
                   "engine_model",
                   "engine_data",
                   "engine_key",
@@ -15183,17 +15175,6 @@
           }
         }
       },
-      "AIManagerAIEngineType": {
-        "type": "string",
-        "description": "Type of engine used by the AI. Currently only empty string is defined in the backend.",
-        "example": "",
-        "enum": [
-          ""
-        ],
-        "x-enum-varnames": [
-          "AIManagerAIEngineTypeNone"
-        ]
-      },
       "AIManagerAIEngineModel": {
         "type": "string",
         "description": "Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.",
@@ -15257,11 +15238,6 @@
             "type": "string",
             "description": "Detailed information about the AI.",
             "example": "AI assistant for handling customer inquiries"
-          },
-          "engine_type": {
-            "$ref": "#/components/schemas/AIManagerAIEngineType",
-            "description": "Type of AI engine.",
-            "example": "chatGPT"
           },
           "engine_model": {
             "$ref": "#/components/schemas/AIManagerAIEngineModel",

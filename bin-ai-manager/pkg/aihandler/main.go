@@ -10,7 +10,6 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
@@ -24,7 +23,6 @@ type AIHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		engineType ai.EngineType,
 		engineModel ai.EngineModel,
 		engineData map[string]any,
 		engineKey string,
@@ -42,7 +40,6 @@ type AIHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
-		engineType ai.EngineType,
 		engineModel ai.EngineModel,
 		engineData map[string]any,
 		engineKey string,
@@ -60,25 +57,6 @@ type aiHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
-}
-
-var (
-	metricsNamespace = "ai_manager"
-
-	promAICreateTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "ai_create_total",
-			Help:      "Total number of created ai with engine type.",
-		},
-		[]string{"engine_type"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(
-		promAICreateTotal,
-	)
 }
 
 // NewAIHandler define

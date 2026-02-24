@@ -90,7 +90,6 @@ func cmdCreate() *cobra.Command {
 	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("name", "", "AI name")
 	flags.String("detail", "", "AI detail")
-	flags.String("engine-type", "", "Engine type (deprecated, use engine-model)")
 	flags.String("engine-model", "openai.gpt-4o", "Engine model (e.g., openai.gpt-4o, dialogflow.cx)")
 	flags.String("engine-key", "", "Engine API key")
 	flags.String("init-prompt", "", "Initial system prompt")
@@ -140,7 +139,6 @@ func cmdUpdate() *cobra.Command {
 	flags.String("id", "", "AI ID (required)")
 	flags.String("name", "", "AI name")
 	flags.String("detail", "", "AI detail")
-	flags.String("engine-type", "", "Engine type (deprecated, use engine-model)")
 	flags.String("engine-model", "", "Engine model (e.g., openai.gpt-4o, dialogflow.cx)")
 	flags.String("engine-key", "", "Engine API key")
 	flags.String("init-prompt", "", "Initial system prompt")
@@ -177,7 +175,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	name := viper.GetString("name")
 	detail := viper.GetString("detail")
-	engineType := ai.EngineType(viper.GetString("engine-type"))
 	engineModel := ai.EngineModel(viper.GetString("engine-model"))
 	engineKey := viper.GetString("engine-key")
 	initPrompt := viper.GetString("init-prompt")
@@ -195,7 +192,6 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		customerID,
 		name,
 		detail,
-		engineType,
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
@@ -271,7 +267,6 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 
 	name := viper.GetString("name")
 	detail := viper.GetString("detail")
-	engineType := ai.EngineType(viper.GetString("engine-type"))
 	engineModel := ai.EngineModel(viper.GetString("engine-model"))
 	engineKey := viper.GetString("engine-key")
 	initPrompt := viper.GetString("init-prompt")
@@ -289,7 +284,6 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		targetID,
 		name,
 		detail,
-		engineType,
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,

@@ -11,7 +11,6 @@ const (
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
 
-	FieldEngineType  Field = "engine_type"
 	FieldEngineModel Field = "engine_model"
 	FieldEngineData  Field = "engine_data"
 	FieldEngineKey   Field = "engine_key"

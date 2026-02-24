@@ -65,7 +65,6 @@ func (r *requestHandler) AIV1AICreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
 	engineKey string,
@@ -82,7 +81,6 @@ func (r *requestHandler) AIV1AICreate(
 		Name:       name,
 		Detail:     detail,
 
-		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
 		EngineKey:   engineKey,
@@ -142,7 +140,6 @@ func (r *requestHandler) AIV1AIUpdate(
 	aiID uuid.UUID,
 	name string,
 	detail string,
-	engineType amai.EngineType,
 	engineModel amai.EngineModel,
 	engineData map[string]any,
 	engineKey string,
@@ -158,7 +155,6 @@ func (r *requestHandler) AIV1AIUpdate(
 		Name:   name,
 		Detail: detail,
 
-		EngineType:  engineType,
 		EngineModel: engineModel,
 		EngineData:  engineData,
 		EngineKey:   engineKey,
