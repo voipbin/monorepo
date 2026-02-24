@@ -39,7 +39,6 @@ func (h *aicallHandler) Create(
 		},
 
 		AIID:          c.ID,
-		AIEngineType:  c.EngineType,
 		AIEngineModel: c.EngineModel,
 		AIEngineData:  c.EngineData,
 		AITTSType:     c.TTSType,

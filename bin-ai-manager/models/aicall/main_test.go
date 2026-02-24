@@ -13,7 +13,6 @@ func TestAIcall(t *testing.T) {
 		name string
 
 		aiID          uuid.UUID
-		aiEngineType  ai.EngineType
 		aiEngineModel ai.EngineModel
 		aiTTSType     ai.TTSType
 		aiTTSVoiceID  string
@@ -31,7 +30,6 @@ func TestAIcall(t *testing.T) {
 			name: "creates_aicall_with_all_fields",
 
 			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
-			aiEngineType:  ai.EngineTypeNone,
 			aiEngineModel: ai.EngineModelOpenaiGPT4O,
 			aiTTSType:     ai.TTSTypeElevenLabs,
 			aiTTSVoiceID:  "voice-123",
@@ -49,7 +47,6 @@ func TestAIcall(t *testing.T) {
 			name: "creates_aicall_with_empty_fields",
 
 			aiID:          uuid.Nil,
-			aiEngineType:  "",
 			aiEngineModel: "",
 			aiTTSType:     "",
 			aiTTSVoiceID:  "",
@@ -67,7 +64,6 @@ func TestAIcall(t *testing.T) {
 			name: "creates_aicall_for_conversation",
 
 			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440006"),
-			aiEngineType:  ai.EngineTypeNone,
 			aiEngineModel: ai.EngineModelDialogflowCX,
 			aiTTSType:     ai.TTSTypeGoogle,
 			aiTTSVoiceID:  "",
@@ -85,7 +81,6 @@ func TestAIcall(t *testing.T) {
 			name: "creates_aicall_for_task",
 
 			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440009"),
-			aiEngineType:  ai.EngineTypeNone,
 			aiEngineModel: ai.EngineModelOpenaiGPT4OMini,
 			aiTTSType:     ai.TTSTypeNone,
 			aiTTSVoiceID:  "",
@@ -105,7 +100,6 @@ func TestAIcall(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ac := &AIcall{
 				AIID:          tt.aiID,
-				AIEngineType:  tt.aiEngineType,
 				AIEngineModel: tt.aiEngineModel,
 				AITTSType:     tt.aiTTSType,
 				AITTSVoiceID:  tt.aiTTSVoiceID,
@@ -122,9 +116,6 @@ func TestAIcall(t *testing.T) {
 
 			if ac.AIID != tt.aiID {
 				t.Errorf("Wrong AIID. expect: %s, got: %s", tt.aiID, ac.AIID)
-			}
-			if ac.AIEngineType != tt.aiEngineType {
-				t.Errorf("Wrong AIEngineType. expect: %s, got: %s", tt.aiEngineType, ac.AIEngineType)
 			}
 			if ac.AIEngineModel != tt.aiEngineModel {
 				t.Errorf("Wrong AIEngineModel. expect: %s, got: %s", tt.aiEngineModel, ac.AIEngineModel)

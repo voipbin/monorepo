@@ -17,7 +17,6 @@ func TestFieldStruct(t *testing.T) {
 			fs: &FieldStruct{
 				CustomerID:    uuid.Must(uuid.NewV4()),
 				AIID:          uuid.Must(uuid.NewV4()),
-				AIEngineType:  ai.EngineTypeNone,
 				AIEngineModel: ai.EngineModelOpenaiGPT4O,
 				ActiveflowID:  uuid.Must(uuid.NewV4()),
 				ReferenceType: ReferenceTypeCall,
@@ -35,7 +34,6 @@ func TestFieldStruct(t *testing.T) {
 			fs: &FieldStruct{
 				CustomerID:    uuid.Nil,
 				AIID:          uuid.Nil,
-				AIEngineType:  "",
 				AIEngineModel: "",
 				ActiveflowID:  uuid.Nil,
 				ReferenceType: ReferenceTypeNone,

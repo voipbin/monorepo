@@ -76,7 +76,6 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
 				},
 				AIID:          uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
-				AIEngineType:  ai.EngineTypeNone,
 				AIEngineModel: ai.EngineModelOpenaiGPT4,
 				AIEngineData: map[string]any{
 					"key1": "value1",

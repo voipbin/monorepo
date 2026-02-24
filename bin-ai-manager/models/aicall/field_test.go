@@ -26,11 +26,6 @@ func TestFieldConstants(t *testing.T) {
 			expected: "ai_id",
 		},
 		{
-			name:     "field_ai_engine_type",
-			constant: FieldAIEngineType,
-			expected: "ai_engine_type",
-		},
-		{
 			name:     "field_ai_engine_model",
 			constant: FieldAIEngineModel,
 			expected: "ai_engine_model",

@@ -4,7 +4,6 @@ create table ai_aicalls(
   customer_id   binary(16),   -- customer id
 
   ai_id            binary(16),   -- ai id
-  ai_engine_type   varchar(255), -- ai engine type
   ai_engine_model  varchar(255),
   ai_engine_data   json,
   ai_tts_type      varchar(255),
@@ -36,7 +35,6 @@ create index idx_ai_aicalls_customer_id on ai_aicalls(customer_id);
 create index idx_ai_aicalls_ai_id on ai_aicalls(ai_id);
 create index idx_ai_aicalls_reference_type on ai_aicalls(reference_type);
 create index idx_ai_aicalls_reference_id on ai_aicalls(reference_id);
-create index idx_ai_aicalls_transcribe_id on ai_aicalls(transcribe_id);
 create index idx_ai_aicalls_create on ai_aicalls(tm_create);
 create index idx_ai_aicalls_activeflow_id on ai_aicalls(activeflow_id);
 

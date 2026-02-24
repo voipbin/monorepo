@@ -24,7 +24,6 @@ func TestConvertWebhookMessage(t *testing.T) {
 					CustomerID: uuid.Must(uuid.NewV4()),
 				},
 				AIID:          uuid.Must(uuid.NewV4()),
-				AIEngineType:  ai.EngineTypeNone,
 				AIEngineModel: ai.EngineModelOpenaiGPT4O,
 				AIEngineData:  map[string]any{"key": "value"},
 				AITTSType:     ai.TTSTypeElevenLabs,
