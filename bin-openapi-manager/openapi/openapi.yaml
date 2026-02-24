@@ -1905,12 +1905,16 @@ components:
             max_tokens: 1024
         ai_tts_type:
           $ref: '#/components/schemas/AIManagerAITTSType'
+          description: Text-to-speech provider type used for this call.
+          example: "elevenlabs"
         ai_tts_voice_id:
           type: string
           description: Text-to-speech voice identifier used for this call.
           example: "21m00Tcm4TlvDq8ikWAM"
         ai_stt_type:
           $ref: '#/components/schemas/AIManagerAISTTType'
+          description: Speech-to-text provider type used for this call.
+          example: "deepgram"
         activeflow_id:
           type: string
           format: uuid
