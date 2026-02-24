@@ -285,6 +285,46 @@ class TestNoManualRTVISetup:
                     )
 
 
+class TestParseLanguage:
+    """Tests for _parse_language helper function."""
+
+    def test_valid_en_us(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("en-US") == Language.EN_US
+
+    def test_valid_fr_fr(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("fr-FR") == Language.FR_FR
+
+    def test_valid_ja_jp(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("ja-JP") == Language.JA_JP
+
+    def test_valid_de_de(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("de-DE") == Language.DE_DE
+
+    def test_unknown_language_falls_back(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("xx-YY") == Language.EN_US
+
+    def test_empty_string_falls_back(self):
+        from run import _parse_language
+        from pipecat.transcriptions.language import Language
+
+        assert _parse_language("") == Language.EN_US
+
+
 class TestCreateTTSService:
     """Tests for create_tts_service function."""
 
@@ -368,6 +408,28 @@ class TestCreateSTTService:
         from pipecat.transcriptions.language import Language
 
         create_stt_service("google", language="xx-YY")
+
+        ip_kwargs = mock_service.InputParams.call_args[1]
+        assert ip_kwargs["languages"] == [Language.EN_US]
+
+    @patch("run.GoogleSTTService")
+    def test_google_stt_non_english_language(self, mock_service):
+        """Test Google STT correctly maps non-English language strings."""
+        from run import create_stt_service
+        from pipecat.transcriptions.language import Language
+
+        create_stt_service("google", language="fr-FR")
+
+        ip_kwargs = mock_service.InputParams.call_args[1]
+        assert ip_kwargs["languages"] == [Language.FR_FR]
+
+    @patch("run.GoogleSTTService")
+    def test_google_stt_empty_string_language(self, mock_service):
+        """Test Google STT defaults to EN_US when language is empty string."""
+        from run import create_stt_service
+        from pipecat.transcriptions.language import Language
+
+        create_stt_service("google", language="")
 
         ip_kwargs = mock_service.InputParams.call_args[1]
         assert ip_kwargs["languages"] == [Language.EN_US]
