@@ -3,8 +3,8 @@
 | # | Service | OpenAPI Schemas | Status | Notes |
 |---|---------|----------------|--------|-------|
 | 1 | bin-agent-manager | AgentManagerAgent | done - in sync | All 13 fields and 3 enums match |
-| 2 | bin-ai-manager | AIManagerAI, AIManagerAIcall, AIManagerMessage, AIManagerSummary | pending | |
-| 3 | bin-call-manager | CallManagerCall, CallManagerGroupcall, CallManagerRecording | pending | |
+| 2 | bin-ai-manager | AIManagerAI, AIManagerAIcall, AIManagerMessage, AIManagerSummary | done - fixed 8 mismatches | EngineType/EngineModel enum stale, tts_type/stt_type missing $ref, Gender/Direction/Role missing empty string, Message missing customer_id/tool_calls/tool_call_id and had extra tm_delete |
+| 3 | bin-call-manager | CallManagerCall, CallManagerGroupcall, CallManagerRecording | done - fixed 2 mismatches | CallManagerCall had extra external_media_ids (not in WebhookMessage), CallManagerRecordingFormat x-enum-varnames missing space after dash |
 | 4 | bin-campaign-manager | CampaignManagerCampaign, CampaignManagerCampaigncall, CampaignManagerOutplan | pending | |
 | 5 | bin-conference-manager | ConferenceManagerConference, ConferenceManagerConferencecall | pending | |
 | 6 | bin-contact-manager | ContactManagerContact | pending | |
