@@ -2,6 +2,7 @@ package webhookhandler
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // sendMessage sends the message to the given uri with the given method and data.
-func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte) (*http.Response, error) {
+func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte) error {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -20,41 +21,34 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 	)
 	log.Debugf("Sending a message. data: %v", data)
 
-	// create request
-	req, err := http.NewRequest(method, uri, bytes.NewBuffer(data))
-	if err != nil {
-		log.Errorf("Could not create request. err: %v", err)
-		return nil, err
-	}
-
-	if data != nil && dataType != "" {
-		req.Header.Set("Content-Type", string(dataType))
-	}
-
-	var resp *http.Response
+	var lastErr error
 	for i := 0; i < 3; i++ {
+		req, err := http.NewRequest(method, uri, bytes.NewBuffer(data))
+		if err != nil {
+			log.Errorf("Could not create request. err: %v", err)
+			return err
+		}
+
+		if data != nil && dataType != "" {
+			req.Header.Set("Content-Type", dataType)
+		}
+
 		client := &http.Client{}
-		resp, err = client.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			log.Errorf("Could not send the request correctly. Making a retrying: %d, err: %v", i, err)
+			lastErr = err
 			time.Sleep(time.Second * 1)
 			continue
 		}
 
-		break
-	}
-	if err != nil {
-		log.Errorf("Could not send the request. err: %v", err)
-		return nil, err
-	}
-	defer func() {
+		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
-	}()
 
-	log.WithFields(
-		logrus.Fields{
-			"response_status": resp.StatusCode,
-		},
-	).Debugf("Sent the event correctly. resp: %v", resp)
-	return resp, nil
+		log.WithField("response_status", resp.StatusCode).Debugf("Sent the event correctly.")
+		return nil
+	}
+
+	log.Errorf("Could not send the request. err: %v", lastErr)
+	return lastErr
 }

@@ -39,12 +39,9 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 	if m.WebhookURI != "" {
 		// send webhook message
 		go func() {
-			res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data)
-			if err != nil {
+			if err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data); err != nil {
 				log.Errorf("Could not send a request. err: %v", err)
-				return
 			}
-			log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
 		}()
 	}
 
@@ -72,12 +69,9 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 
 	// send message
 	go func() {
-		res, err := h.sendMessage(uri, string(method), string(dataType), data)
-		if err != nil {
+		if err := h.sendMessage(uri, string(method), string(dataType), data); err != nil {
 			log.Errorf("Could not send a request. err: %v", err)
-			return
 		}
-		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", method, uri, res.StatusCode)
 	}()
 
 	wh := &webhook.Webhook{

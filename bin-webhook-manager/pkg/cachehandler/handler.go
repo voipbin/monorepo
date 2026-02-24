@@ -39,7 +39,7 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 
 // AccountSet sets the account info into the cache.
 func (h *handler) AccountSet(ctx context.Context, u *account.Account) error {
-	key := fmt.Sprintf("webhook.account:%d", u.ID)
+	key := fmt.Sprintf("webhook.account:%s", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err
@@ -50,7 +50,7 @@ func (h *handler) AccountSet(ctx context.Context, u *account.Account) error {
 
 // AccountGet returns cached account info
 func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-	key := fmt.Sprintf("webhook.account:%d", id)
+	key := fmt.Sprintf("webhook.account:%s", id)
 
 	var res account.Account
 	if err := h.getSerialize(ctx, key, &res); err != nil {
