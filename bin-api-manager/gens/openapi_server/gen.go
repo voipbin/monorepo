@@ -177,6 +177,21 @@ const (
 	BillingManagerAccountPlanTypeUnlimited    BillingManagerAccountPlanType = "unlimited"
 )
 
+// Defines values for BillingManagerBillingCostType.
+const (
+	BillingManagerBillingCostTypeCallDirectExt    BillingManagerBillingCostType = "call_direct_ext"
+	BillingManagerBillingCostTypeCallExtension    BillingManagerBillingCostType = "call_extension"
+	BillingManagerBillingCostTypeCallPSTNIncoming BillingManagerBillingCostType = "call_pstn_incoming"
+	BillingManagerBillingCostTypeCallPSTNOutgoing BillingManagerBillingCostType = "call_pstn_outgoing"
+	BillingManagerBillingCostTypeCallVN           BillingManagerBillingCostType = "call_vn"
+	BillingManagerBillingCostTypeEmail            BillingManagerBillingCostType = "email"
+	BillingManagerBillingCostTypeNone             BillingManagerBillingCostType = ""
+	BillingManagerBillingCostTypeNumber           BillingManagerBillingCostType = "number"
+	BillingManagerBillingCostTypeNumberRenew      BillingManagerBillingCostType = "number_renew"
+	BillingManagerBillingCostTypeSMS              BillingManagerBillingCostType = "sms"
+	BillingManagerBillingCostTypeTTS              BillingManagerBillingCostType = "tts"
+)
+
 // Defines values for BillingManagerBillingStatus.
 const (
 	BillingManagerBillingStatusEnd         BillingManagerBillingStatus = "end"
@@ -199,11 +214,13 @@ const (
 	BillingManagerBillingreferenceTypeCallExtension    BillingManagerBillingreferenceType = "call_extension"
 	BillingManagerBillingreferenceTypeCreditAdjustment BillingManagerBillingreferenceType = "credit_adjustment"
 	BillingManagerBillingreferenceTypeCreditFreeTier   BillingManagerBillingreferenceType = "credit_free_tier"
+	BillingManagerBillingreferenceTypeEmail            BillingManagerBillingreferenceType = "email"
 	BillingManagerBillingreferenceTypeMonthlyAllowance BillingManagerBillingreferenceType = "monthly_allowance"
 	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""
 	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
 	BillingManagerBillingreferenceTypeNumberRenew      BillingManagerBillingreferenceType = "number_renew"
 	BillingManagerBillingreferenceTypeSMS              BillingManagerBillingreferenceType = "sms"
+	BillingManagerBillingreferenceTypeSpeaking         BillingManagerBillingreferenceType = "speaking"
 	BillingManagerBillingreferenceTypeTokenAdjustment  BillingManagerBillingreferenceType = "token_adjustment"
 )
 
@@ -1265,8 +1282,8 @@ type BillingManagerBilling struct {
 	// BillableUnits The number of billable units (e.g. minutes, rounded up).
 	BillableUnits *int `json:"billable_units,omitempty"`
 
-	// CostType The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
-	CostType *string `json:"cost_type,omitempty"`
+	// CostType The classification of the billing cost.
+	CostType *BillingManagerBillingCostType `json:"cost_type,omitempty"`
 
 	// CustomerId The customer's unique identifier. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
@@ -1313,6 +1330,9 @@ type BillingManagerBilling struct {
 	// UsageDuration The actual usage duration in seconds.
 	UsageDuration *int `json:"usage_duration,omitempty"`
 }
+
+// BillingManagerBillingCostType The classification of the billing cost.
+type BillingManagerBillingCostType string
 
 // BillingManagerBillingStatus Status of the billing.
 type BillingManagerBillingStatus string

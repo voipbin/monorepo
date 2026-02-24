@@ -475,23 +475,55 @@ components:
         - call
         - call_extension
         - sms
+        - email
         - number
         - number_renew
         - credit_free_tier
         - monthly_allowance
         - credit_adjustment
         - token_adjustment
+        - speaking
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
         - BillingManagerBillingreferenceTypeCallExtension
         - BillingManagerBillingreferenceTypeSMS
+        - BillingManagerBillingreferenceTypeEmail
         - BillingManagerBillingreferenceTypeNumber
         - BillingManagerBillingreferenceTypeNumberRenew
         - BillingManagerBillingreferenceTypeCreditFreeTier
         - BillingManagerBillingreferenceTypeMonthlyAllowance
         - BillingManagerBillingreferenceTypeCreditAdjustment
         - BillingManagerBillingreferenceTypeTokenAdjustment
+        - BillingManagerBillingreferenceTypeSpeaking
+    BillingManagerBillingCostType:
+      type: string
+      description: The classification of the billing cost.
+      example: "call_pstn_outgoing"
+      enum:
+        - ""
+        - call_pstn_outgoing
+        - call_pstn_incoming
+        - call_vn
+        - call_extension
+        - call_direct_ext
+        - sms
+        - email
+        - number
+        - number_renew
+        - tts
+      x-enum-varnames:
+        - BillingManagerBillingCostTypeNone
+        - BillingManagerBillingCostTypeCallPSTNOutgoing
+        - BillingManagerBillingCostTypeCallPSTNIncoming
+        - BillingManagerBillingCostTypeCallVN
+        - BillingManagerBillingCostTypeCallExtension
+        - BillingManagerBillingCostTypeCallDirectExt
+        - BillingManagerBillingCostTypeSMS
+        - BillingManagerBillingCostTypeEmail
+        - BillingManagerBillingCostTypeNumber
+        - BillingManagerBillingCostTypeNumberRenew
+        - BillingManagerBillingCostTypeTTS
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.
@@ -562,9 +594,9 @@ components:
           description: "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint."
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         cost_type:
-          type: string
-          description: The classification of the billing cost (e.g. call_pstn_outgoing, call_vn, sms, number).
+          description: The classification of the billing cost.
           example: "call_pstn_outgoing"
+          $ref: '#/components/schemas/BillingManagerBillingCostType'
         usage_duration:
           type: integer
           description: The actual usage duration in seconds.
@@ -605,8 +637,10 @@ components:
           example: 1350000
         idempotency_key:
           type: string
+          format: uuid
+          x-go-type: string
           description: A unique key to prevent duplicate transactions.
-          example: "txn-2026-01-15-001"
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         tm_billing_start:
           type: string
           format: date-time
