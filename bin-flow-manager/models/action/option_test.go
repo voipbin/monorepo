@@ -1050,7 +1050,7 @@ func Test_OptionTranscribeStart(t *testing.T) {
 			},
 		},
 		{
-			name: "with direction",
+			name: "with direction in",
 
 			option: []byte(`{"language": "en-US", "on_end_flow_id": "ccde4a38-093b-11f0-921a-93245e27ef98", "direction": "in"}`),
 
@@ -1058,6 +1058,28 @@ func Test_OptionTranscribeStart(t *testing.T) {
 				Language:    "en-US",
 				OnEndFlowID: uuid.FromStringOrNil("ccde4a38-093b-11f0-921a-93245e27ef98"),
 				Direction:   "in",
+			},
+		},
+		{
+			name: "with direction out",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "ccde4a38-093b-11f0-921a-93245e27ef98", "direction": "out"}`),
+
+			expectedRes: OptionTranscribeStart{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("ccde4a38-093b-11f0-921a-93245e27ef98"),
+				Direction:   "out",
+			},
+		},
+		{
+			name: "with direction both",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "ccde4a38-093b-11f0-921a-93245e27ef98", "direction": "both"}`),
+
+			expectedRes: OptionTranscribeStart{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("ccde4a38-093b-11f0-921a-93245e27ef98"),
+				Direction:   "both",
 			},
 		},
 	}
@@ -1098,7 +1120,18 @@ func Test_OptionTranscribeRecording(t *testing.T) {
 			},
 		},
 		{
-			name: "with direction",
+			name: "with direction in",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf", "direction": "in"}`),
+
+			expectedRes: OptionTranscribeRecording{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf"),
+				Direction:   "in",
+			},
+		},
+		{
+			name: "with direction out",
 
 			option: []byte(`{"language": "en-US", "on_end_flow_id": "cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf", "direction": "out"}`),
 
@@ -1106,6 +1139,17 @@ func Test_OptionTranscribeRecording(t *testing.T) {
 				Language:    "en-US",
 				OnEndFlowID: uuid.FromStringOrNil("cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf"),
 				Direction:   "out",
+			},
+		},
+		{
+			name: "with direction both",
+
+			option: []byte(`{"language": "en-US", "on_end_flow_id": "cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf", "direction": "both"}`),
+
+			expectedRes: OptionTranscribeRecording{
+				Language:    "en-US",
+				OnEndFlowID: uuid.FromStringOrNil("cd02b6a2-093b-11f0-b71b-7bc0ff6efaaf"),
+				Direction:   "both",
 			},
 		},
 	}
