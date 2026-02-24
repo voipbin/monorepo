@@ -152,28 +152,6 @@ var (
 		},
 		[]string{"reference_type"},
 	)
-	promAIcallInitProcessTime = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "aicall_init_process_time",
-			Help:      "Process time of aicall initialization.",
-			Buckets: []float64{
-				50, 100, 500, 1000, 3000, 6000,
-			},
-		},
-		[]string{"engine_type"},
-	)
-	promAIcallMessageProcessTime = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "aicall_message_process_time",
-			Help:      "Process time of aicall message.",
-			Buckets: []float64{
-				50, 100, 500, 1000, 3000, 6000,
-			},
-		},
-		[]string{"engine_type"},
-	)
 	promAIcallToolExecuteTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -189,8 +167,6 @@ func init() {
 		promAIcallCreateTotal,
 		promAIcallEndTotal,
 		promAIcallDurationSeconds,
-		promAIcallInitProcessTime,
-		promAIcallMessageProcessTime,
 		promAIcallToolExecuteTotal,
 	)
 }

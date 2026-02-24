@@ -311,9 +311,11 @@ The service reads configuration from environment variables (though not explicitl
 ## Prometheus Metrics
 
 The service exports metrics on:
-- `ai_manager_ai_create_total`: AI configurations created (by engine_type)
-- `ai_manager_message_create_total`: Messages created (by engine_type)
-- `ai_manager_message_process_time`: Message processing latency
+- `ai_manager_aicall_create_total`: AIcalls created (by reference_type)
+- `ai_manager_aicall_end_total`: AIcalls ended (by reference_type)
+- `ai_manager_aicall_duration_seconds`: AIcall duration histogram (by reference_type)
+- `ai_manager_aicall_tool_execute_total`: Tool executions (by tool_name)
+- `ai_manager_message_create_total`: Messages created (by role)
 - `ai_manager_subscribe_event_process_time`: Event processing latency (by publisher and type)
 
 ## CI/CD Pipeline
