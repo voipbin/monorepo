@@ -15321,11 +15321,15 @@
         "example": "call",
         "enum": [
           "",
-          "call"
+          "call",
+          "conversation",
+          "task"
         ],
         "x-enum-varnames": [
           "AIManagerAIcallReferenceTypeNone",
-          "AIManagerAIcallReferenceTypeCall"
+          "AIManagerAIcallReferenceTypeCall",
+          "AIManagerAIcallReferenceTypeConversation",
+          "AIManagerAIcallReferenceTypeTask"
         ]
       },
       "AIManagerAIcallStatus": {
@@ -15335,12 +15339,88 @@
         "enum": [
           "initiating",
           "progressing",
-          "end"
+          "pausing",
+          "resuming",
+          "terminating",
+          "terminated"
         ],
         "x-enum-varnames": [
           "AIManagerAIcallStatusInitiating",
           "AIManagerAIcallStatusProgressing",
-          "AIManagerAIcallStatusEnd"
+          "AIManagerAIcallStatusPausing",
+          "AIManagerAIcallStatusResuming",
+          "AIManagerAIcallStatusTerminating",
+          "AIManagerAIcallStatusTerminated"
+        ]
+      },
+      "AIManagerAITTSType": {
+        "type": "string",
+        "description": "Text-to-speech provider type.",
+        "example": "elevenlabs",
+        "enum": [
+          "",
+          "async",
+          "aws",
+          "azure",
+          "cartesia",
+          "deepgram",
+          "elevenlabs",
+          "fish",
+          "google",
+          "groq",
+          "hume",
+          "inworld",
+          "lmnt",
+          "minimax",
+          "neuphonic",
+          "nvidia-riva",
+          "openai",
+          "piper",
+          "playht",
+          "rime",
+          "sarvam",
+          "xtts"
+        ],
+        "x-enum-varnames": [
+          "AIManagerAITTSTypeNone",
+          "AIManagerAITTSTypeAsync",
+          "AIManagerAITTSTypeAWS",
+          "AIManagerAITTSTypeAzure",
+          "AIManagerAITTSTypeCartesia",
+          "AIManagerAITTSTypeDeepgram",
+          "AIManagerAITTSTypeElevenLabs",
+          "AIManagerAITTSTypeFish",
+          "AIManagerAITTSTypeGoogle",
+          "AIManagerAITTSTypeGroq",
+          "AIManagerAITTSTypeHume",
+          "AIManagerAITTSTypeInworld",
+          "AIManagerAITTSTypeLMNT",
+          "AIManagerAITTSTypeMiniMax",
+          "AIManagerAITTSTypeNeuphonic",
+          "AIManagerAITTSTypeNvidiaRiva",
+          "AIManagerAITTSTypeOpenAI",
+          "AIManagerAITTSTypePiper",
+          "AIManagerAITTSTypePlayHT",
+          "AIManagerAITTSTypeRime",
+          "AIManagerAITTSTypeSarvam",
+          "AIManagerAITTSTypeXTTS"
+        ]
+      },
+      "AIManagerAISTTType": {
+        "type": "string",
+        "description": "Speech-to-text provider type.",
+        "example": "deepgram",
+        "enum": [
+          "",
+          "cartesia",
+          "deepgram",
+          "elevenlabs"
+        ],
+        "x-enum-varnames": [
+          "AIManagerAISTTTypeNone",
+          "AIManagerAISTTTypeCartesia",
+          "AIManagerAISTTTypeDeepgram",
+          "AIManagerAISTTTypeElevenLabs"
         ]
       },
       "AIManagerAIcall": {
@@ -15367,15 +15447,34 @@
             "description": "The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "engine_type": {
-            "$ref": "#/components/schemas/AIManagerAIEngineType",
-            "description": "Type of AI engine.",
-            "example": "chatGPT"
-          },
-          "engine_model": {
+          "ai_engine_model": {
             "$ref": "#/components/schemas/AIManagerAIEngineModel",
-            "description": "Model of the AI engine.",
-            "example": "gpt-4o"
+            "description": "Model of the AI engine used for this call.",
+            "example": "openai.gpt-4o"
+          },
+          "ai_engine_data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key-value configuration data specific to the AI engine type.",
+            "example": {
+              "temperature": 0.7,
+              "max_tokens": 1024
+            }
+          },
+          "ai_tts_type": {
+            "$ref": "#/components/schemas/AIManagerAITTSType",
+            "description": "Text-to-speech provider type used for this call.",
+            "example": "elevenlabs"
+          },
+          "ai_tts_voice_id": {
+            "type": "string",
+            "description": "Text-to-speech voice identifier used for this call.",
+            "example": "21m00Tcm4TlvDq8ikWAM"
+          },
+          "ai_stt_type": {
+            "$ref": "#/components/schemas/AIManagerAISTTType",
+            "description": "Speech-to-text provider type used for this call.",
+            "example": "deepgram"
           },
           "activeflow_id": {
             "type": "string",
@@ -15401,13 +15500,6 @@
             "format": "uuid",
             "x-go-type": "string",
             "description": "The unique identifier of the conference bridge. Returned from the `GET /conferences` response.",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
-          "transcribe_id": {
-            "type": "string",
-            "format": "uuid",
-            "x-go-type": "string",
-            "description": "The unique identifier of the transcription service. Returned from the `GET /transcribes` response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "status": {

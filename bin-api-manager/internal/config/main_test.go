@@ -114,14 +114,9 @@ func TestSSLFilenameConstants(t *testing.T) {
 
 func TestLoadGlobalConfig(t *testing.T) {
 	// Set up environment variables for config
-	os.Setenv("RABBITMQ_ADDRESS", "amqp://test:5672")
-	os.Setenv("PROMETHEUS_ENDPOINT", "/test-metrics")
-	os.Setenv("REDIS_DATABASE", "2")
-	defer func() {
-		os.Unsetenv("RABBITMQ_ADDRESS")
-		os.Unsetenv("PROMETHEUS_ENDPOINT")
-		os.Unsetenv("REDIS_DATABASE")
-	}()
+	t.Setenv("RABBITMQ_ADDRESS", "amqp://test:5672")
+	t.Setenv("PROMETHEUS_ENDPOINT", "/test-metrics")
+	t.Setenv("REDIS_DATABASE", "2")
 
 	// Create a test command and bootstrap
 	cmd := &cobra.Command{Use: "test"}
@@ -170,7 +165,7 @@ func TestWriteBase64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpFile := "/tmp/test-write-base64-" + tt.name + ".txt"
-			defer os.Remove(tmpFile)
+			defer func() { _ = os.Remove(tmpFile) }()
 
 			err := writeBase64(tmpFile, tt.data)
 
@@ -220,8 +215,8 @@ func TestPostBootstrap(t *testing.T) {
 	globalConfig.PrometheusListenAddress = ":0" // Use port 0 to avoid conflicts
 
 	defer func() {
-		os.Remove(constSSLCertFilename)
-		os.Remove(constSSLPrivFilename)
+		_ = os.Remove(constSSLCertFilename)
+		_ = os.Remove(constSSLPrivFilename)
 	}()
 
 	err := PostBootstrap()

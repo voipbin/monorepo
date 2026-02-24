@@ -14,7 +14,6 @@ type AIcall struct {
 	identity.Identity
 
 	AIID          uuid.UUID      `json:"ai_id,omitempty" db:"ai_id,uuid"`
-	AIEngineType  ai.EngineType  `json:"ai_engine_type,omitempty" db:"ai_engine_type"`
 	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
 	AIEngineData  map[string]any `json:"ai_engine_data,omitempty" db:"ai_engine_data,json"`
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`

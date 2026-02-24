@@ -30,6 +30,40 @@ const (
 	AIManagerAIEngineTypeDialogFlow AIManagerAIEngineType = "dialogflow"
 )
 
+// Defines values for AIManagerAISTTType.
+const (
+	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
+	AIManagerAISTTTypeDeepgram   AIManagerAISTTType = "deepgram"
+	AIManagerAISTTTypeElevenLabs AIManagerAISTTType = "elevenlabs"
+	AIManagerAISTTTypeNone       AIManagerAISTTType = ""
+)
+
+// Defines values for AIManagerAITTSType.
+const (
+	AIManagerAITTSTypeAWS        AIManagerAITTSType = "aws"
+	AIManagerAITTSTypeAsync      AIManagerAITTSType = "async"
+	AIManagerAITTSTypeAzure      AIManagerAITTSType = "azure"
+	AIManagerAITTSTypeCartesia   AIManagerAITTSType = "cartesia"
+	AIManagerAITTSTypeDeepgram   AIManagerAITTSType = "deepgram"
+	AIManagerAITTSTypeElevenLabs AIManagerAITTSType = "elevenlabs"
+	AIManagerAITTSTypeFish       AIManagerAITTSType = "fish"
+	AIManagerAITTSTypeGoogle     AIManagerAITTSType = "google"
+	AIManagerAITTSTypeGroq       AIManagerAITTSType = "groq"
+	AIManagerAITTSTypeHume       AIManagerAITTSType = "hume"
+	AIManagerAITTSTypeInworld    AIManagerAITTSType = "inworld"
+	AIManagerAITTSTypeLMNT       AIManagerAITTSType = "lmnt"
+	AIManagerAITTSTypeMiniMax    AIManagerAITTSType = "minimax"
+	AIManagerAITTSTypeNeuphonic  AIManagerAITTSType = "neuphonic"
+	AIManagerAITTSTypeNone       AIManagerAITTSType = ""
+	AIManagerAITTSTypeNvidiaRiva AIManagerAITTSType = "nvidia-riva"
+	AIManagerAITTSTypeOpenAI     AIManagerAITTSType = "openai"
+	AIManagerAITTSTypePiper      AIManagerAITTSType = "piper"
+	AIManagerAITTSTypePlayHT     AIManagerAITTSType = "playht"
+	AIManagerAITTSTypeRime       AIManagerAITTSType = "rime"
+	AIManagerAITTSTypeSarvam     AIManagerAITTSType = "sarvam"
+	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
+)
+
 // Defines values for AIManagerAIcallGender.
 const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
@@ -39,15 +73,20 @@ const (
 
 // Defines values for AIManagerAIcallReferenceType.
 const (
-	AIManagerAIcallReferenceTypeCall AIManagerAIcallReferenceType = "call"
-	AIManagerAIcallReferenceTypeNone AIManagerAIcallReferenceType = ""
+	AIManagerAIcallReferenceTypeCall         AIManagerAIcallReferenceType = "call"
+	AIManagerAIcallReferenceTypeConversation AIManagerAIcallReferenceType = "conversation"
+	AIManagerAIcallReferenceTypeNone         AIManagerAIcallReferenceType = ""
+	AIManagerAIcallReferenceTypeTask         AIManagerAIcallReferenceType = "task"
 )
 
 // Defines values for AIManagerAIcallStatus.
 const (
-	AIManagerAIcallStatusEnd         AIManagerAIcallStatus = "end"
 	AIManagerAIcallStatusInitiating  AIManagerAIcallStatus = "initiating"
+	AIManagerAIcallStatusPausing     AIManagerAIcallStatus = "pausing"
 	AIManagerAIcallStatusProgressing AIManagerAIcallStatus = "progressing"
+	AIManagerAIcallStatusResuming    AIManagerAIcallStatus = "resuming"
+	AIManagerAIcallStatusTerminated  AIManagerAIcallStatus = "terminated"
+	AIManagerAIcallStatusTerminating AIManagerAIcallStatus = "terminating"
 )
 
 // Defines values for AIManagerMessageDirection.
@@ -942,25 +981,40 @@ type AIManagerAIEngineModel string
 // AIManagerAIEngineType Type of engine used by the ai.
 type AIManagerAIEngineType string
 
+// AIManagerAISTTType Speech-to-text provider type.
+type AIManagerAISTTType string
+
+// AIManagerAITTSType Text-to-speech provider type.
+type AIManagerAITTSType string
+
 // AIManagerAIcall defines model for AIManagerAIcall.
 type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
+	// AiEngineData Custom key-value configuration data specific to the AI engine type.
+	AiEngineData *map[string]interface{} `json:"ai_engine_data,omitempty"`
+
+	// AiEngineModel Model of the ai engine.
+	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
+
 	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
 	AiId *string `json:"ai_id,omitempty"`
+
+	// AiSttType Speech-to-text provider type.
+	AiSttType *AIManagerAISTTType `json:"ai_stt_type,omitempty"`
+
+	// AiTtsType Text-to-speech provider type.
+	AiTtsType *AIManagerAITTSType `json:"ai_tts_type,omitempty"`
+
+	// AiTtsVoiceId Text-to-speech voice identifier used for this call.
+	AiTtsVoiceId *string `json:"ai_tts_voice_id,omitempty"`
 
 	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
-
-	// EngineModel Model of the ai engine.
-	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
-
-	// EngineType Type of engine used by the ai.
-	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
 
 	// Gender Gender associated with the ai call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
@@ -991,9 +1045,6 @@ type AIManagerAIcall struct {
 
 	// TmUpdate Timestamp when the AI call was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
-
-	// TranscribeId The unique identifier of the transcription service. Returned from the `GET /transcribes` response.
-	TranscribeId *string `json:"transcribe_id,omitempty"`
 }
 
 // AIManagerAIcallGender Gender associated with the ai call.
