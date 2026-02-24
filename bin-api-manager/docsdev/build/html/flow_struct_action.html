@@ -1436,7 +1436,8 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1444,6 +1445,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (String): Language in BCP47 format (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> (String, optional): STT provider to use: <code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">aws</span></code>. If omitted, VoIPBIN selects the best available provider automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (String, optional): Audio direction to transcribe: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, or <code class="docutils literal notranslate"><span class="pre">both</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">both</span></code>.</p></li>
 </ul>
 </section>
 <section id="id61">
@@ -1452,7 +1454,8 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1468,7 +1471,8 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1476,6 +1480,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (String): Language in BCP47 format. Examples: <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>. The value may be a two-letter language code (e.g., <code class="docutils literal notranslate"><span class="pre">en</span></code>) or language code with country/region (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> (String, optional): STT provider to use: <code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">aws</span></code>. If omitted, VoIPBIN selects the best available provider automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (String, optional): Audio direction to transcribe: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, or <code class="docutils literal notranslate"><span class="pre">both</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">both</span></code>.</p></li>
 </ul>
 </section>
 <section id="id63">
@@ -1484,7 +1489,8 @@ It checks the call’s status and if it matched with condition then move to the 
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>

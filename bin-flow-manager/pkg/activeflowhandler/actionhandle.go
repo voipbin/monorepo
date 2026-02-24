@@ -654,6 +654,10 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 		return errors.Wrapf(err, "could not unmarshal the transcribe_recording option. err: %v", err)
 	}
 
+	if opt.Direction == "" {
+		opt.Direction = string(tmtranscribe.DirectionBoth)
+	}
+
 	if af.ReferenceType != activeflow.ReferenceTypeCall {
 		// nothing to do.
 		log.Errorf("Invalid reference type. Currently, support the call type only. reference_type: %s", af.ReferenceType)
@@ -675,7 +679,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 			tmtranscribe.ReferenceTypeRecording,
 			recordingID,
 			opt.Language,
-			tmtranscribe.DirectionBoth,
+			tmtranscribe.Direction(opt.Direction),
 			tmtranscribe.Provider(opt.Provider),
 			30000,
 		)
@@ -714,6 +718,10 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 		return err
 	}
 
+	if opt.Direction == "" {
+		opt.Direction = string(tmtranscribe.DirectionBoth)
+	}
+
 	// transcribe start
 	trans, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
@@ -723,7 +731,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 		tmtranscribe.ReferenceTypeCall,
 		af.ReferenceID,
 		opt.Language,
-		tmtranscribe.DirectionBoth,
+		tmtranscribe.Direction(opt.Direction),
 		tmtranscribe.Provider(opt.Provider),
 		30000,
 	)

@@ -12717,6 +12717,9 @@
                   "direction": {
                     "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection"
                   },
+                  "provider": {
+                    "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider"
+                  },
                   "on_end_flow_id": {
                     "type": "string",
                     "description": "The ID of the flow to be executed when the transcription ends."
@@ -17621,6 +17624,16 @@
             "x-go-type": "string",
             "description": "The unique identifier of the flow to execute when transcription ends. Returned from the `POST /flows` or `GET /flows` response.",
             "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider",
+            "description": "STT provider to use. If omitted, VoIPBIN selects the best available provider automatically.",
+            "example": "gcp"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection",
+            "description": "Audio direction to transcribe. If omitted, defaults to both.",
+            "example": "both"
           }
         }
       },
@@ -17642,6 +17655,16 @@
             "x-go-type": "string",
             "description": "The unique identifier of the flow to execute when recording transcription ends. Returned from the `POST /flows` or `GET /flows` response.",
             "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider",
+            "description": "STT provider to use. If omitted, VoIPBIN selects the best available provider automatically.",
+            "example": "gcp"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection",
+            "description": "Audio direction to transcribe. If omitted, defaults to both.",
+            "example": "both"
           }
         }
       },
@@ -19708,6 +19731,18 @@
         ],
         "example": "both"
       },
+      "TranscribeManagerTranscribeProvider": {
+        "type": "string",
+        "enum": [
+          "gcp",
+          "aws"
+        ],
+        "x-enum-varnames": [
+          "TranscribeManagerTranscribeProviderGcp",
+          "TranscribeManagerTranscribeProviderAws"
+        ],
+        "example": "gcp"
+      },
       "TranscribeManagerTranscribeReferenceType": {
         "type": "string",
         "enum": [
@@ -19781,6 +19816,11 @@
             "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection",
             "description": "The audio direction to transcribe.",
             "example": "both"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider",
+            "description": "The STT provider used for the transcription.",
+            "example": "gcp"
           },
           "tm_create": {
             "type": "string",
