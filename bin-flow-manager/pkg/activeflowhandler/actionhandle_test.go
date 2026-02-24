@@ -3354,11 +3354,43 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 		expectedLanguage    string
 		expectedOnEndFlowID uuid.UUID
+		expectedDirection   tmtranscribe.Direction
 	}
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "with direction",
+
+			activeflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
+					Type: action.TypeTranscribeRecording,
+					Option: map[string]any{
+						"language":       "en-US",
+						"on_end_flow_id": "bf3dffbc-093c-11f0-9fb1-c767cd34606a",
+						"direction":      "out",
+					},
+				},
+			},
+
+			responseCall: &cmcall.Call{
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("01e4c8a0-82a3-11ed-b30e-8f633f969f44"),
+					uuid.FromStringOrNil("021e88e2-82a3-11ed-a3de-fba809f8b728"),
+				},
+			},
+
+			expectedLanguage:    "en-US",
+			expectedOnEndFlowID: uuid.FromStringOrNil("bf3dffbc-093c-11f0-9fb1-c767cd34606a"),
+			expectedDirection:   tmtranscribe.DirectionOut,
+		},
+		{
+			name: "default direction",
 
 			activeflow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -3385,6 +3417,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 			expectedLanguage:    "en-US",
 			expectedOnEndFlowID: uuid.FromStringOrNil("bf3dffbc-093c-11f0-9fb1-c767cd34606a"),
+			expectedDirection:   tmtranscribe.DirectionBoth,
 		},
 	}
 
@@ -3413,7 +3446,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 					tmtranscribe.ReferenceTypeRecording,
 					recordingID,
 					tt.expectedLanguage,
-					tmtranscribe.DirectionBoth,
+					tt.expectedDirection,
 					tmtranscribe.ProviderEmpty,
 					30000,
 				).Return(&tmtranscribe.Transcribe{}, nil)
@@ -3438,13 +3471,52 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		expectedReferenceID   uuid.UUID
 		expectedReferenceType tmtranscribe.ReferenceType
 		expectedLanguage      string
+		expectedDirection     tmtranscribe.Direction
 
 		response *tmtranscribe.Transcribe
 	}
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "with direction",
+			activeFlow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cfd0865a-093d-11f0-bdc8-87ff6a57d585"),
+					CustomerID: uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
+					Type: action.TypeTranscribeStart,
+					Option: map[string]any{
+						"language":       "en-US",
+						"on_end_flow_id": "bf629ef8-093c-11f0-a38e-73d3a32d02a6",
+						"direction":      "in",
+					},
+				},
+			},
+
+			expectedCustomerID:    uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+			expectedActiveflowID:  uuid.FromStringOrNil("cfd0865a-093d-11f0-bdc8-87ff6a57d585"),
+			expectedOnEndFlowID:   uuid.FromStringOrNil("bf629ef8-093c-11f0-a38e-73d3a32d02a6"),
+			expectedReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+			expectedReferenceType: tmtranscribe.ReferenceTypeCall,
+			expectedLanguage:      "en-US",
+			expectedDirection:     tmtranscribe.DirectionIn,
+
+			response: &tmtranscribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				},
+				ReferenceType: tmtranscribe.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
+				Language:      "en-US",
+			},
+		},
+		{
+			name: "default direction",
 			activeFlow: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cfd0865a-093d-11f0-bdc8-87ff6a57d585"),
@@ -3468,6 +3540,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 			expectedReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 			expectedReferenceType: tmtranscribe.ReferenceTypeCall,
 			expectedLanguage:      "en-US",
+			expectedDirection:     tmtranscribe.DirectionBoth,
 
 			response: &tmtranscribe.Transcribe{
 				Identity: commonidentity.Identity{
@@ -3503,7 +3576,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
-				tmtranscribe.DirectionBoth,
+				tt.expectedDirection,
 				tmtranscribe.ProviderEmpty,
 				30000,
 			).Return(tt.response, nil)
