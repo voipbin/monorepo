@@ -206,10 +206,8 @@ func TestNewServer(t *testing.T) {
 		t.Error("NewServer returned nil")
 	}
 
-	// Verify it's the correct type
-	if _, ok := srv.(openapi_server.ServerInterface); !ok {
-		t.Error("NewServer did not return ServerInterface")
-	}
+	// Verify it implements the interface
+	var _ = openapi_server.ServerInterface(srv)
 }
 
 func TestConvertEmailManagerEmailAttachment(t *testing.T) {
@@ -270,7 +268,7 @@ func TestStringPtr(t *testing.T) {
 			result := stringPtr(tt.input)
 
 			if result == nil {
-				t.Error("stringPtr returned nil")
+				t.Fatal("stringPtr returned nil")
 			}
 			if *result != tt.input {
 				t.Errorf("Wrong value. expect: %v, got: %v", tt.input, *result)
