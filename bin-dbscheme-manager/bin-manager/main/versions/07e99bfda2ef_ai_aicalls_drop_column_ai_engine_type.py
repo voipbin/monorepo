@@ -1,6 +1,6 @@
 """ai_aicalls drop column ai_engine_type
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 07e99bfda2ef
 Revises: fe1a2b3c4d5e
 Create Date: 2026-02-24 15:00:00.000000
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a1b2c3d4e5f6'
+revision = '07e99bfda2ef'
 down_revision = 'fe1a2b3c4d5e'
 branch_labels = None
 depends_on = None
