@@ -13,6 +13,18 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
+func Test_defaultMediaConstants(t *testing.T) {
+	// These constants must match Asterisk's chan_websocket slin16 format.
+	// Pipecat's PipelineParams.audio_out_sample_rate must also be set to 16000
+	// to avoid Go-side per-chunk resampling which causes robotic audio.
+	if defaultMediaSampleRate != 16000 {
+		t.Errorf("defaultMediaSampleRate = %d, want 16000 (Asterisk slin16)", defaultMediaSampleRate)
+	}
+	if defaultMediaNumChannel != 1 {
+		t.Errorf("defaultMediaNumChannel = %d, want 1 (mono)", defaultMediaNumChannel)
+	}
+}
+
 func Test_runAsteriskReceivedMediaHandle(t *testing.T) {
 	tests := []struct {
 		name string

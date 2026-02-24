@@ -99,6 +99,90 @@ class TestCreateLLMService:
             )
 
 
+class TestAudioSampleRateConfiguration:
+    """Regression tests for audio sample rate configuration.
+
+    Pipecat defaults to 24kHz output (PipelineParams.audio_out_sample_rate=24000).
+    Asterisk chan_websocket uses 16kHz slin16. Without explicitly setting
+    audio_out_sample_rate=16000, TTS generates 24kHz audio that Go's per-chunk
+    resampler converts with boundary artifacts every 40ms — causing robotic audio.
+
+    The pipeline input sample rate defaults to 16kHz, matching Asterisk.
+    """
+
+    def _parse_run_py(self):
+        """Parse run.py into an AST."""
+        run_path = os.path.join(os.path.dirname(__file__), "run.py")
+        with open(run_path) as f:
+            return ast.parse(f.read(), filename="run.py")
+
+    def test_pipeline_params_sets_16khz_output(self):
+        """PipelineParams must set audio_out_sample_rate=16000.
+
+        Without this, Pipecat defaults to 24kHz output. The Go resampler
+        creates a new instance per audio chunk (no filter state across
+        boundaries), causing robotic/choppy audio artifacts.
+        """
+        tree = self._parse_run_py()
+        found = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            is_pipeline_params = (
+                (isinstance(func, ast.Name) and func.id == "PipelineParams") or
+                (isinstance(func, ast.Attribute) and func.attr == "PipelineParams")
+            )
+            if not is_pipeline_params:
+                continue
+            for kw in node.keywords:
+                if kw.arg == "audio_out_sample_rate":
+                    assert isinstance(kw.value, ast.Constant), (
+                        "audio_out_sample_rate must be a constant value"
+                    )
+                    assert kw.value.value == 16000, (
+                        f"audio_out_sample_rate must be 16000 (matching Asterisk slin16), "
+                        f"got {kw.value.value}. Pipecat defaults to 24kHz which causes "
+                        f"robotic audio due to Go's per-chunk resampling."
+                    )
+                    found = True
+        assert found, (
+            "PipelineParams must include audio_out_sample_rate=16000. "
+            "Without it, Pipecat defaults to 24kHz and Go's per-chunk resampler "
+            "creates boundary artifacts causing robotic/choppy audio."
+        )
+
+    def test_no_explicit_tts_sample_rate(self):
+        """TTS services should not override sample_rate.
+
+        When audio_out_sample_rate=16000 is set in PipelineParams, TTS services
+        inherit it via the StartFrame. Explicitly setting a different sample_rate
+        on TTS would bypass the 16kHz pipeline and re-introduce Go-side resampling.
+        """
+        tree = self._parse_run_py()
+        tts_constructors = {"CartesiaTTSService", "ElevenLabsTTSService", "GoogleTTSService"}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            name = None
+            if isinstance(func, ast.Name):
+                name = func.id
+            elif isinstance(func, ast.Attribute):
+                name = func.attr
+            if name not in tts_constructors:
+                continue
+            for kw in node.keywords:
+                if kw.arg == "sample_rate":
+                    if isinstance(kw.value, ast.Constant) and kw.value.value != 16000:
+                        pytest.fail(
+                            f"{name} sets sample_rate={kw.value.value} which differs from "
+                            f"the pipeline's 16kHz. This would cause Go-side resampling "
+                            f"with boundary artifacts. Remove the explicit sample_rate to "
+                            f"inherit 16kHz from PipelineParams."
+                        )
+
+
 class TestNoManualRTVISetup:
     """Regression tests to prevent duplicate RTVI message emission.
 

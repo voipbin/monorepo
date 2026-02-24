@@ -115,9 +115,8 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 			websocketHandler: mockWS,
 		}
 
-		// ConnAst is non-nil so websocketAsteriskWrite will be called.
-		// Data is 4 bytes which is smaller than websocketAsteriskFrameSize (640),
-		// so it will be written as a single fragment.
+		// ConnAst is non-nil so WriteMessage will be called to forward
+		// the audio data directly to Asterisk.
 		conn := &websocket.Conn{}
 		se := &pipecatcall.Session{
 			Ctx:     context.Background(),
@@ -156,6 +155,37 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, resampledData).Return(nil)
 
 		if err := h.runnerWebsocketHandleAudio(se, 8000, 1, inputData); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("24kHz audio is resampled (pipecat default rate safety net)", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockAudio := NewMockAudiosocketHandler(mc)
+		mockWS := NewMockWebsocketHandler(mc)
+		h := &pipecatcallHandler{
+			audiosocketHandler: mockAudio,
+			websocketHandler:   mockWS,
+		}
+
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
+
+		// 24kHz is Pipecat's default audio_out_sample_rate. If PipelineParams
+		// doesn't set audio_out_sample_rate=16000, TTS outputs 24kHz and this
+		// resampling path runs per chunk — creating boundary artifacts.
+		inputData := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06}
+		resampledData := []byte{0x10, 0x20, 0x30, 0x40}
+
+		mockAudio.EXPECT().GetDataSamples(24000, inputData).Return(resampledData, nil)
+		mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, resampledData).Return(nil)
+
+		if err := h.runnerWebsocketHandleAudio(se, 24000, 1, inputData); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
@@ -201,7 +231,7 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 			ConnAst: conn,
 		}
 
-		// websocketAsteriskWrite returns nil for empty data without calling WriteMessage
+		// Empty data returns nil without calling WriteMessage
 		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, []byte{}); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
