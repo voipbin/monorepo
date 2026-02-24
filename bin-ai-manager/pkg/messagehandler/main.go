@@ -55,25 +55,13 @@ var (
 			Name:      "message_create_total",
 			Help:      "Total number of created message with role.",
 		},
-		[]string{"engine_type"},
-	)
-	promMessageProcessTime = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "message_process_time",
-			Help:      "Process time of message.",
-			Buckets: []float64{
-				50, 100, 500, 1000, 3000, 6000,
-			},
-		},
-		[]string{"engine_type"},
+		[]string{"role"},
 	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promMessageCreateTotal,
-		promMessageProcessTime,
 	)
 }
 

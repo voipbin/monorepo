@@ -290,33 +290,6 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 20,
-            "spanNulls": false,
-            "stacking": { "mode": "none" }
-          },
-          "unit": "ms"
-        }
-      },
-      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
-      "id": 8,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
-      "targets": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "expr": "histogram_quantile(0.95, sum by (le, engine_type) (rate(ai_manager_aicall_init_process_time_bucket[5m])))",
-          "legendFormat": "p95 {{engine_type}}"
-        }
-      ],
-      "title": "AIcall Init Time p95",
-      "type": "timeseries"
-    },
-    {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
       "id": 102,
@@ -343,38 +316,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (engine_type) (rate(ai_manager_message_create_total[5m])) * 60",
-          "legendFormat": "{{engine_type}}"
+          "expr": "sum by (role) (rate(ai_manager_message_create_total[5m])) * 60",
+          "legendFormat": "{{role}}"
         }
       ],
-      "title": "Messages by Engine Type",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 20,
-            "spanNulls": false,
-            "stacking": { "mode": "none" }
-          },
-          "unit": "ms"
-        }
-      },
-      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 17 },
-      "id": 10,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
-      "targets": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "expr": "histogram_quantile(0.95, sum by (le, engine_type) (rate(ai_manager_message_process_time_bucket[5m])))",
-          "legendFormat": "p95 {{engine_type}}"
-        }
-      ],
-      "title": "Message Process Time p95",
+      "title": "Messages by Role",
       "type": "timeseries"
     },
     {
@@ -402,33 +348,6 @@
         }
       ],
       "title": "Tool Executions by Tool Name",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 20,
-            "spanNulls": false,
-            "stacking": { "mode": "none" }
-          },
-          "unit": "ms"
-        }
-      },
-      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 17 },
-      "id": 12,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
-      "targets": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "expr": "histogram_quantile(0.95, sum by (le, engine_type) (rate(ai_manager_aicall_message_process_time_bucket[5m])))",
-          "legendFormat": "p95 {{engine_type}}"
-        }
-      ],
-      "title": "AIcall Message Process Time p95",
       "type": "timeseries"
     },
     {
@@ -490,33 +409,6 @@
         }
       ],
       "title": "Summary Completions by Reference Type",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 20,
-            "spanNulls": false,
-            "stacking": { "mode": "none" }
-          },
-          "unit": "short"
-        }
-      },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 26 },
-      "id": 15,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
-      "targets": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (engine_type) (rate(ai_manager_ai_create_total[5m])) * 60",
-          "legendFormat": "{{engine_type}}"
-        }
-      ],
-      "title": "AI Configs Created by Engine Type",
       "type": "timeseries"
     },
     {
