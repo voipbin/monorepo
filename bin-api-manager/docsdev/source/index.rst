@@ -54,6 +54,7 @@ Welcome to VoIPBIN's documentation!
    :caption: AI & Automation
 
    ai
+   ai_voice_agent_integration
    campaign
    outdial
    outplan
