@@ -26,6 +26,7 @@ import (
 	"monorepo/bin-webhook-manager/pkg/cachehandler"
 	"monorepo/bin-webhook-manager/pkg/dbhandler"
 	"monorepo/bin-webhook-manager/pkg/listenhandler"
+	"monorepo/bin-webhook-manager/pkg/subscribehandler"
 	"monorepo/bin-webhook-manager/pkg/webhookhandler"
 )
 
@@ -125,24 +126,8 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 		"func": "run",
 	})
 
-	// run listen
-	if err := runListen(db, cache); err != nil {
-		return errors.Wrapf(err, "could not run listen handler")
-	}
-
-	log.Debug("All handlers started successfully")
-	return nil
-}
-
-// runListen runs the listen handler
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runListen",
-	})
-	log.Debugf("Running listen handler")
-
 	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
+	dbHandler := dbhandler.NewHandler(db, cache)
 
 	// rabbitmq sock connect
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
@@ -150,15 +135,57 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName, "")
-	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
+	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler)
+
+	// run listen
+	if err := runListen(sockHandler, notifyHandler, accountHandler, dbHandler); err != nil {
+		return errors.Wrapf(err, "could not run listen handler")
+	}
+
+	// run subscribe
+	if err := runSubscribe(sockHandler, accountHandler); err != nil {
+		return errors.Wrapf(err, "could not run subscribe handler")
+	}
+
+	log.Debug("All handlers started successfully")
+	return nil
+}
+
+// runListen runs the listen handler
+func runListen(sockHandler sockhandler.SockHandler, notifyHandler notifyhandler.NotifyHandler, accountHandler accounthandler.AccountHandler, db dbhandler.DBHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
+	log.Debugf("Running listen handler")
 
 	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler)
-
 	listenHandler := listenhandler.NewListenHandler(sockHandler, whHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameWebhookRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		return errors.Wrapf(err, "could not run the listen handler correctly")
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribe handler
+func runSubscribe(sockHandler sockhandler.SockHandler, accountHandler accounthandler.AccountHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
+	log.Debugf("Running subscribe handler")
+
+	subscribeTargets := string(commonoutline.QueueNameCustomerEvent)
+	subHandler := subscribehandler.NewSubscribeHandler(
+		sockHandler,
+		string(commonoutline.QueueNameWebhookSubscribe),
+		subscribeTargets,
+		accountHandler,
+	)
+
+	if err := subHandler.Run(); err != nil {
+		return errors.Wrapf(err, "could not run the subscribe handler correctly")
 	}
 
 	return nil
