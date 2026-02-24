@@ -2,6 +2,7 @@ package webhookhandler
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -44,6 +45,13 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 
 		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
+
+		if resp.StatusCode >= 500 {
+			log.Errorf("Received server error. Making a retrying: %d, status: %d", i, resp.StatusCode)
+			lastErr = fmt.Errorf("server returned status %d", resp.StatusCode)
+			time.Sleep(time.Second * 1)
+			continue
+		}
 
 		log.WithField("response_status", resp.StatusCode).Debugf("Sent the event correctly.")
 		return nil
