@@ -28,6 +28,7 @@ from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.frames.frames import LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -78,7 +79,7 @@ async def run_pipeline(
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language)
 
-            vad_analyzer = SileroVADAnalyzer()
+            vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
             transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
 
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
