@@ -2678,20 +2678,26 @@ type FlowManagerActionOptionTalkDigitsHandle string
 
 // FlowManagerActionOptionTranscribeRecording defines model for FlowManagerActionOptionTranscribeRecording.
 type FlowManagerActionOptionTranscribeRecording struct {
+	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
 	// Language BCP47 format for the language (e.g., en-US).
 	Language *string `json:"language,omitempty"`
 
 	// OnEndFlowId The unique identifier of the flow to execute when recording transcription ends. Returned from the `POST /flows` or `GET /flows` response.
-	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 }
 
 // FlowManagerActionOptionTranscribeStart defines model for FlowManagerActionOptionTranscribeStart.
 type FlowManagerActionOptionTranscribeStart struct {
+	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
 	// Language BCP47 format for the language (e.g., en-US).
 	Language *string `json:"language,omitempty"`
 
 	// OnEndFlowId The unique identifier of the flow to execute when transcription ends. Returned from the `POST /flows` or `GET /flows` response.
-	OnEndFlowId *string `json:"on_end_flow_id,omitempty"`
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 }
 
 // FlowManagerActionOptionTranscribeStop No options for this action.

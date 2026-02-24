@@ -3732,6 +3732,14 @@ components:
           x-go-type: string
           description: The unique identifier of the flow to execute when transcription ends. Returned from the `POST /flows` or `GET /flows` response.
           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        provider:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeProvider'
+          description: "STT provider to use. If omitted, VoIPBIN selects the best available provider automatically."
+          example: "gcp"
+        direction:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+          description: "Audio direction to transcribe. If omitted, defaults to both."
+          example: "both"
 
     FlowManagerActionOptionTranscribeStop:
       type: object
@@ -3750,6 +3758,14 @@ components:
           x-go-type: string
           description: The unique identifier of the flow to execute when recording transcription ends. Returned from the `POST /flows` or `GET /flows` response.
           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        provider:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeProvider'
+          description: "STT provider to use. If omitted, VoIPBIN selects the best available provider automatically."
+          example: "gcp"
+        direction:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+          description: "Audio direction to transcribe. If omitted, defaults to both."
+          example: "both"
 
     FlowManagerActionOptionVariableSet:
       type: object
