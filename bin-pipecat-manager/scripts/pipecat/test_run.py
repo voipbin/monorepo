@@ -283,3 +283,108 @@ class TestNoManualRTVISetup:
                         "PipelineTask handles RTVI setup automatically. "
                         "Manually adding RTVIProcessor causes duplicate bot-llm-text messages."
                     )
+
+
+class TestCreateTTSService:
+    """Tests for create_tts_service function."""
+
+    @patch("run.GoogleTTSService")
+    def test_google_tts_service_creation(self, mock_service):
+        """Test Google TTS service is created with voice_id and no explicit credentials."""
+        from run import create_tts_service
+
+        create_tts_service("google", voice_id="en-US-Chirp3-HD-Charon")
+
+        mock_service.assert_called_once_with(voice_id="en-US-Chirp3-HD-Charon")
+
+    @patch("run.GoogleTTSService")
+    def test_google_tts_default_voice(self, mock_service):
+        """Test Google TTS uses default voice when none specified."""
+        from run import create_tts_service
+
+        create_tts_service("google")
+
+        mock_service.assert_called_once_with(voice_id="default_voice_id")
+
+    @patch("run.CartesiaTTSService")
+    def test_cartesia_still_works(self, mock_service):
+        """Test existing Cartesia provider is not broken."""
+        from run import create_tts_service
+
+        with patch.dict(os.environ, {"CARTESIA_API_KEY": "test-key"}):
+            create_tts_service("cartesia", voice_id="test-voice", language="en")
+
+        mock_service.assert_called_once_with(
+            api_key="test-key",
+            voice_id="test-voice",
+            language="en",
+        )
+
+    def test_unsupported_tts_raises_error(self):
+        """Test unsupported TTS provider raises ValueError."""
+        from run import create_tts_service
+
+        with pytest.raises(ValueError, match="Unsupported TTS service"):
+            create_tts_service("nonexistent")
+
+
+class TestCreateSTTService:
+    """Tests for create_stt_service function."""
+
+    @patch("run.GoogleSTTService")
+    def test_google_stt_service_creation(self, mock_service):
+        """Test Google STT service is created with language mapped to Language enum."""
+        from run import create_stt_service
+        from pipecat.transcriptions.language import Language
+
+        create_stt_service("google", language="en-US")
+
+        # Verify InputParams was called with the correct language
+        mock_service.InputParams.assert_called_once()
+        ip_kwargs = mock_service.InputParams.call_args[1]
+        assert ip_kwargs["languages"] == [Language.EN_US]
+        assert ip_kwargs["model"] == "latest_long"
+        assert ip_kwargs["enable_automatic_punctuation"] is True
+        assert ip_kwargs["enable_interim_results"] is True
+
+        # Verify GoogleSTTService was called with the params result
+        mock_service.assert_called_once_with(params=mock_service.InputParams.return_value)
+
+    @patch("run.GoogleSTTService")
+    def test_google_stt_default_language(self, mock_service):
+        """Test Google STT defaults to EN_US when no language provided."""
+        from run import create_stt_service
+        from pipecat.transcriptions.language import Language
+
+        create_stt_service("google")
+
+        ip_kwargs = mock_service.InputParams.call_args[1]
+        assert ip_kwargs["languages"] == [Language.EN_US]
+
+    @patch("run.GoogleSTTService")
+    def test_google_stt_unknown_language_fallback(self, mock_service):
+        """Test Google STT falls back to EN_US for unknown language strings."""
+        from run import create_stt_service
+        from pipecat.transcriptions.language import Language
+
+        create_stt_service("google", language="xx-YY")
+
+        ip_kwargs = mock_service.InputParams.call_args[1]
+        assert ip_kwargs["languages"] == [Language.EN_US]
+
+    @patch("run.DeepgramSTTService")
+    def test_deepgram_still_works(self, mock_service):
+        """Test existing Deepgram provider is not broken."""
+        from run import create_stt_service
+
+        with patch.dict(os.environ, {"DEEPGRAM_API_KEY": "test-key"}):
+            create_stt_service("deepgram", language="en")
+
+        mock_service.assert_called_once()
+
+    def test_unsupported_stt_raises_error(self):
+        """Test unsupported STT provider raises ValueError."""
+        from run import create_stt_service
+
+        with pytest.raises(ValueError, match="Unsupported STT service"):
+            create_stt_service("nonexistent")
