@@ -304,6 +304,8 @@ type OptionTalk struct {
 type OptionTranscribeStart struct {
 	Language    string    `json:"language,omitempty"`       // BCP47 format. en-US
 	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
+	Provider    string    `json:"provider,omitempty"`       // transcribe provider(gcp/aws)
+	Direction   string    `json:"direction,omitempty"`      // in|out|both. default: both
 }
 
 // OptionTranscribeStop defines action TypeTranscribeStop's option.
@@ -315,6 +317,8 @@ type OptionTranscribeStop struct {
 type OptionTranscribeRecording struct {
 	Language    string    `json:"language,omitempty"`       // BCP47 format. en-US
 	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
+	Provider    string    `json:"provider,omitempty"`       // transcribe provider(gcp/aws)
+	Direction   string    `json:"direction,omitempty"`      // in|out|both. default: both
 }
 
 // OptionVariableSet defines action TypeVariableSet's option.
