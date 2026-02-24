@@ -3414,6 +3414,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 					recordingID,
 					tt.expectedLanguage,
 					tmtranscribe.DirectionBoth,
+					tmtranscribe.ProviderEmpty,
 					30000,
 				).Return(&tmtranscribe.Transcribe{}, nil)
 			}
@@ -3503,6 +3504,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
 				tmtranscribe.DirectionBoth,
+				tmtranscribe.ProviderEmpty,
 				30000,
 			).Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {

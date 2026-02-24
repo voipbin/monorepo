@@ -4,7 +4,6 @@ package streaminghandler
 
 import (
 	"context"
-	"strings"
 	"sync"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -20,7 +19,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -39,7 +37,7 @@ const (
 type StreamingHandler interface {
 	Run() error
 
-	Start(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error)
+	Start(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction, provider transcribe.Provider) (*streaming.Streaming, error)
 
 	Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 }
@@ -77,8 +75,6 @@ type streamingHandler struct {
 	gcpClient *speech.Client
 	awsClient *transcribestreaming.Client
 
-	providerPriority []STTProvider // Validated list of providers in priority order
-
 	mapStreaming map[uuid.UUID]*streaming.Streaming
 	muSteaming  sync.Mutex
 }
@@ -113,20 +109,18 @@ func NewStreamingHandler(
 		awsClient = nil
 	}
 
-	// Parse and validate STT provider priority
-	priorityList := strings.Split(config.Get().STTProviderPriority, ",")
-	validatedProviders, err := initProviders(priorityList, gcpClient, awsClient)
-	if err != nil {
-		log.Error(err)
+	// At least one provider must be available
+	if gcpClient == nil && awsClient == nil {
+		log.Error("No STT providers available. At least one provider (GCP or AWS) must be initialized.")
 		return nil
 	}
 
-	// Convert to string slice for logging
-	providerNames := make([]string, len(validatedProviders))
-	for i, p := range validatedProviders {
-		providerNames[i] = string(p)
+	if gcpClient != nil {
+		log.Info("GCP STT provider initialized")
 	}
-	log.Infof("STT provider priority: %s", strings.Join(providerNames, " → "))
+	if awsClient != nil {
+		log.Info("AWS STT provider initialized")
+	}
 
 	return &streamingHandler{
 		utilHandler:       utilhandler.NewUtilHandler(),
@@ -134,11 +128,10 @@ func NewStreamingHandler(
 		notifyHandler:     notifyHandler,
 		transcriptHandler: transcriptHandler,
 
-		gcpClient:        gcpClient,
-		awsClient:        awsClient,
-		providerPriority: validatedProviders,
+		gcpClient: gcpClient,
+		awsClient: awsClient,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
-		muSteaming:   sync.Mutex{},
+		muSteaming:  sync.Mutex{},
 	}
 }

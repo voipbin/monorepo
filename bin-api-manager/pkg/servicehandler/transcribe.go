@@ -106,6 +106,7 @@ func (h *serviceHandler) TranscribeStart(
 	language string,
 	direction tmtranscribe.Direction,
 	onEndFlowID uuid.UUID,
+	provider tmtranscribe.Provider,
 ) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "TranscribeStart",
@@ -115,6 +116,7 @@ func (h *serviceHandler) TranscribeStart(
 		"language":       language,
 		"direction":      direction,
 		"on_end_flow_id": onEndFlowID,
+		"provider":       provider,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -138,6 +140,7 @@ func (h *serviceHandler) TranscribeStart(
 		tmpReferenceID,
 		language,
 		direction,
+		provider,
 		60000,
 	)
 	if err != nil {

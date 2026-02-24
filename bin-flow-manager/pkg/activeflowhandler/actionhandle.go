@@ -676,6 +676,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 			recordingID,
 			opt.Language,
 			tmtranscribe.DirectionBoth,
+			tmtranscribe.Provider(opt.Provider),
 			30000,
 		)
 		if err != nil {
@@ -723,6 +724,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 		af.ReferenceID,
 		opt.Language,
 		tmtranscribe.DirectionBoth,
+		tmtranscribe.Provider(opt.Provider),
 		30000,
 	)
 	if err != nil {

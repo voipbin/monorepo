@@ -38,6 +38,11 @@ func (h *server) PostTranscribes(c *gin.Context) {
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
 
+	var provider tmtranscribe.Provider
+	if req.Provider != nil {
+		provider = tmtranscribe.Provider(*req.Provider)
+	}
+
 	res, err := h.serviceHandler.TranscribeStart(
 		c.Request.Context(),
 		&a,
@@ -46,6 +51,7 @@ func (h *server) PostTranscribes(c *gin.Context) {
 		req.Language,
 		tmtranscribe.DirectionBoth,
 		onEndFlowID,
+		provider,
 	)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)

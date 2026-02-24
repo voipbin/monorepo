@@ -5529,6 +5529,15 @@ components:
         - TranscribeManagerTranscribeDirectionIn
         - TranscribeManagerTranscribeDirectionOut
       example: "both"
+    TranscribeManagerTranscribeProvider:
+      type: string
+      enum:
+        - gcp
+        - aws
+      x-enum-varnames:
+        - TranscribeManagerTranscribeProviderGcp
+        - TranscribeManagerTranscribeProviderAws
+      example: "gcp"
     TranscribeManagerTranscribeReferenceType:
       type: string
       enum:
@@ -5590,6 +5599,10 @@ components:
           $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
           description: "The audio direction to transcribe."
           example: "both"
+        provider:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeProvider'
+          description: "The STT provider used for the transcription."
+          example: "gcp"
         tm_create:
           type: string
           format: date-time

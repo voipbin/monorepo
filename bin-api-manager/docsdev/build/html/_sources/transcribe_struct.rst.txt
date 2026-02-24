@@ -15,6 +15,7 @@ Transcribe
         "reference_id": "<string>",
         "status": "<string>",
         "language": "<string>",
+        "provider": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>",
@@ -26,6 +27,7 @@ Transcribe
 * ``reference_id`` (UUID): The ID of the resource being transcribed. Depending on ``reference_type``, obtained from ``GET /calls``, ``GET /recordings``, or ``GET /conferences``.
 * ``status`` (enum string): The transcription session's current status. See :ref:`Status <transcribe-struct-transcribe-status>`.
 * ``language`` (String, BCP47): The language code for transcription (e.g., ``en-US``, ``ko-KR``, ``ja-JP``). See :ref:`Supported Languages <transcribe-overview-supported_languages>`.
+* ``provider`` (enum string, optional): The STT provider used for this transcription. See :ref:`Provider <transcribe-struct-transcribe-provider>`.
 * ``tm_create`` (string, ISO 8601): Timestamp when the transcribe session was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any transcribe property.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the transcribe session was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
@@ -46,6 +48,7 @@ Example
         "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f",
         "status": "done",
         "language": "en-US",
+        "provider": "gcp",
         "tm_create": "2024-04-01 07:17:04.091019",
         "tm_update": "2024-04-01 13:25:32.428602",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -65,6 +68,22 @@ call        Transcribing a live call in real-time. The ``reference_id`` is a cal
 recording   Transcribing a previously recorded audio file. The ``reference_id`` is a recording ID from ``GET /recordings``.
 confbridge  Transcribing a live conference. The ``reference_id`` is a conference ID from ``GET /conferences``.
 =========== ============
+
+.. _transcribe-struct-transcribe-provider:
+
+provider
+--------------
+
+All possible values for the ``provider`` field:
+
+=========== ============
+Provider    Description
+=========== ============
+gcp         Google Cloud Speech-to-Text
+aws         Amazon Transcribe
+=========== ============
+
+When creating a transcription, the ``provider`` field is optional. If omitted, VoIPBIN selects the best available provider automatically (default order: GCP, then AWS). If a specific provider is requested but unavailable, the system falls back to the default order.
 
 .. _transcribe-struct-transcribe-status:
 

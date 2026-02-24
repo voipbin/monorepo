@@ -42,6 +42,7 @@ type TranscribeHandler interface {
 		referenceID uuid.UUID,
 		language string,
 		direction transcribe.Direction,
+		provider transcribe.Provider,
 	) (*transcribe.Transcribe, error)
 	Stop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 

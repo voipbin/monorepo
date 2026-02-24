@@ -145,6 +145,7 @@ func cmdStart() *cobra.Command {
 	flags.String("reference-id", "", "Reference ID (required)")
 	flags.String("language", "en-US", "Language code in BCP47 format")
 	flags.String("direction", "both", "Direction: in, out, both")
+	flags.String("provider", "", "STT provider: gcp, aws (empty = default order)")
 
 	return cmd
 }
@@ -189,6 +190,7 @@ func runStart(cmd *cobra.Command, args []string) error {
 		referenceID,
 		viper.GetString("language"),
 		transcribe.Direction(viper.GetString("direction")),
+		transcribe.Provider(viper.GetString("provider")),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transcription")

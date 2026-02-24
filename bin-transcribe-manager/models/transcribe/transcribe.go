@@ -22,6 +22,7 @@ type Transcribe struct {
 	HostID    uuid.UUID `json:"host_id" db:"host_id,uuid"` // host id
 	Language  string    `json:"language" db:"language"`    // BCP47 type's language code. en-US
 	Direction Direction `json:"direction" db:"direction"`
+	Provider  Provider  `json:"provider" db:"provider"`
 
 	StreamingIDs []uuid.UUID `json:"streaming_ids" db:"streaming_ids,json"`
 
@@ -50,6 +51,16 @@ const (
 	DirectionBoth Direction = "both"
 	DirectionIn   Direction = "in"
 	DirectionOut  Direction = "out"
+)
+
+// Provider defines the STT provider type
+type Provider string
+
+// list of Provider defines
+const (
+	ProviderEmpty Provider = ""
+	ProviderGCP   Provider = "gcp"
+	ProviderAWS   Provider = "aws"
 )
 
 // Status defines

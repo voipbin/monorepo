@@ -715,6 +715,12 @@ const (
 	TranscribeManagerTranscribeDirectionOut  TranscribeManagerTranscribeDirection = "out"
 )
 
+// Defines values for TranscribeManagerTranscribeProvider.
+const (
+	TranscribeManagerTranscribeProviderAws TranscribeManagerTranscribeProvider = "aws"
+	TranscribeManagerTranscribeProviderGcp TranscribeManagerTranscribeProvider = "gcp"
+)
+
 // Defines values for TranscribeManagerTranscribeReferenceType.
 const (
 	TranscribeManagerTranscribeReferenceTypeCall       TranscribeManagerTranscribeReferenceType = "call"
@@ -3635,7 +3641,8 @@ type TranscribeManagerTranscribe struct {
 	Id *string `json:"id,omitempty"`
 
 	// Language BCP47 type's language code.
-	Language *string `json:"language,omitempty"`
+	Language *string                              `json:"language,omitempty"`
+	Provider *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 
 	// ReferenceId The unique identifier of the resource being transcribed (call, conference, or recording). Returned from the corresponding resource endpoint.
 	ReferenceId   *string                                   `json:"reference_id,omitempty"`
@@ -3654,6 +3661,9 @@ type TranscribeManagerTranscribe struct {
 
 // TranscribeManagerTranscribeDirection defines model for TranscribeManagerTranscribeDirection.
 type TranscribeManagerTranscribeDirection string
+
+// TranscribeManagerTranscribeProvider defines model for TranscribeManagerTranscribeProvider.
+type TranscribeManagerTranscribeProvider string
 
 // TranscribeManagerTranscribeReferenceType defines model for TranscribeManagerTranscribeReferenceType.
 type TranscribeManagerTranscribeReferenceType string
@@ -5514,7 +5524,8 @@ type PostTranscribesJSONBody struct {
 	Language string `json:"language"`
 
 	// OnEndFlowId The ID of the flow to be executed when the transcription ends.
-	OnEndFlowId string `json:"on_end_flow_id"`
+	OnEndFlowId string                               `json:"on_end_flow_id"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 
 	// ReferenceId The ID of the reference for the transcription.
 	ReferenceId   string                                   `json:"reference_id"`

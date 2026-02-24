@@ -115,6 +115,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				tmtranscribe.DirectionBoth,
+				tmtranscribe.ProviderEmpty,
 				5000,
 			).Return(tt.responseTranscribe, nil)
 
@@ -227,6 +228,7 @@ func Test_startReferenceTypeConference(t *testing.T) {
 				tt.responseConference.ConfbridgeID,
 				tt.language,
 				tmtranscribe.DirectionIn,
+				tmtranscribe.ProviderEmpty,
 				5000,
 			).Return(tt.responseTranscribe, nil)
 
@@ -526,6 +528,7 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				tmtranscribe.DirectionBoth,
+				tmtranscribe.ProviderEmpty,
 				300000,
 			).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)

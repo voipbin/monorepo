@@ -185,6 +185,7 @@ func Test_Create(t *testing.T) {
 		referenceID   uuid.UUID
 		language      string
 		direction     transcribe.Direction
+		provider      transcribe.Provider
 		streamingIDs  []uuid.UUID
 
 		responseTranscribe *transcribe.Transcribe
@@ -203,6 +204,7 @@ func Test_Create(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
 			language:      "en-US",
 			direction:     transcribe.DirectionBoth,
+			provider:      transcribe.ProviderEmpty,
 			streamingIDs: []uuid.UUID{
 				uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
 				uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
@@ -221,6 +223,7 @@ func Test_Create(t *testing.T) {
 				HostID:        testHostID,
 				Language:      "en-US",
 				Direction:     transcribe.DirectionBoth,
+				Provider:      transcribe.ProviderEmpty,
 				StreamingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
 					uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
@@ -240,6 +243,7 @@ func Test_Create(t *testing.T) {
 				HostID:        testHostID,
 				Language:      "en-US",
 				Direction:     transcribe.DirectionBoth,
+				Provider:      transcribe.ProviderEmpty,
 				StreamingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
 					uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
@@ -280,7 +284,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.activeflowID, tt.onEndFlowID, transcribe.ReferenceTypeCall, tt.referenceID, tt.language, transcribe.DirectionBoth, tt.streamingIDs)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.activeflowID, tt.onEndFlowID, transcribe.ReferenceTypeCall, tt.referenceID, tt.language, transcribe.DirectionBoth, tt.provider, tt.streamingIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

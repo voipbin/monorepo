@@ -6112,18 +6112,18 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeList(ctx, pageTo
 }
 
 // TranscribeV1TranscribeStart mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeStart(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction, timeout int) (*transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TranscribeV1TranscribeStart(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction, provider transcribe.Provider, timeout int) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStart", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, timeout)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStart", ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider, timeout)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscribeV1TranscribeStart indicates an expected call of TranscribeV1TranscribeStart.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStart(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, timeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStart(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStart", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStart), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStart", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStart), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider, timeout)
 }
 
 // TranscribeV1TranscribeStop mocks base method.

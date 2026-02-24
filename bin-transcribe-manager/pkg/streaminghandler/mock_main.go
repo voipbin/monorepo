@@ -59,18 +59,18 @@ func (mr *MockStreamingHandlerMockRecorder) Run() *gomock.Call {
 }
 
 // Start mocks base method.
-func (m *MockStreamingHandler) Start(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {
+func (m *MockStreamingHandler) Start(ctx context.Context, customerID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction, provider transcribe.Provider) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+	ret := m.ctrl.Call(m, "Start", ctx, customerID, transcribeID, referenceType, referenceID, language, direction, provider)
 	ret0, _ := ret[0].(*streaming.Streaming)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockStreamingHandlerMockRecorder) Start(ctx, customerID, transcribeID, referenceType, referenceID, language, direction any) *gomock.Call {
+func (mr *MockStreamingHandlerMockRecorder) Start(ctx, customerID, transcribeID, referenceType, referenceID, language, direction, provider any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockStreamingHandler)(nil).Start), ctx, customerID, transcribeID, referenceType, referenceID, language, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockStreamingHandler)(nil).Start), ctx, customerID, transcribeID, referenceType, referenceID, language, direction, provider)
 }
 
 // Stop mocks base method.

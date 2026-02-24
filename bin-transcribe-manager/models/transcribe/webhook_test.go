@@ -31,6 +31,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 		Status:        StatusProgressing,
 		Language:      "en-US",
 		Direction:     DirectionBoth,
+		Provider:      ProviderGCP,
 		TMCreate:      &tmCreate,
 		TMUpdate:      nil,
 		TMDelete:      nil,
@@ -65,6 +66,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 	if msg.Direction != DirectionBoth {
 		t.Errorf("ConvertWebhookMessage().Direction = %v, expected %v", msg.Direction, DirectionBoth)
 	}
+	if msg.Provider != ProviderGCP {
+		t.Errorf("ConvertWebhookMessage().Provider = %v, expected %v", msg.Provider, ProviderGCP)
+	}
 }
 
 func TestCreateWebhookEvent(t *testing.T) {
@@ -81,6 +85,7 @@ func TestCreateWebhookEvent(t *testing.T) {
 		Status:        StatusProgressing,
 		Language:      "en-US",
 		Direction:     DirectionIn,
+		Provider:      ProviderAWS,
 	}
 
 	data, err := tr.CreateWebhookEvent()

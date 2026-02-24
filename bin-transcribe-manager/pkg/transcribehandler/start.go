@@ -24,6 +24,7 @@ func (h *transcribeHandler) Start(
 	referenceID uuid.UUID,
 	language string,
 	direction transcribe.Direction,
+	provider transcribe.Provider,
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
@@ -32,6 +33,7 @@ func (h *transcribeHandler) Start(
 		"reference_id":   referenceID,
 		"language":       language,
 		"direction":      direction,
+		"provider":       provider,
 	})
 
 	// check the reference is valid
@@ -47,13 +49,13 @@ func (h *transcribeHandler) Start(
 	var err error
 	switch referenceType {
 	case transcribe.ReferenceTypeRecording:
-		res, err = h.startRecording(ctx, customerID, activeflowID, onEndFlowID, referenceID, lang)
+		res, err = h.startRecording(ctx, customerID, activeflowID, onEndFlowID, referenceID, lang, provider)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not start the recording transcribe. reference_id: %s", referenceID)
 		}
 
 	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
-		res, err = h.startLive(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction)
+		res, err = h.startLive(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction, provider)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not start the live transcribe. reference_id: %s", referenceID)
 		}
@@ -128,6 +130,7 @@ func (h *transcribeHandler) startLive(
 	referenceID uuid.UUID,
 	language string,
 	direction transcribe.Direction,
+	provider transcribe.Provider,
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "startLive",
@@ -138,6 +141,7 @@ func (h *transcribeHandler) startLive(
 		"reference_id":   referenceID,
 		"language":       language,
 		"direction":      direction,
+		"provider":       provider,
 	})
 
 	// create transcribe id
@@ -155,7 +159,7 @@ func (h *transcribeHandler) startLive(
 	for _, dr := range directions {
 
 		// start the streaming transcribe
-		st, err := h.streamingHandler.Start(ctx, customerID, id, referenceType, referenceID, language, dr)
+		st, err := h.streamingHandler.Start(ctx, customerID, id, referenceType, referenceID, language, dr, provider)
 		if err != nil {
 			log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dr, err)
 			return nil, err
@@ -166,7 +170,7 @@ func (h *transcribeHandler) startLive(
 	}
 
 	// create transcribing
-	res, err := h.Create(ctx, id, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, streamingIDs)
+	res, err := h.Create(ctx, id, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider, streamingIDs)
 	if err != nil {
 		log.Errorf("Could not create the transcribe. err: %v", err)
 		return nil, err

@@ -94,6 +94,7 @@ func (h *summaryHandler) startReferenceTypeCall(
 		referenceID,
 		language,
 		tmtranscribe.DirectionBoth,
+		tmtranscribe.ProviderEmpty,
 		5000,
 	)
 	if err != nil {
@@ -156,6 +157,7 @@ func (h *summaryHandler) startReferenceTypeConference(
 		cf.ConfbridgeID,
 		language,
 		tmtranscribe.DirectionIn,
+		tmtranscribe.ProviderEmpty,
 		5000,
 	)
 	if err != nil {
@@ -256,6 +258,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 		referenceID,
 		language,
 		tmtranscribe.DirectionBoth,
+		tmtranscribe.ProviderEmpty,
 		300000,
 	)
 	if err != nil {

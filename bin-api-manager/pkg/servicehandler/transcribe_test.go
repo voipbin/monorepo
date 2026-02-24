@@ -187,6 +187,7 @@ func Test_TranscribeStart(t *testing.T) {
 		language      string
 		direction     tmtranscribe.Direction
 		onEndFlowID   uuid.UUID
+		provider      tmtranscribe.Provider
 
 		responseCall       *cmcall.Call
 		responseRecording  *cmrecording.Recording
@@ -212,6 +213,7 @@ func Test_TranscribeStart(t *testing.T) {
 			language:      "en-US",
 			direction:     tmtranscribe.DirectionBoth,
 			onEndFlowID:   uuid.FromStringOrNil("9772a0da-0943-11f0-879f-47ce2d322564"),
+			provider:      tmtranscribe.ProviderGCP,
 
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -268,10 +270,11 @@ func Test_TranscribeStart(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				tt.direction,
+				tt.provider,
 				60000,
 			).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID)
+			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

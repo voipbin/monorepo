@@ -34,6 +34,7 @@ func Test_startRecording(t *testing.T) {
 		onEndFlowID  uuid.UUID
 		recordingID  uuid.UUID
 		language     string
+		provider     transcribe.Provider
 
 		responseUUID       uuid.UUID
 		responseTranscribe *transcribe.Transcribe
@@ -49,6 +50,7 @@ func Test_startRecording(t *testing.T) {
 			onEndFlowID:  uuid.FromStringOrNil("6e3fc806-0924-11f0-b967-4bcc66199182"),
 			recordingID:  uuid.FromStringOrNil("60f9f97e-7f69-11ed-9ae8-b727fc26712d"),
 			language:     "en-US",
+			provider:     transcribe.ProviderEmpty,
 
 			responseUUID: uuid.FromStringOrNil("c5784176-7f69-11ed-8c45-d72bf90127e9"),
 			responseTranscribe: &transcribe.Transcribe{
@@ -72,6 +74,7 @@ func Test_startRecording(t *testing.T) {
 				HostID:    testHostID,
 				Language:  "en-US",
 				Direction: transcribe.DirectionBoth,
+				Provider:  transcribe.ProviderEmpty,
 
 				StreamingIDs: []uuid.UUID{},
 			},
@@ -124,7 +127,7 @@ func Test_startRecording(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
 
-			res, err := h.startRecording(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.recordingID, tt.language)
+			res, err := h.startRecording(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.recordingID, tt.language, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

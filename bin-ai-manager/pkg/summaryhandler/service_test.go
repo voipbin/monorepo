@@ -116,6 +116,7 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				tmtranscribe.DirectionBoth,
+				tmtranscribe.ProviderEmpty,
 				gomock.Any(),
 			).Return(&tmtranscribe.Transcribe{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)

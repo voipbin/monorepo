@@ -22,6 +22,7 @@ type WebhookMessage struct {
 	Status    Status    `json:"status"`
 	Language  string    `json:"language"` // BCP47 type's language code. en-US
 	Direction Direction `json:"direction"`
+	Provider  Provider  `json:"provider"`
 
 	// timestamp
 	TMCreate *time.Time `json:"tm_create"`
@@ -44,6 +45,7 @@ func (h *Transcribe) ConvertWebhookMessage() *WebhookMessage {
 		Status:    h.Status,
 		Language:  h.Language,
 		Direction: h.Direction,
+		Provider:  h.Provider,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

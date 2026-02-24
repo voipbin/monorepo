@@ -17,6 +17,7 @@ type V1DataTranscribesPost struct {
 	ReferenceID   uuid.UUID                `json:"reference_id,omitempty"`   // reference id
 	Language      string                   `json:"language,omitempty"`       // BCP47 type's language code. en-US
 	Direction     transcribe.Direction     `json:"direction,omitempty"`
+	Provider      transcribe.Provider      `json:"provider,omitempty"`
 }
 
 // V1DataTranscribesIDHealthCheckPost is

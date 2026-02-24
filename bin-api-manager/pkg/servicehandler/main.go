@@ -847,6 +847,7 @@ type ServiceHandler interface {
 		language string,
 		direction tmtranscribe.Direction,
 		onEndFlowID uuid.UUID,
+		provider tmtranscribe.Provider,
 	) (*tmtranscribe.WebhookMessage, error)
 	TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
