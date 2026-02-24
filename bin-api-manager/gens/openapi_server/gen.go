@@ -20,23 +20,25 @@ import (
 
 // Defines values for AIManagerAIEngineModel.
 const (
-	AIManagerAIEngineModelChatGPT3Dot5Turbo     AIManagerAIEngineModel = "gpt-3.5-turbo"
-	AIManagerAIEngineModelChatGPT4              AIManagerAIEngineModel = "gpt-4"
-	AIManagerAIEngineModelChatGPT4O             AIManagerAIEngineModel = "gpt-4o"
-	AIManagerAIEngineModelChatGPT4OMini         AIManagerAIEngineModel = "gpt-4o-mini"
-	AIManagerAIEngineModelChatGPT4Turbo         AIManagerAIEngineModel = "gpt-4-turbo"
-	AIManagerAIEngineModelChatGPT4VisionPreview AIManagerAIEngineModel = "gpt-4-vision-preview"
-	AIManagerAIEngineModelChatGPTO1             AIManagerAIEngineModel = "o1"
-	AIManagerAIEngineModelChatGPTO1Mini         AIManagerAIEngineModel = "o1-mini"
-	AIManagerAIEngineModelChatGPTO1Preview      AIManagerAIEngineModel = "o1-preview"
-	AIManagerAIEngineModelChatGPTO3Mini         AIManagerAIEngineModel = "o3-mini"
+	AIManagerAIEngineModelDialogflowCX            AIManagerAIEngineModel = "dialogflow.cx"
+	AIManagerAIEngineModelDialogflowES            AIManagerAIEngineModel = "dialogflow.es"
+	AIManagerAIEngineModelGrok3                   AIManagerAIEngineModel = "grok.grok-3"
+	AIManagerAIEngineModelGrok3Mini               AIManagerAIEngineModel = "grok.grok-3-mini"
+	AIManagerAIEngineModelOpenaiGPT3Dot5Turbo     AIManagerAIEngineModel = "openai.gpt-3.5-turbo"
+	AIManagerAIEngineModelOpenaiGPT4              AIManagerAIEngineModel = "openai.gpt-4"
+	AIManagerAIEngineModelOpenaiGPT4O             AIManagerAIEngineModel = "openai.gpt-4o"
+	AIManagerAIEngineModelOpenaiGPT4OMini         AIManagerAIEngineModel = "openai.gpt-4o-mini"
+	AIManagerAIEngineModelOpenaiGPT4Turbo         AIManagerAIEngineModel = "openai.gpt-4-turbo"
+	AIManagerAIEngineModelOpenaiGPT4VisionPreview AIManagerAIEngineModel = "openai.gpt-4-vision-preview"
+	AIManagerAIEngineModelOpenaiO1                AIManagerAIEngineModel = "openai.o1"
+	AIManagerAIEngineModelOpenaiO1Mini            AIManagerAIEngineModel = "openai.o1-mini"
+	AIManagerAIEngineModelOpenaiO1Preview         AIManagerAIEngineModel = "openai.o1-preview"
+	AIManagerAIEngineModelOpenaiO3Mini            AIManagerAIEngineModel = "openai.o3-mini"
 )
 
 // Defines values for AIManagerAIEngineType.
 const (
-	AIManagerAIEngineTypeChatGPT    AIManagerAIEngineType = "chatGPT"
-	AIManagerAIEngineTypeClova      AIManagerAIEngineType = "clova"
-	AIManagerAIEngineTypeDialogFlow AIManagerAIEngineType = "dialogflow"
+	AIManagerAIEngineTypeNone AIManagerAIEngineType = ""
 )
 
 // Defines values for AIManagerAISTTType.
@@ -78,6 +80,7 @@ const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
 	AIManagerAIcallGenderMale    AIManagerAIcallGender = "male"
 	AIManagerAIcallGenderNeutral AIManagerAIcallGender = "neutral"
+	AIManagerAIcallGenderNone    AIManagerAIcallGender = ""
 )
 
 // Defines values for AIManagerAIcallReferenceType.
@@ -101,6 +104,7 @@ const (
 // Defines values for AIManagerMessageDirection.
 const (
 	AIManagerMessageDirectionIncoming AIManagerMessageDirection = "incoming"
+	AIManagerMessageDirectionNone     AIManagerMessageDirection = ""
 	AIManagerMessageDirectionOutgoing AIManagerMessageDirection = "outgoing"
 )
 
@@ -108,6 +112,7 @@ const (
 const (
 	AIManagerMessageRoleAssistant AIManagerMessageRole = "assistant"
 	AIManagerMessageRoleFunction  AIManagerMessageRole = "function"
+	AIManagerMessageRoleNone      AIManagerMessageRole = ""
 	AIManagerMessageRoleSystem    AIManagerMessageRole = "system"
 	AIManagerMessageRoleTool      AIManagerMessageRole = "tool"
 	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
@@ -341,7 +346,7 @@ const (
 
 // Defines values for CallManagerRecordingFormat.
 const (
-	CallManagerRecordingFormatWav CallManagerRecordingFormat = "wav"
+	CallManagerRecordingFormatWAV CallManagerRecordingFormat = "wav"
 )
 
 // Defines values for CallManagerRecordingReferenceType.
@@ -475,11 +480,11 @@ const (
 	ConversationManagerAccountTypeSMS  ConversationManagerAccountType = "sms"
 )
 
-// Defines values for ConversationManagerConversationReferenceType.
+// Defines values for ConversationManagerConversationType.
 const (
-	ConversationManagerConversationReferenceTypeLine    ConversationManagerConversationReferenceType = "line"
-	ConversationManagerConversationReferenceTypeMessage ConversationManagerConversationReferenceType = "message"
-	ConversationManagerConversationReferenceTypeNone    ConversationManagerConversationReferenceType = ""
+	ConversationManagerConversationTypeLine    ConversationManagerConversationType = "line"
+	ConversationManagerConversationTypeMessage ConversationManagerConversationType = "message"
+	ConversationManagerConversationTypeNone    ConversationManagerConversationType = ""
 )
 
 // Defines values for ConversationManagerMediaType.
@@ -635,9 +640,14 @@ const (
 
 // Defines values for FlowManagerReferenceType.
 const (
-	FlowManagerReferenceTypeCall    FlowManagerReferenceType = "call"
-	FlowManagerReferenceTypeMessage FlowManagerReferenceType = "message"
-	FlowManagerReferenceTypeNone    FlowManagerReferenceType = ""
+	FlowManagerReferenceTypeAI           FlowManagerReferenceType = "ai"
+	FlowManagerReferenceTypeAPI          FlowManagerReferenceType = "api"
+	FlowManagerReferenceTypeCall         FlowManagerReferenceType = "call"
+	FlowManagerReferenceTypeCampaign     FlowManagerReferenceType = "campaign"
+	FlowManagerReferenceTypeConversation FlowManagerReferenceType = "conversation"
+	FlowManagerReferenceTypeNone         FlowManagerReferenceType = ""
+	FlowManagerReferenceTypeRecording    FlowManagerReferenceType = "recording"
+	FlowManagerReferenceTypeTranscribe   FlowManagerReferenceType = "transcribe"
 )
 
 // Defines values for MessageManagerMessageDirection.
@@ -782,15 +792,15 @@ const (
 
 // Defines values for TranscribeManagerTranscribeProvider.
 const (
-	TranscribeManagerTranscribeProviderAws TranscribeManagerTranscribeProvider = "aws"
-	TranscribeManagerTranscribeProviderGcp TranscribeManagerTranscribeProvider = "gcp"
+	TranscribeManagerTranscribeProviderAws   TranscribeManagerTranscribeProvider = "aws"
+	TranscribeManagerTranscribeProviderEmpty TranscribeManagerTranscribeProvider = ""
+	TranscribeManagerTranscribeProviderGcp   TranscribeManagerTranscribeProvider = "gcp"
 )
 
 // Defines values for TranscribeManagerTranscribeReferenceType.
 const (
 	TranscribeManagerTranscribeReferenceTypeCall       TranscribeManagerTranscribeReferenceType = "call"
 	TranscribeManagerTranscribeReferenceTypeConfbridge TranscribeManagerTranscribeReferenceType = "confbridge"
-	TranscribeManagerTranscribeReferenceTypeConference TranscribeManagerTranscribeReferenceType = "conference"
 	TranscribeManagerTranscribeReferenceTypeRecording  TranscribeManagerTranscribeReferenceType = "recording"
 	TranscribeManagerTranscribeReferenceTypeUnknown    TranscribeManagerTranscribeReferenceType = "unknown"
 )
@@ -814,6 +824,28 @@ const (
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
 )
 
+// Defines values for TtsManagerSpeakingDirection.
+const (
+	TtsManagerSpeakingDirectionBoth TtsManagerSpeakingDirection = "both"
+	TtsManagerSpeakingDirectionIn   TtsManagerSpeakingDirection = "in"
+	TtsManagerSpeakingDirectionNone TtsManagerSpeakingDirection = ""
+	TtsManagerSpeakingDirectionOut  TtsManagerSpeakingDirection = "out"
+)
+
+// Defines values for TtsManagerSpeakingReferenceType.
+const (
+	TtsManagerSpeakingReferenceTypeCall       TtsManagerSpeakingReferenceType = "call"
+	TtsManagerSpeakingReferenceTypeConfbridge TtsManagerSpeakingReferenceType = "confbridge"
+	TtsManagerSpeakingReferenceTypeNone       TtsManagerSpeakingReferenceType = ""
+)
+
+// Defines values for TtsManagerSpeakingStatus.
+const (
+	TtsManagerSpeakingStatusActive     TtsManagerSpeakingStatus = "active"
+	TtsManagerSpeakingStatusInitiating TtsManagerSpeakingStatus = "initiating"
+	TtsManagerSpeakingStatusStopped    TtsManagerSpeakingStatus = "stopped"
+)
+
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
 const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
@@ -821,7 +853,7 @@ const (
 
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
 const (
-	Wav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
+	PostConferencesIdRecordingStartJSONBodyFormatWav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
 )
 
 // Defines values for PostContactsJSONBodyEmailsType.
@@ -964,10 +996,10 @@ type AIManagerAI struct {
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
 
 	// Id The unique identifier of the AI.
@@ -980,7 +1012,7 @@ type AIManagerAI struct {
 	Name *string `json:"name,omitempty"`
 
 	// SttType Speech-to-text provider type.
-	SttType *string `json:"stt_type,omitempty"`
+	SttType *AIManagerAISTTType `json:"stt_type,omitempty"`
 
 	// TmCreate Timestamp when the AI was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -995,16 +1027,16 @@ type AIManagerAI struct {
 	ToolNames *[]string `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech provider type.
-	TtsType *string `json:"tts_type,omitempty"`
+	TtsType *AIManagerAITTSType `json:"tts_type,omitempty"`
 
 	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 }
 
-// AIManagerAIEngineModel Model of the ai engine.
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
 
-// AIManagerAIEngineType Type of engine used by the ai.
+// AIManagerAIEngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 type AIManagerAIEngineType string
 
 // AIManagerAISTTType Speech-to-text provider type.
@@ -1021,7 +1053,7 @@ type AIManagerAIcall struct {
 	// AiEngineData Custom key-value configuration data specific to the AI engine type.
 	AiEngineData *map[string]interface{} `json:"ai_engine_data,omitempty"`
 
-	// AiEngineModel Model of the ai engine.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
 	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
@@ -1042,7 +1074,7 @@ type AIManagerAIcall struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
 	// Id The unique identifier of the AI call.
@@ -1073,7 +1105,7 @@ type AIManagerAIcall struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
-// AIManagerAIcallGender Gender associated with the ai call.
+// AIManagerAIcallGender Gender associated with the AI call.
 type AIManagerAIcallGender string
 
 // AIManagerAIcallReferenceType Type of reference associated with the ai call.
@@ -1090,6 +1122,9 @@ type AIManagerMessage struct {
 	// Content Content of the message.
 	Content *string `json:"content,omitempty"`
 
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
 	// Direction Direction of the message.
 	Direction *AIManagerMessageDirection `json:"direction,omitempty"`
 
@@ -1102,8 +1137,26 @@ type AIManagerMessage struct {
 	// TmCreate Timestamp when the message was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the message was deleted.
-	TmDelete *string `json:"tm_delete,omitempty"`
+	// ToolCallId The tool call ID this message is responding to.
+	ToolCallId *string `json:"tool_call_id,omitempty"`
+
+	// ToolCalls List of tool calls made during the message.
+	ToolCalls *[]struct {
+		// Function The function call details.
+		Function *struct {
+			// Arguments The arguments to pass to the function as a JSON string.
+			Arguments *string `json:"arguments,omitempty"`
+
+			// Name The name of the function to call.
+			Name *string `json:"name,omitempty"`
+		} `json:"function,omitempty"`
+
+		// Id The unique identifier of the tool call.
+		Id *string `json:"id,omitempty"`
+
+		// Type The type of tool call.
+		Type *string `json:"type,omitempty"`
+	} `json:"tool_calls,omitempty"`
 }
 
 // AIManagerMessageDirection Direction of the message.
@@ -1361,9 +1414,6 @@ type CallManagerCall struct {
 
 	// Direction Call direction
 	Direction *CallManagerCallDirection `json:"direction,omitempty"`
-
-	// ExternalMediaIds External media IDs associated with this call. Multiple external media streams (e.g., transcription + TTS) can run simultaneously.
-	ExternalMediaIds *[]string `json:"external_media_ids,omitempty"`
 
 	// FlowId The flow ID associated with this call. Returned from the `POST /flows` or `GET /flows` response.
 	FlowId *string `json:"flow_id,omitempty"`
@@ -2112,6 +2162,9 @@ type ConversationManagerConversation struct {
 	// Detail Detailed information about the conversation.
 	Detail *string `json:"detail,omitempty"`
 
+	// DialogId The identifier of the referenced conversation transaction. For Line, this is the chatroom ID.
+	DialogId *string `json:"dialog_id,omitempty"`
+
 	// Id The unique identifier of the conversation.
 	Id *string `json:"id,omitempty"`
 
@@ -2124,17 +2177,11 @@ type ConversationManagerConversation struct {
 	// OwnerType Type of the conversation owner.
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// Participants List of participants in the conversation.
-	Participants *[]CommonAddress `json:"participants,omitempty"`
+	// Peer Contains source or destination detail info.
+	Peer *CommonAddress `json:"peer,omitempty"`
 
-	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
-	ReferenceId *string `json:"reference_id,omitempty"`
-
-	// ReferenceType Type of the reference for the conversation.
-	ReferenceType *ConversationManagerConversationReferenceType `json:"reference_type,omitempty"`
-
-	// Source Contains source or destination detail info.
-	Source *CommonAddress `json:"source,omitempty"`
+	// Self Contains source or destination detail info.
+	Self *CommonAddress `json:"self,omitempty"`
 
 	// TmCreate Timestamp when the conversation was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -2144,10 +2191,13 @@ type ConversationManagerConversation struct {
 
 	// TmUpdate Timestamp when the conversation was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the conversation.
+	Type *ConversationManagerConversationType `json:"type,omitempty"`
 }
 
-// ConversationManagerConversationReferenceType Type of the reference for the conversation.
-type ConversationManagerConversationReferenceType string
+// ConversationManagerConversationType Type of the conversation.
+type ConversationManagerConversationType string
 
 // ConversationManagerMedia defines model for ConversationManagerMedia.
 type ConversationManagerMedia struct {
@@ -2198,9 +2248,6 @@ type ConversationManagerMessage struct {
 
 	// ReferenceType Type of reference associated with the message (e.g., call, campaign).
 	ReferenceType *ConversationManagerMessageReferenceType `json:"reference_type,omitempty"`
-
-	// Source Contains source or destination detail info.
-	Source *CommonAddress `json:"source,omitempty"`
 
 	// Status Status of the message.
 	Status *ConversationManagerMessageStatus `json:"status,omitempty"`
@@ -2338,9 +2385,6 @@ type CustomerManagerSignupResult struct {
 
 // EmailManagerEmail defines model for EmailManagerEmail.
 type EmailManagerEmail struct {
-	// ActiveflowId The unique identifier of the activeflow. Returned from the `POST /activeflows` or `GET /activeflows` response.
-	ActiveflowId *string `json:"activeflow_id,omitempty"`
-
 	// Attachments List of attachments
 	Attachments []EmailManagerEmailAttachment `json:"attachments"`
 
@@ -2466,7 +2510,7 @@ type FlowManagerActionOptionAITalk struct {
 	// Duration Maximum duration of the AI talk session in seconds.
 	Duration *int `json:"duration,omitempty"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 
 	// Language BCP47 language code (e.g., en-US).
@@ -3511,6 +3555,9 @@ type StorageManagerFile struct {
 	// OwnerId The unique identifier of the resource that owns this file (e.g., an agent or a call). Returned from the corresponding owner resource endpoint.
 	OwnerId *string `json:"owner_id,omitempty"`
 
+	// OwnerType Type of the resource owner (e.g., agent).
+	OwnerType *string `json:"owner_type,omitempty"`
+
 	// ReferenceId The unique identifier of the referenced resource. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
@@ -3538,6 +3585,9 @@ type StorageManagerFileReferenceType string
 
 // TagManagerTag defines model for TagManagerTag.
 type TagManagerTag struct {
+	// CustomerId The unique identifier of the customer who owns this tag. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
 	// Detail The details about the tag.
 	Detail *string `json:"detail,omitempty"`
 
@@ -3719,6 +3769,9 @@ type TimelineManagerEvent struct {
 
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
+	// ActiveflowId The unique identifier of the activeflow associated with this transcribe session. Returned from the `POST /activeflows` or `GET /activeflows` response.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
 	// CustomerId The unique identifier of the customer who owns this transcribe session. Returned from the `GET /customers` response.
 	CustomerId *string                               `json:"customer_id,omitempty"`
 	Direction  *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
@@ -3727,8 +3780,11 @@ type TranscribeManagerTranscribe struct {
 	Id *string `json:"id,omitempty"`
 
 	// Language BCP47 type's language code.
-	Language *string                              `json:"language,omitempty"`
-	Provider *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
+	Language *string `json:"language,omitempty"`
+
+	// OnEndFlowId The unique identifier of the flow to execute when the transcribe session ends. Returned from the `POST /flows` or `GET /flows` response.
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 
 	// ReferenceId The unique identifier of the resource being transcribed (call, conference, or recording). Returned from the corresponding resource endpoint.
 	ReferenceId   *string                                   `json:"reference_id,omitempty"`
@@ -3759,7 +3815,9 @@ type TranscribeManagerTranscribeStatus string
 
 // TranscribeManagerTranscript defines model for TranscribeManagerTranscript.
 type TranscribeManagerTranscript struct {
-	Direction *TranscribeManagerTranscriptDirection `json:"direction,omitempty"`
+	// CustomerId The unique identifier of the customer who owns this transcript. Returned from the `GET /customers` response.
+	CustomerId *string                               `json:"customer_id,omitempty"`
+	Direction  *TranscribeManagerTranscriptDirection `json:"direction,omitempty"`
 
 	// Id The unique identifier of the transcript.
 	Id *string `json:"id,omitempty"`
@@ -3822,8 +3880,8 @@ type TtsManagerSpeaking struct {
 	// CustomerId The unique identifier of the customer who owns this speaking session. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Direction Audio injection direction (in, out, both)
-	Direction *string `json:"direction,omitempty"`
+	// Direction Audio injection direction for the speaking session.
+	Direction *TtsManagerSpeakingDirection `json:"direction,omitempty"`
 
 	// Id The unique identifier of the speaking session. Returned from the `POST /speakings` or `GET /speakings` response.
 	Id *string `json:"id,omitempty"`
@@ -3837,11 +3895,11 @@ type TtsManagerSpeaking struct {
 	// ReferenceId The unique identifier of the referenced resource (call or confbridge). Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
-	// ReferenceType Type of the referenced entity (call, confbridge)
-	ReferenceType *string `json:"reference_type,omitempty"`
+	// ReferenceType Type of the referenced entity for the speaking session.
+	ReferenceType *TtsManagerSpeakingReferenceType `json:"reference_type,omitempty"`
 
-	// Status Session status (initiating, active, stopped)
-	Status *string `json:"status,omitempty"`
+	// Status Status of the speaking session.
+	Status *TtsManagerSpeakingStatus `json:"status,omitempty"`
 
 	// TmCreate Creation timestamp
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -3855,6 +3913,15 @@ type TtsManagerSpeaking struct {
 	// VoiceId Provider-specific voice ID
 	VoiceId *string `json:"voice_id,omitempty"`
 }
+
+// TtsManagerSpeakingDirection Audio injection direction for the speaking session.
+type TtsManagerSpeakingDirection string
+
+// TtsManagerSpeakingReferenceType Type of the referenced entity for the speaking session.
+type TtsManagerSpeakingReferenceType string
+
+// TtsManagerSpeakingStatus Status of the speaking session.
+type TtsManagerSpeakingStatus string
 
 // PageSize defines model for PageSize.
 type PageSize = int
@@ -3984,7 +4051,7 @@ type GetAicallsParams struct {
 type PostAicallsJSONBody struct {
 	AiId string `json:"ai_id"`
 
-	// Gender Gender associated with the ai call.
+	// Gender Gender associated with the AI call.
 	Gender      AIManagerAIcallGender `json:"gender"`
 	Language    string                `json:"language"`
 	ReferenceId string                `json:"reference_id"`
@@ -4033,10 +4100,10 @@ type PostAisJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
@@ -4064,10 +4131,10 @@ type PutAisIdJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the ai engine.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 
-	// EngineType Type of engine used by the ai.
+	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
 	EngineType AIManagerAIEngineType `json:"engine_type"`
 	InitPrompt string                `json:"init_prompt"`
 	Name       string                `json:"name"`
