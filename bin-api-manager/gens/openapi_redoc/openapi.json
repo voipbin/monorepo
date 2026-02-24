@@ -14167,18 +14167,6 @@
               "e5f6a7b8-c9d0-1234-5678-90abcdef0123"
             ]
           },
-          "external_media_ids": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid",
-              "x-go-type": "string"
-            },
-            "description": "External media IDs associated with this call. Multiple external media streams (e.g., transcription + TTS) can run simultaneously.",
-            "example": [
-              "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
-            ]
-          },
           "groupcall_id": {
             "type": "string",
             "format": "uuid",
@@ -14476,7 +14464,9 @@
         "enum": [
           "wav"
         ],
-        "x-enum-varnames": "-CallManagerRecordingFormatWAV"
+        "x-enum-varnames": [
+          "CallManagerRecordingFormatWAV"
+        ]
       },
       "CallManagerRecordingReferenceType": {
         "type": "string",
@@ -16458,9 +16448,9 @@
           }
         }
       },
-      "ConversationManagerConversationReferenceType": {
+      "ConversationManagerConversationType": {
         "type": "string",
-        "description": "Type of the reference for the conversation.",
+        "description": "Type of the conversation.",
         "example": "message",
         "enum": [
           "",
@@ -16468,9 +16458,9 @@
           "line"
         ],
         "x-enum-varnames": [
-          "ConversationManagerConversationReferenceTypeNone",
-          "ConversationManagerConversationReferenceTypeMessage",
-          "ConversationManagerConversationReferenceTypeLine"
+          "ConversationManagerConversationTypeNone",
+          "ConversationManagerConversationTypeMessage",
+          "ConversationManagerConversationTypeLine"
         ]
       },
       "ConversationManagerConversation": {
@@ -16519,28 +16509,23 @@
             "description": "Detailed information about the conversation.",
             "example": "Support conversation with customer"
           },
-          "reference_type": {
-            "$ref": "#/components/schemas/ConversationManagerConversationReferenceType",
-            "description": "Type of the reference for the conversation.",
+          "type": {
+            "$ref": "#/components/schemas/ConversationManagerConversationType",
+            "description": "Type of the conversation (e.g., message, line).",
             "example": "message"
           },
-          "reference_id": {
+          "dialog_id": {
             "type": "string",
-            "format": "uuid",
-            "x-go-type": "string",
-            "description": "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.",
-            "example": "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
+            "description": "The identifier of the referenced conversation transaction. For Line, this is the chatroom ID.",
+            "example": "chatroom-abc123"
           },
-          "source": {
-            "description": "The source address for the conversation.",
-            "$ref": "#/components/schemas/CommonAddress"
+          "self": {
+            "$ref": "#/components/schemas/CommonAddress",
+            "description": "The self address of the conversation."
           },
-          "participants": {
-            "type": "array",
-            "description": "List of participants in the conversation.",
-            "items": {
-              "$ref": "#/components/schemas/CommonAddress"
-            }
+          "peer": {
+            "$ref": "#/components/schemas/CommonAddress",
+            "description": "The peer address of the conversation."
           },
           "tm_create": {
             "type": "string",
@@ -16732,10 +16717,6 @@
             "x-go-type": "string",
             "description": "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.",
             "example": "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
-          },
-          "source": {
-            "$ref": "#/components/schemas/CommonAddress",
-            "description": "Source address of the message."
           },
           "text": {
             "type": "string",
@@ -17048,13 +17029,6 @@
             "x-go-type": "string",
             "description": "The unique identifier of the customer. Returned from the `GET /customers` response.",
             "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-          },
-          "activeflow_id": {
-            "type": "string",
-            "format": "uuid",
-            "x-go-type": "string",
-            "description": "The unique identifier of the activeflow. Returned from the `POST /activeflows` or `GET /activeflows` response.",
-            "example": "d4e5f6a7-b8c9-0123-4567-890abcdef012"
           },
           "source": {
             "$ref": "#/components/schemas/CommonAddress",
@@ -17965,13 +17939,23 @@
         "example": "call",
         "enum": [
           "",
+          "ai",
+          "api",
           "call",
-          "message"
+          "campaign",
+          "conversation",
+          "transcribe",
+          "recording"
         ],
         "x-enum-varnames": [
           "FlowManagerReferenceTypeNone",
+          "FlowManagerReferenceTypeAI",
+          "FlowManagerReferenceTypeAPI",
           "FlowManagerReferenceTypeCall",
-          "FlowManagerReferenceTypeMessage"
+          "FlowManagerReferenceTypeCampaign",
+          "FlowManagerReferenceTypeConversation",
+          "FlowManagerReferenceTypeTranscribe",
+          "FlowManagerReferenceTypeRecording"
         ]
       },
       "FlowManagerActiveflow": {
@@ -19346,6 +19330,11 @@
             "description": "The unique identifier of the customer who owns this file. Returned from the `GET /customers` response.",
             "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
           },
+          "owner_type": {
+            "type": "string",
+            "description": "Type of the resource owner (e.g., agent).",
+            "example": "agent"
+          },
           "owner_id": {
             "type": "string",
             "format": "uuid",
@@ -19786,6 +19775,13 @@
             "description": "The unique identifier of the tag. Returned from the `POST /tags` or `GET /tags` response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the customer who owns this tag. Returned from the `GET /customers` response.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
           "name": {
             "type": "string",
             "description": "The name of the tag.",
@@ -19819,6 +19815,53 @@
           }
         }
       },
+      "TtsManagerSpeakingReferenceType": {
+        "type": "string",
+        "description": "Type of the referenced entity for the speaking session.",
+        "example": "call",
+        "enum": [
+          "",
+          "call",
+          "confbridge"
+        ],
+        "x-enum-varnames": [
+          "TtsManagerSpeakingReferenceTypeNone",
+          "TtsManagerSpeakingReferenceTypeCall",
+          "TtsManagerSpeakingReferenceTypeConfbridge"
+        ]
+      },
+      "TtsManagerSpeakingDirection": {
+        "type": "string",
+        "description": "Audio injection direction for the speaking session.",
+        "example": "both",
+        "enum": [
+          "",
+          "in",
+          "out",
+          "both"
+        ],
+        "x-enum-varnames": [
+          "TtsManagerSpeakingDirectionNone",
+          "TtsManagerSpeakingDirectionIn",
+          "TtsManagerSpeakingDirectionOut",
+          "TtsManagerSpeakingDirectionBoth"
+        ]
+      },
+      "TtsManagerSpeakingStatus": {
+        "type": "string",
+        "description": "Status of the speaking session.",
+        "example": "active",
+        "enum": [
+          "initiating",
+          "active",
+          "stopped"
+        ],
+        "x-enum-varnames": [
+          "TtsManagerSpeakingStatusInitiating",
+          "TtsManagerSpeakingStatusActive",
+          "TtsManagerSpeakingStatusStopped"
+        ]
+      },
       "TtsManagerSpeaking": {
         "type": "object",
         "properties": {
@@ -19837,8 +19880,8 @@
             "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
           },
           "reference_type": {
-            "type": "string",
-            "description": "Type of the referenced entity (call, confbridge)",
+            "$ref": "#/components/schemas/TtsManagerSpeakingReferenceType",
+            "description": "Type of the referenced entity (call, confbridge).",
             "example": "call"
           },
           "reference_id": {
@@ -19864,13 +19907,13 @@
             "example": "21m00Tcm4TlvDq8ikWAM"
           },
           "direction": {
-            "type": "string",
-            "description": "Audio injection direction (in, out, both)",
+            "$ref": "#/components/schemas/TtsManagerSpeakingDirection",
+            "description": "Audio injection direction (in, out, both).",
             "example": "both"
           },
           "status": {
-            "type": "string",
-            "description": "Session status (initiating, active, stopped)",
+            "$ref": "#/components/schemas/TtsManagerSpeakingStatus",
+            "description": "Status of the speaking session.",
             "example": "active"
           },
           "tm_create": {
@@ -19913,10 +19956,12 @@
       "TranscribeManagerTranscribeProvider": {
         "type": "string",
         "enum": [
+          "",
           "gcp",
           "aws"
         ],
         "x-enum-varnames": [
+          "TranscribeManagerTranscribeProviderEmpty",
           "TranscribeManagerTranscribeProviderGcp",
           "TranscribeManagerTranscribeProviderAws"
         ],
@@ -19928,15 +19973,13 @@
           "unknown",
           "recording",
           "call",
-          "confbridge",
-          "conference"
+          "confbridge"
         ],
         "x-enum-varnames": [
           "TranscribeManagerTranscribeReferenceTypeUnknown",
           "TranscribeManagerTranscribeReferenceTypeRecording",
           "TranscribeManagerTranscribeReferenceTypeCall",
-          "TranscribeManagerTranscribeReferenceTypeConfbridge",
-          "TranscribeManagerTranscribeReferenceTypeConference"
+          "TranscribeManagerTranscribeReferenceTypeConfbridge"
         ],
         "example": "call"
       },
@@ -19968,6 +20011,20 @@
             "x-go-type": "string",
             "description": "The unique identifier of the customer who owns this transcribe session. Returned from the `GET /customers` response.",
             "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "activeflow_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the activeflow associated with this transcribe session. Returned from the `POST /activeflows` or `GET /activeflows` response.",
+            "example": "d4e5f6a7-b8c9-0123-4567-890abcdef012"
+          },
+          "on_end_flow_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the flow to execute when the transcribe session ends. Returned from the `POST /flows` or `GET /flows` response.",
+            "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
           },
           "reference_type": {
             "$ref": "#/components/schemas/TranscribeManagerTranscribeReferenceType",
@@ -20047,6 +20104,13 @@
             "x-go-type": "string",
             "description": "The unique identifier of the transcript.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the customer who owns this transcript. Returned from the `GET /customers` response.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
           },
           "transcribe_id": {
             "type": "string",
