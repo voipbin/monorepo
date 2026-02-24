@@ -15,7 +15,6 @@ type AI struct {
 	Name   string `json:"name,omitempty" db:"name"`
 	Detail string `json:"detail,omitempty" db:"detail"`
 
-	EngineType  EngineType     `json:"engine_type,omitempty" db:"engine_type"`   // currently not in used.
 	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
 	EngineData  map[string]any `json:"engine_data,omitempty" db:"engine_data,json"`
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
@@ -36,14 +35,6 @@ type AI struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
-
-// EngineType define
-type EngineType string
-
-// list of engine types
-const (
-	EngineTypeNone EngineType = ""
-)
 
 type EngineModelTarget string
 

@@ -26,7 +26,6 @@ func Test_AICreate(t *testing.T) {
 		agent       *amagent.Agent
 		aiName      string
 		detail      string
-		engineType  amai.EngineType
 		engineModel amai.EngineModel
 		engineData  map[string]any
 		engineKey   string
@@ -50,7 +49,6 @@ func Test_AICreate(t *testing.T) {
 			},
 			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  amai.EngineTypeNone,
 			engineModel: amai.EngineModelOpenaiGPT4,
 			engineData: map[string]any{
 				"key1": "val1",
@@ -93,7 +91,6 @@ func Test_AICreate(t *testing.T) {
 				tt.agent.CustomerID,
 				tt.aiName,
 				tt.detail,
-				tt.engineType,
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,
@@ -109,7 +106,6 @@ func Test_AICreate(t *testing.T) {
 				tt.agent,
 				tt.aiName,
 				tt.detail,
-				tt.engineType,
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,

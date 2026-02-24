@@ -15,7 +15,6 @@ AI
         "customer_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
-        "engine_type": "<string>",
         "engine_model": "<string>",
         "engine_data": "<object>",
         "engine_key": "<string>",
@@ -33,7 +32,6 @@ AI
 * ``customer_id`` (UUID): The customer that owns this AI configuration. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String, Required): A human-readable name for the AI configuration (e.g., ``"Sales Assistant"``).
 * ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
-* ``engine_type`` (String): Reserved for future use. Leave empty (``""``).
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
 * ``engine_data`` (Object, Optional): Provider-specific configuration as a JSON object. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
@@ -64,7 +62,6 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "Sales Assistant AI",
         "detail": "AI assistant for handling sales inquiries",
-        "engine_type": "",
         "engine_model": "openai.gpt-4o",
         "engine_data": {},
         "engine_key": "sk-...",

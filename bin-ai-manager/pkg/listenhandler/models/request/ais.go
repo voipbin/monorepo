@@ -15,7 +15,6 @@ type V1DataAIsPost struct {
 	Name       string    `json:"name,omitempty"`
 	Detail     string    `json:"detail,omitempty"`
 
-	EngineType  ai.EngineType  `json:"engine_type,omitempty"`
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	EngineData  map[string]any `json:"engine_data,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
@@ -37,7 +36,6 @@ type V1DataAIsIDPut struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	EngineType  ai.EngineType  `json:"engine_type,omitempty"`
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	EngineData  map[string]any `json:"engine_data,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`

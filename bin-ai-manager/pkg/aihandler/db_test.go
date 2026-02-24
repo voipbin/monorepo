@@ -25,7 +25,6 @@ func Test_Create(t *testing.T) {
 		customerID  uuid.UUID
 		aiName      string
 		detail      string
-		engineType  ai.EngineType
 		engineModel ai.EngineModel
 		engineData  map[string]any
 		engineKey   string
@@ -45,7 +44,6 @@ func Test_Create(t *testing.T) {
 			customerID:  uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  ai.EngineTypeNone,
 			engineModel: ai.EngineModelOpenaiGPT4Turbo,
 			engineData: map[string]any{
 				"key1": "val1",
@@ -70,7 +68,6 @@ func Test_Create(t *testing.T) {
 				},
 				Name:        "test name",
 				Detail:      "test detail",
-				EngineType:  ai.EngineTypeNone,
 				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
 				EngineData: map[string]any{
 					"key1": "val1",
@@ -108,7 +105,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -304,7 +301,6 @@ func Test_Update(t *testing.T) {
 		id          uuid.UUID
 		aiName      string
 		detail      string
-		engineType  ai.EngineType
 		engineModel ai.EngineModel
 		engineData  map[string]any
 		engineKey   string
@@ -321,7 +317,6 @@ func Test_Update(t *testing.T) {
 			id:          uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
 			aiName:      "new name",
 			detail:      "new detail",
-			engineType:  ai.EngineTypeNone,
 			engineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
 			engineData: map[string]any{
 				"key1": "val1",
@@ -368,7 +363,6 @@ func Test_Update(t *testing.T) {
 				tt.id,
 				tt.aiName,
 				tt.detail,
-				tt.engineType,
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,

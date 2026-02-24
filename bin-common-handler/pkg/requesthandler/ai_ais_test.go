@@ -164,7 +164,6 @@ func Test_AIV1AICreate(t *testing.T) {
 		customerID  uuid.UUID
 		aiName      string
 		detail      string
-		engineType  amai.EngineType
 		engineModel amai.EngineModel
 		engineData  map[string]any
 		engineKey   string
@@ -185,7 +184,6 @@ func Test_AIV1AICreate(t *testing.T) {
 			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  amai.EngineTypeNone,
 			engineModel: amai.EngineModelOpenaiGPT4,
 			engineData: map[string]any{
 				"key1": "value1",
@@ -231,7 +229,7 @@ func Test_AIV1AICreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -313,7 +311,6 @@ func Test_AIV1AIUpdate(t *testing.T) {
 		id          uuid.UUID
 		aiName      string
 		detail      string
-		engineType  amai.EngineType
 		engineModel amai.EngineModel
 		engineData  map[string]any
 		engineKey   string
@@ -334,7 +331,6 @@ func Test_AIV1AIUpdate(t *testing.T) {
 			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineType:  amai.EngineTypeNone,
 			engineModel: amai.EngineModelOpenaiGPT4,
 			engineData: map[string]any{
 				"key1": "value1",
@@ -380,7 +376,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

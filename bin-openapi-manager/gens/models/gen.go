@@ -27,11 +27,6 @@ const (
 	AIManagerAIEngineModelOpenaiO3Mini            AIManagerAIEngineModel = "openai.o3-mini"
 )
 
-// Defines values for AIManagerAIEngineType.
-const (
-	AIManagerAIEngineTypeNone AIManagerAIEngineType = ""
-)
-
 // Defines values for AIManagerAISTTType.
 const (
 	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
@@ -990,9 +985,6 @@ type AIManagerAI struct {
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
-	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
-	EngineType *AIManagerAIEngineType `json:"engine_type,omitempty"`
-
 	// Id The unique identifier of the AI.
 	Id *string `json:"id,omitempty"`
 
@@ -1026,9 +1018,6 @@ type AIManagerAI struct {
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
-
-// AIManagerAIEngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
-type AIManagerAIEngineType string
 
 // AIManagerAISTTType Speech-to-text provider type.
 type AIManagerAISTTType string
@@ -4093,11 +4082,8 @@ type PostAisJSONBody struct {
 
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
-
-	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
-	EngineType AIManagerAIEngineType `json:"engine_type"`
-	InitPrompt string                `json:"init_prompt"`
-	Name       string                `json:"name"`
+	InitPrompt  string                 `json:"init_prompt"`
+	Name        string                 `json:"name"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
@@ -4124,11 +4110,8 @@ type PutAisIdJSONBody struct {
 
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
-
-	// EngineType Type of engine used by the AI. Currently only empty string is defined in the backend.
-	EngineType AIManagerAIEngineType `json:"engine_type"`
-	InitPrompt string                `json:"init_prompt"`
-	Name       string                `json:"name"`
+	InitPrompt  string                 `json:"init_prompt"`
+	Name        string                 `json:"name"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`

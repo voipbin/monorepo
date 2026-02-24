@@ -10,7 +10,6 @@ func TestAI(t *testing.T) {
 
 		aiName      string
 		detail      string
-		engineType  EngineType
 		engineModel EngineModel
 		engineKey   string
 		initPrompt  string
@@ -23,7 +22,6 @@ func TestAI(t *testing.T) {
 
 			aiName:      "Test AI Agent",
 			detail:      "A test AI agent for unit testing",
-			engineType:  EngineTypeNone,
 			engineModel: EngineModelOpenaiGPT4O,
 			engineKey:   "sk-test-key",
 			initPrompt:  "You are a helpful assistant.",
@@ -36,7 +34,6 @@ func TestAI(t *testing.T) {
 
 			aiName:      "",
 			detail:      "",
-			engineType:  "",
 			engineModel: "",
 			engineKey:   "",
 			initPrompt:  "",
@@ -49,7 +46,6 @@ func TestAI(t *testing.T) {
 
 			aiName:      "Dialogflow Agent",
 			detail:      "A Dialogflow-powered agent",
-			engineType:  EngineTypeNone,
 			engineModel: EngineModelDialogflowCX,
 			engineKey:   "dialogflow-key",
 			initPrompt:  "",
@@ -64,7 +60,6 @@ func TestAI(t *testing.T) {
 			a := &AI{
 				Name:        tt.aiName,
 				Detail:      tt.detail,
-				EngineType:  tt.engineType,
 				EngineModel: tt.engineModel,
 				EngineKey:   tt.engineKey,
 				InitPrompt:  tt.initPrompt,
@@ -78,9 +73,6 @@ func TestAI(t *testing.T) {
 			}
 			if a.Detail != tt.detail {
 				t.Errorf("Wrong Detail. expect: %s, got: %s", tt.detail, a.Detail)
-			}
-			if a.EngineType != tt.engineType {
-				t.Errorf("Wrong EngineType. expect: %s, got: %s", tt.engineType, a.EngineType)
 			}
 			if a.EngineModel != tt.engineModel {
 				t.Errorf("Wrong EngineModel. expect: %s, got: %s", tt.engineModel, a.EngineModel)
@@ -99,28 +91,6 @@ func TestAI(t *testing.T) {
 			}
 			if a.STTType != tt.sttType {
 				t.Errorf("Wrong STTType. expect: %s, got: %s", tt.sttType, a.STTType)
-			}
-		})
-	}
-}
-
-func TestEngineTypeConstants(t *testing.T) {
-	tests := []struct {
-		name     string
-		constant EngineType
-		expected string
-	}{
-		{
-			name:     "engine_type_none",
-			constant: EngineTypeNone,
-			expected: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if string(tt.constant) != tt.expected {
-				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
 			}
 		})
 	}

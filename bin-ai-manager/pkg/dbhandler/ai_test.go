@@ -39,7 +39,6 @@ func Test_AICreate(t *testing.T) {
 				},
 				Name:       "test name",
 				Detail:     "test detail",
-				EngineType: ai.EngineTypeNone,
 				EngineData: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
@@ -59,7 +58,6 @@ func Test_AICreate(t *testing.T) {
 				},
 				Name:       "test name",
 				Detail:     "test detail",
-				EngineType: ai.EngineTypeNone,
 				EngineData: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
@@ -348,7 +346,6 @@ func Test_AIUpdate(t *testing.T) {
 			fields: map[ai.Field]any{
 				ai.FieldName:        "new name",
 				ai.FieldDetail:      "new detail",
-				ai.FieldEngineType:  ai.EngineTypeNone,
 				ai.FieldEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
 				ai.FieldEngineData: map[string]any{
 					"key1": "val1",
@@ -368,7 +365,6 @@ func Test_AIUpdate(t *testing.T) {
 				},
 				Name:        "new name",
 				Detail:      "new detail",
-				EngineType:  ai.EngineTypeNone,
 				EngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
 				EngineData: map[string]any{
 					"key1": "val1",

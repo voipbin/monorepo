@@ -61,8 +61,6 @@ put:
               type: string
             detail:
               type: string
-            engine_type:
-              $ref: '#/components/schemas/AIManagerAIEngineType'
             engine_model:
               $ref: '#/components/schemas/AIManagerAIEngineModel'
             engine_data:
@@ -91,7 +89,6 @@ put:
           required:
             - name
             - detail
-            - engine_type
             - engine_model
             - engine_data
             - engine_key
