@@ -1805,6 +1805,72 @@ components:
         - AIManagerAIcallStatusProgressing
         - AIManagerAIcallStatusEnd
 
+    AIManagerAITTSType:
+      type: string
+      description: Text-to-speech provider type.
+      example: "elevenlabs"
+      enum:
+        - ""
+        - async
+        - aws
+        - azure
+        - cartesia
+        - deepgram
+        - elevenlabs
+        - fish
+        - google
+        - groq
+        - hume
+        - inworld
+        - lmnt
+        - minimax
+        - neuphonic
+        - nvidia-riva
+        - openai
+        - piper
+        - playht
+        - rime
+        - sarvam
+        - xtts
+      x-enum-varnames:
+        - AIManagerAITTSTypeNone
+        - AIManagerAITTSTypeAsync
+        - AIManagerAITTSTypeAWS
+        - AIManagerAITTSTypeAzure
+        - AIManagerAITTSTypeCartesia
+        - AIManagerAITTSTypeDeepgram
+        - AIManagerAITTSTypeElevenLabs
+        - AIManagerAITTSTypeFish
+        - AIManagerAITTSTypeGoogle
+        - AIManagerAITTSTypeGroq
+        - AIManagerAITTSTypeHume
+        - AIManagerAITTSTypeInworld
+        - AIManagerAITTSTypeLMNT
+        - AIManagerAITTSTypeMiniMax
+        - AIManagerAITTSTypeNeuphonic
+        - AIManagerAITTSTypeNvidiaRiva
+        - AIManagerAITTSTypeOpenAI
+        - AIManagerAITTSTypePiper
+        - AIManagerAITTSTypePlayHT
+        - AIManagerAITTSTypeRime
+        - AIManagerAITTSTypeSarvam
+        - AIManagerAITTSTypeXTTS
+
+    AIManagerAISTTType:
+      type: string
+      description: Speech-to-text provider type.
+      example: "deepgram"
+      enum:
+        - ""
+        - cartesia
+        - deepgram
+        - elevenlabs
+      x-enum-varnames:
+        - AIManagerAISTTTypeNone
+        - AIManagerAISTTTypeCartesia
+        - AIManagerAISTTTypeDeepgram
+        - AIManagerAISTTTypeElevenLabs
+
     AIManagerAIcall:
       type: object
       properties:
@@ -1834,18 +1900,17 @@ components:
           type: object
           additionalProperties: true
           description: Custom key-value configuration data specific to the AI engine type.
+          example:
+            temperature: 0.7
+            max_tokens: 1024
         ai_tts_type:
-          type: string
-          description: Text-to-speech provider type used for this call.
-          example: "elevenlabs"
+          $ref: '#/components/schemas/AIManagerAITTSType'
         ai_tts_voice_id:
           type: string
           description: Text-to-speech voice identifier used for this call.
           example: "21m00Tcm4TlvDq8ikWAM"
         ai_stt_type:
-          type: string
-          description: Speech-to-text provider type used for this call.
-          example: "deepgram"
+          $ref: '#/components/schemas/AIManagerAISTTType'
         activeflow_id:
           type: string
           format: uuid

@@ -30,6 +30,40 @@ const (
 	AIManagerAIEngineTypeDialogFlow AIManagerAIEngineType = "dialogflow"
 )
 
+// Defines values for AIManagerAISTTType.
+const (
+	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
+	AIManagerAISTTTypeDeepgram   AIManagerAISTTType = "deepgram"
+	AIManagerAISTTTypeElevenLabs AIManagerAISTTType = "elevenlabs"
+	AIManagerAISTTTypeNone       AIManagerAISTTType = ""
+)
+
+// Defines values for AIManagerAITTSType.
+const (
+	AIManagerAITTSTypeAWS        AIManagerAITTSType = "aws"
+	AIManagerAITTSTypeAsync      AIManagerAITTSType = "async"
+	AIManagerAITTSTypeAzure      AIManagerAITTSType = "azure"
+	AIManagerAITTSTypeCartesia   AIManagerAITTSType = "cartesia"
+	AIManagerAITTSTypeDeepgram   AIManagerAITTSType = "deepgram"
+	AIManagerAITTSTypeElevenLabs AIManagerAITTSType = "elevenlabs"
+	AIManagerAITTSTypeFish       AIManagerAITTSType = "fish"
+	AIManagerAITTSTypeGoogle     AIManagerAITTSType = "google"
+	AIManagerAITTSTypeGroq       AIManagerAITTSType = "groq"
+	AIManagerAITTSTypeHume       AIManagerAITTSType = "hume"
+	AIManagerAITTSTypeInworld    AIManagerAITTSType = "inworld"
+	AIManagerAITTSTypeLMNT       AIManagerAITTSType = "lmnt"
+	AIManagerAITTSTypeMiniMax    AIManagerAITTSType = "minimax"
+	AIManagerAITTSTypeNeuphonic  AIManagerAITTSType = "neuphonic"
+	AIManagerAITTSTypeNone       AIManagerAITTSType = ""
+	AIManagerAITTSTypeNvidiaRiva AIManagerAITTSType = "nvidia-riva"
+	AIManagerAITTSTypeOpenAI     AIManagerAITTSType = "openai"
+	AIManagerAITTSTypePiper      AIManagerAITTSType = "piper"
+	AIManagerAITTSTypePlayHT     AIManagerAITTSType = "playht"
+	AIManagerAITTSTypeRime       AIManagerAITTSType = "rime"
+	AIManagerAITTSTypeSarvam     AIManagerAITTSType = "sarvam"
+	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
+)
+
 // Defines values for AIManagerAIcallGender.
 const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
@@ -942,6 +976,12 @@ type AIManagerAIEngineModel string
 // AIManagerAIEngineType Type of engine used by the ai.
 type AIManagerAIEngineType string
 
+// AIManagerAISTTType Speech-to-text provider type.
+type AIManagerAISTTType string
+
+// AIManagerAITTSType Text-to-speech provider type.
+type AIManagerAITTSType string
+
 // AIManagerAIcall defines model for AIManagerAIcall.
 type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
@@ -956,11 +996,11 @@ type AIManagerAIcall struct {
 	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
 	AiId *string `json:"ai_id,omitempty"`
 
-	// AiSttType Speech-to-text provider type used for this call.
-	AiSttType *string `json:"ai_stt_type,omitempty"`
+	// AiSttType Speech-to-text provider type.
+	AiSttType *AIManagerAISTTType `json:"ai_stt_type,omitempty"`
 
-	// AiTtsType Text-to-speech provider type used for this call.
-	AiTtsType *string `json:"ai_tts_type,omitempty"`
+	// AiTtsType Text-to-speech provider type.
+	AiTtsType *AIManagerAITTSType `json:"ai_tts_type,omitempty"`
 
 	// AiTtsVoiceId Text-to-speech voice identifier used for this call.
 	AiTtsVoiceId *string `json:"ai_tts_voice_id,omitempty"`
