@@ -44,17 +44,35 @@ Create a call to the destination. The call must be answered before starting STT/
             "flow_id": "00000000-0000-0000-0000-000000000000"
         }'
 
-**Response (201 Created):**
+**Response (200 OK):**
 
 .. code::
 
     {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "status": "dialing",
-        ...
+        "calls": [],
+        "groupcalls": [
+            {
+                "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+                "status": "progressing",
+                "source": {
+                    "type": "tel",
+                    "target": "+15551234567"
+                },
+                "destinations": [
+                    {
+                        "type": "tel",
+                        "target": "+15559876543"
+                    }
+                ],
+                "call_ids": [
+                    "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                ],
+                ...
+            }
+        ]
     }
 
-Save the ``id`` value — this is your ``call_id`` (UUID). Wait for the call to reach ``progressing`` status by listening for a ``call_progressing`` webhook event, or poll ``GET /calls/{call_id}`` until ``status`` is ``progressing``.
+The response contains ``calls`` and ``groupcalls`` arrays. Extract your ``call_id`` from the ``call_ids`` field inside the groupcall object (e.g., ``groupcalls[0].call_ids[0]``). This is the UUID you will use for transcription and speaking sessions. Wait for the call to reach ``progressing`` status by listening for a ``call_progressing`` webhook event, or poll ``GET /calls/{call_id}`` until ``status`` is ``progressing``.
 
 
 Step 2: Start Transcription
@@ -195,6 +213,7 @@ When the caller responds, VoIPBIN delivers a ``transcript_created`` event to you
     import requests
 
     VOIPBIN_TOKEN = "<YOUR_AUTH_TOKEN>"
+    TRANSCRIBE_ID = "550e8400-e29b-41d4-a716-446655440000"
     SPEAKING_ID = "b2c3d4e5-f6a7-8901-bcde-f12345678901"
 
     app = Flask(__name__)

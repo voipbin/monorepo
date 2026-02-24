@@ -637,15 +637,33 @@ conversational agents</p></td>
     }&#39;
 </pre></div>
 </div>
-<p><strong>Response (201 Created):</strong></p>
+<p><strong>Response (200 OK):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-    <span class="o">...</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+            <span class="p">],</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Save the <code class="docutils literal notranslate"><span class="pre">id</span></code> value — this is your <code class="docutils literal notranslate"><span class="pre">call_id</span></code> (UUID). Wait for the call to reach <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status by listening for a <code class="docutils literal notranslate"><span class="pre">call_progressing</span></code> webhook event, or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call_id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p>
+<p>The response contains <code class="docutils literal notranslate"><span class="pre">calls</span></code> and <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> arrays. Extract your <code class="docutils literal notranslate"><span class="pre">call_id</span></code> from the <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> field inside the groupcall object (e.g., <code class="docutils literal notranslate"><span class="pre">groupcalls[0].call_ids[0]</span></code>). This is the UUID you will use for transcription and speaking sessions. Wait for the call to reach <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status by listening for a <code class="docutils literal notranslate"><span class="pre">call_progressing</span></code> webhook event, or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call_id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p>
 </section>
 <section id="step-2-start-transcription">
 <h3>Step 2: Start Transcription<a class="headerlink" href="#step-2-start-transcription" title="Link to this heading"></a></h3>
@@ -757,6 +775,7 @@ conversational agents</p></td>
 <span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">VOIPBIN_TOKEN</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">TRANSCRIBE_ID</span> <span class="o">=</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span>
 <span class="n">SPEAKING_ID</span> <span class="o">=</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
