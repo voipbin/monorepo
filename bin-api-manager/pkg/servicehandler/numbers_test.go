@@ -571,7 +571,7 @@ func Test_NumberRenew(t *testing.T) {
 		tmRenew string
 
 		responseNumbers []nmnumber.Number
-		expectRes       []*nmnumber.WebhookMessage
+		expectRes       []*nmnumber.Number
 	}
 
 	tests := []test{
@@ -599,7 +599,7 @@ func Test_NumberRenew(t *testing.T) {
 					},
 				},
 			},
-			expectRes: []*nmnumber.WebhookMessage{
+			expectRes: []*nmnumber.Number{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),

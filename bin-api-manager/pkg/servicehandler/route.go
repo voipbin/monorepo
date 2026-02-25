@@ -33,7 +33,7 @@ func (h *serviceHandler) routeGet(ctx context.Context, routeID uuid.UUID) (*rmro
 
 // RouteGet sends a request to route-manager
 // to getting the route.
-func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGet",
 		"customer_id": a.CustomerID,
@@ -54,14 +54,13 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "RouteGets",
 		"username": a.Username,
@@ -88,10 +87,9 @@ func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size u
 		return nil, err
 	}
 
-	res := []*rmroute.WebhookMessage{}
-	for _, tmp := range tmps {
-		e := tmp.ConvertWebhookMessage()
-		res = append(res, e)
+	res := make([]*rmroute.Route, len(tmps))
+	for i := range tmps {
+		res[i] = &tmps[i]
 	}
 
 	return res, nil
@@ -100,7 +98,7 @@ func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size u
 // RouteGetsByCustomerID sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGetsByCustomerID",
 		"customer_id": customerID,
@@ -129,10 +127,9 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.A
 		return nil, err
 	}
 
-	res := []*rmroute.WebhookMessage{}
-	for _, tmp := range tmps {
-		e := tmp.ConvertWebhookMessage()
-		res = append(res, e)
+	res := make([]*rmroute.Route, len(tmps))
+	for i := range tmps {
+		res[i] = &tmps[i]
 	}
 
 	return res, nil
@@ -150,7 +147,7 @@ func (h *serviceHandler) RouteCreate(
 	providerID uuid.UUID,
 	priority int,
 	target string,
-) (*rmroute.WebhookMessage, error) {
+) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteCreate",
 		"customer_id": customerID,
@@ -180,14 +177,13 @@ func (h *serviceHandler) RouteCreate(
 	}
 	log.WithField("route", tmp).Debug("Created a new route.")
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // RouteDelete sends a request to route-manager
 // to deleting the route.
 // it returns error if it failed.
-func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteDelete",
 		"customer_id": a.CustomerID,
@@ -215,8 +211,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, rout
 	}
 	log.WithField("route", tmp).Debugf("Deleted route. route_id: %s", tmp.ID)
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // RouteUpdate sends a request to route-manager
@@ -231,7 +226,7 @@ func (h *serviceHandler) RouteUpdate(
 	providerID uuid.UUID,
 	priority int,
 	target string,
-) (*rmroute.WebhookMessage, error) {
+) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteUpdate",
 		"customer_id": a.CustomerID,
@@ -258,6 +253,5 @@ func (h *serviceHandler) RouteUpdate(
 	}
 	log.WithField("route", tmp).Debugf("Updated route. route_id: %s", tmp.ID)
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }

@@ -25,7 +25,7 @@ func Test_providersGet(t *testing.T) {
 
 		reqQuery string
 
-		responseProviders []*rmprovider.WebhookMessage
+		responseProviders []*rmprovider.Provider
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -43,7 +43,7 @@ func Test_providersGet(t *testing.T) {
 
 			reqQuery: "/providers?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseProviders: []*rmprovider.WebhookMessage{
+			responseProviders: []*rmprovider.Provider{
 				{
 					ID:       uuid.FromStringOrNil("088b16ac-515f-11ed-a848-cb013a2391a9"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -64,7 +64,7 @@ func Test_providersGet(t *testing.T) {
 
 			reqQuery: "/providers?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseProviders: []*rmprovider.WebhookMessage{
+			responseProviders: []*rmprovider.Provider{
 				{
 					ID:       uuid.FromStringOrNil("3829653a-515f-11ed-a1a8-6b5ca0211d65"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -129,7 +129,7 @@ func Test_providersPost(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseProvider *rmprovider.WebhookMessage
+		responseProvider *rmprovider.Provider
 
 		expectType        rmprovider.Type
 		expectHostname    string
@@ -153,7 +153,7 @@ func Test_providersPost(t *testing.T) {
 			reqQuery: "/providers",
 			reqBody:  []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header_1":"val1","header_2":"val2"},"name":"test name","detail":"test detail"}`),
 
-			responseProvider: &rmprovider.WebhookMessage{
+			responseProvider: &rmprovider.Provider{
 				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
 			},
 
@@ -225,7 +225,7 @@ func Test_providersIDGet(t *testing.T) {
 
 		reqQuery string
 
-		responseProvider *rmprovider.WebhookMessage
+		responseProvider *rmprovider.Provider
 
 		expectProviderID uuid.UUID
 		expectRes        string
@@ -242,7 +242,7 @@ func Test_providersIDGet(t *testing.T) {
 
 			reqQuery: "/providers/d091abe2-5160-11ed-b13c-57769429b0f0",
 
-			responseProvider: &rmprovider.WebhookMessage{
+			responseProvider: &rmprovider.Provider{
 				ID:       uuid.FromStringOrNil("d091abe2-5160-11ed-b13c-57769429b0f0"),
 				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
@@ -295,7 +295,7 @@ func Test_providersIDDelete(t *testing.T) {
 
 		reqQuery string
 
-		responseProvider *rmprovider.WebhookMessage
+		responseProvider *rmprovider.Provider
 
 		expectProviderID uuid.UUID
 		expectRes        string
@@ -312,7 +312,7 @@ func Test_providersIDDelete(t *testing.T) {
 
 			reqQuery: "/providers/528bae9a-5161-11ed-b6c1-03e42a38600c",
 
-			responseProvider: &rmprovider.WebhookMessage{
+			responseProvider: &rmprovider.Provider{
 				ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
 			},
 
@@ -374,7 +374,7 @@ func Test_providersIDPut(t *testing.T) {
 		expectName         string
 		expectDetail       string
 
-		responseProvider *rmprovider.WebhookMessage
+		responseProvider *rmprovider.Provider
 
 		expectRes string
 	}{
@@ -401,7 +401,7 @@ func Test_providersIDPut(t *testing.T) {
 			expectName:   "update name",
 			expectDetail: "update detail",
 
-			responseProvider: &rmprovider.WebhookMessage{
+			responseProvider: &rmprovider.Provider{
 				ID: uuid.FromStringOrNil("169cbfe0-5162-11ed-9be1-872503f37e02"),
 			},
 

@@ -27,7 +27,7 @@ func Test_ProviderGet(t *testing.T) {
 		id    uuid.UUID
 
 		response  *rmprovider.Provider
-		expectRes *rmprovider.WebhookMessage
+		expectRes *rmprovider.Provider
 	}
 
 	tests := []test{
@@ -46,7 +46,7 @@ func Test_ProviderGet(t *testing.T) {
 			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("0c6f3dd3-929e-4d3b-8231-5e8c10db6c21"),
 			},
-			&rmprovider.WebhookMessage{
+			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("0c6f3dd3-929e-4d3b-8231-5e8c10db6c21"),
 			},
 		},
@@ -91,7 +91,7 @@ func Test_ProviderList(t *testing.T) {
 		pageSize  uint64
 
 		responseProviders []rmprovider.Provider
-		expectRes         []*rmprovider.WebhookMessage
+		expectRes         []*rmprovider.Provider
 	}
 
 	tests := []test{
@@ -113,7 +113,7 @@ func Test_ProviderList(t *testing.T) {
 					ID: uuid.FromStringOrNil("d9603c2b-643c-43f2-9d58-71733785d45b"),
 				},
 			},
-			[]*rmprovider.WebhookMessage{
+			[]*rmprovider.Provider{
 				{
 					ID: uuid.FromStringOrNil("d9603c2b-643c-43f2-9d58-71733785d45b"),
 				},
@@ -164,7 +164,7 @@ func Test_ProviderCreate(t *testing.T) {
 		detail       string
 
 		response  *rmprovider.Provider
-		expectRes *rmprovider.WebhookMessage
+		expectRes *rmprovider.Provider
 	}
 
 	tests := []test{
@@ -192,7 +192,7 @@ func Test_ProviderCreate(t *testing.T) {
 			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("c26e8f5b-5d5b-4618-a386-e633773f538e"),
 			},
-			&rmprovider.WebhookMessage{
+			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("c26e8f5b-5d5b-4618-a386-e633773f538e"),
 			},
 		},
@@ -255,7 +255,7 @@ func Test_ProviderDelete(t *testing.T) {
 		providerID uuid.UUID
 
 		responseProvider *rmprovider.Provider
-		expectRes        *rmprovider.WebhookMessage
+		expectRes        *rmprovider.Provider
 	}
 
 	tests := []test{
@@ -274,7 +274,7 @@ func Test_ProviderDelete(t *testing.T) {
 			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("3b889381-8944-49fa-8220-1a3b8b4d0894"),
 			},
-			&rmprovider.WebhookMessage{
+			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("3b889381-8944-49fa-8220-1a3b8b4d0894"),
 			},
 		},
@@ -327,7 +327,7 @@ func Test_ProviderUpdate(t *testing.T) {
 		detail       string
 
 		responseProvider *rmprovider.Provider
-		expectRes        *rmprovider.WebhookMessage
+		expectRes        *rmprovider.Provider
 	}
 
 	tests := []test{
@@ -357,7 +357,7 @@ func Test_ProviderUpdate(t *testing.T) {
 			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("9d4a55e6-f197-497a-a359-06d1858de39e"),
 			},
-			&rmprovider.WebhookMessage{
+			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("9d4a55e6-f197-497a-a359-06d1858de39e"),
 			},
 		},

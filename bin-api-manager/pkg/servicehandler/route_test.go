@@ -27,7 +27,7 @@ func Test_RouteGet(t *testing.T) {
 		id    uuid.UUID
 
 		responseRoute *rmroute.Route
-		expectRes     *rmroute.WebhookMessage
+		expectRes     *rmroute.Route
 	}
 
 	tests := []test{
@@ -47,7 +47,7 @@ func Test_RouteGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("19dd98af-0e61-4735-909f-e0da0873ef44"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&rmroute.WebhookMessage{
+			&rmroute.Route{
 				ID:         uuid.FromStringOrNil("19dd98af-0e61-4735-909f-e0da0873ef44"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
@@ -94,7 +94,7 @@ func Test_RouteList(t *testing.T) {
 		pageSize  uint64
 
 		responseRoutes []rmroute.Route
-		expectRes      []*rmroute.WebhookMessage
+		expectRes      []*rmroute.Route
 	}
 
 	tests := []test{
@@ -117,7 +117,7 @@ func Test_RouteList(t *testing.T) {
 					ID: uuid.FromStringOrNil("f65b0310-68a1-11ee-8c62-73e88f334b47"),
 				},
 			},
-			[]*rmroute.WebhookMessage{
+			[]*rmroute.Route{
 				{
 					ID: uuid.FromStringOrNil("f65b0310-68a1-11ee-8c62-73e88f334b47"),
 				},
@@ -165,7 +165,7 @@ func Test_RouteListByCustomerID(t *testing.T) {
 		pageSize   uint64
 
 		responseRoutes []rmroute.Route
-		expectRes      []*rmroute.WebhookMessage
+		expectRes      []*rmroute.Route
 	}
 
 	tests := []test{
@@ -189,7 +189,7 @@ func Test_RouteListByCustomerID(t *testing.T) {
 					ID: uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
 				},
 			},
-			[]*rmroute.WebhookMessage{
+			[]*rmroute.Route{
 				{
 					ID: uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
 				},
@@ -240,7 +240,7 @@ func Test_RouteCreate(t *testing.T) {
 		target     string
 
 		responseRoute *rmroute.Route
-		expectRes     *rmroute.WebhookMessage
+		expectRes     *rmroute.Route
 	}
 
 	tests := []test{
@@ -265,7 +265,7 @@ func Test_RouteCreate(t *testing.T) {
 			&rmroute.Route{
 				ID: uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
 			},
-			&rmroute.WebhookMessage{
+			&rmroute.Route{
 				ID: uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
 			},
 		},
@@ -326,7 +326,7 @@ func Test_RouteDelete(t *testing.T) {
 		routeID uuid.UUID
 
 		responseRoute *rmroute.Route
-		expectRes     *rmroute.WebhookMessage
+		expectRes     *rmroute.Route
 	}
 
 	tests := []test{
@@ -346,7 +346,7 @@ func Test_RouteDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("15700708-0f25-4d46-b72e-1d489abc2cea"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&rmroute.WebhookMessage{
+			&rmroute.Route{
 				ID:         uuid.FromStringOrNil("15700708-0f25-4d46-b72e-1d489abc2cea"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
@@ -398,7 +398,7 @@ func Test_RouteUpdate(t *testing.T) {
 		target     string
 
 		responseRoute *rmroute.Route
-		expectRes     *rmroute.WebhookMessage
+		expectRes     *rmroute.Route
 	}
 
 	tests := []test{
@@ -424,7 +424,7 @@ func Test_RouteUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&rmroute.WebhookMessage{
+			&rmroute.Route{
 				ID:         uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},

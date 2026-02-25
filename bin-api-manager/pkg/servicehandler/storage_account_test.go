@@ -82,7 +82,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
-		expectRes              *smaccount.WebhookMessage
+		expectRes              *smaccount.Account
 	}{
 		{
 			name: "normal",
@@ -101,7 +101,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
 				TMDelete: nil,
 			},
-			expectRes: &smaccount.WebhookMessage{
+			expectRes: &smaccount.Account{
 				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
 				TMDelete: nil,
@@ -149,7 +149,7 @@ func Test_StorageAccountList(t *testing.T) {
 
 		responseStorageAcounts []smaccount.Account
 		expectFilters          map[smaccount.Field]any
-		expectRes              []*smaccount.WebhookMessage
+		expectRes              []*smaccount.Account
 	}{
 		{
 			name: "normal",
@@ -174,7 +174,7 @@ func Test_StorageAccountList(t *testing.T) {
 			expectFilters: map[smaccount.Field]any{
 				smaccount.FieldDeleted: false,
 			},
-			expectRes: []*smaccount.WebhookMessage{
+			expectRes: []*smaccount.Account{
 				{
 					ID: uuid.FromStringOrNil("6a1a3db8-1bd8-11ef-bffb-8bab4b517f52"),
 				},
@@ -223,7 +223,7 @@ func Test_StorageAccountCreate(t *testing.T) {
 		customerID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
-		expectRes              *smaccount.WebhookMessage
+		expectRes              *smaccount.Account
 	}{
 		{
 			name: "normal",
@@ -240,7 +240,7 @@ func Test_StorageAccountCreate(t *testing.T) {
 			responseStorageAccount: &smaccount.Account{
 				ID: uuid.FromStringOrNil("f27afcba-1bd8-11ef-a4b8-6f4d6a5ab550"),
 			},
-			expectRes: &smaccount.WebhookMessage{
+			expectRes: &smaccount.Account{
 				ID: uuid.FromStringOrNil("f27afcba-1bd8-11ef-a4b8-6f4d6a5ab550"),
 			},
 		},

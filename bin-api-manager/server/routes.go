@@ -42,7 +42,7 @@ func (h *server) GetRoutes(c *gin.Context, params openapi_server.GetRoutesParams
 		pageToken = *params.PageToken
 	}
 
-	var tmps []*rmroute.WebhookMessage
+	var tmps []*rmroute.Route
 	var err error
 
 	if params.CustomerId != nil {

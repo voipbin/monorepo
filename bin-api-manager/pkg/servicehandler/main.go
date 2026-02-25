@@ -150,8 +150,8 @@ type ServiceHandler interface {
 
 	// billing accounts
 	BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
-	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
-	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
+	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error)
+	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error)
 	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)
 	BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
 
@@ -445,10 +445,10 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.WebhookMessage, error)
-	CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	) (*cscustomer.Customer, error)
+	CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerSelfGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
-	CustomerList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error)
+	CustomerList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.Customer, error)
 	CustomerUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -460,7 +460,7 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.WebhookMessage, error)
+	) (*cscustomer.Customer, error)
 	CustomerSelfUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -472,13 +472,13 @@ type ServiceHandler interface {
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
-	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
-	CustomerFreeze(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
-	CustomerRecover(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error)
+	CustomerFreeze(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error)
+	CustomerRecover(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerSelfFreeze(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerSelfFreezeAndDelete(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
-	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
 		ctx context.Context,
@@ -557,7 +557,7 @@ type ServiceHandler interface {
 	NumberDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberUpdateFlowIDs(ctx context.Context, a *amagent.Agent, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
-	NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.WebhookMessage, error)
+	NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.Number, error)
 
 	// outdials
 	OutdialCreate(ctx context.Context, a *amagent.Agent, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)
@@ -629,10 +629,10 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
-	) (*rmprovider.WebhookMessage, error)
-	ProviderDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.WebhookMessage, error)
-	ProviderGet(ctx context.Context, a *amagent.Agent, providerID uuid.UUID) (*rmprovider.WebhookMessage, error)
-	ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.WebhookMessage, error)
+	) (*rmprovider.Provider, error)
+	ProviderDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.Provider, error)
+	ProviderGet(ctx context.Context, a *amagent.Agent, providerID uuid.UUID) (*rmprovider.Provider, error)
+	ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.Provider, error)
 	ProviderUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -644,7 +644,7 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
-	) (*rmprovider.WebhookMessage, error)
+	) (*rmprovider.Provider, error)
 
 	// queue handlers
 	QueueGet(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
@@ -692,9 +692,9 @@ type ServiceHandler interface {
 	RecordingfileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error)
 
 	// route handlers
-	RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
-	RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error)
-	RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.WebhookMessage, error)
+	RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error)
+	RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.Route, error)
+	RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.Route, error)
 	RouteCreate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -704,8 +704,8 @@ type ServiceHandler interface {
 		providerID uuid.UUID,
 		priority int,
 		target string,
-	) (*rmroute.WebhookMessage, error)
-	RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
+	) (*rmroute.Route, error)
+	RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error)
 	RouteUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -715,7 +715,7 @@ type ServiceHandler interface {
 		providerID uuid.UUID,
 		priority int,
 		target string,
-	) (*rmroute.WebhookMessage, error)
+	) (*rmroute.Route, error)
 
 	// service_agent agent
 	ServiceAgentAgentList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error)
@@ -829,11 +829,11 @@ type ServiceHandler interface {
 	ServiceAgentMeUpdatePassword(ctx context.Context, a *amagent.Agent, password string) (*amagent.WebhookMessage, error)
 
 	// storage account
-	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
+	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.Account, error)
 	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGetByCustomerID(ctx context.Context, a *amagent.Agent) (*smaccount.WebhookMessage, error)
-	StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error)
-	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
+	StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.Account, error)
+	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.Account, error)
 
 	// storage file
 	StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)

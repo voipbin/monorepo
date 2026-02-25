@@ -25,7 +25,7 @@ func Test_storageAccountsGet(t *testing.T) {
 
 		reqQuery string
 
-		responseAccounts []*smaccount.WebhookMessage
+		responseAccounts []*smaccount.Account
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -46,7 +46,7 @@ func Test_storageAccountsGet(t *testing.T) {
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 
-			responseAccounts: []*smaccount.WebhookMessage{
+			responseAccounts: []*smaccount.Account{
 				{
 					ID: uuid.FromStringOrNil("6adce0da-004e-11ee-b74a-23da476139db"),
 				},
@@ -100,7 +100,7 @@ func Test_storageAccountsPost(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseAccount *smaccount.WebhookMessage
+		responseAccount *smaccount.Account
 
 		expectCustomerID uuid.UUID
 		expectRes        string
@@ -118,7 +118,7 @@ func Test_storageAccountsPost(t *testing.T) {
 			reqQuery: "/storage_accounts",
 			reqBody:  []byte(`{"customer_id":"a77397a6-1bef-11ef-bb4f-d76f9d478e32"}`),
 
-			responseAccount: &smaccount.WebhookMessage{
+			responseAccount: &smaccount.Account{
 				ID: uuid.FromStringOrNil("ae58a520-1bef-11ef-afdc-571791bb0855"),
 			},
 
@@ -242,7 +242,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 
 		reqQuery string
 
-		responseAccount        *smaccount.WebhookMessage
+		responseAccount        *smaccount.Account
 		expectStorageAccountID uuid.UUID
 		expectRes              string
 	}
@@ -258,7 +258,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 
 			reqQuery: "/storage_accounts/c88754b4-1bef-11ef-b6d2-0b09724bcbc3",
 
-			responseAccount: &smaccount.WebhookMessage{
+			responseAccount: &smaccount.Account{
 				ID: uuid.FromStringOrNil("c88754b4-1bef-11ef-b6d2-0b09724bcbc3"),
 			},
 
