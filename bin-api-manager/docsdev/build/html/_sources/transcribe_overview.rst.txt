@@ -227,6 +227,24 @@ Receiving Transcripts
 ---------------------
 VoIPBIN delivers transcripts to your application via webhooks or WebSocket subscription.
 
+**Webhook Event Types**
+
+VoIPBIN generates the following events during a transcription session:
+
++------------------------------------+--------------------------------------------------------------+
+| Event Type                         | Description                                                  |
++====================================+==============================================================+
+| ``transcript_created``             | Final transcribed text segment                               |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_started``      | Voice activity detected (speaker began talking)              |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_interim``      | Partial transcript while speaker is still talking            |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_ended``        | Voice activity ended (speaker stopped talking)               |
++------------------------------------+--------------------------------------------------------------+
+
+The ``transcript_created`` event delivers final, complete transcript segments. The speech events provide real-time voice activity detection and interim results, useful for AI voice agent integrations. See :ref:`Speech Webhook Message <transcribe-struct-speech-webhook>` for the speech event payload structure.
+
 **Webhook Delivery (Push)**
 
 Configure a webhook URL in your customer settings to receive ``transcript_created`` events automatically.

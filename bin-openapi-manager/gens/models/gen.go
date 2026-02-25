@@ -3747,6 +3747,31 @@ type TimelineManagerEvent struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
+// TranscribeManagerSpeechWebhookMessage Webhook payload for speech recognition events (transcribe_speech_started, transcribe_speech_interim, transcribe_speech_ended). Delivered when voice activity is detected during a streaming transcription session.
+type TranscribeManagerSpeechWebhookMessage struct {
+	// CustomerId The unique identifier of the customer who owns this transcription session. Returned from the `GET /customers` response.
+	CustomerId *string                               `json:"customer_id,omitempty"`
+	Direction  *TranscribeManagerTranscriptDirection `json:"direction,omitempty"`
+
+	// Id The unique identifier of the speech event.
+	Id *string `json:"id,omitempty"`
+
+	// Message The interim transcribed text. Present for `transcribe_speech_interim` events. Empty for `transcribe_speech_started` and `transcribe_speech_ended` events.
+	Message *string `json:"message,omitempty"`
+
+	// StreamingId The unique identifier of the audio streaming session that produced this speech event.
+	StreamingId *string `json:"streaming_id,omitempty"`
+
+	// TmCreate Timestamp when the speech event record was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmEvent Timestamp when the speech event occurred.
+	TmEvent *string `json:"tm_event,omitempty"`
+
+	// TranscribeId The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response.
+	TranscribeId *string `json:"transcribe_id,omitempty"`
+}
+
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
 	// ActiveflowId The unique identifier of the activeflow associated with this transcribe session. Returned from the `POST /activeflows` or `GET /activeflows` response.

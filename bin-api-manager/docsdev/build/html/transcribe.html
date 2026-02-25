@@ -400,6 +400,30 @@ speaker relative to conference)</p></td>
 <section id="receiving-transcripts">
 <h3>Receiving Transcripts<a class="headerlink" href="#receiving-transcripts" title="Link to this heading"></a></h3>
 <p>VoIPBIN delivers transcripts to your application via webhooks or WebSocket subscription.</p>
+<p><strong>Webhook Event Types</strong></p>
+<p>VoIPBIN generates the following events during a transcription session:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcript_created</span></code></p></td>
+<td><p>Final transcribed text segment</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code></p></td>
+<td><p>Voice activity detected (speaker began talking)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code></p></td>
+<td><p>Partial transcript while speaker is still talking</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code></p></td>
+<td><p>Voice activity ended (speaker stopped talking)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event delivers final, complete transcript segments. The speech events provide real-time voice activity detection and interim results, useful for AI voice agent integrations. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-speech-webhook"><span class="std std-ref">Speech Webhook Message</span></a> for the speech event payload structure.</p>
 <p><strong>Webhook Delivery (Push)</strong></p>
 <p>Configure a webhook URL in your customer settings to receive <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events automatically.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span>                           <span class="n">Your</span> <span class="n">App</span>
@@ -1492,6 +1516,84 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </table>
 </section>
 </section>
+<section id="speech-webhook-message">
+<span id="transcribe-struct-speech-webhook"></span><h2>Speech Webhook Message<a class="headerlink" href="#speech-webhook-message" title="Link to this heading"></a></h2>
+<section id="id9">
+<h3>Speech Webhook Message<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<p>The speech webhook message is the payload delivered for <code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code>, and <code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code> events. These events are generated during a real-time streaming transcription session when voice activity is detected.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The unique identifier of the speech event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this transcription session. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">streaming_id</span></code> (UUID): The unique identifier of the audio streaming session that produced this event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The parent transcribe session’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code> or the response of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): Whether the speech was incoming or outgoing. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcription-direction"><span class="std std-ref">Direction</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (String): The interim transcribed text. Present for <code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code> events. Empty for <code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code> and <code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code> events.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_event</span></code> (string, ISO 8601): Timestamp when the speech event occurred.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the speech event record was created.</p></li>
+</ul>
+<section id="id10">
+<h4>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<p><strong>transcribe_speech_started:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_speech_started&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:07.229309&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:07.229309&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>transcribe_speech_interim:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_speech_interim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I need help with my account&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:08.115000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:08.115000&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>transcribe_speech_ended:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_speech_ended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:12.500000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:12.500000&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
 </section>
 
 </main>
@@ -1554,6 +1656,13 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </ul>
 </li>
 <li><a class="reference internal" href="#direction">direction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#speech-webhook-message">Speech Webhook Message</a><ul>
+<li><a class="reference internal" href="#id9">Speech Webhook Message</a><ul>
+<li><a class="reference internal" href="#id10">Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

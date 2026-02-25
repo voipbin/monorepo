@@ -5889,6 +5889,55 @@ components:
           description: "Timestamp when the transcript record was created."
           example: "2026-01-15T09:30:00.000000Z"
 
+    TranscribeManagerSpeechWebhookMessage:
+      type: object
+      description: "Webhook payload for speech recognition events (transcribe_speech_started, transcribe_speech_interim, transcribe_speech_ended). Delivered when voice activity is detected during a streaming transcription session."
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the speech event."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the customer who owns this transcription session. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        streaming_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the audio streaming session that produced this speech event."
+          example: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e"
+        transcribe_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response."
+          example: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f"
+        direction:
+          $ref: '#/components/schemas/TranscribeManagerTranscriptDirection'
+          description: "The audio direction of this speech event."
+          example: "in"
+        message:
+          type: string
+          description: "The interim transcribed text. Present for `transcribe_speech_interim` events. Empty for `transcribe_speech_started` and `transcribe_speech_ended` events."
+          example: "Hello, I need help with my account"
+        tm_event:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the speech event occurred."
+          example: "2026-01-15T09:31:15.000000Z"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the speech event record was created."
+          example: "2026-01-15T09:31:15.000000Z"
+
 
 #########################################
 # Transfer Manager

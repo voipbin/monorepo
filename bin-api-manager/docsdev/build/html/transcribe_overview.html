@@ -394,6 +394,30 @@ speaker relative to conference)</p></td>
 <section id="receiving-transcripts">
 <h2>Receiving Transcripts<a class="headerlink" href="#receiving-transcripts" title="Link to this heading"></a></h2>
 <p>VoIPBIN delivers transcripts to your application via webhooks or WebSocket subscription.</p>
+<p><strong>Webhook Event Types</strong></p>
+<p>VoIPBIN generates the following events during a transcription session:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcript_created</span></code></p></td>
+<td><p>Final transcribed text segment</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code></p></td>
+<td><p>Voice activity detected (speaker began talking)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code></p></td>
+<td><p>Partial transcript while speaker is still talking</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code></p></td>
+<td><p>Voice activity ended (speaker stopped talking)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event delivers final, complete transcript segments. The speech events provide real-time voice activity detection and interim results, useful for AI voice agent integrations. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-speech-webhook"><span class="std std-ref">Speech Webhook Message</span></a> for the speech event payload structure.</p>
 <p><strong>Webhook Delivery (Push)</strong></p>
 <p>Configure a webhook URL in your customer settings to receive <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events automatically.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span>                           <span class="n">Your</span> <span class="n">App</span>

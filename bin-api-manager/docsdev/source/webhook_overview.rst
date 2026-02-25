@@ -42,7 +42,7 @@ Resource Type             Events
 ``conferencecall``        Participant join/leave events
 ``message``               Message sent/received/delivered events
 ``recording``             Recording started/completed events
-``transcribe``            Transcription completed events
+``transcribe``            Transcription completed, speech started/interim/ended events
 ``queue``                 Queue events
 ``queuecall``             Queue call events (joined, agent connected, timeout)
 ``activeflow``            Flow execution events
