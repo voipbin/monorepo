@@ -831,3 +831,31 @@ func Test_CustomerSelfFreezeAndDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_CustomerSelfFreezeAndDelete_PermissionDenied(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+
+	agent := &amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+		},
+		Permission: amagent.PermissionCustomerAgent, // not admin
+	}
+
+	_, err := h.CustomerSelfFreezeAndDelete(ctx, agent)
+	if err == nil {
+		t.Errorf("Expected permission denied error, got nil")
+	}
+}

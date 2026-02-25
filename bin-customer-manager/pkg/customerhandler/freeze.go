@@ -75,19 +75,15 @@ func (h *customerHandler) FreezeAndDelete(ctx context.Context, id uuid.UUID) (*c
 	log.Debug("Freezing and deleting the customer account immediately.")
 
 	// Step 1: Freeze (idempotent — handles already-frozen)
+	// Note: Freeze() rejects already-deleted customers with an error, so calling
+	// FreezeAndDelete on a deleted customer returns an error (not idempotent).
 	c, err := h.Freeze(ctx, id)
 	if err != nil {
 		log.Errorf("Could not freeze the customer. err: %v", err)
 		return nil, err
 	}
 
-	// Step 2: Guard — if already deleted, return early (idempotent)
-	if c.Status == customer.StatusDeleted || c.TMDelete != nil {
-		log.Infof("Customer already deleted. customer_id: %s", c.ID)
-		return c, nil
-	}
-
-	// Step 3: Anonymize PII (same logic as cleanupFrozenExpired)
+	// Step 2: Anonymize PII (same logic as cleanupFrozenExpired)
 	shortID := c.ID.String()[:8]
 	anonName := fmt.Sprintf("deleted_user_%s", shortID)
 	anonEmail := fmt.Sprintf("deleted_%s@removed.voipbin.net", shortID)
