@@ -447,11 +447,23 @@ type ServiceHandler interface {
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerSelfGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error)
 	CustomerUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
 		id uuid.UUID,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod cscustomer.WebhookMethod,
+		webhookURI string,
+	) (*cscustomer.WebhookMessage, error)
+	CustomerSelfUpdate(
+		ctx context.Context,
+		a *amagent.Agent,
 		name string,
 		detail string,
 		email string,
@@ -466,6 +478,7 @@ type ServiceHandler interface {
 	CustomerSelfFreeze(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
 		ctx context.Context,
 		name string,

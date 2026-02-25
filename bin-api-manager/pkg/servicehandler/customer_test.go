@@ -120,8 +120,8 @@ func TestCustomerGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *amagent.Agent
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseCustomer *cscustomer.Customer
 		expectRes        *cscustomer.WebhookMessage
@@ -133,10 +133,9 @@ func TestCustomerGet(t *testing.T) {
 
 			&amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 
@@ -166,7 +165,65 @@ func TestCustomerGet(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerGet(ctx, tt.customer, tt.id)
+			res, err := h.CustomerGet(ctx, tt.agent, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerSelfGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer *cscustomer.Customer
+		expectRes        *cscustomer.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerSelfGet(ctx, tt.agent)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -279,10 +336,9 @@ func Test_CustomerUpdate(t *testing.T) {
 
 			&amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			"name new",
@@ -321,6 +377,78 @@ func Test_CustomerUpdate(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerUpdate(ctx, tt.agent, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerSelfUpdate(t *testing.T) {
+	tests := []struct {
+		name  string
+		agent *amagent.Agent
+
+		customerName  string
+		detail        string
+		email         string
+		phoneNumber   string
+		address       string
+		webhookMethod cscustomer.WebhookMethod
+		webhookURI    string
+
+		responseCustomer *cscustomer.Customer
+		expectRes        *cscustomer.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			customerName:  "name new",
+			detail:        "detail new",
+			email:         "test@test.com",
+			phoneNumber:   "+821100000001",
+			address:       "somewhere",
+			webhookMethod: cscustomer.WebhookMethodPost,
+			webhookURI:    "test.com",
+
+			responseCustomer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.agent.CustomerID, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerSelfUpdate(ctx, tt.agent, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -416,10 +544,9 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 			agent: &amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			customerID:       uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
@@ -433,7 +560,6 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
 					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 				},
-				TMDelete: nil,
 			},
 			expectRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
@@ -460,6 +586,79 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customerID, tt.billingAccountID).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerUpdateBillingAccountID(ctx, tt.agent, tt.customerID, tt.billingAccountID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerSelfUpdateBillingAccountID(t *testing.T) {
+
+	type test struct {
+		name string
+
+		agent *amagent.Agent
+
+		billingAccountID uuid.UUID
+
+		responseBillingAccount *bmaccount.Account
+		responseCustomer       *cscustomer.Customer
+		expectRes              *cscustomer.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			billingAccountID: uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				},
+				TMDelete: nil,
+			},
+			responseCustomer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.agent.CustomerID, tt.billingAccountID).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerSelfUpdateBillingAccountID(ctx, tt.agent, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -25,7 +25,7 @@ func (h *server) GetCustomer(c *gin.Context) {
 	a := tmp.(amagent.Agent)
 	log = log.WithField("agent", a)
 
-	res, err := h.serviceHandler.CustomerGet(c.Request.Context(), &a, a.CustomerID)
+	res, err := h.serviceHandler.CustomerSelfGet(c.Request.Context(), &a)
 	if err != nil {
 		log.Infof("Could not get the customer info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -57,7 +57,7 @@ func (h *server) PutCustomer(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerUpdate(c.Request.Context(), &a, a.CustomerID, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cmcustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
+	res, err := h.serviceHandler.CustomerSelfUpdate(c.Request.Context(), &a, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cmcustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,7 +96,7 @@ func (h *server) PutCustomerBillingAccountId(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, a.CustomerID, billingAccountID)
+	res, err := h.serviceHandler.CustomerSelfUpdateBillingAccountID(c.Request.Context(), &a, billingAccountID)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)

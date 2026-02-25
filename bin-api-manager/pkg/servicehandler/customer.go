@@ -67,22 +67,48 @@ func (h *serviceHandler) CustomerCreate(
 }
 
 // CustomerGet returns customer info of given customerID.
+// Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerGet",
-		"customer_id": a.CustomerID,
+		"customer_id": customerID,
 	})
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
 
 	tmp, err := h.customerGet(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not validate the customer info. err: %v", err)
+		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
+	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
-	if !h.hasPermission(ctx, a, tmp.ID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// CustomerSelfGet returns the authenticated agent's own customer info.
+// Requires CustomerAdmin or CustomerManager permission.
+func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfGet",
+		"customer_id": a.CustomerID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
+
+	tmp, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not get the customer info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
@@ -135,6 +161,7 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *amagent.Agent, siz
 
 // CustomerUpdate sends a request to customer-manager
 // to update the customer's basic info.
+// Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerUpdate(
 	ctx context.Context,
 	a *amagent.Agent,
@@ -149,7 +176,7 @@ func (h *serviceHandler) CustomerUpdate(
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "CustomerUpdate",
-		"customer_id":    a.CustomerID,
+		"customer_id":    id,
 		"username":       a.Username,
 		"name":           name,
 		"detail":         detail,
@@ -160,19 +187,52 @@ func (h *serviceHandler) CustomerUpdate(
 		"webhook_uri":    webhookURI,
 	})
 
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	c, err := h.customerGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not validate the customer info. err: %v", err)
 		return nil, err
 	}
-
-	if !h.hasPermission(ctx, a, c.ID, amagent.PermissionCustomerAdmin) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
+	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	// send request
 	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	if err != nil {
+		log.Errorf("Could not update the customer's basic info. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
+// CustomerSelfUpdate updates the authenticated agent's own customer info.
+// Requires CustomerAdmin permission.
+func (h *serviceHandler) CustomerSelfUpdate(
+	ctx context.Context,
+	a *amagent.Agent,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfUpdate",
+		"customer_id": a.CustomerID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, a.CustomerID, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not update the customer's basic info. err: %v", err)
 		return nil, err
@@ -334,22 +394,52 @@ func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *amagent.Age
 
 // CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
+// Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "CustomerUpdateBillingAccountID",
-		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"customer_id":        customerID,
 		"billing_account_id": billingAccountID,
 	})
 
-	c, err := h.customerGet(ctx, customerID)
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.customerGet(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not validate the customer info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.ID, amagent.PermissionCustomerAdmin) {
-		log.Info("The agent has no permission for this agent.")
+	_, err = h.billingAccountGet(ctx, billingAccountID)
+	if err != nil {
+		log.Errorf("Could not validate the billing account info. err: %v", err)
+		return nil, err
+	}
+
+	// send request
+	res, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, billingAccountID)
+	if err != nil {
+		log.Errorf("Could not update the customer's billing account. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
+// CustomerSelfUpdateBillingAccountID updates the authenticated agent's own customer's billing account ID.
+// Requires CustomerAdmin permission.
+func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "CustomerSelfUpdateBillingAccountID",
+		"customer_id":        a.CustomerID,
+		"billing_account_id": billingAccountID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -364,10 +454,9 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	// send request
-	res, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, billingAccountID)
+	res, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, a.CustomerID, billingAccountID)
 	if err != nil {
-		log.Errorf("Could not update the customer's permission. err: %v", err)
+		log.Errorf("Could not update the customer's billing account. err: %v", err)
 		return nil, err
 	}
 
