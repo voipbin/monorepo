@@ -33,7 +33,7 @@ Billing account
 * ``detail`` (String): An optional description of the billing account.
 * ``plan_type`` (enum string): The plan tier of the account. Determines resource creation limits and monthly token allocations. Values: ``free``, ``basic``, ``professional``, ``unlimited``.
 * ``balance_credit`` (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: ``69772630`` = $69.77. Used for PSTN calls, number purchases, and token overflow charges.
-* ``balance_token`` (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and SMS (10 tokens/message). Replenished monthly via automated top-up.
+* ``balance_token`` (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.
 * ``payment_type`` (String): Payment type. Reserved for future use.
 * ``payment_method`` (String): Payment method. Reserved for future use.
 * ``tm_last_topup`` (string, ISO 8601): Timestamp of the last token top-up.
@@ -67,11 +67,11 @@ Each billing record is an immutable ledger entry recording a single transaction.
         "usage_duration": 135,
         "billable_units": 3,
         "rate_token_per_unit": 0,
-        "rate_credit_per_unit": 6000,
+        "rate_credit_per_unit": 10000,
         "amount_token": 0,
-        "amount_credit": -18000,
+        "amount_credit": -30000,
         "balance_token_snapshot": 650,
-        "balance_credit_snapshot": 69754630,
+        "balance_credit_snapshot": 69742630,
         "idempotency_key": "b2c3d4e5-6789-bcde-f123-456789012345",
         "tm_billing_start": "2024-01-15T10:30:00Z",
         "tm_billing_end": "2024-01-15T10:32:15Z",
@@ -91,7 +91,7 @@ Each billing record is an immutable ledger entry recording a single transaction.
 * ``usage_duration`` (Integer): Actual usage duration in seconds (for calls). Not applicable for non-call services.
 * ``billable_units`` (Integer): Number of billable units after ceiling rounding (e.g., 135 seconds becomes 3 minutes for call billing).
 * ``rate_token_per_unit`` (Integer, int64): Token rate per billable unit. Set to ``0`` for credit-only services.
-* ``rate_credit_per_unit`` (Integer, int64 micros): Credit rate per billable unit in micros. Example: ``6000`` = $0.006.
+* ``rate_credit_per_unit`` (Integer, int64 micros): Credit rate per billable unit in micros. Example: ``10000`` = $0.01.
 * ``amount_token`` (Integer, int64): Token delta for this transaction. Negative for usage, positive for top-up.
 * ``amount_credit`` (Integer, int64 micros): Credit delta in micros for this transaction. Negative for usage, positive for top-up/refund.
 * ``balance_token_snapshot`` (Integer, int64): The token balance immediately after this transaction was applied.

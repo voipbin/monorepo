@@ -212,7 +212,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the billing account.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">plan_type</span></code> (enum string): The plan tier of the account. Determines resource creation limits and monthly token allocations. Values: <code class="docutils literal notranslate"><span class="pre">free</span></code>, <code class="docutils literal notranslate"><span class="pre">basic</span></code>, <code class="docutils literal notranslate"><span class="pre">professional</span></code>, <code class="docutils literal notranslate"><span class="pre">unlimited</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: <code class="docutils literal notranslate"><span class="pre">69772630</span></code> = $69.77. Used for PSTN calls, number purchases, and token overflow charges.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and SMS (10 tokens/message). Replenished monthly via automated top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">payment_type</span></code> (String): Payment type. Reserved for future use.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">payment_method</span></code> (String): Payment method. Reserved for future use.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_last_topup</span></code> (string, ISO 8601): Timestamp of the last token top-up.</p></li>
@@ -242,11 +242,11 @@
     <span class="s2">&quot;usage_duration&quot;</span><span class="p">:</span> <span class="mi">135</span><span class="p">,</span>
     <span class="s2">&quot;billable_units&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
     <span class="s2">&quot;rate_token_per_unit&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">&quot;rate_credit_per_unit&quot;</span><span class="p">:</span> <span class="mi">6000</span><span class="p">,</span>
+    <span class="s2">&quot;rate_credit_per_unit&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
     <span class="s2">&quot;amount_token&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">&quot;amount_credit&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">18000</span><span class="p">,</span>
+    <span class="s2">&quot;amount_credit&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">30000</span><span class="p">,</span>
     <span class="s2">&quot;balance_token_snapshot&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
-    <span class="s2">&quot;balance_credit_snapshot&quot;</span><span class="p">:</span> <span class="mi">69754630</span><span class="p">,</span>
+    <span class="s2">&quot;balance_credit_snapshot&quot;</span><span class="p">:</span> <span class="mi">69742630</span><span class="p">,</span>
     <span class="s2">&quot;idempotency_key&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-6789-bcde-f123-456789012345&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_billing_start&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_billing_end&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:32:15Z&quot;</span><span class="p">,</span>
@@ -268,7 +268,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">usage_duration</span></code> (Integer): Actual usage duration in seconds (for calls). Not applicable for non-call services.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">billable_units</span></code> (Integer): Number of billable units after ceiling rounding (e.g., 135 seconds becomes 3 minutes for call billing).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">rate_token_per_unit</span></code> (Integer, int64): Token rate per billable unit. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for credit-only services.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rate_credit_per_unit</span></code> (Integer, int64 micros): Credit rate per billable unit in micros. Example: <code class="docutils literal notranslate"><span class="pre">6000</span></code> = $0.006.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rate_credit_per_unit</span></code> (Integer, int64 micros): Credit rate per billable unit in micros. Example: <code class="docutils literal notranslate"><span class="pre">10000</span></code> = $0.01.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">amount_token</span></code> (Integer, int64): Token delta for this transaction. Negative for usage, positive for top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">amount_credit</span></code> (Integer, int64 micros): Credit delta in micros for this transaction. Negative for usage, positive for top-up/refund.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">balance_token_snapshot</span></code> (Integer, int64): The token balance immediately after this transaction was applied.</p></li>

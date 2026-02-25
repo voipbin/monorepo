@@ -25,7 +25,7 @@ How Billing Works
 -----------------
 VoIPBIN uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
 
-Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and SMS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls and number purchases are always charged to the credit balance.
+Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and TTS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.
 
 All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.
 
@@ -53,26 +53,26 @@ All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to
     +--------+----------+     +--------+----------+
     |                   |     |                   |
     v                   v     v                   v
-    +----------+  +----------+  +----------+  +----------+  +----------+
-    | VN Calls |  |   SMS    |  |PSTN Calls|  | Numbers  |  |   TTS    |
-    | 1 tok/min|  |10 tok/msg|  | per min  |  | per num  |  | 3 tok/min|
-    +----------+  +----------+  +----------+  +----------+  +----------+
-         |             |             |             |              |
-         | token first | token first |             |              | token first
-         | then credit | then credit | credit only | credit only  | then credit
-         v             v             v             v              v
-    +---------+   +---------+   +---------+   +---------+   +---------+
-    |$0.001   |   | $0.008  |   |$0.006 ot|   |  $5.00  |   |  $0.03  |
-    | /minute |   | /message|   |$0.0045 in|  | /number |   | /minute |
-    +---------+   +---------+   +---------+   +---------+   +---------+
+    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+    | VN Calls |  |   TTS    |  |PSTN Calls|  |   SMS    |  |  Email   |  | Numbers  |
+    | 1 tok/min|  | 3 tok/min|  | per min  |  | per msg  |  | per msg  |  | per num  |
+    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+         |             |             |             |              |             |
+         | token first | token first |             |              |             |
+         | then credit | then credit | credit only | credit only  | credit only | credit only
+         v             v             v             v              v             v
+    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
+    | $0.001  |   |  $0.03  |   |  $0.01  |   |  $0.01  |   |  $0.01  |   |  $5.00  |
+    | /minute |   | /minute |   | /minute |   | /message|   | /message|   | /number |
+    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
 
 **Key Components**
 
 - **Account State**: The ``billing_accounts`` table holds the live ``balance_credit`` (int64 micros) and ``balance_token`` (int64). This is the single source of truth for current balances.
 - **Billing Ledger**: The ``billing_billings`` table records every transaction as an immutable entry with signed deltas (``amount_token``, ``amount_credit``) and post-transaction snapshots (``balance_token_snapshot``, ``balance_credit_snapshot``).
 - **Monthly Token Top-Up**: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a ``top_up`` transaction in the ledger.
-- **Token-Eligible Services**: VN calls (1 token/minute), SMS (10 tokens/message), and TTS (3 tokens/minute) consume tokens first, then overflow to credits.
-- **Credit-Only Services**: PSTN calls and number purchases always use credits directly.
+- **Token-Eligible Services**: VN calls (1 token/minute) and TTS (3 tokens/minute) consume tokens first, then overflow to credits.
+- **Credit-Only Services**: PSTN calls, SMS, email, and number purchases always use credits directly.
 - **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
 
 **Token Top-Up Process**
@@ -136,8 +136,6 @@ VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) 
 +======================+==================+========================================+
 | VN Calls             | 1 token          | Per minute (ceiling-rounded)           |
 +----------------------+------------------+----------------------------------------+
-| SMS Messages         | 10 tokens        | Per message                            |
-+----------------------+------------------+----------------------------------------+
 | TTS (Text-to-Speech) | 3 tokens         | Per minute (ceiling-rounded)           |
 +----------------------+------------------+----------------------------------------+
 
@@ -150,11 +148,13 @@ All credit rates are stored internally as int64 micros.
 +======================+==================+==================+=========================+
 | VN Calls (overflow)  | $0.001           | 1,000            | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
-| PSTN Outgoing Calls  | $0.0060          | 6,000            | Per minute              |
+| PSTN Outgoing Calls  | $0.01            | 10,000           | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
-| PSTN Incoming Calls  | $0.0045          | 4,500            | Per minute              |
+| PSTN Incoming Calls  | $0.01            | 10,000           | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
-| SMS (overflow)       | $0.008           | 8,000            | Per message             |
+| SMS                  | $0.01            | 10,000           | Per message             |
++----------------------+------------------+------------------+-------------------------+
+| Email                | $0.01            | 10,000           | Per message             |
 +----------------------+------------------+------------------+-------------------------+
 | Number Purchase      | $5.00            | 5,000,000        | Per number              |
 +----------------------+------------------+------------------+-------------------------+
@@ -167,7 +167,7 @@ All credit rates are stored internally as int64 micros.
 
 **How Token Consumption Works**
 
-When a token-eligible service is used (VN call, SMS, or TTS):
+When a token-eligible service is used (VN call or TTS):
 
 1. The system checks the account's ``balance_token``.
 2. If tokens are available, they are consumed first.
@@ -205,10 +205,10 @@ Each transaction is recorded in the billing ledger with the token and credit amo
     +--------------------------------------------+
     | Duration: 2 min 30 sec -> 3 minutes        |
     | (ceiling-rounded to next whole minute)      |
-    | Credit cost: 3 x 6,000 = 18,000 micros     |
+    | Credit cost: 3 x 10,000 = 30,000 micros    |
     | Ledger entry:                               |
     |   amount_token: 0                           |
-    |   amount_credit: -18000                     |
+    |   amount_credit: -30000                     |
     +--------------------------------------------+
 
     TTS Session (1 minute 15 seconds) with tokens available:
@@ -303,21 +303,21 @@ Account balance changes through specific operations. Token balances are replenis
     |  150,500,000      |     |      100          |
     +--------+----------+     +--------+----------+
              |                         |
-             | PSTN calls,             | VN calls,
-             | numbers,                | SMS, TTS
+             | PSTN calls, SMS,        | VN calls,
+             | email, numbers,         | TTS
              | overflow                |
              v                         v
     +-------------------+     +-------------------+
     |   Credit Charges  |     |  Token Usage      |
-    | - 18000 PSTN call |     | - 3 tokens call   |
-    | - 5000000 number  |     | - 10 tokens SMS   |
-    | - 3 tokens TTS/min|
+    | - 30000 PSTN call |     | - 3 tokens call   |
+    | - 10000 SMS       |     | - 6 tokens TTS    |
+    | - 5000000 number  |
     +--------+----------+     +--------+----------+
              |                         |
              v                         | exhausted
     +-------------------+              |
     |  Updated Balance  |<-------------+
-    |  145,082,000      |   overflow charges
+    |  145,460,000      |   overflow charges
     +-------------------+
 
     All transactions recorded in billing ledger
@@ -357,19 +357,19 @@ Track token consumption via the billing ledger.
     +--------------------------------------------+
     | Week 1:                                    |
     | - 10 VN calls (avg 3 min) = 30 tokens      |
-    | - 5 SMS = 50 tokens                        |
-    | balance_token: 20                          |
+    | - 2 TTS sessions (avg 5 min) = 30 tokens   |
+    | - 5 SMS = 50,000 micros credit (credit-only)|
+    | balance_token: 40                          |
     |                                            |
     | Week 2:                                    |
-    | - 5 VN calls (avg 2 min) = 10 tokens       |
-    | - 1 SMS = 10 tokens                        |
+    | - 20 VN calls (avg 2 min) = 40 tokens      |
     | balance_token: 0                           |
     |                                            |
     | Week 3 (tokens exhausted):                 |
     | - 5 VN calls (avg 3 min) = overflow        |
     |   5 x 3 x 1,000 = 15,000 micros credit    |
-    | - 2 SMS = overflow to credit               |
-    |   2 x 8,000 = 16,000 micros credit charge  |
+    | - 2 SMS = credit                           |
+    |   2 x 10,000 = 20,000 micros credit        |
     +--------------------------------------------+
 
 **Scenario 2: Mixed Token and Credit Usage**
@@ -379,24 +379,24 @@ Plan for costs across token-eligible and credit-only services.
 ::
 
     Campaign: Customer Outreach (Basic plan, 1000 tokens)
-    +--------------------------------------------+
-    | VN Calls: 200 calls (avg 3 min)            |
-    | - Tokens needed: 200 x 3 = 600             |
-    | - If 400 tokens remaining:                 |
-    |   - 400 tokens consumed                    |
-    |   - 200 overflow x 3 min x 1,000 micros    |
-    |     = 600,000 micros ($0.60)               |
-    |                                            |
-    | PSTN Calls: 50 calls (avg 2 min)           |
-    | - Credit: 50 x 2 x 6,000 = 600,000 micros |
-    |   ($0.60)                                  |
-    |                                            |
-    | SMS: 100 messages (no tokens remaining)    |
-    | - Credit: 100 x 8,000 = 800,000 micros    |
-    |   ($0.80)                                  |
-    |                                            |
-    | Total credit: 2,000,000 micros ($2.00)     |
-    +--------------------------------------------+
+    +----------------------------------------------+
+    | VN Calls: 200 calls (avg 3 min)              |
+    | - Tokens needed: 200 x 3 = 600               |
+    | - If 400 tokens remaining:                   |
+    |   - 400 tokens consumed (= 400 min covered)  |
+    |   - 200 min overflow x 1,000 micros/min      |
+    |     = 200,000 micros ($0.20)                 |
+    |                                              |
+    | PSTN Calls: 50 calls (avg 2 min)             |
+    | - Credit: 50 x 2 x 10,000 = 1,000,000 micros|
+    |   ($1.00)                                    |
+    |                                              |
+    | SMS: 100 messages (credit-only)              |
+    | - Credit: 100 x 10,000 = 1,000,000 micros   |
+    |   ($1.00)                                    |
+    |                                              |
+    | Total credit: 2,200,000 micros ($2.20)       |
+    +----------------------------------------------+
 
 
 Best Practices
@@ -429,7 +429,7 @@ Best Practices
 
 **5. Plan Selection**
 
-- Choose plan tier based on expected VN call and SMS volume
+- Choose plan tier based on expected VN call and TTS volume
 - Compare token allocation cost vs. credit-only cost at each tier
 - Consider upgrading if monthly overflow charges are significant
 
@@ -462,7 +462,7 @@ Troubleshooting
 |                           | consider upgrading plan tier for more tokens    |
 +---------------------------+------------------------------------------------+
 | Unexpected overflow       | Check ``balance_token`` on account; VN calls    |
-|                           | and SMS consume tokens first                   |
+|                           | and TTS consume tokens first                   |
 +---------------------------+------------------------------------------------+
 | Tokens not replenishing   | Check ``tm_next_topup`` on the account;         |
 |                           | tokens are replenished by the automated cron    |
