@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
+func Test_Speech_CreateWebhookEvent(t *testing.T) {
 	now := time.Now()
 	st := &Streaming{
 		Identity: commonidentity.Identity{
@@ -19,29 +19,39 @@ func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001"),
 		},
 		TranscribeID: uuid.FromStringOrNil("t0000000-0000-0000-0000-000000000001"),
+		Language:     "en-US",
 		Direction:    transcript.DirectionIn,
 	}
 
-	msg := st.ConvertWebhookMessage("hello world", &now)
+	speech := st.NewSpeech("hello world", &now)
 
-	if msg.ID != st.ID {
-		t.Errorf("expected ID %s, got %s", st.ID, msg.ID)
+	if speech.CustomerID != st.CustomerID {
+		t.Errorf("expected CustomerID %s, got %s", st.CustomerID, speech.CustomerID)
 	}
-	if msg.CustomerID != st.CustomerID {
-		t.Errorf("expected CustomerID %s, got %s", st.CustomerID, msg.CustomerID)
+	if speech.StreamingID != st.ID {
+		t.Errorf("expected StreamingID %s, got %s", st.ID, speech.StreamingID)
 	}
-	if msg.TranscribeID != st.TranscribeID {
-		t.Errorf("expected TranscribeID %s, got %s", st.TranscribeID, msg.TranscribeID)
+	if speech.TranscribeID != st.TranscribeID {
+		t.Errorf("expected TranscribeID %s, got %s", st.TranscribeID, speech.TranscribeID)
 	}
-	if msg.Direction != transcript.DirectionIn {
-		t.Errorf("expected direction in, got %s", msg.Direction)
+	if speech.Language != "en-US" {
+		t.Errorf("expected Language en-US, got %s", speech.Language)
 	}
-	if msg.Message != "hello world" {
-		t.Errorf("expected message 'hello world', got '%s'", msg.Message)
+	if speech.Direction != transcript.DirectionIn {
+		t.Errorf("expected direction in, got %s", speech.Direction)
+	}
+	if speech.Message != "hello world" {
+		t.Errorf("expected message 'hello world', got '%s'", speech.Message)
+	}
+
+	// verify ConvertWebhookMessage omits Language
+	msg := speech.ConvertWebhookMessage()
+	if msg.StreamingID != st.ID {
+		t.Errorf("expected WebhookMessage.StreamingID %s, got %s", st.ID, msg.StreamingID)
 	}
 
 	// verify CreateWebhookEvent returns valid JSON via the interface
-	data, err := msg.CreateWebhookEvent()
+	data, err := speech.CreateWebhookEvent()
 	if err != nil {
 		t.Fatalf("CreateWebhookEvent failed: %v", err)
 	}
@@ -57,9 +67,13 @@ func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
 	if parsed["message"] != "hello world" {
 		t.Errorf("expected message 'hello world' in JSON, got %v", parsed["message"])
 	}
+	// Language should NOT appear in the webhook JSON
+	if _, exists := parsed["language"]; exists {
+		t.Error("expected language to be omitted from webhook JSON")
+	}
 }
 
-func Test_WebhookMessage_CreateWebhookEvent_EmptyMessage(t *testing.T) {
+func Test_Speech_CreateWebhookEvent_EmptyMessage(t *testing.T) {
 	now := time.Now()
 	st := &Streaming{
 		Identity: commonidentity.Identity{
@@ -67,11 +81,12 @@ func Test_WebhookMessage_CreateWebhookEvent_EmptyMessage(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001"),
 		},
 		TranscribeID: uuid.FromStringOrNil("t0000000-0000-0000-0000-000000000001"),
+		Language:     "en-US",
 		Direction:    transcript.DirectionOut,
 	}
 
-	msg := st.ConvertWebhookMessage("", &now)
-	data, err := msg.CreateWebhookEvent()
+	speech := st.NewSpeech("", &now)
+	data, err := speech.CreateWebhookEvent()
 	if err != nil {
 		t.Fatalf("CreateWebhookEvent failed: %v", err)
 	}
