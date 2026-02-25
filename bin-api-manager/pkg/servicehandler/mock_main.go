@@ -2020,6 +2020,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreeze(ctx, a any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfFreeze", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfFreeze), ctx, a)
 }
 
+// CustomerSelfFreezeAndDelete mocks base method.
+func (m *MockServiceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerSelfFreezeAndDelete", ctx, a)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerSelfFreezeAndDelete indicates an expected call of CustomerSelfFreezeAndDelete.
+func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreezeAndDelete(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfFreezeAndDelete", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfFreezeAndDelete), ctx, a)
+}
+
 // CustomerSelfGet mocks base method.
 func (m *MockServiceHandler) CustomerSelfGet(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()

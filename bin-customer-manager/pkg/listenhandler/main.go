@@ -60,8 +60,9 @@ var (
 	regV1CustomersEmailVerify    = regexp.MustCompile("/v1/customers/email_verify$")
 	regV1CustomersCompleteSignup = regexp.MustCompile("/v1/customers/complete_signup$")
 
-	regV1CustomersIDFreeze  = regexp.MustCompile("/v1/customers/" + regUUID + "/freeze$")
-	regV1CustomersIDRecover = regexp.MustCompile("/v1/customers/" + regUUID + "/recover$")
+	regV1CustomersIDFreeze          = regexp.MustCompile("/v1/customers/" + regUUID + "/freeze$")
+	regV1CustomersIDRecover         = regexp.MustCompile("/v1/customers/" + regUUID + "/recover$")
+	regV1CustomersIDFreezeAndDelete = regexp.MustCompile("/v1/customers/" + regUUID + "/freeze_and_delete$")
 )
 
 // simpleResponse returns simple rabbitmq response
@@ -191,6 +192,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CustomersIDRecover.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersIDRecoverPost(ctx, m)
 		requestType = "/v1/customers/recover"
+
+	// POST /customers/<customer-id>/freeze_and_delete
+	case regV1CustomersIDFreezeAndDelete.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersIDFreezeAndDeletePost(ctx, m)
+		requestType = "/v1/customers/freeze_and_delete"
 
 	// GET /customers/<customer-id>
 	case regV1CustomersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

@@ -3412,6 +3412,9 @@ type RequestBodyAuthUnregisterPOST struct {
 	// ConfirmationPhrase Must be exactly "DELETE". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.
 	ConfirmationPhrase *string `json:"confirmation_phrase,omitempty"`
 
+	// Immediate If true, skip the 30-day grace period and delete the account immediately. The account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in a single request. Default: false.
+	Immediate *bool `json:"immediate,omitempty"`
+
 	// Password Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`.
 	Password *string `json:"password,omitempty"`
 }

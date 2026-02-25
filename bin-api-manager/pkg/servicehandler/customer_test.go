@@ -770,3 +770,64 @@ func Test_CustomerSignup(t *testing.T) {
 		})
 	}
 }
+
+func Test_CustomerSelfFreezeAndDelete(t *testing.T) {
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer *cscustomer.Customer
+		expectRes        *cscustomer.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusDeleted,
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusDeleted,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerFreezeAndDelete(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerSelfFreezeAndDelete(ctx, tt.agent)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -303,6 +303,23 @@ func (r *requestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerI
 	return &res, nil
 }
 
+// CustomerV1CustomerFreezeAndDelete sends the request to freeze and immediately delete the customer
+func (r *requestHandler) CustomerV1CustomerFreezeAndDelete(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/freeze_and_delete", customerID)
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/freeze_and_delete", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // CustomerV1CustomerRecover sends the request to recover the customer
 func (r *requestHandler) CustomerV1CustomerRecover(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/recover", customerID)

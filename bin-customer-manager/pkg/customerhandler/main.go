@@ -35,6 +35,7 @@ type CustomerHandler interface {
 	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Freeze(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
+	FreezeAndDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	List(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
 	UpdateBasicInfo(

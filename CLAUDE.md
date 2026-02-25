@@ -666,6 +666,11 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 
 **IMPORTANT:** Always do a clean rebuild (`rm -rf build` first). Incremental Sphinx builds may miss cross-page references. The built HTML is tracked in git and must stay in sync with the RST sources.
 
+**RST struct docs must match `WebhookMessage`, not internal model structs.**
+The `WebhookMessage` struct (defined in `models/<entity>/webhook.go`) determines exactly which fields are exposed to external users via the API. RST struct documentation (`*_struct_*.rst`) must only include fields present in `WebhookMessage`. Do not document internal-only fields (e.g., `PodID`, `Username`, `PermissionIDs`) that are stripped by `ConvertWebhookMessage()`. When verifying RST accuracy, always compare against `WebhookMessage` fields, not the internal model struct.
+
+**After making user-facing changes**, also verify RST docs in `bin-api-manager/docsdev/source/` are in sync with the code. Compare struct docs against the relevant `WebhookMessage` fields (in `models/<entity>/webhook.go`), not the internal model struct. If RST updates are needed, rebuild HTML: `cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build` and force-add: `git add -f bin-api-manager/docsdev/build/`.
+
 **Why this matters:**
 - RST docs are the single source of truth for external users
 - Customers cannot discover undocumented features

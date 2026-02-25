@@ -476,6 +476,7 @@ type ServiceHandler interface {
 	CustomerFreeze(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerRecover(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfFreeze(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
+	CustomerSelfFreezeAndDelete(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
