@@ -418,18 +418,33 @@ Defaults to provider default.</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcript_created</span></code></p></td>
-<td><p>New transcript from the caller or TTS output</p></td>
+<td><p>Final transcribed text from the caller or TTS output</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_started</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code></p></td>
+<td><p>Caller began speaking (voice activity detected)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code></p></td>
+<td><p>Partial transcript while caller is still speaking</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code></p></td>
+<td><p>Caller stopped speaking (voice activity ended)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">streaming_started</span></code></p></td>
+<td><p>Audio streaming session connected to STT provider</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">streaming_stopped</span></code></p></td>
+<td><p>Audio streaming session disconnected from STT provider</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_started</span></code></p></td>
 <td><p>Speaking session is active and ready for <code class="docutils literal notranslate"><span class="pre">/say</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_stopped</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_stopped</span></code></p></td>
 <td><p>Speaking session has been terminated</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">call_progressing</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">call_progressing</span></code></p></td>
 <td><p>Call answered — audio flowing, safe to start sessions</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">call_hangup</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">call_hangup</span></code></p></td>
 <td><p>Call ended — clean up transcribe and speaking sessions</p></td>
 </tr>
 </tbody>

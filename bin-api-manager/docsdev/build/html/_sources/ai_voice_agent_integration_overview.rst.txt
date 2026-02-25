@@ -186,19 +186,29 @@ Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voi
 
 Key event types for AI voice agent integration:
 
-+---------------------------+--------------------------------------------------------------+
-| Event Type                | Description                                                  |
-+===========================+==============================================================+
-| ``transcript_created``    | New transcript from the caller or TTS output                 |
-+---------------------------+--------------------------------------------------------------+
-| ``speaking_started``      | Speaking session is active and ready for ``/say``            |
-+---------------------------+--------------------------------------------------------------+
-| ``speaking_stopped``      | Speaking session has been terminated                         |
-+---------------------------+--------------------------------------------------------------+
-| ``call_progressing``      | Call answered — audio flowing, safe to start sessions        |
-+---------------------------+--------------------------------------------------------------+
-| ``call_hangup``           | Call ended — clean up transcribe and speaking sessions       |
-+---------------------------+--------------------------------------------------------------+
++------------------------------------+--------------------------------------------------------------+
+| Event Type                         | Description                                                  |
++====================================+==============================================================+
+| ``transcript_created``             | Final transcribed text from the caller or TTS output         |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_started``      | Caller began speaking (voice activity detected)              |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_interim``      | Partial transcript while caller is still speaking            |
++------------------------------------+--------------------------------------------------------------+
+| ``transcribe_speech_ended``        | Caller stopped speaking (voice activity ended)               |
++------------------------------------+--------------------------------------------------------------+
+| ``streaming_started``              | Audio streaming session connected to STT provider            |
++------------------------------------+--------------------------------------------------------------+
+| ``streaming_stopped``              | Audio streaming session disconnected from STT provider       |
++------------------------------------+--------------------------------------------------------------+
+| ``speaking_started``               | Speaking session is active and ready for ``/say``            |
++------------------------------------+--------------------------------------------------------------+
+| ``speaking_stopped``               | Speaking session has been terminated                         |
++------------------------------------+--------------------------------------------------------------+
+| ``call_progressing``               | Call answered — audio flowing, safe to start sessions        |
++------------------------------------+--------------------------------------------------------------+
+| ``call_hangup``                    | Call ended — clean up transcribe and speaking sessions       |
++------------------------------------+--------------------------------------------------------------+
 
 .. note:: **AI Implementation Hint**
 
