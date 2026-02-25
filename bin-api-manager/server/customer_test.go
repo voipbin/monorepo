@@ -28,8 +28,7 @@ func Test_customerGET(t *testing.T) {
 
 		responseCustomer *cscustomer.WebhookMessage
 
-		expectedCustomerID uuid.UUID
-		expectedRes        string
+		expectedRes string
 	}{
 		{
 			name: "normal",
@@ -47,8 +46,7 @@ func Test_customerGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
 			},
 
-			expectedCustomerID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
-			expectedRes:        `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -71,7 +69,7 @@ func Test_customerGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectedCustomerID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfGet(req.Context(), &tt.agent).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -96,7 +94,6 @@ func Test_customerPut(t *testing.T) {
 
 		responseCustomer *cscustomer.WebhookMessage
 
-		expectedCustomerID    uuid.UUID
 		expectecName          string
 		expectedDetail        string
 		expectedEmail         string
@@ -123,7 +120,6 @@ func Test_customerPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
 			},
 
-			expectedCustomerID:    uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
 			expectecName:          "new name",
 			expectedDetail:        "new detail",
 			expectedEmail:         "test@test.com",
@@ -156,7 +152,7 @@ func Test_customerPut(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdate(req.Context(), &tt.agent, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -181,7 +177,6 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 
 		responseCustomer *cscustomer.WebhookMessage
 
-		expectedCustomerID       uuid.UUID
 		expectedBillingAccountID uuid.UUID
 		expectedRes              string
 	}{
@@ -202,7 +197,6 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
 			},
 
-			expectedCustomerID:       uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
 			expectedBillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
 			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
@@ -229,7 +223,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
