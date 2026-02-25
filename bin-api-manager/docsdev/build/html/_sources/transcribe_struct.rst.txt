@@ -156,3 +156,89 @@ Direction   Description
 in          Incoming speech toward VoIPBIN (i.e., what the caller/remote party said).
 out         Outgoing speech from VoIPBIN (i.e., TTS audio, recorded prompts, or the connected party's speech sent from VoIPBIN).
 =========== ============
+
+.. _transcribe-struct-speech-webhook:
+
+Speech Webhook Message
+======================
+
+Speech Webhook Message
+----------------------
+The speech webhook message is the payload delivered for ``transcribe_speech_started``, ``transcribe_speech_interim``, and ``transcribe_speech_ended`` events. These events are generated during a real-time streaming transcription session when voice activity is detected.
+
+.. code::
+
+    {
+        "id": "<string>",
+        "customer_id": "<string>",
+        "streaming_id": "<string>",
+        "transcribe_id": "<string>",
+        "direction": "<string>",
+        "message": "<string>",
+        "tm_event": "<string>",
+        "tm_create": "<string>"
+    }
+
+* ``id`` (UUID): The unique identifier of the speech event.
+* ``customer_id`` (UUID): The customer who owns this transcription session. Obtained from ``GET /customers``.
+* ``streaming_id`` (UUID): The unique identifier of the audio streaming session that produced this event.
+* ``transcribe_id`` (UUID): The parent transcribe session's ID. Obtained from ``GET /transcribes`` or the response of ``POST /transcribes``.
+* ``direction`` (enum string): Whether the speech was incoming or outgoing. See :ref:`Direction <transcribe-struct-transcription-direction>`.
+* ``message`` (String): The interim transcribed text. Present for ``transcribe_speech_interim`` events. Empty for ``transcribe_speech_started`` and ``transcribe_speech_ended`` events.
+* ``tm_event`` (string, ISO 8601): Timestamp when the speech event occurred.
+* ``tm_create`` (string, ISO 8601): Timestamp when the speech event record was created.
+
+Example
++++++++
+
+**transcribe_speech_started:**
+
+.. code::
+
+    {
+        "type": "transcribe_speech_started",
+        "data": {
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "streaming_id": "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+            "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
+            "direction": "in",
+            "tm_event": "2024-04-01 07:22:07.229309",
+            "tm_create": "2024-04-01 07:22:07.229309"
+        }
+    }
+
+**transcribe_speech_interim:**
+
+.. code::
+
+    {
+        "type": "transcribe_speech_interim",
+        "data": {
+            "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "streaming_id": "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+            "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
+            "direction": "in",
+            "message": "Hello, I need help with my account",
+            "tm_event": "2024-04-01 07:22:08.115000",
+            "tm_create": "2024-04-01 07:22:08.115000"
+        }
+    }
+
+**transcribe_speech_ended:**
+
+.. code::
+
+    {
+        "type": "transcribe_speech_ended",
+        "data": {
+            "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "streaming_id": "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+            "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
+            "direction": "in",
+            "tm_event": "2024-04-01 07:22:12.500000",
+            "tm_create": "2024-04-01 07:22:12.500000"
+        }
+    }

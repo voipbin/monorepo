@@ -50,14 +50,14 @@ func (rp *resultProcessor) process(ctx context.Context, r sttResult) {
 		if !rp.speaking {
 			rp.speaking = true
 			now := time.Now()
-			webhookMsg := rp.st.ConvertWebhookMessage("", &now)
-			rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechStarted, webhookMsg)
+			evt := rp.st.NewSpeech("", &now)
+			rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechStarted, evt)
 			log.Debugf("Published speech_started. transcribe_id: %s, direction: %s", rp.st.TranscribeID, rp.st.Direction)
 		}
 
 		now := time.Now()
-		webhookMsg := rp.st.ConvertWebhookMessage(r.message, &now)
-		rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechInterim, webhookMsg)
+		evt := rp.st.NewSpeech(r.message, &now)
+		rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechInterim, evt)
 		log.Debugf("Published speech_interim. transcribe_id: %s, direction: %s, message: %s", rp.st.TranscribeID, rp.st.Direction, r.message)
 		return
 	}
@@ -66,8 +66,8 @@ func (rp *resultProcessor) process(ctx context.Context, r sttResult) {
 	if rp.speaking {
 		rp.speaking = false
 		now := time.Now()
-		webhookMsg := rp.st.ConvertWebhookMessage("", &now)
-		rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechEnded, webhookMsg)
+		evt := rp.st.NewSpeech("", &now)
+		rp.notifyHandler.PublishWebhookEvent(ctx, rp.st.CustomerID, streaming.EventTypeSpeechEnded, evt)
 		log.Debugf("Published speech_ended. transcribe_id: %s, direction: %s", rp.st.TranscribeID, rp.st.Direction)
 	}
 
