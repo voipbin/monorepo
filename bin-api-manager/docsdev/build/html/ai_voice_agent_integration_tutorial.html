@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Tutorial &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tutorial</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/ai_voice_agent_integration_tutorial.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="tutorial">
+<span id="ai-voice-agent-integration-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before building a custom AI voice agent, you need:</p>
+<ul class="simple">
+<li><p>An authentication token (String). Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Obtain one via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A destination phone number or extension to call.</p></li>
+<li><p>A webhook URL or WebSocket connection to receive <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events. Configure your webhook URL via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+<li><p>An AI backend (LLM, RAG, or NLP system) that can receive text and return a response.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The call must reach <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered, audio flowing) before you can start transcription or speaking sessions. If the call is still in <code class="docutils literal notranslate"><span class="pre">dialing</span></code> or <code class="docutils literal notranslate"><span class="pre">ringing</span></code> status, the API will reject the request.</p>
+</div>
+<section id="step-1-create-an-outbound-call">
+<h3>Step 1: Create an Outbound Call<a class="headerlink" href="#step-1-create-an-outbound-call" title="Link to this heading"></a></h3>
+<p>Create a call to the destination. The call must be answered before starting STT/TTS.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Response (200 OK):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+            <span class="p">],</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The response contains <code class="docutils literal notranslate"><span class="pre">calls</span></code> and <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> arrays. Extract your <code class="docutils literal notranslate"><span class="pre">call_id</span></code> from the <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> field inside the groupcall object (e.g., <code class="docutils literal notranslate"><span class="pre">groupcalls[0].call_ids[0]</span></code>). This is the UUID you will use for transcription and speaking sessions. Wait for the call to reach <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status by listening for a <code class="docutils literal notranslate"><span class="pre">call_progressing</span></code> webhook event, or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call_id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p>
+</section>
+<section id="step-2-start-transcription">
+<h3>Step 2: Start Transcription<a class="headerlink" href="#step-2-start-transcription" title="Link to this heading"></a></h3>
+<p>Once the call is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, start a transcription session.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Response (200 OK):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the <code class="docutils literal notranslate"><span class="pre">id</span></code> value — this is your <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID).</p>
+</section>
+<section id="step-3-create-a-speaking-session">
+<h3>Step 3: Create a Speaking Session<a class="headerlink" href="#step-3-create-a-speaking-session" title="Link to this heading"></a></h3>
+<p>Create a speaking session on the same call so you can inject TTS audio.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;provider&quot;: &quot;elevenlabs&quot;,
+        &quot;voice_id&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Response (201 Created):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;21m00Tcm4TlvDq8ikWAM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;initiating&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:01.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:01.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the <code class="docutils literal notranslate"><span class="pre">id</span></code> value — this is your <code class="docutils literal notranslate"><span class="pre">speaking_id</span></code> (UUID). Wait for the <code class="docutils literal notranslate"><span class="pre">speaking_started</span></code> webhook event or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/{speaking_id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> before sending text.</p>
+</section>
+<section id="step-4-send-an-initial-greeting">
+<h3>Step 4: Send an Initial Greeting<a class="headerlink" href="#step-4-send-an-initial-greeting" title="Link to this heading"></a></h3>
+<p>Once the speaking session is <code class="docutils literal notranslate"><span class="pre">active</span></code>, send an initial greeting to the caller.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/b2c3d4e5-f6a7-8901-bcde-f12345678901/say?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;text&quot;: &quot;Hello, thank you for calling. How can I help you today?&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Response (200 OK):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The caller now hears the greeting. VoIPBIN synthesizes the text using the configured TTS provider and voice.</p>
+</section>
+<section id="step-5-receive-and-process-transcripts">
+<h3>Step 5: Receive and Process Transcripts<a class="headerlink" href="#step-5-receive-and-process-transcripts" title="Link to this heading"></a></h3>
+<p>When the caller responds, VoIPBIN delivers a <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event to your webhook URL.</p>
+<p><strong>Webhook Payload:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, I need help with my account balance.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:15.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Process in your AI backend:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example — webhook handler</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">VOIPBIN_TOKEN</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">TRANSCRIBE_ID</span> <span class="o">=</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span>
+<span class="n">SPEAKING_ID</span> <span class="o">=</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">handle_webhook</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Only process caller&#39;s speech (direction: &quot;in&quot;)</span>
+        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
+            <span class="n">caller_text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Send to your LLM</span>
+            <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">caller_text</span><span class="p">)</span>
+
+            <span class="c1"># Send AI response back to the call via Speaking API</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+
+<span class="k">def</span> <span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="c1"># Replace with your actual LLM call</span>
+    <span class="c1"># e.g., OpenAI, Anthropic, local model, etc.</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you need help with: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-handle-interruptions">
+<h3>Step 6: Handle Interruptions<a class="headerlink" href="#step-6-handle-interruptions" title="Link to this heading"></a></h3>
+<p>If the caller speaks while TTS is playing, you receive a new <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event. Flush the current playback before sending the new response.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">handle_webhook</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
+            <span class="c1"># Flush current TTS playback</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Process and respond</span>
+            <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+</pre></div>
+</div>
+</section>
+<section id="step-7-clean-up-on-call-end">
+<h3>Step 7: Clean Up on Call End<a class="headerlink" href="#step-7-clean-up-on-call-end" title="Link to this heading"></a></h3>
+<p>When the call ends, stop the transcription and speaking sessions to release resources.</p>
+<p>Listen for the <code class="docutils literal notranslate"><span class="pre">call_hangup</span></code> webhook event and clean up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Stop transcription</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/transcribes/</span><span class="si">{</span><span class="n">TRANSCRIBE_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Stop speaking</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Transcription and speaking sessions may stop automatically when the call ends. However, explicitly stopping them ensures immediate resource cleanup and prevents charges for idle sessions.</p>
+</div>
+</section>
+<section id="complete-python-example">
+<h3>Complete Python Example<a class="headerlink" href="#complete-python-example" title="Link to this heading"></a></h3>
+<p>This example combines all steps into a complete webhook server that implements a custom AI voice agent.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">VOIPBIN_BASE</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
+<span class="n">TOKEN</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;VOIPBIN_TOKEN&quot;</span><span class="p">)</span>
+
+<span class="c1"># Store session IDs per call (in production, use a database)</span>
+<span class="n">call_sessions</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">webhook</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_progressing&#39;</span><span class="p">:</span>
+        <span class="n">handle_call_progressing</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">handle_transcript</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+        <span class="n">handle_call_hangup</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+
+<span class="k">def</span> <span class="nf">handle_call_progressing</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call answered — start transcription and speaking.&quot;&quot;&quot;</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Start transcription</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;reference_type&#39;</span><span class="p">:</span> <span class="s1">&#39;call&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;reference_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+            <span class="s1">&#39;language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="s1">&#39;both&#39;</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Create speaking session</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;reference_type&#39;</span><span class="p">:</span> <span class="s1">&#39;call&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;reference_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+            <span class="s1">&#39;language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;provider&#39;</span><span class="p">:</span> <span class="s1">&#39;elevenlabs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="s1">&#39;both&#39;</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="n">call_sessions</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;transcribe_id&#39;</span><span class="p">:</span> <span class="n">transcribe_id</span><span class="p">,</span>
+        <span class="s1">&#39;speaking_id&#39;</span><span class="p">:</span> <span class="n">speaking_id</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Send initial greeting (after short delay for session to become active)</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello, how can I help you today?&#39;</span><span class="p">}</span>
+    <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">handle_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process caller speech and respond.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Find the speaking session for this transcribe</span>
+    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">transcribe_id</span><span class="p">),</span>
+        <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="s1">&#39;speaking_id&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Flush any current playback</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Generate AI response</span>
+    <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Send response to caller</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+    <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">handle_call_hangup</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean up sessions when call ends.&quot;&quot;&quot;</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">call_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;transcribe_id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;speaking_id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace with your actual LLM integration.&quot;&quot;&quot;</span>
+    <span class="c1"># Example: OpenAI, Anthropic, local model, etc.</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you said: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">. Let me help you with that.&quot;</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#step-1-create-an-outbound-call">Step 1: Create an Outbound Call</a></li>
+<li><a class="reference internal" href="#step-2-start-transcription">Step 2: Start Transcription</a></li>
+<li><a class="reference internal" href="#step-3-create-a-speaking-session">Step 3: Create a Speaking Session</a></li>
+<li><a class="reference internal" href="#step-4-send-an-initial-greeting">Step 4: Send an Initial Greeting</a></li>
+<li><a class="reference internal" href="#step-5-receive-and-process-transcripts">Step 5: Receive and Process Transcripts</a></li>
+<li><a class="reference internal" href="#step-6-handle-interruptions">Step 6: Handle Interruptions</a></li>
+<li><a class="reference internal" href="#step-7-clean-up-on-call-end">Step 7: Clean Up on Call End</a></li>
+<li><a class="reference internal" href="#complete-python-example">Complete Python Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 7.2.6
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
