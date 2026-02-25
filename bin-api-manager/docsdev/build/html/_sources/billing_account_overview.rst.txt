@@ -317,7 +317,7 @@ Account balance changes through specific operations. Token balances are replenis
              v                         | exhausted
     +-------------------+              |
     |  Updated Balance  |<-------------+
-    |  145,082,000      |   overflow charges
+    |  145,460,000      |   overflow charges
     +-------------------+
 
     All transactions recorded in billing ledger
@@ -383,9 +383,9 @@ Plan for costs across token-eligible and credit-only services.
     | VN Calls: 200 calls (avg 3 min)              |
     | - Tokens needed: 200 x 3 = 600               |
     | - If 400 tokens remaining:                   |
-    |   - 400 tokens consumed                      |
-    |   - 200 overflow x 3 min x 1,000 micros      |
-    |     = 600,000 micros ($0.60)                 |
+    |   - 400 tokens consumed (= 400 min covered)  |
+    |   - 200 min overflow x 1,000 micros/min      |
+    |     = 200,000 micros ($0.20)                 |
     |                                              |
     | PSTN Calls: 50 calls (avg 2 min)             |
     | - Credit: 50 x 2 x 10,000 = 1,000,000 micros|
@@ -395,7 +395,7 @@ Plan for costs across token-eligible and credit-only services.
     | - Credit: 100 x 10,000 = 1,000,000 micros   |
     |   ($1.00)                                    |
     |                                              |
-    | Total credit: 2,600,000 micros ($2.60)       |
+    | Total credit: 2,200,000 micros ($2.20)       |
     +----------------------------------------------+
 
 
