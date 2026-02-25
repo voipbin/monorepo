@@ -278,7 +278,7 @@
 </section>
 <section id="understanding-service-rates">
 <h3>Understanding Service Rates<a class="headerlink" href="#understanding-service-rates" title="Link to this heading"></a></h3>
-<p>VoIPBIN uses a hybrid billing model: token-eligible services consume tokens first, then overflow to credits. Credit-only services always charge the credit balance directly. All calls are billed per minute with ceiling rounding.</p>
+<p>VoIPBIN uses a hybrid billing model: token-eligible services (VN calls, TTS) consume tokens first, then overflow to credits. Credit-only services (PSTN calls, SMS, email, numbers) always charge the credit balance directly. All calls are billed per minute with ceiling rounding.</p>
 <p>For the complete rate table, see <a class="reference internal" href="billing_account_overview.html#billing-account-rate-structure"><span class="std std-ref">Rate Structure</span></a>.</p>
 <p><strong>Calculate VN Call Cost (with tokens):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 5 minute VN call with tokens available
@@ -296,18 +296,12 @@ Credit cost: 5 x $0.001 = $0.005
 <p><strong>Calculate PSTN Call Cost:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 2 minute 30 second PSTN outgoing call
 Duration: 2 min 30 sec -&gt; 3 minutes (ceiling-rounded)
-Credit cost: 3 x $0.0060 = $0.018
+Credit cost: 3 x $0.01 = $0.03
 </pre></div>
 </div>
-<p><strong>Calculate SMS Cost (with tokens):</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 10 messages with tokens available
-Token cost: 10 x 10 = 100 tokens
-Credit cost: $0.00 (covered by tokens)
-</pre></div>
-</div>
-<p><strong>Calculate SMS Cost (tokens exhausted):</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 10 messages with no tokens remaining
-Credit cost: 10 x $0.008 = $0.08
+<p><strong>Calculate SMS Cost:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Example: 10 messages (SMS is always credit-only)
+Credit cost: 10 x $0.01 = $0.10
 </pre></div>
 </div>
 </section>
@@ -346,8 +340,8 @@ Credit cost: 10 x $0.008 = $0.08
 
     <span class="k">elif</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;pstn&quot;</span><span class="p">:</span>
         <span class="c1"># PSTN call: always credit</span>
-        <span class="n">estimated_cost_micros</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mi">6000</span>  <span class="c1"># 6,000 micros/min</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSTN call cost: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x 6,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros&quot;</span><span class="p">)</span>
+        <span class="n">estimated_cost_micros</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mi">10000</span>  <span class="c1"># 10,000 micros/min</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSTN call cost: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x 10,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros&quot;</span><span class="p">)</span>
         <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">balance_credit</span> <span class="o">&gt;=</span> <span class="n">estimated_cost_micros</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">can_proceed</span><span class="p">:</span>
@@ -398,8 +392,8 @@ async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callTy
             canProceed = balanceCredit &gt;= estimatedCostMicros;
         } else if (callType === &#39;pstn&#39;) {
             // PSTN call: always credit
-            const estimatedCostMicros = duration * 6000;  // 6,000 micros/min
-            console.log(`PSTN call cost: ${duration} min x 6,000 = ${estimatedCostMicros} micros`);
+            const estimatedCostMicros = duration * 10000;  // 10,000 micros/min
+            console.log(`PSTN call cost: ${duration} min x 10,000 = ${estimatedCostMicros} micros`);
             canProceed = balanceCredit &gt;= estimatedCostMicros;
         }
 
@@ -492,9 +486,10 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <span class="s2">    Current Token Balance: </span><span class="si">{</span><span class="n">balance_token</span><span class="si">}</span>
 <span class="s2">    Threshold: $</span><span class="si">{</span><span class="n">threshold_usd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span>
 
-<span class="s2">    Note: Token-eligible services (VN calls, SMS) will continue</span>
+<span class="s2">    Note: Token-eligible services (VN calls, TTS) will continue</span>
 <span class="s2">    working as long as monthly tokens are available. Credit balance</span>
-<span class="s2">    is needed for PSTN calls, number purchases, and token overflow.</span>
+<span class="s2">    is needed for PSTN calls, SMS, email, number purchases, and</span>
+<span class="s2">    token overflow.</span>
 <span class="s2">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sending low balance alert: </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
@@ -507,12 +502,12 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign credit cost in micros (1 USD = 1,000,000 micros).&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">math</span>
 
-    <span class="c1"># PSTN calls: always credit (6,000 micros/min outgoing)</span>
+    <span class="c1"># PSTN calls: always credit (10,000 micros/min outgoing)</span>
     <span class="n">pstn_total_minutes</span> <span class="o">=</span> <span class="n">pstn_calls</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">pstn_avg_minutes</span><span class="p">)</span>
-    <span class="n">pstn_credit_micros</span> <span class="o">=</span> <span class="n">pstn_total_minutes</span> <span class="o">*</span> <span class="mi">6000</span>
+    <span class="n">pstn_credit_micros</span> <span class="o">=</span> <span class="n">pstn_total_minutes</span> <span class="o">*</span> <span class="mi">10000</span>
 
-    <span class="c1"># SMS: credit cost when tokens exhausted (8,000 micros/msg)</span>
-    <span class="n">sms_credit_micros</span> <span class="o">=</span> <span class="n">sms_count</span> <span class="o">*</span> <span class="mi">8000</span>
+    <span class="c1"># SMS: always credit (10,000 micros/msg)</span>
+    <span class="n">sms_credit_micros</span> <span class="o">=</span> <span class="n">sms_count</span> <span class="o">*</span> <span class="mi">10000</span>
 
     <span class="n">total_micros</span> <span class="o">=</span> <span class="n">pstn_credit_micros</span> <span class="o">+</span> <span class="n">sms_credit_micros</span>
 
@@ -533,7 +528,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </pre></div>
 </div>
 <p><strong>2. Plan Tier Comparison:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_sms</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_tts_minutes</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recommend the plan tier with the least overflow credit cost.&quot;&quot;&quot;</span>
     <span class="n">plans</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;free&#39;</span><span class="p">:</span>         <span class="p">{</span><span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
@@ -542,27 +537,25 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
     <span class="p">}</span>
 
     <span class="k">for</span> <span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span> <span class="ow">in</span> <span class="n">plans</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">vn_tokens</span> <span class="o">=</span> <span class="n">monthly_vn_minutes</span> <span class="o">*</span> <span class="mi">1</span>   <span class="c1"># 1 token per minute</span>
-        <span class="n">sms_tokens</span> <span class="o">=</span> <span class="n">monthly_sms</span> <span class="o">*</span> <span class="mi">10</span>         <span class="c1"># 10 tokens per message</span>
-        <span class="n">total_tokens</span> <span class="o">=</span> <span class="n">vn_tokens</span> <span class="o">+</span> <span class="n">sms_tokens</span>
+        <span class="n">vn_tokens</span> <span class="o">=</span> <span class="n">monthly_vn_minutes</span> <span class="o">*</span> <span class="mi">1</span>    <span class="c1"># 1 token per minute</span>
+        <span class="n">tts_tokens</span> <span class="o">=</span> <span class="n">monthly_tts_minutes</span> <span class="o">*</span> <span class="mi">3</span>  <span class="c1"># 3 tokens per minute</span>
+        <span class="n">total_tokens</span> <span class="o">=</span> <span class="n">vn_tokens</span> <span class="o">+</span> <span class="n">tts_tokens</span>
 
         <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&lt;=</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]:</span>
             <span class="n">overflow_micros</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># When tokens run out, remaining usage overflows to credit.</span>
-            <span class="c1"># Calculate worst-case: all overflow as VN minutes (1,000 micros/min)</span>
-            <span class="c1"># and SMS (8,000 micros/msg). Split proportionally.</span>
             <span class="n">overflow_tokens</span> <span class="o">=</span> <span class="n">total_tokens</span> <span class="o">-</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span>
             <span class="n">vn_ratio</span> <span class="o">=</span> <span class="n">vn_tokens</span> <span class="o">/</span> <span class="n">total_tokens</span> <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
             <span class="n">overflow_vn_micros</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">overflow_tokens</span> <span class="o">*</span> <span class="n">vn_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
-            <span class="n">overflow_sms_micros</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">overflow_tokens</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vn_ratio</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8000</span>
-            <span class="n">overflow_micros</span> <span class="o">=</span> <span class="n">overflow_vn_micros</span> <span class="o">+</span> <span class="n">overflow_sms_micros</span>
+            <span class="n">overflow_tts_micros</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">overflow_tokens</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vn_ratio</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">30000</span>
+            <span class="n">overflow_micros</span> <span class="o">=</span> <span class="n">overflow_vn_micros</span> <span class="o">+</span> <span class="n">overflow_tts_micros</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">plan_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> tokens, &quot;</span>
               <span class="sa">f</span><span class="s2">&quot;need </span><span class="si">{</span><span class="n">total_tokens</span><span class="si">}</span><span class="s2">, overflow: </span><span class="si">{</span><span class="n">overflow_micros</span><span class="si">}</span><span class="s2"> micros &quot;</span>
               <span class="sa">f</span><span class="s2">&quot;($</span><span class="si">{</span><span class="n">overflow_micros</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-<span class="n">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">monthly_sms</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">monthly_tts_minutes</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

@@ -107,7 +107,7 @@ Only users with admin permissions can add balance to accounts. This ensures acco
 Understanding Service Rates
 ----------------------------
 
-VoIPBIN uses a hybrid billing model: token-eligible services consume tokens first, then overflow to credits. Credit-only services always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
+VoIPBIN uses a hybrid billing model: token-eligible services (VN calls, TTS) consume tokens first, then overflow to credits. Credit-only services (PSTN calls, SMS, email, numbers) always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
 
 For the complete rate table, see :ref:`Rate Structure <billing_account_rate_structure>`.
 
@@ -134,22 +134,14 @@ For the complete rate table, see :ref:`Rate Structure <billing_account_rate_stru
 
     # Example: 2 minute 30 second PSTN outgoing call
     Duration: 2 min 30 sec -> 3 minutes (ceiling-rounded)
-    Credit cost: 3 x $0.0060 = $0.018
+    Credit cost: 3 x $0.01 = $0.03
 
-**Calculate SMS Cost (with tokens):**
-
-.. code::
-
-    # Example: 10 messages with tokens available
-    Token cost: 10 x 10 = 100 tokens
-    Credit cost: $0.00 (covered by tokens)
-
-**Calculate SMS Cost (tokens exhausted):**
+**Calculate SMS Cost:**
 
 .. code::
 
-    # Example: 10 messages with no tokens remaining
-    Credit cost: 10 x $0.008 = $0.08
+    # Example: 10 messages (SMS is always credit-only)
+    Credit cost: 10 x $0.01 = $0.10
 
 Check Balance Before Call
 --------------------------
@@ -191,8 +183,8 @@ Programmatically verify balance before initiating calls to ensure successful com
 
         elif call_type == "pstn":
             # PSTN call: always credit
-            estimated_cost_micros = duration * 6000  # 6,000 micros/min
-            print(f"PSTN call cost: {duration} min x 6,000 = {estimated_cost_micros} micros")
+            estimated_cost_micros = duration * 10000  # 10,000 micros/min
+            print(f"PSTN call cost: {duration} min x 10,000 = {estimated_cost_micros} micros")
             can_proceed = balance_credit >= estimated_cost_micros
 
         if not can_proceed:
@@ -245,8 +237,8 @@ Programmatically verify balance before initiating calls to ensure successful com
                 canProceed = balanceCredit >= estimatedCostMicros;
             } else if (callType === 'pstn') {
                 // PSTN call: always credit
-                const estimatedCostMicros = duration * 6000;  // 6,000 micros/min
-                console.log(`PSTN call cost: ${duration} min x 6,000 = ${estimatedCostMicros} micros`);
+                const estimatedCostMicros = duration * 10000;  // 10,000 micros/min
+                console.log(`PSTN call cost: ${duration} min x 10,000 = ${estimatedCostMicros} micros`);
                 canProceed = balanceCredit >= estimatedCostMicros;
             }
 
@@ -346,9 +338,10 @@ Set up webhooks to receive notifications when billing account state changes. You
         Current Token Balance: {balance_token}
         Threshold: ${threshold_usd:.2f}
 
-        Note: Token-eligible services (VN calls, SMS) will continue
+        Note: Token-eligible services (VN calls, TTS) will continue
         working as long as monthly tokens are available. Credit balance
-        is needed for PSTN calls, number purchases, and token overflow.
+        is needed for PSTN calls, SMS, email, number purchases, and
+        token overflow.
         """
         print(f"Sending low balance alert: {subject}")
 
@@ -363,12 +356,12 @@ Common Use Cases
         """Estimate campaign credit cost in micros (1 USD = 1,000,000 micros)."""
         import math
 
-        # PSTN calls: always credit (6,000 micros/min outgoing)
+        # PSTN calls: always credit (10,000 micros/min outgoing)
         pstn_total_minutes = pstn_calls * math.ceil(pstn_avg_minutes)
-        pstn_credit_micros = pstn_total_minutes * 6000
+        pstn_credit_micros = pstn_total_minutes * 10000
 
-        # SMS: credit cost when tokens exhausted (8,000 micros/msg)
-        sms_credit_micros = sms_count * 8000
+        # SMS: always credit (10,000 micros/msg)
+        sms_credit_micros = sms_count * 10000
 
         total_micros = pstn_credit_micros + sms_credit_micros
 
@@ -391,7 +384,7 @@ Common Use Cases
 
 .. code::
 
-    def recommend_plan(monthly_vn_minutes, monthly_sms):
+    def recommend_plan(monthly_vn_minutes, monthly_tts_minutes):
         """Recommend the plan tier with the least overflow credit cost."""
         plans = {
             'free':         {'tokens': 100},
@@ -400,27 +393,25 @@ Common Use Cases
         }
 
         for plan_name, plan in plans.items():
-            vn_tokens = monthly_vn_minutes * 1   # 1 token per minute
-            sms_tokens = monthly_sms * 10         # 10 tokens per message
-            total_tokens = vn_tokens + sms_tokens
+            vn_tokens = monthly_vn_minutes * 1    # 1 token per minute
+            tts_tokens = monthly_tts_minutes * 3  # 3 tokens per minute
+            total_tokens = vn_tokens + tts_tokens
 
             if total_tokens <= plan['tokens']:
                 overflow_micros = 0
             else:
                 # When tokens run out, remaining usage overflows to credit.
-                # Calculate worst-case: all overflow as VN minutes (1,000 micros/min)
-                # and SMS (8,000 micros/msg). Split proportionally.
                 overflow_tokens = total_tokens - plan['tokens']
                 vn_ratio = vn_tokens / total_tokens if total_tokens > 0 else 0
                 overflow_vn_micros = int(overflow_tokens * vn_ratio) * 1000
-                overflow_sms_micros = int(overflow_tokens * (1 - vn_ratio) / 10) * 8000
-                overflow_micros = overflow_vn_micros + overflow_sms_micros
+                overflow_tts_micros = int(overflow_tokens * (1 - vn_ratio) / 3) * 30000
+                overflow_micros = overflow_vn_micros + overflow_tts_micros
 
             print(f"{plan_name}: {plan['tokens']} tokens, "
                   f"need {total_tokens}, overflow: {overflow_micros} micros "
                   f"(${overflow_micros / 1_000_000:.2f})")
 
-    recommend_plan(monthly_vn_minutes=500, monthly_sms=100)
+    recommend_plan(monthly_vn_minutes=500, monthly_tts_minutes=100)
 
 Best Practices
 --------------
