@@ -175,6 +175,74 @@ Transcripts are delivered via ``transcript_created`` webhook events or WebSocket
 - ``transcribe_id``: UUID linking back to the transcription session
 
 
+Receiving Events
+----------------
+
+VoIPBIN delivers events to your backend through two methods: **webhooks** (push-based HTTP POST) and **WebSocket** (persistent bidirectional connection). You must configure at least one before starting the agent loop, since transcript and call events drive the conversation cycle.
+
+**Webhook Delivery**
+
+Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voipbin.net/v1.0/customer``. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP ``200`` within 5 seconds or delivery may be retried.
+
+Key event types for AI voice agent integration:
+
++---------------------------+--------------------------------------------------------------+
+| Event Type                | Description                                                  |
++===========================+==============================================================+
+| ``transcript_created``    | New transcript from the caller or TTS output                 |
++---------------------------+--------------------------------------------------------------+
+| ``speaking_started``      | Speaking session is active and ready for ``/say``            |
++---------------------------+--------------------------------------------------------------+
+| ``speaking_stopped``      | Speaking session has been terminated                         |
++---------------------------+--------------------------------------------------------------+
+| ``call_progressing``      | Call answered — audio flowing, safe to start sessions        |
++---------------------------+--------------------------------------------------------------+
+| ``call_hangup``           | Call ended — clean up transcribe and speaking sessions       |
++---------------------------+--------------------------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   Implement idempotent processing using the resource ``id`` and ``status`` fields, because VoIPBIN may retry delivery if your endpoint does not respond in time. See :ref:`Webhook Overview <webhook-overview>` for full configuration details.
+
+**WebSocket Delivery**
+
+WebSocket maintains a persistent connection for instant event delivery. Connect to ``wss://api.voipbin.net/v1.0/ws?token=<token>`` using the same JWT or access key token used for REST API calls. After connecting, send a subscribe message to start receiving events.
+
+Subscribe to transcription and call events for your customer:
+
+.. code::
+
+    {
+        "type": "subscribe",
+        "topics": [
+            "customer_id:<your-customer-id>:transcription:*",
+            "customer_id:<your-customer-id>:call:*"
+        ]
+    }
+
+Events arrive as JSON messages on the open connection. No polling required.
+
+.. note:: **AI Implementation Hint**
+
+   Always implement automatic reconnection with exponential backoff (start at 1 second, cap at 30 seconds). When the connection drops, all subscriptions are lost and must be re-sent after reconnecting. See :ref:`WebSocket Overview <websocket_overview>` for the full topic format and subscription lifecycle.
+
+**Choosing a Delivery Method**
+
++------------------+--------------------------------------+--------------------------------------+
+| Aspect           | Webhook                              | WebSocket                            |
++==================+======================================+======================================+
+| Latency          | Higher (HTTP round-trip per event)   | Lower (persistent connection)        |
++------------------+--------------------------------------+--------------------------------------+
+| Connection model | Stateless — VoIPBIN POSTs to your    | Stateful — your client holds an open |
+|                  | endpoint                             | connection to VoIPBIN                |
++------------------+--------------------------------------+--------------------------------------+
+| Best for         | Serverless backends, simple setups,  | Real-time voice agents, low-latency  |
+|                  | multi-region redundancy              | event loops, interactive dashboards  |
++------------------+--------------------------------------+--------------------------------------+
+
+For real-time AI voice agent scenarios where latency directly impacts conversation quality, **WebSocket is recommended**. The persistent connection eliminates per-event HTTP overhead and delivers transcripts faster to your AI backend.
+
+
 Integration Workflow
 --------------------
 The complete integration involves six steps in a repeating loop:
@@ -340,3 +408,4 @@ Related Documentation
 - :ref:`AI Overview <ai-overview>` — Managed AI pipeline with ``ai_talk``
 - :ref:`Call Overview <call-overview>` — Call lifecycle and status
 - :ref:`Webhook Overview <webhook-overview>` — Webhook configuration
+- :ref:`WebSocket Overview <websocket_overview>` — Real-time event delivery via WebSocket

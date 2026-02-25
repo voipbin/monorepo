@@ -398,6 +398,88 @@ Defaults to provider default.</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code>: UUID linking back to the transcription session</p></li>
 </ul>
 </section>
+<section id="receiving-events">
+<h2>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading"></a></h2>
+<p>VoIPBIN delivers events to your backend through two methods: <strong>webhooks</strong> (push-based HTTP POST) and <strong>WebSocket</strong> (persistent bidirectional connection). You must configure at least one before starting the agent loop, since transcript and call events drive the conversation cycle.</p>
+<p><strong>Webhook Delivery</strong></p>
+<p>Webhooks push events to an HTTPS endpoint you register via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds or delivery may be retried.</p>
+<p>Key event types for AI voice agent integration:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transcript_created</span></code></p></td>
+<td><p>New transcript from the caller or TTS output</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_started</span></code></p></td>
+<td><p>Speaking session is active and ready for <code class="docutils literal notranslate"><span class="pre">/say</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">speaking_stopped</span></code></p></td>
+<td><p>Speaking session has been terminated</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">call_progressing</span></code></p></td>
+<td><p>Call answered — audio flowing, safe to start sessions</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">call_hangup</span></code></p></td>
+<td><p>Call ended — clean up transcribe and speaking sessions</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Implement idempotent processing using the resource <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> fields, because VoIPBIN may retry delivery if your endpoint does not respond in time. See <a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> for full configuration details.</p>
+</div>
+<p><strong>WebSocket Delivery</strong></p>
+<p>WebSocket maintains a persistent connection for instant event delivery. Connect to <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code> using the same JWT or access key token used for REST API calls. After connecting, send a subscribe message to start receiving events.</p>
+<p>Subscribe to transcription and call events for your customer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcription:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Events arrive as JSON messages on the open connection. No polling required.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Always implement automatic reconnection with exponential backoff (start at 1 second, cap at 30 seconds). When the connection drops, all subscriptions are lost and must be re-sent after reconnecting. See <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> for the full topic format and subscription lifecycle.</p>
+</div>
+<p><strong>Choosing a Delivery Method</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Webhook</p></th>
+<th class="head"><p>WebSocket</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Latency</p></td>
+<td><p>Higher (HTTP round-trip per event)</p></td>
+<td><p>Lower (persistent connection)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Connection model</p></td>
+<td><p>Stateless — VoIPBIN POSTs to your
+endpoint</p></td>
+<td><p>Stateful — your client holds an open
+connection to VoIPBIN</p></td>
+</tr>
+<tr class="row-even"><td><p>Best for</p></td>
+<td><p>Serverless backends, simple setups,
+multi-region redundancy</p></td>
+<td><p>Real-time voice agents, low-latency
+event loops, interactive dashboards</p></td>
+</tr>
+</tbody>
+</table>
+<p>For real-time AI voice agent scenarios where latency directly impacts conversation quality, <strong>WebSocket is recommended</strong>. The persistent connection eliminates per-event HTTP overhead and delivers transcripts faster to your AI backend.</p>
+</section>
 <section id="integration-workflow">
 <h2>Integration Workflow<a class="headerlink" href="#integration-workflow" title="Link to this heading"></a></h2>
 <p>The complete integration involves six steps in a repeating loop:</p>
@@ -592,6 +674,7 @@ conversational agents</p></td>
 <li><p><a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">AI Overview</span></a> — Managed AI pipeline with <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code></p></li>
 <li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> — Call lifecycle and status</p></li>
 <li><p><a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> — Webhook configuration</p></li>
+<li><p><a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> — Real-time event delivery via WebSocket</p></li>
 </ul>
 </section>
 </section>
@@ -607,6 +690,7 @@ conversational agents</p></td>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#architecture">Architecture</a></li>
 <li><a class="reference internal" href="#api-components">API Components</a></li>
+<li><a class="reference internal" href="#receiving-events">Receiving Events</a></li>
 <li><a class="reference internal" href="#integration-workflow">Integration Workflow</a></li>
 <li><a class="reference internal" href="#handling-interruptions-barge-in">Handling Interruptions (Barge-in)</a></li>
 <li><a class="reference internal" href="#custom-integration-vs-ai-talk">Custom Integration vs ai_talk</a></li>
