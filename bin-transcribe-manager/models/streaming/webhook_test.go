@@ -47,11 +47,14 @@ func Test_NewSpeech(t *testing.T) {
 	if speech.Message != "hello world" {
 		t.Errorf("expected message 'hello world', got '%s'", speech.Message)
 	}
-	if speech.TMEvent != &now {
-		t.Errorf("expected TMEvent to point to provided time")
+	if speech.TMEvent == nil || !speech.TMEvent.Equal(now) {
+		t.Errorf("expected TMEvent %v, got %v", now, speech.TMEvent)
 	}
-	if speech.TMCreate != &now {
-		t.Errorf("expected TMCreate to equal TMEvent")
+	if speech.TMCreate == nil || !speech.TMCreate.Equal(now) {
+		t.Errorf("expected TMCreate %v, got %v", now, speech.TMCreate)
+	}
+	if speech.ID == st.ID {
+		t.Error("Speech.ID should be a new UUID, not the Streaming ID")
 	}
 }
 
