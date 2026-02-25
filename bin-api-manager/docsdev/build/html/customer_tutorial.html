@@ -206,22 +206,23 @@
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;username&quot;: &quot;admin&quot;,
-            &quot;name&quot;: &quot;admin&quot;,
-            &quot;detail&quot;: &quot;admin account&quot;,
+            &quot;name&quot;: &quot;Acme Corporation&quot;,
+            &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+            &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+            &quot;phone_number&quot;: &quot;+15551234567&quot;,
+            &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
             &quot;webhook_method&quot;: &quot;POST&quot;,
-            &quot;webhook_uri&quot;: &quot;https://en7evasdjwhmqbt.x.pipedream.net&quot;,
-            &quot;line_secret&quot;: &quot;ba5fsf0575d826d5b4asdf052a43145ef1391&quot;,
-            &quot;line_token&quot;: &quot;tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdisyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTsdfsfTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;,
-            &quot;permission_ids&quot;: [
-                &quot;03796e14-7cb4-11ec-9dba-e72023efd1c6&quot;
-            ],
-            &quot;tm_create&quot;: &quot;2022-02-01 00:00:00.000000&quot;,
-            &quot;tm_update&quot;: &quot;2022-06-16 08:37:16.952738&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+            &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+            &quot;email_verified&quot;: true,
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;tm_deletion_scheduled&quot;: null,
+            &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+            &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+            &quot;tm_delete&quot;: null
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-02-01 00:00:00.000000&quot;
+    &quot;next_page_token&quot;: &quot;2024-01-15T10:30:00Z&quot;
 }
 </pre></div>
 </div>
@@ -233,19 +234,20 @@
 
 {
     &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;username&quot;: &quot;admin&quot;,
-    &quot;name&quot;: &quot;admin&quot;,
-    &quot;detail&quot;: &quot;admin account&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
     &quot;webhook_method&quot;: &quot;POST&quot;,
-    &quot;webhook_uri&quot;: &quot;https://en7evajwhmqbt.x.pipedream.net&quot;,
-    &quot;line_secret&quot;: &quot;ba5f0575d826d5b4a0512a145ef1391&quot;,
-    &quot;line_token&quot;: &quot;tsfIiDB/2cGI5sssaIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;,
-    &quot;permission_ids&quot;: [
-        &quot;03796e14-7cb4-11ec-9dba-e72023efd1c6&quot;
-    ],
-    &quot;tm_create&quot;: &quot;2022-02-01 00:00:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2022-06-16 08:37:16.952738&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -258,28 +260,29 @@
     --data-raw &#39;{
         &quot;username&quot;: &quot;test1&quot;,
         &quot;password&quot;: &quot;ee5f3d14-5ac6-11ed-808e-6f7d676a444b&quot;,
-        &quot;name&quot;: &quot;test 1&quot;,
-        &quot;detail&quot;: &quot;test user 1&quot;,
+        &quot;name&quot;: &quot;Test Company&quot;,
+        &quot;detail&quot;: &quot;Test customer account&quot;,
+        &quot;email&quot;: &quot;admin@test-company.com&quot;,
         &quot;webhook_method&quot;: &quot;POST&quot;,
-        &quot;webhook_uri&quot;: &quot;https://en7evajwhm11qbt.x.pipedream.net&quot;,
-        &quot;line_secret&quot;: &quot;ba5f0575d826d5b4a051112a145ef1391&quot;,
-        &quot;line_token&quot;: &quot;tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;,
-        &quot;permission_ids&quot;: []
+        &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;
     }&#39;
 
 {
     &quot;id&quot;: &quot;ff424526-f65d-483f-bc36-3b2357c6c6a9&quot;,
-    &quot;username&quot;: &quot;test1&quot;,
-    &quot;name&quot;: &quot;test 1&quot;,
-    &quot;detail&quot;: &quot;test user 1&quot;,
+    &quot;name&quot;: &quot;Test Company&quot;,
+    &quot;detail&quot;: &quot;Test customer account&quot;,
+    &quot;email&quot;: &quot;admin@test-company.com&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
     &quot;webhook_method&quot;: &quot;POST&quot;,
-    &quot;webhook_uri&quot;: &quot;https://en7evajwhm11qbt.x.pipedream.net&quot;,
-    &quot;line_secret&quot;: &quot;ba5f0575d826d5b4a051112a145ef1391&quot;,
-    &quot;line_token&quot;: &quot;tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;,
-    &quot;permission_ids&quot;: [],
-    &quot;tm_create&quot;: &quot;2022-11-02 15:57:08.368093&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;initial&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -292,21 +295,120 @@
 <p>Deleting a customer is a destructive operation that removes the customer account and all associated resources (agents, numbers, flows, etc.). This cannot be undone. The API returns the deleted customer object with <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to the deletion timestamp.</p>
 </div>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;ff424526-f65d-483f-bc36-3b2357c6c6a9&quot;,
-    &quot;username&quot;: &quot;test1&quot;,
-    &quot;name&quot;: &quot;test 1&quot;,
-    &quot;detail&quot;: &quot;test user 1&quot;,
+    &quot;name&quot;: &quot;Test Company&quot;,
+    &quot;detail&quot;: &quot;Test customer account&quot;,
+    &quot;email&quot;: &quot;admin@test-company.com&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
     &quot;webhook_method&quot;: &quot;POST&quot;,
-    &quot;webhook_uri&quot;: &quot;https://en7evajwhm11qbt.x.pipedream.net&quot;,
-    &quot;line_secret&quot;: &quot;ba5f0575d826d5b4a051112a145ef1391&quot;,
-    &quot;line_token&quot;: &quot;tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;,
-    &quot;permission_ids&quot;: [],
-    &quot;tm_create&quot;: &quot;2022-11-02 15:57:08.368093&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;2022-11-02 15:59:08.368093&quot;
+    &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;deleted&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_delete&quot;: &quot;2024-03-10T15:59:08Z&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="unregister-account-schedule-deletion">
+<h3>Unregister account (schedule deletion)<a class="headerlink" href="#unregister-account-schedule-deletion" title="Link to this heading"></a></h3>
+<p>Request account deletion with a 30-day grace period. The account transitions to <code class="docutils literal notranslate"><span class="pre">frozen</span></code> status and a deletion date is scheduled.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --data-raw &#39;{
+        &quot;password&quot;: &quot;yourPassword&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;frozen&quot;,
+    &quot;tm_deletion_scheduled&quot;: &quot;2024-07-20T14:22:35Z&quot;,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
+}
+</pre></div>
+</div>
+</section>
+<section id="unregister-account-immediately">
+<h3>Unregister account immediately<a class="headerlink" href="#unregister-account-immediately" title="Link to this heading"></a></h3>
+<p>Skip the 30-day grace period and permanently delete the account immediately. Requires a confirmation phrase and password.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --data-raw &#39;{
+        &quot;password&quot;: &quot;yourPassword&quot;,
+        &quot;confirmation_phrase&quot;: &quot;DELETE&quot;,
+        &quot;immediate&quot;: true
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;&quot;,
+    &quot;detail&quot;: &quot;&quot;,
+    &quot;email&quot;: &quot;&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
+    &quot;webhook_method&quot;: &quot;&quot;,
+    &quot;webhook_uri&quot;: &quot;&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;deleted&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:25:00Z&quot;,
+    &quot;tm_delete&quot;: &quot;2024-06-20T14:25:00Z&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Immediate deletion cannot be undone. All customer resources are cascade-deleted: agents, numbers, flows, queues, trunks, extensions, files, billing accounts, tags, transcriptions, and contacts. PII is anonymized – notice how name, detail, email, and other personal fields are empty in the response. The <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> must be exactly <code class="docutils literal notranslate"><span class="pre">&quot;DELETE&quot;</span></code> (case-sensitive). Do not call this endpoint unless the user has explicitly confirmed permanent, irreversible deletion.</p>
+</div>
+</section>
+<section id="cancel-unregistration-recover-account">
+<h3>Cancel unregistration (recover account)<a class="headerlink" href="#cancel-unregistration-recover-account" title="Link to this heading"></a></h3>
+<p>During the 30-day grace period, cancel the scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code> status.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:30:00Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -328,6 +430,9 @@
 <li><a class="reference internal" href="#get-detail-of-customer">Get detail of customer</a></li>
 <li><a class="reference internal" href="#create-a-new-customer">Create a new customer</a></li>
 <li><a class="reference internal" href="#delete-customer">Delete customer</a></li>
+<li><a class="reference internal" href="#unregister-account-schedule-deletion">Unregister account (schedule deletion)</a></li>
+<li><a class="reference internal" href="#unregister-account-immediately">Unregister account immediately</a></li>
+<li><a class="reference internal" href="#cancel-unregistration-recover-account">Cancel unregistration (recover account)</a></li>
 </ul>
 </li>
 </ul>

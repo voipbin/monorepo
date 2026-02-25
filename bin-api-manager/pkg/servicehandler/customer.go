@@ -363,6 +363,36 @@ func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *amagent.Agen
 	return res.ConvertWebhookMessage(), nil
 }
 
+// CustomerSelfFreezeAndDelete handles self-service immediate account deletion.
+// Freezes and immediately deletes the account (skips 30-day grace period).
+// Requires CustomerAdmin permission.
+func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfFreezeAndDelete",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerFreezeAndDelete(ctx, a.CustomerID)
+	if err != nil {
+		log.Errorf("Could not freeze and delete the customer. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
 // CustomerSelfRecover handles self-service account recovery (cancel scheduled deletion).
 // Requires CustomerAdmin permission and operates on the agent's own customer account.
 func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {

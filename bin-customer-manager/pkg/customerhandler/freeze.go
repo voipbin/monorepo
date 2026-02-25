@@ -65,6 +65,48 @@ func (h *customerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.C
 	return res, nil
 }
 
+// FreezeAndDelete freezes the customer account and immediately deletes it.
+// This skips the 30-day grace period by combining freeze + PII anonymization + deletion event.
+func (h *customerHandler) FreezeAndDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "FreezeAndDelete",
+		"customer_id": id,
+	})
+	log.Debug("Freezing and deleting the customer account immediately.")
+
+	// Step 1: Freeze (idempotent — handles already-frozen)
+	// Note: Freeze() rejects already-deleted customers with an error, so calling
+	// FreezeAndDelete on a deleted customer returns an error (not idempotent).
+	c, err := h.Freeze(ctx, id)
+	if err != nil {
+		log.Errorf("Could not freeze the customer. err: %v", err)
+		return nil, err
+	}
+
+	// Step 2: Anonymize PII (same logic as cleanupFrozenExpired)
+	shortID := c.ID.String()[:8]
+	anonName := fmt.Sprintf("deleted_user_%s", shortID)
+	anonEmail := fmt.Sprintf("deleted_%s@removed.voipbin.net", shortID)
+
+	if err := h.db.CustomerAnonymizePII(ctx, c.ID, anonName, anonEmail); err != nil {
+		log.Errorf("Could not anonymize customer PII. customer_id: %s, err: %v", c.ID, err)
+		return nil, err
+	}
+
+	// Step 4: Fetch updated customer after anonymization
+	res, err := h.db.CustomerGet(ctx, c.ID)
+	if err != nil {
+		log.Errorf("Could not get anonymized customer. customer_id: %s, err: %v", c.ID, err)
+		return nil, fmt.Errorf("could not get anonymized customer")
+	}
+
+	// Step 5: Publish customer_deleted event (cascades all resource cleanup)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, res)
+	log.Infof("Customer frozen and deleted immediately. customer_id: %s", c.ID)
+
+	return res, nil
+}
+
 // Recover recovers a frozen customer account.
 func (h *customerHandler) Recover(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -4,6 +4,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,7 @@ import (
 type RequestBodyUnregisterPOST struct {
 	Password           string `json:"password"`
 	ConfirmationPhrase string `json:"confirmation_phrase"`
+	Immediate          bool   `json:"immediate"`
 }
 
 // PostAuthUnregister handles POST /auth/unregister request.
@@ -67,11 +69,24 @@ func PostAuthUnregister(c *gin.Context) {
 		}
 	}
 
-	res, err := serviceHandler.CustomerSelfFreeze(c.Request.Context(), &a)
-	if err != nil {
-		log.Errorf("Could not freeze the customer. err: %v", err)
-		c.AbortWithStatus(400)
-		return
+	var (
+		res *cscustomer.WebhookMessage
+		err error
+	)
+	if req.Immediate {
+		res, err = serviceHandler.CustomerSelfFreezeAndDelete(c.Request.Context(), &a)
+		if err != nil {
+			log.Errorf("Could not freeze and delete the customer. err: %v", err)
+			c.AbortWithStatus(400)
+			return
+		}
+	} else {
+		res, err = serviceHandler.CustomerSelfFreeze(c.Request.Context(), &a)
+		if err != nil {
+			log.Errorf("Could not freeze the customer. err: %v", err)
+			c.AbortWithStatus(400)
+			return
+		}
 	}
 
 	c.JSON(200, res)

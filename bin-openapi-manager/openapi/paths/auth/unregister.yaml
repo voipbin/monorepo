@@ -1,9 +1,13 @@
 post:
-  summary: Schedule account deletion (self-service freeze).
+  summary: Schedule or immediately execute account deletion (self-service).
   description: |
     Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.
     Active calls are terminated and new operations are blocked.
-    The customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.
+
+    By default, the customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.
+
+    If `immediate` is set to `true`, the account is frozen and then permanently deleted (PII anonymized,
+    all resources cascade-deleted) in a single request. This cannot be undone.
 
     Exactly one of `password` or `confirmation_phrase` must be provided:
     - Password-based accounts: provide `password` for re-authentication.
@@ -25,7 +29,7 @@ post:
           $ref: '#/components/schemas/RequestBodyAuthUnregisterPOST'
   responses:
     '200':
-      description: Account frozen successfully.
+      description: Account frozen successfully (or deleted if `immediate` was `true`).
       content:
         application/json:
           schema:

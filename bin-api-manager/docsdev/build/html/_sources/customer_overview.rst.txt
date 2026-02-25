@@ -67,31 +67,46 @@ Key properties of a customer account.
 
 **Core Properties**
 
-+------------------+----------------------------------------------------------------+
-| Property         | Description                                                    |
-+==================+================================================================+
-| id               | Unique identifier for the customer account                     |
-+------------------+----------------------------------------------------------------+
-| name             | Display name of the organization                               |
-+------------------+----------------------------------------------------------------+
-| detail           | Additional description or notes                                |
-+------------------+----------------------------------------------------------------+
-| status           | Account status (active, suspended, etc.)                       |
-+------------------+----------------------------------------------------------------+
-| permission_ids   | Default permissions for new agents                             |
-+------------------+----------------------------------------------------------------+
++------------------------+----------------------------------------------------------------+
+| Property               | Description                                                    |
++========================+================================================================+
+| id                     | (UUID) Unique identifier for the customer account              |
++------------------------+----------------------------------------------------------------+
+| name                   | (String) Display name of the organization                      |
++------------------------+----------------------------------------------------------------+
+| detail                 | (String) Additional description or notes                       |
++------------------------+----------------------------------------------------------------+
+| email                  | (String) Email address associated with the account             |
++------------------------+----------------------------------------------------------------+
+| phone_number           | (String) Phone number associated with the account              |
++------------------------+----------------------------------------------------------------+
+| address                | (String) Physical or mailing address                           |
++------------------------+----------------------------------------------------------------+
+| webhook_method         | (enum string) HTTP method for webhooks: POST, GET, PUT, DELETE |
++------------------------+----------------------------------------------------------------+
+| webhook_uri            | (String) URI for webhook event notifications                   |
++------------------------+----------------------------------------------------------------+
+| billing_account_id     | (UUID) Default billing account. From ``GET /billing_accounts`` |
++------------------------+----------------------------------------------------------------+
+| email_verified         | (Boolean) Whether the email address has been verified          |
++------------------------+----------------------------------------------------------------+
+| status                 | (enum string) Account status: initial, active, frozen,         |
+|                        | deleted, expired                                               |
++------------------------+----------------------------------------------------------------+
 
 **Timestamps**
 
-+------------------+----------------------------------------------------------------+
-| Property         | Description                                                    |
-+==================+================================================================+
-| tm_create        | When the account was created                                   |
-+------------------+----------------------------------------------------------------+
-| tm_update        | When the account was last modified                             |
-+------------------+----------------------------------------------------------------+
-| tm_delete        | When the account was deleted (if applicable)                   |
-+------------------+----------------------------------------------------------------+
++------------------------+----------------------------------------------------------------+
+| Property               | Description                                                    |
++========================+================================================================+
+| tm_deletion_scheduled  | (ISO 8601, nullable) When permanent deletion is scheduled      |
++------------------------+----------------------------------------------------------------+
+| tm_create              | (ISO 8601) When the account was created                        |
++------------------------+----------------------------------------------------------------+
+| tm_update              | (ISO 8601) When the account was last modified                  |
++------------------------+----------------------------------------------------------------+
+| tm_delete              | (ISO 8601, nullable) When the account was deleted              |
++------------------------+----------------------------------------------------------------+
 
 
 Managing Customers
@@ -102,32 +117,146 @@ Access and update customer account information.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/customers/<customer-id>?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/customer?token=<token>'
 
 **Response:**
 
 .. code::
 
     {
-        "id": "customer-uuid-123",
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "Acme Corporation",
         "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "email_verified": true,
         "status": "active",
-        "permission_ids": [...],
+        "tm_deletion_scheduled": null,
         "tm_create": "2024-01-01T00:00:00Z",
-        "tm_update": "2024-01-15T10:30:00Z"
+        "tm_update": "2024-01-15T10:30:00Z",
+        "tm_delete": null
     }
 
 **Update Customer Information**
 
 .. code::
 
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/customers/<customer-id>?token=<token>' \
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/customer?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
             "name": "Acme Corporation Inc.",
             "detail": "Updated enterprise account"
         }'
+
+
+Account Deletion Lifecycle
+--------------------------
+Customer accounts follow a defined status lifecycle that governs account creation, verification, and deletion.
+
+**Status Lifecycle**
+
+::
+
+    Signup              Email Verified         Unregister          Grace Period
+    +----------+       +----------+           +----------+       +----------+
+    | initial  | ----> |  active  | --------> |  frozen  | ----> | deleted  |
+    +----------+       +----------+           +----------+       +----------+
+         |                                         |
+         | (no verification                        | (cancel unregister)
+         |  within timeout)                        |
+         v                                         v
+    +----------+                              +----------+
+    | expired  |                              |  active  |
+    +----------+                              +----------+
+
+**Status Values**
+
++------------+-------------------------------------------------------------------+
+| Status     | Description                                                       |
++============+===================================================================+
+| initial    | Account created, pending email verification.                      |
++------------+-------------------------------------------------------------------+
+| active     | Normal operation, fully verified. All features available.          |
++------------+-------------------------------------------------------------------+
+| frozen     | Deletion scheduled, 30-day grace period (or immediate deletion    |
+|            | in progress). Active calls terminated, new operations blocked.    |
++------------+-------------------------------------------------------------------+
+| deleted    | Permanently deleted. All PII anonymized, all resources removed.   |
++------------+-------------------------------------------------------------------+
+| expired    | Unverified signup expired. Account was never activated.           |
++------------+-------------------------------------------------------------------+
+
+**Self-Service Unregistration**
+
+A customer can request account deletion via the unregister endpoint. This freezes the account and schedules permanent deletion after a 30-day grace period.
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/auth/unregister' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Bearer <token>' \
+        --data '{
+            "password": "yourPassword"
+        }'
+
+When an account is frozen:
+
+- Active calls and operations are terminated
+- New resource creation and operations are blocked
+- The ``tm_deletion_scheduled`` field is set to the scheduled deletion date
+- The ``status`` changes to ``frozen``
+
+**Immediate Deletion**
+
+To skip the 30-day grace period and delete the account immediately, include ``"immediate": true`` and a confirmation phrase.
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/auth/unregister' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Bearer <token>' \
+        --data '{
+            "password": "yourPassword",
+            "confirmation_phrase": "DELETE",
+            "immediate": true
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   Immediate deletion cannot be undone. All customer resources are cascade-deleted: agents, numbers, flows, queues, trunks, extensions, files, billing accounts, tags, transcriptions, and contacts. PII is anonymized. Do not call this endpoint unless the user has explicitly confirmed they want permanent, irreversible deletion.
+
+**Cancel Unregistration (Recover Account)**
+
+During the 30-day grace period, a frozen account can be recovered by cancelling the unregistration.
+
+.. code::
+
+    $ curl -X DELETE 'https://api.voipbin.net/auth/unregister' \
+        --header 'Authorization: Bearer <token>'
+
+This restores the account to ``active`` status, clears the ``tm_deletion_scheduled`` field, and re-enables all operations.
+
+**What Happens on Permanent Deletion**
+
+When the grace period expires (or immediate deletion is requested), the following resources are cascade-deleted:
+
+- Agents
+- Numbers
+- Flows
+- Queues
+- Trunks
+- Extensions
+- Files
+- Billing accounts
+- Tags
+- Transcriptions
+- Contacts
+
+All personally identifiable information (PII) is anonymized and the account status transitions to ``deleted``.
 
 
 Resource Ownership
@@ -335,11 +464,11 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Account suspended         | Check billing status; contact support for      |
-|                           | reactivation                                   |
+| Account frozen            | Account has deletion scheduled. Cancel with    |
+|                           | ``DELETE /auth/unregister`` to recover          |
 +---------------------------+------------------------------------------------+
-| Cannot update account     | Verify admin permissions; check for locked     |
-|                           | fields                                         |
+| Cannot update account     | Verify admin permissions; check account status |
+|                           | is ``active`` (frozen accounts are read-only)  |
 +---------------------------+------------------------------------------------+
 
 
@@ -350,4 +479,3 @@ Related Documentation
 - :ref:`Billing Account Overview <billing_account_overview>` - Account billing
 - :ref:`Number Overview <number-overview>` - Phone number management
 - :ref:`Flow Overview <flow-overview>` - Call flow configuration
-

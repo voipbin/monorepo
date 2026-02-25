@@ -189,17 +189,17 @@
 <span id="id1"></span><h2>Customer<a class="headerlink" href="#customer-struct-customer-customer" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phone_number&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;line_secret&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;line_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;permission_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">],</span>
+    <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -207,41 +207,53 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The customer’s unique identifier. Returned when creating a customer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/customers</span></code> or when listing customers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">username</span></code> (String): The customer’s login username. Must be unique across the platform.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The display name of the customer organization.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description or notes about the customer account.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string): The HTTP method used for webhook notifications. Typically <code class="docutils literal notranslate"><span class="pre">POST</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String): The URI where webhook event notifications are sent for this customer.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">line_secret</span></code> (String): The LINE messaging platform channel secret for LINE integration.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">line_token</span></code> (String): The LINE messaging platform channel access token for LINE integration.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">permission_ids</span></code> (Array of UUID): List of default permission IDs for this customer’s resources. Each ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/permissions</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the customer was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the customer was last updated.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the customer was deleted, if applicable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The customer’s unique identifier. Returned when retrieving the customer via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Optional): The display name of the customer organization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): An optional description or notes about the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">email</span></code> (String, Optional): The email address associated with the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phone_number</span></code> (String, Optional): The phone number associated with the customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">address</span></code> (String, Optional): The physical or mailing address of the customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string, Optional): The HTTP method used for webhook notifications. One of: <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String, Optional): The URI where webhook event notifications are sent for this customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">billing_account_id</span></code> (UUID, Optional): The default billing account ID for this customer. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/billing_accounts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">email_verified</span></code> (Boolean): Whether the customer’s email address has been verified. <code class="docutils literal notranslate"><span class="pre">true</span></code> if verified, <code class="docutils literal notranslate"><span class="pre">false</span></code> otherwise.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The current account status. One of:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial</span></code>: Account created, pending email verification.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Normal operation, fully verified.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frozen</span></code>: Deletion scheduled, 30-day grace period (or immediate deletion in progress).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deleted</span></code>: Permanently deleted, PII anonymized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expired</span></code>: Unverified signup expired.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> (String, ISO 8601, nullable): Timestamp when the account is scheduled for permanent deletion. Set when the account transitions to <code class="docutils literal notranslate"><span class="pre">frozen</span></code> status. <code class="docutils literal notranslate"><span class="pre">null</span></code> if no deletion is scheduled.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the customer was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the customer was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601, nullable): Timestamp when the customer was deleted. <code class="docutils literal notranslate"><span class="pre">null</span></code> if the customer has not been deleted.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the customer has not been deleted. The <code class="docutils literal notranslate"><span class="pre">line_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">line_token</span></code> fields are only needed if the customer uses LINE messaging integration; they can be left empty for voice-only customers.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field determines what operations are allowed on the account. Only <code class="docutils literal notranslate"><span class="pre">active</span></code> accounts can create resources and make calls. A <code class="docutils literal notranslate"><span class="pre">frozen</span></code> account has deletion scheduled but can be recovered by cancelling unregistration before the grace period expires. A <code class="docutils literal notranslate"><span class="pre">deleted</span></code> account cannot be recovered – all PII has been anonymized and all resources cascade-deleted. The <code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> field is only set when <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">frozen</span></code>.</p>
 </div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;admin account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Acme Corporation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Enterprise customer account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;admin@acme-corp.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phone_number&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;123 Main St, San Francisco, CA 94105&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://en7evajwhmqbt.x.pipedream.net&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;line_secret&quot;</span><span class="p">:</span> <span class="s2">&quot;ba5f0575d826d5b4a052a43145ef1391&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;line_token&quot;</span><span class="p">:</span> <span class="s2">&quot;tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;permission_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;03796e14-7cb4-11ec-9dba-e72023efd1c6&quot;</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-01 00:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-16 08:37:16.952738&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-06-20T14:22:35Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>

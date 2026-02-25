@@ -3421,6 +3421,9 @@ type RequestBodyAuthUnregisterPOST struct {
 	// ConfirmationPhrase Must be exactly "DELETE". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.
 	ConfirmationPhrase *string `json:"confirmation_phrase,omitempty"`
 
+	// Immediate If true, skip the 30-day grace period and delete the account immediately. The account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in a single request. Default: false.
+	Immediate *bool `json:"immediate,omitempty"`
+
 	// Password Account password for re-authentication. Required for password-based accounts. Mutually exclusive with `confirmation_phrase`.
 	Password *string `json:"password,omitempty"`
 }
@@ -6208,7 +6211,7 @@ type ServerInterface interface {
 	// Cancel account deletion (self-service recover).
 	// (DELETE /auth/unregister)
 	DeleteAuthUnregister(c *gin.Context, params DeleteAuthUnregisterParams)
-	// Schedule account deletion (self-service freeze).
+	// Schedule or immediately execute account deletion (self-service).
 	// (POST /auth/unregister)
 	PostAuthUnregister(c *gin.Context, params PostAuthUnregisterParams)
 	// List available numbers
@@ -20592,7 +20595,7 @@ type StrictServerInterface interface {
 	// Cancel account deletion (self-service recover).
 	// (DELETE /auth/unregister)
 	DeleteAuthUnregister(ctx context.Context, request DeleteAuthUnregisterRequestObject) (DeleteAuthUnregisterResponseObject, error)
-	// Schedule account deletion (self-service freeze).
+	// Schedule or immediately execute account deletion (self-service).
 	// (POST /auth/unregister)
 	PostAuthUnregister(ctx context.Context, request PostAuthUnregisterRequestObject) (PostAuthUnregisterResponseObject, error)
 	// List available numbers

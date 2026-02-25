@@ -3475,6 +3475,21 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerFreeze(ctx, customer
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerFreeze", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerFreeze), ctx, customerID)
 }
 
+// CustomerV1CustomerFreezeAndDelete mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerFreezeAndDelete(ctx context.Context, customerID uuid.UUID) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerFreezeAndDelete", ctx, customerID)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1CustomerFreezeAndDelete indicates an expected call of CustomerV1CustomerFreezeAndDelete.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerFreezeAndDelete(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerFreezeAndDelete", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerFreezeAndDelete), ctx, customerID)
+}
+
 // CustomerV1CustomerGet mocks base method.
 func (m *MockRequestHandler) CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

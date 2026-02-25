@@ -1999,8 +1999,8 @@
     },
     "/auth/unregister": {
       "post": {
-        "summary": "Schedule account deletion (self-service freeze).",
-        "description": "Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.\nActive calls are terminated and new operations are blocked.\nThe customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.\n\nExactly one of `password` or `confirmation_phrase` must be provided:\n- Password-based accounts: provide `password` for re-authentication.\n- SSO or API-key authenticated requests: provide `confirmation_phrase` set to `\"DELETE\"`.\n",
+        "summary": "Schedule or immediately execute account deletion (self-service).",
+        "description": "Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.\nActive calls are terminated and new operations are blocked.\n\nBy default, the customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.\n\nIf `immediate` is set to `true`, the account is frozen and then permanently deleted (PII anonymized,\nall resources cascade-deleted) in a single request. This cannot be undone.\n\nExactly one of `password` or `confirmation_phrase` must be provided:\n- Password-based accounts: provide `password` for re-authentication.\n- SSO or API-key authenticated requests: provide `confirmation_phrase` set to `\"DELETE\"`.\n",
         "tags": [
           "Auth"
         ],
@@ -2027,7 +2027,7 @@
         },
         "responses": {
           "200": {
-            "description": "Account frozen successfully.",
+            "description": "Account frozen successfully (or deleted if `immediate` was `true`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -20482,6 +20482,11 @@
             "type": "string",
             "description": "Must be exactly \"DELETE\". Required for SSO users and API-key authenticated requests. Mutually exclusive with `password`.",
             "example": "DELETE"
+          },
+          "immediate": {
+            "type": "boolean",
+            "description": "If true, skip the 30-day grace period and delete the account immediately. The account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in a single request. Default: false.",
+            "example": false
           }
         }
       }

@@ -27,22 +27,23 @@ Get list of customers
         "result": [
             {
                 "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "username": "admin",
-                "name": "admin",
-                "detail": "admin account",
+                "name": "Acme Corporation",
+                "detail": "Enterprise customer account",
+                "email": "admin@acme-corp.com",
+                "phone_number": "+15551234567",
+                "address": "123 Main St, San Francisco, CA 94105",
                 "webhook_method": "POST",
-                "webhook_uri": "https://en7evasdjwhmqbt.x.pipedream.net",
-                "line_secret": "ba5fsf0575d826d5b4asdf052a43145ef1391",
-                "line_token": "tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdisyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTsdfsfTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-                "permission_ids": [
-                    "03796e14-7cb4-11ec-9dba-e72023efd1c6"
-                ],
-                "tm_create": "2022-02-01 00:00:00.000000",
-                "tm_update": "2022-06-16 08:37:16.952738",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+                "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+                "email_verified": true,
+                "status": "active",
+                "tm_deletion_scheduled": null,
+                "tm_create": "2024-01-15T10:30:00Z",
+                "tm_update": "2024-06-20T14:22:35Z",
+                "tm_delete": null
             }
         ],
-        "next_page_token": "2022-02-01 00:00:00.000000"
+        "next_page_token": "2024-01-15T10:30:00Z"
     }
 
 Get detail of customer
@@ -56,19 +57,20 @@ Example
 
     {
         "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "username": "admin",
-        "name": "admin",
-        "detail": "admin account",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
         "webhook_method": "POST",
-        "webhook_uri": "https://en7evajwhmqbt.x.pipedream.net",
-        "line_secret": "ba5f0575d826d5b4a0512a145ef1391",
-        "line_token": "tsfIiDB/2cGI5sssaIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-        "permission_ids": [
-            "03796e14-7cb4-11ec-9dba-e72023efd1c6"
-        ],
-        "tm_create": "2022-02-01 00:00:00.000000",
-        "tm_update": "2022-06-16 08:37:16.952738",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "email_verified": true,
+        "status": "active",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:22:35Z",
+        "tm_delete": null
     }
 
 Create a new customer
@@ -83,28 +85,29 @@ Example
         --data-raw '{
             "username": "test1",
             "password": "ee5f3d14-5ac6-11ed-808e-6f7d676a444b",
-            "name": "test 1",
-            "detail": "test user 1",
+            "name": "Test Company",
+            "detail": "Test customer account",
+            "email": "admin@test-company.com",
             "webhook_method": "POST",
-            "webhook_uri": "https://en7evajwhm11qbt.x.pipedream.net",
-            "line_secret": "ba5f0575d826d5b4a051112a145ef1391",
-            "line_token": "tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-            "permission_ids": []
+            "webhook_uri": "https://webhooks.test-company.com/voipbin"
         }'
 
     {
         "id": "ff424526-f65d-483f-bc36-3b2357c6c6a9",
-        "username": "test1",
-        "name": "test 1",
-        "detail": "test user 1",
+        "name": "Test Company",
+        "detail": "Test customer account",
+        "email": "admin@test-company.com",
+        "phone_number": "",
+        "address": "",
         "webhook_method": "POST",
-        "webhook_uri": "https://en7evajwhm11qbt.x.pipedream.net",
-        "line_secret": "ba5f0575d826d5b4a051112a145ef1391",
-        "line_token": "tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-        "permission_ids": [],
-        "tm_create": "2022-11-02 15:57:08.368093",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "webhook_uri": "https://webhooks.test-company.com/voipbin",
+        "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "email_verified": false,
+        "status": "initial",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-03-10T15:57:08Z",
+        "tm_update": "2024-03-10T15:57:08Z",
+        "tm_delete": null
     }
 
 Delete customer
@@ -118,19 +121,126 @@ Example
 
 .. code::
 
-    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "ff424526-f65d-483f-bc36-3b2357c6c6a9",
-        "username": "test1",
-        "name": "test 1",
-        "detail": "test user 1",
+        "name": "Test Company",
+        "detail": "Test customer account",
+        "email": "admin@test-company.com",
+        "phone_number": "",
+        "address": "",
         "webhook_method": "POST",
-        "webhook_uri": "https://en7evajwhm11qbt.x.pipedream.net",
-        "line_secret": "ba5f0575d826d5b4a051112a145ef1391",
-        "line_token": "tsfIiDB/2cGI5sssaIop7S311SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-        "permission_ids": [],
-        "tm_create": "2022-11-02 15:57:08.368093",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "2022-11-02 15:59:08.368093"
+        "webhook_uri": "https://webhooks.test-company.com/voipbin",
+        "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "email_verified": false,
+        "status": "deleted",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-03-10T15:57:08Z",
+        "tm_update": "2024-03-10T15:57:08Z",
+        "tm_delete": "2024-03-10T15:59:08Z"
+    }
+
+Unregister account (schedule deletion)
+---------------------------------------
+
+Request account deletion with a 30-day grace period. The account transitions to ``frozen`` status and a deletion date is scheduled.
+
+Example
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/auth/unregister' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Bearer <YOUR_AUTH_TOKEN>' \
+        --data-raw '{
+            "password": "yourPassword"
+        }'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "email_verified": true,
+        "status": "frozen",
+        "tm_deletion_scheduled": "2024-07-20T14:22:35Z",
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:22:35Z",
+        "tm_delete": null
+    }
+
+Unregister account immediately
+------------------------------
+
+Skip the 30-day grace period and permanently delete the account immediately. Requires a confirmation phrase and password.
+
+Example
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/auth/unregister' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Bearer <YOUR_AUTH_TOKEN>' \
+        --data-raw '{
+            "password": "yourPassword",
+            "confirmation_phrase": "DELETE",
+            "immediate": true
+        }'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "",
+        "detail": "",
+        "email": "",
+        "phone_number": "",
+        "address": "",
+        "webhook_method": "",
+        "webhook_uri": "",
+        "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "email_verified": false,
+        "status": "deleted",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:25:00Z",
+        "tm_delete": "2024-06-20T14:25:00Z"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Immediate deletion cannot be undone. All customer resources are cascade-deleted: agents, numbers, flows, queues, trunks, extensions, files, billing accounts, tags, transcriptions, and contacts. PII is anonymized -- notice how name, detail, email, and other personal fields are empty in the response. The ``confirmation_phrase`` must be exactly ``"DELETE"`` (case-sensitive). Do not call this endpoint unless the user has explicitly confirmed permanent, irreversible deletion.
+
+Cancel unregistration (recover account)
+----------------------------------------
+
+During the 30-day grace period, cancel the scheduled deletion and restore the account to ``active`` status.
+
+Example
+
+.. code::
+
+    $ curl --location --request DELETE 'https://api.voipbin.net/auth/unregister' \
+        --header 'Authorization: Bearer <YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "email_verified": true,
+        "status": "active",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:30:00Z",
+        "tm_delete": null
     }

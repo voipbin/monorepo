@@ -117,6 +117,21 @@ func (mr *MockCustomerHandlerMockRecorder) Freeze(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Freeze", reflect.TypeOf((*MockCustomerHandler)(nil).Freeze), ctx, id)
 }
 
+// FreezeAndDelete mocks base method.
+func (m *MockCustomerHandler) FreezeAndDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FreezeAndDelete", ctx, id)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FreezeAndDelete indicates an expected call of FreezeAndDelete.
+func (mr *MockCustomerHandlerMockRecorder) FreezeAndDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FreezeAndDelete", reflect.TypeOf((*MockCustomerHandler)(nil).FreezeAndDelete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockCustomerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
