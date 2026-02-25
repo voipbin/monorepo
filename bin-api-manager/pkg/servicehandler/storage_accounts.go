@@ -92,7 +92,7 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 // StorageAccountDelete sends a request to storage-manager
 // to deleting a storage account.
 // it returns storage account if it succeed.
-func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "StorageAccountDelete",
 		"customer_id":        a.CustomerID,
@@ -111,19 +111,18 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Ag
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.StorageV1AccountDelete(ctx, storageAccountID, 60000)
+	res, err := h.reqHandler.StorageV1AccountDelete(ctx, storageAccountID, 60000)
 	if err != nil {
 		log.Errorf("Could not delete storage account. err: %v", err)
 	}
 
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // StorageAccountGets sends a request to storage-manager
 // to getting a list of storage accounts.
 // it returns list of storage accounts if it succeed.
-func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountGets",
 		"customer_id": a.CustomerID,
@@ -159,11 +158,9 @@ func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agen
 		return nil, err
 	}
 
-	// create result
-	res := []*smaccount.WebhookMessage{}
-	for _, tmp := range tmps {
-		c := tmp.ConvertWebhookMessage()
-		res = append(res, c)
+	res := make([]*smaccount.Account, len(tmps))
+	for i := range tmps {
+		res[i] = &tmps[i]
 	}
 
 	return res, nil
@@ -172,7 +169,7 @@ func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agen
 // StorageAccountCreate sends a request to storage-manager
 // to create a new storage accounts.
 // it returns created storage account if it succeed.
-func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountCreate",
 		"customer_id": a.CustomerID,
@@ -184,13 +181,12 @@ func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *amagent.Ag
 	}
 
 	// create storage accounts
-	tmp, err := h.reqHandler.StorageV1AccountCreate(ctx, a.CustomerID)
+	res, err := h.reqHandler.StorageV1AccountCreate(ctx, a.CustomerID)
 	if err != nil {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 

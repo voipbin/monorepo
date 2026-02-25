@@ -26,7 +26,7 @@ func Test_customersPOST(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.Customer
 
 		expectName          string
 		expectDetail        string
@@ -49,7 +49,7 @@ func Test_customersPOST(t *testing.T) {
 			reqQuery: "/customers",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 
-			responseCustomer: &cscustomer.WebhookMessage{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("271353a8-83f3-11ec-9386-8be19d563155"),
 			},
 
@@ -118,7 +118,7 @@ func Test_customersGet(t *testing.T) {
 
 		reqQuery string
 
-		responseCustomers []*cscustomer.WebhookMessage
+		responseCustomers []*cscustomer.Customer
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -135,7 +135,7 @@ func Test_customersGet(t *testing.T) {
 
 			reqQuery: "/customers?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseCustomers: []*cscustomer.WebhookMessage{
+			responseCustomers: []*cscustomer.Customer{
 				{
 					ID: uuid.FromStringOrNil("52bac7ec-83f4-11ec-a083-c3cf3f92a2e3"),
 				},
@@ -194,7 +194,7 @@ func Test_customersIDGet(t *testing.T) {
 
 		reqQuery string
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.Customer
 
 		expectCustomerID uuid.UUID
 		expectRes        string
@@ -210,7 +210,7 @@ func Test_customersIDGet(t *testing.T) {
 
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
-			responseCustomer: &cscustomer.WebhookMessage{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
 			},
 
@@ -264,7 +264,7 @@ func Test_customersIDPut(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.Customer
 
 		expectCustomerID    uuid.UUID
 		expectName          string
@@ -288,7 +288,7 @@ func Test_customersIDPut(t *testing.T) {
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 			reqBody:  []byte(`{"name":"new name","detail":"new detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 
-			responseCustomer: &cscustomer.WebhookMessage{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
 			},
 
@@ -348,7 +348,7 @@ func Test_customersIDDelete(t *testing.T) {
 
 		reqQuery string
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.Customer
 
 		expectCustomerID uuid.UUID
 		expectRes        string
@@ -364,7 +364,7 @@ func Test_customersIDDelete(t *testing.T) {
 
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
-			responseCustomer: &cscustomer.WebhookMessage{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
 			},
 
@@ -418,7 +418,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.Customer
 
 		expectedCustomerID       uuid.UUID
 		expectedBillingAccountID uuid.UUID
@@ -436,7 +436,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",
 			reqBody:  []byte(`{"billing_account_id":"ccc776b6-1773-11ee-bea5-d78345c015af"}`),
 
-			responseCustomer: &cscustomer.WebhookMessage{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 			},
 

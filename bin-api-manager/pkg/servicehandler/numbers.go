@@ -261,7 +261,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *amagent.Age
 // NumberRenew handles number renew request.
 // It sends a request to the number-manager to renew the numbers.
 // it returns renewed numbers information if it succeed.
-func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberRenew",
 		"customer_id": a.CustomerID,
@@ -281,10 +281,9 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRe
 		return nil, err
 	}
 
-	res := []*nmnumber.WebhookMessage{}
-	for _, tmp := range tmps {
-		c := tmp.ConvertWebhookMessage()
-		res = append(res, c)
+	res := make([]*nmnumber.Number, len(tmps))
+	for i := range tmps {
+		res[i] = &tmps[i]
 	}
 
 	return res, nil

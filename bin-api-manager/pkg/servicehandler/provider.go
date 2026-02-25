@@ -33,7 +33,7 @@ func (h *serviceHandler) providerGet(ctx context.Context, id uuid.UUID) (*rmprov
 
 // ProviderGet sends a request to route-manager
 // to getting the provider.
-func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, providerID uuid.UUID) (*rmprovider.WebhookMessage, error) {
+func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, providerID uuid.UUID) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGet",
 		"customer_id": a.CustomerID,
@@ -52,14 +52,13 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, prov
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // ProviderGets sends a request to route-manager
 // to getting a list of providers.
 // it returns providers info if it succeed.
-func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.WebhookMessage, error) {
+func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGets",
 		"customer_id": a.CustomerID,
@@ -85,10 +84,9 @@ func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, siz
 		return nil, err
 	}
 
-	res := []*rmprovider.WebhookMessage{}
-	for _, tmp := range tmps {
-		e := tmp.ConvertWebhookMessage()
-		res = append(res, e)
+	res := make([]*rmprovider.Provider, len(tmps))
+	for i := range tmps {
+		res[i] = &tmps[i]
 	}
 
 	return res, nil
@@ -105,7 +103,7 @@ func (h *serviceHandler) ProviderCreate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
-) (*rmprovider.WebhookMessage, error) {
+) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderCreate",
 		"customer_id": a.CustomerID,
@@ -134,12 +132,11 @@ func (h *serviceHandler) ProviderCreate(
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // ProviderDelete deletes the provider.
-func (h *serviceHandler) ProviderDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.WebhookMessage, error) {
+func (h *serviceHandler) ProviderDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderDelete",
 		"customer_id": a.CustomerID,
@@ -168,8 +165,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *amagent.Agent, i
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }
 
 // ProviderUpdate sends a request to route-manager
@@ -186,7 +182,7 @@ func (h *serviceHandler) ProviderUpdate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
-) (*rmprovider.WebhookMessage, error) {
+) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderUpdate",
 		"customer_id": a.CustomerID,
@@ -221,6 +217,5 @@ func (h *serviceHandler) ProviderUpdate(
 	}
 	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
 
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
+	return tmp, nil
 }

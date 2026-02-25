@@ -39,7 +39,7 @@ func Test_CustomerCreate(t *testing.T) {
 		responseBillingAccount *bmaccount.Account
 
 		expectFilters map[cscustomer.Field]any
-		expectRes     *cscustomer.WebhookMessage
+		expectRes     *cscustomer.Customer
 	}
 
 	tests := []test{
@@ -79,7 +79,7 @@ func Test_CustomerCreate(t *testing.T) {
 				"deleted":  "false",
 				"username": "test@test.com",
 			},
-			expectRes: &cscustomer.WebhookMessage{
+			expectRes: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("ade4707c-837d-11ec-a600-f30a3ccf56ae"),
 			},
 		},
@@ -124,7 +124,7 @@ func TestCustomerGet(t *testing.T) {
 		id    uuid.UUID
 
 		responseCustomer *cscustomer.Customer
-		expectRes        *cscustomer.WebhookMessage
+		expectRes        *cscustomer.Customer
 	}
 
 	tests := []test{
@@ -142,7 +142,7 @@ func TestCustomerGet(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 			},
-			&cscustomer.WebhookMessage{
+			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 			},
 		},
@@ -247,7 +247,7 @@ func Test_CustomerList(t *testing.T) {
 		expectFilters map[cscustomer.Field]any
 
 		responseCustomers []cscustomer.Customer
-		expectRes         []*cscustomer.WebhookMessage
+		expectRes         []*cscustomer.Customer
 	}
 
 	tests := []test{
@@ -275,7 +275,7 @@ func Test_CustomerList(t *testing.T) {
 					ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 				},
 			},
-			[]*cscustomer.WebhookMessage{
+			[]*cscustomer.Customer{
 				{
 					ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 				},
@@ -327,7 +327,7 @@ func Test_CustomerUpdate(t *testing.T) {
 		webhookURI    string
 
 		responseCustomers *cscustomer.Customer
-		expectRes         *cscustomer.WebhookMessage
+		expectRes         *cscustomer.Customer
 	}
 
 	tests := []test{
@@ -352,7 +352,7 @@ func Test_CustomerUpdate(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			},
-			&cscustomer.WebhookMessage{
+			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			},
 		},
@@ -469,7 +469,7 @@ func Test_CustomerDelete(t *testing.T) {
 		id    uuid.UUID
 
 		responseCustomers *cscustomer.Customer
-		expectRes         *cscustomer.WebhookMessage
+		expectRes         *cscustomer.Customer
 	}
 
 	tests := []test{
@@ -487,7 +487,7 @@ func Test_CustomerDelete(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			},
-			&cscustomer.WebhookMessage{
+			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			},
 		},
@@ -535,7 +535,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 		responseCustomer       *cscustomer.Customer
 		responseBillingAccount *bmaccount.Account
-		expectRes              *cscustomer.WebhookMessage
+		expectRes              *cscustomer.Customer
 	}
 
 	tests := []test{
@@ -561,7 +561,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 				},
 			},
-			expectRes: &cscustomer.WebhookMessage{
+			expectRes: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 			},
 		},

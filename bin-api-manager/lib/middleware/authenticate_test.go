@@ -299,7 +299,7 @@ func TestAuthenticate(t *testing.T) {
 				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 					"agent": testAgent,
 				}, nil)
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.Customer{
 					Status: cscustomer.StatusActive,
 				}, nil)
 			},
@@ -398,7 +398,7 @@ func TestAuthenticateWithMalformedAgentJSON(t *testing.T) {
 		},
 	}, nil)
 	// Agent will have zero-value fields (including zero Permission), so frozen check runs
-	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), uuid.Nil).Return(&cscustomer.WebhookMessage{
+	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), uuid.Nil).Return(&cscustomer.Customer{
 		Status: cscustomer.StatusActive,
 	}, nil)
 
@@ -457,7 +457,7 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 		"agent": testAgent,
 	}, nil)
-	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.Customer{
 		Status: cscustomer.StatusActive,
 	}, nil)
 
@@ -519,7 +519,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.Customer{
 					Status: cscustomer.StatusActive,
 				}, nil)
 			},
@@ -535,7 +535,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.Customer{
 					Status:              cscustomer.StatusFrozen,
 					TMDeletionScheduled: &deletionTime,
 				}, nil)
@@ -649,7 +649,7 @@ func TestAuthenticateFrozenAccount(t *testing.T) {
 				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 					"agent": testAgent,
 				}, nil)
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.Customer{
 					Status:              cscustomer.StatusFrozen,
 					TMDeletionScheduled: &deletionTime,
 				}, nil)

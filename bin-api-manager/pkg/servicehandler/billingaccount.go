@@ -129,7 +129,7 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 
 // BillingAccountAddBalanceForce sends a request to billing-manager
 // to add the given billing account's balance.
-func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountAddBalanceForce",
 		"customer_id":        a.CustomerID,
@@ -149,13 +149,12 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *a
 		return nil, errors.Wrap(err, "could not add the balance")
 	}
 
-	res := b.ConvertWebhookMessage()
-	return res, nil
+	return b, nil
 }
 
 // BillingAccountSubtractBalanceForce sends a request to billing-manager
 // to subtract the given billing account's balance.
-func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountSubtractBalanceForce",
 		"customer_id":        a.CustomerID,
@@ -175,7 +174,6 @@ func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context,
 		return nil, errors.Wrap(err, "could not subtract the balance")
 	}
 
-	res := b.ConvertWebhookMessage()
-	return res, nil
+	return b, nil
 }
 

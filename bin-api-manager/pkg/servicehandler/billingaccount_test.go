@@ -231,7 +231,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 		balance   int64
 
 		responseBillingAccount *bmaccount.Account
-		expectRes              *bmaccount.WebhookMessage
+		expectRes              *bmaccount.Account
 	}{
 		{
 			name: "normal",
@@ -251,7 +251,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
 				},
 			},
-			expectRes: &bmaccount.WebhookMessage{
+			expectRes: &bmaccount.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
 				},

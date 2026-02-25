@@ -25,7 +25,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 		reqQuery string
 
-		responseRoutes []*rmroute.WebhookMessage
+		responseRoutes []*rmroute.Route
 
 		expectPageSize   uint64
 		expectPageToken  string
@@ -42,7 +42,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 			reqQuery: "/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseRoutes: []*rmroute.WebhookMessage{
+			responseRoutes: []*rmroute.Route{
 				{
 					ID:       uuid.FromStringOrNil("611c9384-5166-11ed-aee0-43c348138b55"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -65,7 +65,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 			reqQuery: "/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseRoutes: []*rmroute.WebhookMessage{
+			responseRoutes: []*rmroute.Route{
 				{
 					ID:       uuid.FromStringOrNil("6158d6dc-5166-11ed-9a8c-7f1a71b3baaa"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -133,7 +133,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 		reqQuery string
 
-		responseRoutes []*rmroute.WebhookMessage
+		responseRoutes []*rmroute.Route
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -149,7 +149,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseRoutes: []*rmroute.WebhookMessage{
+			responseRoutes: []*rmroute.Route{
 				{
 					ID:       uuid.FromStringOrNil("93b9143a-68a2-11ee-b676-8718718cd43e"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -169,7 +169,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 			},
 			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
-			responseRoutes: []*rmroute.WebhookMessage{
+			responseRoutes: []*rmroute.Route{
 				{
 					ID:       uuid.FromStringOrNil("941551f0-68a2-11ee-889c-ff0e92d76ad5"),
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
@@ -234,7 +234,7 @@ func Test_routesPost(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseRoute *rmroute.WebhookMessage
+		responseRoute *rmroute.Route
 
 		expectCustomerID uuid.UUID
 		expectName       string
@@ -255,7 +255,7 @@ func Test_routesPost(t *testing.T) {
 			reqQuery: "/routes",
 			reqBody:  []byte(`{"customer_id":"04303d61-d8c9-477c-8b54-254af0cb499f","name":"test name","detail":"test detail","provider_id":"a7efc236-5166-11ed-bdea-631379fb1515","priority":1,"target":"+82"}`),
 
-			responseRoute: &rmroute.WebhookMessage{
+			responseRoute: &rmroute.Route{
 				ID: uuid.FromStringOrNil("e1d75c98-5166-11ed-b2ff-1bb082f1fc25"),
 			},
 
@@ -319,7 +319,7 @@ func Test_routesIDGet(t *testing.T) {
 
 		reqQuery string
 
-		responseRoute *rmroute.WebhookMessage
+		responseRoute *rmroute.Route
 
 		expectRouteID uuid.UUID
 		expectRes     string
@@ -334,7 +334,7 @@ func Test_routesIDGet(t *testing.T) {
 
 			reqQuery: "/routes/1c776852-5167-11ed-bf9a-eba39c6546e4",
 
-			responseRoute: &rmroute.WebhookMessage{
+			responseRoute: &rmroute.Route{
 				ID:       uuid.FromStringOrNil("1c776852-5167-11ed-bf9a-eba39c6546e4"),
 				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
@@ -387,7 +387,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 		reqQuery string
 
-		responseRoute *rmroute.WebhookMessage
+		responseRoute *rmroute.Route
 
 		expectRouteID uuid.UUID
 		expectRes     string
@@ -402,7 +402,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 			reqQuery: "/routes/4d1e5ab0-5167-11ed-98ff-f7ff08fc0833",
 
-			responseRoute: &rmroute.WebhookMessage{
+			responseRoute: &rmroute.Route{
 				ID: uuid.FromStringOrNil("4d1e5ab0-5167-11ed-98ff-f7ff08fc0833"),
 			},
 
@@ -455,7 +455,7 @@ func Test_routesIDPut(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseRoute *rmroute.WebhookMessage
+		responseRoute *rmroute.Route
 
 		expectRouteID    uuid.UUID
 		expectName       string
@@ -476,7 +476,7 @@ func Test_routesIDPut(t *testing.T) {
 			reqQuery: "/routes/cd2b8926-5167-11ed-a158-ffb3472a3a4d",
 			reqBody:  []byte(`{"name":"update name","detail":"update detail","provider_id":"cd58db88-5167-11ed-8d35-e3209648ccf8","priority":1,"target":"+82"}`),
 
-			responseRoute: &rmroute.WebhookMessage{
+			responseRoute: &rmroute.Route{
 				ID: uuid.FromStringOrNil("169cbfe0-5162-11ed-9be1-872503f37e02"),
 			},
 
