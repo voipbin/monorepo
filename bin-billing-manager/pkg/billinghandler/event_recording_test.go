@@ -21,7 +21,7 @@ import (
 
 func Test_EventCMRecordingStarted(t *testing.T) {
 
-	tmCreate := time.Date(2026, 2, 23, 10, 0, 0, 0, time.UTC)
+	tmStart := time.Date(2026, 2, 23, 10, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name string
@@ -40,7 +40,7 @@ func Test_EventCMRecordingStarted(t *testing.T) {
 					ID:         uuid.FromStringOrNil("ee000001-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("ee000002-0000-0000-0000-000000000001"),
 				},
-				TMCreate: &tmCreate,
+				TMStart: &tmStart,
 			},
 
 			responseAccount: &account.Account{
@@ -103,7 +103,7 @@ func Test_EventCMRecordingStarted(t *testing.T) {
 func Test_EventCMRecordingFinished(t *testing.T) {
 
 	tmBillingStart := time.Date(2026, 2, 23, 10, 0, 0, 0, time.UTC)
-	tmUpdate := time.Date(2026, 2, 23, 10, 1, 0, 0, time.UTC) // 60 seconds later
+	tmEnd := time.Date(2026, 2, 23, 10, 1, 0, 0, time.UTC) // 60 seconds later
 
 	tests := []struct {
 		name string
@@ -120,7 +120,7 @@ func Test_EventCMRecordingFinished(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ff000001-0000-0000-0000-000000000001"),
 				},
-				TMUpdate: &tmUpdate,
+				TMEnd: &tmEnd,
 			},
 
 			responseBilling: &billing.Billing{
@@ -146,7 +146,7 @@ func Test_EventCMRecordingFinished(t *testing.T) {
 				RateTokenPerUnit:  billing.DefaultTokenPerUnitRecording,
 				RateCreditPerUnit: billing.DefaultCreditPerUnitRecording,
 				TMBillingStart:    &tmBillingStart,
-				TMBillingEnd:      &tmUpdate,
+				TMBillingEnd:      &tmEnd,
 				Status:            billing.StatusEnd,
 			},
 		},
@@ -181,7 +181,7 @@ func Test_EventCMRecordingFinished(t *testing.T) {
 				1,  // billableUnits
 				60, // usageDuration (seconds)
 				billing.GetCostInfo(tt.responseBilling.CostType),
-				tt.recording.TMUpdate,
+				tt.recording.TMEnd,
 			).Return(tt.responseConsumedBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, tt.responseConsumedBilling)
 
@@ -194,7 +194,7 @@ func Test_EventCMRecordingFinished(t *testing.T) {
 
 func Test_EventCMRecordingFinished_billing_not_found(t *testing.T) {
 
-	tmUpdate := time.Date(2026, 2, 23, 10, 1, 0, 0, time.UTC)
+	tmEnd := time.Date(2026, 2, 23, 10, 1, 0, 0, time.UTC)
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -216,7 +216,7 @@ func Test_EventCMRecordingFinished_billing_not_found(t *testing.T) {
 		Identity: commonidentity.Identity{
 			ID: uuid.FromStringOrNil("ff100001-0000-0000-0000-000000000001"),
 		},
-		TMUpdate: &tmUpdate,
+		TMEnd: &tmEnd,
 	}
 
 	mockDB.EXPECT().BillingGetByReferenceID(ctx, r.ID).Return(nil, fmt.Errorf("not found"))
@@ -249,7 +249,7 @@ func Test_EventCMRecordingFinished_nil_tmupdate(t *testing.T) {
 		Identity: commonidentity.Identity{
 			ID: uuid.FromStringOrNil("ff200001-0000-0000-0000-000000000001"),
 		},
-		TMUpdate: nil,
+		TMEnd: nil,
 	}
 
 	mockDB.EXPECT().BillingGetByReferenceID(ctx, r.ID).Return(&billing.Billing{

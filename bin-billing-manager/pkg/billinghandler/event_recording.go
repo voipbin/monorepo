@@ -27,7 +27,7 @@ func (h *billingHandler) EventCMRecordingStarted(ctx context.Context, r *cmrecor
 		billing.ReferenceTypeRecording,
 		r.ID,
 		billing.CostTypeRecording,
-		r.TMCreate,
+		r.TMStart,
 		&commonaddress.Address{},
 		&commonaddress.Address{},
 	); errBilling != nil {
@@ -51,11 +51,11 @@ func (h *billingHandler) EventCMRecordingFinished(ctx context.Context, r *cmreco
 		return nil
 	}
 
-	if r.TMUpdate == nil {
-		return errors.Errorf("invalid tm_update. recording_id: %s, tm_update: nil", r.ID)
+	if r.TMEnd == nil {
+		return errors.Errorf("invalid tm_end. recording_id: %s, tm_end: nil", r.ID)
 	}
 
-	if errEnd := h.BillingEnd(ctx, b, r.TMUpdate, &commonaddress.Address{}, &commonaddress.Address{}); errEnd != nil {
+	if errEnd := h.BillingEnd(ctx, b, r.TMEnd, &commonaddress.Address{}, &commonaddress.Address{}); errEnd != nil {
 		return errors.Wrapf(errEnd, "could not end the billing. billing_id: %s, recording_id: %s", b.ID, r.ID)
 	}
 
