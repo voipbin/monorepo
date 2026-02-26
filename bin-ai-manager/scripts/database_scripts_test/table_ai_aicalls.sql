@@ -4,6 +4,7 @@ create table ai_aicalls(
   customer_id   binary(16),   -- customer id
 
   ai_id            binary(16),   -- ai id
+  team_id          binary(16),   -- team id
   ai_engine_model  varchar(255),
   ai_engine_data   json,
   ai_tts_type      varchar(255),
