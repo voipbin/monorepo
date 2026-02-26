@@ -15,6 +15,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
+	team "monorepo/bin-ai-manager/models/team"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -203,4 +204,33 @@ func (m *MockCacheHandler) SummarySet(ctx context.Context, data *summary.Summary
 func (mr *MockCacheHandlerMockRecorder) SummarySet(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummarySet", reflect.TypeOf((*MockCacheHandler)(nil).SummarySet), ctx, data)
+}
+
+// TeamGet mocks base method.
+func (m *MockCacheHandler) TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamGet", ctx, id)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamGet indicates an expected call of TeamGet.
+func (mr *MockCacheHandlerMockRecorder) TeamGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamGet", reflect.TypeOf((*MockCacheHandler)(nil).TeamGet), ctx, id)
+}
+
+// TeamSet mocks base method.
+func (m *MockCacheHandler) TeamSet(ctx context.Context, data *team.Team) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamSet", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TeamSet indicates an expected call of TeamSet.
+func (mr *MockCacheHandlerMockRecorder) TeamSet(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamSet", reflect.TypeOf((*MockCacheHandler)(nil).TeamSet), ctx, data)
 }
