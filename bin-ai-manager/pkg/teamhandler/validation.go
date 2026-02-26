@@ -61,6 +61,11 @@ func validateTeam(startMemberID uuid.UUID, members []team.Member) error {
 		// Check transitions
 		fnNames := make(map[string]bool)
 		for _, t := range m.Transitions {
+			// FunctionName must not be empty
+			if t.FunctionName == "" {
+				return fmt.Errorf("transition function_name must not be empty for member %s", m.ID)
+			}
+
 			// Rule 8: FunctionName must not collide with reserved tool names
 			if reservedNames[t.FunctionName] {
 				return fmt.Errorf("transition function_name %q collides with reserved tool name for member %s", t.FunctionName, m.ID)

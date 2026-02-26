@@ -1,10 +1,10 @@
 package teamhandler
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
-	"github.com/stretchr/testify/assert"
 
 	"monorepo/bin-ai-manager/models/team"
 )
@@ -105,6 +105,20 @@ func Test_validateTeam(t *testing.T) {
 			errContains: "member name must not be empty",
 		},
 		{
+			name:          "empty transition function name",
+			startMemberID: memberA,
+			members: []team.Member{
+				{
+					ID: memberA, Name: "A", AIID: aiA,
+					Transitions: []team.Transition{
+						{FunctionName: "", Description: "bad", NextMemberID: memberA},
+					},
+				},
+			},
+			wantErr:     true,
+			errContains: "function_name must not be empty",
+		},
+		{
 			name:          "transition function name collides with reserved tool",
 			startMemberID: memberA,
 			members: []team.Member{
@@ -178,12 +192,17 @@ func Test_validateTeam(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validateTeam(tt.startMemberID, tt.members)
 			if tt.wantErr {
-				assert.Error(t, err)
-				if tt.errContains != "" {
-					assert.Contains(t, err.Error(), tt.errContains)
+				if err == nil {
+					t.Errorf("expected error but got nil")
+					return
+				}
+				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("expected error containing %q, got %q", tt.errContains, err.Error())
 				}
 			} else {
-				assert.NoError(t, err)
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
 			}
 		})
 	}

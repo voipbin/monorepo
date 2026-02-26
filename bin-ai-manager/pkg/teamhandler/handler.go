@@ -2,7 +2,6 @@ package teamhandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -21,14 +20,14 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 
 	// Validate team structure (rules 1-5, 7-11)
 	if err := validateTeam(startMemberID, members); err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
+		return nil, errors.Wrap(err, "validation failed")
 	}
 
 	// Rule 6: Verify each member's AIID references an existing AI
 	for _, m := range members {
 		ai, err := h.db.AIGet(ctx, m.AIID)
 		if err != nil {
-			return nil, fmt.Errorf("member %s references non-existent ai %s: %w", m.ID, m.AIID, err)
+			return nil, errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
 		}
 		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
 	}
@@ -117,14 +116,14 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 
 	// Validate team structure (rules 1-5, 7-11)
 	if err := validateTeam(startMemberID, members); err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
+		return nil, errors.Wrap(err, "validation failed")
 	}
 
 	// Rule 6: Verify each member's AIID references an existing AI
 	for _, m := range members {
 		ai, err := h.db.AIGet(ctx, m.AIID)
 		if err != nil {
-			return nil, fmt.Errorf("member %s references non-existent ai %s: %w", m.ID, m.AIID, err)
+			return nil, errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
 		}
 		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
 	}
