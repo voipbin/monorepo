@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -151,6 +152,7 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseCallChannel, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseCall.CustomerID, bmbilling.ReferenceTypeRecording, "", 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
@@ -277,6 +279,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConfbridge.CustomerID, bmbilling.ReferenceTypeRecording, "", 1).Return(true, nil)
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
 			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
