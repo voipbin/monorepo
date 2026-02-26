@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-ai-manager/pkg/toolhandler"
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -46,6 +47,7 @@ type listenHandler struct {
 	messageHandler messagehandler.MessageHandler
 	summaryHandler summaryhandler.SummaryHandler
 	toolHandler    toolhandler.ToolHandler
+	teamHandler    teamhandler.TeamHandler
 }
 
 var (
@@ -82,6 +84,11 @@ var (
 
 	// tools
 	regV1Tools = regexp.MustCompile("/v1/tools$")
+
+	// teams
+	regV1TeamsGet = regexp.MustCompile(`/v1/teams\?`)
+	regV1Teams    = regexp.MustCompile("/v1/teams$")
+	regV1TeamsID  = regexp.MustCompile("/v1/teams/" + regUUID + "$")
 )
 
 var (
@@ -126,6 +133,7 @@ func NewListenHandler(
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 	toolHandler toolhandler.ToolHandler,
+	teamHandler teamhandler.TeamHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -139,6 +147,7 @@ func NewListenHandler(
 		messageHandler: messageHandler,
 		summaryHandler: summaryHandler,
 		toolHandler:    toolHandler,
+		teamHandler:    teamHandler,
 	}
 
 	return h
@@ -309,6 +318,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Tools.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ToolsGet(ctx, m)
 		requestType = "/v1/tools"
+
+	////////////
+	// teams
+	////////////
+	// GET /teams
+	case regV1TeamsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1TeamsGet(ctx, m)
+		requestType = "/v1/teams"
+
+	// POST /teams
+	case regV1Teams.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1TeamsPost(ctx, m)
+		requestType = "/v1/teams"
+
+	// GET /teams/<team-id>
+	case regV1TeamsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1TeamsIDGet(ctx, m)
+		requestType = "/v1/teams/<team-id>"
+
+	// PUT /teams/<team-id>
+	case regV1TeamsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1TeamsIDPut(ctx, m)
+		requestType = "/v1/teams/<team-id>"
+
+	// DELETE /teams/<team-id>
+	case regV1TeamsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1TeamsIDDelete(ctx, m)
+		requestType = "/v1/teams/<team-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
