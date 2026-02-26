@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/identity"
 
@@ -14,6 +15,10 @@ import (
 
 // Create creates a new team record.
 func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Create",
+	})
+
 	// Validate team structure (rules 1-5, 7-11)
 	if err := validateTeam(startMemberID, members); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
@@ -21,9 +26,11 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 
 	// Rule 6: Verify each member's AIID references an existing AI
 	for _, m := range members {
-		if _, err := h.db.AIGet(ctx, m.AIID); err != nil {
+		ai, err := h.db.AIGet(ctx, m.AIID)
+		if err != nil {
 			return nil, fmt.Errorf("member %s references non-existent ai %s: %w", m.ID, m.AIID, err)
 		}
+		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -46,6 +53,7 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created team")
 	}
+	log.WithField("team", res).Debugf("Created team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeCreated, res)
 
 	return res, nil
@@ -53,26 +61,40 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 
 // Get returns team.
 func (h *teamHandler) Get(ctx context.Context, id uuid.UUID) (*team.Team, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Get",
+	})
+
 	res, err := h.db.TeamGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get team")
 	}
+	log.WithField("team", res).Debugf("Retrieved team info. team_id: %s", res.ID)
 
 	return res, nil
 }
 
 // List returns list of teams.
 func (h *teamHandler) List(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "List",
+	})
+
 	res, err := h.db.TeamList(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not list teams")
 	}
+	log.Debugf("Retrieved teams list. count: %d", len(res))
 
 	return res, nil
 }
 
 // Delete deletes the team.
 func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Delete",
+	})
+
 	if err := h.db.TeamDelete(ctx, id); err != nil {
 		return nil, errors.Wrapf(err, "could not delete team")
 	}
@@ -81,6 +103,7 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get deleted team")
 	}
+	log.WithField("team", res).Debugf("Deleted team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeDeleted, res)
 
 	return res, nil
@@ -88,6 +111,10 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 
 // Update updates the team.
 func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Update",
+	})
+
 	// Validate team structure (rules 1-5, 7-11)
 	if err := validateTeam(startMemberID, members); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
@@ -95,9 +122,11 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 
 	// Rule 6: Verify each member's AIID references an existing AI
 	for _, m := range members {
-		if _, err := h.db.AIGet(ctx, m.AIID); err != nil {
+		ai, err := h.db.AIGet(ctx, m.AIID)
+		if err != nil {
 			return nil, fmt.Errorf("member %s references non-existent ai %s: %w", m.ID, m.AIID, err)
 		}
+		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
 	}
 
 	fields := map[team.Field]any{
@@ -115,6 +144,7 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated team")
 	}
+	log.WithField("team", res).Debugf("Updated team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeUpdated, res)
 
 	return res, nil
