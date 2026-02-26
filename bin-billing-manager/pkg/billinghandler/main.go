@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -48,6 +49,8 @@ type BillingHandler interface {
 	EventNMNumberRenewed(ctx context.Context, n *nmnumber.Number) error
 	EventTTSSpeakingStarted(ctx context.Context, s *tmspeaking.Speaking) error
 	EventTTSSpeakingStopped(ctx context.Context, s *tmspeaking.Speaking) error
+	EventCMRecordingStarted(ctx context.Context, r *cmrecording.Recording) error
+	EventCMRecordingFinished(ctx context.Context, r *cmrecording.Recording) error
 }
 
 type billingHandler struct {

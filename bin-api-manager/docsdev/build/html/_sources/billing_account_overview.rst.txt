@@ -25,7 +25,7 @@ How Billing Works
 -----------------
 VoIPBIN uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
 
-Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and TTS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.
+Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls, TTS, and recording). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.
 
 All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.
 
@@ -53,25 +53,25 @@ All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to
     +--------+----------+     +--------+----------+
     |                   |     |                   |
     v                   v     v                   v
-    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
-    | VN Calls |  |   TTS    |  |PSTN Calls|  |   SMS    |  |  Email   |  | Numbers  |
-    | 1 tok/min|  | 3 tok/min|  | per min  |  | per msg  |  | per msg  |  | per num  |
-    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
-         |             |             |             |              |             |
-         | token first | token first |             |              |             |
-         | then credit | then credit | credit only | credit only  | credit only | credit only
-         v             v             v             v              v             v
-    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
-    | $0.001  |   |  $0.03  |   |  $0.01  |   |  $0.01  |   |  $0.01  |   |  $5.00  |
-    | /minute |   | /minute |   | /minute |   | /message|   | /message|   | /number |
-    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
+    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+    | VN Calls |  |   TTS    |  |Recording |  |PSTN Calls|  |   SMS    |  |  Email   |  | Numbers  |
+    | 1 tok/min|  | 3 tok/min|  | 3 tok/min|  | per min  |  | per msg  |  | per msg  |  | per num  |
+    +----------+  +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+         |             |             |             |             |              |             |
+         | token first | token first | token first |             |              |             |
+         | then credit | then credit | then credit | credit only | credit only  | credit only | credit only
+         v             v             v             v             v              v             v
+    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
+    | $0.001  |   |  $0.03  |   |  $0.03  |   |  $0.01  |   |  $0.01  |   |  $0.01  |   |  $5.00  |
+    | /minute |   | /minute |   | /minute |   | /minute |   | /message|   | /message|   | /number |
+    +---------+   +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
 
 **Key Components**
 
 - **Account State**: The ``billing_accounts`` table holds the live ``balance_credit`` (int64 micros) and ``balance_token`` (int64). This is the single source of truth for current balances.
 - **Billing Ledger**: The ``billing_billings`` table records every transaction as an immutable entry with signed deltas (``amount_token``, ``amount_credit``) and post-transaction snapshots (``balance_token_snapshot``, ``balance_credit_snapshot``).
 - **Monthly Token Top-Up**: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a ``top_up`` transaction in the ledger.
-- **Token-Eligible Services**: VN calls (1 token/minute) and TTS (3 tokens/minute) consume tokens first, then overflow to credits.
+- **Token-Eligible Services**: VN calls (1 token/minute), TTS (3 tokens/minute), and recording (3 tokens/minute) consume tokens first, then overflow to credits.
 - **Credit-Only Services**: PSTN calls, SMS, email, and number purchases always use credits directly.
 - **Free Services**: Extension-to-extension calls and direct extension calls incur no charges.
 
@@ -138,6 +138,8 @@ VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) 
 +----------------------+------------------+----------------------------------------+
 | TTS (Text-to-Speech) | 3 tokens         | Per minute (ceiling-rounded)           |
 +----------------------+------------------+----------------------------------------+
+| Recording            | 3 tokens         | Per minute (ceiling-rounded)           |
++----------------------+------------------+----------------------------------------+
 
 **Credit Rates (Overflow and Credit-Only)**
 
@@ -162,12 +164,14 @@ All credit rates are stored internally as int64 micros.
 +----------------------+------------------+------------------+-------------------------+
 | TTS (overflow)       | $0.03            | 30,000           | Per minute              |
 +----------------------+------------------+------------------+-------------------------+
+| Recording (overflow) | $0.03            | 30,000           | Per minute              |
++----------------------+------------------+------------------+-------------------------+
 | Extension Calls      | Free             | 0                | No charge               |
 +----------------------+------------------+------------------+-------------------------+
 
 **How Token Consumption Works**
 
-When a token-eligible service is used (VN call or TTS):
+When a token-eligible service is used (VN call, TTS, or recording):
 
 1. The system checks the account's ``balance_token``.
 2. If tokens are available, they are consumed first.
@@ -220,6 +224,17 @@ Each transaction is recorded in the billing ledger with the token and credit amo
     | Ledger entry:                               |
     |   amount_token: -6                          |
     |   amount_credit: 0                          |
+    +--------------------------------------------+
+
+    Recording (3 minutes 45 seconds) with NO tokens remaining:
+    +--------------------------------------------+
+    | Duration: 3 min 45 sec -> 4 minutes        |
+    | (ceiling-rounded to next whole minute)      |
+    | Token cost: 0 (exhausted)                   |
+    | Credit cost: 4 x 30,000 = 120,000 micros   |
+    | Ledger entry:                               |
+    |   amount_token: 0                           |
+    |   amount_credit: -120000                    |
     +--------------------------------------------+
 
     Monthly Token Top-Up (Free plan):
@@ -304,7 +319,7 @@ Account balance changes through specific operations. Token balances are replenis
     +--------+----------+     +--------+----------+
              |                         |
              | PSTN calls, SMS,        | VN calls,
-             | email, numbers,         | TTS
+             | email, numbers,         | TTS, recording
              | overflow                |
              v                         v
     +-------------------+     +-------------------+
@@ -429,7 +444,7 @@ Best Practices
 
 **5. Plan Selection**
 
-- Choose plan tier based on expected VN call and TTS volume
+- Choose plan tier based on expected VN call, TTS, and recording volume
 - Compare token allocation cost vs. credit-only cost at each tier
 - Consider upgrading if monthly overflow charges are significant
 
@@ -461,8 +476,8 @@ Troubleshooting
 | Tokens exhausted early    | Review billing ledger for usage patterns;       |
 |                           | consider upgrading plan tier for more tokens    |
 +---------------------------+------------------------------------------------+
-| Unexpected overflow       | Check ``balance_token`` on account; VN calls    |
-|                           | and TTS consume tokens first                   |
+| Unexpected overflow       | Check ``balance_token`` on account; VN calls,   |
+|                           | TTS, and recording consume tokens first         |
 +---------------------------+------------------------------------------------+
 | Tokens not replenishing   | Check ``tm_next_topup`` on the account;         |
 |                           | tokens are replenished by the automated cron    |

@@ -13,6 +13,7 @@ import (
 	context "context"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
+	recording "monorepo/bin-call-manager/models/recording"
 	email "monorepo/bin-email-manager/models/email"
 	message "monorepo/bin-message-manager/models/message"
 	number "monorepo/bin-number-manager/models/number"
@@ -89,6 +90,34 @@ func (m *MockBillingHandler) EventCMCallProgressing(ctx context.Context, c *call
 func (mr *MockBillingHandlerMockRecorder) EventCMCallProgressing(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallProgressing", reflect.TypeOf((*MockBillingHandler)(nil).EventCMCallProgressing), ctx, c)
+}
+
+// EventCMRecordingFinished mocks base method.
+func (m *MockBillingHandler) EventCMRecordingFinished(ctx context.Context, r *recording.Recording) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMRecordingFinished", ctx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMRecordingFinished indicates an expected call of EventCMRecordingFinished.
+func (mr *MockBillingHandlerMockRecorder) EventCMRecordingFinished(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMRecordingFinished", reflect.TypeOf((*MockBillingHandler)(nil).EventCMRecordingFinished), ctx, r)
+}
+
+// EventCMRecordingStarted mocks base method.
+func (m *MockBillingHandler) EventCMRecordingStarted(ctx context.Context, r *recording.Recording) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMRecordingStarted", ctx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMRecordingStarted indicates an expected call of EventCMRecordingStarted.
+func (mr *MockBillingHandlerMockRecorder) EventCMRecordingStarted(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMRecordingStarted", reflect.TypeOf((*MockBillingHandler)(nil).EventCMRecordingStarted), ctx, r)
 }
 
 // EventEMEmailCreated mocks base method.

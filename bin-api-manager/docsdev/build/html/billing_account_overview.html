@@ -207,7 +207,7 @@
 <section id="how-billing-works">
 <h2>How Billing Works<a class="headerlink" href="#how-billing-works" title="Link to this heading"></a></h2>
 <p>VoIPBIN uses a hybrid billing model with two cost mechanisms: <strong>token balance</strong> and <strong>credit balance</strong>.</p>
-<p>Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls and TTS). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.</p>
+<p>Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls, TTS, and recording). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.</p>
 <p>All monetary values are stored as <strong>int64 micros</strong> (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -231,18 +231,18 @@
 +--------+----------+     +--------+----------+
 |                   |     |                   |
 v                   v     v                   v
-+----------+  +----------+  +----------+  +----------+  +----------+  +----------+
-| VN Calls |  |   TTS    |  |PSTN Calls|  |   SMS    |  |  Email   |  | Numbers  |
-| 1 tok/min|  | 3 tok/min|  | per min  |  | per msg  |  | per msg  |  | per num  |
-+----------+  +----------+  +----------+  +----------+  +----------+  +----------+
-     |             |             |             |              |             |
-     | token first | token first |             |              |             |
-     | then credit | then credit | credit only | credit only  | credit only | credit only
-     v             v             v             v              v             v
-+---------+   +---------+   +---------+   +---------+   +---------+   +---------+
-| $0.001  |   |  $0.03  |   |  $0.01  |   |  $0.01  |   |  $0.01  |   |  $5.00  |
-| /minute |   | /minute |   | /minute |   | /message|   | /message|   | /number |
-+---------+   +---------+   +---------+   +---------+   +---------+   +---------+
++----------+  +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+| VN Calls |  |   TTS    |  |Recording |  |PSTN Calls|  |   SMS    |  |  Email   |  | Numbers  |
+| 1 tok/min|  | 3 tok/min|  | 3 tok/min|  | per min  |  | per msg  |  | per msg  |  | per num  |
++----------+  +----------+  +----------+  +----------+  +----------+  +----------+  +----------+
+     |             |             |             |             |              |             |
+     | token first | token first | token first |             |              |             |
+     | then credit | then credit | then credit | credit only | credit only  | credit only | credit only
+     v             v             v             v             v              v             v
++---------+   +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
+| $0.001  |   |  $0.03  |   |  $0.03  |   |  $0.01  |   |  $0.01  |   |  $0.01  |   |  $5.00  |
+| /minute |   | /minute |   | /minute |   | /minute |   | /message|   | /message|   | /number |
++---------+   +---------+   +---------+   +---------+   +---------+   +---------+   +---------+
 </pre></div>
 </div>
 <p><strong>Key Components</strong></p>
@@ -250,7 +250,7 @@ v                   v     v                   v
 <li><p><strong>Account State</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_accounts</span></code> table holds the live <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (int64 micros) and <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (int64). This is the single source of truth for current balances.</p></li>
 <li><p><strong>Billing Ledger</strong>: The <code class="docutils literal notranslate"><span class="pre">billing_billings</span></code> table records every transaction as an immutable entry with signed deltas (<code class="docutils literal notranslate"><span class="pre">amount_token</span></code>, <code class="docutils literal notranslate"><span class="pre">amount_credit</span></code>) and post-transaction snapshots (<code class="docutils literal notranslate"><span class="pre">balance_token_snapshot</span></code>, <code class="docutils literal notranslate"><span class="pre">balance_credit_snapshot</span></code>).</p></li>
 <li><p><strong>Monthly Token Top-Up</strong>: Tokens are replenished monthly via a cron-driven top-up process. The top-up is recorded as a <code class="docutils literal notranslate"><span class="pre">top_up</span></code> transaction in the ledger.</p></li>
-<li><p><strong>Token-Eligible Services</strong>: VN calls (1 token/minute) and TTS (3 tokens/minute) consume tokens first, then overflow to credits.</p></li>
+<li><p><strong>Token-Eligible Services</strong>: VN calls (1 token/minute), TTS (3 tokens/minute), and recording (3 tokens/minute) consume tokens first, then overflow to credits.</p></li>
 <li><p><strong>Credit-Only Services</strong>: PSTN calls, SMS, email, and number purchases always use credits directly.</p></li>
 <li><p><strong>Free Services</strong>: Extension-to-extension calls and direct extension calls incur no charges.</p></li>
 </ul>
@@ -361,6 +361,10 @@ v                   v     v                   v
 <td><p>3 tokens</p></td>
 <td><p>Per minute (ceiling-rounded)</p></td>
 </tr>
+<tr class="row-even"><td><p>Recording</p></td>
+<td><p>3 tokens</p></td>
+<td><p>Per minute (ceiling-rounded)</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Credit Rates (Overflow and Credit-Only)</strong></p>
@@ -414,7 +418,12 @@ v                   v     v                   v
 <td><p>30,000</p></td>
 <td><p>Per minute</p></td>
 </tr>
-<tr class="row-even"><td><p>Extension Calls</p></td>
+<tr class="row-even"><td><p>Recording (overflow)</p></td>
+<td><p>$0.03</p></td>
+<td><p>30,000</p></td>
+<td><p>Per minute</p></td>
+</tr>
+<tr class="row-odd"><td><p>Extension Calls</p></td>
 <td><p>Free</p></td>
 <td><p>0</p></td>
 <td><p>No charge</p></td>
@@ -422,7 +431,7 @@ v                   v     v                   v
 </tbody>
 </table>
 <p><strong>How Token Consumption Works</strong></p>
-<p>When a token-eligible service is used (VN call or TTS):</p>
+<p>When a token-eligible service is used (VN call, TTS, or recording):</p>
 <ol class="arabic simple">
 <li><p>The system checks the account’s <code class="docutils literal notranslate"><span class="pre">balance_token</span></code>.</p></li>
 <li><p>If tokens are available, they are consumed first.</p></li>
@@ -471,6 +480,17 @@ v                   v     v                   v
 <span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="o">-</span><span class="mi">6</span>                          <span class="o">|</span>
 <span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="mi">0</span>                          <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Recording</span> <span class="p">(</span><span class="mi">3</span> <span class="n">minutes</span> <span class="mi">45</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">with</span> <span class="n">NO</span> <span class="n">tokens</span> <span class="n">remaining</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="mi">3</span> <span class="nb">min</span> <span class="mi">45</span> <span class="n">sec</span> <span class="o">-&gt;</span> <span class="mi">4</span> <span class="n">minutes</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">ceiling</span><span class="o">-</span><span class="n">rounded</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">whole</span> <span class="n">minute</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Token</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">0</span> <span class="p">(</span><span class="n">exhausted</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Credit</span> <span class="n">cost</span><span class="p">:</span> <span class="mi">4</span> <span class="n">x</span> <span class="mi">30</span><span class="p">,</span><span class="mi">000</span> <span class="o">=</span> <span class="mi">120</span><span class="p">,</span><span class="mi">000</span> <span class="n">micros</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ledger</span> <span class="n">entry</span><span class="p">:</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_token</span><span class="p">:</span> <span class="mi">0</span>                           <span class="o">|</span>
+<span class="o">|</span>   <span class="n">amount_credit</span><span class="p">:</span> <span class="o">-</span><span class="mi">120000</span>                    <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Monthly</span> <span class="n">Token</span> <span class="n">Top</span><span class="o">-</span><span class="n">Up</span> <span class="p">(</span><span class="n">Free</span> <span class="n">plan</span><span class="p">):</span>
@@ -539,7 +559,7 @@ v                   v     v                   v
 <span class="o">+--------+----------+</span>     <span class="o">+--------+----------+</span>
          <span class="o">|</span>                         <span class="o">|</span>
          <span class="o">|</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="p">,</span> <span class="n">SMS</span><span class="p">,</span>        <span class="o">|</span> <span class="n">VN</span> <span class="n">calls</span><span class="p">,</span>
-         <span class="o">|</span> <span class="n">email</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span>         <span class="o">|</span> <span class="n">TTS</span>
+         <span class="o">|</span> <span class="n">email</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span>         <span class="o">|</span> <span class="n">TTS</span><span class="p">,</span> <span class="n">recording</span>
          <span class="o">|</span> <span class="n">overflow</span>                <span class="o">|</span>
          <span class="n">v</span>                         <span class="n">v</span>
 <span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
@@ -654,7 +674,7 @@ v                   v     v                   v
 </ul>
 <p><strong>5. Plan Selection</strong></p>
 <ul class="simple">
-<li><p>Choose plan tier based on expected VN call and TTS volume</p></li>
+<li><p>Choose plan tier based on expected VN call, TTS, and recording volume</p></li>
 <li><p>Compare token allocation cost vs. credit-only cost at each tier</p></li>
 <li><p>Consider upgrading if monthly overflow charges are significant</p></li>
 </ul>

@@ -13740,7 +13740,8 @@
           "monthly_allowance",
           "credit_adjustment",
           "token_adjustment",
-          "speaking"
+          "speaking",
+          "recording"
         ],
         "x-enum-varnames": [
           "BillingManagerBillingreferenceTypeNone",
@@ -13754,7 +13755,8 @@
           "BillingManagerBillingreferenceTypeMonthlyAllowance",
           "BillingManagerBillingreferenceTypeCreditAdjustment",
           "BillingManagerBillingreferenceTypeTokenAdjustment",
-          "BillingManagerBillingreferenceTypeSpeaking"
+          "BillingManagerBillingreferenceTypeSpeaking",
+          "BillingManagerBillingreferenceTypeRecording"
         ]
       },
       "BillingManagerBillingCostType": {
@@ -13772,7 +13774,8 @@
           "email",
           "number",
           "number_renew",
-          "tts"
+          "tts",
+          "recording"
         ],
         "x-enum-varnames": [
           "BillingManagerBillingCostTypeNone",
@@ -13785,7 +13788,8 @@
           "BillingManagerBillingCostTypeEmail",
           "BillingManagerBillingCostTypeNumber",
           "BillingManagerBillingCostTypeNumberRenew",
-          "BillingManagerBillingCostTypeTTS"
+          "BillingManagerBillingCostTypeTTS",
+          "BillingManagerBillingCostTypeRecording"
         ]
       },
       "BillingManagerBillingStatus": {

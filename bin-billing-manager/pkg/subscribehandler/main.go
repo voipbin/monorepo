@@ -8,6 +8,7 @@ import (
 	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -196,6 +197,14 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	case m.Publisher == string(commonoutline.ServiceNameTTSManager) && m.Type == tmspeaking.EventTypeSpeakingStopped:
 		err = h.processEventTTSSpeakingStopped(ctx, m)
+
+	//// call-manager
+	// recording
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmrecording.EventTypeRecordingStarted:
+		err = h.processEventCMRecordingStarted(ctx, m)
+
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmrecording.EventTypeRecordingFinished:
+		err = h.processEventCMRecordingFinished(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

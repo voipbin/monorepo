@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/recording"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -52,6 +53,15 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 
 	if c.Status != call.StatusProgressing {
 		return nil, fmt.Errorf("invalid status. call_id: %s, status: %s", c.ID, c.Status)
+	}
+
+	// check balance for recording
+	validBalance, errBalance := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, c.CustomerID, bmbilling.ReferenceTypeRecording, "", 1)
+	if errBalance != nil {
+		return nil, errors.Wrap(errBalance, "could not check balance for recording")
+	}
+	if !validBalance {
+		return nil, fmt.Errorf("insufficient balance for recording. customer_id: %s", c.CustomerID)
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -150,6 +160,15 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 
 	if cb.TMDelete != nil {
 		return nil, fmt.Errorf("invalid confbridge. confbridge_id: %s", confbridgeID)
+	}
+
+	// check balance for recording
+	validBalance, errBalance := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, cb.CustomerID, bmbilling.ReferenceTypeRecording, "", 1)
+	if errBalance != nil {
+		return nil, errors.Wrap(errBalance, "could not check balance for recording")
+	}
+	if !validBalance {
+		return nil, fmt.Errorf("insufficient balance for recording. customer_id: %s", cb.CustomerID)
 	}
 
 	// get bridge info

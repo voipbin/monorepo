@@ -400,6 +400,56 @@ func Test_IsValidBalance(t *testing.T) {
 			expectRes: false,
 			expectErr: true,
 		},
+		{
+			name: "recording with enough token balance",
+
+			accountID:   uuid.FromStringOrNil("c1c1c1c1-1111-11ee-86c6-111111111111"),
+			billingType: billing.ReferenceTypeRecording,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1c1c1c1-1111-11ee-86c6-111111111111"),
+				},
+				BalanceToken: 100,
+				TMDelete:     nil,
+			},
+			expectRes: true,
+		},
+		{
+			name: "recording with no tokens but enough credit",
+
+			accountID:   uuid.FromStringOrNil("c2c2c2c2-2222-11ee-86c6-222222222222"),
+			billingType: billing.ReferenceTypeRecording,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c2c2c2c2-2222-11ee-86c6-222222222222"),
+				},
+				BalanceToken:  0,
+				BalanceCredit: 30000,
+				TMDelete:      nil,
+			},
+			expectRes: true,
+		},
+		{
+			name: "recording with no tokens and insufficient credit",
+
+			accountID:   uuid.FromStringOrNil("c3c3c3c3-3333-11ee-86c6-333333333333"),
+			billingType: billing.ReferenceTypeRecording,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3c3c3c3-3333-11ee-86c6-333333333333"),
+				},
+				BalanceToken:  0,
+				BalanceCredit: 100,
+				TMDelete:      nil,
+			},
+			expectRes: false,
+		},
 	}
 
 	for _, tt := range tests {
