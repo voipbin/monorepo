@@ -113,6 +113,18 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 			return true, nil
 		}
 
+	case billing.ReferenceTypeRecording:
+		if a.BalanceToken > 0 {
+			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
+			return true, nil
+		}
+		costInfo := billing.GetCostInfo(billing.CostTypeRecording)
+		expectCost := costInfo.CreditPerUnit * int64(count)
+		if a.BalanceCredit >= expectCost {
+			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
+			return true, nil
+		}
+
 	default:
 		log.Errorf("Unsupported billing type. billing_type: %s", billingType)
 		return false, fmt.Errorf("unsupported billing type")
