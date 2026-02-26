@@ -483,6 +483,7 @@ components:
         - credit_adjustment
         - token_adjustment
         - speaking
+        - recording
       x-enum-varnames:
         - BillingManagerBillingreferenceTypeNone
         - BillingManagerBillingreferenceTypeCall
@@ -496,6 +497,7 @@ components:
         - BillingManagerBillingreferenceTypeCreditAdjustment
         - BillingManagerBillingreferenceTypeTokenAdjustment
         - BillingManagerBillingreferenceTypeSpeaking
+        - BillingManagerBillingreferenceTypeRecording
     BillingManagerBillingCostType:
       type: string
       description: The classification of the billing cost.
@@ -512,6 +514,7 @@ components:
         - number
         - number_renew
         - tts
+        - recording
       x-enum-varnames:
         - BillingManagerBillingCostTypeNone
         - BillingManagerBillingCostTypeCallPSTNOutgoing
@@ -524,6 +527,7 @@ components:
         - BillingManagerBillingCostTypeNumber
         - BillingManagerBillingCostTypeNumberRenew
         - BillingManagerBillingCostTypeTTS
+        - BillingManagerBillingCostTypeRecording
     BillingManagerBillingStatus:
       type: string
       description: Status of the billing.

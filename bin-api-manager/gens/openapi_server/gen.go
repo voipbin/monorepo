@@ -188,6 +188,7 @@ const (
 	BillingManagerBillingCostTypeNone             BillingManagerBillingCostType = ""
 	BillingManagerBillingCostTypeNumber           BillingManagerBillingCostType = "number"
 	BillingManagerBillingCostTypeNumberRenew      BillingManagerBillingCostType = "number_renew"
+	BillingManagerBillingCostTypeRecording        BillingManagerBillingCostType = "recording"
 	BillingManagerBillingCostTypeSMS              BillingManagerBillingCostType = "sms"
 	BillingManagerBillingCostTypeTTS              BillingManagerBillingCostType = "tts"
 )
@@ -219,6 +220,7 @@ const (
 	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""
 	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
 	BillingManagerBillingreferenceTypeNumberRenew      BillingManagerBillingreferenceType = "number_renew"
+	BillingManagerBillingreferenceTypeRecording        BillingManagerBillingreferenceType = "recording"
 	BillingManagerBillingreferenceTypeSMS              BillingManagerBillingreferenceType = "sms"
 	BillingManagerBillingreferenceTypeSpeaking         BillingManagerBillingreferenceType = "speaking"
 	BillingManagerBillingreferenceTypeTokenAdjustment  BillingManagerBillingreferenceType = "token_adjustment"
