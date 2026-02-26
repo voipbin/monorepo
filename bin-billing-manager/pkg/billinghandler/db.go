@@ -97,7 +97,7 @@ func (h *billingHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 		return nil, errors.Wrap(err, "could not get billing")
 	}
 
-	if res.ReferenceType != billing.ReferenceTypeCall && res.ReferenceType != billing.ReferenceTypeCallExtension && res.ReferenceType != billing.ReferenceTypeSpeaking {
+	if res.ReferenceType != billing.ReferenceTypeCall && res.ReferenceType != billing.ReferenceTypeCallExtension && res.ReferenceType != billing.ReferenceTypeSpeaking && res.ReferenceType != billing.ReferenceTypeRecording {
 		// if the billing's reference type is not a call or speaking type,
 		// the result not valid.
 		// because it is possible to billing has more than 2 billings of that reference id.
