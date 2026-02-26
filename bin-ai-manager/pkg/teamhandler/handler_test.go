@@ -429,3 +429,284 @@ func Test_Update(t *testing.T) {
 		})
 	}
 }
+
+func Test_Get_db_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("a568e0b2-a70e-11ed-86c5-374896e473bd")
+
+	mockDB.EXPECT().TeamGet(ctx, id).Return(nil, fmt.Errorf("db error"))
+
+	_, err := h.Get(ctx, id)
+	if err == nil {
+		t.Error("Expected error for db failure, got nil")
+	}
+}
+
+func Test_List_db_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	filters := map[team.Field]any{
+		team.FieldDeleted: false,
+	}
+
+	mockDB.EXPECT().TeamList(ctx, uint64(10), "2023-01-03T21:35:02.809Z", filters).Return(nil, fmt.Errorf("db error"))
+
+	_, err := h.List(ctx, 10, "2023-01-03T21:35:02.809Z", filters)
+	if err == nil {
+		t.Error("Expected error for db failure, got nil")
+	}
+}
+
+func Test_Delete_db_delete_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995")
+
+	mockDB.EXPECT().TeamDelete(ctx, id).Return(fmt.Errorf("db error"))
+
+	_, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Error("Expected error for db delete failure, got nil")
+	}
+}
+
+func Test_Delete_db_get_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995")
+
+	mockDB.EXPECT().TeamDelete(ctx, id).Return(nil)
+	mockDB.EXPECT().TeamGet(ctx, id).Return(nil, fmt.Errorf("db error"))
+
+	_, err := h.Delete(ctx, id)
+	if err == nil {
+		t.Error("Expected error for db get failure after delete, got nil")
+	}
+}
+
+func Test_Update_validation_failure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	// Empty members — should fail validation before any DB call
+	_, err := h.Update(ctx, teamID, "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{})
+	if err == nil {
+		t.Error("Expected error for empty members, got nil")
+	}
+}
+
+func Test_Update_ai_not_found(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(nil, fmt.Errorf("not found"))
+
+	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members)
+	if err == nil {
+		t.Error("Expected error for non-existent AI, got nil")
+	}
+}
+
+func Test_Update_db_error(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
+	mockDB.EXPECT().TeamUpdate(ctx, teamID, gomock.Any()).Return(fmt.Errorf("db error"))
+
+	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members)
+	if err == nil {
+		t.Error("Expected error for db update failure, got nil")
+	}
+}
+
+func Test_Create_db_create_error(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	customerID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(teamID)
+	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(fmt.Errorf("db error"))
+
+	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members)
+	if err == nil {
+		t.Error("Expected error for db create failure, got nil")
+	}
+}
+
+func Test_Create_db_get_error(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	customerID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(teamID)
+	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(nil, fmt.Errorf("db error"))
+
+	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members)
+	if err == nil {
+		t.Error("Expected error for db get failure after create, got nil")
+	}
+}
