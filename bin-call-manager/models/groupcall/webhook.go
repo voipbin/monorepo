@@ -64,7 +64,7 @@ func (h *Groupcall) ConvertWebhookMessage() *WebhookMessage {
 		AnswerCallID: h.AnswerCallID,
 		CallIDs:      h.CallIDs,
 
-		AnswerGroupcallID: h.AnswerCallID,
+		AnswerGroupcallID: h.AnswerGroupcallID,
 		GroupcallIDs:      h.GroupcallIDs,
 
 		CallCount:      h.CallCount,

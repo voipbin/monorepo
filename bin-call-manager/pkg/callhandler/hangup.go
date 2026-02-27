@@ -68,7 +68,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 			if errReq := h.reqHandler.CallV1GroupcallHangupCall(ctx, id); errReq != nil {
 				// we don't do any error handle here.
 				// just write the log.
-				log.Errorf("Could not hangup the groupcall. err: %v", err)
+				log.Errorf("Could not hangup the groupcall. err: %v", errReq)
 			}
 		}(res.GroupcallID)
 	}

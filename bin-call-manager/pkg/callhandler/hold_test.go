@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -25,7 +26,9 @@ func Test_HoldOn(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall *call.Call
+		responseCall     *call.Call
+		responseHoldOnErr error
+		expectError      bool
 	}{
 		{
 			name: "normal",
@@ -37,6 +40,21 @@ func Test_HoldOn(t *testing.T) {
 				},
 				ChannelID: "9a4086ec-cef3-11ed-b377-ef35b455442f",
 			},
+			responseHoldOnErr: nil,
+			expectError:       false,
+		},
+		{
+			name: "channel hold on error",
+
+			id: uuid.FromStringOrNil("b1234554-cef3-11ed-9ba5-a7e641ec5c06"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1234554-cef3-11ed-9ba5-a7e641ec5c06"),
+				},
+				ChannelID: "b2408600-cef3-11ed-b377-ef35b455442f",
+			},
+			responseHoldOnErr: fmt.Errorf("channel hold on error"),
+			expectError:       true,
 		},
 	}
 
@@ -64,9 +82,12 @@ func Test_HoldOn(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().HoldOn(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockChannel.EXPECT().HoldOn(ctx, tt.responseCall.ChannelID).Return(tt.responseHoldOnErr)
 
-			if err := h.HoldOn(ctx, tt.id); err != nil {
+			err := h.HoldOn(ctx, tt.id)
+			if tt.expectError && err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			} else if !tt.expectError && err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -80,7 +101,9 @@ func Test_HoldOff(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall *call.Call
+		responseCall      *call.Call
+		responseHoldOffErr error
+		expectError       bool
 	}{
 		{
 			name: "normal",
@@ -92,6 +115,21 @@ func Test_HoldOff(t *testing.T) {
 				},
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
+			responseHoldOffErr: nil,
+			expectError:        false,
+		},
+		{
+			name: "channel hold off error",
+
+			id: uuid.FromStringOrNil("e9a5bc58-cef3-11ed-8296-4b4cc63de165"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e9a5bc58-cef3-11ed-8296-4b4cc63de165"),
+				},
+				ChannelID: "ea6e4122-cef3-11ed-b195-5b72e7449d60",
+			},
+			responseHoldOffErr: fmt.Errorf("channel hold off error"),
+			expectError:        true,
 		},
 	}
 
@@ -119,9 +157,12 @@ func Test_HoldOff(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().HoldOff(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockChannel.EXPECT().HoldOff(ctx, tt.responseCall.ChannelID).Return(tt.responseHoldOffErr)
 
-			if err := h.HoldOff(ctx, tt.id); err != nil {
+			err := h.HoldOff(ctx, tt.id)
+			if tt.expectError && err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			} else if !tt.expectError && err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

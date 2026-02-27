@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -25,7 +26,9 @@ func Test_MOHOn(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall *call.Call
+		responseCall    *call.Call
+		responseMOHOnErr error
+		expectError     bool
 	}{
 		{
 			name: "normal",
@@ -37,6 +40,21 @@ func Test_MOHOn(t *testing.T) {
 				},
 				ChannelID: "9a4086ec-cef3-11ed-b377-ef35b455442f",
 			},
+			responseMOHOnErr: nil,
+			expectError:      false,
+		},
+		{
+			name: "channel moh on error",
+
+			id: uuid.FromStringOrNil("e011cf18-d139-11ed-92f8-d75f1d7e1914"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e011cf18-d139-11ed-92f8-d75f1d7e1914"),
+				},
+				ChannelID: "ea4086ec-cef3-11ed-b377-ef35b455442f",
+			},
+			responseMOHOnErr: fmt.Errorf("channel moh on error"),
+			expectError:      true,
 		},
 	}
 
@@ -64,9 +82,12 @@ func Test_MOHOn(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MOHOn(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockChannel.EXPECT().MOHOn(ctx, tt.responseCall.ChannelID).Return(tt.responseMOHOnErr)
 
-			if err := h.MOHOn(ctx, tt.id); err != nil {
+			err := h.MOHOn(ctx, tt.id)
+			if tt.expectError && err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			} else if !tt.expectError && err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -80,7 +101,9 @@ func Test_MOHOff(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall *call.Call
+		responseCall     *call.Call
+		responseMOHOffErr error
+		expectError      bool
 	}{
 		{
 			name: "normal",
@@ -92,6 +115,21 @@ func Test_MOHOff(t *testing.T) {
 				},
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
+			responseMOHOffErr: nil,
+			expectError:       false,
+		},
+		{
+			name: "channel moh off error",
+
+			id: uuid.FromStringOrNil("e0609bfc-d139-11ed-b643-ff2b2ad0a3eb"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0609bfc-d139-11ed-b643-ff2b2ad0a3eb"),
+				},
+				ChannelID: "ea6e4122-cef3-11ed-b195-5b72e7449d60",
+			},
+			responseMOHOffErr: fmt.Errorf("channel moh off error"),
+			expectError:       true,
 		},
 	}
 
@@ -119,9 +157,12 @@ func Test_MOHOff(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MOHOff(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockChannel.EXPECT().MOHOff(ctx, tt.responseCall.ChannelID).Return(tt.responseMOHOffErr)
 
-			if err := h.MOHOff(ctx, tt.id); err != nil {
+			err := h.MOHOff(ctx, tt.id)
+			if tt.expectError && err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			} else if !tt.expectError && err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

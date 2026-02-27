@@ -24,7 +24,7 @@ func (h *callHandler) HoldOn(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.HoldOn(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not hold the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not hold the channel")
+		return errors.Wrap(errHold, "Could not hold the channel")
 	}
 
 	return nil
@@ -46,7 +46,7 @@ func (h *callHandler) HoldOff(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.HoldOff(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not unhold the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not unhold the channel")
+		return errors.Wrap(errHold, "Could not unhold the channel")
 	}
 
 	return nil
