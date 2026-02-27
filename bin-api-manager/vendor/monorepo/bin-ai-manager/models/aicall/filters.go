@@ -8,9 +8,10 @@ import (
 // FieldStruct defines allowed filters for AIcall queries
 // Each field corresponds to a filterable database column
 type FieldStruct struct {
-	CustomerID    uuid.UUID      `filter:"customer_id"`
-	AIID          uuid.UUID      `filter:"ai_id"`
-	AIEngineModel ai.EngineModel `filter:"ai_engine_model"`
+	CustomerID     uuid.UUID      `filter:"customer_id"`
+	AssistanceType AssistanceType `filter:"assistance_type"`
+	AssistanceID   uuid.UUID      `filter:"assistance_id"`
+	AIEngineModel  ai.EngineModel `filter:"ai_engine_model"`
 	ActiveflowID  uuid.UUID      `filter:"activeflow_id"`
 	ReferenceType ReferenceType  `filter:"reference_type"`
 	ReferenceID   uuid.UUID      `filter:"reference_id"`

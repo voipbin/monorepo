@@ -61,6 +61,13 @@ const (
 	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
 )
 
+// Defines values for AIManagerAIcallAssistanceType.
+const (
+	AIManagerAIcallAssistanceTypeAI   AIManagerAIcallAssistanceType = "ai"
+	AIManagerAIcallAssistanceTypeNone AIManagerAIcallAssistanceType = ""
+	AIManagerAIcallAssistanceTypeTeam AIManagerAIcallAssistanceType = "team"
+)
+
 // Defines values for AIManagerAIcallGender.
 const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
@@ -1038,9 +1045,6 @@ type AIManagerAIcall struct {
 	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
-	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
-	AiId *string `json:"ai_id,omitempty"`
-
 	// AiSttType Speech-to-text provider type.
 	AiSttType *AIManagerAISTTType `json:"ai_stt_type,omitempty"`
 
@@ -1049,6 +1053,12 @@ type AIManagerAIcall struct {
 
 	// AiTtsVoiceId Text-to-speech voice identifier used for this call.
 	AiTtsVoiceId *string `json:"ai_tts_voice_id,omitempty"`
+
+	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
+	AssistanceId *string `json:"assistance_id,omitempty"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType *AIManagerAIcallAssistanceType `json:"assistance_type,omitempty"`
 
 	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
@@ -1086,6 +1096,9 @@ type AIManagerAIcall struct {
 	// TmUpdate Timestamp when the AI call was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
+
+// AIManagerAIcallAssistanceType Type of assistance entity associated with the AI call.
+type AIManagerAIcallAssistanceType string
 
 // AIManagerAIcallGender Gender associated with the AI call.
 type AIManagerAIcallGender string
@@ -1191,6 +1204,63 @@ type AIManagerSummaryReferenceType string
 
 // AIManagerSummaryStatus Status of the AI summary generation.
 type AIManagerSummaryStatus string
+
+// AIManagerTeam defines model for AIManagerTeam.
+type AIManagerTeam struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// Detail Detailed description of the team.
+	Detail string `json:"detail"`
+
+	// Id The unique identifier of the team.
+	Id string `json:"id"`
+
+	// Members List of team members forming the graph nodes.
+	Members []AIManagerTeamMember `json:"members"`
+
+	// Name Name of the team.
+	Name string `json:"name"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId string `json:"start_member_id"`
+
+	// TmCreate Timestamp when the team was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the team was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the team was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerTeamMember A member node in the team graph, backed by an existing AI configuration.
+type AIManagerTeamMember struct {
+	// AiId The AI configuration backing this member. Returned from the `POST /ais` or `GET /ais` response.
+	AiId string `json:"ai_id"`
+
+	// Id The unique identifier of this member within the team.
+	Id string `json:"id"`
+
+	// Name Display name for this member.
+	Name string `json:"name"`
+
+	// Transitions List of transitions (edges) from this member to other members.
+	Transitions *[]AIManagerTeamTransition `json:"transitions,omitempty"`
+}
+
+// AIManagerTeamTransition A transition edge that triggers a switch from one member to another via LLM function calling.
+type AIManagerTeamTransition struct {
+	// Description Human-readable description of when this transition should be triggered. Used as the function description in LLM tool definitions.
+	Description string `json:"description"`
+
+	// FunctionName The function name that the LLM calls to trigger this transition. Must not collide with reserved tool names.
+	FunctionName string `json:"function_name"`
+
+	// NextMemberId The member ID to transition to. Must reference an existing member in the team.
+	NextMemberId string `json:"next_member_id"`
+}
 
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
@@ -2486,8 +2556,14 @@ type FlowManagerActionOptionAISummary struct {
 
 // FlowManagerActionOptionAITalk defines model for FlowManagerActionOptionAITalk.
 type FlowManagerActionOptionAITalk struct {
-	// AiId The unique identifier of the AI configuration to use. Returned from the `POST /ais` or `GET /ais` response.
+	// AiId Deprecated: use assistance_type+assistance_id. The unique identifier of the AI configuration to use.
 	AiId *string `json:"ai_id,omitempty"`
+
+	// AssistanceId The unique identifier of the assistance entity (AI or Team).
+	AssistanceId *string `json:"assistance_id,omitempty"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType *AIManagerAIcallAssistanceType `json:"assistance_type,omitempty"`
 
 	// Duration Maximum duration of the AI talk session in seconds.
 	Duration *int `json:"duration,omitempty"`
@@ -4059,7 +4135,10 @@ type GetAicallsParams struct {
 
 // PostAicallsJSONBody defines parameters for PostAicalls.
 type PostAicallsJSONBody struct {
-	AiId string `json:"ai_id"`
+	AssistanceId string `json:"assistance_id"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`
 
 	// Gender Gender associated with the AI call.
 	Gender      AIManagerAIcallGender `json:"gender"`
@@ -5652,6 +5731,45 @@ type PutTagsIdJSONBody struct {
 	Name   string `json:"name"`
 }
 
+// GetTeamsParams defines parameters for GetTeams.
+type GetTeamsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostTeamsJSONBody defines parameters for PostTeams.
+type PostTeamsJSONBody struct {
+	// Detail Detailed description of the team.
+	Detail string `json:"detail"`
+
+	// Members List of team members forming the graph nodes. Must contain at least one member.
+	Members []AIManagerTeamMember `json:"members"`
+
+	// Name Name of the team.
+	Name string `json:"name"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId string `json:"start_member_id"`
+}
+
+// PutTeamsIdJSONBody defines parameters for PutTeamsId.
+type PutTeamsIdJSONBody struct {
+	// Detail Detailed description of the team.
+	Detail string `json:"detail"`
+
+	// Members List of team members forming the graph nodes.
+	Members []AIManagerTeamMember `json:"members"`
+
+	// Name Name of the team.
+	Name string `json:"name"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId string `json:"start_member_id"`
+}
+
 // GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
 type GetTimelinesResourceTypeResourceIdEventsParams struct {
 	// PageSize Number of results to return per page.
@@ -6066,6 +6184,12 @@ type PostTagsJSONRequestBody PostTagsJSONBody
 
 // PutTagsIdJSONRequestBody defines body for PutTagsId for application/json ContentType.
 type PutTagsIdJSONRequestBody PutTagsIdJSONBody
+
+// PostTeamsJSONRequestBody defines body for PostTeams for application/json ContentType.
+type PostTeamsJSONRequestBody PostTeamsJSONBody
+
+// PutTeamsIdJSONRequestBody defines body for PutTeamsId for application/json ContentType.
+type PutTeamsIdJSONRequestBody PutTeamsIdJSONBody
 
 // PostTranscribesJSONRequestBody defines body for PostTranscribes for application/json ContentType.
 type PostTranscribesJSONRequestBody PostTranscribesJSONBody

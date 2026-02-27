@@ -33,7 +33,9 @@ post:
         schema:
           type: object
           properties:
-            ai_id:
+            assistance_type:
+              $ref: '#/components/schemas/AIManagerAIcallAssistanceType'
+            assistance_id:
               type: string
             reference_type:
               $ref: '#/components/schemas/AIManagerAIcallReferenceType'
@@ -44,7 +46,8 @@ post:
             language:
               type: string
           required:
-            - ai_id
+            - assistance_type
+            - assistance_id
             - reference_type
             - reference_id
             - gender

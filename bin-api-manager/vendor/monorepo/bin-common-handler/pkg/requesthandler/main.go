@@ -28,6 +28,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -210,11 +211,32 @@ type RequestHandler interface {
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 
+	// ai-manager team
+	AIV1TeamGet(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
+	AIV1TeamList(ctx context.Context, pageToken string, pageSize uint64, filters map[amteam.Field]any) ([]amteam.Team, error)
+	AIV1TeamCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		startMemberID uuid.UUID,
+		members []amteam.Member,
+	) (*amteam.Team, error)
+	AIV1TeamDelete(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
+	AIV1TeamUpdate(
+		ctx context.Context,
+		teamID uuid.UUID,
+		name string,
+		detail string,
+		startMemberID uuid.UUID,
+		members []amteam.Member,
+	) (*amteam.Team, error)
+
 	// ai-manager tools
 	AIV1ToolList(ctx context.Context) ([]amtool.Tool, error)
 
 	// ai-manager aicall
-	AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
+	AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
 	AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
@@ -245,7 +267,8 @@ type RequestHandler interface {
 	// ai-manager service
 	AIV1ServiceTypeAIcallStart(
 		ctx context.Context,
-		aiID uuid.UUID,
+		assistanceType amaicall.AssistanceType,
+		assistanceID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
@@ -264,7 +287,7 @@ type RequestHandler interface {
 		language string,
 		requestTimeout int,
 	) (*service.Service, error)
-	AIV1ServiceTypeTaskStart(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error)
+	AIV1ServiceTypeTaskStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error)
 
 	// ai-manager summary
 	AIV1SummaryList(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error)

@@ -15,6 +15,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
+	team "monorepo/bin-ai-manager/models/team"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -332,4 +333,76 @@ func (m *MockDBHandler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields 
 func (mr *MockDBHandlerMockRecorder) SummaryUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdate", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdate), ctx, id, fields)
+}
+
+// TeamCreate mocks base method.
+func (m *MockDBHandler) TeamCreate(ctx context.Context, t *team.Team) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamCreate", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TeamCreate indicates an expected call of TeamCreate.
+func (mr *MockDBHandlerMockRecorder) TeamCreate(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamCreate", reflect.TypeOf((*MockDBHandler)(nil).TeamCreate), ctx, t)
+}
+
+// TeamDelete mocks base method.
+func (m *MockDBHandler) TeamDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TeamDelete indicates an expected call of TeamDelete.
+func (mr *MockDBHandlerMockRecorder) TeamDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamDelete", reflect.TypeOf((*MockDBHandler)(nil).TeamDelete), ctx, id)
+}
+
+// TeamGet mocks base method.
+func (m *MockDBHandler) TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamGet", ctx, id)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamGet indicates an expected call of TeamGet.
+func (mr *MockDBHandlerMockRecorder) TeamGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamGet", reflect.TypeOf((*MockDBHandler)(nil).TeamGet), ctx, id)
+}
+
+// TeamList mocks base method.
+func (m *MockDBHandler) TeamList(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamList indicates an expected call of TeamList.
+func (mr *MockDBHandlerMockRecorder) TeamList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamList", reflect.TypeOf((*MockDBHandler)(nil).TeamList), ctx, size, token, filters)
+}
+
+// TeamUpdate mocks base method.
+func (m *MockDBHandler) TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TeamUpdate indicates an expected call of TeamUpdate.
+func (mr *MockDBHandlerMockRecorder) TeamUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamUpdate", reflect.TypeOf((*MockDBHandler)(nil).TeamUpdate), ctx, id, fields)
 }

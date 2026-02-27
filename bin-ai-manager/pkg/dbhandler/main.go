@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/summary"
+	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 )
 
@@ -43,6 +44,12 @@ type DBHandler interface {
 	SummaryDelete(ctx context.Context, id uuid.UUID) error
 	SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error
+
+	TeamCreate(ctx context.Context, t *team.Team) error
+	TeamDelete(ctx context.Context, id uuid.UUID) error
+	TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error)
+	TeamList(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error)
+	TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.Field]any) error
 }
 
 // handler database handler

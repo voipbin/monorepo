@@ -8,7 +8,9 @@ const (
 	FieldID         Field = "id"
 	FieldCustomerID Field = "customer_id"
 
-	FieldAIID          Field = "ai_id"
+	FieldAssistanceType Field = "assistance_type"
+	FieldAssistanceID   Field = "assistance_id"
+
 	FieldAIEngineModel Field = "ai_engine_model"
 	FieldAIEngineData  Field = "ai_engine_data"
 	FieldAITTSType     Field = "ai_tts_type"

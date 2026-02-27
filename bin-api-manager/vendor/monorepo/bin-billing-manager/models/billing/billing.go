@@ -78,6 +78,7 @@ const (
 	ReferenceTypeCreditAdjustment  ReferenceType = "credit_adjustment"
 	ReferenceTypeTokenAdjustment   ReferenceType = "token_adjustment"
 	ReferenceTypeSpeaking          ReferenceType = "speaking"
+	ReferenceTypeRecording         ReferenceType = "recording"
 )
 
 // Status define

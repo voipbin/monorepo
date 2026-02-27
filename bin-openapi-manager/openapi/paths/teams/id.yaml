@@ -1,0 +1,91 @@
+get:
+  summary: Get team details.
+  description: Retrieves detailed information for a specific team by its ID.
+  tags:
+    - Team
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the team.
+  responses:
+    '200':
+      description: Details of the requested team.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerTeam'
+
+delete:
+  summary: Delete a team.
+  description: Deletes an existing team by its ID.
+  tags:
+    - Team
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the team.
+  responses:
+    '200':
+      description: Team successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerTeam'
+
+put:
+  summary: Update a team.
+  description: Updates an existing team's details and returns the updated information.
+  tags:
+    - Team
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the team.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the team.
+              example: "Customer Support Team"
+            detail:
+              type: string
+              description: Detailed description of the team.
+              example: "Multi-agent team for handling customer inquiries"
+            start_member_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: The member ID that starts the conversation. Must reference one of the members in the members array.
+              example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            members:
+              type: array
+              items:
+                $ref: '#/components/schemas/AIManagerTeamMember'
+              minItems: 1
+              description: List of team members forming the graph nodes.
+          required:
+            - name
+            - detail
+            - start_member_id
+            - members
+  responses:
+    '200':
+      description: Details of the updated team.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerTeam'

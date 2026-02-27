@@ -1043,6 +1043,7 @@ monorepo/bin-ai-manager/models/ai
 monorepo/bin-ai-manager/models/aicall
 monorepo/bin-ai-manager/models/message
 monorepo/bin-ai-manager/models/summary
+monorepo/bin-ai-manager/models/team
 monorepo/bin-ai-manager/models/tool
 monorepo/bin-ai-manager/pkg/listenhandler/models/request
 # monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab => ../bin-billing-manager

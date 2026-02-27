@@ -30,6 +30,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/subscribehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-ai-manager/pkg/toolhandler"
 )
 
@@ -110,16 +111,17 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameAIEvent, serviceName, "")
 
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
+	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)
 
 	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(cfg.EngineKeyChatGPT)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, messageHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, messageHandler, summaryHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, messageHandler, summaryHandler, teamHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -174,6 +176,7 @@ func runListen(
 	aicallhandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
+	teamHandler teamhandler.TeamHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -188,6 +191,7 @@ func runListen(
 		messageHandler,
 		summaryHandler,
 		toolHandler,
+		teamHandler,
 	)
 
 	// run

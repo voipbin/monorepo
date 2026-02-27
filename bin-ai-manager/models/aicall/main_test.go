@@ -12,8 +12,9 @@ func TestAIcall(t *testing.T) {
 	tests := []struct {
 		name string
 
-		aiID          uuid.UUID
-		aiEngineModel ai.EngineModel
+		assistanceType AssistanceType
+		assistanceID   uuid.UUID
+		aiEngineModel  ai.EngineModel
 		aiTTSType     ai.TTSType
 		aiTTSVoiceID  string
 		aiSTTType     ai.STTType
@@ -29,8 +30,9 @@ func TestAIcall(t *testing.T) {
 		{
 			name: "creates_aicall_with_all_fields",
 
-			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
-			aiEngineModel: ai.EngineModelOpenaiGPT4O,
+			assistanceType: AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
+			aiEngineModel:  ai.EngineModelOpenaiGPT4O,
 			aiTTSType:     ai.TTSTypeElevenLabs,
 			aiTTSVoiceID:  "voice-123",
 			aiSTTType:     ai.STTTypeDeepgram,
@@ -46,8 +48,9 @@ func TestAIcall(t *testing.T) {
 		{
 			name: "creates_aicall_with_empty_fields",
 
-			aiID:          uuid.Nil,
-			aiEngineModel: "",
+			assistanceType: "",
+			assistanceID:   uuid.Nil,
+			aiEngineModel:  "",
 			aiTTSType:     "",
 			aiTTSVoiceID:  "",
 			aiSTTType:     "",
@@ -63,8 +66,9 @@ func TestAIcall(t *testing.T) {
 		{
 			name: "creates_aicall_for_conversation",
 
-			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440006"),
-			aiEngineModel: ai.EngineModelDialogflowCX,
+			assistanceType: AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440006"),
+			aiEngineModel:  ai.EngineModelDialogflowCX,
 			aiTTSType:     ai.TTSTypeGoogle,
 			aiTTSVoiceID:  "",
 			aiSTTType:     ai.STTTypeCartesia,
@@ -80,8 +84,9 @@ func TestAIcall(t *testing.T) {
 		{
 			name: "creates_aicall_for_task",
 
-			aiID:          uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440009"),
-			aiEngineModel: ai.EngineModelOpenaiGPT4OMini,
+			assistanceType: AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440009"),
+			aiEngineModel:  ai.EngineModelOpenaiGPT4OMini,
 			aiTTSType:     ai.TTSTypeNone,
 			aiTTSVoiceID:  "",
 			aiSTTType:     ai.STTTypeNone,
@@ -99,8 +104,9 @@ func TestAIcall(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ac := &AIcall{
-				AIID:          tt.aiID,
-				AIEngineModel: tt.aiEngineModel,
+				AssistanceType: tt.assistanceType,
+				AssistanceID:   tt.assistanceID,
+				AIEngineModel:  tt.aiEngineModel,
 				AITTSType:     tt.aiTTSType,
 				AITTSVoiceID:  tt.aiTTSVoiceID,
 				AISTTType:     tt.aiSTTType,
@@ -114,8 +120,11 @@ func TestAIcall(t *testing.T) {
 				Language:      tt.language,
 			}
 
-			if ac.AIID != tt.aiID {
-				t.Errorf("Wrong AIID. expect: %s, got: %s", tt.aiID, ac.AIID)
+			if ac.AssistanceType != tt.assistanceType {
+				t.Errorf("Wrong AssistanceType. expect: %s, got: %s", tt.assistanceType, ac.AssistanceType)
+			}
+			if ac.AssistanceID != tt.assistanceID {
+				t.Errorf("Wrong AssistanceID. expect: %s, got: %s", tt.assistanceID, ac.AssistanceID)
 			}
 			if ac.AIEngineModel != tt.aiEngineModel {
 				t.Errorf("Wrong AIEngineModel. expect: %s, got: %s", tt.aiEngineModel, ac.AIEngineModel)

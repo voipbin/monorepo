@@ -13,7 +13,9 @@ import (
 type AIcall struct {
 	identity.Identity
 
-	AIID          uuid.UUID      `json:"ai_id,omitempty" db:"ai_id,uuid"`
+	AssistanceType AssistanceType `json:"assistance_type,omitempty" db:"assistance_type"`
+	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty" db:"assistance_id,uuid"`
+
 	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
 	AIEngineData  map[string]any `json:"ai_engine_data,omitempty" db:"ai_engine_data,json"`
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
@@ -47,6 +49,15 @@ const (
 	ReferenceTypeCall         ReferenceType = "call"
 	ReferenceTypeConversation ReferenceType = "conversation"
 	ReferenceTypeTask         ReferenceType = "task"
+)
+
+// AssistanceType defines the type of assistance entity backing an AIcall.
+type AssistanceType string
+
+// list of assistance types
+const (
+	AssistanceTypeAI   AssistanceType = "ai"
+	AssistanceTypeTeam AssistanceType = "team"
 )
 
 // Status define

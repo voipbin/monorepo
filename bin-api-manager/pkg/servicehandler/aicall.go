@@ -17,26 +17,42 @@ import (
 func (h *serviceHandler) AIcallCreate(
 	ctx context.Context,
 	a *amagent.Agent,
-	aiID uuid.UUID,
+	assistanceType amaicall.AssistanceType,
+	assistanceID uuid.UUID,
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
 	gender amaicall.Gender,
 	language string,
 ) (*amaicall.WebhookMessage, error) {
 
-	cb, err := h.aiGet(ctx, aiID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get ai info")
+	// resolve customer ID based on assistance type
+	var customerID uuid.UUID
+	switch assistanceType {
+	case amaicall.AssistanceTypeAI:
+		cb, err := h.aiGet(ctx, assistanceID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get ai info")
+		}
+		customerID = cb.CustomerID
+	case amaicall.AssistanceTypeTeam:
+		t, err := h.teamGet(ctx, assistanceID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get team info")
+		}
+		customerID = t.CustomerID
+	default:
+		return nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
 	}
 
-	if !h.hasPermission(ctx, a, cb.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
+		assistanceType,
+		assistanceID,
 		uuid.Nil,
-		aiID,
 		referenceType,
 		referenceID,
 		gender,

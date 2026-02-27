@@ -38,7 +38,8 @@ func Test_AIcallCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b11ef334-a5e1-11ed-8006-bf175306f060"),
 					CustomerID: uuid.FromStringOrNil("b147c35e-a5e1-11ed-bd07-e789c0df6bca"),
 				},
-				AIID:          uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
 				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
 				AIEngineData: map[string]any{
 					"key1": "val1",
@@ -63,7 +64,8 @@ func Test_AIcallCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b11ef334-a5e1-11ed-8006-bf175306f060"),
 					CustomerID: uuid.FromStringOrNil("b147c35e-a5e1-11ed-bd07-e789c0df6bca"),
 				},
-				AIID:          uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
 				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
 				AIEngineData: map[string]any{
 					"key1": "val1",

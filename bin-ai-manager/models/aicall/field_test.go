@@ -21,9 +21,14 @@ func TestFieldConstants(t *testing.T) {
 			expected: "customer_id",
 		},
 		{
-			name:     "field_ai_id",
-			constant: FieldAIID,
-			expected: "ai_id",
+			name:     "field_assistance_type",
+			constant: FieldAssistanceType,
+			expected: "assistance_type",
+		},
+		{
+			name:     "field_assistance_id",
+			constant: FieldAssistanceID,
+			expected: "assistance_id",
 		},
 		{
 			name:     "field_ai_engine_model",

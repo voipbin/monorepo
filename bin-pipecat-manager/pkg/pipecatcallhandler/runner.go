@@ -90,7 +90,7 @@ func (h *pipecatcallHandler) getToolsForPipecatcall(ctx context.Context, pc *pip
 	}
 
 	// Get the AI to find its ToolNames configuration
-	ai, err := h.requestHandler.AIV1AIGet(ctx, aicall.AIID)
+	ai, err := h.resolveAIFromAIcall(ctx, aicall)
 	if err != nil {
 		log.WithError(err).Warnf("Could not get AI, returning all tools")
 		return h.toolHandler.GetAll()

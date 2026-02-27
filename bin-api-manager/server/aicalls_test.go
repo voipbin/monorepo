@@ -28,12 +28,13 @@ func Test_PostAicalls(t *testing.T) {
 
 		response *amaicall.WebhookMessage
 
-		expectedAIID          uuid.UUID
-		expectedReferenceType amaicall.ReferenceType
-		expectedReferenceID   uuid.UUID
-		expectedGender        amaicall.Gender
-		expectedLanguage      string
-		expectedRes           string
+		expectedAssistanceType amaicall.AssistanceType
+		expectedAssistanceID   uuid.UUID
+		expectedReferenceType  amaicall.ReferenceType
+		expectedReferenceID    uuid.UUID
+		expectedGender         amaicall.Gender
+		expectedLanguage       string
+		expectedRes            string
 	}{
 		{
 			name: "full data",
@@ -44,7 +45,7 @@ func Test_PostAicalls(t *testing.T) {
 			},
 
 			reqQuery: "/aicalls",
-			reqBody:  []byte(`{"ai_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","gender":"male","language":"en-US"}`),
+			reqBody:  []byte(`{"assistance_type":"ai","assistance_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","gender":"male","language":"en-US"}`),
 
 			response: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -52,12 +53,13 @@ func Test_PostAicalls(t *testing.T) {
 				},
 			},
 
-			expectedAIID:          uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"),
-			expectedReferenceType: amaicall.ReferenceTypeCall,
-			expectedReferenceID:   uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
-			expectedGender:        amaicall.GenderMale,
-			expectedLanguage:      "en-US",
-			expectedRes:           `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedAssistanceType: amaicall.AssistanceTypeAI,
+			expectedAssistanceID:   uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"),
+			expectedReferenceType:  amaicall.ReferenceTypeCall,
+			expectedReferenceID:    uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
+			expectedGender:         amaicall.GenderMale,
+			expectedLanguage:       "en-US",
+			expectedRes:            `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -84,7 +86,8 @@ func Test_PostAicalls(t *testing.T) {
 			mockSvc.EXPECT().AIcallCreate(
 				req.Context(),
 				&tt.agent,
-				tt.expectedAIID,
+				tt.expectedAssistanceType,
+				tt.expectedAssistanceID,
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedGender,
@@ -140,7 +143,7 @@ func Test_aicallsGET(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"fa136fec-eca6-4958-b9a8-21fd8d61b8aa","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"fa136fec-eca6-4958-b9a8-21fd8d61b8aa","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -175,7 +178,7 @@ func Test_aicallsGET(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"f7576695-a944-4427-b7d6-1a776f83aa9a","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"f34d51d0-4a74-40d7-9050-edc6fd1654f7","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"227edc68-c2da-4ed8-bd28-08d8fab8c17c","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"f7576695-a944-4427-b7d6-1a776f83aa9a","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"f34d51d0-4a74-40d7-9050-edc6fd1654f7","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"227edc68-c2da-4ed8-bd28-08d8fab8c17c","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -243,7 +246,7 @@ func Test_aicallsIDGET(t *testing.T) {
 			},
 
 			expectAIcallID: uuid.FromStringOrNil("f199188b-8d78-4778-8891-8f276cd56de5"),
-			expectRes:      `{"id":"f199188b-8d78-4778-8891-8f276cd56de5","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"f199188b-8d78-4778-8891-8f276cd56de5","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -311,7 +314,7 @@ func Test_aicallsIDDELETE(t *testing.T) {
 			},
 
 			expectAIcallID: uuid.FromStringOrNil("c1a95988-5382-4769-98a9-b404823a64bf"),
-			expectRes:      `{"id":"c1a95988-5382-4769-98a9-b404823a64bf","customer_id":"00000000-0000-0000-0000-000000000000","ai_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"c1a95988-5382-4769-98a9-b404823a64bf","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
