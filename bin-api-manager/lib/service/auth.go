@@ -60,7 +60,7 @@ func PostLogin(c *gin.Context) {
 	}
 	log.Debugf("Created token string. token: %v", token)
 
-	c.SetCookie("token", token, int(servicehandler.TokenExpiration.Seconds()), "/", "", false, true)
+	c.SetCookie("token", token, int(servicehandler.TokenExpiration.Seconds()), "/", "", true, true)
 	res := ResponseBodyLoginPOST{
 		Username: req.Username,
 		Token:    token,

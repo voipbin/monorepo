@@ -212,6 +212,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	// register basic services
 	app.GET("/ping", service.GetPing)
 	auth := app.Group("/auth")
+	auth.Use(middleware.RateLimit(10, 20)) // 10 req/s per IP, burst of 20
 	auth.POST("/login", service.PostLogin)
 	auth.POST("/password-forgot", service.PostPasswordForgot)
 	auth.GET("/password-reset", service.GetPasswordReset)
