@@ -70,6 +70,13 @@ const (
 	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
 )
 
+// Defines values for AIManagerAIcallAssistanceType.
+const (
+	AIManagerAIcallAssistanceTypeAI   AIManagerAIcallAssistanceType = "ai"
+	AIManagerAIcallAssistanceTypeNone AIManagerAIcallAssistanceType = ""
+	AIManagerAIcallAssistanceTypeTeam AIManagerAIcallAssistanceType = "team"
+)
+
 // Defines values for AIManagerAIcallGender.
 const (
 	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
@@ -1047,9 +1054,6 @@ type AIManagerAIcall struct {
 	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
-	// AiId The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response.
-	AiId *string `json:"ai_id,omitempty"`
-
 	// AiSttType Speech-to-text provider type.
 	AiSttType *AIManagerAISTTType `json:"ai_stt_type,omitempty"`
 
@@ -1058,6 +1062,12 @@ type AIManagerAIcall struct {
 
 	// AiTtsVoiceId Text-to-speech voice identifier used for this call.
 	AiTtsVoiceId *string `json:"ai_tts_voice_id,omitempty"`
+
+	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
+	AssistanceId *string `json:"assistance_id,omitempty"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType *AIManagerAIcallAssistanceType `json:"assistance_type,omitempty"`
 
 	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
@@ -1095,6 +1105,9 @@ type AIManagerAIcall struct {
 	// TmUpdate Timestamp when the AI call was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
+
+// AIManagerAIcallAssistanceType Type of assistance entity associated with the AI call.
+type AIManagerAIcallAssistanceType string
 
 // AIManagerAIcallGender Gender associated with the AI call.
 type AIManagerAIcallGender string
@@ -2552,8 +2565,14 @@ type FlowManagerActionOptionAISummary struct {
 
 // FlowManagerActionOptionAITalk defines model for FlowManagerActionOptionAITalk.
 type FlowManagerActionOptionAITalk struct {
-	// AiId The unique identifier of the AI configuration to use. Returned from the `POST /ais` or `GET /ais` response.
+	// AiId Deprecated: use assistance_type+assistance_id. The unique identifier of the AI configuration to use.
 	AiId *string `json:"ai_id,omitempty"`
+
+	// AssistanceId The unique identifier of the assistance entity (AI or Team).
+	AssistanceId *string `json:"assistance_id,omitempty"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType *AIManagerAIcallAssistanceType `json:"assistance_type,omitempty"`
 
 	// Duration Maximum duration of the AI talk session in seconds.
 	Duration *int `json:"duration,omitempty"`
@@ -4125,7 +4144,10 @@ type GetAicallsParams struct {
 
 // PostAicallsJSONBody defines parameters for PostAicalls.
 type PostAicallsJSONBody struct {
-	AiId string `json:"ai_id"`
+	AssistanceId string `json:"assistance_id"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`
 
 	// Gender Gender associated with the AI call.
 	Gender      AIManagerAIcallGender `json:"gender"`

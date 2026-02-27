@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	ememail "monorepo/bin-email-manager/models/email"
@@ -912,6 +913,42 @@ func Test_marshal_OptionAITalk(t *testing.T) {
 				Duration: 6000,
 			},
 		},
+		{
+			name: "with assistance_type ai",
+
+			option: []byte(`{
+				"assistance_type":"ai",
+				"assistance_id":"a1b2c3d4-1111-2222-3333-444455556666",
+				"gender":"male",
+				"language":"ko-KR"
+			}`),
+
+			expectedRes: OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+				Gender:         "male",
+				Language:       "ko-KR",
+			},
+		},
+		{
+			name: "with assistance_type team",
+
+			option: []byte(`{
+				"assistance_type":"team",
+				"assistance_id":"b2c3d4e5-2222-3333-4444-555566667777",
+				"gender":"female",
+				"language":"en-US",
+				"duration":3000
+			}`),
+
+			expectedRes: OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("b2c3d4e5-2222-3333-4444-555566667777"),
+				Gender:         "female",
+				Language:       "en-US",
+				Duration:       3000,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1305,6 +1342,32 @@ func Test_marshal_OptionAITask(t *testing.T) {
 				AIID: uuid.Nil,
 			},
 		},
+		{
+			name: "with assistance_type ai",
+
+			option: []byte(`{
+				"assistance_type":"ai",
+				"assistance_id":"c3d4e5f6-3333-4444-5555-666677778888"
+			}`),
+
+			expectedRes: OptionAITask{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("c3d4e5f6-3333-4444-5555-666677778888"),
+			},
+		},
+		{
+			name: "with assistance_type team",
+
+			option: []byte(`{
+				"assistance_type":"team",
+				"assistance_id":"d4e5f6a7-4444-5555-6666-777788889999"
+			}`),
+
+			expectedRes: OptionAITask{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("d4e5f6a7-4444-5555-6666-777788889999"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1317,6 +1380,142 @@ func Test_marshal_OptionAITask(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectedRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetAssistanceTypeAndID_AITalk(t *testing.T) {
+	tests := []struct {
+		name string
+
+		option OptionAITalk
+
+		expectedType amaicall.AssistanceType
+		expectedID   uuid.UUID
+	}{
+		{
+			name: "legacy ai_id only falls back to AssistanceTypeAI",
+
+			option: OptionAITalk{
+				AIID: uuid.FromStringOrNil("d1c4f676-a8a5-11ed-85ca-7fe57e970bcd"),
+			},
+
+			expectedType: amaicall.AssistanceTypeAI,
+			expectedID:   uuid.FromStringOrNil("d1c4f676-a8a5-11ed-85ca-7fe57e970bcd"),
+		},
+		{
+			name: "new style assistance_type ai",
+
+			option: OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+			},
+
+			expectedType: amaicall.AssistanceTypeAI,
+			expectedID:   uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+		},
+		{
+			name: "new style assistance_type team",
+
+			option: OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("b2c3d4e5-2222-3333-4444-555566667777"),
+			},
+
+			expectedType: amaicall.AssistanceTypeTeam,
+			expectedID:   uuid.FromStringOrNil("b2c3d4e5-2222-3333-4444-555566667777"),
+		},
+		{
+			name: "both old and new set prefers new",
+
+			option: OptionAITalk{
+				AIID:           uuid.FromStringOrNil("aaaa0000-0000-0000-0000-000000000000"),
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("bbbb0000-0000-0000-0000-000000000000"),
+			},
+
+			expectedType: amaicall.AssistanceTypeTeam,
+			expectedID:   uuid.FromStringOrNil("bbbb0000-0000-0000-0000-000000000000"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotType, gotID := tt.option.GetAssistanceTypeAndID()
+			if gotType != tt.expectedType {
+				t.Errorf("Wrong type. expect: %v, got: %v", tt.expectedType, gotType)
+			}
+			if gotID != tt.expectedID {
+				t.Errorf("Wrong ID. expect: %v, got: %v", tt.expectedID, gotID)
+			}
+		})
+	}
+}
+
+func Test_GetAssistanceTypeAndID_AITask(t *testing.T) {
+	tests := []struct {
+		name string
+
+		option OptionAITask
+
+		expectedType amaicall.AssistanceType
+		expectedID   uuid.UUID
+	}{
+		{
+			name: "legacy ai_id only falls back to AssistanceTypeAI",
+
+			option: OptionAITask{
+				AIID: uuid.FromStringOrNil("5ac82032-d482-11f0-b683-4b780579e9b6"),
+			},
+
+			expectedType: amaicall.AssistanceTypeAI,
+			expectedID:   uuid.FromStringOrNil("5ac82032-d482-11f0-b683-4b780579e9b6"),
+		},
+		{
+			name: "new style assistance_type ai",
+
+			option: OptionAITask{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("c3d4e5f6-3333-4444-5555-666677778888"),
+			},
+
+			expectedType: amaicall.AssistanceTypeAI,
+			expectedID:   uuid.FromStringOrNil("c3d4e5f6-3333-4444-5555-666677778888"),
+		},
+		{
+			name: "new style assistance_type team",
+
+			option: OptionAITask{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("d4e5f6a7-4444-5555-6666-777788889999"),
+			},
+
+			expectedType: amaicall.AssistanceTypeTeam,
+			expectedID:   uuid.FromStringOrNil("d4e5f6a7-4444-5555-6666-777788889999"),
+		},
+		{
+			name: "both old and new set prefers new",
+
+			option: OptionAITask{
+				AIID:           uuid.FromStringOrNil("cccc0000-0000-0000-0000-000000000000"),
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("dddd0000-0000-0000-0000-000000000000"),
+			},
+
+			expectedType: amaicall.AssistanceTypeAI,
+			expectedID:   uuid.FromStringOrNil("dddd0000-0000-0000-0000-000000000000"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotType, gotID := tt.option.GetAssistanceTypeAndID()
+			if gotType != tt.expectedType {
+				t.Errorf("Wrong type. expect: %v, got: %v", tt.expectedType, gotType)
+			}
+			if gotID != tt.expectedID {
+				t.Errorf("Wrong ID. expect: %v, got: %v", tt.expectedID, gotID)
 			}
 		})
 	}

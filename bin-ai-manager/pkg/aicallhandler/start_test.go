@@ -28,11 +28,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai           *ai.AI
-		activeflowID uuid.UUID
-		referenceID  uuid.UUID
-		gender       aicall.Gender
-		language     string
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceID    uuid.UUID
+		gender         aicall.Gender
+		language       string
 
 		responseConfbridge        *cmconfbridge.Confbridge
 		responseUUIDPipecatcallID uuid.UUID
@@ -65,10 +67,12 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
 				STTType:     ai.STTTypeDeepgram,
 			},
-			activeflowID: uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-			referenceID:  uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-			gender:       aicall.GenderFemale,
-			language:     "en-US",
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+			activeflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+			referenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+			gender:         aicall.GenderFemale,
+			language:       "en-US",
 
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -82,19 +86,20 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				AIID:          uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel: ai.EngineModel("openai.o1"),
-				AITTSType:     ai.TTSTypeElevenLabs,
-				AITTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
-				AISTTType:     ai.STTTypeDeepgram,
-				ActiveflowID:  uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				PipecatcallID: uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  ai.EngineModel("openai.o1"),
+				AITTSType:      ai.TTSTypeElevenLabs,
+				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
+				AISTTType:      ai.STTTypeDeepgram,
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				Gender:         aicall.GenderFemale,
+				Language:       "en-US",
+				Status:         aicall.StatusInitiating,
 			},
 			responseMessages: []*message.Message{
 				{
@@ -113,16 +118,17 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				AIID:          uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel: "openai.o1",
-				ActiveflowID:  uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				PipecatcallID: uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  "openai.o1",
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				Gender:         aicall.GenderFemale,
+				Language:       "en-US",
+				Status:         aicall.StatusInitiating,
 			},
 			expectVariables: map[string]string{
 				variableID:            "a6cd01d0-d785-467f-9069-684e46cc2644",
@@ -149,19 +155,20 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				AIID:          uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel: ai.EngineModel("openai.o1"),
-				AITTSType:     ai.TTSTypeElevenLabs,
-				AITTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
-				AISTTType:     ai.STTTypeDeepgram,
-				ActiveflowID:  uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
-				ReferenceType: aicall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				PipecatcallID: uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  ai.EngineModel("openai.o1"),
+				AITTSType:      ai.TTSTypeElevenLabs,
+				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
+				AISTTType:      ai.STTTypeDeepgram,
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				Gender:         aicall.GenderFemale,
+				Language:       "en-US",
+				Status:         aicall.StatusInitiating,
 			},
 		},
 	}
@@ -221,7 +228,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -237,9 +244,11 @@ func Test_startReferenceTypeNone(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai       *ai.AI
-		gender   aicall.Gender
-		language string
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		gender         aicall.Gender
+		language       string
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -258,8 +267,10 @@ func Test_startReferenceTypeNone(t *testing.T) {
 				},
 				InitPrompt: "hello, this is init prompt message.",
 			},
-			gender:   aicall.GenderFemale,
-			language: "en-US",
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
+			gender:         aicall.GenderFemale,
+			language:       "en-US",
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
@@ -312,7 +323,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.gender, tt.language)
+			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -328,11 +339,13 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai           *ai.AI
-		activeflowID uuid.UUID
-		referenceID  uuid.UUID
-		gender       aicall.Gender
-		language     string
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceID    uuid.UUID
+		gender         aicall.Gender
+		language       string
 
 		responseVarible           *fmvariable.Variable
 		responseAIcall            *aicall.AIcall
@@ -359,10 +372,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				},
 				InitPrompt: "hello, this is init prompt message.",
 			},
-			activeflowID: uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
-			referenceID:  uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
-			gender:       aicall.GenderFemale,
-			language:     "en-US",
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+			activeflowID:   uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+			referenceID:    uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+			gender:         aicall.GenderFemale,
+			language:       "en-US",
 
 			responseVarible: &fmvariable.Variable{
 				Variables: map[string]string{
@@ -397,14 +412,15 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				AIID:          uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
-				ActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
-				ReferenceType: aicall.ReferenceTypeConversation,
-				ReferenceID:   uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
-				PipecatcallID: uuid.FromStringOrNil("19f84290-b465-11f0-81ef-07fea8c8aa82"),
-				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
-				Status:        aicall.StatusInitiating,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+				ActiveflowID:   uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+				PipecatcallID:  uuid.FromStringOrNil("19f84290-b465-11f0-81ef-07fea8c8aa82"),
+				Gender:         aicall.GenderFemale,
+				Language:       "en-US",
+				Status:         aicall.StatusInitiating,
 			},
 			expectMessageContent: "test user message.",
 			expectLLMType:        pmpipecatcall.LLMType("openai.gpt-3.5-turbo"),
@@ -485,7 +501,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -840,14 +856,16 @@ func Test_startAIcall(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai            *ai.AI
-		activeflowID  uuid.UUID
-		referenceType aicall.ReferenceType
-		referenceID   uuid.UUID
-		confbridgeID  uuid.UUID
-		gender        aicall.Gender
-		language      string
-		isTask        bool
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  aicall.ReferenceType
+		referenceID    uuid.UUID
+		confbridgeID   uuid.UUID
+		gender         aicall.Gender
+		language       string
+		isTask         bool
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -868,13 +886,15 @@ func Test_startAIcall(t *testing.T) {
 				},
 				InitPrompt: "You are a helpful assistant.",
 			},
-			activeflowID:  uuid.FromStringOrNil("b34140c8-b659-11f0-be3a-5fc8a6759b80"),
-			referenceType: aicall.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("b3662e38-b659-11f0-820a-833195d45f7e"),
-			confbridgeID:  uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
-			gender:        aicall.GenderMale,
-			language:      "en-US",
-			isTask:        false,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			activeflowID:   uuid.FromStringOrNil("b34140c8-b659-11f0-be3a-5fc8a6759b80"),
+			referenceType:  aicall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("b3662e38-b659-11f0-820a-833195d45f7e"),
+			confbridgeID:   uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
+			gender:         aicall.GenderMale,
+			language:       "en-US",
+			isTask:         false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -884,7 +904,8 @@ func Test_startAIcall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
 				},
-				AIID: uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 
 				ActiveflowID:  uuid.FromStringOrNil("b34140c8-b659-11f0-be3a-5fc8a6759b80"),
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -914,7 +935,8 @@ func Test_startAIcall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
 				},
-				AIID: uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 
 				ActiveflowID:  uuid.FromStringOrNil("b34140c8-b659-11f0-be3a-5fc8a6759b80"),
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -970,7 +992,7 @@ func Test_startAIcall(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask)
+			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1187,8 +1209,9 @@ func Test_StartTask(t *testing.T) {
 	tests := []struct {
 		name string
 
-		aiID         uuid.UUID
-		activeflowID uuid.UUID
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
 
 		responseAI                *ai.AI
 		responseUUIDPipecatcallID uuid.UUID
@@ -1203,8 +1226,9 @@ func Test_StartTask(t *testing.T) {
 		{
 			name: "normal",
 
-			aiID:         uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
-			activeflowID: uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
+			activeflowID:   uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
 
 			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
@@ -1235,12 +1259,13 @@ func Test_StartTask(t *testing.T) {
 					ID:         uuid.FromStringOrNil("da2a0df4-d798-11f0-a8c3-6348c9284ca2"),
 					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
 				},
-				AIID:          uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
-				ActiveflowID:  uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
-				ReferenceType: aicall.ReferenceTypeTask,
-				ReferenceID:   uuid.Nil,
-				PipecatcallID: uuid.FromStringOrNil("d9f74cd4-d798-11f0-9e0e-c3713b24ebdc"),
-				Status:        aicall.StatusInitiating,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
+				ActiveflowID:   uuid.FromStringOrNil("c1f4b4e4-30de-11f0-8bbf-d773a2d31d73"),
+				ReferenceType:  aicall.ReferenceTypeTask,
+				ReferenceID:    uuid.Nil,
+				PipecatcallID:  uuid.FromStringOrNil("d9f74cd4-d798-11f0-9e0e-c3713b24ebdc"),
+				Status:         aicall.StatusInitiating,
 			},
 			expectMessageContents: []string{
 				defaultCommonAItaskSystemPrompt,
@@ -1278,7 +1303,7 @@ func Test_StartTask(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Get(ctx, tt.assistanceID).Return(tt.responseAI, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 
@@ -1312,7 +1337,7 @@ func Test_StartTask(t *testing.T) {
 
 			mockReq.EXPECT().AIV1AIcallTerminateWithDelay(ctx, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.StartTask(ctx, tt.aiID, tt.activeflowID)
+			res, err := h.StartTask(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

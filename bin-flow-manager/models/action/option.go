@@ -52,16 +52,38 @@ type OptionAISummary struct {
 
 // OptionAITalk defines action ai_talk's option.
 type OptionAITalk struct {
-	AIID     uuid.UUID       `json:"ai_id,omitempty"`
-	Resume   bool            `json:"resume,omitempty"` // resume the previous ai talk.
-	Gender   amaicall.Gender `json:"gender,omitempty"`
-	Language string          `json:"language,omitempty"` // BCP47 format. en-US
-	Duration int             `json:"duration,omitempty"` // ai talk duration. seconds
+	AIID           uuid.UUID              `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
+	AssistanceID   uuid.UUID              `json:"assistance_id,omitempty"`
+	Resume         bool                   `json:"resume,omitempty"` // resume the previous ai talk.
+	Gender         amaicall.Gender        `json:"gender,omitempty"`
+	Language       string                 `json:"language,omitempty"` // BCP47 format. en-US
+	Duration       int                    `json:"duration,omitempty"` // ai talk duration. seconds
+}
+
+// GetAssistanceTypeAndID returns the resolved assistance type and ID.
+// If the new fields are set, use them. Otherwise fall back to AIID for backward compatibility.
+func (o *OptionAITalk) GetAssistanceTypeAndID() (amaicall.AssistanceType, uuid.UUID) {
+	if o.AssistanceType != "" {
+		return o.AssistanceType, o.AssistanceID
+	}
+	return amaicall.AssistanceTypeAI, o.AIID
 }
 
 // OptionAITask defines action ai_task's option
 type OptionAITask struct {
-	AIID uuid.UUID `json:"ai_id,omitempty"`
+	AIID           uuid.UUID              `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
+	AssistanceID   uuid.UUID              `json:"assistance_id,omitempty"`
+}
+
+// GetAssistanceTypeAndID returns the resolved assistance type and ID.
+// If the new fields are set, use them. Otherwise fall back to AIID for backward compatibility.
+func (o *OptionAITask) GetAssistanceTypeAndID() (amaicall.AssistanceType, uuid.UUID) {
+	if o.AssistanceType != "" {
+		return o.AssistanceType, o.AssistanceID
+	}
+	return amaicall.AssistanceTypeAI, o.AIID
 }
 
 // OptionAMD defines action amd's option.

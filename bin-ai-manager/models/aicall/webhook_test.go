@@ -23,8 +23,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 					ID:         uuid.Must(uuid.NewV4()),
 					CustomerID: uuid.Must(uuid.NewV4()),
 				},
-				AIID:          uuid.Must(uuid.NewV4()),
-				AIEngineModel: ai.EngineModelOpenaiGPT4O,
+				AssistanceType: AssistanceTypeAI,
+				AssistanceID:   uuid.Must(uuid.NewV4()),
+				AIEngineModel:  ai.EngineModelOpenaiGPT4O,
 				AIEngineData:  map[string]any{"key": "value"},
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "voice-123",
@@ -45,8 +46,11 @@ func TestConvertWebhookMessage(t *testing.T) {
 				if wh.ID != ac.ID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", ac.ID, wh.ID)
 				}
-				if wh.AIID != ac.AIID {
-					t.Errorf("Wrong AIID. expect: %s, got: %s", ac.AIID, wh.AIID)
+				if wh.AssistanceType != ac.AssistanceType {
+					t.Errorf("Wrong AssistanceType. expect: %s, got: %s", ac.AssistanceType, wh.AssistanceType)
+				}
+				if wh.AssistanceID != ac.AssistanceID {
+					t.Errorf("Wrong AssistanceID. expect: %s, got: %s", ac.AssistanceID, wh.AssistanceID)
 				}
 				if wh.AIEngineModel != ac.AIEngineModel {
 					t.Errorf("Wrong AIEngineModel. expect: %s, got: %s", ac.AIEngineModel, wh.AIEngineModel)
@@ -117,8 +121,9 @@ func TestCreateWebhookEvent(t *testing.T) {
 					ID:         uuid.Must(uuid.NewV4()),
 					CustomerID: uuid.Must(uuid.NewV4()),
 				},
-				AIID:          uuid.Must(uuid.NewV4()),
-				Status:        StatusProgressing,
+				AssistanceType: AssistanceTypeAI,
+				AssistanceID:   uuid.Must(uuid.NewV4()),
+				Status:         StatusProgressing,
 				Gender:        GenderMale,
 				Language:      "ko-KR",
 				ReferenceType: ReferenceTypeConversation,

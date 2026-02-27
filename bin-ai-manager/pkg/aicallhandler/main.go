@@ -22,6 +22,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 	commonservice "monorepo/bin-common-handler/models/service"
 )
 
@@ -39,7 +40,8 @@ type AIcallHandler interface {
 
 	Start(
 		ctx context.Context,
-		aiID uuid.UUID,
+		assistanceType aicall.AssistanceType,
+		assistanceID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType aicall.ReferenceType,
 		referenceID uuid.UUID,
@@ -49,14 +51,15 @@ type AIcallHandler interface {
 
 	ServiceStart(
 		ctx context.Context,
-		aiID uuid.UUID,
+		assistanceType aicall.AssistanceType,
+		assistanceID uuid.UUID,
 		activeflowID uuid.UUID,
 		referenceType aicall.ReferenceType,
 		referenceID uuid.UUID,
 		gender aicall.Gender,
 		language string,
 	) (*commonservice.Service, error)
-	ServiceStartTypeTask(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*commonservice.Service, error)
+	ServiceStartTypeTask(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) (*commonservice.Service, error)
 
 	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
@@ -121,6 +124,7 @@ type aicallHandler struct {
 	db            dbhandler.DBHandler
 
 	aiHandler      aihandler.AIHandler
+	teamHandler    teamhandler.TeamHandler
 	messageHandler messagehandler.MessageHandler
 }
 
@@ -177,6 +181,7 @@ func NewAIcallHandler(
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	aiHandler aihandler.AIHandler,
+	teamHandler teamhandler.TeamHandler,
 	messageHandler messagehandler.MessageHandler,
 ) AIcallHandler {
 	return &aicallHandler{
@@ -186,6 +191,7 @@ func NewAIcallHandler(
 		db:            db,
 
 		aiHandler:      aiHandler,
+		teamHandler:    teamHandler,
 		messageHandler: messageHandler,
 	}
 }

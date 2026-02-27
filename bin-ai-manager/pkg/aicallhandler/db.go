@@ -18,6 +18,8 @@ import (
 func (h *aicallHandler) Create(
 	ctx context.Context,
 	c *ai.AI,
+	assistanceType aicall.AssistanceType,
+	assistanceID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
@@ -38,7 +40,9 @@ func (h *aicallHandler) Create(
 			CustomerID: c.CustomerID,
 		},
 
-		AIID:          c.ID,
+		AssistanceType: assistanceType,
+		AssistanceID:   assistanceID,
+
 		AIEngineModel: c.EngineModel,
 		AIEngineData:  c.EngineData,
 		AITTSType:     c.TTSType,

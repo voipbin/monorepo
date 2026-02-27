@@ -8,13 +8,14 @@ const (
 	FieldID         Field = "id"
 	FieldCustomerID Field = "customer_id"
 
-	FieldAIID          Field = "ai_id"
+	FieldAssistanceType Field = "assistance_type"
+	FieldAssistanceID   Field = "assistance_id"
+
 	FieldAIEngineModel Field = "ai_engine_model"
 	FieldAIEngineData  Field = "ai_engine_data"
 	FieldAITTSType     Field = "ai_tts_type"
 	FieldAITTSVoiceID  Field = "ai_tts_voice_id"
 	FieldAISTTType     Field = "ai_stt_type"
-	FieldTeamID        Field = "team_id"
 
 	FieldActiveflowID  Field = "activeflow_id"
 	FieldReferenceType Field = "reference_type"

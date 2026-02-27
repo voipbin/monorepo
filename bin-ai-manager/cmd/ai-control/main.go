@@ -398,7 +398,7 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, "")
 
 	// For these operations, we don't need aiHandler and messageHandler
-	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil), nil
+	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil), nil
 }
 
 func cmdAIcallGet() *cobra.Command {
@@ -438,7 +438,8 @@ func cmdAIcallList() *cobra.Command {
 	flags.Int("limit", 100, "Limit the number of AIcalls to retrieve")
 	flags.String("token", "", "Retrieve AIcalls before this token (pagination)")
 	flags.String("customer-id", "", "Filter by customer ID (required)")
-	flags.String("ai-id", "", "Filter by AI ID")
+	flags.String("assistance-type", "", "Filter by assistance type (ai or team)")
+	flags.String("assistance-id", "", "Filter by assistance ID")
 	flags.String("reference-type", "", "Filter by reference type (call, conversation, task)")
 	flags.String("status", "", "Filter by status (initiating, progressing, terminating, terminated)")
 
@@ -515,9 +516,12 @@ func runAIcallList(cmd *cobra.Command, args []string) error {
 	}
 
 	// Optional filters
-	if aiID := viper.GetString("ai-id"); aiID != "" {
-		if id := uuid.FromStringOrNil(aiID); id != uuid.Nil {
-			filters[aicall.FieldAIID] = id
+	if assistanceType := viper.GetString("assistance-type"); assistanceType != "" {
+		filters[aicall.FieldAssistanceType] = aicall.AssistanceType(assistanceType)
+	}
+	if assistanceID := viper.GetString("assistance-id"); assistanceID != "" {
+		if id := uuid.FromStringOrNil(assistanceID); id != uuid.Nil {
+			filters[aicall.FieldAssistanceID] = id
 		}
 	}
 	if refType := viper.GetString("reference-type"); refType != "" {

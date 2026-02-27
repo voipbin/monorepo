@@ -1082,7 +1082,8 @@ func (h *activeflowHandler) actionHandleAITalk(ctx context.Context, af *activefl
 	}
 
 	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, opt.AIID, af.ID, referenceType, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 30000)
+	assistanceType, assistanceID := opt.GetAssistanceTypeAndID()
+	sv, err := h.reqHandler.AIV1ServiceTypeAIcallStart(ctx, assistanceType, assistanceID, af.ID, referenceType, af.ReferenceID, opt.Resume, opt.Gender, opt.Language, 30000)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")
 	}
@@ -1229,7 +1230,8 @@ func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activefl
 	}
 
 	// start service
-	sv, err := h.reqHandler.AIV1ServiceTypeTaskStart(ctx, opt.AIID, af.ID)
+	assistanceType, assistanceID := opt.GetAssistanceTypeAndID()
+	sv, err := h.reqHandler.AIV1ServiceTypeTaskStart(ctx, assistanceType, assistanceID, af.ID)
 	if err != nil {
 		return errors.Wrap(err, "Could not start the service.")
 	}

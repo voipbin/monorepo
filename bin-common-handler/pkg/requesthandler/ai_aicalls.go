@@ -15,13 +15,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *requestHandler) AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error) {
+func (r *requestHandler) AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error) {
 	uri := "/v1/aicalls"
 
 	data := &cbrequest.V1DataAIcallsPost{
-		ActiveflowID: activeflowID,
+		AssistanceType: assistanceType,
+		AssistanceID:   assistanceID,
 
-		AIID: aiID,
+		ActiveflowID: activeflowID,
 
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,

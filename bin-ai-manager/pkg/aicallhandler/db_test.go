@@ -24,14 +24,16 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai            *ai.AI
-		activeflowID  uuid.UUID
-		referenceType aicall.ReferenceType
-		referenceID   uuid.UUID
-		confbridgeID  uuid.UUID
-		pipecatcallID uuid.UUID
-		gender        aicall.Gender
-		language      string
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  aicall.ReferenceType
+		referenceID    uuid.UUID
+		confbridgeID   uuid.UUID
+		pipecatcallID  uuid.UUID
+		gender         aicall.Gender
+		language       string
 
 		responseUUIDID uuid.UUID
 		responseAIcall *aicall.AIcall
@@ -54,8 +56,10 @@ func Test_Create(t *testing.T) {
 				TTSVoiceID: "d4c7e1f2-5e8b-4d3a-9f0a-1c2b3d4e5f60",
 				STTType:    ai.STTTypeDeepgram,
 			},
-			activeflowID:  uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
-			referenceType: aicall.ReferenceTypeCall,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
+			activeflowID:   uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
+			referenceType:  aicall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
 			confbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
 			pipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
@@ -74,8 +78,9 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
 					CustomerID: uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
 				},
-				AIID:          uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
-				AIEngineModel: ai.EngineModelOpenaiGPT4,
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
+				AIEngineModel:  ai.EngineModelOpenaiGPT4,
 				AIEngineData: map[string]any{
 					"key1": "value1",
 				},
@@ -119,7 +124,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language)
+			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

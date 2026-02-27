@@ -23,7 +23,7 @@ func (h *aicallHandler) setActiveflowVariables(ctx context.Context, cc *aicall.A
 
 	variables := map[string]string{
 		variableID:            cc.ID.String(),
-		variableAIID:          cc.AIID.String(),
+		variableAIID:          cc.AssistanceID.String(),
 		variableAIEngineModel: string(cc.AIEngineModel),
 		variableConfbridgeID:  cc.ConfbridgeID.String(),
 		variableGender:        string(cc.Gender),

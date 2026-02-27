@@ -34,10 +34,10 @@ func (h *server) PostAicalls(c *gin.Context) {
 		return
 	}
 
-	aiID := uuid.FromStringOrNil(req.AiId)
+	assistanceID := uuid.FromStringOrNil(req.AssistanceId)
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 
-	res, err := h.serviceHandler.AIcallCreate(c.Request.Context(), &a, aiID, amaicall.ReferenceType(req.ReferenceType), referenceID, amaicall.Gender(req.Gender), req.Language)
+	res, err := h.serviceHandler.AIcallCreate(c.Request.Context(), &a, amaicall.AssistanceType(req.AssistanceType), assistanceID, amaicall.ReferenceType(req.ReferenceType), referenceID, amaicall.Gender(req.Gender), req.Language)
 	if err != nil {
 		log.Errorf("Could not create AI. err: %v", err)
 		c.AbortWithStatus(400)

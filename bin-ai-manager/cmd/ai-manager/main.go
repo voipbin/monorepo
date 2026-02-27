@@ -117,7 +117,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, messageHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// run listen

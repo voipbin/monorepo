@@ -18,7 +18,8 @@ import (
 // it returns created service if it succeed.
 func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	ctx context.Context,
-	aiID uuid.UUID,
+	assistanceType amaicall.AssistanceType,
+	assistanceID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
@@ -30,13 +31,14 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	uri := "/v1/services/type/aicall"
 
 	data := &airequest.V1DataServicesTypeAIcallPost{
-		AIID:          aiID,
-		ActiveflowID:  activeflowID,
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
-		Resume:        resume,
-		Gender:        gender,
-		Language:      language,
+		AssistanceType: assistanceType,
+		AssistanceID:   assistanceID,
+		ActiveflowID:   activeflowID,
+		ReferenceType:  referenceType,
+		ReferenceID:    referenceID,
+		Resume:         resume,
+		Gender:         gender,
+		Language:       language,
 	}
 
 	m, err := json.Marshal(data)
@@ -102,12 +104,13 @@ func (r *requestHandler) AIV1ServiceTypeSummaryStart(
 // AIV1ServiceTypeTaskStart sends a request to ai-manager
 // to starts a task service.
 // it returns created service if it succeed.
-func (r *requestHandler) AIV1ServiceTypeTaskStart(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error) {
+func (r *requestHandler) AIV1ServiceTypeTaskStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error) {
 	uri := "/v1/services/type/task"
 
 	data := &airequest.V1DataServicesTypeTaskPost{
-		AIID:         aiID,
-		ActiveflowID: activeflowID,
+		AssistanceType: assistanceType,
+		AssistanceID:   assistanceID,
+		ActiveflowID:   activeflowID,
 	}
 
 	m, err := json.Marshal(data)

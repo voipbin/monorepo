@@ -11,7 +11,8 @@ import (
 // data type request struct for
 // /v1/services/type/aicall POST
 type V1DataServicesTypeAIcallPost struct {
-	AIID uuid.UUID `json:"ai_id"`
+	AssistanceType aicall.AssistanceType `json:"assistance_type"`
+	AssistanceID   uuid.UUID             `json:"assistance_id"`
 
 	ActiveflowID  uuid.UUID            `json:"activeflow_id"`
 	ReferenceType aicall.ReferenceType `json:"reference_type"`
@@ -42,6 +43,7 @@ type V1DataServicesTypeSummaryPost struct {
 // data type request struct for
 // /v1/services/type/task POST
 type V1DataServicesTypeTaskPost struct {
-	AIID         uuid.UUID `json:"ai_id"`
-	ActiveflowID uuid.UUID `json:"activeflow_id"`
+	AssistanceType aicall.AssistanceType `json:"assistance_type"`
+	AssistanceID   uuid.UUID             `json:"assistance_id"`
+	ActiveflowID   uuid.UUID             `json:"activeflow_id"`
 }

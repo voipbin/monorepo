@@ -273,7 +273,8 @@ type ServiceHandler interface {
 	AIcallCreate(
 		ctx context.Context,
 		a *amagent.Agent,
-		aiID uuid.UUID,
+		assistanceType amaicall.AssistanceType,
+		assistanceID uuid.UUID,
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
 		gender amaicall.Gender,

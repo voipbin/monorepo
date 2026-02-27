@@ -16,7 +16,8 @@ func TestFieldStruct(t *testing.T) {
 			name: "creates_field_struct_with_all_fields",
 			fs: &FieldStruct{
 				CustomerID:    uuid.Must(uuid.NewV4()),
-				AIID:          uuid.Must(uuid.NewV4()),
+				AssistanceType: AssistanceTypeAI,
+				AssistanceID:   uuid.Must(uuid.NewV4()),
 				AIEngineModel: ai.EngineModelOpenaiGPT4O,
 				ActiveflowID:  uuid.Must(uuid.NewV4()),
 				ReferenceType: ReferenceTypeCall,
@@ -33,7 +34,8 @@ func TestFieldStruct(t *testing.T) {
 			name: "creates_field_struct_with_empty_fields",
 			fs: &FieldStruct{
 				CustomerID:    uuid.Nil,
-				AIID:          uuid.Nil,
+				AssistanceType: AssistanceTypeAI,
+				AssistanceID:   uuid.Nil,
 				AIEngineModel: "",
 				ActiveflowID:  uuid.Nil,
 				ReferenceType: ReferenceTypeNone,

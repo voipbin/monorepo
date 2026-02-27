@@ -25,12 +25,13 @@ func Test_AIcallCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
-		aiID          uuid.UUID
-		referenceType amaicall.ReferenceType
-		referenceID   uuid.UUID
-		gender        amaicall.Gender
-		language      string
+		agent          *amagent.Agent
+		assistanceType amaicall.AssistanceType
+		assistanceID   uuid.UUID
+		referenceType  amaicall.ReferenceType
+		referenceID    uuid.UUID
+		gender         amaicall.Gender
+		language       string
 
 		responseAI     *amai.AI
 		responseAIcall *amaicall.AIcall
@@ -49,9 +50,10 @@ func Test_AIcallCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
-			aiID:          uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
-			referenceType: amaicall.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
+			referenceType:  amaicall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 			gender:        amaicall.GenderMale,
 			language:      "en-US",
 
@@ -91,18 +93,19 @@ func Test_AIcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.assistanceID).Return(tt.responseAI, nil)
 			mockReq.EXPECT().AIV1AIcallStart(
 				ctx,
+				tt.assistanceType,
+				tt.assistanceID,
 				uuid.Nil,
-				tt.aiID,
 				tt.referenceType,
 				tt.referenceID,
 				tt.gender,
 				tt.language,
 			).Return(tt.responseAIcall, nil)
 
-			res, err := h.AIcallCreate(ctx, tt.agent, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			res, err := h.AIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

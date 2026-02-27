@@ -2,6 +2,10 @@ package pipecatcallhandler
 
 import (
 	"context"
+	"fmt"
+
+	amai "monorepo/bin-ai-manager/models/ai"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gorilla/websocket"
@@ -73,9 +77,9 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 			return ""
 		}
 
-		a, err := h.requestHandler.AIV1AIGet(ctx, c.AIID)
+		a, err := h.resolveAIFromAIcall(ctx, c)
 		if err != nil {
-			logrus.Errorf("Could not get ai info. err: %v", err)
+			logrus.Errorf("Could not resolve ai info. err: %v", err)
 			return ""
 		}
 
@@ -83,5 +87,30 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 
 	default:
 		return ""
+	}
+}
+
+// resolveAIFromAIcall resolves the AI entity from the AIcall's assistance type and ID.
+// For AssistanceTypeAI, AssistanceID is the AI ID directly.
+// For AssistanceTypeTeam, it fetches the team, finds the start member, and returns that member's AI.
+func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaicall.AIcall) (*amai.AI, error) {
+	switch c.AssistanceType {
+	case amaicall.AssistanceTypeTeam:
+		team, err := h.requestHandler.AIV1TeamGet(ctx, c.AssistanceID)
+		if err != nil {
+			return nil, err
+		}
+
+		// find the start member's AI ID
+		for _, m := range team.Members {
+			if m.ID == team.StartMemberID {
+				return h.requestHandler.AIV1AIGet(ctx, m.AIID)
+			}
+		}
+		return nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", c.AssistanceID, team.StartMemberID)
+
+	default:
+		// AssistanceTypeAI or any other: AssistanceID is the AI ID
+		return h.requestHandler.AIV1AIGet(ctx, c.AssistanceID)
 	}
 }

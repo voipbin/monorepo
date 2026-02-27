@@ -197,6 +197,12 @@ tags:
   - name: RAG
     description: Operations related to RAG (Retrieval-Augmented Generation)
 
+  - name: Team
+    description: Team operations
+    externalDocs:
+      description: Team Tutorial
+      url: https://api.voipbin.net/docs/team_overview.html
+
 
 components:
 
@@ -1902,6 +1908,19 @@ components:
         - description
         - next_member_id
 
+    AIManagerAIcallAssistanceType:
+      type: string
+      description: Type of assistance entity associated with the AI call.
+      example: "ai"
+      enum:
+        - ""
+        - ai
+        - team
+      x-enum-varnames:
+        - AIManagerAIcallAssistanceTypeNone
+        - AIManagerAIcallAssistanceTypeAI
+        - AIManagerAIcallAssistanceTypeTeam
+
     AIManagerAIcallGender:
       type: string
       description: Gender associated with the AI call.
@@ -2032,11 +2051,15 @@ components:
           x-go-type: string
           description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-        ai_id:
+        assistance_type:
+          $ref: '#/components/schemas/AIManagerAIcallAssistanceType'
+          description: Type of assistance entity associated with the AI call.
+          example: "ai"
+        assistance_id:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the associated AI. Returned from the `POST /ais` or `GET /ais` response."
+          description: "The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
         ai_engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
@@ -3521,7 +3544,16 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the AI configuration to use. Returned from the `POST /ais` or `GET /ais` response.
+          description: "Deprecated: use assistance_type+assistance_id. The unique identifier of the AI configuration to use."
+          example: "6f7a8b9c-0d1e-2345-f012-345678901234"
+        assistance_type:
+          $ref: '#/components/schemas/AIManagerAIcallAssistanceType'
+          description: Type of assistance entity. Use "ai" for AI or "team" for Team.
+        assistance_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the assistance entity (AI or Team).
           example: "6f7a8b9c-0d1e-2345-f012-345678901234"
         resume:
           type: boolean

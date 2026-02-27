@@ -24,12 +24,13 @@ func Test_AIV1AIcallStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeflowID  uuid.UUID
-		aiID          uuid.UUID
-		referenceType amaicall.ReferenceType
-		referenceID   uuid.UUID
-		gender        amaicall.Gender
-		language      string
+		assistanceType amaicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  amaicall.ReferenceType
+		referenceID    uuid.UUID
+		gender         amaicall.Gender
+		language       string
 
 		response *sock.Response
 
@@ -40,9 +41,10 @@ func Test_AIV1AIcallStart(t *testing.T) {
 		{
 			name: "normal",
 
-			activeflowID:  uuid.FromStringOrNil("eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4"),
-			aiID:          uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
-			referenceType: amaicall.ReferenceTypeCall,
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
+			activeflowID:   uuid.FromStringOrNil("eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4"),
+			referenceType:  amaicall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"),
 			gender:        amaicall.GenderFemale,
 			language:      "en-US",
@@ -58,7 +60,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 				URI:      "/v1/aicalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"activeflow_id":"eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4","ai_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9","gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"assistance_type":"ai","assistance_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","activeflow_id":"eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9","gender":"female","language":"en-US"}`),
 			},
 			expectRes: &amaicall.AIcall{
 				Identity: identity.Identity{
@@ -81,7 +83,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.activeflowID, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

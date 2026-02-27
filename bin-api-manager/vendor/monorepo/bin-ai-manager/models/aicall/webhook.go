@@ -14,8 +14,9 @@ import (
 type WebhookMessage struct {
 	identity.Identity
 
-	AIID   uuid.UUID `json:"ai_id,omitempty"`
-	TeamID uuid.UUID `json:"team_id,omitempty"`
+	AssistanceType AssistanceType `json:"assistance_type,omitempty"`
+	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty"`
+
 	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty"`
 	AIEngineData  map[string]any `json:"ai_engine_data,omitempty"`
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty"`
@@ -44,8 +45,9 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
 
-		AIID:   h.AIID,
-		TeamID: h.TeamID,
+		AssistanceType: h.AssistanceType,
+		AssistanceID:   h.AssistanceID,
+
 		AIEngineModel: h.AIEngineModel,
 		AIEngineData:  h.AIEngineData,
 		AITTSType:     h.AITTSType,
