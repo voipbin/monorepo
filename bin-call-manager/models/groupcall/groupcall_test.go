@@ -124,6 +124,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 	flowID := uuid.Must(uuid.NewV4())
 	masterCallID := uuid.Must(uuid.NewV4())
 	answerCallID := uuid.Must(uuid.NewV4())
+	answerGroupcallID := uuid.Must(uuid.NewV4())
 	callID1 := uuid.Must(uuid.NewV4())
 	callID2 := uuid.Must(uuid.NewV4())
 
@@ -152,8 +153,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 		MasterCallID:   masterCallID,
 		RingMethod:     RingMethodRingAll,
 		AnswerMethod:   AnswerMethodHangupOthers,
-		AnswerCallID:   answerCallID,
-		CallIDs:        []uuid.UUID{callID1, callID2},
+		AnswerCallID:      answerCallID,
+		AnswerGroupcallID: answerGroupcallID,
+		CallIDs:           []uuid.UUID{callID1, callID2},
 		CallCount:      2,
 		GroupcallCount: 1,
 		DialIndex:      0,
@@ -186,6 +188,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 	}
 	if webhook.AnswerCallID != answerCallID {
 		t.Errorf("ConvertWebhookMessage AnswerCallID = %v, expected %v", webhook.AnswerCallID, answerCallID)
+	}
+	if webhook.AnswerGroupcallID != answerGroupcallID {
+		t.Errorf("ConvertWebhookMessage AnswerGroupcallID = %v, expected %v", webhook.AnswerGroupcallID, answerGroupcallID)
 	}
 	if len(webhook.CallIDs) != 2 {
 		t.Errorf("ConvertWebhookMessage CallIDs length = %v, expected 2", len(webhook.CallIDs))

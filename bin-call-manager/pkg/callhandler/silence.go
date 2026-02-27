@@ -24,7 +24,7 @@ func (h *callHandler) SilenceOn(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.SilenceOn(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not silence the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not silence the channel")
+		return errors.Wrap(errHold, "Could not silence the channel")
 	}
 
 	return nil
@@ -46,7 +46,7 @@ func (h *callHandler) SilenceOff(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.SilenceOff(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not silence off the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not silence off the channel")
+		return errors.Wrap(errHold, "Could not silence off the channel")
 	}
 
 	return nil

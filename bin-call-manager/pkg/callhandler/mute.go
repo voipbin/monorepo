@@ -32,12 +32,13 @@ func (h *callHandler) MuteOn(ctx context.Context, id uuid.UUID, direction call.M
 
 	if errHold := h.channelHandler.MuteOn(ctx, c.ChannelID, channel.MuteDirection(direction)); errHold != nil {
 		log.Errorf("Could not mute the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not mute the channel")
+		return errors.Wrap(errHold, "Could not mute the channel")
 	}
 
 	_, err = h.UpdateMuteDirection(ctx, id, direction)
 	if err != nil {
 		log.Errorf("Could not update the call mute direction. err: %v", err)
+		return errors.Wrap(err, "could not update the call mute direction")
 	}
 
 	return nil
@@ -64,7 +65,7 @@ func (h *callHandler) MuteOff(ctx context.Context, id uuid.UUID, muteDirection c
 
 	if errHold := h.channelHandler.MuteOff(ctx, c.ChannelID, channel.MuteDirection(muteDirection)); errHold != nil {
 		log.Errorf("Could not mute off the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not mute off the channel")
+		return errors.Wrap(errHold, "Could not mute off the channel")
 	}
 
 	newDirection := call.MuteDirectionNone
@@ -85,6 +86,7 @@ func (h *callHandler) MuteOff(ctx context.Context, id uuid.UUID, muteDirection c
 	_, err = h.UpdateMuteDirection(ctx, id, newDirection)
 	if err != nil {
 		log.Errorf("Could not update the call mute direction. err: %v", err)
+		return errors.Wrap(err, "could not update the call mute direction")
 	}
 
 	return nil

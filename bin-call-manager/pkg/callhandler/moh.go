@@ -24,7 +24,7 @@ func (h *callHandler) MOHOn(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.MOHOn(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not moh the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not moh the channel")
+		return errors.Wrap(errHold, "Could not moh the channel")
 	}
 
 	return nil
@@ -46,7 +46,7 @@ func (h *callHandler) MOHOff(ctx context.Context, id uuid.UUID) error {
 
 	if errHold := h.channelHandler.MOHOff(ctx, c.ChannelID); errHold != nil {
 		log.Errorf("Could not moh off the channel. err: %v", errHold)
-		return errors.Wrap(err, "Could not moh off the channel")
+		return errors.Wrap(errHold, "Could not moh off the channel")
 	}
 
 	return nil
