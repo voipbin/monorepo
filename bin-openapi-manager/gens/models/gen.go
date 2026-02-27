@@ -1192,6 +1192,63 @@ type AIManagerSummaryReferenceType string
 // AIManagerSummaryStatus Status of the AI summary generation.
 type AIManagerSummaryStatus string
 
+// AIManagerTeam defines model for AIManagerTeam.
+type AIManagerTeam struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the team.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the team.
+	Id *string `json:"id,omitempty"`
+
+	// Members List of team members forming the graph nodes.
+	Members *[]AIManagerTeamMember `json:"members,omitempty"`
+
+	// Name Name of the team.
+	Name *string `json:"name,omitempty"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId *string `json:"start_member_id,omitempty"`
+
+	// TmCreate Timestamp when the team was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the team was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the team was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerTeamMember A member node in the team graph, backed by an existing AI configuration.
+type AIManagerTeamMember struct {
+	// AiId The AI configuration backing this member. Returned from the `POST /ais` or `GET /ais` response.
+	AiId string `json:"ai_id"`
+
+	// Id The unique identifier of this member within the team.
+	Id string `json:"id"`
+
+	// Name Display name for this member.
+	Name string `json:"name"`
+
+	// Transitions List of transitions (edges) from this member to other members.
+	Transitions *[]AIManagerTeamTransition `json:"transitions,omitempty"`
+}
+
+// AIManagerTeamTransition A transition edge that triggers a switch from one member to another via LLM function calling.
+type AIManagerTeamTransition struct {
+	// Description Human-readable description of when this transition should be triggered. Used as the function description in LLM tool definitions.
+	Description string `json:"description"`
+
+	// FunctionName The function name that the LLM calls to trigger this transition. Must not collide with reserved tool names.
+	FunctionName string `json:"function_name"`
+
+	// NextMemberId The member ID to transition to. Must reference an existing member in the team.
+	NextMemberId string `json:"next_member_id"`
+}
+
 // AgentManagerAgent Represents an agent resource.
 type AgentManagerAgent struct {
 	// Addresses Agent's endpoint addresses for receiving calls.
@@ -5652,6 +5709,45 @@ type PutTagsIdJSONBody struct {
 	Name   string `json:"name"`
 }
 
+// GetTeamsParams defines parameters for GetTeams.
+type GetTeamsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostTeamsJSONBody defines parameters for PostTeams.
+type PostTeamsJSONBody struct {
+	// Detail Detailed description of the team.
+	Detail string `json:"detail"`
+
+	// Members List of team members forming the graph nodes. Must contain at least one member.
+	Members []AIManagerTeamMember `json:"members"`
+
+	// Name Name of the team.
+	Name string `json:"name"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId string `json:"start_member_id"`
+}
+
+// PutTeamsIdJSONBody defines parameters for PutTeamsId.
+type PutTeamsIdJSONBody struct {
+	// Detail Detailed description of the team.
+	Detail string `json:"detail"`
+
+	// Members List of team members forming the graph nodes.
+	Members []AIManagerTeamMember `json:"members"`
+
+	// Name Name of the team.
+	Name string `json:"name"`
+
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	StartMemberId string `json:"start_member_id"`
+}
+
 // GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
 type GetTimelinesResourceTypeResourceIdEventsParams struct {
 	// PageSize Number of results to return per page.
@@ -6066,6 +6162,12 @@ type PostTagsJSONRequestBody PostTagsJSONBody
 
 // PutTagsIdJSONRequestBody defines body for PutTagsId for application/json ContentType.
 type PutTagsIdJSONRequestBody PutTagsIdJSONBody
+
+// PostTeamsJSONRequestBody defines body for PostTeams for application/json ContentType.
+type PostTeamsJSONRequestBody PostTeamsJSONBody
+
+// PutTeamsIdJSONRequestBody defines body for PutTeamsId for application/json ContentType.
+type PutTeamsIdJSONRequestBody PutTeamsIdJSONBody
 
 // PostTranscribesJSONRequestBody defines body for PostTranscribes for application/json ContentType.
 type PostTranscribesJSONRequestBody PostTranscribesJSONBody

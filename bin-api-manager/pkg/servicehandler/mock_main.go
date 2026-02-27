@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
+	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
@@ -4358,6 +4359,81 @@ func (m *MockServiceHandler) TagUpdate(ctx context.Context, a *agent.Agent, id u
 func (mr *MockServiceHandlerMockRecorder) TagUpdate(ctx, a, id, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TagUpdate), ctx, a, id, name, detail)
+}
+
+// TeamCreate mocks base method.
+func (m *MockServiceHandler) TeamCreate(ctx context.Context, a *agent.Agent, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamCreate", ctx, a, name, detail, startMemberID, members)
+	ret0, _ := ret[0].(*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamCreate indicates an expected call of TeamCreate.
+func (mr *MockServiceHandlerMockRecorder) TeamCreate(ctx, a, name, detail, startMemberID, members any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamCreate", reflect.TypeOf((*MockServiceHandler)(nil).TeamCreate), ctx, a, name, detail, startMemberID, members)
+}
+
+// TeamDelete mocks base method.
+func (m *MockServiceHandler) TeamDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamDelete", ctx, a, id)
+	ret0, _ := ret[0].(*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamDelete indicates an expected call of TeamDelete.
+func (mr *MockServiceHandlerMockRecorder) TeamDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamDelete", reflect.TypeOf((*MockServiceHandler)(nil).TeamDelete), ctx, a, id)
+}
+
+// TeamGet mocks base method.
+func (m *MockServiceHandler) TeamGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamGet", ctx, a, id)
+	ret0, _ := ret[0].(*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamGet indicates an expected call of TeamGet.
+func (mr *MockServiceHandlerMockRecorder) TeamGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamGet", reflect.TypeOf((*MockServiceHandler)(nil).TeamGet), ctx, a, id)
+}
+
+// TeamGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) TeamGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamGetsByCustomerID", ctx, a, size, token)
+	ret0, _ := ret[0].([]*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamGetsByCustomerID indicates an expected call of TeamGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) TeamGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).TeamGetsByCustomerID), ctx, a, size, token)
+}
+
+// TeamUpdate mocks base method.
+func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamUpdate", ctx, a, id, name, detail, startMemberID, members)
+	ret0, _ := ret[0].(*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamUpdate indicates an expected call of TeamUpdate.
+func (mr *MockServiceHandlerMockRecorder) TeamUpdate(ctx, a, id, name, detail, startMemberID, members any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TeamUpdate), ctx, a, id, name, detail, startMemberID, members)
 }
 
 // TimelineEventList mocks base method.

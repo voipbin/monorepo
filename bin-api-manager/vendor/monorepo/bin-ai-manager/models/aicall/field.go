@@ -14,6 +14,7 @@ const (
 	FieldAITTSType     Field = "ai_tts_type"
 	FieldAITTSVoiceID  Field = "ai_tts_voice_id"
 	FieldAISTTType     Field = "ai_stt_type"
+	FieldTeamID        Field = "team_id"
 
 	FieldActiveflowID  Field = "activeflow_id"
 	FieldReferenceType Field = "reference_type"

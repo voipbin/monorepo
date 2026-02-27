@@ -30,6 +30,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -260,6 +261,13 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
+
+	// team handlers
+	TeamCreate(ctx context.Context, a *amagent.Agent, name string, detail string, startMemberID uuid.UUID, members []amteam.Member) (*amteam.WebhookMessage, error)
+	TeamGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amteam.WebhookMessage, error)
+	TeamGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
+	TeamDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
+	TeamUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []amteam.Member) (*amteam.WebhookMessage, error)
 
 	// aicall handlers
 	AIcallCreate(

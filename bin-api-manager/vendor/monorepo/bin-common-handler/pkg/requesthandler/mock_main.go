@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
+	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
@@ -457,6 +458,81 @@ func (m *MockRequestHandler) AIV1SummaryList(ctx context.Context, pageToken stri
 func (mr *MockRequestHandlerMockRecorder) AIV1SummaryList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1TeamCreate mocks base method.
+func (m *MockRequestHandler) AIV1TeamCreate(ctx context.Context, customerID uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1TeamCreate", ctx, customerID, name, detail, startMemberID, members)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1TeamCreate indicates an expected call of AIV1TeamCreate.
+func (mr *MockRequestHandlerMockRecorder) AIV1TeamCreate(ctx, customerID, name, detail, startMemberID, members any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1TeamCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1TeamCreate), ctx, customerID, name, detail, startMemberID, members)
+}
+
+// AIV1TeamDelete mocks base method.
+func (m *MockRequestHandler) AIV1TeamDelete(ctx context.Context, teamID uuid.UUID) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1TeamDelete", ctx, teamID)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1TeamDelete indicates an expected call of AIV1TeamDelete.
+func (mr *MockRequestHandlerMockRecorder) AIV1TeamDelete(ctx, teamID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1TeamDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1TeamDelete), ctx, teamID)
+}
+
+// AIV1TeamGet mocks base method.
+func (m *MockRequestHandler) AIV1TeamGet(ctx context.Context, teamID uuid.UUID) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1TeamGet", ctx, teamID)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1TeamGet indicates an expected call of AIV1TeamGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1TeamGet(ctx, teamID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1TeamGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1TeamGet), ctx, teamID)
+}
+
+// AIV1TeamList mocks base method.
+func (m *MockRequestHandler) AIV1TeamList(ctx context.Context, pageToken string, pageSize uint64, filters map[team.Field]any) ([]team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1TeamList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1TeamList indicates an expected call of AIV1TeamList.
+func (mr *MockRequestHandlerMockRecorder) AIV1TeamList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1TeamList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1TeamList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1TeamUpdate mocks base method.
+func (m *MockRequestHandler) AIV1TeamUpdate(ctx context.Context, teamID uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1TeamUpdate", ctx, teamID, name, detail, startMemberID, members)
+	ret0, _ := ret[0].(*team.Team)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1TeamUpdate indicates an expected call of AIV1TeamUpdate.
+func (mr *MockRequestHandlerMockRecorder) AIV1TeamUpdate(ctx, teamID, name, detail, startMemberID, members any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1TeamUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1TeamUpdate), ctx, teamID, name, detail, startMemberID, members)
 }
 
 // AIV1ToolList mocks base method.

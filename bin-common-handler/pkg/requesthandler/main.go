@@ -28,6 +28,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -209,6 +210,27 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
+
+	// ai-manager team
+	AIV1TeamGet(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
+	AIV1TeamList(ctx context.Context, pageToken string, pageSize uint64, filters map[amteam.Field]any) ([]amteam.Team, error)
+	AIV1TeamCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		startMemberID uuid.UUID,
+		members []amteam.Member,
+	) (*amteam.Team, error)
+	AIV1TeamDelete(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
+	AIV1TeamUpdate(
+		ctx context.Context,
+		teamID uuid.UUID,
+		name string,
+		detail string,
+		startMemberID uuid.UUID,
+		members []amteam.Member,
+	) (*amteam.Team, error)
 
 	// ai-manager tools
 	AIV1ToolList(ctx context.Context) ([]amtool.Tool, error)

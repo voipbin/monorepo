@@ -1789,6 +1789,112 @@ components:
           description: Timestamp when the AI was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
+    AIManagerTeam:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the team.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        name:
+          type: string
+          description: Name of the team.
+          example: "Customer Support Team"
+        detail:
+          type: string
+          description: Detailed description of the team.
+          example: "Multi-agent team for handling customer inquiries"
+        start_member_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The member ID that starts the conversation. Must reference one of the members in the members array."
+          example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIManagerTeamMember'
+          description: List of team members forming the graph nodes.
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the team was created.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the team was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the team was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
+
+    AIManagerTeamMember:
+      type: object
+      description: A member node in the team graph, backed by an existing AI configuration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of this member within the team.
+          example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        name:
+          type: string
+          description: Display name for this member.
+          example: "Greeter"
+        ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The AI configuration backing this member. Returned from the `POST /ais` or `GET /ais` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIManagerTeamTransition'
+          description: List of transitions (edges) from this member to other members.
+      required:
+        - id
+        - name
+        - ai_id
+
+    AIManagerTeamTransition:
+      type: object
+      description: A transition edge that triggers a switch from one member to another via LLM function calling.
+      properties:
+        function_name:
+          type: string
+          description: The function name that the LLM calls to trigger this transition. Must not collide with reserved tool names.
+          example: "transfer_to_specialist"
+        description:
+          type: string
+          description: Human-readable description of when this transition should be triggered. Used as the function description in LLM tool definitions.
+          example: "Transfer to the specialist when the customer needs technical help"
+        next_member_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The member ID to transition to. Must reference an existing member in the team.
+          example: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+      required:
+        - function_name
+        - description
+        - next_member_id
+
     AIManagerAIcallGender:
       type: string
       description: Gender associated with the AI call.
@@ -6256,6 +6362,11 @@ paths:
     $ref: './paths/aisummaries/id.yaml'
   /aisummaries:
     $ref: './paths/aisummaries/main.yaml'
+
+  /teams/{id}:
+    $ref: './paths/teams/id.yaml'
+  /teams:
+    $ref: './paths/teams/main.yaml'
 
   /auth/signup:
     $ref: './paths/auth/signup.yaml'
