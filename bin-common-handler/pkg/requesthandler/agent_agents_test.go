@@ -73,16 +73,15 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
 			},
 			expectRes: &amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 					CustomerID: uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 				},
-				Username:     "test1",
-				PasswordHash: "password",
-				Name:         "test agent1",
+				Username: "test1",
+				Name:     "test agent1",
 				Detail:       "test agent1 detail",
 				RingMethod:   "ringall",
 				Status:       amagent.StatusOffline,

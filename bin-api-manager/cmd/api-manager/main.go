@@ -178,10 +178,12 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	app := gin.Default()
 
-	// Disable proxy header parsing so c.ClientIP() returns the direct connection IP.
-	// This prevents X-Forwarded-For spoofing for rate limiting.
-	// If deployed behind an HTTP proxy that sets X-Forwarded-For, configure trusted proxy CIDRs instead:
-	//   app.SetTrustedProxies([]string{"10.0.0.0/8"})
+	// Use Cloudflare's CF-Connecting-IP header to get the real client IP.
+	// This is required because the service runs behind Cloudflare (L7 proxy) + GKE L4 LB.
+	// TrustedPlatform takes priority over TrustedProxies in Gin's ClientIP().
+	// SetTrustedProxies(nil) is a safety fallback: if CF header is absent (direct access
+	// bypassing Cloudflare), c.ClientIP() returns the connection IP instead of trusting XFF.
+	app.TrustedPlatform = "CF-Connecting-IP"
 	_ = app.SetTrustedProxies(nil)
 
 	// documents
