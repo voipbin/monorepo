@@ -178,6 +178,12 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	app := gin.Default()
 
+	// Disable proxy header parsing so c.ClientIP() returns the direct connection IP.
+	// This prevents X-Forwarded-For spoofing for rate limiting.
+	// If deployed behind an HTTP proxy that sets X-Forwarded-For, configure trusted proxy CIDRs instead:
+	//   app.SetTrustedProxies([]string{"10.0.0.0/8"})
+	_ = app.SetTrustedProxies(nil)
+
 	// documents
 	app.Static("/docs", "docsdev/build/html")
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

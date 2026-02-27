@@ -29,9 +29,10 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 	}
 
 	// Guard against nil httpClient (e.g. in unit tests that construct the struct directly).
+	// Always use the safe client to maintain SSRF protection.
 	client := h.httpClient
 	if client == nil {
-		client = &http.Client{Timeout: 30 * time.Second}
+		client = newSafeHTTPClient()
 	}
 
 	var lastErr error

@@ -53,14 +53,41 @@ func Test_isPrivateIP(t *testing.T) {
 		ip      string
 		private bool
 	}{
+		// Original ranges
 		{"loopback", "127.0.0.1", true},
 		{"private 10", "10.0.0.1", true},
 		{"private 172", "172.16.0.1", true},
 		{"private 192", "192.168.1.1", true},
 		{"metadata", "169.254.169.254", true},
 		{"cgn", "100.64.0.1", true},
+		{"zero network", "0.0.0.1", true},
+
+		// New ranges
+		{"ietf protocol", "192.0.0.1", true},
+		{"test-net-1", "192.0.2.1", true},
+		{"test-net-2", "198.51.100.1", true},
+		{"test-net-3", "203.0.113.1", true},
+		{"benchmarking", "198.18.0.1", true},
+		{"reserved future", "240.0.0.1", true},
+		{"broadcast", "255.255.255.255", true},
+
+		// IPv6 ranges
+		{"ipv6 unspecified", "::", true},
+		{"ipv6 loopback", "::1", true},
+		{"ipv6 unique local", "fd00::1", true},
+		{"ipv6 link-local", "fe80::1", true},
+		{"ipv6 documentation", "2001:db8::1", true},
+
+		// IPv4-mapped IPv6 (must be caught by IPv4 ranges)
+		{"ipv4-mapped loopback", "::ffff:127.0.0.1", true},
+		{"ipv4-mapped metadata", "::ffff:169.254.169.254", true},
+		{"ipv4-mapped private 10", "::ffff:10.0.0.1", true},
+		{"ipv4-mapped private 192", "::ffff:192.168.1.1", true},
+
+		// Public IPs (should NOT be blocked)
 		{"public", "8.8.8.8", false},
 		{"public 2", "93.184.216.34", false},
+		{"public ipv6", "2607:f8b0:4004:800::200e", false},
 	}
 
 	for _, tt := range tests {
