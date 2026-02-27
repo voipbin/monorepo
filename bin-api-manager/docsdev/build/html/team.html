@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Team &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Campaign" href="campaign.html" />
+            <link rel="prev" title="AI Voice Agent Integration" href="ai_voice_agent_integration.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Team</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Team</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/team.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="team">
+<h1>Team<a class="headerlink" href="#team" title="Link to this heading"></a></h1>
+<p>Compose multiple AI agents into a directed graph for multi-agent conversations. Teams enable structured handoffs between specialized AI personas — for example, a receptionist that qualifies intent, then transfers to a billing specialist or a technical support agent — all within a single call.</p>
+<p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Team">Team endpoints</a></p>
+<section id="overview">
+<span id="team-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable (credit deduction per AI session — each member consumes LLM, TTS, and STT credits while active)</p></li>
+<li><p><strong>Async:</strong> Yes. Team conversations run asynchronously during calls. Monitor via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or WebSocket events.</p></li>
+</ul>
+</div>
+<p>A <strong>Team</strong> models a multi-agent conversation as a directed graph. Each node in the graph is a <strong>Member</strong> backed by a reusable <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI configuration</span></a>. Directed edges between members are <strong>Transitions</strong> — LLM tool-functions that, when invoked by the currently active AI, hand the conversation to the next member.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A Team is a configuration resource, not a runtime entity. You create a Team via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/teams</span></code>, then reference it in a flow action (e.g., <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> with <code class="docutils literal notranslate"><span class="pre">team_id</span></code>) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.</p>
+</div>
+</section>
+<section id="how-it-works">
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h2>
+<section id="architecture">
+<h3>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------+
+|                     Team Conversation Architecture                    |
++-----------------------------------------------------------------------+
+
+1. TEAM DEFINITION (design-time)
+
+   +---------------------+
+   |       Team          |
+   | start_member_id: A  |
+   +----------+----------+
+              |
+   +----------v----------+       +---------------------+
+   |   Member A           |       |   Member B           |
+   |   &quot;Receptionist&quot;     |------&gt;|   &quot;Billing Agent&quot;    |
+   |   ai_id: &lt;uuid-A&gt;   | xfer  |   ai_id: &lt;uuid-B&gt;   |
+   +-----------+----------+ _to_  +---------------------+
+               |            billing
+               |
+               |  xfer_to_support
+               v
+   +---------------------+
+   |   Member C           |
+   |   &quot;Support Agent&quot;    |
+   |   ai_id: &lt;uuid-C&gt;   |
+   +---------------------+
+
+2. RUNTIME (during a call)
+
+   Caller  ──&gt;  Member A (Receptionist)
+                   │
+                   │ LLM invokes &quot;xfer_to_billing&quot;
+                   v
+                Member B (Billing Agent)
+                   │
+                   │ LLM invokes &quot;xfer_to_support&quot;  (if defined)
+                   v
+                Member C (Support Agent)
+</pre></div>
+</div>
+</section>
+<section id="graph-model">
+<h3>Graph Model<a class="headerlink" href="#graph-model" title="Link to this heading"></a></h3>
+<p>A Team is a directed graph where:</p>
+<ul class="simple">
+<li><p><strong>Nodes</strong> are Members. Each member wraps an existing <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI configuration</span></a> (<code class="docutils literal notranslate"><span class="pre">ai_id</span></code>), inheriting its LLM, TTS, STT, prompt, and tools.</p></li>
+<li><p><strong>Edges</strong> are Transitions. Each transition is an LLM tool-function (<code class="docutils literal notranslate"><span class="pre">function_name</span></code>) with a human-readable <code class="docutils literal notranslate"><span class="pre">description</span></code> the LLM uses to decide when to invoke it. When triggered, the conversation switches to <code class="docutils literal notranslate"><span class="pre">next_member_id</span></code>.</p></li>
+<li><p><strong>Entry point</strong> is the <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> on the Team. The conversation begins with this member when the flow action activates the team.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------+
+|                          Graph Model                                  |
++-----------------------------------------------------------------------+
+
+Members (nodes)              Transitions (edges)
++-----------+                +------------------------------+
+| id        |---&lt;defines&gt;---→| function_name                |
+| name      |                | description                  |
+| ai_id     |                | next_member_id → Member.id   |
++-----------+                +------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="conversation-flow">
+<h3>Conversation Flow<a class="headerlink" href="#conversation-flow" title="Link to this heading"></a></h3>
+<p>When a flow action references a Team:</p>
+<ol class="arabic simple">
+<li><p>The system starts the conversation with the member identified by <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code>.</p></li>
+<li><p>The active member’s AI configuration (prompt, LLM, TTS, STT, tools) drives the conversation.</p></li>
+<li><p>Transitions are injected into the LLM as additional tool-functions. The LLM’s <code class="docutils literal notranslate"><span class="pre">description</span></code> field tells the model when to trigger each transition.</p></li>
+<li><p>When the LLM invokes a transition’s <code class="docutils literal notranslate"><span class="pre">function_name</span></code>, the system seamlessly switches to <code class="docutils literal notranslate"><span class="pre">next_member_id</span></code>. The new member’s AI configuration takes over.</p></li>
+<li><p>This repeats until the call ends, the flow stops, or no further transitions are available.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Transition descriptions act as instructions to the LLM. Write them as clear conditions: <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">billing</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">caller</span> <span class="pre">asks</span> <span class="pre">about</span> <span class="pre">invoices,</span> <span class="pre">payments,</span> <span class="pre">or</span> <span class="pre">account</span> <span class="pre">charges.&quot;</span></code> Vague descriptions (<code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">billing&quot;</span></code> without context) may cause the LLM to trigger transitions unexpectedly.</p>
+</div>
+</section>
+</section>
+<section id="use-cases">
+<h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Customer service routing</strong> — A receptionist AI qualifies intent and routes to specialized agents (billing, support, sales).</p></li>
+<li><p><strong>Multi-step onboarding</strong> — A greeting agent collects basic info, then hands off to a verification agent, then to an account setup agent.</p></li>
+<li><p><strong>Escalation chains</strong> — A first-line support AI attempts resolution, then escalates to a senior agent if needed.</p></li>
+<li><p><strong>Survey + follow-up</strong> — A survey agent collects responses, then transitions to a follow-up agent for scheduling or issue resolution.</p></li>
+</ul>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI Configuration</span></a> — AI resource referenced by each member</p></li>
+<li><p><a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">AI Overview</span></a> — How AI voice conversations work</p></li>
+<li><p><a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a> — Tools available to each member’s AI</p></li>
+<li><p><a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Flow Actions</span></a> — How to reference a team in a flow</p></li>
+</ul>
+</section>
+<section id="team-struct-team">
+<span id="id1"></span><h2>Team<a class="headerlink" href="#team-struct-team" title="Link to this heading"></a></h2>
+<section id="team-struct-team-team">
+<span id="id2"></span><h3>Team<a class="headerlink" href="#team-struct-team-team" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The team’s unique identifier. Returned when creating a team via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/teams</span></code> or when listing teams via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/teams</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this team. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customer</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the team (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Customer</span> <span class="pre">Service</span> <span class="pre">Team&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the team’s purpose or additional notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> (UUID, Required): The member where the conversation begins. Must match one of the <code class="docutils literal notranslate"><span class="pre">id</span></code> values in the <code class="docutils literal notranslate"><span class="pre">members</span></code> array.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">members</span></code> (Array of Member, Required): The list of members (nodes) in the team graph. At least one member is required. See <a class="reference internal" href="team_struct_team.html#team-struct-team-member"><span class="std std-ref">Member</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the team was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the team was last updated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the team was deleted, if applicable.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
+</div>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to the right specialist based on intent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Receptionist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_to_billing&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer to the billing specialist when the caller asks about invoices, payments, charges, or account balance.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_to_support&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer to technical support when the caller reports a technical issue, outage, or needs troubleshooting help.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f6a7b8c9-d0e1-2345-fabc-678901234567&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Billing Specialist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f6a7b8c9-d0e1-2345-fabc-678901234567&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Technical Support&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c294e7fb-854e-6af9-d92d-6bb04b206cd3&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;escalate_to_receptionist&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer back to the receptionist if the caller wants to discuss a different topic.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="member">
+<span id="team-struct-team-member"></span><h3>Member<a class="headerlink" href="#member" title="Link to this heading"></a></h3>
+<p>A member is a node in the team graph, backed by an existing <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI configuration</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID, Required): A client-provided UUID that uniquely identifies this member within the team. You generate this value (e.g., via <code class="docutils literal notranslate"><span class="pre">uuidgen</span></code>) when creating the team. Must be unique across the <code class="docutils literal notranslate"><span class="pre">members</span></code> array. Referenced by <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> on the Team and <code class="docutils literal notranslate"><span class="pre">next_member_id</span></code> on Transitions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable label for this member (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Receptionist&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Billing</span> <span class="pre">Agent&quot;</span></code>). Used for logging and identification; not exposed to the caller.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_id</span></code> (UUID, Required): The AI configuration that drives this member’s behavior. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>. The referenced AI defines the LLM, TTS, STT, prompt, and tools for this member.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transitions</span></code> (Array of Transition, Optional): Outgoing edges from this member. Each transition defines an LLM tool-function that hands the conversation to another member. See <a class="reference internal" href="team_struct_team.html#team-struct-team-transition"><span class="std std-ref">Transition</span></a>. An empty array means this is a terminal node — the conversation stays with this member until the call ends.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> must reference a valid, existing AI configuration. If the referenced AI is deleted, the team will fail to start a conversation for this member. Verify the AI exists via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais/{ai_id}</span></code> before assigning it to a member.</p>
+</div>
+</section>
+<section id="transition">
+<span id="team-struct-team-transition"></span><h3>Transition<a class="headerlink" href="#transition" title="Link to this heading"></a></h3>
+<p>A transition is a directed edge between two members, implemented as an LLM tool-function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">function_name</span></code> (String, Required): The tool-function name the LLM will invoke to trigger this transition. Must be a valid identifier (letters, digits, underscores). Example: <code class="docutils literal notranslate"><span class="pre">&quot;transfer_to_billing&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (String, Required): A natural-language description of when to trigger this transition. The LLM uses this to decide whether to invoke the function. Write clear, specific conditions. Example: <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">billing</span> <span class="pre">specialist</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">caller</span> <span class="pre">asks</span> <span class="pre">about</span> <span class="pre">invoices,</span> <span class="pre">payments,</span> <span class="pre">or</span> <span class="pre">account</span> <span class="pre">charges.&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">next_member_id</span></code> (UUID, Required): The member to hand the conversation to when this transition fires. Must match an <code class="docutils literal notranslate"><span class="pre">id</span></code> in the team’s <code class="docutils literal notranslate"><span class="pre">members</span></code> array.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">function_name</span></code> values must be unique within a member’s <code class="docutils literal notranslate"><span class="pre">transitions</span></code> array. Duplicate names will cause unpredictable LLM behavior. Use descriptive, action-oriented names like <code class="docutils literal notranslate"><span class="pre">transfer_to_billing</span></code> rather than generic names like <code class="docutils literal notranslate"><span class="pre">next</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="tutorial">
+<span id="team-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>Before creating a team, you need:</p>
+<ul class="simple">
+<li><p>A valid authentication token (String). Obtain via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an accesskey from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>At least two AI configurations (UUIDs). Create them via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>. Each AI defines a distinct persona with its own LLM, prompt, TTS, and STT settings.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Each member in a team references an independent AI configuration. Design each AI’s <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> for a specific role (e.g., receptionist, billing specialist). The team’s graph structure handles routing — individual AIs do not need to know about each other.</p>
+</div>
+<section id="step-1-create-ai-configurations">
+<h3>Step 1: Create AI Configurations<a class="headerlink" href="#step-1-create-ai-configurations" title="Link to this heading"></a></h3>
+<p>First, create the AI configurations that will back each team member. In this example, we create a receptionist and a billing specialist.</p>
+<p><strong>Create Receptionist AI:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/ais?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Receptionist AI&quot;,
+        &quot;detail&quot;: &quot;Qualifies caller intent and routes to the right specialist&quot;,
+        &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+        &quot;engine_key&quot;: &quot;sk-...&quot;,
+        &quot;init_prompt&quot;: &quot;You are a friendly receptionist. Greet the caller, ask how you can help, and determine if they need billing assistance or technical support.&quot;,
+        &quot;tts_type&quot;: &quot;elevenlabs&quot;,
+        &quot;stt_type&quot;: &quot;deepgram&quot;,
+        &quot;tool_names&quot;: [&quot;all&quot;]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">receptionist_ai_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Receptionist AI&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Create Billing AI:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/ais?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Billing Specialist AI&quot;,
+        &quot;detail&quot;: &quot;Handles billing inquiries, payment issues, and account charges&quot;,
+        &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+        &quot;engine_key&quot;: &quot;sk-...&quot;,
+        &quot;init_prompt&quot;: &quot;You are a billing specialist. Help callers with invoices, payments, charges, and account balance questions. Be precise with numbers and dates.&quot;,
+        &quot;tts_type&quot;: &quot;elevenlabs&quot;,
+        &quot;stt_type&quot;: &quot;deepgram&quot;,
+        &quot;tool_names&quot;: [&quot;all&quot;]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">billing_ai_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Billing Specialist AI&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-create-the-team">
+<h3>Step 2: Create the Team<a class="headerlink" href="#step-2-create-the-team" title="Link to this heading"></a></h3>
+<p>Create a team with two members (receptionist and billing specialist) and a transition from the receptionist to the billing specialist.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/teams?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Customer Service Team&quot;,
+        &quot;detail&quot;: &quot;Routes callers to the right specialist based on intent&quot;,
+        &quot;start_member_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;,
+        &quot;members&quot;: [
+            {
+                &quot;id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;,
+                &quot;name&quot;: &quot;Receptionist&quot;,
+                &quot;ai_id&quot;: &quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;,
+                &quot;transitions&quot;: [
+                    {
+                        &quot;function_name&quot;: &quot;transfer_to_billing&quot;,
+                        &quot;description&quot;: &quot;Transfer to the billing specialist when the caller asks about invoices, payments, charges, or account balance.&quot;,
+                        &quot;next_member_id&quot;: &quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;
+                    }
+                ]
+            },
+            {
+                &quot;id&quot;: &quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;,
+                &quot;name&quot;: &quot;Billing Specialist&quot;,
+                &quot;ai_id&quot;: &quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;,
+                &quot;transitions&quot;: [
+                    {
+                        &quot;function_name&quot;: &quot;transfer_to_receptionist&quot;,
+                        &quot;description&quot;: &quot;Transfer back to the receptionist if the caller wants help with something other than billing.&quot;,
+                        &quot;next_member_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;
+                    }
+                ]
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">team_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to the right specialist based on intent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Receptionist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_to_billing&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer to the billing specialist when the caller asks about invoices, payments, charges, or account balance.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Billing Specialist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;function_name&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_to_receptionist&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer back to the receptionist if the caller wants help with something other than billing.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;next_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-get-team-details">
+<h3>Step 3: Get Team Details<a class="headerlink" href="#step-3-get-team-details" title="Link to this heading"></a></h3>
+<p>Retrieve the team to verify its configuration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/teams/c3d4e5f6-a7b8-9012-cdef-345678901234?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to the right specialist based on intent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Receptionist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Billing Specialist&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-update-a-team">
+<h3>Step 4: Update a Team<a class="headerlink" href="#step-4-update-a-team" title="Link to this heading"></a></h3>
+<p>Add a third member (Technical Support) to the existing team.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/teams/c3d4e5f6-a7b8-9012-cdef-345678901234?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Customer Service Team&quot;,
+        &quot;detail&quot;: &quot;Routes callers to billing or technical support&quot;,
+        &quot;start_member_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;,
+        &quot;members&quot;: [
+            {
+                &quot;id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;,
+                &quot;name&quot;: &quot;Receptionist&quot;,
+                &quot;ai_id&quot;: &quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;,
+                &quot;transitions&quot;: [
+                    {
+                        &quot;function_name&quot;: &quot;transfer_to_billing&quot;,
+                        &quot;description&quot;: &quot;Transfer to the billing specialist when the caller asks about invoices, payments, charges, or account balance.&quot;,
+                        &quot;next_member_id&quot;: &quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;
+                    },
+                    {
+                        &quot;function_name&quot;: &quot;transfer_to_support&quot;,
+                        &quot;description&quot;: &quot;Transfer to technical support when the caller reports a technical issue, outage, or needs troubleshooting help.&quot;,
+                        &quot;next_member_id&quot;: &quot;f6a7b8c9-d0e1-2345-fabc-678901234567&quot;
+                    }
+                ]
+            },
+            {
+                &quot;id&quot;: &quot;e5f6a7b8-c9d0-1234-efab-567890123456&quot;,
+                &quot;name&quot;: &quot;Billing Specialist&quot;,
+                &quot;ai_id&quot;: &quot;b193d6ea-743d-59e8-c81c-5aaf3a195bc2&quot;,
+                &quot;transitions&quot;: [
+                    {
+                        &quot;function_name&quot;: &quot;transfer_to_receptionist&quot;,
+                        &quot;description&quot;: &quot;Transfer back to the receptionist if the caller wants help with something other than billing.&quot;,
+                        &quot;next_member_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;
+                    }
+                ]
+            },
+            {
+                &quot;id&quot;: &quot;f6a7b8c9-d0e1-2345-fabc-678901234567&quot;,
+                &quot;name&quot;: &quot;Technical Support&quot;,
+                &quot;ai_id&quot;: &quot;c294e7fb-854e-6af9-d92d-6bb04b206cd3&quot;,
+                &quot;transitions&quot;: [
+                    {
+                        &quot;function_name&quot;: &quot;escalate_to_receptionist&quot;,
+                        &quot;description&quot;: &quot;Transfer back to the receptionist if the caller wants to discuss a different topic.&quot;,
+                        &quot;next_member_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;
+                    }
+                ]
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to billing or technical support&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:05:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-list-teams">
+<h3>Step 5: List Teams<a class="headerlink" href="#step-5-list-teams" title="Link to this heading"></a></h3>
+<p>List all teams owned by your account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/teams?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to billing or technical support&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:05:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-delete-a-team">
+<h3>Step 6: Delete a Team<a class="headerlink" href="#step-6-delete-a-team" title="Link to this heading"></a></h3>
+<p>Delete a team when it is no longer needed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/teams/c3d4e5f6-a7b8-9012-cdef-345678901234?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer Service Team&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Routes callers to billing or technical support&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:05:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 11:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting a team does not delete the underlying AI configurations. The AIs referenced by <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> remain available and can be reused in other teams or standalone flows. To fully clean up, delete the AI configurations separately via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/ais/{ai_id}</span></code>.</p>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>Team Design:</strong></p>
+<ul class="simple">
+<li><p>Keep each member focused on a single domain (billing, support, sales). Broad prompts lead to less accurate routing.</p></li>
+<li><p>Write transition <code class="docutils literal notranslate"><span class="pre">description</span></code> fields as explicit conditions, not vague labels. The LLM relies on these to decide when to switch.</p></li>
+<li><p>Design bidirectional transitions for flexibility — allow callers to go back to the receptionist from any specialist.</p></li>
+</ul>
+<p><strong>AI Configuration:</strong></p>
+<ul class="simple">
+<li><p>Each member’s AI should have a prompt that includes context about its role within the team. For example: <code class="docutils literal notranslate"><span class="pre">&quot;You</span> <span class="pre">are</span> <span class="pre">the</span> <span class="pre">billing</span> <span class="pre">specialist</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">customer</span> <span class="pre">service</span> <span class="pre">team.</span> <span class="pre">A</span> <span class="pre">receptionist</span> <span class="pre">has</span> <span class="pre">already</span> <span class="pre">greeted</span> <span class="pre">the</span> <span class="pre">caller</span> <span class="pre">and</span> <span class="pre">identified</span> <span class="pre">their</span> <span class="pre">billing</span> <span class="pre">question.&quot;</span></code></p></li>
+<li><p>Use consistent TTS voices across members for a cohesive caller experience, or deliberately vary them to signal the handoff.</p></li>
+</ul>
+<p><strong>Testing:</strong></p>
+<ul class="simple">
+<li><p>Test each AI configuration individually via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> with an inline <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action before assembling them into a team.</p></li>
+<li><p>Verify transitions by testing conversations that should trigger each <code class="docutils literal notranslate"><span class="pre">function_name</span></code>.</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> does not match any member’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in the <code class="docutils literal notranslate"><span class="pre">members</span></code> array.</p></li>
+<li><p><strong>Fix:</strong> Verify that <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> is set to a valid member <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> A <code class="docutils literal notranslate"><span class="pre">next_member_id</span></code> in a transition references a member that does not exist in the <code class="docutils literal notranslate"><span class="pre">members</span></code> array.</p></li>
+<li><p><strong>Fix:</strong> Ensure all <code class="docutils literal notranslate"><span class="pre">next_member_id</span></code> values point to valid member <code class="docutils literal notranslate"><span class="pre">id</span></code> values within the same team.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>402 Payment Required:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Insufficient account balance. Team conversations consume credits for each active member’s LLM, TTS, and STT usage.</p></li>
+<li><p><strong>Fix:</strong> Check balance via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing-accounts</span></code>. Top up before retrying.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The team UUID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/teams</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/teams</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>AI not switching members:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The transition <code class="docutils literal notranslate"><span class="pre">description</span></code> is too vague for the LLM to match.</p></li>
+<li><p><strong>Fix:</strong> Make the description more specific. Example: <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">caller</span> <span class="pre">mentions</span> <span class="pre">billing,</span> <span class="pre">invoices,</span> <span class="pre">or</span> <span class="pre">payments&quot;</span></code> instead of <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">billing&quot;</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Wrong member activated at start:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> points to the wrong member.</p></li>
+<li><p><strong>Fix:</strong> Update the team via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/teams/{id}</span></code> with the correct <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="ai_voice_agent_integration.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>AI Voice Agent Integration
+    </a>
+    <a class="float-right" href="campaign.html" title="Next">
+        Campaign <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Team</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#how-it-works">How it works</a><ul>
+<li><a class="reference internal" href="#architecture">Architecture</a></li>
+<li><a class="reference internal" href="#graph-model">Graph Model</a></li>
+<li><a class="reference internal" href="#conversation-flow">Conversation Flow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#use-cases">Use Cases</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+<li><a class="reference internal" href="#team-struct-team">Team</a><ul>
+<li><a class="reference internal" href="#team-struct-team-team">Team</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#member">Member</a></li>
+<li><a class="reference internal" href="#transition">Transition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#step-1-create-ai-configurations">Step 1: Create AI Configurations</a></li>
+<li><a class="reference internal" href="#step-2-create-the-team">Step 2: Create the Team</a></li>
+<li><a class="reference internal" href="#step-3-get-team-details">Step 3: Get Team Details</a></li>
+<li><a class="reference internal" href="#step-4-update-a-team">Step 4: Update a Team</a></li>
+<li><a class="reference internal" href="#step-5-list-teams">Step 5: List Teams</a></li>
+<li><a class="reference internal" href="#step-6-delete-a-team">Step 6: Delete a Team</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 7.2.6
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

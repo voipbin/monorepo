@@ -55,6 +55,7 @@ Welcome to VoIPBIN's documentation!
 
    ai
    ai_voice_agent_integration
+   team
    campaign
    outdial
    outplan

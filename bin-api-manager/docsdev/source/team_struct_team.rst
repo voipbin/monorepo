@@ -1,0 +1,157 @@
+.. _team-struct-team:
+
+Team
+========
+
+.. _team-struct-team-team:
+
+Team
+--------
+
+.. code::
+
+    {
+        "id": "<string>",
+        "customer_id": "<string>",
+        "name": "<string>",
+        "detail": "<string>",
+        "start_member_id": "<string>",
+        "members": [
+            {
+                "id": "<string>",
+                "name": "<string>",
+                "ai_id": "<string>",
+                "transitions": [
+                    {
+                        "function_name": "<string>",
+                        "description": "<string>",
+                        "next_member_id": "<string>"
+                    }
+                ]
+            }
+        ],
+        "tm_create": "<string>",
+        "tm_update": "<string>",
+        "tm_delete": "<string>"
+    }
+
+* ``id`` (UUID): The team's unique identifier. Returned when creating a team via ``POST /teams`` or when listing teams via ``GET /teams``.
+* ``customer_id`` (UUID): The customer that owns this team. Obtained from the ``id`` field of ``GET /customer``.
+* ``name`` (String, Required): A human-readable name for the team (e.g., ``"Customer Service Team"``).
+* ``detail`` (String, Optional): A description of the team's purpose or additional notes.
+* ``start_member_id`` (UUID, Required): The member where the conversation begins. Must match one of the ``id`` values in the ``members`` array.
+* ``members`` (Array of Member, Required): The list of members (nodes) in the team graph. At least one member is required. See :ref:`Member <team-struct-team-member>`.
+* ``tm_create`` (String, ISO 8601): Timestamp when the team was created.
+* ``tm_update`` (String, ISO 8601): Timestamp when the team was last updated.
+* ``tm_delete`` (String, ISO 8601): Timestamp when the team was deleted, if applicable.
+
+.. note:: **AI Implementation Hint**
+
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent "not yet occurred."
+
+Example
++++++++
+
+.. code::
+
+    {
+        "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Customer Service Team",
+        "detail": "Routes callers to the right specialist based on intent",
+        "start_member_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+        "members": [
+            {
+                "id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+                "name": "Receptionist",
+                "ai_id": "a092c5d9-632c-48d7-b70b-499f2ca084b1",
+                "transitions": [
+                    {
+                        "function_name": "transfer_to_billing",
+                        "description": "Transfer to the billing specialist when the caller asks about invoices, payments, charges, or account balance.",
+                        "next_member_id": "e5f6a7b8-c9d0-1234-efab-567890123456"
+                    },
+                    {
+                        "function_name": "transfer_to_support",
+                        "description": "Transfer to technical support when the caller reports a technical issue, outage, or needs troubleshooting help.",
+                        "next_member_id": "f6a7b8c9-d0e1-2345-fabc-678901234567"
+                    }
+                ]
+            },
+            {
+                "id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+                "name": "Billing Specialist",
+                "ai_id": "b193d6ea-743d-59e8-c81c-5aaf3a195bc2",
+                "transitions": []
+            },
+            {
+                "id": "f6a7b8c9-d0e1-2345-fabc-678901234567",
+                "name": "Technical Support",
+                "ai_id": "c294e7fb-854e-6af9-d92d-6bb04b206cd3",
+                "transitions": [
+                    {
+                        "function_name": "escalate_to_receptionist",
+                        "description": "Transfer back to the receptionist if the caller wants to discuss a different topic.",
+                        "next_member_id": "d4e5f6a7-b8c9-0123-defa-456789012345"
+                    }
+                ]
+            }
+        ],
+        "tm_create": "2026-02-27 10:00:00.000000",
+        "tm_update": "9999-01-01 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. _team-struct-team-member:
+
+Member
+--------
+
+A member is a node in the team graph, backed by an existing :ref:`AI configuration <ai-struct-ai>`.
+
+.. code::
+
+    {
+        "id": "<string>",
+        "name": "<string>",
+        "ai_id": "<string>",
+        "transitions": [
+            {
+                "function_name": "<string>",
+                "description": "<string>",
+                "next_member_id": "<string>"
+            }
+        ]
+    }
+
+* ``id`` (UUID, Required): A client-provided UUID that uniquely identifies this member within the team. You generate this value (e.g., via ``uuidgen``) when creating the team. Must be unique across the ``members`` array. Referenced by ``start_member_id`` on the Team and ``next_member_id`` on Transitions.
+* ``name`` (String, Required): A human-readable label for this member (e.g., ``"Receptionist"``, ``"Billing Agent"``). Used for logging and identification; not exposed to the caller.
+* ``ai_id`` (UUID, Required): The AI configuration that drives this member's behavior. Obtained from the ``id`` field of ``POST /ais`` or ``GET /ais``. The referenced AI defines the LLM, TTS, STT, prompt, and tools for this member.
+* ``transitions`` (Array of Transition, Optional): Outgoing edges from this member. Each transition defines an LLM tool-function that hands the conversation to another member. See :ref:`Transition <team-struct-team-transition>`. An empty array means this is a terminal node — the conversation stays with this member until the call ends.
+
+.. note:: **AI Implementation Hint**
+
+   The ``ai_id`` must reference a valid, existing AI configuration. If the referenced AI is deleted, the team will fail to start a conversation for this member. Verify the AI exists via ``GET /ais/{ai_id}`` before assigning it to a member.
+
+.. _team-struct-team-transition:
+
+Transition
+----------
+
+A transition is a directed edge between two members, implemented as an LLM tool-function.
+
+.. code::
+
+    {
+        "function_name": "<string>",
+        "description": "<string>",
+        "next_member_id": "<string>"
+    }
+
+* ``function_name`` (String, Required): The tool-function name the LLM will invoke to trigger this transition. Must be a valid identifier (letters, digits, underscores). Example: ``"transfer_to_billing"``.
+* ``description`` (String, Required): A natural-language description of when to trigger this transition. The LLM uses this to decide whether to invoke the function. Write clear, specific conditions. Example: ``"Transfer to the billing specialist when the caller asks about invoices, payments, or account charges."``.
+* ``next_member_id`` (UUID, Required): The member to hand the conversation to when this transition fires. Must match an ``id`` in the team's ``members`` array.
+
+.. note:: **AI Implementation Hint**
+
+   ``function_name`` values must be unique within a member's ``transitions`` array. Duplicate names will cause unpredictable LLM behavior. Use descriptive, action-oriented names like ``transfer_to_billing`` rather than generic names like ``next``.
