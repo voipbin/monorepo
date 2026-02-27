@@ -13,7 +13,7 @@ type ExternalMedia struct {
 	BridgeID   string `json:"bridge_id,omitempty"`   // bridge id for external media snoop channel and external media channel.
 	PlaybackID string `json:"playback_id,omitempty"` // playback id for reference channel's silence streaming out.
 
-	ReferenceType ReferenceType `json:"reference_typee"`
+	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
 	Status Status `json:"status,omitempty"` // status of the external media

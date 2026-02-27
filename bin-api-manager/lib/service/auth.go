@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 
 	"monorepo/bin-api-manager/models/common"
@@ -60,7 +61,15 @@ func PostLogin(c *gin.Context) {
 	}
 	log.Debugf("Created token string. token: %v", token)
 
-	c.SetCookie("token", token, int(servicehandler.TokenExpiration.Seconds()), "/", "", false, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		MaxAge:   int(servicehandler.TokenExpiration.Seconds()),
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
 	res := ResponseBodyLoginPOST{
 		Username: req.Username,
 		Token:    token,

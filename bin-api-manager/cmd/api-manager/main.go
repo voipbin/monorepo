@@ -178,6 +178,14 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	app := gin.Default()
 
+	// Use Cloudflare's CF-Connecting-IP header to get the real client IP.
+	// This is required because the service runs behind Cloudflare (L7 proxy) + GKE L4 LB.
+	// TrustedPlatform takes priority over TrustedProxies in Gin's ClientIP().
+	// SetTrustedProxies(nil) is a safety fallback: if CF header is absent (direct access
+	// bypassing Cloudflare), c.ClientIP() returns the connection IP instead of trusting XFF.
+	app.TrustedPlatform = "CF-Connecting-IP"
+	_ = app.SetTrustedProxies(nil)
+
 	// documents
 	app.Static("/docs", "docsdev/build/html")
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -212,6 +220,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	// register basic services
 	app.GET("/ping", service.GetPing)
 	auth := app.Group("/auth")
+	auth.Use(middleware.RateLimit(10, 20)) // 10 req/s per IP, burst of 20
 	auth.POST("/login", service.PostLogin)
 	auth.POST("/password-forgot", service.PostPasswordForgot)
 	auth.GET("/password-reset", service.GetPasswordReset)

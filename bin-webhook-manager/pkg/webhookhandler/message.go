@@ -20,7 +20,20 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 			"method": method,
 		},
 	)
-	log.Debugf("Sending a message. data: %v", data)
+	log.Debugf("Sending a message.")
+
+	// Validate the webhook URL before attempting delivery.
+	if err := validateWebhookURL(uri); err != nil {
+		log.Errorf("Webhook URL validation failed. err: %v", err)
+		return fmt.Errorf("webhook URL validation failed: %w", err)
+	}
+
+	// Guard against nil httpClient (e.g. in unit tests that construct the struct directly).
+	// Always use the safe client to maintain SSRF protection.
+	client := h.httpClient
+	if client == nil {
+		client = newSafeHTTPClient()
+	}
 
 	var lastErr error
 	for i := 0; i < 3; i++ {
@@ -34,7 +47,6 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 			req.Header.Set("Content-Type", dataType)
 		}
 
-		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Errorf("Could not send the request correctly. Making a retrying: %d, err: %v", i, err)

@@ -14,7 +14,7 @@ type Agent struct {
 	commonidentity.Identity
 
 	Username     string `json:"username" db:"username"`           // agent's username
-	PasswordHash string `json:"password_hash" db:"password_hash"` // hashed Password
+	PasswordHash string `json:"-" db:"password_hash"` // hashed Password - excluded from JSON/JWT
 
 	Name   string `json:"name" db:"name"`     // agent's name
 	Detail string `json:"detail" db:"detail"` // agent's detail
