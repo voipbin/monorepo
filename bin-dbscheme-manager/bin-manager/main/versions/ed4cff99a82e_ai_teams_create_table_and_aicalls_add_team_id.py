@@ -39,7 +39,12 @@ def upgrade():
         AFTER ai_id;
     """)
 
+    op.execute("""
+        CREATE INDEX idx_ai_aicalls_team_id ON ai_aicalls(team_id);
+    """)
+
 
 def downgrade():
+    op.execute("""DROP INDEX idx_ai_aicalls_team_id ON ai_aicalls;""")
     op.execute("""ALTER TABLE ai_aicalls DROP COLUMN team_id;""")
     op.execute("""DROP TABLE IF EXISTS ai_teams;""")

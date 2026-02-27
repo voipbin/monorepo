@@ -1195,22 +1195,22 @@ type AIManagerSummaryStatus string
 // AIManagerTeam defines model for AIManagerTeam.
 type AIManagerTeam struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
-	CustomerId *string `json:"customer_id,omitempty"`
+	CustomerId string `json:"customer_id"`
 
 	// Detail Detailed description of the team.
-	Detail *string `json:"detail,omitempty"`
+	Detail string `json:"detail"`
 
 	// Id The unique identifier of the team.
-	Id *string `json:"id,omitempty"`
+	Id string `json:"id"`
 
 	// Members List of team members forming the graph nodes.
-	Members *[]AIManagerTeamMember `json:"members,omitempty"`
+	Members []AIManagerTeamMember `json:"members"`
 
 	// Name Name of the team.
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
-	StartMemberId *string `json:"start_member_id,omitempty"`
+	StartMemberId string `json:"start_member_id"`
 
 	// TmCreate Timestamp when the team was created.
 	TmCreate *string `json:"tm_create,omitempty"`

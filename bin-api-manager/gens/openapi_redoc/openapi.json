@@ -15614,7 +15614,15 @@
             "description": "Timestamp when the team was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
           }
-        }
+        },
+        "required": [
+          "id",
+          "customer_id",
+          "name",
+          "detail",
+          "start_member_id",
+          "members"
+        ]
       },
       "AIManagerTeamMember": {
         "type": "object",
