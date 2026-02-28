@@ -2,14 +2,21 @@ package circuitbreakerhandler
 
 import (
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
-func newTestHandler() CircuitBreakerHandler {
+func newTestHandlerWithRegistry() (CircuitBreakerHandler, *prometheus.Registry) {
 	reg := prometheus.NewPedanticRegistry()
-	return newCircuitBreakerHandlerWithRegisterer("test", reg)
+	return newCircuitBreakerHandlerWithRegisterer("test", reg), reg
+}
+
+func newTestHandler() CircuitBreakerHandler {
+	h, _ := newTestHandlerWithRegistry()
+	return h
 }
 
 func TestHandlerAllowNewTarget(t *testing.T) {
@@ -99,4 +106,114 @@ func TestHandlerLazyCreation(t *testing.T) {
 	if len(cbh.breakers) != 2 {
 		t.Errorf("expected still 2 breakers, got %d", len(cbh.breakers))
 	}
+}
+
+func TestHandlerPrometheusRejectedMetric(t *testing.T) {
+	h, reg := newTestHandlerWithRegistry()
+
+	// Trip circuit to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = h.Allow("target-a")
+		h.RecordFailure("target-a")
+	}
+
+	// This should be rejected and increment the rejected counter
+	_ = h.Allow("target-a")
+	_ = h.Allow("target-a")
+
+	mfs, err := reg.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather metrics: %v", err)
+	}
+
+	var rejectedCount float64
+	for _, mf := range mfs {
+		if mf.GetName() == "test_circuitbreaker_rejected_total" {
+			for _, m := range mf.GetMetric() {
+				rejectedCount += m.GetCounter().GetValue()
+			}
+		}
+	}
+
+	if rejectedCount != 2 {
+		t.Errorf("expected 2 rejected requests, got %v", rejectedCount)
+	}
+}
+
+func TestHandlerPrometheusStateTransitionMetric(t *testing.T) {
+	h, reg := newTestHandlerWithRegistry()
+
+	// Trip circuit: Closed -> Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = h.Allow("target-a")
+		h.RecordFailure("target-a")
+	}
+
+	mfs, err := reg.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather metrics: %v", err)
+	}
+
+	var transitionCount float64
+	for _, mf := range mfs {
+		if mf.GetName() == "test_circuitbreaker_state_transitions_total" {
+			for _, m := range mf.GetMetric() {
+				transitionCount += m.GetCounter().GetValue()
+			}
+		}
+	}
+
+	if transitionCount < 1 {
+		t.Errorf("expected at least 1 state transition, got %v", transitionCount)
+	}
+}
+
+func TestHandlerPrometheusStateGauge(t *testing.T) {
+	h, reg := newTestHandlerWithRegistry()
+
+	// Trip circuit: Closed -> Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = h.Allow("target-a")
+		h.RecordFailure("target-a")
+	}
+
+	mfs, err := reg.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather metrics: %v", err)
+	}
+
+	var stateGauge *dto.Metric
+	for _, mf := range mfs {
+		if mf.GetName() == "test_circuitbreaker_state" {
+			for _, m := range mf.GetMetric() {
+				stateGauge = m
+			}
+		}
+	}
+
+	if stateGauge == nil {
+		t.Fatal("expected circuitbreaker_state metric, got none")
+	}
+
+	// StateOpen = 1 (iota: 0=Closed, 1=Open, 2=HalfOpen)
+	if stateGauge.GetGauge().GetValue() != float64(StateOpen) {
+		t.Errorf("expected state gauge to be %v (Open), got %v", float64(StateOpen), stateGauge.GetGauge().GetValue())
+	}
+}
+
+func TestHandlerConcurrentAccess(t *testing.T) {
+	h := newTestHandler()
+	var wg sync.WaitGroup
+
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_ = h.Allow("target-a")
+			h.RecordFailure("target-a")
+			_ = h.Allow("target-b")
+			h.RecordSuccess("target-b")
+		}()
+	}
+	wg.Wait()
 }

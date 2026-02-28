@@ -50,7 +50,7 @@ func newCircuitBreakerHandlerWithRegisterer(namespace string, registerer prometh
 		prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "circuitbreaker_state",
-			Help:      "Current circuit breaker state per target (0=closed, 1=half-open, 2=open).",
+			Help:      "Current circuit breaker state per target (0=closed, 1=open, 2=half-open).",
 		},
 		[]string{"target"},
 	)

@@ -131,6 +131,95 @@ func TestBreakerDoesNotTripBelowThreshold(t *testing.T) {
 	}
 }
 
+func TestBreakerHalfOpenBlocksSecondProbe(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Trip to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = b.allow()
+		b.recordFailure()
+	}
+
+	// Advance past open duration -> first allow transitions to HalfOpen
+	now = now.Add(defaultOpenDuration + time.Second)
+	if err := b.allow(); err != nil {
+		t.Fatalf("expected first probe to be allowed, got %v", err)
+	}
+
+	// Second call in HalfOpen should be rejected
+	err := b.allow()
+	if !errors.Is(err, ErrCircuitOpen) {
+		t.Errorf("expected second probe to be rejected with ErrCircuitOpen, got %v", err)
+	}
+}
+
+func TestBreakerRecordSuccessInClosedIsNoOp(t *testing.T) {
+	b := newBreaker()
+
+	// Recording success in Closed state should not change state
+	b.recordSuccess()
+	if b.getState() != StateClosed {
+		t.Errorf("expected StateClosed after recordSuccess in Closed, got %v", b.getState())
+	}
+	if b.consecutiveFails != 0 {
+		t.Errorf("expected consecutiveFails to be 0, got %d", b.consecutiveFails)
+	}
+}
+
+func TestBreakerRecordFailureInOpenStaysOpen(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Trip to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = b.allow()
+		b.recordFailure()
+	}
+	if b.getState() != StateOpen {
+		t.Fatalf("expected StateOpen, got %v", b.getState())
+	}
+
+	// Record additional failure while Open — should stay Open, not reset timer
+	openedAt := b.openedAt
+	b.recordFailure()
+	if b.getState() != StateOpen {
+		t.Errorf("expected StateOpen after extra failure, got %v", b.getState())
+	}
+	if b.openedAt != openedAt {
+		t.Errorf("expected openedAt unchanged, was %v, now %v", openedAt, b.openedAt)
+	}
+}
+
+func TestBreakerGetStateTransitionsOpenToHalfOpen(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Trip to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = b.allow()
+		b.recordFailure()
+	}
+	if b.getState() != StateOpen {
+		t.Fatalf("expected StateOpen, got %v", b.getState())
+	}
+
+	// Before timeout: still Open
+	now = now.Add(defaultOpenDuration - time.Second)
+	if b.getState() != StateOpen {
+		t.Errorf("expected StateOpen before timeout, got %v", b.getState())
+	}
+
+	// At exactly the timeout: transitions to HalfOpen
+	now = now.Add(time.Second)
+	if b.getState() != StateHalfOpen {
+		t.Errorf("expected StateHalfOpen at timeout boundary, got %v", b.getState())
+	}
+}
+
 func TestBreakerConcurrentAccess(t *testing.T) {
 	b := newBreaker()
 	var wg sync.WaitGroup
