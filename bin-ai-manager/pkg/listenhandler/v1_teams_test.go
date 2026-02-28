@@ -162,6 +162,7 @@ func Test_processV1TeamsPost(t *testing.T) {
 				tt.expectDetail,
 				tt.expectStartMemberID,
 				tt.expectMembers,
+				gomock.Any(),
 			).Return(tt.responseTeam, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -305,6 +306,7 @@ func Test_processV1TeamsIDPut(t *testing.T) {
 				tt.expectDetail,
 				tt.expectStartMemberID,
 				tt.expectMembers,
+				gomock.Any(),
 			).Return(tt.responseTeam, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

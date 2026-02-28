@@ -17,11 +17,11 @@ import (
 
 // TeamHandler provides CRUD operations for Team resources.
 type TeamHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error)
+	Create(ctx context.Context, customerID uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error)
 	Get(ctx context.Context, id uuid.UUID) (*team.Team, error)
 	List(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error)
 	Delete(ctx context.Context, id uuid.UUID) (*team.Team, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error)
+	Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error)
 }
 
 type teamHandler struct {

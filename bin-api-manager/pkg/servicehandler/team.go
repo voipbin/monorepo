@@ -37,6 +37,7 @@ func (h *serviceHandler) TeamCreate(
 	detail string,
 	startMemberID uuid.UUID,
 	members []amteam.Member,
+	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "TeamCreate",
@@ -58,6 +59,7 @@ func (h *serviceHandler) TeamCreate(
 		detail,
 		startMemberID,
 		members,
+		parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new team. err: %v", err)
@@ -199,6 +201,7 @@ func (h *serviceHandler) TeamUpdate(
 	detail string,
 	startMemberID uuid.UUID,
 	members []amteam.Member,
+	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "TeamUpdate",
@@ -227,6 +230,7 @@ func (h *serviceHandler) TeamUpdate(
 		detail,
 		startMemberID,
 		members,
+		parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not update the team. err: %v", err)

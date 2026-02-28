@@ -43,18 +43,18 @@ func (m *MockTeamHandler) EXPECT() *MockTeamHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTeamHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+func (m *MockTeamHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, startMemberID, members)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.Team)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockTeamHandlerMockRecorder) Create(ctx, customerID, name, detail, startMemberID, members any) *gomock.Call {
+func (mr *MockTeamHandlerMockRecorder) Create(ctx, customerID, name, detail, startMemberID, members, parameter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTeamHandler)(nil).Create), ctx, customerID, name, detail, startMemberID, members)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTeamHandler)(nil).Create), ctx, customerID, name, detail, startMemberID, members, parameter)
 }
 
 // Delete mocks base method.
@@ -103,16 +103,16 @@ func (mr *MockTeamHandlerMockRecorder) List(ctx, size, token, filters any) *gomo
 }
 
 // Update mocks base method.
-func (m *MockTeamHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+func (m *MockTeamHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, startMemberID, members)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.Team)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockTeamHandlerMockRecorder) Update(ctx, id, name, detail, startMemberID, members any) *gomock.Call {
+func (mr *MockTeamHandlerMockRecorder) Update(ctx, id, name, detail, startMemberID, members, parameter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTeamHandler)(nil).Update), ctx, id, name, detail, startMemberID, members)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTeamHandler)(nil).Update), ctx, id, name, detail, startMemberID, members, parameter)
 }

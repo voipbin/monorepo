@@ -22,6 +22,8 @@ type AIcall struct {
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
 
+	TeamParameter map[string]any `json:"team_parameter,omitempty" db:"team_parameter,json"`
+
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`

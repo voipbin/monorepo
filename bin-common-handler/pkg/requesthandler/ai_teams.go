@@ -65,6 +65,7 @@ func (r *requestHandler) AIV1TeamCreate(
 	detail string,
 	startMemberID uuid.UUID,
 	members []amteam.Member,
+	parameter map[string]any,
 ) (*amteam.Team, error) {
 	uri := "/v1/teams"
 
@@ -74,6 +75,7 @@ func (r *requestHandler) AIV1TeamCreate(
 		Detail:        detail,
 		StartMemberID: startMemberID,
 		Members:       members,
+		Parameter:     parameter,
 	}
 
 	m, err := json.Marshal(data)
@@ -123,6 +125,7 @@ func (r *requestHandler) AIV1TeamUpdate(
 	detail string,
 	startMemberID uuid.UUID,
 	members []amteam.Member,
+	parameter map[string]any,
 ) (*amteam.Team, error) {
 	uri := fmt.Sprintf("/v1/teams/%s", teamID)
 
@@ -131,6 +134,7 @@ func (r *requestHandler) AIV1TeamUpdate(
 		Detail:        detail,
 		StartMemberID: startMemberID,
 		Members:       members,
+		Parameter:     parameter,
 	}
 
 	m, err := json.Marshal(data)

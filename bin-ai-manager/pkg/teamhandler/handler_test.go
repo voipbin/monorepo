@@ -113,7 +113,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().TeamGet(ctx, tt.responseUUID).Return(tt.responseTeam, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeCreated, tt.responseTeam)
 
-			res, err := h.Create(ctx, tt.customerID, tt.teamName, tt.detail, tt.startMemberID, tt.members)
+			res, err := h.Create(ctx, tt.customerID, tt.teamName, tt.detail, tt.startMemberID, tt.members, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -144,7 +144,7 @@ func Test_Create_validation_failure(t *testing.T) {
 	ctx := context.Background()
 
 	// Empty members — should fail validation before any DB call
-	_, err := h.Create(ctx, uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{})
+	_, err := h.Create(ctx, uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{}, nil)
 	if err == nil {
 		t.Error("Expected error for empty members, got nil")
 	}
@@ -177,7 +177,7 @@ func Test_Create_ai_not_found(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(nil, fmt.Errorf("not found"))
 
-	_, err := h.Create(ctx, uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), "test", "detail", memberA, members)
+	_, err := h.Create(ctx, uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for non-existent AI, got nil")
 	}
@@ -418,7 +418,7 @@ func Test_Update(t *testing.T) {
 			mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeUpdated, tt.responseTeam)
 
-			res, err := h.Update(ctx, tt.id, tt.teamName, tt.detail, tt.startMemberID, tt.members)
+			res, err := h.Update(ctx, tt.id, tt.teamName, tt.detail, tt.startMemberID, tt.members, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -561,7 +561,7 @@ func Test_Update_validation_failure(t *testing.T) {
 	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
 
 	// Empty members — should fail validation before any DB call
-	_, err := h.Update(ctx, teamID, "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{})
+	_, err := h.Update(ctx, teamID, "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{}, nil)
 	if err == nil {
 		t.Error("Expected error for empty members, got nil")
 	}
@@ -595,7 +595,7 @@ func Test_Update_ai_not_found(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(nil, fmt.Errorf("not found"))
 
-	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members)
+	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for non-existent AI, got nil")
 	}
@@ -630,7 +630,7 @@ func Test_Update_db_error(t *testing.T) {
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockDB.EXPECT().TeamUpdate(ctx, teamID, gomock.Any()).Return(fmt.Errorf("db error"))
 
-	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members)
+	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for db update failure, got nil")
 	}
@@ -667,7 +667,7 @@ func Test_Create_db_create_error(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(teamID)
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(fmt.Errorf("db error"))
 
-	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members)
+	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for db create failure, got nil")
 	}
@@ -705,7 +705,7 @@ func Test_Create_db_get_error(t *testing.T) {
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().TeamGet(ctx, teamID).Return(nil, fmt.Errorf("db error"))
 
-	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members)
+	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for db get failure after create, got nil")
 	}

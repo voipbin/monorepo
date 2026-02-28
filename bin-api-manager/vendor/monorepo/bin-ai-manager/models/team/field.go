@@ -10,6 +10,7 @@ const (
 	FieldDetail        Field = "detail"
 	FieldStartMemberID Field = "start_member_id"
 	FieldMembers       Field = "members"
+	FieldParameter     Field = "parameter"
 	FieldTMCreate      Field = "tm_create"
 	FieldTMUpdate      Field = "tm_update"
 	FieldTMDelete      Field = "tm_delete"
