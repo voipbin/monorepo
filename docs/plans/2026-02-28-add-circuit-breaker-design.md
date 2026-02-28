@@ -116,7 +116,7 @@ Callers can check with `errors.Is(err, circuitbreakerhandler.ErrCircuitOpen)` fo
 
 **Prometheus metrics (namespaced per service):**
 - `circuitbreaker_state_transitions_total{target, from, to}` — counter of state transitions
-- `circuitbreaker_state{target}` — gauge of current state (0=closed, 1=half-open, 2=open)
+- `circuitbreaker_state{target}` — gauge of current state (0=closed, 1=open, 2=half-open)
 - `circuitbreaker_rejected_total{target}` — counter of rejected requests
 
 **Logging:**

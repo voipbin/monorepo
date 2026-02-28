@@ -103,8 +103,5 @@ func (b *breaker) getState() State {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	if b.state == StateOpen && b.nowFunc().Sub(b.openedAt) >= b.openDuration {
-		b.state = StateHalfOpen
-	}
 	return b.state
 }

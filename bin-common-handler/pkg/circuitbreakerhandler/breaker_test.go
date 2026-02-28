@@ -55,8 +55,12 @@ func TestBreakerTransitionsToHalfOpenAfterTimeout(t *testing.T) {
 	}
 
 	now = now.Add(defaultOpenDuration + time.Second)
+	// allow() transitions Open -> HalfOpen and lets the probe through
+	if err := b.allow(); err != nil {
+		t.Errorf("expected probe allowed after timeout, got %v", err)
+	}
 	if b.getState() != StateHalfOpen {
-		t.Errorf("expected StateHalfOpen, got %v", b.getState())
+		t.Errorf("expected StateHalfOpen after probe, got %v", b.getState())
 	}
 }
 
@@ -193,7 +197,7 @@ func TestBreakerRecordFailureInOpenStaysOpen(t *testing.T) {
 	}
 }
 
-func TestBreakerGetStateTransitionsOpenToHalfOpen(t *testing.T) {
+func TestBreakerGetStateIsReadOnly(t *testing.T) {
 	now := time.Now()
 	b := newBreaker()
 	b.nowFunc = func() time.Time { return now }
@@ -207,16 +211,37 @@ func TestBreakerGetStateTransitionsOpenToHalfOpen(t *testing.T) {
 		t.Fatalf("expected StateOpen, got %v", b.getState())
 	}
 
-	// Before timeout: still Open
-	now = now.Add(defaultOpenDuration - time.Second)
+	// After timeout: getState should still report Open (read-only, no side effect)
+	now = now.Add(defaultOpenDuration + time.Second)
 	if b.getState() != StateOpen {
-		t.Errorf("expected StateOpen before timeout, got %v", b.getState())
+		t.Errorf("expected getState to remain StateOpen (read-only), got %v", b.getState())
 	}
 
-	// At exactly the timeout: transitions to HalfOpen
-	now = now.Add(time.Second)
+	// allow() is the sole mutator — it transitions Open -> HalfOpen and allows the probe
+	if err := b.allow(); err != nil {
+		t.Errorf("expected probe to be allowed, got %v", err)
+	}
 	if b.getState() != StateHalfOpen {
-		t.Errorf("expected StateHalfOpen at timeout boundary, got %v", b.getState())
+		t.Errorf("expected StateHalfOpen after allow(), got %v", b.getState())
+	}
+}
+
+func TestBreakerAllowBeforeTimeoutStaysOpen(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Trip to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_ = b.allow()
+		b.recordFailure()
+	}
+
+	// Before timeout: allow() should reject
+	now = now.Add(defaultOpenDuration - time.Second)
+	err := b.allow()
+	if !errors.Is(err, ErrCircuitOpen) {
+		t.Errorf("expected ErrCircuitOpen before timeout, got %v", err)
 	}
 }
 
