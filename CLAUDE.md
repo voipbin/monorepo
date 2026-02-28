@@ -90,7 +90,7 @@ The full verification workflow consists of 5 steps that MUST all be run:
 | Step | Command | Purpose |
 |------|---------|---------|
 | 1 | `go mod tidy` | Sync go.mod/go.sum with imports, remove unused deps, add missing ones |
-| 2 | `go mod vendor` | Copy dependencies to vendor/ for reproducible builds |
+| 2 | `go mod vendor` | Copy dependencies to vendor/ for local builds (vendor is NOT committed to git; Dockerfiles regenerate it during build) |
 | 3 | `go generate ./...` | Run code generators (mocks, OpenAPI types, etc.) |
 | 4 | `go test ./...` | Run all unit tests |
 | 5 | `golangci-lint run -v --timeout 5m` | Run static analysis and linting |

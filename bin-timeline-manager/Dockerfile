@@ -4,7 +4,7 @@ FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
 WORKDIR /app
 COPY ./ .
 RUN mkdir -p /app/bin
-RUN cd bin-timeline-manager && go build -o /app/bin/ ./cmd/...
+RUN cd bin-timeline-manager && go mod vendor && go build -o /app/bin/ ./cmd/...
 
 # run
 FROM alpine:latest
