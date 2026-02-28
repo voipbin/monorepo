@@ -23,6 +23,8 @@ type WebhookMessage struct {
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty"`
 
+	TeamParameter map[string]any `json:"team_parameter,omitempty"`
+
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
@@ -53,6 +55,8 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		AITTSType:     h.AITTSType,
 		AITTSVoiceID:  h.AITTSVoiceID,
 		AISTTType:     h.AISTTType,
+
+		TeamParameter: h.TeamParameter,
 
 		ActiveflowID:  h.ActiveflowID,
 		ReferenceType: h.ReferenceType,

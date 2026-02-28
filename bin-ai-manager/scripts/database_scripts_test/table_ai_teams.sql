@@ -8,6 +8,7 @@ create table ai_teams(
   detail          text,           -- detail description
   start_member_id binary(16),     -- starting member id
   members         json,           -- members as json array
+  parameter       json,           -- parameter as json object
 
   -- timestamps
   tm_create datetime(6),  --
