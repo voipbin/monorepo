@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
+
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmbridge "monorepo/bin-call-manager/models/bridge"
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -1313,19 +1315,22 @@ type requestHandler struct {
 	publisher commonoutline.ServiceName
 
 	utilHandler utilhandler.UtilHandler
+
+	cb circuitbreakerhandler.CircuitBreakerHandler
 }
 
 // NewRequestHandler create RequesterHandler
 func NewRequestHandler(sock sockhandler.SockHandler, publisher commonoutline.ServiceName) RequestHandler {
+	namespace := commonoutline.GetMetricNameSpace(publisher)
+	initPrometheus(namespace)
+
 	h := &requestHandler{
 		sock: sock,
 
 		publisher:   publisher,
 		utilHandler: utilhandler.NewUtilHandler(),
+		cb:          circuitbreakerhandler.NewCircuitBreakerHandler(namespace),
 	}
-
-	namespace := commonoutline.GetMetricNameSpace(publisher)
-	initPrometheus(namespace)
 
 	return h
 }
