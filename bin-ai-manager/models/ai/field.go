@@ -12,7 +12,7 @@ const (
 	FieldDetail Field = "detail"
 
 	FieldEngineModel Field = "engine_model"
-	FieldEngineData  Field = "engine_data"
+	FieldParameter   Field = "parameter"
 	FieldEngineKey   Field = "engine_key"
 
 	FieldInitPrompt Field = "init_prompt"

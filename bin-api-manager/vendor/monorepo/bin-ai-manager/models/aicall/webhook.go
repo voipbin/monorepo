@@ -18,10 +18,11 @@ type WebhookMessage struct {
 	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty"`
 
 	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty"`
-	AIEngineData  map[string]any `json:"ai_engine_data,omitempty"`
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty"`
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty"`
+
+	Parameter map[string]any `json:"parameter,omitempty"`
 
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
@@ -49,10 +50,11 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		AssistanceID:   h.AssistanceID,
 
 		AIEngineModel: h.AIEngineModel,
-		AIEngineData:  h.AIEngineData,
 		AITTSType:     h.AITTSType,
 		AITTSVoiceID:  h.AITTSVoiceID,
 		AISTTType:     h.AISTTType,
+
+		Parameter: h.Parameter,
 
 		ActiveflowID:  h.ActiveflowID,
 		ReferenceType: h.ReferenceType,

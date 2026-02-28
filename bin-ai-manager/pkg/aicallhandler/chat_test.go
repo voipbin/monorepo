@@ -3,7 +3,6 @@ package aicallhandler
 import (
 	"context"
 	"encoding/json"
-	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -17,11 +16,11 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_getEngineData(t *testing.T) {
+func Test_getDataAsJSON(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai           *ai.AI
+		data         map[string]any
 		activeflowID uuid.UUID
 
 		responseSubstitutes map[string]string
@@ -29,28 +28,26 @@ func Test_getEngineData(t *testing.T) {
 	}{
 		{
 			name: "nested structure with variable substitution",
-			ai: &ai.AI{
-				EngineData: map[string]any{
-					"key1": "value1",
-					"key2": 2,
-					"key3": true,
-					"key4": "The culprit is {${lame_person}}.",
-					"key5": map[string]any{
-						"subkey1": "subvalue1",
-						"subkey2": 3,
-						"subkey3": "The ghost is {${ghost_person}}.",
-						"subkey4": []string{
-							"sub list val 1",
-							"The secret is {${secret_info}}.",
-						},
+			data: map[string]any{
+				"key1": "value1",
+				"key2": 2,
+				"key3": true,
+				"key4": "The culprit is {${lame_person}}.",
+				"key5": map[string]any{
+					"subkey1": "subvalue1",
+					"subkey2": 3,
+					"subkey3": "The ghost is {${ghost_person}}.",
+					"subkey4": []string{
+						"sub list val 1",
+						"The secret is {${secret_info}}.",
 					},
-					"key6": []string{
-						"list val 1",
-						"The answer is {${answer_info}}.",
-					},
-					"key7": 4.5,
-					"key8": nil,
 				},
+				"key6": []string{
+					"list val 1",
+					"The answer is {${answer_info}}.",
+				},
+				"key7": 4.5,
+				"key8": nil,
 			},
 			activeflowID: uuid.FromStringOrNil("d48b2510-c035-11f0-b454-83d837506895"),
 			responseSubstitutes: map[string]string{
@@ -114,7 +111,7 @@ func Test_getEngineData(t *testing.T) {
 				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
 			}
 
-			res := h.getEngineData(ctx, tt.ai, tt.activeflowID)
+			res := h.getDataAsJSON(ctx, tt.data, tt.activeflowID)
 
 			var expected, actual map[string]any
 			if err := json.Unmarshal([]byte(tt.expectedRes), &expected); err != nil {
@@ -131,7 +128,7 @@ func Test_getEngineData(t *testing.T) {
 	}
 }
 
-func Test_getEngineDataValue(t *testing.T) {
+func Test_getParameterValue(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -250,7 +247,7 @@ func Test_getEngineDataValue(t *testing.T) {
 				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
 			}
 
-			actual := h.getEngineDataValue(ctx, tt.input, tt.activeflowID)
+			actual := h.getParameterValue(ctx, tt.input, tt.activeflowID)
 
 			if !reflect.DeepEqual(tt.expectedResult, actual) {
 				t.Errorf("Wrong match.\nexpected: %#v\ngot: %#v", tt.expectedResult, actual)

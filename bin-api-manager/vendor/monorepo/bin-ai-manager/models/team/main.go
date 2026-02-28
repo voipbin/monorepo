@@ -17,7 +17,8 @@ type Team struct {
 	Name          string    `json:"name,omitempty" db:"name"`
 	Detail        string    `json:"detail,omitempty" db:"detail"`
 	StartMemberID uuid.UUID `json:"start_member_id,omitempty" db:"start_member_id,uuid"`
-	Members       []Member  `json:"members,omitempty" db:"members,json"`
+	Members       []Member       `json:"members,omitempty" db:"members,json"`
+	Parameter     map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`

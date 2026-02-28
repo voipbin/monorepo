@@ -13,7 +13,7 @@ import (
 )
 
 // Create creates a new team record.
-func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
 	})
@@ -42,6 +42,7 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 		Detail:        detail,
 		StartMemberID: startMemberID,
 		Members:       members,
+		Parameter:     parameter,
 	}
 
 	if err := h.db.TeamCreate(ctx, t); err != nil {
@@ -109,7 +110,7 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 }
 
 // Update updates the team.
-func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member) (*team.Team, error) {
+func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Update",
 	})
@@ -133,6 +134,7 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 		team.FieldDetail:        detail,
 		team.FieldStartMemberID: startMemberID,
 		team.FieldMembers:       members,
+		team.FieldParameter:     parameter,
 	}
 
 	if err := h.db.TeamUpdate(ctx, id, fields); err != nil {

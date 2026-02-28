@@ -14,7 +14,8 @@ type V1DataTeamsPost struct {
 	Name          string        `json:"name,omitempty"`
 	Detail        string        `json:"detail,omitempty"`
 	StartMemberID uuid.UUID     `json:"start_member_id,omitempty"`
-	Members       []team.Member `json:"members,omitempty"`
+	Members       []team.Member  `json:"members,omitempty"`
+	Parameter     map[string]any `json:"parameter,omitempty"`
 }
 
 // V1DataTeamsIDPut is
@@ -24,5 +25,6 @@ type V1DataTeamsIDPut struct {
 	Name          string        `json:"name,omitempty"`
 	Detail        string        `json:"detail,omitempty"`
 	StartMemberID uuid.UUID     `json:"start_member_id,omitempty"`
-	Members       []team.Member `json:"members,omitempty"`
+	Members       []team.Member  `json:"members,omitempty"`
+	Parameter     map[string]any `json:"parameter,omitempty"`
 }

@@ -165,7 +165,7 @@ func Test_AIV1AICreate(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel amai.EngineModel
-		engineData  map[string]any
+		parameter   map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     amai.TTSType
@@ -185,7 +185,7 @@ func Test_AIV1AICreate(t *testing.T) {
 			aiName:      "test name",
 			detail:      "test detail",
 			engineModel: amai.EngineModelOpenaiGPT4,
-			engineData: map[string]any{
+			parameter: map[string]any{
 				"key1": "value1",
 				"key2": 2,
 			},
@@ -206,7 +206,7 @@ func Test_AIV1AICreate(t *testing.T) {
 				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
@@ -229,7 +229,7 @@ func Test_AIV1AICreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -312,7 +312,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel amai.EngineModel
-		engineData  map[string]any
+		parameter   map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     amai.TTSType
@@ -332,7 +332,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 			aiName:      "test name",
 			detail:      "test detail",
 			engineModel: amai.EngineModelOpenaiGPT4,
-			engineData: map[string]any{
+			parameter: map[string]any{
 				"key1": "value1",
 				"key2": 2,
 			},
@@ -353,7 +353,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 				URI:      "/v1/ais/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","engine_data":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
@@ -376,7 +376,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

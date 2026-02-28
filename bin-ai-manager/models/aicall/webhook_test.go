@@ -26,7 +26,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 				AssistanceType: AssistanceTypeAI,
 				AssistanceID:   uuid.Must(uuid.NewV4()),
 				AIEngineModel:  ai.EngineModelOpenaiGPT4O,
-				AIEngineData:  map[string]any{"key": "value"},
+				Parameter:  map[string]any{"key": "value"},
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "voice-123",
 				AISTTType:     ai.STTTypeDeepgram,
@@ -55,8 +55,8 @@ func TestConvertWebhookMessage(t *testing.T) {
 				if wh.AIEngineModel != ac.AIEngineModel {
 					t.Errorf("Wrong AIEngineModel. expect: %s, got: %s", ac.AIEngineModel, wh.AIEngineModel)
 				}
-				if wh.AIEngineData["key"] != ac.AIEngineData["key"] {
-					t.Errorf("Wrong AIEngineData. expect: %v, got: %v", ac.AIEngineData, wh.AIEngineData)
+				if wh.Parameter["key"] != ac.Parameter["key"] {
+					t.Errorf("Wrong Parameter. expect: %v, got: %v", ac.Parameter, wh.Parameter)
 				}
 				if wh.AITTSType != ac.AITTSType {
 					t.Errorf("Wrong AITTSType. expect: %s, got: %s", ac.AITTSType, wh.AITTSType)

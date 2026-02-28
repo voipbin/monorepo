@@ -14,7 +14,7 @@ type ResolvedAI struct {
 	identity.Identity
 
 	EngineModel ai.EngineModel  `json:"engine_model,omitempty"`
-	EngineData  map[string]any  `json:"engine_data,omitempty"`
+	Parameter   map[string]any  `json:"parameter,omitempty"`
 	InitPrompt  string          `json:"init_prompt,omitempty"`
 	TTSType     ai.TTSType      `json:"tts_type,omitempty"`
 	TTSVoiceID  string          `json:"tts_voice_id,omitempty"`
@@ -43,7 +43,7 @@ func ConvertResolvedAI(a *ai.AI) ResolvedAI {
 	return ResolvedAI{
 		Identity:    a.Identity,
 		EngineModel: a.EngineModel,
-		EngineData:  a.EngineData,
+		Parameter:   a.Parameter,
 		InitPrompt:  a.InitPrompt,
 		TTSType:     a.TTSType,
 		TTSVoiceID:  a.TTSVoiceID,

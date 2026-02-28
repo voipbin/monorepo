@@ -39,7 +39,7 @@ post:
               type: string
             engine_model:
               $ref: '#/components/schemas/AIManagerAIEngineModel'
-            engine_data:
+            parameter:
               type: object
               additionalProperties: true
               description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
@@ -66,7 +66,7 @@ post:
             - name
             - detail
             - engine_model
-            - engine_data
+            - parameter
             - engine_key
             - init_prompt
             - tts_type

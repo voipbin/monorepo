@@ -6,10 +6,10 @@ create table ai_aicalls(
   assistance_type  varchar(255),  -- assistance type (ai or team)
   assistance_id    binary(16),    -- assistance id (ai or team uuid)
   ai_engine_model  varchar(255),
-  ai_engine_data   json,
   ai_tts_type      varchar(255),
   ai_tts_voice_id  varchar(255),
   ai_stt_type      varchar(255),
+  parameter        json,
 
   activeflow_id     binary(16),
   reference_type    varchar(255),

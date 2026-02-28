@@ -36,9 +36,9 @@ func TestFieldConstants(t *testing.T) {
 			expected: "engine_model",
 		},
 		{
-			name:     "field_engine_data",
-			constant: FieldEngineData,
-			expected: "engine_data",
+			name:     "field_parameter",
+			constant: FieldParameter,
+			expected: "parameter",
 		},
 		{
 			name:     "field_engine_key",

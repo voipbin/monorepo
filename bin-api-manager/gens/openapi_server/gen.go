@@ -994,9 +994,6 @@ type AIManagerAI struct {
 	// Detail Detailed information about the AI.
 	Detail *string `json:"detail,omitempty"`
 
-	// EngineData Custom key-value configuration data specific to the AI engine type.
-	EngineData *map[string]interface{} `json:"engine_data,omitempty"`
-
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
@@ -1011,6 +1008,9 @@ type AIManagerAI struct {
 
 	// Name Name of the AI.
 	Name *string `json:"name,omitempty"`
+
+	// Parameter Custom key-value configuration data specific to the AI engine type.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// SttType Speech-to-text provider type.
 	SttType *AIManagerAISTTType `json:"stt_type,omitempty"`
@@ -1048,9 +1048,6 @@ type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiEngineData Custom key-value configuration data specific to the AI engine type.
-	AiEngineData *map[string]interface{} `json:"ai_engine_data,omitempty"`
-
 	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
@@ -1083,6 +1080,9 @@ type AIManagerAIcall struct {
 
 	// Language Language used during the AI call.
 	Language *string `json:"language,omitempty"`
+
+	// Parameter Merged key-value parameter data from AI and team configuration.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
@@ -1230,6 +1230,9 @@ type AIManagerTeam struct {
 
 	// Name Name of the team.
 	Name string `json:"name"`
+
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`
@@ -4192,9 +4195,6 @@ type GetAisParams struct {
 type PostAisJSONBody struct {
 	Detail string `json:"detail"`
 
-	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
-	EngineData map[string]interface{} `json:"engine_data"`
-
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
@@ -4202,6 +4202,9 @@ type PostAisJSONBody struct {
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 	Name        string                 `json:"name"`
+
+	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	Parameter map[string]interface{} `json:"parameter"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
@@ -4220,9 +4223,6 @@ type PostAisJSONBody struct {
 type PutAisIdJSONBody struct {
 	Detail string `json:"detail"`
 
-	// EngineData Data associated with the ai's engine, can be dynamic and vary based on the engine type.
-	EngineData map[string]interface{} `json:"engine_data"`
-
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
@@ -4230,6 +4230,9 @@ type PutAisIdJSONBody struct {
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 	Name        string                 `json:"name"`
+
+	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
+	Parameter map[string]interface{} `json:"parameter"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
@@ -5760,6 +5763,9 @@ type PostTeamsJSONBody struct {
 	// Name Name of the team.
 	Name string `json:"name"`
 
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
+
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`
 }
@@ -5774,6 +5780,9 @@ type PutTeamsIdJSONBody struct {
 
 	// Name Name of the team.
 	Name string `json:"name"`
+
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`

@@ -58,27 +58,19 @@ func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowI
 	return res
 }
 
-func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowID uuid.UUID) string {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "getEngineData",
-		"ai_id":         a.ID,
-		"activeflow_id": activeflowID,
-	})
-
-	if a.EngineData == nil {
+func (h *aicallHandler) getDataAsJSON(ctx context.Context, data map[string]any, activeflowID uuid.UUID) string {
+	if data == nil {
 		return "{}"
 	}
 
 	wg := sync.WaitGroup{}
 	tmpRes := sync.Map{}
-	for k, v := range a.EngineData {
+	for k, v := range data {
 		wg.Add(1)
 
 		go func(key string, value any) {
 			defer wg.Done()
-
-			// EngineData(value) must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
-			data := h.getEngineDataValue(ctx, value, activeflowID)
+			data := h.getParameterValue(ctx, value, activeflowID)
 			tmpRes.Store(key, data)
 		}(k, v)
 	}
@@ -89,28 +81,27 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 		k, ok := key.(string)
 		if !ok {
 			logrus.WithFields(logrus.Fields{
-				"func": "getEngineData",
+				"func": "getDataAsJSON",
 				"key":  key,
 			}).Warn("Non-string key encountered in tmpRes; skipping entry")
 			return true
 		}
 		tmpMap[k] = value
-
 		return true
 	})
 
-	engineDataBytes, err := json.Marshal(tmpMap)
+	dataBytes, err := json.Marshal(tmpMap)
 	if err != nil {
-		log.Errorf("Could not marshal the engine data back to string. err: %v", err)
+		logrus.Errorf("Could not marshal data back to string. err: %v", err)
 		return "{}"
 	}
 
-	return string(engineDataBytes)
+	return string(dataBytes)
 }
 
-func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflowID uuid.UUID) any {
+func (h *aicallHandler) getParameterValue(ctx context.Context, v any, activeflowID uuid.UUID) any {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "getEngineDataValue",
+		"func":          "getParameterValue",
 		"activeflow_id": activeflowID,
 	})
 
@@ -125,14 +116,14 @@ func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflo
 		for _, key := range rv.MapKeys() {
 			k := fmt.Sprintf("%v", key.Interface())
 			val := rv.MapIndex(key).Interface()
-			tmp[k] = h.getEngineDataValue(ctx, val, activeflowID)
+			tmp[k] = h.getParameterValue(ctx, val, activeflowID)
 		}
 		return tmp
 
 	case reflect.Slice, reflect.Array:
 		tmp := make([]any, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
-			tmp[i] = h.getEngineDataValue(ctx, rv.Index(i).Interface(), activeflowID)
+			tmp[i] = h.getParameterValue(ctx, rv.Index(i).Interface(), activeflowID)
 		}
 		return tmp
 
@@ -140,7 +131,7 @@ func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflo
 		str := v.(string)
 		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, str)
 		if err != nil {
-			log.Errorf("Could not substitute the engine data string. err: %v", err)
+			log.Errorf("Could not substitute the parameter string. err: %v", err)
 			return str
 		}
 		return res

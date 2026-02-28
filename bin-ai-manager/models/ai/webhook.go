@@ -17,7 +17,7 @@ type WebhookMessage struct {
 	Detail string `json:"detail,omitempty"`
 
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
-	EngineData  map[string]any `json:"engine_data,omitempty"`
+	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
@@ -44,7 +44,7 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		Detail: h.Detail,
 
 		EngineModel: h.EngineModel,
-		EngineData:  h.EngineData,
+		Parameter:   h.Parameter,
 		EngineKey:   h.EngineKey,
 
 		InitPrompt: h.InitPrompt,

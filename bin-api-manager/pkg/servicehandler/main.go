@@ -235,7 +235,7 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		engineModel amai.EngineModel,
-		engineData map[string]any,
+		parameter map[string]any,
 		engineKey string,
 		initPrompt string,
 		ttsType amai.TTSType,
@@ -253,7 +253,7 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		engineModel amai.EngineModel,
-		engineData map[string]any,
+		parameter map[string]any,
 		engineKey string,
 		initPrompt string,
 		ttsType amai.TTSType,
@@ -263,11 +263,11 @@ type ServiceHandler interface {
 	) (*amai.WebhookMessage, error)
 
 	// team handlers
-	TeamCreate(ctx context.Context, a *amagent.Agent, name string, detail string, startMemberID uuid.UUID, members []amteam.Member) (*amteam.WebhookMessage, error)
+	TeamCreate(ctx context.Context, a *amagent.Agent, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
 	TeamGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amteam.WebhookMessage, error)
 	TeamGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
 	TeamDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
-	TeamUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []amteam.Member) (*amteam.WebhookMessage, error)
+	TeamUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
 
 	// aicall handlers
 	AIcallCreate(

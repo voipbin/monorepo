@@ -27,13 +27,13 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 	})
 
 	var data engine_dialogflow.EngineDialogflow
-	tmpData, err := json.Marshal(cc.AIEngineData)
+	tmpData, err := json.Marshal(cc.Parameter)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the ai engine data")
+		return nil, errors.Wrapf(err, "could not marshal the ai parameter")
 	}
 
 	if errUnmarshal := json.Unmarshal(tmpData, &data); errUnmarshal != nil {
-		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the ai engine data")
+		return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the ai parameter")
 	}
 
 	endpoint := GetEndpointAddress(data.Region)

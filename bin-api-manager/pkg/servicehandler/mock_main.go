@@ -99,18 +99,18 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AICreate mocks base method.
-func (m *MockServiceHandler) AICreate(ctx context.Context, a *agent.Agent, name, detail string, engineModel ai.EngineModel, engineData map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AICreate(ctx context.Context, a *agent.Agent, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AICreate indicates an expected call of AICreate.
-func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 }
 
 // AIDelete mocks base method.
@@ -219,18 +219,18 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryGetsByCustomerID(ctx, a, size
 }
 
 // AIUpdate mocks base method.
-func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, engineModel ai.EngineModel, engineData map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIUpdate indicates an expected call of AIUpdate.
-func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 }
 
 // AIcallCreate mocks base method.
@@ -4362,18 +4362,18 @@ func (mr *MockServiceHandlerMockRecorder) TagUpdate(ctx, a, id, name, detail any
 }
 
 // TeamCreate mocks base method.
-func (m *MockServiceHandler) TeamCreate(ctx context.Context, a *agent.Agent, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamCreate(ctx context.Context, a *agent.Agent, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TeamCreate", ctx, a, name, detail, startMemberID, members)
+	ret := m.ctrl.Call(m, "TeamCreate", ctx, a, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TeamCreate indicates an expected call of TeamCreate.
-func (mr *MockServiceHandlerMockRecorder) TeamCreate(ctx, a, name, detail, startMemberID, members any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) TeamCreate(ctx, a, name, detail, startMemberID, members, parameter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamCreate", reflect.TypeOf((*MockServiceHandler)(nil).TeamCreate), ctx, a, name, detail, startMemberID, members)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamCreate", reflect.TypeOf((*MockServiceHandler)(nil).TeamCreate), ctx, a, name, detail, startMemberID, members, parameter)
 }
 
 // TeamDelete mocks base method.
@@ -4422,18 +4422,18 @@ func (mr *MockServiceHandlerMockRecorder) TeamGetsByCustomerID(ctx, a, size, tok
 }
 
 // TeamUpdate mocks base method.
-func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TeamUpdate", ctx, a, id, name, detail, startMemberID, members)
+	ret := m.ctrl.Call(m, "TeamUpdate", ctx, a, id, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TeamUpdate indicates an expected call of TeamUpdate.
-func (mr *MockServiceHandlerMockRecorder) TeamUpdate(ctx, a, id, name, detail, startMemberID, members any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) TeamUpdate(ctx, a, id, name, detail, startMemberID, members, parameter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TeamUpdate), ctx, a, id, name, detail, startMemberID, members)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TeamUpdate), ctx, a, id, name, detail, startMemberID, members, parameter)
 }
 
 // TimelineEventList mocks base method.

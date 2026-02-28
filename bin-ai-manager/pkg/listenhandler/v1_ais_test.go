@@ -101,7 +101,7 @@ func Test_processV1AIsPost(t *testing.T) {
 		expectName        string
 		expectDetail      string
 		expectEngineModel ai.EngineModel
-		expectEngineData  map[string]any
+		expectParameter  map[string]any
 		expectEngineKey   string
 		expectInitPrompt  string
 		expectTTSType     ai.TTSType
@@ -115,7 +115,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_model": "openai.gpt-4", "engine_data": {"key1": "val1"}, "engine_key": "test engine key", "init_prompt": "test init prompt", "tts_type": "elevenlabs", "tts_voice_id": "test-voice-id", "stt_type": "deepgram"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_model": "openai.gpt-4", "parameter": {"key1": "val1"}, "engine_key": "test engine key", "init_prompt": "test init prompt", "tts_type": "elevenlabs", "tts_voice_id": "test-voice-id", "stt_type": "deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -128,7 +128,7 @@ func Test_processV1AIsPost(t *testing.T) {
 			expectName:        "test name",
 			expectDetail:      "test detail",
 			expectEngineModel: ai.EngineModelOpenaiGPT4,
-			expectEngineData: map[string]any{
+			expectParameter: map[string]any{
 				"key1": "val1",
 			},
 			expectEngineKey:  "test engine key",
@@ -163,7 +163,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectEngineModel,
-				tt.expectEngineData,
+				tt.expectParameter,
 				tt.expectEngineKey,
 				tt.expectInitPrompt,
 				tt.expectTTSType,
@@ -315,7 +315,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 		expectName        string
 		expectDetail      string
 		expectEngineModel ai.EngineModel
-		expectEngineData  map[string]any
+		expectParameter  map[string]any
 		expectEngineKey   string
 		expectInitPrompt  string
 		expectTTSType     ai.TTSType
@@ -329,7 +329,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				URI:      "/v1/ais/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"new prompt","tts_type":"cartesia","tts_voice_id":"new-voice-id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_model":"openai.gpt-4","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"new prompt","tts_type":"cartesia","tts_voice_id":"new-voice-id","stt_type":"deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -342,7 +342,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 			expectName:        "new name",
 			expectDetail:      "new detail",
 			expectEngineModel: ai.EngineModelOpenaiGPT4,
-			expectEngineData: map[string]any{
+			expectParameter: map[string]any{
 				"key1": "val1",
 			},
 			expectEngineKey:  "test engine key",
@@ -378,7 +378,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectEngineModel,
-				tt.expectEngineData,
+				tt.expectParameter,
 				tt.expectEngineKey,
 				tt.expectInitPrompt,
 				tt.expectTTSType,

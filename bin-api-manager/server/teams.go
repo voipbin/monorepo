@@ -37,6 +37,11 @@ func (h *server) PostTeams(c *gin.Context) {
 	startMemberID := uuid.FromStringOrNil(req.StartMemberId)
 	members := convertOpenAPIMembers(req.Members)
 
+	var parameter map[string]any
+	if req.Parameter != nil {
+		parameter = *req.Parameter
+	}
+
 	res, err := h.serviceHandler.TeamCreate(
 		c.Request.Context(),
 		&a,
@@ -44,6 +49,7 @@ func (h *server) PostTeams(c *gin.Context) {
 		req.Detail,
 		startMemberID,
 		members,
+		parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not create a team. err: %v", err)
@@ -208,6 +214,11 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 	startMemberID := uuid.FromStringOrNil(req.StartMemberId)
 	members := convertOpenAPIMembers(req.Members)
 
+	var parameter map[string]any
+	if req.Parameter != nil {
+		parameter = *req.Parameter
+	}
+
 	res, err := h.serviceHandler.TeamUpdate(
 		c.Request.Context(),
 		&a,
@@ -216,6 +227,7 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 		req.Detail,
 		startMemberID,
 		members,
+		parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not update the team. err: %v", err)

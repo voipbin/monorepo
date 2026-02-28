@@ -9,7 +9,7 @@ create table ai_ais(
 
   engine_type   varchar(255),
   engine_model  varchar(255),
-  engine_data   json,
+  parameter     json,
   engine_key    varchar(255),
 
   init_prompt   text,           -- initial prompt

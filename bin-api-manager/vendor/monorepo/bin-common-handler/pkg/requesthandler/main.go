@@ -187,7 +187,7 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		engineModel amai.EngineModel,
-		engineData map[string]any,
+		parameter map[string]any,
 		engineKey string,
 		initPrompt string,
 		ttsType amai.TTSType,
@@ -202,7 +202,7 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		engineModel amai.EngineModel,
-		engineData map[string]any,
+		parameter map[string]any,
 		engineKey string,
 		initPrompt string,
 		ttsType amai.TTSType,
@@ -221,6 +221,7 @@ type RequestHandler interface {
 		detail string,
 		startMemberID uuid.UUID,
 		members []amteam.Member,
+		parameter map[string]any,
 	) (*amteam.Team, error)
 	AIV1TeamDelete(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
 	AIV1TeamUpdate(
@@ -230,6 +231,7 @@ type RequestHandler interface {
 		detail string,
 		startMemberID uuid.UUID,
 		members []amteam.Member,
+		parameter map[string]any,
 	) (*amteam.Team, error)
 
 	// ai-manager tools

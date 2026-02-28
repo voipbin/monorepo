@@ -96,6 +96,7 @@ func (h *listenHandler) processV1TeamsPost(ctx context.Context, m *sock.Request)
 		req.Detail,
 		req.StartMemberID,
 		req.Members,
+		req.Parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not create team. err: %v", err)
@@ -179,6 +180,7 @@ func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request
 		req.Detail,
 		req.StartMemberID,
 		req.Members,
+		req.Parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not update team. err: %v", err)

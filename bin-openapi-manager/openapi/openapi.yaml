@@ -1746,7 +1746,7 @@ components:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine.
           example: "gpt-4o"
-        engine_data:
+        parameter:
           type: object
           additionalProperties: true
           description: Custom key-value configuration data specific to the AI engine type.
@@ -1829,6 +1829,13 @@ components:
           items:
             $ref: '#/components/schemas/AIManagerTeamMember'
           description: List of team members forming the graph nodes.
+        parameter:
+          type: object
+          additionalProperties: true
+          description: Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+          example:
+            language: "en-US"
+            department: "support"
         tm_create:
           type: string
           format: date-time
@@ -2065,13 +2072,6 @@ components:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine used for this call.
           example: "openai.gpt-4o"
-        ai_engine_data:
-          type: object
-          additionalProperties: true
-          description: Custom key-value configuration data specific to the AI engine type.
-          example:
-            temperature: 0.7
-            max_tokens: 1024
         ai_tts_type:
           $ref: '#/components/schemas/AIManagerAITTSType'
           description: Text-to-speech provider type used for this call.
@@ -2084,6 +2084,13 @@ components:
           $ref: '#/components/schemas/AIManagerAISTTType'
           description: Speech-to-text provider type used for this call.
           example: "deepgram"
+        parameter:
+          type: object
+          additionalProperties: true
+          description: Merged key-value parameter data from AI and team configuration.
+          example:
+            language: "en-US"
+            department: "support"
         activeflow_id:
           type: string
           format: uuid

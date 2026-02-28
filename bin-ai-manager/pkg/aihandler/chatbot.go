@@ -16,7 +16,7 @@ func (h *aiHandler) Create(
 	name string,
 	detail string,
 	engineModel ai.EngineModel,
-	engineData map[string]any,
+	parameter map[string]any,
 	engineKey string,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -29,7 +29,7 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -44,7 +44,7 @@ func (h *aiHandler) Update(
 	name string,
 	detail string,
 	engineModel ai.EngineModel,
-	engineData map[string]any,
+	parameter map[string]any,
 	engineKey string,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -57,7 +57,7 @@ func (h *aiHandler) Update(
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
