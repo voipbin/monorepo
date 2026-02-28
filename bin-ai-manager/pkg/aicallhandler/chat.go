@@ -58,26 +58,18 @@ func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowI
 	return res
 }
 
-func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowID uuid.UUID) string {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "getEngineData",
-		"ai_id":         a.ID,
-		"activeflow_id": activeflowID,
-	})
-
-	if a.EngineData == nil {
+func (h *aicallHandler) getDataAsJSON(ctx context.Context, data map[string]any, activeflowID uuid.UUID) string {
+	if data == nil {
 		return "{}"
 	}
 
 	wg := sync.WaitGroup{}
 	tmpRes := sync.Map{}
-	for k, v := range a.EngineData {
+	for k, v := range data {
 		wg.Add(1)
 
 		go func(key string, value any) {
 			defer wg.Done()
-
-			// EngineData(value) must be immutable. Concurrent read is safe, but no mutation is allowed after read begins.
 			data := h.getEngineDataValue(ctx, value, activeflowID)
 			tmpRes.Store(key, data)
 		}(k, v)
@@ -89,23 +81,22 @@ func (h *aicallHandler) getEngineData(ctx context.Context, a *ai.AI, activeflowI
 		k, ok := key.(string)
 		if !ok {
 			logrus.WithFields(logrus.Fields{
-				"func": "getEngineData",
+				"func": "getDataAsJSON",
 				"key":  key,
 			}).Warn("Non-string key encountered in tmpRes; skipping entry")
 			return true
 		}
 		tmpMap[k] = value
-
 		return true
 	})
 
-	engineDataBytes, err := json.Marshal(tmpMap)
+	dataBytes, err := json.Marshal(tmpMap)
 	if err != nil {
-		log.Errorf("Could not marshal the engine data back to string. err: %v", err)
+		logrus.Errorf("Could not marshal data back to string. err: %v", err)
 		return "{}"
 	}
 
-	return string(engineDataBytes)
+	return string(dataBytes)
 }
 
 func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflowID uuid.UUID) any {

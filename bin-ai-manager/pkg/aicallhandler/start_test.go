@@ -228,7 +228,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -323,7 +323,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language, nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -501,7 +501,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
+			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -992,7 +992,7 @@ func Test_startAIcall(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask)
+			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1065,9 +1065,10 @@ func Test_startInitMessages(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai     *ai.AI
-		aicall *aicall.AIcall
-		isTask bool
+		ai            *ai.AI
+		aicall        *aicall.AIcall
+		isTask        bool
+		teamParameter map[string]any
 
 		responseSubstitutes []string
 
@@ -1163,6 +1164,25 @@ func Test_startInitMessages(t *testing.T) {
 				"You are a super helpful assistant.",
 			},
 		},
+		{
+			name: "has team parameter",
+
+			ai: &ai.AI{},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+			},
+			isTask:        false,
+			teamParameter: map[string]any{"greeting": "hello"},
+
+			responseSubstitutes: []string{"hello"},
+			expectMessageTexts: []string{
+				defaultCommonAIcallSystemPrompt,
+				`{"greeting":"hello"}`,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1198,7 +1218,7 @@ func Test_startInitMessages(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask); err != nil {
+			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask, tt.teamParameter); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
