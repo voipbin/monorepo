@@ -2,7 +2,9 @@ package pipecatcallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	amai "monorepo/bin-ai-manager/models/ai"
@@ -552,6 +554,82 @@ func Test_resolveTeamForPython(t *testing.T) {
 
 			expectedErr: true,
 		},
+		{
+			name: "team with zero members returns empty members slice",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity: commonidentity.Identity{
+						ID: teamID,
+					},
+					StartMemberID: member1ID,
+					Members:       []amateam.Member{},
+				}, nil)
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if result.Members == nil {
+					t.Fatal("Members should be empty slice, not nil (nil serializes to JSON null)")
+				}
+				if len(result.Members) != 0 {
+					t.Errorf("Expected 0 members, got %d", len(result.Members))
+				}
+			},
+		},
+		{
+			name: "member with nil transitions gets empty transitions slice",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity: commonidentity.Identity{
+						ID: teamID,
+					},
+					StartMemberID: member1ID,
+					Members: []amateam.Member{
+						{
+							ID:          member1ID,
+							Name:        "solo-agent",
+							AIID:        ai1ID,
+							Transitions: nil, // no transitions defined
+						},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
+					Identity: commonidentity.Identity{
+						ID: ai1ID,
+					},
+					EngineModel: amai.EngineModelOpenaiGPT4O,
+					EngineKey:   "key-1",
+					InitPrompt:  "You are solo",
+					TTSType:     amai.TTSTypeCartesia,
+					STTType:     amai.STTTypeDeepgram,
+				}, nil)
+				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if len(result.Members) != 1 {
+					t.Fatalf("Expected 1 member, got %d", len(result.Members))
+				}
+				m := result.Members[0]
+				if m.Transitions == nil {
+					t.Fatal("Transitions should be empty slice, not nil (nil serializes to JSON null)")
+				}
+				if len(m.Transitions) != 0 {
+					t.Errorf("Expected 0 transitions, got %d", len(m.Transitions))
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -750,4 +828,53 @@ func Test_runGetLLMKey(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_resolvedTeamData_JSONSerialization(t *testing.T) {
+	t.Run("empty members serializes as JSON array not null", func(t *testing.T) {
+		data := &resolvedTeamData{
+			ID:            uuid.FromStringOrNil("aaaaaaaa-1111-1111-1111-111111111111"),
+			StartMemberID: uuid.FromStringOrNil("bbbbbbbb-2222-2222-2222-222222222222"),
+			Members:       []resolvedMemberData{},
+		}
+
+		jsonBytes, err := json.Marshal(data)
+		if err != nil {
+			t.Fatalf("Failed to marshal: %v", err)
+		}
+
+		jsonStr := string(jsonBytes)
+		if strings.Contains(jsonStr, `"members":null`) {
+			t.Error("members serialized as null instead of []. Python Pydantic rejects null for List fields")
+		}
+		if !strings.Contains(jsonStr, `"members":[]`) {
+			t.Errorf("expected members:[], got: %s", jsonStr)
+		}
+	})
+
+	t.Run("empty transitions serializes as JSON array not null", func(t *testing.T) {
+		data := &resolvedMemberData{
+			ID:   uuid.FromStringOrNil("cccccccc-3333-3333-3333-333333333333"),
+			Name: "test-member",
+			AI: resolvedAIData{
+				EngineModel: "openai.gpt-4o",
+				EngineKey:   "test-key",
+			},
+			Tools:       []aitool.Tool{},
+			Transitions: []amateam.Transition{},
+		}
+
+		jsonBytes, err := json.Marshal(data)
+		if err != nil {
+			t.Fatalf("Failed to marshal: %v", err)
+		}
+
+		jsonStr := string(jsonBytes)
+		if strings.Contains(jsonStr, `"transitions":null`) {
+			t.Error("transitions serialized as null instead of []. Python iterates over this field")
+		}
+		if strings.Contains(jsonStr, `"tools":null`) {
+			t.Error("tools serialized as null instead of []. Python iterates over this field")
+		}
+	})
 }

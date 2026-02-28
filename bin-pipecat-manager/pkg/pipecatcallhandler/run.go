@@ -140,6 +140,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 	resolved := &resolvedTeamData{
 		ID:            team.ID,
 		StartMemberID: team.StartMemberID,
+		Members:       []resolvedMemberData{},
 	}
 
 	for _, m := range team.Members {
@@ -150,6 +151,11 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 		logrus.WithField("ai", ai).Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
 
 		tools := h.toolHandler.GetByNames(ai.ToolNames)
+
+		transitions := m.Transitions
+		if transitions == nil {
+			transitions = []amteam.Transition{}
+		}
 
 		resolved.Members = append(resolved.Members, resolvedMemberData{
 			ID:   m.ID,
@@ -164,7 +170,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 				STTType:     string(ai.STTType),
 			},
 			Tools:       tools,
-			Transitions: m.Transitions,
+			Transitions: transitions,
 		})
 	}
 

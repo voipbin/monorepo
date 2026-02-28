@@ -120,8 +120,6 @@ func (h *pythonRunner) Start(
 		return errors.Wrapf(err, "could not send request to python runner")
 	}
 	defer func() {
-		// Drain and close body to enable connection reuse
-		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 	}()
 
@@ -155,8 +153,6 @@ func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error 
 		return errors.Wrapf(err, "could not send stop request to python runner")
 	}
 	defer func() {
-		// Drain and close body to enable connection reuse
-		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 	}()
 

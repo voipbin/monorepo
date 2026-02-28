@@ -96,6 +96,31 @@ When a flow action references a Team:
 
    Transition descriptions act as instructions to the LLM. Write them as clear conditions: ``"Transfer to billing when the caller asks about invoices, payments, or account charges."`` Vague descriptions (``"Transfer to billing"`` without context) may cause the LLM to trigger transitions unexpectedly.
 
+Runtime Behavior
+================
+
+When a team is activated during a call, the system handles member switching automatically:
+
+**Service switching:**
+
+Each member carries its own LLM, TTS, and STT configuration (inherited from its ``ai_id``). When a transition fires, the system switches all three services to the new member's configuration. The caller hears the new member's TTS voice immediately after the transition.
+
+**Tool availability:**
+
+Each member's AI tools (defined via ``tool_names`` on the AI configuration) are available only while that member is active. When a transition fires, the new member's tools replace the previous member's tools. Transition functions themselves are always available alongside the member's regular tools.
+
+**STT language:**
+
+The speech-to-text language is shared across all members in a team and is determined by the call's STT configuration — not per-member. All members use the same STT language for the duration of the call.
+
+**Graceful fallback:**
+
+If a member does not have a TTS or STT service configured (e.g., ``tts_type`` is empty on its AI), the system keeps the previous member's TTS or STT service active. This prevents silence or deafness during the conversation.
+
+.. note:: **AI Implementation Hint**
+
+   For the best caller experience, configure consistent STT types across all members in a team. While the system gracefully falls back to the previous member's service, mixing STT providers mid-conversation may cause subtle differences in transcription behavior.
+
 Use Cases
 =========
 
