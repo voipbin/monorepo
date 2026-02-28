@@ -117,18 +117,18 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AIV1AICreate mocks base method.
-func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineModel ai.EngineModel, engineData map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AICreate indicates an expected call of AIV1AICreate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 }
 
 // AIV1AIDelete mocks base method.
@@ -177,18 +177,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, f
 }
 
 // AIV1AIUpdate mocks base method.
-func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineModel ai.EngineModel, engineData map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIUpdate indicates an expected call of AIV1AIUpdate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 }
 
 // AIV1AIcallDelete mocks base method.

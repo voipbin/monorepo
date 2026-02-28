@@ -41,7 +41,7 @@ func Test_AIcallCreate(t *testing.T) {
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
 				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
-				AIEngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},
@@ -67,7 +67,7 @@ func Test_AIcallCreate(t *testing.T) {
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
 				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
-				AIEngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},
@@ -101,7 +101,7 @@ func Test_AIcallCreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e2fa5772-a5e1-11ed-94a9-f72c152d4780"),
 				},
-				AIEngineData: nil,
+				Parameter: nil,
 				TMEnd:        nil,
 				TMCreate:     curTime,
 				TMUpdate:     nil,
@@ -177,7 +177,7 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a8b26464-a5e2-11ed-bce7-83b475b0c53d"),
 				},
-				AIEngineData:  nil,
+				Parameter:  nil,
 				ReferenceType: aicall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("a8ebd744-a5e2-11ed-bc18-d3a88a0f1ffa"),
 				TMEnd:         nil,
@@ -258,7 +258,7 @@ func Test_AIcallUpdate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
 				},
-				AIEngineData:  nil,
+				Parameter:  nil,
 				PipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
 				TMEnd:         nil,
 				TMCreate:      curTime,
@@ -284,7 +284,7 @@ func Test_AIcallUpdate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
 				},
-				AIEngineData: nil,
+				Parameter: nil,
 				Status:       aicall.StatusProgressing,
 				TMEnd:        nil,
 				TMCreate:     curTime,
@@ -364,7 +364,7 @@ func Test_AIcallDelete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("78f9a8fc-a5e4-11ed-95aa-133c8380df73"),
 				},
-				AIEngineData: nil,
+				Parameter: nil,
 				TMEnd:        nil,
 				TMCreate:     curTime,
 				TMUpdate:     curTime,
@@ -459,7 +459,7 @@ func Test_AIcallList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					AIEngineData: nil,
+					Parameter: nil,
 					TMEnd:        nil,
 					TMCreate:     curTime,
 					TMUpdate:     nil,
@@ -470,7 +470,7 @@ func Test_AIcallList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					AIEngineData: nil,
+					Parameter: nil,
 					TMEnd:        nil,
 					TMCreate:     curTime,
 					TMUpdate:     nil,

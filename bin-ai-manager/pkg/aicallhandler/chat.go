@@ -70,7 +70,7 @@ func (h *aicallHandler) getDataAsJSON(ctx context.Context, data map[string]any, 
 
 		go func(key string, value any) {
 			defer wg.Done()
-			data := h.getEngineDataValue(ctx, value, activeflowID)
+			data := h.getParameterValue(ctx, value, activeflowID)
 			tmpRes.Store(key, data)
 		}(k, v)
 	}
@@ -99,9 +99,9 @@ func (h *aicallHandler) getDataAsJSON(ctx context.Context, data map[string]any, 
 	return string(dataBytes)
 }
 
-func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflowID uuid.UUID) any {
+func (h *aicallHandler) getParameterValue(ctx context.Context, v any, activeflowID uuid.UUID) any {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "getEngineDataValue",
+		"func":          "getParameterValue",
 		"activeflow_id": activeflowID,
 	})
 
@@ -116,14 +116,14 @@ func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflo
 		for _, key := range rv.MapKeys() {
 			k := fmt.Sprintf("%v", key.Interface())
 			val := rv.MapIndex(key).Interface()
-			tmp[k] = h.getEngineDataValue(ctx, val, activeflowID)
+			tmp[k] = h.getParameterValue(ctx, val, activeflowID)
 		}
 		return tmp
 
 	case reflect.Slice, reflect.Array:
 		tmp := make([]any, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
-			tmp[i] = h.getEngineDataValue(ctx, rv.Index(i).Interface(), activeflowID)
+			tmp[i] = h.getParameterValue(ctx, rv.Index(i).Interface(), activeflowID)
 		}
 		return tmp
 
@@ -131,7 +131,7 @@ func (h *aicallHandler) getEngineDataValue(ctx context.Context, v any, activeflo
 		str := v.(string)
 		res, err := h.reqHandler.FlowV1VariableSubstitute(ctx, activeflowID, str)
 		if err != nil {
-			log.Errorf("Could not substitute the engine data string. err: %v", err)
+			log.Errorf("Could not substitute the parameter string. err: %v", err)
 			return str
 		}
 		return res

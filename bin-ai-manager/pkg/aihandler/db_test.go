@@ -26,7 +26,7 @@ func Test_Create(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel ai.EngineModel
-		engineData  map[string]any
+		parameter  map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     ai.TTSType
@@ -45,7 +45,7 @@ func Test_Create(t *testing.T) {
 			aiName:      "test name",
 			detail:      "test detail",
 			engineModel: ai.EngineModelOpenaiGPT4Turbo,
-			engineData: map[string]any{
+			parameter: map[string]any{
 				"key1": "val1",
 			},
 			engineKey:  "test engine service key",
@@ -69,7 +69,7 @@ func Test_Create(t *testing.T) {
 				Name:        "test name",
 				Detail:      "test detail",
 				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
-				EngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 				},
 				EngineKey:  "test engine service key",
@@ -105,7 +105,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
+			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -302,7 +302,7 @@ func Test_Update(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel ai.EngineModel
-		engineData  map[string]any
+		parameter  map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     ai.TTSType
@@ -318,7 +318,7 @@ func Test_Update(t *testing.T) {
 			aiName:      "new name",
 			detail:      "new detail",
 			engineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
-			engineData: map[string]any{
+			parameter: map[string]any{
 				"key1": "val1",
 			},
 			engineKey:  "new engine service key",
@@ -364,7 +364,7 @@ func Test_Update(t *testing.T) {
 				tt.aiName,
 				tt.detail,
 				tt.engineModel,
-				tt.engineData,
+				tt.parameter,
 				tt.engineKey,
 				tt.initPrompt,
 				tt.ttsType,

@@ -208,6 +208,7 @@
             <span class="p">]</span>
         <span class="p">}</span>
     <span class="p">],</span>
+    <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;object&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -221,6 +222,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the team’s purpose or additional notes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> (UUID, Required): The member where the conversation begins. Must match one of the <code class="docutils literal notranslate"><span class="pre">id</span></code> values in the <code class="docutils literal notranslate"><span class="pre">members</span></code> array.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">members</span></code> (Array of Member, Required): The list of members (nodes) in the team graph. At least one member is required. See <a class="reference internal" href="#team-struct-team-member"><span class="std std-ref">Member</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parameter</span></code> (Object, Optional): Custom key-value parameter data for the team. Supports flow variable substitution at runtime.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the team was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the team was last updated.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the team was deleted, if applicable.</p></li>
@@ -275,6 +277,10 @@
             <span class="p">]</span>
         <span class="p">}</span>
     <span class="p">],</span>
+    <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;department&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-service&quot;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-27 10:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>

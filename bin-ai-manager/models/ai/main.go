@@ -16,7 +16,7 @@ type AI struct {
 	Detail string `json:"detail,omitempty" db:"detail"`
 
 	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
-	EngineData  map[string]any `json:"engine_data,omitempty" db:"engine_data,json"`
+	Parameter   map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
 
 	InitPrompt string `json:"init_prompt,omitempty" db:"init_prompt"`

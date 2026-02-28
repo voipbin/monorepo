@@ -1559,7 +1559,7 @@
                   "engine_model": {
                     "$ref": "#/components/schemas/AIManagerAIEngineModel"
                   },
-                  "engine_data": {
+                  "parameter": {
                     "type": "object",
                     "additionalProperties": true,
                     "description": "Data associated with the ai's engine, can be dynamic and vary based on the engine type."
@@ -1595,7 +1595,7 @@
                   "name",
                   "detail",
                   "engine_model",
-                  "engine_data",
+                  "parameter",
                   "engine_key",
                   "init_prompt",
                   "tts_type",
@@ -1685,7 +1685,7 @@
                   "engine_model": {
                     "$ref": "#/components/schemas/AIManagerAIEngineModel"
                   },
-                  "engine_data": {
+                  "parameter": {
                     "type": "object",
                     "additionalProperties": true,
                     "description": "Data associated with the ai's engine, can be dynamic and vary based on the engine type."
@@ -1721,7 +1721,7 @@
                   "name",
                   "detail",
                   "engine_model",
-                  "engine_data",
+                  "parameter",
                   "engine_key",
                   "init_prompt",
                   "tts_type",
@@ -15519,7 +15519,7 @@
             "description": "Model of the AI engine.",
             "example": "gpt-4o"
           },
-          "engine_data": {
+          "parameter": {
             "type": "object",
             "additionalProperties": true,
             "description": "Custom key-value configuration data specific to the AI engine type."
@@ -15902,15 +15902,6 @@
             "description": "Model of the AI engine used for this call.",
             "example": "openai.gpt-4o"
           },
-          "ai_engine_data": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Custom key-value configuration data specific to the AI engine type.",
-            "example": {
-              "temperature": 0.7,
-              "max_tokens": 1024
-            }
-          },
           "ai_tts_type": {
             "$ref": "#/components/schemas/AIManagerAITTSType",
             "description": "Text-to-speech provider type used for this call.",
@@ -15926,10 +15917,10 @@
             "description": "Speech-to-text provider type used for this call.",
             "example": "deepgram"
           },
-          "team_parameter": {
+          "parameter": {
             "type": "object",
             "additionalProperties": true,
-            "description": "Custom key-value parameter data from the team configuration. Present when assistance_type is team.",
+            "description": "Merged key-value parameter data from AI and team configuration.",
             "example": {
               "language": "en-US",
               "department": "support"

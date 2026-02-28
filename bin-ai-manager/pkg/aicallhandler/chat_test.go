@@ -128,7 +128,7 @@ func Test_getDataAsJSON(t *testing.T) {
 	}
 }
 
-func Test_getEngineDataValue(t *testing.T) {
+func Test_getParameterValue(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -247,7 +247,7 @@ func Test_getEngineDataValue(t *testing.T) {
 				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
 			}
 
-			actual := h.getEngineDataValue(ctx, tt.input, tt.activeflowID)
+			actual := h.getParameterValue(ctx, tt.input, tt.activeflowID)
 
 			if !reflect.DeepEqual(tt.expectedResult, actual) {
 				t.Errorf("Wrong match.\nexpected: %#v\ngot: %#v", tt.expectedResult, actual)

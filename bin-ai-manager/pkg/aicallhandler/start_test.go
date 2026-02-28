@@ -2,12 +2,15 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -866,6 +869,7 @@ func Test_startAIcall(t *testing.T) {
 		gender         aicall.Gender
 		language       string
 		isTask         bool
+		teamParameter  map[string]any
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -949,6 +953,96 @@ func Test_startAIcall(t *testing.T) {
 				Language: "en-US",
 			},
 		},
+		{
+			name: "merge ai and team parameters with key collision - team overrides",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+					CustomerID: uuid.FromStringOrNil("c9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				Parameter: map[string]any{
+					"shared_key": "ai_value",
+					"ai_only":    "ai_data",
+				},
+			},
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("c40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			activeflowID:   uuid.FromStringOrNil("c34140c8-b659-11f0-be3a-5fc8a6759b80"),
+			referenceType:  aicall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("c3662e38-b659-11f0-820a-833195d45f7e"),
+			confbridgeID:   uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
+			gender:         aicall.GenderFemale,
+			language:       "ko-KR",
+			isTask:         false,
+			teamParameter: map[string]any{
+				"shared_key": "team_value",
+				"team_only":  "team_data",
+			},
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("c9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("c40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				Parameter: map[string]any{
+					"shared_key": "team_value",
+					"ai_only":    "ai_data",
+					"team_only":  "team_data",
+				},
+
+				ActiveflowID:  uuid.FromStringOrNil("c34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c3662e38-b659-11f0-820a-833195d45f7e"),
+				ConfbridgeID:  uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
+				PipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status:   aicall.StatusInitiating,
+				Gender:   aicall.GenderFemale,
+				Language: "ko-KR",
+			},
+			expectVariables: map[string]string{
+				"voipbin.aicall.ai_engine_model": "",
+				"voipbin.aicall.ai_id":           "c40ecf94-b659-11f0-b8ef-13f90dff9ee8",
+				"voipbin.aicall.confbridge_id":   "c3864e5c-b659-11f0-ab17-6b281e446482",
+				"voipbin.aicall.gender":          "female",
+				"voipbin.aicall.id":              "c3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.language":        "ko-KR",
+				"voipbin.aicall.pipecatcall_id":  "c3af613e-b659-11f0-9a72-e3e004fae386",
+			},
+			expectMessageTexts: []string{
+				defaultCommonAIcallSystemPrompt,
+				`{"ai_only":"ai_data","shared_key":"team_value","team_only":"team_data"}`,
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("c9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("c40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				Parameter: map[string]any{
+					"shared_key": "team_value",
+					"ai_only":    "ai_data",
+					"team_only":  "team_data",
+				},
+
+				ActiveflowID:  uuid.FromStringOrNil("c34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c3662e38-b659-11f0-820a-833195d45f7e"),
+				ConfbridgeID:  uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
+				PipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status:   aicall.StatusInitiating,
+				Gender:   aicall.GenderFemale,
+				Language: "ko-KR",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -987,12 +1081,29 @@ func Test_startAIcall(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables).Return(nil)
 
 			// startInitMessages
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			if tt.ai.InitPrompt != "" {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			}
+			// parameter substitution
+			if tt.expectAIcall.Parameter != nil {
+				paramCount := 0
+				for _, v := range tt.expectAIcall.Parameter {
+					if _, ok := v.(string); ok {
+						paramCount++
+					}
+				}
+				if paramCount > 0 {
+					mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, gomock.Any()).
+						DoAndReturn(func(_ context.Context, _ uuid.UUID, input string) (string, error) {
+							return input, nil
+						}).Times(paramCount)
+				}
+			}
 			for _, m := range tt.expectMessageTexts {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, nil)
+			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1065,10 +1176,9 @@ func Test_startInitMessages(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai            *ai.AI
-		aicall        *aicall.AIcall
-		isTask        bool
-		teamParameter map[string]any
+		ai     *ai.AI
+		aicall *aicall.AIcall
+		isTask bool
 
 		responseSubstitutes []string
 
@@ -1079,15 +1189,15 @@ func Test_startInitMessages(t *testing.T) {
 
 			ai: &ai.AI{
 				InitPrompt: "You are a helpful assistant.",
-				EngineData: map[string]any{
-					"initial_system_prompt": "Bruce Wayne is Batman.",
-				},
 			},
 			aicall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("79e1da30-c055-11f0-9ca3-6ff0383cb80c"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("7a0651d0-c055-11f0-a70e-8fe16492a013"),
+				Parameter: map[string]any{
+					"initial_system_prompt": "Bruce Wayne is Batman.",
+				},
 			},
 			isTask: false,
 
@@ -1106,15 +1216,15 @@ func Test_startInitMessages(t *testing.T) {
 
 			ai: &ai.AI{
 				InitPrompt: "You are a helpful assistant.",
-				EngineData: map[string]any{
-					"initial_system_prompt": "Bruce Wayne is Batman.",
-				},
 			},
 			aicall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("79c5557e-d49e-11f0-813f-fb8e8df71bb6"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("79f79174-d49e-11f0-96e7-430b2e8fc74c"),
+				Parameter: map[string]any{
+					"initial_system_prompt": "Bruce Wayne is Batman.",
+				},
 			},
 			isTask: true,
 
@@ -1165,7 +1275,7 @@ func Test_startInitMessages(t *testing.T) {
 			},
 		},
 		{
-			name: "has team parameter",
+			name: "has parameter",
 
 			ai: &ai.AI{},
 			aicall: &aicall.AIcall{
@@ -1173,14 +1283,31 @@ func Test_startInitMessages(t *testing.T) {
 					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+				Parameter:    map[string]any{"greeting": "hello"},
 			},
-			isTask:        false,
-			teamParameter: map[string]any{"greeting": "hello"},
+			isTask: false,
 
 			responseSubstitutes: []string{"hello"},
 			expectMessageTexts: []string{
 				defaultCommonAIcallSystemPrompt,
 				`{"greeting":"hello"}`,
+			},
+		},
+		{
+			name: "empty map parameter is excluded from messages",
+
+			ai: &ai.AI{},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("d4e5f6a7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+				Parameter:    map[string]any{},
+			},
+			isTask: false,
+
+			expectMessageTexts: []string{
+				defaultCommonAIcallSystemPrompt,
 			},
 		},
 	}
@@ -1218,7 +1345,7 @@ func Test_startInitMessages(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask, tt.teamParameter); err != nil {
+			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
@@ -1256,7 +1383,7 @@ func Test_StartTask(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
 				},
 				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
-				EngineData:  map[string]any{},
+				Parameter:  map[string]any{},
 
 				InitPrompt: "",
 			},
@@ -1364,6 +1491,240 @@ func Test_StartTask(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectAIcall) {
 				t.Errorf("expected: %v, got: %v", tt.expectAIcall, res)
+			}
+		})
+	}
+}
+
+func Test_resolveAI(t *testing.T) {
+	tests := []struct {
+		name string
+
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+
+		responseAI   *ai.AI
+		responseTeam *team.Team
+		errAI        error
+		errTeam      error
+
+		expectAI            *ai.AI
+		expectTeamParameter map[string]any
+		expectErr           bool
+	}{
+		{
+			name: "AssistanceTypeAI returns ai and nil team parameter",
+
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("d1a2b3c4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1a2b3c4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				Parameter:   map[string]any{"key": "value"},
+			},
+
+			expectAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1a2b3c4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				Parameter:   map[string]any{"key": "value"},
+			},
+			expectTeamParameter: nil,
+			expectErr:           false,
+		},
+		{
+			name: "AssistanceTypeTeam with parameter returns ai and team parameter",
+
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("e2b3c4d5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e2b3c4d5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+				},
+				StartMemberID: uuid.FromStringOrNil("f3c4d5e6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("f3c4d5e6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+						AIID: uuid.FromStringOrNil("a4d5e6f7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+					},
+				},
+				Parameter: map[string]any{"team_key": "team_value"},
+			},
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4d5e6f7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+			},
+
+			expectAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4d5e6f7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+			},
+			expectTeamParameter: map[string]any{"team_key": "team_value"},
+			expectErr:           false,
+		},
+		{
+			name: "AssistanceTypeTeam start member not found returns error",
+
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("b5e6f7a8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5e6f7a8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+				},
+				StartMemberID: uuid.FromStringOrNil("c6f7a8b9-d0e1-11f0-f6a7-b8c9d0e1f2a3"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("d7a8b9c0-e1f2-11f0-a7b8-c9d0e1f2a3b4"),
+						AIID: uuid.FromStringOrNil("e8b9c0d1-f2a3-11f0-b8c9-d0e1f2a3b4c5"),
+					},
+				},
+			},
+
+			expectErr: true,
+		},
+		{
+			name: "AssistanceTypeTeam team fetch fails returns error",
+
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("f9c0d1e2-a3b4-11f0-c9d0-e1f2a3b4c5d6"),
+
+			errTeam: fmt.Errorf("team not found"),
+
+			expectErr: true,
+		},
+		{
+			name: "AssistanceTypeAI ai fetch fails returns error",
+
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("a0d1e2f3-b4c5-11f0-d0e1-f2a3b4c5d6e7"),
+
+			errAI: fmt.Errorf("ai not found"),
+
+			expectErr: true,
+		},
+		{
+			name: "AssistanceTypeTeam empty members returns error",
+
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("d1e2f3a4-b5c6-11f0-e1f2-a3b4c5d6e7f8"),
+
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1e2f3a4-b5c6-11f0-e1f2-a3b4c5d6e7f8"),
+				},
+				StartMemberID: uuid.FromStringOrNil("e2f3a4b5-c6d7-11f0-f2a3-b4c5d6e7f8a9"),
+				Members:       []team.Member{},
+			},
+
+			expectErr: true,
+		},
+		{
+			name: "AssistanceTypeTeam with nil parameter returns ai and nil team parameter",
+
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("f3a4b5c6-d7e8-11f0-a3b4-c5d6e7f8a9b0"),
+
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3a4b5c6-d7e8-11f0-a3b4-c5d6e7f8a9b0"),
+				},
+				StartMemberID: uuid.FromStringOrNil("a4b5c6d7-e8f9-11f0-b4c5-d6e7f8a9b0c1"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("a4b5c6d7-e8f9-11f0-b4c5-d6e7f8a9b0c1"),
+						AIID: uuid.FromStringOrNil("b5c6d7e8-f9a0-11f0-c5d6-e7f8a9b0c1d2"),
+					},
+				},
+				Parameter: nil,
+			},
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5c6d7e8-f9a0-11f0-c5d6-e7f8a9b0c1d2"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4,
+			},
+
+			expectAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b5c6d7e8-f9a0-11f0-c5d6-e7f8a9b0c1d2"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4,
+			},
+			expectTeamParameter: nil,
+			expectErr:           false,
+		},
+		{
+			name: "unsupported assistance type returns error",
+
+			assistanceType: aicall.AssistanceType("unknown"),
+			assistanceID:   uuid.FromStringOrNil("c6d7e8f9-a0b1-11f0-d6e7-f8a9b0c1d2e3"),
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+
+			h := &aicallHandler{
+				aiHandler:   mockAI,
+				teamHandler: mockTeam,
+			}
+			ctx := context.Background()
+
+			switch tt.assistanceType {
+			case aicall.AssistanceTypeAI:
+				mockAI.EXPECT().Get(ctx, tt.assistanceID).Return(tt.responseAI, tt.errAI)
+
+			case aicall.AssistanceTypeTeam:
+				mockTeam.EXPECT().Get(ctx, tt.assistanceID).Return(tt.responseTeam, tt.errTeam)
+				if tt.errTeam == nil && tt.responseTeam != nil {
+					// check if start member exists to decide if AI Get will be called
+					for _, m := range tt.responseTeam.Members {
+						if m.ID == tt.responseTeam.StartMemberID {
+							mockAI.EXPECT().Get(ctx, m.AIID).Return(tt.responseAI, tt.errAI)
+							break
+						}
+					}
+				}
+			}
+
+			resAI, resTeamParam, err := h.resolveAI(ctx, tt.assistanceType, tt.assistanceID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if !reflect.DeepEqual(resAI, tt.expectAI) {
+				t.Errorf("expected AI: %v, got: %v", tt.expectAI, resAI)
+			}
+
+			if !reflect.DeepEqual(resTeamParam, tt.expectTeamParameter) {
+				t.Errorf("expected team parameter: %v, got: %v", tt.expectTeamParameter, resTeamParam)
 			}
 		})
 	}

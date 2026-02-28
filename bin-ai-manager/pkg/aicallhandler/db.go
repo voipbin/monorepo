@@ -27,7 +27,7 @@ func (h *aicallHandler) Create(
 	pipecatcallID uuid.UUID,
 	gender aicall.Gender,
 	language string,
-	teamParameter map[string]any,
+	parameter map[string]any,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -45,12 +45,11 @@ func (h *aicallHandler) Create(
 		AssistanceID:   assistanceID,
 
 		AIEngineModel: c.EngineModel,
-		AIEngineData:  c.EngineData,
 		AITTSType:     c.TTSType,
 		AITTSVoiceID:  c.TTSVoiceID,
 		AISTTType:     c.STTType,
 
-		TeamParameter: teamParameter,
+		Parameter: parameter,
 
 		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,

@@ -39,7 +39,7 @@ func Test_AICreate(t *testing.T) {
 				},
 				Name:       "test name",
 				Detail:     "test detail",
-				EngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},
@@ -58,7 +58,7 @@ func Test_AICreate(t *testing.T) {
 				},
 				Name:       "test name",
 				Detail:     "test detail",
-				EngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},
@@ -86,7 +86,7 @@ func Test_AICreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
-				EngineData: nil,
+				Parameter: nil,
 				TMCreate:   curTime,
 				TMUpdate:   nil,
 				TMDelete:   nil,
@@ -158,7 +158,7 @@ func Test_AIDelete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
-				EngineData: nil,
+				Parameter: nil,
 				TMCreate:   curTime,
 				TMUpdate:   curTime,
 				TMDelete:   curTime,
@@ -252,7 +252,7 @@ func Test_AIList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					EngineData: nil,
+					Parameter: nil,
 					TMCreate:   curTime,
 					TMUpdate:   nil,
 					TMDelete:   nil,
@@ -262,7 +262,7 @@ func Test_AIList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					EngineData: nil,
+					Parameter: nil,
 					TMCreate:   curTime,
 					TMUpdate:   nil,
 					TMDelete:   nil,
@@ -347,7 +347,7 @@ func Test_AIUpdate(t *testing.T) {
 				ai.FieldName:        "new name",
 				ai.FieldDetail:      "new detail",
 				ai.FieldEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
-				ai.FieldEngineData: map[string]any{
+				ai.FieldParameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},
@@ -366,7 +366,7 @@ func Test_AIUpdate(t *testing.T) {
 				Name:        "new name",
 				Detail:      "new detail",
 				EngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
-				EngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
 				},

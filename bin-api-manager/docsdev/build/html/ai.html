@@ -957,7 +957,7 @@ for errors; verify WebSocket stability</p></td>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;engine_data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;object&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;object&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;init_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -976,7 +976,7 @@ for errors; verify WebSocket stability</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the AI configuration (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Sales</span> <span class="pre">Assistant&quot;</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the AI’s purpose or additional notes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">engine_model</span></code> (String, Required): The LLM provider and model. Format: <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>, <code class="docutils literal notranslate"><span class="pre">anthropic.claude-3-5-sonnet</span></code>). See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">engine_data</span></code> (Object, Optional): Provider-specific configuration as a JSON object. Typically left as <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parameter</span></code> (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">engine_key</span></code> (String, Required): The API key for the LLM provider. Must be a valid key from the provider’s dashboard.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> (String, Required): The system prompt that defines the AI’s behavior, persona, and instructions. No enforced length limit.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_type</span></code> (enum string, Required): Text-to-Speech provider. See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
@@ -1005,7 +1005,7 @@ for errors; verify WebSocket stability</p></td>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Sales Assistant AI&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;AI assistant for handling sales inquiries&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;openai.gpt-4o&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;engine_data&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;engine_key&quot;</span><span class="p">:</span> <span class="s2">&quot;sk-...&quot;</span><span class="p">,</span>
     <span class="s2">&quot;init_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a friendly sales assistant. Help customers find the right products.&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>

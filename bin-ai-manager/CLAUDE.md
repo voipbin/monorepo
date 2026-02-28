@@ -75,7 +75,7 @@ A command-line tool for managing AI configurations directly via database/cache (
 
 ```bash
 # Create AI configuration - returns created AI JSON
-./bin/ai-control ai create --customer_id <uuid> --name <name> --engine_type <type> --engine_model <model> [--engine_data '<json>'] [--init_prompt '<text>']
+./bin/ai-control ai create --customer_id <uuid> --name <name> --engine_type <type> --engine_model <model> [--parameter '<json>'] [--init_prompt '<text>']
 
 # Get AI configuration - returns AI JSON
 ./bin/ai-control ai get --id <uuid>
@@ -84,7 +84,7 @@ A command-line tool for managing AI configurations directly via database/cache (
 ./bin/ai-control ai list --customer_id <uuid> [--limit 100] [--token]
 
 # Update AI configuration - returns updated AI JSON
-./bin/ai-control ai update --id <uuid> [--name <name>] [--engine_type <type>] [--engine_model <model>] [--engine_data '<json>'] [--init_prompt '<text>']
+./bin/ai-control ai update --id <uuid> [--name <name>] [--engine_type <type>] [--engine_model <model>] [--parameter '<json>'] [--init_prompt '<text>']
 
 # Delete AI configuration - returns deleted AI JSON
 ./bin/ai-control ai delete --id <uuid>

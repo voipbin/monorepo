@@ -16,7 +16,7 @@ AI
         "name": "<string>",
         "detail": "<string>",
         "engine_model": "<string>",
-        "engine_data": "<object>",
+        "parameter": "<object>",
         "engine_key": "<string>",
         "init_prompt": "<string>",
         "tts_type": "<string>",
@@ -33,7 +33,7 @@ AI
 * ``name`` (String, Required): A human-readable name for the AI configuration (e.g., ``"Sales Assistant"``).
 * ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
-* ``engine_data`` (Object, Optional): Provider-specific configuration as a JSON object. Typically left as ``{}``.
+* ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
 * ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
@@ -63,7 +63,7 @@ Example
         "name": "Sales Assistant AI",
         "detail": "AI assistant for handling sales inquiries",
         "engine_model": "openai.gpt-4o",
-        "engine_data": {},
+        "parameter": {},
         "engine_key": "sk-...",
         "init_prompt": "You are a friendly sales assistant. Help customers find the right products.",
         "tts_type": "elevenlabs",

@@ -17,12 +17,11 @@ type AIcall struct {
 	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty" db:"assistance_id,uuid"`
 
 	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
-	AIEngineData  map[string]any `json:"ai_engine_data,omitempty" db:"ai_engine_data,json"`
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
 
-	TeamParameter map[string]any `json:"team_parameter,omitempty" db:"team_parameter,json"`
+	Parameter map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 
 	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`

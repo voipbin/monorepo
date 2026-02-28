@@ -1,6 +1,6 @@
 """ai_teams add parameter column and ai_aicalls add team_parameter column
 
-Revision ID: f1a2b3c4d5e6
+Revision ID: f1b2c3d4e5f6
 Revises: ed4cff99a82e
 Create Date: 2026-02-28 01:00:00.000000
 
@@ -9,7 +9,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = 'f1a2b3c4d5e6'
+revision = 'f1b2c3d4e5f6'
 down_revision = 'ed4cff99a82e'
 branch_labels = None
 depends_on = None

@@ -34,6 +34,7 @@ func Test_Create(t *testing.T) {
 		pipecatcallID  uuid.UUID
 		gender         aicall.Gender
 		language       string
+		parameter      map[string]any
 
 		responseUUIDID uuid.UUID
 		responseAIcall *aicall.AIcall
@@ -49,7 +50,7 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
 				},
 				EngineModel: ai.EngineModelOpenaiGPT4,
-				EngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "value1",
 				},
 				TTSType:    ai.TTSTypeElevenLabs,
@@ -65,6 +66,9 @@ func Test_Create(t *testing.T) {
 			pipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
 			gender:        aicall.GenderFemale,
 			language:      "en-US",
+			parameter: map[string]any{
+				"key1": "value1",
+			},
 
 			responseUUIDID: uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
 			responseAIcall: &aicall.AIcall{
@@ -81,7 +85,7 @@ func Test_Create(t *testing.T) {
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
 				AIEngineModel:  ai.EngineModelOpenaiGPT4,
-				AIEngineData: map[string]any{
+				Parameter: map[string]any{
 					"key1": "value1",
 				},
 				AITTSType:     ai.TTSTypeElevenLabs,
@@ -95,6 +99,58 @@ func Test_Create(t *testing.T) {
 				Gender:        aicall.GenderFemale,
 				Language:      "en-US",
 				Status:        aicall.StatusInitiating,
+			},
+		},
+		{
+			name: "nil parameter",
+
+			ai: &ai.AI{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT4,
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "voice-id-123",
+				STTType:     ai.STTTypeDeepgram,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+			activeflowID:   uuid.FromStringOrNil("c3d4e5f6-a7b8-11ed-c3d4-e5f6a7b8c9d0"),
+			referenceType:  aicall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("d4e5f6a7-b8c9-11ed-d4e5-f6a7b8c9d0e1"),
+			confbridgeID:   uuid.FromStringOrNil("e5f6a7b8-c9d0-11ed-e5f6-a7b8c9d0e1f2"),
+			pipecatcallID:  uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
+			gender:         aicall.GenderMale,
+			language:       "ja-JP",
+			parameter:      nil,
+
+			responseUUIDID: uuid.FromStringOrNil("a7b8c9d0-e1f2-11ed-a7b8-c9d0e1f2a3b4"),
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a7b8c9d0-e1f2-11ed-a7b8-c9d0e1f2a3b4"),
+				},
+			},
+
+			expectAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("a7b8c9d0-e1f2-11ed-a7b8-c9d0e1f2a3b4"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+				AIEngineModel:  ai.EngineModelOpenaiGPT4,
+				AITTSType:      ai.TTSTypeElevenLabs,
+				AITTSVoiceID:   "voice-id-123",
+				AISTTType:      ai.STTTypeDeepgram,
+				ActiveflowID:   uuid.FromStringOrNil("c3d4e5f6-a7b8-11ed-c3d4-e5f6a7b8c9d0"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("d4e5f6a7-b8c9-11ed-d4e5-f6a7b8c9d0e1"),
+				ConfbridgeID:   uuid.FromStringOrNil("e5f6a7b8-c9d0-11ed-e5f6-a7b8c9d0e1f2"),
+				PipecatcallID:  uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
+				Gender:         aicall.GenderMale,
+				Language:       "ja-JP",
+				Status:         aicall.StatusInitiating,
 			},
 		},
 	}
@@ -124,7 +180,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language, nil)
+			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language, tt.parameter)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

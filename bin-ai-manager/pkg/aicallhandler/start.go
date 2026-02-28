@@ -384,7 +384,7 @@ func (h *aicallHandler) startPipecatcallTask(ctx context.Context, c *aicall.AIca
 	return res, nil
 }
 
-func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aicall.AIcall, isTask bool, teamParameter map[string]any) error {
+func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aicall.AIcall, isTask bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "startInitMessages",
 		"aicall_id": c.ID,
@@ -403,17 +403,11 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	}
 	log.Debugf("Parsed init prompt. aicall_id: %s", c.ID)
 
-	// parse engine data
-	if msg := h.getDataAsJSON(ctx, a.EngineData, c.ActiveflowID); msg != "{}" {
+	// parse parameter (merged ai + team parameter)
+	if msg := h.getDataAsJSON(ctx, c.Parameter, c.ActiveflowID); msg != "{}" {
 		messages = append(messages, msg)
 	}
-	log.Debugf("Parsed engine data. aicall_id: %s", c.ID)
-
-	// parse team parameter
-	if msg := h.getDataAsJSON(ctx, teamParameter, c.ActiveflowID); msg != "{}" {
-		messages = append(messages, msg)
-	}
-	log.Debugf("Parsed team parameter. aicall_id: %s", c.ID)
+	log.Debugf("Parsed parameter. aicall_id: %s", c.ID)
 
 	for _, msg := range messages {
 		tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
@@ -446,9 +440,22 @@ func (h *aicallHandler) startAIcall(
 		"activeflow_id": activeflowID,
 	})
 
+	// merge ai parameter and team parameter (team overrides ai on key collision)
+	mergedParam := map[string]any{}
+	for k, v := range a.Parameter {
+		mergedParam[k] = v
+	}
+	for k, v := range teamParameter {
+		mergedParam[k] = v
+	}
+	var parameter map[string]any
+	if len(mergedParam) > 0 {
+		parameter = mergedParam
+	}
+
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, gender, language, teamParameter)
+	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, gender, language, parameter)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -462,7 +469,7 @@ func (h *aicallHandler) startAIcall(
 	log.Debugf("Set activeflow variables for aicall. aicall_id: %s", res.ID)
 
 	// start initial messages
-	if errInitMessages := h.startInitMessages(ctx, a, res, isTask, teamParameter); errInitMessages != nil {
+	if errInitMessages := h.startInitMessages(ctx, a, res, isTask); errInitMessages != nil {
 		return nil, errors.Wrapf(errInitMessages, "could not start initial messages for aicall. aicall_id: %s", res.ID)
 	}
 	log.Debugf("Initialized messages for aicall. aicall_id: %s", res.ID)

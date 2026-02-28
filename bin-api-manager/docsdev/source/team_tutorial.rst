@@ -114,7 +114,11 @@ Create a team with two members (receptionist and billing specialist) and a trans
                         }
                     ]
                 }
-            ]
+            ],
+            "parameter": {
+                "language": "en",
+                "department": "customer-service"
+            }
         }'
 
 Response:
@@ -153,6 +157,10 @@ Response:
                 ]
             }
         ],
+        "parameter": {
+            "language": "en",
+            "department": "customer-service"
+        },
         "tm_create": "2026-02-27 10:00:00.000000",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -191,6 +199,10 @@ Response:
                 "transitions": [...]
             }
         ],
+        "parameter": {
+            "language": "en",
+            "department": "customer-service"
+        },
         "tm_create": "2026-02-27 10:00:00.000000",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -251,7 +263,11 @@ Add a third member (Technical Support) to the existing team.
                         }
                     ]
                 }
-            ]
+            ],
+            "parameter": {
+                "language": "en",
+                "department": "customer-service"
+            }
         }'
 
 Response:
@@ -267,6 +283,10 @@ Response:
         "members": [
             ...
         ],
+        "parameter": {
+            "language": "en",
+            "department": "customer-service"
+        },
         "tm_create": "2026-02-27 10:00:00.000000",
         "tm_update": "2026-02-27 10:05:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -294,6 +314,10 @@ Response:
                 "detail": "Routes callers to billing or technical support",
                 "start_member_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
                 "members": [...],
+                "parameter": {
+                    "language": "en",
+                    "department": "customer-service"
+                },
                 "tm_create": "2026-02-27 10:00:00.000000",
                 "tm_update": "2026-02-27 10:05:00.000000",
                 "tm_delete": "9999-01-01 00:00:00.000000"
@@ -322,6 +346,10 @@ Response:
         "detail": "Routes callers to billing or technical support",
         "start_member_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
         "members": [...],
+        "parameter": {
+            "language": "en",
+            "department": "customer-service"
+        },
         "tm_create": "2026-02-27 10:00:00.000000",
         "tm_update": "2026-02-27 10:05:00.000000",
         "tm_delete": "2026-02-27 11:00:00.000000"
