@@ -44,8 +44,40 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	// Get tools for this pipecat call based on reference type
-	tools := h.getToolsForPipecatcall(se.Ctx, pc)
+	// Get tools and resolve team based on reference type.
+	// For AICall references, fetch AIcall once and use for both tool and team resolution.
+	// Team-backed calls skip resolveAIFromAIcall since per-member tools come from resolvedTeam.
+	var tools []aitool.Tool
+	var resolvedTeam *resolvedTeamData
+
+	if pc.ReferenceType == pipecatcall.ReferenceTypeAICall {
+		aicall, err := h.requestHandler.AIV1AIcallGet(se.Ctx, pc.ReferenceID)
+		if err != nil {
+			return fmt.Errorf("could not get AIcall for pipecatcall %s: %w", pc.ID, err)
+		}
+
+		// Resolve team first — if team-backed, per-member tools come from resolvedTeam
+		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
+		if err != nil {
+			return fmt.Errorf("could not resolve team for python: %w", err)
+		}
+
+		if resolvedTeam != nil {
+			// Team pipeline: per-member tools are in resolvedTeam, no top-level tools needed
+			log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
+		} else {
+			// Single AI: resolve tools from the AI's configuration
+			ai, errAI := h.resolveAIFromAIcall(se.Ctx, aicall)
+			if errAI != nil {
+				log.WithError(errAI).Warnf("Could not resolve AI, returning all tools")
+				tools = h.toolHandler.GetAll()
+			} else {
+				tools = h.toolHandler.GetByNames(ai.ToolNames)
+			}
+		}
+	} else {
+		tools = h.toolHandler.GetAll()
+	}
 	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
 
 	if errStart := h.pythonRunner.Start(
@@ -60,6 +92,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		string(pc.TTSLanguage),
 		pc.TTSVoiceID,
 		tools,
+		resolvedTeam,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
@@ -68,40 +101,6 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	return nil
 }
 
-// getToolsForPipecatcall retrieves the tools for a pipecat call based on the AI's configuration
-func (h *pipecatcallHandler) getToolsForPipecatcall(ctx context.Context, pc *pipecatcall.Pipecatcall) []aitool.Tool {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "getToolsForPipecatcall",
-		"pipecatcall_id": pc.ID,
-		"reference_type": pc.ReferenceType,
-	})
-
-	// Only AICall reference types have AI-specific tool configurations
-	if pc.ReferenceType != pipecatcall.ReferenceTypeAICall {
-		log.Debugf("Reference type is not AI call, returning all tools")
-		return h.toolHandler.GetAll()
-	}
-
-	// Get the AIcall to find the associated AI
-	aicall, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
-	if err != nil {
-		log.WithError(err).Warnf("Could not get AIcall, returning all tools")
-		return h.toolHandler.GetAll()
-	}
-
-	// Get the AI to find its ToolNames configuration
-	ai, err := h.resolveAIFromAIcall(ctx, aicall)
-	if err != nil {
-		log.WithError(err).Warnf("Could not get AI, returning all tools")
-		return h.toolHandler.GetAll()
-	}
-
-	// Filter tools based on the AI's ToolNames
-	tools := h.toolHandler.GetByNames(ai.ToolNames)
-	log.WithField("tool_names", ai.ToolNames).Debugf("Filtered tools based on AI configuration")
-
-	return tools
-}
 
 func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) error {
 	direction := c.Query("direction")

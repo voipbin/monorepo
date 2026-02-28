@@ -1635,6 +1635,20 @@ websocket = [
 ]
 
 [[package]]
+name = "pipecat-ai-flows"
+version = "0.0.23"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "docstring-parser" },
+    { name = "loguru" },
+    { name = "pipecat-ai" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/83/b5/14ba59e4c03e0af3bcdf0371fddbbd8db95be057fae4f88b0b5296df0df7/pipecat_ai_flows-0.0.23.tar.gz", hash = "sha256:c6c6cbe0ced61e5c91bc8b904a301e1c600e8461f79a7b27811d11f84b647690", size = 4989429, upload-time = "2026-02-28T00:41:01.67Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/53/1b16ddfe8b66b33fa495cc9409d99d22f52b88952fc50120b22303132104/pipecat_ai_flows-0.0.23-py3-none-any.whl", hash = "sha256:3678d9eaef41d4c9e686ea14d2a2d4792dfcf20882ef1bb1c8a5c942812fd2d9", size = 30403, upload-time = "2026-02-28T00:41:00.205Z" },
+]
+
+[[package]]
 name = "pipecat-runner"
 version = "0.1.0"
 source = { virtual = "." }
@@ -1643,6 +1657,7 @@ dependencies = [
     { name = "onnxruntime" },
     { name = "pillow" },
     { name = "pipecat-ai", extra = ["cartesia", "deepgram", "google", "openai", "silero", "websocket"] },
+    { name = "pipecat-ai-flows" },
     { name = "protobuf" },
     { name = "python-dotenv" },
     { name = "uvicorn" },
@@ -1654,6 +1669,7 @@ requires-dist = [
     { name = "onnxruntime", specifier = ">=1.20.1" },
     { name = "pillow", specifier = ">=12.1.1" },
     { name = "pipecat-ai", extras = ["silero", "deepgram", "openai", "cartesia", "websocket", "google"], specifier = ">=0.0.103" },
+    { name = "pipecat-ai-flows", specifier = ">=0.0.10" },
     { name = "protobuf", specifier = ">=5.29.6" },
     { name = "python-dotenv" },
     { name = "uvicorn" },

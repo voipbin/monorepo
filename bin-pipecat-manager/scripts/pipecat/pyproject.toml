@@ -7,6 +7,7 @@ dependencies = [
     "python-dotenv",
     "uvicorn",
     "pipecat-ai[silero,deepgram,openai,cartesia,websocket,google]>=0.0.103",
+    "pipecat-ai-flows>=0.0.10",
     "onnxruntime>=1.20.1",
     "pillow>=12.1.1",
     "protobuf>=5.29.6",

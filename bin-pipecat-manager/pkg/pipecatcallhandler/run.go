@@ -6,8 +6,11 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amteam "monorepo/bin-ai-manager/models/team"
+	aitool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -16,6 +19,35 @@ const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
 )
+
+// resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.
+// Each member carries its own EngineKey so the Python side can call LLM APIs directly.
+type resolvedTeamData struct {
+	ID            uuid.UUID            `json:"id"`
+	StartMemberID uuid.UUID            `json:"start_member_id"`
+	Members       []resolvedMemberData `json:"members"`
+}
+
+// resolvedMemberData holds a single team member's AI config, available tools, and transitions.
+type resolvedMemberData struct {
+	ID          uuid.UUID           `json:"id"`
+	Name        string              `json:"name"`
+	AI          resolvedAIData      `json:"ai"`
+	Tools       []aitool.Tool       `json:"tools"`
+	Transitions []amteam.Transition `json:"transitions"`
+}
+
+// resolvedAIData contains the AI engine configuration for a team member,
+// including credentials, model, prompt, and TTS/STT settings.
+type resolvedAIData struct {
+	EngineModel string         `json:"engine_model"`
+	EngineKey   string         `json:"engine_key"`
+	InitPrompt  string         `json:"init_prompt"`
+	Parameter   map[string]any `json:"parameter,omitempty"`
+	TTSType     string         `json:"tts_type"`
+	TTSVoiceID  string         `json:"tts_voice_id"`
+	STTType     string         `json:"stt_type"`
+}
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
@@ -88,6 +120,61 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 	default:
 		return ""
 	}
+}
+
+// resolveTeamForPython builds the full team data for the Python runner, including engine keys.
+// Returns nil if the AIcall is not team-backed.
+func (h *pipecatcallHandler) resolveTeamForPython(
+	ctx context.Context, c *amaicall.AIcall,
+) (*resolvedTeamData, error) {
+	if c.AssistanceType != amaicall.AssistanceTypeTeam {
+		return nil, nil
+	}
+
+	team, err := h.requestHandler.AIV1TeamGet(ctx, c.AssistanceID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get team: %w", err)
+	}
+	logrus.WithField("team", team).Debugf("Retrieved team info. team_id: %s", team.ID)
+
+	resolved := &resolvedTeamData{
+		ID:            team.ID,
+		StartMemberID: team.StartMemberID,
+		Members:       []resolvedMemberData{},
+	}
+
+	for _, m := range team.Members {
+		ai, errAI := h.requestHandler.AIV1AIGet(ctx, m.AIID)
+		if errAI != nil {
+			return nil, fmt.Errorf("could not get AI for member %s: %w", m.ID, errAI)
+		}
+		logrus.WithField("ai", ai).Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
+
+		tools := h.toolHandler.GetByNames(ai.ToolNames)
+
+		transitions := m.Transitions
+		if transitions == nil {
+			transitions = []amteam.Transition{}
+		}
+
+		resolved.Members = append(resolved.Members, resolvedMemberData{
+			ID:   m.ID,
+			Name: m.Name,
+			AI: resolvedAIData{
+				EngineModel: string(ai.EngineModel),
+				EngineKey:   ai.EngineKey,
+				InitPrompt:  ai.InitPrompt,
+				Parameter:   ai.Parameter,
+				TTSType:     string(ai.TTSType),
+				TTSVoiceID:  ai.TTSVoiceID,
+				STTType:     string(ai.STTType),
+			},
+			Tools:       tools,
+			Transitions: transitions,
+		})
+	}
+
+	return resolved, nil
 }
 
 // resolveAIFromAIcall resolves the AI entity from the AIcall's assistance type and ID.

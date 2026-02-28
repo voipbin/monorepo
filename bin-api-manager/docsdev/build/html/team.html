@@ -290,6 +290,23 @@ Members (nodes)              Transitions (edges)
 </div>
 </section>
 </section>
+<section id="runtime-behavior">
+<h2>Runtime Behavior<a class="headerlink" href="#runtime-behavior" title="Link to this heading"></a></h2>
+<p>When a team is activated during a call, the system handles member switching automatically:</p>
+<p><strong>Service switching:</strong></p>
+<p>Each member carries its own LLM, TTS, and STT configuration (inherited from its <code class="docutils literal notranslate"><span class="pre">ai_id</span></code>). When a transition fires, the system switches all three services to the new member’s configuration. The caller hears the new member’s TTS voice immediately after the transition.</p>
+<p><strong>Tool availability:</strong></p>
+<p>Each member’s AI tools (defined via <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> on the AI configuration) are available only while that member is active. When a transition fires, the new member’s tools replace the previous member’s tools. Transition functions themselves are always available alongside the member’s regular tools.</p>
+<p><strong>STT language:</strong></p>
+<p>The speech-to-text language is shared across all members in a team and is determined by the call’s STT configuration — not per-member. All members use the same STT language for the duration of the call.</p>
+<p><strong>Graceful fallback:</strong></p>
+<p>If a member does not have a TTS or STT service configured (e.g., <code class="docutils literal notranslate"><span class="pre">tts_type</span></code> is empty on its AI), the system keeps the previous member’s TTS or STT service active. This prevents silence or deafness during the conversation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For the best caller experience, configure consistent STT types across all members in a team. While the system gracefully falls back to the previous member’s service, mixing STT providers mid-conversation may cause subtle differences in transcription behavior.</p>
+</div>
+</section>
 <section id="use-cases">
 <h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -890,6 +907,7 @@ Members (nodes)              Transitions (edges)
 <li><a class="reference internal" href="#conversation-flow">Conversation Flow</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#runtime-behavior">Runtime Behavior</a></li>
 <li><a class="reference internal" href="#use-cases">Use Cases</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li><a class="reference internal" href="#team-struct-team">Team</a><ul>

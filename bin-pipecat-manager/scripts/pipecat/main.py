@@ -36,6 +36,44 @@ class Tool(BaseModel):
     class Config:
         extra = "ignore"
 
+class ResolvedAI(BaseModel):
+    engine_model: str
+    engine_key: str
+    init_prompt: Optional[str] = None
+    parameter: Optional[dict] = None
+    tts_type: Optional[str] = None
+    tts_voice_id: Optional[str] = None
+    stt_type: Optional[str] = None
+
+    class Config:
+        extra = "ignore"
+
+class TeamTransition(BaseModel):
+    function_name: str
+    description: str
+    next_member_id: str
+
+    class Config:
+        extra = "ignore"
+
+class ResolvedMember(BaseModel):
+    id: str
+    name: str
+    ai: ResolvedAI
+    tools: Optional[List[Tool]] = Field(default_factory=list)
+    transitions: Optional[List[TeamTransition]] = Field(default_factory=list)
+
+    class Config:
+        extra = "ignore"
+
+class ResolvedTeam(BaseModel):
+    id: str
+    start_member_id: str
+    members: List[ResolvedMember]
+
+    class Config:
+        extra = "ignore"
+
 class PipelineRequest(BaseModel):
     id: Optional[str] = None
     llm_type: Optional[str] = None
@@ -47,12 +85,13 @@ class PipelineRequest(BaseModel):
     tts_language: Optional[str] = None
     tts_voice_id: Optional[str] = None
     tools: Optional[List[Tool]] = Field(default_factory=list)
+    resolved_team: Optional[ResolvedTeam] = None
 
 async def run_pipeline_wrapper(req: PipelineRequest):
     try:
         logger.info(f"Pipeline started: id={req.id}")
-        # Convert Tool objects to dict format for LLM
         tools_data = [t.model_dump() for t in req.tools] if req.tools else []
+        resolved_team_data = req.resolved_team.model_dump() if req.resolved_team else None
         await run_pipeline(
             req.id,
             req.llm_type,
@@ -64,6 +103,7 @@ async def run_pipeline_wrapper(req: PipelineRequest):
             req.tts_language,
             req.tts_voice_id,
             tools_data,
+            resolved_team=resolved_team_data,
         )
         logger.info(f"Pipeline finished successfully: id={req.id}")
     except Exception as e:
@@ -84,6 +124,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
             "tts_type": req.tts_type,
             "tts_language": req.tts_language,
             "tts_voice_id": req.tts_voice_id,
+            "has_resolved_team": req.resolved_team is not None,
         }))
         
         asyncio.create_task(run_pipeline_wrapper(req))
