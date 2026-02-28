@@ -1077,6 +1077,7 @@ monorepo/bin-common-handler/models/identity
 monorepo/bin-common-handler/models/outline
 monorepo/bin-common-handler/models/service
 monorepo/bin-common-handler/models/sock
+monorepo/bin-common-handler/pkg/circuitbreakerhandler
 monorepo/bin-common-handler/pkg/databasehandler
 monorepo/bin-common-handler/pkg/rabbitmqhandler
 monorepo/bin-common-handler/pkg/requesthandler
