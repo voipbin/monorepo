@@ -97,36 +97,32 @@ def _create_transition_handler(
 ):
     """Create a FlowsFunctionSchema handler for member transitions."""
     async def handler(args: FlowArgs, flow_manager: FlowManager):
-        # Save current active member for rollback
-        prev_llm = routing_llm._active_id
-        prev_tts = routing_tts._active_id if routing_tts else None
-        prev_stt = routing_stt._active_id if routing_stt else None
-
-        try:
-            routing_llm.set_active_member(next_member_id)
-            if routing_tts:
-                routing_tts.set_active_member(next_member_id)
-            if routing_stt:
-                routing_stt.set_active_member(next_member_id)
-        except Exception as e:
-            logger.error(f"Transition to {next_member_id} failed, rolling back: {e}")
-            # Rollback
-            if prev_llm:
-                routing_llm.set_active_member(prev_llm)
-            if routing_tts and prev_tts:
-                routing_tts.set_active_member(prev_tts)
-            if routing_stt and prev_stt:
-                routing_stt.set_active_member(prev_stt)
-            return {"error": str(e)}, None
-
+        # Validate target member exists before switching any services
         next_node = member_nodes.get(next_member_id)
         if next_node is None:
             logger.error(f"No NodeConfig for member {next_member_id}")
             return {"error": f"unknown member {next_member_id}"}, None
 
+        routing_llm.set_active_member(next_member_id)
+        if routing_tts:
+            routing_tts.set_active_member(next_member_id)
+        if routing_stt:
+            routing_stt.set_active_member(next_member_id)
+
         logger.info(f"Transition to member {next_member_id} successful")
         return {"status": "transferred"}, next_node
     return handler
+
+
+# Module-level shared HTTP session for connection reuse across tool calls.
+_http_session: aiohttp.ClientSession | None = None
+
+
+async def _get_http_session() -> aiohttp.ClientSession:
+    global _http_session
+    if _http_session is None or _http_session.closed:
+        _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+    return _http_session
 
 
 async def _call_go_tool_endpoint(tool_name: str, args: dict, pipecatcall_id: str) -> dict:
@@ -143,20 +139,20 @@ async def _call_go_tool_endpoint(tool_name: str, args: dict, pipecatcall_id: str
     logger.debug(f"[team_flow][{tool_name}] POST {http_url}")
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(http_url, json=http_body, timeout=aiohttp.ClientTimeout(total=10)) as response:
-                text = await response.text()
-                if response.status >= 400:
-                    logger.warning(f"[team_flow][{tool_name}] HTTP {response.status}: {text[:500]}")
-                    return {"status": "error", "error": f"HTTP {response.status}: {text}"}
+        session = await _get_http_session()
+        async with session.post(http_url, json=http_body) as response:
+            text = await response.text()
+            if response.status >= 400:
+                logger.warning(f"[team_flow][{tool_name}] HTTP {response.status}: {text[:500]}")
+                return {"status": "error", "error": f"HTTP {response.status}: {text}"}
 
-                content_type = response.headers.get("Content-Type", "")
-                if content_type.startswith("application/json"):
-                    try:
-                        return {"status": "ok", "data": json.loads(text)}
-                    except json.JSONDecodeError:
-                        return {"status": "ok", "data": {"raw": text}}
-                return {"status": "ok", "data": {"raw": text}}
+            content_type = response.headers.get("Content-Type", "")
+            if content_type.startswith("application/json"):
+                try:
+                    return {"status": "ok", "data": json.loads(text)}
+                except json.JSONDecodeError:
+                    return {"status": "ok", "data": {"raw": text}}
+            return {"status": "ok", "data": {"raw": text}}
 
     except asyncio.TimeoutError:
         logger.error(f"[team_flow][{tool_name}] Request timed out")

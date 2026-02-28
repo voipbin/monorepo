@@ -40,12 +40,10 @@ class RoutingLLMService(FrameProcessor):
         else:
             await self.push_frame(frame, direction)
 
-    # Delegate FlowManager-facing methods to active service
+    # Delegate FlowManager-facing methods to all services so transitions work
     def register_function(self, name, handler):
-        if self._active_id and self._active_id in self._services:
-            self._services[self._active_id].register_function(name, handler)
-        else:
-            logger.warning(f"Cannot register function '{name}': no active LLM service")
+        for svc in self._services.values():
+            svc.register_function(name, handler)
 
     def unregister_function(self, name):
         # Unregister from ALL services since function may have been registered

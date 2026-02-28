@@ -114,7 +114,7 @@ func (h *pythonRunner) Start(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	log.WithField("request_body", string(jsonData)).Debugf("Sending request to python runner")
+	log.Debugf("Sending request to python runner. pipecatcall_id: %s", pipecatcallID)
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "could not send request to python runner")

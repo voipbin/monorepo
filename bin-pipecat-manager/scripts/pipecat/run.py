@@ -436,7 +436,9 @@ async def run_team_pipeline(
 
     # --- Step 3: Create context aggregator ---
     # Use the start member's LLM service to create the aggregator
-    start_member = next(m for m in members if m["id"] == start_member_id)
+    start_member = next((m for m in members if m["id"] == start_member_id), None)
+    if start_member is None:
+        raise ValueError(f"start_member_id {start_member_id} not found in members list")
     start_messages = []
     if start_member["ai"].get("init_prompt"):
         start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
@@ -446,8 +448,10 @@ async def run_team_pipeline(
     context_aggregator = llm_services[start_member_id].create_context_aggregator(context)
 
     # --- Step 4: Create transports ---
-    vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
-    transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+    transport_input = None
+    if routing_stt:
+        vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
+        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
     transport_output = create_websocket_transport("output", id, vad_analyzer=None)
 
     # --- Step 5: Build pipeline ---
@@ -497,8 +501,9 @@ async def run_team_pipeline(
         logger.error(f"[TEAM] {name} WebSocket disconnected or errored: {error}. pipeline id={id}")
         await task.cancel()
 
-    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
-    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+    if transport_input:
+        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
     transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
     transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
 

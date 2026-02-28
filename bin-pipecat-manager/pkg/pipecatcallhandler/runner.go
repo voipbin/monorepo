@@ -44,26 +44,38 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
-	// Get tools for this pipecat call based on reference type
-	tools := h.getToolsForPipecatcall(se.Ctx, pc)
-	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
-
-	// Resolve team if this is a team-backed AIcall
+	// Get tools and resolve team based on reference type.
+	// For AICall references, fetch AIcall once and use for both tool resolution and team resolution.
+	var tools []aitool.Tool
 	var resolvedTeam *resolvedTeamData
+
 	if pc.ReferenceType == pipecatcall.ReferenceTypeAICall {
 		aicall, err := h.requestHandler.AIV1AIcallGet(se.Ctx, pc.ReferenceID)
-		if err == nil {
-			resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
-			if err != nil {
-				return fmt.Errorf("could not resolve team for python: %w", err)
-			}
-			if resolvedTeam != nil {
-				log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
-			}
-		} else {
-			log.WithError(err).Warnf("Could not get AIcall for team resolution, proceeding without team data")
+		if err != nil {
+			return fmt.Errorf("could not get AIcall for pipecatcall %s: %w", pc.ID, err)
 		}
+
+		// Resolve tools from the AI's configuration
+		ai, errAI := h.resolveAIFromAIcall(se.Ctx, aicall)
+		if errAI != nil {
+			log.WithError(errAI).Warnf("Could not resolve AI, returning all tools")
+			tools = h.toolHandler.GetAll()
+		} else {
+			tools = h.toolHandler.GetByNames(ai.ToolNames)
+		}
+
+		// Resolve team if team-backed
+		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
+		if err != nil {
+			return fmt.Errorf("could not resolve team for python: %w", err)
+		}
+		if resolvedTeam != nil {
+			log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
+		}
+	} else {
+		tools = h.toolHandler.GetAll()
 	}
+	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
 
 	if errStart := h.pythonRunner.Start(
 		se.Ctx,
