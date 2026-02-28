@@ -333,3 +333,156 @@ func Test_resolveAIFromAIcall(t *testing.T) {
 		})
 	}
 }
+
+func Test_runGetLLMKey(t *testing.T) {
+	aiID := uuid.FromStringOrNil("a1a1a1a1-1111-1111-1111-111111111111")
+	teamID := uuid.FromStringOrNil("b2b2b2b2-2222-2222-2222-222222222222")
+	memberID := uuid.FromStringOrNil("c3c3c3c3-3333-3333-3333-333333333333")
+	memberAIID := uuid.FromStringOrNil("d4d4d4d4-4444-4444-4444-444444444444")
+	pipecatcallID := uuid.FromStringOrNil("e5e5e5e5-5555-5555-5555-555555555555")
+	referenceID := uuid.FromStringOrNil("f6f6f6f6-6666-6666-6666-666666666666")
+
+	tests := []struct {
+		name string
+
+		pc *pipecatcall.Pipecatcall
+
+		prepareMockFn func(mockReq *requesthandler.MockRequestHandler)
+
+		expectedKey string
+	}{
+		{
+			name: "aicall reference with ai assistance returns key",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: pipecatcallID,
+				},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   referenceID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{
+					AssistanceType: amaicall.AssistanceTypeAI,
+					AssistanceID:   aiID,
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{
+					Identity: commonidentity.Identity{
+						ID: aiID,
+					},
+					EngineKey: "ai-direct-key",
+				}, nil)
+			},
+
+			expectedKey: "ai-direct-key",
+		},
+		{
+			name: "aicall reference with team assistance returns start member key",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: pipecatcallID,
+				},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   referenceID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{
+					AssistanceType: amaicall.AssistanceTypeTeam,
+					AssistanceID:   teamID,
+				}, nil)
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity: commonidentity.Identity{
+						ID: teamID,
+					},
+					StartMemberID: memberID,
+					Members: []amateam.Member{
+						{ID: memberID, AIID: memberAIID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), memberAIID).Return(&amai.AI{
+					Identity: commonidentity.Identity{
+						ID: memberAIID,
+					},
+					EngineKey: "team-member-key",
+				}, nil)
+			},
+
+			expectedKey: "team-member-key",
+		},
+		{
+			name: "aicall reference with aicall fetch error returns empty",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: pipecatcallID,
+				},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   referenceID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(nil, fmt.Errorf("aicall not found"))
+			},
+
+			expectedKey: "",
+		},
+		{
+			name: "aicall reference with ai resolve error returns empty",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: pipecatcallID,
+				},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   referenceID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{
+					AssistanceType: amaicall.AssistanceTypeAI,
+					AssistanceID:   aiID,
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(nil, fmt.Errorf("ai not found"))
+			},
+
+			expectedKey: "",
+		},
+		{
+			name: "non-aicall reference type returns empty",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: pipecatcallID,
+				},
+				ReferenceType: pipecatcall.ReferenceTypeCall,
+				ReferenceID:   referenceID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {},
+
+			expectedKey: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			tt.prepareMockFn(mockReq)
+
+			h := &pipecatcallHandler{
+				requestHandler: mockReq,
+			}
+
+			result := h.runGetLLMKey(context.Background(), tt.pc)
+			if result != tt.expectedKey {
+				t.Errorf("Wrong LLM key. expect: %q, got: %q", tt.expectedKey, result)
+			}
+		})
+	}
+}
