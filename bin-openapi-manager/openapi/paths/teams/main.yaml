@@ -53,6 +53,13 @@ post:
                 $ref: '#/components/schemas/AIManagerTeamMember'
               minItems: 1
               description: List of team members forming the graph nodes. Must contain at least one member.
+            parameter:
+              type: object
+              additionalProperties: true
+              description: Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+              example:
+                language: "en-US"
+                department: "support"
           required:
             - name
             - detail

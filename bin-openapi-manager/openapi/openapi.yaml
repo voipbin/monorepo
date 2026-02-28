@@ -1829,6 +1829,13 @@ components:
           items:
             $ref: '#/components/schemas/AIManagerTeamMember'
           description: List of team members forming the graph nodes.
+        parameter:
+          type: object
+          additionalProperties: true
+          description: Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+          example:
+            language: "en-US"
+            department: "support"
         tm_create:
           type: string
           format: date-time
@@ -2084,6 +2091,13 @@ components:
           $ref: '#/components/schemas/AIManagerAISTTType'
           description: Speech-to-text provider type used for this call.
           example: "deepgram"
+        team_parameter:
+          type: object
+          additionalProperties: true
+          description: Custom key-value parameter data from the team configuration. Present when assistance_type is team.
+          example:
+            language: "en-US"
+            department: "support"
         activeflow_id:
           type: string
           format: uuid

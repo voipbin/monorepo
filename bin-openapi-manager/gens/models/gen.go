@@ -1084,6 +1084,9 @@ type AIManagerAIcall struct {
 	// Status Status of the ai call.
 	Status *AIManagerAIcallStatus `json:"status,omitempty"`
 
+	// TeamParameter Custom key-value parameter data from the team configuration. Present when assistance_type is team.
+	TeamParameter *map[string]interface{} `json:"team_parameter,omitempty"`
+
 	// TmCreate Timestamp when the AI call was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
@@ -1221,6 +1224,9 @@ type AIManagerTeam struct {
 
 	// Name Name of the team.
 	Name string `json:"name"`
+
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`
@@ -5751,6 +5757,9 @@ type PostTeamsJSONBody struct {
 	// Name Name of the team.
 	Name string `json:"name"`
 
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
+
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`
 }
@@ -5765,6 +5774,9 @@ type PutTeamsIdJSONBody struct {
 
 	// Name Name of the team.
 	Name string `json:"name"`
+
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
 	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
 	StartMemberId string `json:"start_member_id"`
