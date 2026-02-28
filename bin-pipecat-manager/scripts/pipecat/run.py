@@ -41,6 +41,11 @@ from pipecat.transports.websocket.client import (
 
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
 from task import task_manager
+from routing_llm import RoutingLLMService
+from routing_tts import RoutingTTSService
+from routing_stt import RoutingSTTService
+from team_flow import build_team_flow
+from pipecat_flows import FlowManager
 
 
 async def run_pipeline(
@@ -380,6 +385,145 @@ async def run_team_pipeline(
     llm_messages: list = None,
     tools_data: list = None,
 ):
-    """Team pipeline - implemented in Task 12."""
-    logger.error(f"[TEAM] Team pipeline not yet implemented. pipeline id={id}")
-    raise NotImplementedError("Team pipeline not yet implemented")
+    """Run a team-based pipeline with routing services and FlowManager."""
+    total_start = time.monotonic()
+    logger.info(f"[TEAM][INIT] Starting team pipeline. pipeline id={id}")
+
+    if llm_messages is None:
+        llm_messages = []
+
+    members = resolved_team.get("members", [])
+    start_member_id = resolved_team["start_member_id"]
+
+    # --- Step 1: Create per-member service instances ---
+    llm_services = {}
+    tts_services = {}
+    stt_services = {}
+
+    for member in members:
+        mid = member["id"]
+        ai = member["ai"]
+
+        # LLM service — create_llm_service returns (llm, aggregator), we only need llm here
+        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [])
+        llm_services[mid] = llm_svc
+
+        # TTS service
+        if ai.get("tts_type"):
+            tts_svc = create_tts_service(ai["tts_type"], voice_id=ai.get("tts_voice_id"), language=tts_language)
+            tts_services[mid] = tts_svc
+
+        # STT service
+        if ai.get("stt_type"):
+            stt_svc = create_stt_service(ai["stt_type"], language=stt_language)
+            stt_services[mid] = stt_svc
+
+    logger.info(f"[TEAM][INIT] Created {len(llm_services)} LLM, {len(tts_services)} TTS, {len(stt_services)} STT services. pipeline id={id}")
+
+    # --- Step 2: Create routing services ---
+    routing_llm = RoutingLLMService(llm_services)
+    routing_llm.set_active_member(start_member_id)
+
+    routing_tts = None
+    if tts_services:
+        routing_tts = RoutingTTSService(tts_services)
+        routing_tts.set_active_member(start_member_id)
+
+    routing_stt = None
+    if stt_services:
+        routing_stt = RoutingSTTService(stt_services)
+        routing_stt.set_active_member(start_member_id)
+
+    # --- Step 3: Create context aggregator ---
+    # Use the start member's LLM service to create the aggregator
+    start_member = next(m for m in members if m["id"] == start_member_id)
+    start_messages = []
+    if start_member["ai"].get("init_prompt"):
+        start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
+    start_messages.extend([m for m in llm_messages if m.get("role") and m.get("content")])
+
+    context = OpenAILLMContext(messages=start_messages, tools=[])
+    context_aggregator = llm_services[start_member_id].create_context_aggregator(context)
+
+    # --- Step 4: Create transports ---
+    vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
+    transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+    transport_output = create_websocket_transport("output", id, vad_analyzer=None)
+
+    # --- Step 5: Build pipeline ---
+    pipeline_stages = []
+
+    if routing_stt:
+        pipeline_stages.append(transport_input.input())
+        pipeline_stages.append(routing_stt)
+
+    pipeline_stages.append(context_aggregator.user())
+    pipeline_stages.append(routing_llm)
+
+    if routing_tts:
+        pipeline_stages.append(routing_tts)
+
+    pipeline_stages.append(context_aggregator.assistant())
+    pipeline_stages.append(transport_output.output())
+
+    pipeline = Pipeline(pipeline_stages)
+
+    # --- Step 6: Create pipeline task ---
+    task = PipelineTask(
+        pipeline,
+        params=PipelineParams(
+            audio_out_sample_rate=16000,
+            enable_metrics=True,
+            enable_usage_metrics=True,
+        ),
+    )
+
+    await task_manager.add(id, task)
+
+    # --- Step 7: Set up FlowManager ---
+    member_nodes, start_node = build_team_flow(
+        resolved_team, id,
+        routing_llm, routing_tts, routing_stt,
+    )
+
+    flow_manager = FlowManager(
+        task=task,
+        llm=routing_llm,
+        context_aggregator=context_aggregator,
+    )
+
+    # --- Step 8: Event handlers ---
+    async def handle_disconnect_or_error(name, transport, error=None):
+        logger.error(f"[TEAM] {name} WebSocket disconnected or errored: {error}. pipeline id={id}")
+        await task.cancel()
+
+    transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+    transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
+
+    # --- Step 9: Initialize and run ---
+    await flow_manager.initialize(start_node)
+
+    runner = PipelineRunner()
+
+    init_total = time.monotonic() - total_start
+    logger.info(f"[TEAM][INIT][total] All initialization completed in {init_total:.3f} sec. pipeline id={id}")
+
+    try:
+        logger.info(f"[TEAM][RUN] Starting team pipeline. pipeline id={id}")
+        await runner.run(task)
+    except asyncio.CancelledError:
+        logger.info(f"[TEAM][RUN] Pipeline cancelled. pipeline id={id}")
+    except Exception as e:
+        logger.error(f"[TEAM][RUN] Pipeline error: {e}. pipeline id={id}")
+    finally:
+        logger.info(f"[TEAM][CLEANUP] Cleaning up team pipeline. pipeline id={id}")
+        if task:
+            await task.cancel()
+        if transport_input:
+            await transport_input.cleanup()
+        if transport_output:
+            await transport_output.cleanup()
+        await task_manager.remove(id)
+        logger.info(f"[TEAM][CLEANUP] Team pipeline cleaned. pipeline id={id}")
