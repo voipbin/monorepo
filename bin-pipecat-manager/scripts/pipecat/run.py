@@ -54,6 +54,35 @@ async def run_pipeline(
     tts_language: str = None,
     tts_voice_id: str = None,
     tools_data: list = None,
+    resolved_team: dict = None,
+):
+    if resolved_team:
+        await run_team_pipeline(
+            id, resolved_team,
+            stt_language=stt_language,
+            tts_language=tts_language,
+            llm_messages=llm_messages,
+            tools_data=tools_data,
+        )
+    else:
+        await run_single_ai_pipeline(
+            id, llm_type, llm_key, llm_messages,
+            stt_type, stt_language, tts_type, tts_language,
+            tts_voice_id, tools_data,
+        )
+
+
+async def run_single_ai_pipeline(
+    id: str,
+    llm_type: str,
+    llm_key: str,
+    llm_messages: list = None,
+    stt_type: str = None,
+    stt_language: str = None,
+    tts_type: str = None,
+    tts_language: str = None,
+    tts_voice_id: str = None,
+    tools_data: list = None,
 ):
     total_start = time.monotonic()
     logger.info(f"[INIT] Starting Pipecat client pipeline id={id}")
@@ -341,3 +370,16 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
             session_timeout=common.PIPELINE_SESSION_TIMEOUT,
         )
     )
+
+
+async def run_team_pipeline(
+    id: str,
+    resolved_team: dict,
+    stt_language: str = None,
+    tts_language: str = None,
+    llm_messages: list = None,
+    tools_data: list = None,
+):
+    """Team pipeline - implemented in Task 12."""
+    logger.error(f"[TEAM] Team pipeline not yet implemented. pipeline id={id}")
+    raise NotImplementedError("Team pipeline not yet implemented")
