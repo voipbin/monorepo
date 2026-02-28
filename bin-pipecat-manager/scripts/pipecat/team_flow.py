@@ -115,6 +115,8 @@ def _create_transition_handler(
 
 
 # Module-level shared HTTP session for connection reuse across tool calls.
+# Safe in CPython asyncio: no await between check and assignment in _get_http_session,
+# so no coroutine interleaving is possible within a single event loop.
 _http_session: aiohttp.ClientSession | None = None
 
 

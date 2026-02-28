@@ -23,7 +23,9 @@ class RoutingTTSService(FrameProcessor):
 
     def set_active_member(self, member_id: str):
         if member_id not in self._services:
-            logger.error(f"Unknown member_id for TTS routing: {member_id}")
+            # Member has no TTS configured — keep using the previous member's TTS service.
+            # In a voice call, this is safer than having no TTS (silence).
+            logger.warning(f"Member {member_id} has no TTS service, keeping previous member's TTS")
             return
         self._active_id = member_id
         logger.info(f"TTS routing switched to member: {member_id}")

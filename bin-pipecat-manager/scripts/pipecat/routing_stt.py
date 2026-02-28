@@ -23,7 +23,9 @@ class RoutingSTTService(FrameProcessor):
 
     def set_active_member(self, member_id: str):
         if member_id not in self._services:
-            logger.error(f"Unknown member_id for STT routing: {member_id}")
+            # Member has no STT configured — keep using the previous member's STT service.
+            # In a voice call, this is safer than having no STT (deaf).
+            logger.warning(f"Member {member_id} has no STT service, keeping previous member's STT")
             return
         self._active_id = member_id
         logger.info(f"STT routing switched to member: {member_id}")

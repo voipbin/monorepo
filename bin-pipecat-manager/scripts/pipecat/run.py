@@ -67,7 +67,6 @@ async def run_pipeline(
             stt_language=stt_language,
             tts_language=tts_language,
             llm_messages=llm_messages,
-            tools_data=tools_data,
         )
     else:
         await run_single_ai_pipeline(
@@ -383,7 +382,6 @@ async def run_team_pipeline(
     stt_language: str = None,
     tts_language: str = None,
     llm_messages: list = None,
-    tools_data: list = None,
 ):
     """Run a team-based pipeline with routing services and FlowManager."""
     total_start = time.monotonic()
