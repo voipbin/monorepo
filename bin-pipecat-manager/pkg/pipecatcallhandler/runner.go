@@ -63,8 +63,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		}
 
 		if resolvedTeam != nil {
-			// Team pipeline: per-member tools are in resolvedTeam, top-level tools unused by Python
-			tools = h.toolHandler.GetAll()
+			// Team pipeline: per-member tools are in resolvedTeam, no top-level tools needed
 			log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
 		} else {
 			// Single AI: resolve tools from the AI's configuration

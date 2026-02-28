@@ -482,38 +482,38 @@ async def run_team_pipeline(
 
     await task_manager.add(id, task)
 
-    # --- Step 7: Set up FlowManager ---
-    member_nodes, start_node = build_team_flow(
-        resolved_team, id,
-        routing_llm, routing_tts, routing_stt,
-    )
-
-    flow_manager = FlowManager(
-        task=task,
-        llm=routing_llm,
-        context_aggregator=context_aggregator,
-    )
-
-    # --- Step 8: Event handlers ---
-    async def handle_disconnect_or_error(name, transport, error=None):
-        logger.error(f"[TEAM] {name} WebSocket disconnected or errored: {error}. pipeline id={id}")
-        await task.cancel()
-
-    if transport_input:
-        transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
-        transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
-    transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
-    transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
-
-    # --- Step 9: Initialize and run ---
-    await flow_manager.initialize(start_node)
-
-    runner = PipelineRunner()
-
-    init_total = time.monotonic() - total_start
-    logger.info(f"[TEAM][INIT][total] All initialization completed in {init_total:.3f} sec. pipeline id={id}")
-
     try:
+        # --- Step 7: Set up FlowManager ---
+        member_nodes, start_node = build_team_flow(
+            resolved_team, id,
+            routing_llm, routing_tts, routing_stt,
+        )
+
+        flow_manager = FlowManager(
+            task=task,
+            llm=routing_llm,
+            context_aggregator=context_aggregator,
+        )
+
+        # --- Step 8: Event handlers ---
+        async def handle_disconnect_or_error(name, transport, error=None):
+            logger.error(f"[TEAM] {name} WebSocket disconnected or errored: {error}. pipeline id={id}")
+            await task.cancel()
+
+        if transport_input:
+            transport_input.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Input"))
+            transport_input.event_handler("on_error")(partial(handle_disconnect_or_error, "Input"))
+        transport_output.event_handler("on_disconnected")(partial(handle_disconnect_or_error, "Output"))
+        transport_output.event_handler("on_error")(partial(handle_disconnect_or_error, "Output"))
+
+        # --- Step 9: Initialize and run ---
+        await flow_manager.initialize(start_node)
+
+        runner = PipelineRunner()
+
+        init_total = time.monotonic() - total_start
+        logger.info(f"[TEAM][INIT][total] All initialization completed in {init_total:.3f} sec. pipeline id={id}")
+
         logger.info(f"[TEAM][RUN] Starting team pipeline. pipeline id={id}")
         await runner.run(task)
     except asyncio.CancelledError:

@@ -69,8 +69,10 @@ _mocks = {
     ),
     # deepgram SDK
     "deepgram": _make_mock_module("LiveOptions"),
+    # pipecat-flows
+    "pipecat_flows": _make_mock_module("FlowManager", "FlowArgs", "FlowsFunctionSchema", "NodeConfig"),
     # local modules that may not exist in test env
-    "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPELINE_SESSION_TIMEOUT=300),
+    "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPECATCALL_HTTP_URL="http://localhost", PIPELINE_SESSION_TIMEOUT=300),
     "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "get_tool_names"),
     "task": _make_mock_module("task_manager"),
 }
