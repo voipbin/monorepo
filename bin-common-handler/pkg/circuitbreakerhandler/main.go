@@ -88,9 +88,7 @@ func (h *circuitBreakerHandler) getOrCreateBreaker(target string) *breaker {
 func (h *circuitBreakerHandler) Allow(target string) error {
 	b := h.getOrCreateBreaker(target)
 
-	prevState := b.getState()
-	err := b.allow()
-	newState := b.getState()
+	prevState, newState, err := b.allow()
 
 	if prevState != newState {
 		h.promStateTransitions.WithLabelValues(target, prevState.String(), newState.String()).Inc()
@@ -109,9 +107,7 @@ func (h *circuitBreakerHandler) Allow(target string) error {
 func (h *circuitBreakerHandler) RecordSuccess(target string) {
 	b := h.getOrCreateBreaker(target)
 
-	prevState := b.getState()
-	b.recordSuccess()
-	newState := b.getState()
+	prevState, newState := b.recordSuccess()
 
 	if prevState != newState {
 		h.promStateTransitions.WithLabelValues(target, prevState.String(), newState.String()).Inc()
@@ -123,9 +119,7 @@ func (h *circuitBreakerHandler) RecordSuccess(target string) {
 func (h *circuitBreakerHandler) RecordFailure(target string) {
 	b := h.getOrCreateBreaker(target)
 
-	prevState := b.getState()
-	b.recordFailure()
-	newState := b.getState()
+	prevState, newState := b.recordFailure()
 
 	if prevState != newState {
 		h.promStateTransitions.WithLabelValues(target, prevState.String(), newState.String()).Inc()

@@ -49,42 +49,52 @@ func newBreaker() *breaker {
 }
 
 // allow checks whether a request is allowed through.
-// Returns nil if allowed, ErrCircuitOpen if not.
-func (b *breaker) allow() error {
+// Returns the state before and after the check, and an error if rejected.
+// Both states are captured under a single lock acquisition to avoid TOCTOU races.
+func (b *breaker) allow() (State, State, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	prev := b.state
 
 	switch b.state {
 	case StateClosed:
-		return nil
+		return prev, b.state, nil
 	case StateOpen:
 		if b.nowFunc().Sub(b.openedAt) >= b.openDuration {
 			b.state = StateHalfOpen
-			return nil
+			return prev, b.state, nil
 		}
-		return ErrCircuitOpen
+		return prev, b.state, ErrCircuitOpen
 	case StateHalfOpen:
 		// only one probe allowed — the caller that transitioned Open→HalfOpen
-		return ErrCircuitOpen
+		return prev, b.state, ErrCircuitOpen
 	default:
-		return nil
+		return prev, b.state, nil
 	}
 }
 
-func (b *breaker) recordSuccess() {
+// recordSuccess records a successful request.
+// Returns the state before and after, captured atomically.
+func (b *breaker) recordSuccess() (State, State) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
+	prev := b.state
 	b.consecutiveFails = 0
 	if b.state == StateHalfOpen {
 		b.state = StateClosed
 	}
+	return prev, b.state
 }
 
-func (b *breaker) recordFailure() {
+// recordFailure records a failed request.
+// Returns the state before and after, captured atomically.
+func (b *breaker) recordFailure() (State, State) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
+	prev := b.state
 	b.consecutiveFails++
 
 	switch b.state {
@@ -97,6 +107,7 @@ func (b *breaker) recordFailure() {
 		b.state = StateOpen
 		b.openedAt = b.nowFunc()
 	}
+	return prev, b.state
 }
 
 func (b *breaker) getState() State {

@@ -16,7 +16,7 @@ func TestBreakerStartsClosed(t *testing.T) {
 
 func TestBreakerAllowsRequestsWhenClosed(t *testing.T) {
 	b := newBreaker()
-	if err := b.allow(); err != nil {
+	if _, _, err := b.allow(); err != nil {
 		t.Errorf("expected nil error, got %v", err)
 	}
 }
@@ -24,7 +24,7 @@ func TestBreakerAllowsRequestsWhenClosed(t *testing.T) {
 func TestBreakerTransitionsToOpenAfterThresholdFailures(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateOpen {
@@ -35,10 +35,10 @@ func TestBreakerTransitionsToOpenAfterThresholdFailures(t *testing.T) {
 func TestBreakerRejectsWhenOpen(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
-	err := b.allow()
+	_, _, err := b.allow()
 	if !errors.Is(err, ErrCircuitOpen) {
 		t.Errorf("expected ErrCircuitOpen, got %v", err)
 	}
@@ -50,13 +50,13 @@ func TestBreakerTransitionsToHalfOpenAfterTimeout(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	now = now.Add(defaultOpenDuration + time.Second)
 	// allow() transitions Open -> HalfOpen and lets the probe through
-	if err := b.allow(); err != nil {
+	if _, _, err := b.allow(); err != nil {
 		t.Errorf("expected probe allowed after timeout, got %v", err)
 	}
 	if b.getState() != StateHalfOpen {
@@ -70,13 +70,13 @@ func TestBreakerHalfOpenProbeSuccessCloses(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	now = now.Add(defaultOpenDuration + time.Second)
 
-	if err := b.allow(); err != nil {
+	if _, _, err := b.allow(); err != nil {
 		t.Errorf("expected probe to be allowed, got %v", err)
 	}
 
@@ -92,12 +92,12 @@ func TestBreakerHalfOpenProbeFailureReopens(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	now = now.Add(defaultOpenDuration + time.Second)
-	_ = b.allow()
+	_, _, _ = b.allow()
 	b.recordFailure()
 
 	if b.getState() != StateOpen {
@@ -109,13 +109,13 @@ func TestBreakerSuccessResetsFailureCount(t *testing.T) {
 	b := newBreaker()
 
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	b.recordSuccess()
 
-	_ = b.allow()
+	_, _, _ = b.allow()
 	b.recordFailure()
 
 	if b.getState() != StateClosed {
@@ -126,7 +126,7 @@ func TestBreakerSuccessResetsFailureCount(t *testing.T) {
 func TestBreakerDoesNotTripBelowThreshold(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateClosed {
@@ -142,18 +142,18 @@ func TestBreakerHalfOpenBlocksSecondProbe(t *testing.T) {
 
 	// Trip to Open
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	// Advance past open duration -> first allow transitions to HalfOpen
 	now = now.Add(defaultOpenDuration + time.Second)
-	if err := b.allow(); err != nil {
+	if _, _, err := b.allow(); err != nil {
 		t.Fatalf("expected first probe to be allowed, got %v", err)
 	}
 
 	// Second call in HalfOpen should be rejected
-	err := b.allow()
+	_, _, err := b.allow()
 	if !errors.Is(err, ErrCircuitOpen) {
 		t.Errorf("expected second probe to be rejected with ErrCircuitOpen, got %v", err)
 	}
@@ -179,7 +179,7 @@ func TestBreakerRecordFailureInOpenStaysOpen(t *testing.T) {
 
 	// Trip to Open
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateOpen {
@@ -204,7 +204,7 @@ func TestBreakerGetStateIsReadOnly(t *testing.T) {
 
 	// Trip to Open
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateOpen {
@@ -218,7 +218,7 @@ func TestBreakerGetStateIsReadOnly(t *testing.T) {
 	}
 
 	// allow() is the sole mutator — it transitions Open -> HalfOpen and allows the probe
-	if err := b.allow(); err != nil {
+	if _, _, err := b.allow(); err != nil {
 		t.Errorf("expected probe to be allowed, got %v", err)
 	}
 	if b.getState() != StateHalfOpen {
@@ -233,13 +233,13 @@ func TestBreakerAllowBeforeTimeoutStaysOpen(t *testing.T) {
 
 	// Trip to Open
 	for i := 0; i < defaultFailureThreshold; i++ {
-		_ = b.allow()
+		_, _, _ = b.allow()
 		b.recordFailure()
 	}
 
 	// Before timeout: allow() should reject
 	now = now.Add(defaultOpenDuration - time.Second)
-	err := b.allow()
+	_, _, err := b.allow()
 	if !errors.Is(err, ErrCircuitOpen) {
 		t.Errorf("expected ErrCircuitOpen before timeout, got %v", err)
 	}
@@ -253,13 +253,90 @@ func TestBreakerConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_ = b.allow()
+			_, _, _ = b.allow()
 			b.recordFailure()
 			b.recordSuccess()
 			b.getState()
 		}()
 	}
 	wg.Wait()
+}
+
+func TestBreakerAllowReturnsAtomicTransition(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Closed -> allow returns (Closed, Closed, nil)
+	prev, cur, err := b.allow()
+	if prev != StateClosed || cur != StateClosed || err != nil {
+		t.Errorf("expected (Closed, Closed, nil), got (%v, %v, %v)", prev, cur, err)
+	}
+
+	// Trip to Open
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_, _, _ = b.allow()
+		b.recordFailure()
+	}
+
+	// Open -> allow before timeout returns (Open, Open, ErrCircuitOpen)
+	prev, cur, err = b.allow()
+	if prev != StateOpen || cur != StateOpen || !errors.Is(err, ErrCircuitOpen) {
+		t.Errorf("expected (Open, Open, ErrCircuitOpen), got (%v, %v, %v)", prev, cur, err)
+	}
+
+	// Open -> allow after timeout returns (Open, HalfOpen, nil)
+	now = now.Add(defaultOpenDuration + time.Second)
+	prev, cur, err = b.allow()
+	if prev != StateOpen || cur != StateHalfOpen || err != nil {
+		t.Errorf("expected (Open, HalfOpen, nil), got (%v, %v, %v)", prev, cur, err)
+	}
+}
+
+func TestBreakerRecordFailureReturnsAtomicTransition(t *testing.T) {
+	b := newBreaker()
+
+	// Failures below threshold: (Closed, Closed)
+	for i := 0; i < defaultFailureThreshold-1; i++ {
+		_, _, _ = b.allow()
+		prev, cur := b.recordFailure()
+		if prev != StateClosed || cur != StateClosed {
+			t.Errorf("failure %d: expected (Closed, Closed), got (%v, %v)", i+1, prev, cur)
+		}
+	}
+
+	// Failure at threshold: (Closed, Open)
+	_, _, _ = b.allow()
+	prev, cur := b.recordFailure()
+	if prev != StateClosed || cur != StateOpen {
+		t.Errorf("expected (Closed, Open) at threshold, got (%v, %v)", prev, cur)
+	}
+}
+
+func TestBreakerRecordSuccessReturnsAtomicTransition(t *testing.T) {
+	now := time.Now()
+	b := newBreaker()
+	b.nowFunc = func() time.Time { return now }
+
+	// Success in Closed: (Closed, Closed)
+	prev, cur := b.recordSuccess()
+	if prev != StateClosed || cur != StateClosed {
+		t.Errorf("expected (Closed, Closed), got (%v, %v)", prev, cur)
+	}
+
+	// Trip to Open, advance to HalfOpen
+	for i := 0; i < defaultFailureThreshold; i++ {
+		_, _, _ = b.allow()
+		b.recordFailure()
+	}
+	now = now.Add(defaultOpenDuration + time.Second)
+	_, _, _ = b.allow() // transitions to HalfOpen
+
+	// Success in HalfOpen: (HalfOpen, Closed)
+	prev, cur = b.recordSuccess()
+	if prev != StateHalfOpen || cur != StateClosed {
+		t.Errorf("expected (HalfOpen, Closed), got (%v, %v)", prev, cur)
+	}
 }
 
 func TestStateString(t *testing.T) {
