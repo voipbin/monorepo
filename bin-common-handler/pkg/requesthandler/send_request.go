@@ -47,11 +47,18 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.Qu
 		return nil, nil
 
 	default:
-		res, err := r.sendDirectRequest(cctx, string(queue), resource, req)
-		if err != nil {
+		// check circuit breaker before sending
+		if err := r.cb.Allow(string(queue)); err != nil {
 			return nil, errors.Wrapf(err, "could not send the request. queue: %s, method: %s, uri: %s", queue, method, uri)
 		}
 
+		res, err := r.sendDirectRequest(cctx, string(queue), resource, req)
+		if err != nil {
+			r.cb.RecordFailure(string(queue))
+			return nil, errors.Wrapf(err, "could not send the request. queue: %s, method: %s, uri: %s", queue, method, uri)
+		}
+
+		r.cb.RecordSuccess(string(queue))
 		return res, nil
 	}
 }
