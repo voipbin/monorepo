@@ -48,6 +48,7 @@ type PythonRunner interface {
 		ttsLanguage string,
 		ttsVoiceID string,
 		tools []aitool.Tool,
+		resolvedTeam *resolvedTeamData,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -68,6 +69,7 @@ func (h *pythonRunner) Start(
 	ttsLanguage string,
 	ttsVoiceID string,
 	tools []aitool.Tool,
+	resolvedTeam *resolvedTeamData,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -75,27 +77,29 @@ func (h *pythonRunner) Start(
 
 	// Request body structure for Python runner
 	reqBody := struct {
-		ID          uuid.UUID        `json:"id,omitempty"`
-		LLMType     string           `json:"llm_type,omitempty"`
-		LLMKey      string           `json:"llm_key,omitempty"`
-		LLMMessages []map[string]any `json:"llm_messages,omitempty"`
-		STTType     string           `json:"stt_type,omitempty"`
-		STTLanguage string           `json:"stt_language,omitempty"`
-		TTSType     string           `json:"tts_type,omitempty"`
-		TTSLanguage string           `json:"tts_language,omitempty"`
-		TTSVoiceID  string           `json:"tts_voice_id,omitempty"`
-		Tools       []aitool.Tool    `json:"tools,omitempty"`
+		ID           uuid.UUID         `json:"id,omitempty"`
+		LLMType      string            `json:"llm_type,omitempty"`
+		LLMKey       string            `json:"llm_key,omitempty"`
+		LLMMessages  []map[string]any  `json:"llm_messages,omitempty"`
+		STTType      string            `json:"stt_type,omitempty"`
+		STTLanguage  string            `json:"stt_language,omitempty"`
+		TTSType      string            `json:"tts_type,omitempty"`
+		TTSLanguage  string            `json:"tts_language,omitempty"`
+		TTSVoiceID   string            `json:"tts_voice_id,omitempty"`
+		Tools        []aitool.Tool     `json:"tools,omitempty"`
+		ResolvedTeam *resolvedTeamData `json:"resolved_team,omitempty"`
 	}{
-		ID:          pipecatcallID,
-		LLMType:     llmType,
-		LLMKey:      llmKey,
-		LLMMessages: llmMessages,
-		STTType:     sttType,
-		STTLanguage: sttLanguage,
-		TTSType:     ttsType,
-		TTSLanguage: ttsLanguage,
-		TTSVoiceID:  ttsVoiceID,
-		Tools:       tools,
+		ID:           pipecatcallID,
+		LLMType:      llmType,
+		LLMKey:       llmKey,
+		LLMMessages:  llmMessages,
+		STTType:      sttType,
+		STTLanguage:  sttLanguage,
+		TTSType:      ttsType,
+		TTSLanguage:  ttsLanguage,
+		TTSVoiceID:   ttsVoiceID,
+		Tools:        tools,
+		ResolvedTeam: resolvedTeam,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

@@ -48,6 +48,23 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	tools := h.getToolsForPipecatcall(se.Ctx, pc)
 	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
 
+	// Resolve team if this is a team-backed AIcall
+	var resolvedTeam *resolvedTeamData
+	if pc.ReferenceType == pipecatcall.ReferenceTypeAICall {
+		aicall, err := h.requestHandler.AIV1AIcallGet(se.Ctx, pc.ReferenceID)
+		if err == nil {
+			resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
+			if err != nil {
+				return fmt.Errorf("could not resolve team for python: %w", err)
+			}
+			if resolvedTeam != nil {
+				log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
+			}
+		} else {
+			log.WithError(err).Warnf("Could not get AIcall for team resolution, proceeding without team data")
+		}
+	}
+
 	if errStart := h.pythonRunner.Start(
 		se.Ctx,
 		pc.ID,
@@ -60,6 +77,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		string(pc.TTSLanguage),
 		pc.TTSVoiceID,
 		tools,
+		resolvedTeam,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
