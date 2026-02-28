@@ -29,8 +29,7 @@ class RoutingLLMService(FrameProcessor):
 
     def set_active_member(self, member_id: str):
         if member_id not in self._services:
-            logger.error(f"Unknown member_id for LLM routing: {member_id}")
-            return
+            raise ValueError(f"Unknown member_id for LLM routing: {member_id}")
         self._active_id = member_id
         logger.info(f"LLM routing switched to member: {member_id}")
 

@@ -76,7 +76,12 @@ def build_team_flow(
         }
         member_nodes[member_id] = node
 
-    start_node = member_nodes[resolved_team["start_member_id"]]
+    start_node = member_nodes.get(resolved_team["start_member_id"])
+    if start_node is None:
+        raise ValueError(
+            f"start_member_id {resolved_team['start_member_id']} not found in member_nodes. "
+            f"Known members: {list(member_nodes.keys())}"
+        )
     return member_nodes, start_node
 
 

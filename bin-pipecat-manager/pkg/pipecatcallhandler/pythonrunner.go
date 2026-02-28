@@ -86,7 +86,7 @@ func (h *pythonRunner) Start(
 		TTSType      string            `json:"tts_type,omitempty"`
 		TTSLanguage  string            `json:"tts_language,omitempty"`
 		TTSVoiceID   string            `json:"tts_voice_id,omitempty"`
-		Tools        []aitool.Tool     `json:"tools,omitempty"`
+		Tools        []aitool.Tool     `json:"tools,omitempty"` // Python defaults to [] via Field(default_factory=list) when absent
 		ResolvedTeam *resolvedTeamData `json:"resolved_team,omitempty"`
 	}{
 		ID:           pipecatcallID,
