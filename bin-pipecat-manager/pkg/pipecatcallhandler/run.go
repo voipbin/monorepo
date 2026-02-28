@@ -6,8 +6,11 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amteam "monorepo/bin-ai-manager/models/team"
+	aitool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -16,6 +19,35 @@ const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
 )
+
+// resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.
+// Each member carries its own EngineKey so the Python side can call LLM APIs directly.
+type resolvedTeamData struct {
+	ID            uuid.UUID            `json:"id"`
+	StartMemberID uuid.UUID            `json:"start_member_id"`
+	Members       []resolvedMemberData `json:"members"`
+}
+
+// resolvedMemberData holds a single team member's AI config, available tools, and transitions.
+type resolvedMemberData struct {
+	ID          uuid.UUID           `json:"id"`
+	Name        string              `json:"name"`
+	AI          resolvedAIData      `json:"ai"`
+	Tools       []aitool.Tool       `json:"tools"`
+	Transitions []amteam.Transition `json:"transitions"`
+}
+
+// resolvedAIData contains the AI engine configuration for a team member,
+// including credentials, model, prompt, and TTS/STT settings.
+type resolvedAIData struct {
+	EngineModel string         `json:"engine_model"`
+	EngineKey   string         `json:"engine_key"`
+	InitPrompt  string         `json:"init_prompt"`
+	Parameter   map[string]any `json:"parameter,omitempty"`
+	TTSType     string         `json:"tts_type"`
+	TTSVoiceID  string         `json:"tts_voice_id"`
+	STTType     string         `json:"stt_type"`
+}
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
