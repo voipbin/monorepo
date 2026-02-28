@@ -24,7 +24,7 @@ func TestBreakerAllowsRequestsWhenClosed(t *testing.T) {
 func TestBreakerTransitionsToOpenAfterThresholdFailures(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateOpen {
@@ -35,7 +35,7 @@ func TestBreakerTransitionsToOpenAfterThresholdFailures(t *testing.T) {
 func TestBreakerRejectsWhenOpen(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 	err := b.allow()
@@ -50,7 +50,7 @@ func TestBreakerTransitionsToHalfOpenAfterTimeout(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 
@@ -66,7 +66,7 @@ func TestBreakerHalfOpenProbeSuccessCloses(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 
@@ -88,12 +88,12 @@ func TestBreakerHalfOpenProbeFailureReopens(t *testing.T) {
 	b.nowFunc = func() time.Time { return now }
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 
 	now = now.Add(defaultOpenDuration + time.Second)
-	b.allow()
+	_ = b.allow()
 	b.recordFailure()
 
 	if b.getState() != StateOpen {
@@ -105,13 +105,13 @@ func TestBreakerSuccessResetsFailureCount(t *testing.T) {
 	b := newBreaker()
 
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 
 	b.recordSuccess()
 
-	b.allow()
+	_ = b.allow()
 	b.recordFailure()
 
 	if b.getState() != StateClosed {
@@ -122,7 +122,7 @@ func TestBreakerSuccessResetsFailureCount(t *testing.T) {
 func TestBreakerDoesNotTripBelowThreshold(t *testing.T) {
 	b := newBreaker()
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		b.allow()
+		_ = b.allow()
 		b.recordFailure()
 	}
 	if b.getState() != StateClosed {
@@ -139,7 +139,7 @@ func TestBreakerConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			b.allow()
+			_ = b.allow()
 			b.recordFailure()
 			b.recordSuccess()
 			b.getState()

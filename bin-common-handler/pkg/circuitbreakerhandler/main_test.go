@@ -23,7 +23,7 @@ func TestHandlerIndependentBreakers(t *testing.T) {
 	h := newTestHandler()
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		h.Allow("target-a")
+		_ = h.Allow("target-a")
 		h.RecordFailure("target-a")
 	}
 
@@ -41,14 +41,14 @@ func TestHandlerRecordSuccessResets(t *testing.T) {
 	h := newTestHandler()
 
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		h.Allow("target-a")
+		_ = h.Allow("target-a")
 		h.RecordFailure("target-a")
 	}
 
 	h.RecordSuccess("target-a")
 
 	for i := 0; i < defaultFailureThreshold-1; i++ {
-		h.Allow("target-a")
+		_ = h.Allow("target-a")
 		h.RecordFailure("target-a")
 	}
 
@@ -61,7 +61,7 @@ func TestHandlerErrorWrapsTarget(t *testing.T) {
 	h := newTestHandler()
 
 	for i := 0; i < defaultFailureThreshold; i++ {
-		h.Allow("target-a")
+		_ = h.Allow("target-a")
 		h.RecordFailure("target-a")
 	}
 
@@ -88,14 +88,14 @@ func TestHandlerLazyCreation(t *testing.T) {
 		t.Errorf("expected 0 breakers initially, got %d", len(cbh.breakers))
 	}
 
-	h.Allow("target-a")
-	h.Allow("target-b")
+	_ = h.Allow("target-a")
+	_ = h.Allow("target-b")
 
 	if len(cbh.breakers) != 2 {
 		t.Errorf("expected 2 breakers after two targets, got %d", len(cbh.breakers))
 	}
 
-	h.Allow("target-a")
+	_ = h.Allow("target-a")
 	if len(cbh.breakers) != 2 {
 		t.Errorf("expected still 2 breakers, got %d", len(cbh.breakers))
 	}
