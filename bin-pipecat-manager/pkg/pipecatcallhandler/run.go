@@ -122,6 +122,55 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 	}
 }
 
+// resolveTeamForPython builds the full team data for the Python runner, including engine keys.
+// Returns nil if the AIcall is not team-backed.
+func (h *pipecatcallHandler) resolveTeamForPython(
+	ctx context.Context, c *amaicall.AIcall,
+) (*resolvedTeamData, error) {
+	if c.AssistanceType != amaicall.AssistanceTypeTeam {
+		return nil, nil
+	}
+
+	team, err := h.requestHandler.AIV1TeamGet(ctx, c.AssistanceID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get team: %w", err)
+	}
+	logrus.WithField("team", team).Debugf("Retrieved team info. team_id: %s", team.ID)
+
+	resolved := &resolvedTeamData{
+		ID:            team.ID,
+		StartMemberID: team.StartMemberID,
+	}
+
+	for _, m := range team.Members {
+		ai, errAI := h.requestHandler.AIV1AIGet(ctx, m.AIID)
+		if errAI != nil {
+			return nil, fmt.Errorf("could not get AI for member %s: %w", m.ID, errAI)
+		}
+		logrus.WithField("ai", ai).Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
+
+		tools := h.toolHandler.GetByNames(ai.ToolNames)
+
+		resolved.Members = append(resolved.Members, resolvedMemberData{
+			ID:   m.ID,
+			Name: m.Name,
+			AI: resolvedAIData{
+				EngineModel: string(ai.EngineModel),
+				EngineKey:   ai.EngineKey,
+				InitPrompt:  ai.InitPrompt,
+				Parameter:   ai.Parameter,
+				TTSType:     string(ai.TTSType),
+				TTSVoiceID:  ai.TTSVoiceID,
+				STTType:     string(ai.STTType),
+			},
+			Tools:       tools,
+			Transitions: m.Transitions,
+		})
+	}
+
+	return resolved, nil
+}
+
 // resolveAIFromAIcall resolves the AI entity from the AIcall's assistance type and ID.
 // For AssistanceTypeAI, AssistanceID is the AI ID directly.
 // For AssistanceTypeTeam, it fetches the team, finds the start member, and returns that member's AI.

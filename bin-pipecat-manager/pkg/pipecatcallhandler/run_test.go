@@ -8,9 +8,11 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amateam "monorepo/bin-ai-manager/models/team"
+	aitool "monorepo/bin-ai-manager/models/tool"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -329,6 +331,269 @@ func Test_resolveAIFromAIcall(t *testing.T) {
 
 			if result.ID != tt.expectedAIID {
 				t.Errorf("Wrong AI ID. expect: %v, got: %v", tt.expectedAIID, result.ID)
+			}
+		})
+	}
+}
+
+func Test_resolveTeamForPython(t *testing.T) {
+	teamID := uuid.FromStringOrNil("b2b2b2b2-2222-2222-2222-222222222222")
+	member1ID := uuid.FromStringOrNil("c3c3c3c3-3333-3333-3333-333333333333")
+	member2ID := uuid.FromStringOrNil("c4c4c4c4-4444-4444-4444-444444444444")
+	ai1ID := uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111")
+	ai2ID := uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222")
+
+	tests := []struct {
+		name string
+
+		aicall *amaicall.AIcall
+
+		prepareMockFn func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler)
+
+		expectedNil bool
+		expectedErr bool
+		validate    func(t *testing.T, result *resolvedTeamData)
+	}{
+		{
+			name: "non-team aicall returns nil",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   ai1ID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				// No calls expected for non-team type
+			},
+
+			expectedNil: true,
+		},
+		{
+			name: "team with two members resolves all AIs and tools",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity: commonidentity.Identity{
+						ID: teamID,
+					},
+					StartMemberID: member1ID,
+					Members: []amateam.Member{
+						{
+							ID:   member1ID,
+							Name: "greeter",
+							AIID: ai1ID,
+							Transitions: []amateam.Transition{
+								{
+									FunctionName: "transfer_to_support",
+									Description:  "Transfer to support agent",
+									NextMemberID: member2ID,
+								},
+							},
+						},
+						{
+							ID:   member2ID,
+							Name: "support",
+							AIID: ai2ID,
+							Transitions: []amateam.Transition{
+								{
+									FunctionName: "transfer_to_greeter",
+									Description:  "Transfer back to greeter",
+									NextMemberID: member1ID,
+								},
+							},
+						},
+					},
+				}, nil)
+
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
+					Identity: commonidentity.Identity{
+						ID: ai1ID,
+					},
+					EngineModel: amai.EngineModelOpenaiGPT4O,
+					EngineKey:   "key-1",
+					InitPrompt:  "You are a greeter",
+					Parameter:   map[string]any{"temperature": 0.7},
+					TTSType:     amai.TTSTypeElevenLabs,
+					TTSVoiceID:  "voice-1",
+					STTType:     amai.STTTypeDeepgram,
+					ToolNames:   []aitool.ToolName{aitool.ToolNameConnectCall},
+				}, nil)
+
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai2ID).Return(&amai.AI{
+					Identity: commonidentity.Identity{
+						ID: ai2ID,
+					},
+					EngineModel: amai.EngineModelOpenaiGPT4OMini,
+					EngineKey:   "key-2",
+					InitPrompt:  "You are support",
+					TTSType:     amai.TTSTypeCartesia,
+					TTSVoiceID:  "voice-2",
+					STTType:     amai.STTTypeDeepgram,
+					ToolNames:   []aitool.ToolName{aitool.ToolNameSendEmail},
+				}, nil)
+
+				mockTool.EXPECT().GetByNames([]aitool.ToolName{aitool.ToolNameConnectCall}).Return([]aitool.Tool{
+					{
+						Name:        aitool.ToolNameConnectCall,
+						Description: "Connect a call",
+						Parameters:  map[string]any{"destination": "string"},
+					},
+				})
+
+				mockTool.EXPECT().GetByNames([]aitool.ToolName{aitool.ToolNameSendEmail}).Return([]aitool.Tool{
+					{
+						Name:        aitool.ToolNameSendEmail,
+						Description: "Send an email",
+						Parameters:  map[string]any{"to": "string"},
+					},
+				})
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if result.ID != teamID {
+					t.Errorf("Wrong team ID. expect: %v, got: %v", teamID, result.ID)
+				}
+				if result.StartMemberID != member1ID {
+					t.Errorf("Wrong start member ID. expect: %v, got: %v", member1ID, result.StartMemberID)
+				}
+				if len(result.Members) != 2 {
+					t.Fatalf("Expected 2 members, got %d", len(result.Members))
+				}
+
+				// Verify first member
+				m1 := result.Members[0]
+				if m1.ID != member1ID {
+					t.Errorf("Wrong member 1 ID. expect: %v, got: %v", member1ID, m1.ID)
+				}
+				if m1.Name != "greeter" {
+					t.Errorf("Wrong member 1 name. expect: greeter, got: %s", m1.Name)
+				}
+				if m1.AI.EngineModel != string(amai.EngineModelOpenaiGPT4O) {
+					t.Errorf("Wrong member 1 engine model. expect: %s, got: %s", amai.EngineModelOpenaiGPT4O, m1.AI.EngineModel)
+				}
+				if m1.AI.EngineKey != "key-1" {
+					t.Errorf("Wrong member 1 engine key. expect: key-1, got: %s", m1.AI.EngineKey)
+				}
+				if m1.AI.InitPrompt != "You are a greeter" {
+					t.Errorf("Wrong member 1 init prompt. expect: You are a greeter, got: %s", m1.AI.InitPrompt)
+				}
+				if m1.AI.TTSType != string(amai.TTSTypeElevenLabs) {
+					t.Errorf("Wrong member 1 TTS type. expect: %s, got: %s", amai.TTSTypeElevenLabs, m1.AI.TTSType)
+				}
+				if m1.AI.TTSVoiceID != "voice-1" {
+					t.Errorf("Wrong member 1 TTS voice ID. expect: voice-1, got: %s", m1.AI.TTSVoiceID)
+				}
+				if m1.AI.STTType != string(amai.STTTypeDeepgram) {
+					t.Errorf("Wrong member 1 STT type. expect: %s, got: %s", amai.STTTypeDeepgram, m1.AI.STTType)
+				}
+				if len(m1.Tools) != 1 || m1.Tools[0].Name != aitool.ToolNameConnectCall {
+					t.Errorf("Wrong member 1 tools. got: %v", m1.Tools)
+				}
+				if len(m1.Transitions) != 1 || m1.Transitions[0].FunctionName != "transfer_to_support" {
+					t.Errorf("Wrong member 1 transitions. got: %v", m1.Transitions)
+				}
+
+				// Verify second member
+				m2 := result.Members[1]
+				if m2.ID != member2ID {
+					t.Errorf("Wrong member 2 ID. expect: %v, got: %v", member2ID, m2.ID)
+				}
+				if m2.Name != "support" {
+					t.Errorf("Wrong member 2 name. expect: support, got: %s", m2.Name)
+				}
+				if m2.AI.EngineKey != "key-2" {
+					t.Errorf("Wrong member 2 engine key. expect: key-2, got: %s", m2.AI.EngineKey)
+				}
+			},
+		},
+		{
+			name: "team fetch error returns error",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(nil, fmt.Errorf("team not found"))
+			},
+
+			expectedErr: true,
+		},
+		{
+			name: "member AI fetch error returns error",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity: commonidentity.Identity{
+						ID: teamID,
+					},
+					StartMemberID: member1ID,
+					Members: []amateam.Member{
+						{
+							ID:   member1ID,
+							Name: "greeter",
+							AIID: ai1ID,
+						},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(nil, fmt.Errorf("ai not found"))
+			},
+
+			expectedErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTool := toolhandler.NewMockToolHandler(mc)
+			tt.prepareMockFn(mockReq, mockTool)
+
+			h := &pipecatcallHandler{
+				requestHandler: mockReq,
+				toolHandler:    mockTool,
+			}
+
+			result, err := h.resolveTeamForPython(context.Background(), tt.aicall)
+			if tt.expectedErr {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			if tt.expectedNil {
+				if result != nil {
+					t.Errorf("Expected nil result but got: %v", result)
+				}
+				return
+			}
+
+			if result == nil {
+				t.Fatal("Expected non-nil result but got nil")
+			}
+
+			if tt.validate != nil {
+				tt.validate(t, result)
 			}
 		})
 	}
