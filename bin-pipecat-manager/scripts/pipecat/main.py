@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from loguru import logger
 from dotenv import load_dotenv
 
-from run import run_pipeline
+from run import init_pipeline, execute_pipeline
 from task import task_manager
 
 load_dotenv(override=True)
@@ -87,12 +87,36 @@ class PipelineRequest(BaseModel):
     tools: Optional[List[Tool]] = Field(default_factory=list)
     resolved_team: Optional[ResolvedTeam] = None
 
-async def run_pipeline_wrapper(req: PipelineRequest):
+async def execute_pipeline_wrapper(id: str, ctx: dict):
+    """Background task wrapper for execute_pipeline."""
     try:
-        logger.info(f"Pipeline started: id={req.id}")
+        await execute_pipeline(id, ctx)
+        logger.info(f"Pipeline finished successfully: id={id}")
+    except Exception as e:
+        logger.exception(f"Pipeline execution failed (id={id}): {e}")
+
+
+@app.post("/run")
+async def run_pipeline_endpoint(req: PipelineRequest):
+    msg_count = len(req.llm_messages or [])
+    logger.info(json.dumps({
+        "event": "run_request",
+        "id": req.id,
+        "llm_type": req.llm_type,
+        "llm_message_count": msg_count,
+        "stt_type": req.stt_type,
+        "stt_language": req.stt_language,
+        "tts_type": req.tts_type,
+        "tts_language": req.tts_language,
+        "tts_voice_id": req.tts_voice_id,
+        "has_resolved_team": req.resolved_team is not None,
+    }))
+
+    try:
         tools_data = [t.model_dump() for t in req.tools] if req.tools else []
         resolved_team_data = req.resolved_team.model_dump() if req.resolved_team else None
-        await run_pipeline(
+
+        ctx = await init_pipeline(
             req.id,
             req.llm_type,
             req.llm_key,
@@ -105,36 +129,16 @@ async def run_pipeline_wrapper(req: PipelineRequest):
             tools_data,
             resolved_team=resolved_team_data,
         )
-        logger.info(f"Pipeline finished successfully: id={req.id}")
+    except ValueError as e:
+        logger.error(f"Pipeline validation failed (id={req.id}): {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.exception(f"Pipeline failed (id={req.id}): {e}")
-
-
-@app.post("/run")
-async def run_pipeline_endpoint(req: PipelineRequest):
-    try:
-        msg_count = len(req.llm_messages or [])
-        logger.info(json.dumps({
-            "event": "run_request",
-            "id": req.id,
-            "llm_type": req.llm_type,
-            "llm_message_count": msg_count,
-            "stt_type": req.stt_type,
-            "stt_language": req.stt_language,
-            "tts_type": req.tts_type,
-            "tts_language": req.tts_language,
-            "tts_voice_id": req.tts_voice_id,
-            "has_resolved_team": req.resolved_team is not None,
-        }))
-        
-        asyncio.create_task(run_pipeline_wrapper(req))
-        await asyncio.sleep(0)
-
-        return {"status": "ok", "message": "Pipeline executed successfully"}
-
-    except Exception as e:
-        logger.exception(f"Pipeline execution failed: {e}")
+        logger.exception(f"Pipeline initialization failed (id={req.id}): {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+    asyncio.create_task(execute_pipeline_wrapper(req.id, ctx))
+
+    return {"status": "ok", "message": "Pipeline initialized and started"}
 
 @app.post("/stop")
 async def stop_pipeline(id: str):
