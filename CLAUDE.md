@@ -97,6 +97,8 @@ The full verification workflow consists of 5 steps that MUST all be run:
 
 **Do NOT skip any steps.** Each step can catch different issues.
 
+**IMPORTANT: Vendor directories are NOT committed to git.** The `.gitignore` excludes `vendor/`. Do NOT use `git add -f` for vendor files. Each service's Dockerfile runs `go mod vendor` during Docker build to regenerate dependencies. The local `go mod vendor` step is only for local development and testing.
+
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
 **For complete workflows, troubleshooting, and detailed explanations, see:**
