@@ -4,6 +4,7 @@ Verifies that init_pipeline raises exceptions for invalid configurations
 instead of silently failing in a background task.
 """
 import pytest
+from unittest.mock import patch
 
 from run import init_pipeline, init_team_pipeline, init_single_ai_pipeline
 
@@ -107,14 +108,15 @@ async def test_init_team_pipeline_unsupported_member_llm():
 
 
 @pytest.mark.asyncio
-async def test_init_team_pipeline_empty_members():
-    """Empty members list raises an error (no valid services to create)."""
+@patch("run.RoutingLLMService")
+async def test_init_team_pipeline_empty_members(mock_routing_llm):
+    """Empty members list fails at start_member_id lookup."""
     resolved_team = {
         "id": "team-3",
         "start_member_id": "member-1",
         "members": [],
     }
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="start_member_id .* not found"):
         await init_team_pipeline(
             id="test-7",
             resolved_team=resolved_team,
