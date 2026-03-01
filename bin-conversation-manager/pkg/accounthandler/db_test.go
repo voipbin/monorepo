@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -290,6 +291,7 @@ func Test_Delete(t *testing.T) {
 
 		id uuid.UUID
 
+		teardownErr     error
 		responseAccount *account.Account
 	}{
 		{
@@ -297,11 +299,37 @@ func Test_Delete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("74a879e6-fe49-11ed-98e7-576bc17c7b79"),
 
+			teardownErr: nil,
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("74a879e6-fe49-11ed-98e7-576bc17c7b79"),
 				},
 				Type: account.TypeLine,
+			},
+		},
+		{
+			name: "teardown failure does not block delete",
+
+			id: uuid.FromStringOrNil("85b9c7d6-fe49-11ed-98e7-576bc17c7b79"),
+
+			teardownErr: fmt.Errorf("LINE API unavailable"),
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("85b9c7d6-fe49-11ed-98e7-576bc17c7b79"),
+				},
+				Type: account.TypeLine,
+			},
+		},
+		{
+			name: "sms type no teardown",
+
+			id: uuid.FromStringOrNil("96cad8e7-fe49-11ed-98e7-576bc17c7b79"),
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("96cad8e7-fe49-11ed-98e7-576bc17c7b79"),
+				},
+				Type: account.TypeSMS,
 			},
 		},
 	}
@@ -326,8 +354,10 @@ func Test_Delete(t *testing.T) {
 
 			// Get for teardown
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
-			// Teardown (LINE type)
-			mockLine.EXPECT().Teardown(ctx, tt.responseAccount).Return(nil)
+			// Teardown — only LINE type calls Teardown
+			if tt.responseAccount.Type == account.TypeLine {
+				mockLine.EXPECT().Teardown(ctx, tt.responseAccount).Return(tt.teardownErr)
+			}
 			// DB delete
 			mockDB.EXPECT().AccountDelete(ctx, tt.id).Return(nil)
 			// Get after delete

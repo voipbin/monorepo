@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -174,6 +175,40 @@ func Test_processV1AccountsPost(t *testing.T) {
 				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			name: "response strips credentials",
+
+			expectCustomerID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11ec-a717-5f6984c51794"),
+			expectType:       account.TypeLine,
+			expectName:       "test name 2",
+			expectDetail:     "test detail 2",
+			expectSecret:     "secret2",
+			expectToken:      "token2",
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4e5f6a7-b8c9-11ec-9558-fbf54c7aa51e"),
+					CustomerID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11ec-a717-5f6984c51794"),
+				},
+				Type:   account.TypeLine,
+				Name:   "test name 2",
+				Detail: "test detail 2",
+				Secret: "secret2",
+				Token:  "token2",
+			},
+
+			request: &sock.Request{
+				URI:      "/v1/accounts",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"c3d4e5f6-a7b8-11ec-a717-5f6984c51794","type":"line","name":"test name 2","detail":"test detail 2","secret":"secret2","token":"token2"}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d4e5f6a7-b8c9-11ec-9558-fbf54c7aa51e","customer_id":"c3d4e5f6-a7b8-11ec-a717-5f6984c51794","type":"line","name":"test name 2","detail":"test detail 2","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -235,6 +270,47 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			name: "has secret and token",
+
+			expectID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ec-b291-9f454e92f1bb"),
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-11ec-b291-9f454e92f1bb"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ec-b291-9f454e92f1bb"),
+				},
+				Name:   "test account",
+				Detail: "test detail",
+				Secret: "super-secret-value",
+				Token:  "super-token-value",
+			},
+
+			request: &sock.Request{
+				URI:    "/v1/accounts/a1b2c3d4-e5f6-11ec-b291-9f454e92f1bb",
+				Method: sock.RequestMethodGet,
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"a1b2c3d4-e5f6-11ec-b291-9f454e92f1bb","customer_id":"b2c3d4e5-f6a7-11ec-b291-9f454e92f1bb","name":"test account","detail":"test detail","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "not found returns 404",
+
+			expectID: uuid.FromStringOrNil("e5f6a7b8-c9d0-11ec-ab65-07ce8687961d"),
+
+			responseAccount: nil,
+
+			request: &sock.Request{
+				URI:    "/v1/accounts/e5f6a7b8-c9d0-11ec-ab65-07ce8687961d",
+				Method: sock.RequestMethodGet,
+			},
+			response: &sock.Response{
+				StatusCode: 404,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -250,7 +326,11 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
+			if tt.responseAccount != nil {
+				mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
+			} else {
+				mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(nil, fmt.Errorf("not found"))
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -366,6 +446,21 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			name: "not found returns 404",
+
+			expectID: uuid.FromStringOrNil("f6a7b8c9-d0e1-11ec-8113-5f6f4693c29f"),
+
+			responseAccount: nil,
+
+			request: &sock.Request{
+				URI:    "/v1/accounts/f6a7b8c9-d0e1-11ec-8113-5f6f4693c29f",
+				Method: sock.RequestMethodDelete,
+			},
+			response: &sock.Response{
+				StatusCode: 404,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -381,7 +476,11 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
+			if tt.responseAccount != nil {
+				mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
+			} else {
+				mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(nil, fmt.Errorf("not found"))
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
