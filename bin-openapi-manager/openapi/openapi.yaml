@@ -2854,10 +2854,12 @@ components:
           example: "Primary SMS messaging account"
         secret:
           type: string
+          writeOnly: true
           description: Webhook secret for signature verification. Write-only.
           example: "whsec_...redacted..."
         token:
           type: string
+          writeOnly: true
           description: API token for the messaging platform. Write-only.
           example: "xoxb_...redacted..."
         tm_create:

@@ -104,20 +104,6 @@ func (mr *MockDBHandlerMockRecorder) AccountList(arg0, arg1, arg2, arg3 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountList", reflect.TypeOf((*MockDBHandler)(nil).AccountList), arg0, arg1, arg2, arg3)
 }
 
-// AccountSet mocks base method.
-func (m *MockDBHandler) AccountSet(ctx context.Context, id uuid.UUID, name, detail, secret, token string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountSet", ctx, id, name, detail, secret, token)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AccountSet indicates an expected call of AccountSet.
-func (mr *MockDBHandlerMockRecorder) AccountSet(ctx, id, name, detail, secret, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockDBHandler)(nil).AccountSet), ctx, id, name, detail, secret, token)
-}
-
 // AccountUpdate mocks base method.
 func (m *MockDBHandler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
 	m.ctrl.T.Helper()

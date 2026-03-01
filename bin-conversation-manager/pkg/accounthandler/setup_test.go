@@ -69,3 +69,56 @@ func Test_setup(t *testing.T) {
 		})
 	}
 }
+
+func Test_teardown(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		account *account.Account
+	}{
+		{
+			name: "type is line",
+
+			account: &account.Account{
+				Type: account.TypeLine,
+			},
+		},
+		{
+			name: "type is sms",
+
+			account: &account.Account{
+				Type: account.TypeSMS,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
+			}
+			ctx := context.Background()
+
+			switch tt.account.Type {
+			case account.TypeLine:
+				mockLine.EXPECT().Teardown(ctx, tt.account).Return(nil)
+			}
+
+			h.teardown(ctx, tt.account)
+		})
+	}
+}

@@ -58,7 +58,7 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 		log.Errorf("Could not get created confbridge info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, account.EventTypeAccountCreated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountCreated, res)
 
 	return res, nil
 }
@@ -75,6 +75,7 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 		log.Errorf("Could not get account info. err: %v", err)
 		return nil, errors.Wrap(err, "could not get account info")
 	}
+	log.WithField("account", res).Debugf("Retrieved account info. account_id: %s", id)
 
 	return res, nil
 }
@@ -91,6 +92,7 @@ func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize ui
 		log.Errorf("Could not get messages. err: %v", err)
 		return nil, err
 	}
+	log.WithField("accounts", res).Debugf("Retrieved account list. count: %d", len(res))
 
 	return res, nil
 }
@@ -129,6 +131,16 @@ func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Acc
 		"account_id": id,
 	})
 
+	// get the account first for teardown
+	ac, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get account info for teardown. err: %v", err)
+		return nil, errors.Wrap(err, "could not get account info")
+	}
+
+	// teardown external resources (best-effort)
+	h.teardown(ctx, ac)
+
 	if errDelete := h.db.AccountDelete(ctx, id); errDelete != nil {
 		log.Errorf("Could not delete account info. err: %v", errDelete)
 		return nil, errors.Wrap(errDelete, "could not delete account info")
@@ -139,7 +151,7 @@ func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Acc
 		log.Errorf("Could not get deleted account info")
 		return nil, errors.Wrap(err, "could not get deleted account info")
 	}
-	h.notifyHandler.PublishEvent(ctx, account.EventTypeAccountDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountDeleted, res)
 
 	return res, nil
 }

@@ -90,7 +90,7 @@ func Test_Create(t *testing.T) {
 			mockLine.EXPECT().Setup(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount)
 
 			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
@@ -301,6 +301,7 @@ func Test_Delete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("74a879e6-fe49-11ed-98e7-576bc17c7b79"),
 				},
+				Type: account.TypeLine,
 			},
 		},
 	}
@@ -313,17 +314,26 @@ func Test_Delete(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
 
 			h := &accountHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountDelete(ctx, tt.id).Return(nil)
+			// Get for teardown
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountDeleted, tt.responseAccount)
+			// Teardown (LINE type)
+			mockLine.EXPECT().Teardown(ctx, tt.responseAccount).Return(nil)
+			// DB delete
+			mockDB.EXPECT().AccountDelete(ctx, tt.id).Return(nil)
+			// Get after delete
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
+			// Publish
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountDeleted, tt.responseAccount)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
