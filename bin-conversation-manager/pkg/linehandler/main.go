@@ -16,6 +16,7 @@ import (
 // LineHandler defines
 type LineHandler interface {
 	Setup(ctx context.Context, ac *account.Account) error
+	Teardown(ctx context.Context, ac *account.Account) error
 	Send(ctx context.Context, cv *conversation.Conversation, ac *account.Account, text string, medias []media.Media) error
 	Hook(ctx context.Context, ac *account.Account, data []byte) error
 

@@ -16,9 +16,6 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	Secret string `json:"secret,omitempty"` // secret
-	Token  string `json:"token,omitempty"`  // usually api token
-
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete"`
@@ -33,9 +30,6 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		Name:   h.Name,
 		Detail: h.Detail,
-
-		Secret: h.Secret,
-		Token:  h.Token,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

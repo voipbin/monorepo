@@ -25,7 +25,6 @@ type DBHandler interface {
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error
 	AccountList(context.Context, uint64, string, map[account.Field]any) ([]*account.Account, error)
-	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error

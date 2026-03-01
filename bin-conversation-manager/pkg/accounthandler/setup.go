@@ -37,3 +37,26 @@ func (h *accountHandler) setup(ctx context.Context, ac *account.Account) error {
 
 	return nil
 }
+
+// teardown tears down the account (best-effort, logs warning on failure)
+func (h *accountHandler) teardown(ctx context.Context, ac *account.Account) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "teardown",
+		"account_id": ac.ID,
+	})
+
+	var err error
+	switch ac.Type {
+	case account.TypeLine:
+		err = h.lineHandler.Teardown(ctx, ac)
+
+	case account.TypeSMS:
+		// nothing to do
+
+	default:
+		// unknown type, nothing to tear down
+	}
+	if err != nil {
+		log.Warnf("Could not teardown the account. err: %v", err)
+	}
+}

@@ -200,18 +200,6 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
-// AccountSet returns sets the account info
-func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error {
-	fields := map[account.Field]any{
-		account.FieldName:   name,
-		account.FieldDetail: detail,
-		account.FieldSecret: secret,
-		account.FieldToken:  token,
-	}
-
-	return h.AccountUpdate(ctx, id, fields)
-}
-
 // AccountUpdate updates the account info.
 func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
 	if len(fields) == 0 {
@@ -235,7 +223,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		return fmt.Errorf("AccountUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("AccountUpdate: exec failed: %w", err)
 	}
 

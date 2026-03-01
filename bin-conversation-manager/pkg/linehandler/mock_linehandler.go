@@ -100,3 +100,17 @@ func (mr *MockLineHandlerMockRecorder) Setup(ctx, ac any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockLineHandler)(nil).Setup), ctx, ac)
 }
+
+// Teardown mocks base method.
+func (m *MockLineHandler) Teardown(ctx context.Context, ac *account.Account) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Teardown", ctx, ac)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Teardown indicates an expected call of Teardown.
+func (mr *MockLineHandlerMockRecorder) Teardown(ctx, ac any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Teardown", reflect.TypeOf((*MockLineHandler)(nil).Teardown), ctx, ac)
+}
