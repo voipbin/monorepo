@@ -14,7 +14,7 @@ Contact Us
 For technical assistance, questions, or feedback:
 
 - **Discord:** https://discord.gg/waztvb63Yx
-- **Email:** sungtae@voipbin.net
+- **Email:** support@voipbin.net
 
 When contacting us, please include:
 
