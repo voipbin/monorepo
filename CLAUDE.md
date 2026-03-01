@@ -126,14 +126,14 @@ This includes:
    ```bash
    pwd
    # If output is ~/gitvoipbin/monorepo → STOP, create worktree first
-   # If output is ~/gitvoipbin/monorepo-worktrees/<branch-name> → OK to proceed
+   # If output is ~/gitvoipbin/monorepo/.worktrees/<branch-name> → OK to proceed
    ```
 
 2. **Create a worktree (if not already in one):**
    ```bash
    cd ~/gitvoipbin/monorepo
-   git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
-   cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   git worktree add ~/gitvoipbin/monorepo/.worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+   cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-feature-name
    ```
 
 3. **Work in the worktree:**
@@ -143,10 +143,10 @@ This includes:
 4. **When done, remove the worktree:**
    ```bash
    cd ~/gitvoipbin/monorepo
-   git worktree remove ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   git worktree remove ~/gitvoipbin/monorepo/.worktrees/NOJIRA-feature-name
    ```
 
-**Worktree location:** `~/gitvoipbin/monorepo-worktrees/`
+**Worktree location:** `~/gitvoipbin/monorepo/.worktrees/`
 
 **Why worktrees:**
 - Keeps main repository (`~/gitvoipbin/monorepo`) clean and always on `main` branch
@@ -271,8 +271,8 @@ This applies to: new features, architectural changes, multi-file modifications, 
 2. **Create a worktree** — All files (design docs and code) are written in the worktree, never in the main repository.
    ```bash
    cd ~/gitvoipbin/monorepo
-   git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
-   cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   git worktree add ~/gitvoipbin/monorepo/.worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+   cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-feature-name
    ```
 3. **Write the design document** in the worktree:
    - Location: `docs/plans/YYYY-MM-DD-<topic>-design.md`
