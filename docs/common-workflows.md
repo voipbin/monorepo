@@ -37,8 +37,7 @@ When changing `bin-common-handler` or `bin-openapi-manager`:
 1. Make changes in the shared package
 2. Regenerate if needed: `go generate ./...`
 3. Test impact on dependent services
-4. Update all affected services' vendor directories if using vendoring
-5. Coordinate deployment - shared changes affect multiple services
+4. Coordinate deployment - shared changes affect multiple services
 
 **Note:** For flow execution patterns and variable substitution, see `bin-flow-manager/CLAUDE.md`.
 

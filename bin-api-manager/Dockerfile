@@ -17,7 +17,7 @@ FROM base AS build
 WORKDIR /app
 COPY ./ .
 RUN mkdir -p /app/bin
-RUN cd bin-api-manager && go build -o /app/bin/ ./cmd/...
+RUN cd bin-api-manager && go mod vendor && go build -o /app/bin/ ./cmd/...
 
 # run
 FROM base

@@ -6,7 +6,7 @@ LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 WORKDIR /app
 COPY ./ .
 RUN mkdir -p /app/bin
-RUN cd bin-registrar-manager && go build -o /app/bin/ ./cmd/...
+RUN cd bin-registrar-manager && go mod vendor && go build -o /app/bin/ ./cmd/...
 
 # run
 FROM public.ecr.aws/docker/library/alpine:latest

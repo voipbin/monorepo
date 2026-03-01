@@ -28,7 +28,7 @@ golangci-lint run -v --timeout 5m
 
 **What this does:**
 1. `go mod tidy` - Cleans up go.mod and go.sum files
-2. `go mod vendor` - Vendors dependencies for reproducible builds
+2. `go mod vendor` - Vendors dependencies for local builds (vendor is NOT committed to git; Dockerfiles regenerate it during build)
 3. `go generate ./...` - Regenerates mocks and generated code
 4. `go test ./...` - Runs all tests to ensure nothing broke
 5. `golangci-lint run -v --timeout 5m` - Lints code for quality issues
