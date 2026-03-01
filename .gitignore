@@ -46,5 +46,8 @@ build/
 .pytest_cache/
 htmlcov/
 
+# Git worktrees
+.worktrees/
+
 # Environment files
 .env
