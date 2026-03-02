@@ -74,6 +74,180 @@ class TestCreateLLMService:
             base_url="https://api.x.ai/v1"
         )
 
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_service_creation(self, mock_context, mock_service):
+        """Test Gemini service is created with GoogleLLMService and correct parameters."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="gemini.gemini-2.5-flash",
+            key="google-test-key",
+            messages=[{"role": "user", "content": "hello"}],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(api_key="google-test-key", model="gemini-2.5-flash")
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_uses_env_var_fallback(self, mock_context, mock_service):
+        """Test Gemini falls back to GOOGLE_API_KEY env var when key is empty."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        with patch.dict(os.environ, {"GOOGLE_API_KEY": "env-google-key"}):
+            llm, aggregator = create_llm_service(
+                type="gemini.gemini-1.5-pro",
+                key="",
+                messages=[],
+                tools=[]
+            )
+
+        mock_service.assert_called_once_with(api_key="env-google-key", model="gemini-1.5-pro")
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_with_colon_separator(self, mock_context, mock_service):
+        """Test Gemini service works with colon separator format."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="gemini:gemini-flash",
+            key="test-key",
+            messages=[],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-flash")
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_case_insensitive(self, mock_context, mock_service):
+        """Test Gemini service name matching is case-insensitive."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="Gemini.gemini-2.5-flash",
+            key="test-key",
+            messages=[],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-2.5-flash")
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_model_name_with_dots_preserved(self, mock_context, mock_service):
+        """Test model names containing dots are preserved (split on first dot only)."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="gemini.gemini-1.5-pro-latest",
+            key="test-key",
+            messages=[],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-1.5-pro-latest")
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_filters_invalid_messages(self, mock_context, mock_service):
+        """Test messages without role or content are filtered before passing to context."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        messages = [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "", "content": "no role"},
+            {"content": "missing role key"},
+            {"role": "user"},
+            {"role": "user", "content": ""},
+            {"role": "user", "content": "valid message"},
+        ]
+
+        create_llm_service(
+            type="gemini.gemini-2.5-flash",
+            key="test-key",
+            messages=messages,
+            tools=[]
+        )
+
+        mock_context.assert_called_once()
+        passed_messages = mock_context.call_args[1]["messages"]
+        assert len(passed_messages) == 2
+        assert passed_messages[0] == {"role": "system", "content": "You are helpful."}
+        assert passed_messages[1] == {"role": "user", "content": "valid message"}
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_passes_tools_to_context(self, mock_context, mock_service):
+        """Test tools list is correctly passed to OpenAILLMContext."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        tools = [{"type": "function", "function": {"name": "connect_call", "parameters": {}}}]
+
+        create_llm_service(
+            type="gemini.gemini-2.5-flash",
+            key="test-key",
+            messages=[],
+            tools=tools
+        )
+
+        mock_context.assert_called_once_with(messages=[], tools=tools)
+
+    @patch("run.GoogleLLMService")
+    @patch("run.OpenAILLMContext")
+    def test_gemini_returns_llm_and_aggregator(self, mock_context, mock_service):
+        """Test Gemini returns the correct (llm, aggregator) tuple."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_aggregator = MagicMock()
+        mock_llm.create_context_aggregator.return_value = mock_aggregator
+
+        mock_ctx_instance = MagicMock()
+        mock_context.return_value = mock_ctx_instance
+
+        llm, aggregator = create_llm_service(
+            type="gemini.gemini-2.5-flash",
+            key="test-key",
+            messages=[],
+            tools=[]
+        )
+
+        assert llm is mock_llm
+        assert aggregator is mock_aggregator
+        mock_llm.create_context_aggregator.assert_called_once_with(mock_ctx_instance)
+
     def test_unsupported_service_raises_error(self):
         """Test unsupported service raises ValueError."""
         from run import create_llm_service

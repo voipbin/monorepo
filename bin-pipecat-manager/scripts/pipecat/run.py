@@ -22,6 +22,7 @@ from pipecat.processors.filters.stt_mute_filter import STTMuteConfig, STTMuteFil
 
 # llm
 from pipecat.services.openai.llm import OpenAILLMService
+from pipecat.services.google.llm import GoogleLLMService
 
 # aggregators / context
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
@@ -365,6 +366,15 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
             model=model_name,
             base_url="https://api.x.ai/v1"
         )
+
+        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        aggregator = llm.create_context_aggregator(ctx)
+
+        return llm, aggregator
+
+    elif service_name == "gemini":
+        api_key = key or os.getenv("GOOGLE_API_KEY")
+        llm = GoogleLLMService(api_key=api_key, model=model_name)
 
         ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
         aggregator = llm.create_context_aggregator(ctx)

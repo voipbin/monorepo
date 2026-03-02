@@ -201,7 +201,7 @@ Environment variables / flags:
 - `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint
 
 Python environment variables (in `.env` or exported):
-- LLM provider API keys: `OPENAI_API_KEY`, `XAI_API_KEY` (Grok), `ANTHROPIC_API_KEY`, etc.
+- LLM provider API keys: `OPENAI_API_KEY`, `XAI_API_KEY` (Grok), `GOOGLE_API_KEY` (Gemini), `ANTHROPIC_API_KEY`, etc.
 - STT provider keys: `DEEPGRAM_API_KEY`
 - TTS provider keys: `CARTESIA_API_KEY`, `ELEVENLABS_API_KEY`, `GOOGLE_API_KEY`
 
@@ -209,7 +209,7 @@ Python environment variables (in `.env` or exported):
 
 - **pipecat-ai framework**: Python library for building voice AI pipelines
 - **Supported providers**:
-  - LLM: OpenAI (e.g., `openai.gpt-4o`), Grok (e.g., `grok.grok-3`, `grok.grok-3-mini`)
+  - LLM: OpenAI (e.g., `openai.gpt-4o`), Grok (e.g., `grok.grok-3`, `grok.grok-3-mini`), Gemini (e.g., `gemini.gemini-2.5-flash`, `gemini.gemini-1.5-pro`)
   - STT: Deepgram, Whisper
   - TTS: Cartesia, ElevenLabs, Google
 - **RTVI protocol**: Used for runtime control and tool calling
