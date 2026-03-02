@@ -512,9 +512,13 @@ async def init_team_pipeline(
         # member's actual LLM service so the adapter is created correctly, then
         # swap the internal reference to routing_llm so register_function and
         # unregister_function delegate to ALL member services.
+        active_llm = routing_llm.active_service
+        if active_llm is None:
+            raise ValueError(f"No active LLM service for start_member_id={start_member_id}")
+
         flow_manager = FlowManager(
             task=task,
-            llm=routing_llm.active_service,
+            llm=active_llm,
             context_aggregator=context_aggregator,
         )
         flow_manager._llm = routing_llm
