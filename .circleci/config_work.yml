@@ -8,7 +8,7 @@ references:
   go_image: &go_image
     - image: cimg/go:1.25.3
   gcp_image: &gcp_image
-    - image: cimg/gcp:2024.03
+    - image: cimg/gcp:2026.02
   gcloud_image: &gcloud_image
     - image: google/cloud-sdk:debian_component_based
 
