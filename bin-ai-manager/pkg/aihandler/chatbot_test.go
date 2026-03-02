@@ -21,6 +21,8 @@ func TestCreate(t *testing.T) {
 		customerID  uuid.UUID
 		aiName      string
 		engineModel ai.EngineModel
+		ttsType     ai.TTSType
+		sttType     ai.STTType
 		setupMock   func(*dbhandler.MockDBHandler)
 		wantError   bool
 		errorMsg    string
@@ -30,6 +32,8 @@ func TestCreate(t *testing.T) {
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
 			engineModel: ai.EngineModelOpenaiGPT4O,
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				testAI := &ai.AI{Name: "Test AI"}
 				testAI.ID = uuid.Must(uuid.NewV4())
@@ -43,6 +47,8 @@ func TestCreate(t *testing.T) {
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
 			engineModel: ai.EngineModel("invalid.model"),
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				// Should not call database
 			},
@@ -50,10 +56,38 @@ func TestCreate(t *testing.T) {
 			errorMsg:  "invalid engine model",
 		},
 		{
+			name:        "fails_with_invalid_tts_type",
+			customerID:  uuid.Must(uuid.NewV4()),
+			aiName:      "Test AI",
+			engineModel: ai.EngineModelOpenaiGPT4O,
+			ttsType:     ai.TTSType("gcp"),
+			sttType:     ai.STTTypeNone,
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid tts_type",
+		},
+		{
+			name:        "fails_with_invalid_stt_type",
+			customerID:  uuid.Must(uuid.NewV4()),
+			aiName:      "Test AI",
+			engineModel: ai.EngineModelOpenaiGPT4O,
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTType("gcp"),
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid stt_type",
+		},
+		{
 			name:        "handles_database_error",
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
 			engineModel: ai.EngineModelDialogflowCX,
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(errors.New("database error")).Times(1)
 			},
@@ -87,9 +121,9 @@ func TestCreate(t *testing.T) {
 				nil,
 				"test-key",
 				"Test prompt",
-				ai.TTSTypeNone,
+				tt.ttsType,
 				"",
-				ai.STTTypeNone,
+				tt.sttType,
 				[]tool.ToolName{},
 			)
 
@@ -117,6 +151,8 @@ func TestUpdate(t *testing.T) {
 		aiID        uuid.UUID
 		aiName      string
 		engineModel ai.EngineModel
+		ttsType     ai.TTSType
+		sttType     ai.STTType
 		setupMock   func(*dbhandler.MockDBHandler)
 		wantError   bool
 		errorMsg    string
@@ -126,6 +162,8 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelOpenaiGPT4OMini,
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				updatedAI := &ai.AI{Name: "Updated AI"}
 				updatedAI.ID = uuid.Must(uuid.NewV4())
@@ -139,6 +177,8 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModel("unknown.invalid"),
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				// Should not call database
 			},
@@ -146,10 +186,38 @@ func TestUpdate(t *testing.T) {
 			errorMsg:  "invalid engine model",
 		},
 		{
+			name:        "fails_with_invalid_tts_type",
+			aiID:        uuid.Must(uuid.NewV4()),
+			aiName:      "Updated AI",
+			engineModel: ai.EngineModelOpenaiGPT4O,
+			ttsType:     ai.TTSType("gcp"),
+			sttType:     ai.STTTypeDeepgram,
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid tts_type",
+		},
+		{
+			name:        "fails_with_invalid_stt_type",
+			aiID:        uuid.Must(uuid.NewV4()),
+			aiName:      "Updated AI",
+			engineModel: ai.EngineModelOpenaiGPT4O,
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTType("gcp"),
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid stt_type",
+		},
+		{
 			name:        "handles_database_error",
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelDialogflowES,
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("update failed")).Times(1)
 			},
@@ -182,9 +250,9 @@ func TestUpdate(t *testing.T) {
 				nil,
 				"updated-key",
 				"Updated prompt",
-				ai.TTSTypeOpenAI,
+				tt.ttsType,
 				"voice-id",
-				ai.STTTypeDeepgram,
+				tt.sttType,
 				[]tool.ToolName{},
 			)
 

@@ -442,3 +442,143 @@ func TestSTTTypeConstants(t *testing.T) {
 		})
 	}
 }
+
+func TestTTSTypeIsValid(t *testing.T) {
+	tests := []struct {
+		name     string
+		ttsType  TTSType
+		expected bool
+	}{
+		{"empty_string_is_valid", TTSTypeNone, true},
+		{"google_is_valid", TTSTypeGoogle, true},
+		{"openai_is_valid", TTSTypeOpenAI, true},
+		{"elevenlabs_is_valid", TTSTypeElevenLabs, true},
+		{"cartesia_is_valid", TTSTypeCartesia, true},
+		{"deepgram_is_valid", TTSTypeDeepgram, true},
+		{"aws_is_valid", TTSTypeAWS, true},
+		{"azure_is_valid", TTSTypeAzure, true},
+		{"async_is_valid", TTSTypeAsync, true},
+		{"fish_is_valid", TTSTypeFish, true},
+		{"groq_is_valid", TTSTypeGroq, true},
+		{"hume_is_valid", TTSTypeHume, true},
+		{"inworld_is_valid", TTSTypeInworld, true},
+		{"lmnt_is_valid", TTSTypeLMNT, true},
+		{"minimax_is_valid", TTSTypeMiniMax, true},
+		{"neuphonic_is_valid", TTSTypeNeuphonic, true},
+		{"nvidia_riva_is_valid", TTSTypeNvidiaRiva, true},
+		{"piper_is_valid", TTSTypePiper, true},
+		{"playht_is_valid", TTSTypePlayHT, true},
+		{"rime_is_valid", TTSTypeRime, true},
+		{"sarvam_is_valid", TTSTypeSarvam, true},
+		{"xtts_is_valid", TTSTypeXTTS, true},
+		{"gcp_is_invalid", TTSType("gcp"), false},
+		{"random_string_is_invalid", TTSType("random"), false},
+		{"polly_is_invalid", TTSType("polly"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.ttsType.IsValid() != tt.expected {
+				t.Errorf("TTSType(%q).IsValid() = %v, want %v", tt.ttsType, !tt.expected, tt.expected)
+			}
+		})
+	}
+}
+
+func TestTTSTypeValidValues(t *testing.T) {
+	values := TTSTypeNone.ValidValues()
+
+	if len(values) == 0 {
+		t.Fatal("ValidValues() returned empty slice")
+	}
+
+	// Should not contain empty string
+	for _, v := range values {
+		if v == "" {
+			t.Error("ValidValues() should not contain empty string")
+		}
+	}
+
+	// Should be sorted
+	for i := 1; i < len(values); i++ {
+		if values[i] < values[i-1] {
+			t.Errorf("ValidValues() not sorted: %q comes after %q", values[i], values[i-1])
+		}
+	}
+
+	// Should contain known values
+	knownValues := map[string]bool{
+		"google": false, "openai": false, "elevenlabs": false, "cartesia": false,
+	}
+	for _, v := range values {
+		if _, ok := knownValues[v]; ok {
+			knownValues[v] = true
+		}
+	}
+	for k, found := range knownValues {
+		if !found {
+			t.Errorf("ValidValues() missing expected value: %q", k)
+		}
+	}
+}
+
+func TestSTTTypeIsValid(t *testing.T) {
+	tests := []struct {
+		name     string
+		sttType  STTType
+		expected bool
+	}{
+		{"empty_string_is_valid", STTTypeNone, true},
+		{"cartesia_is_valid", STTTypeCartesia, true},
+		{"deepgram_is_valid", STTTypeDeepgram, true},
+		{"elevenlabs_is_valid", STTTypeElevenLabs, true},
+		{"gcp_is_invalid", STTType("gcp"), false},
+		{"google_is_invalid", STTType("google"), false},
+		{"random_string_is_invalid", STTType("random"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.sttType.IsValid() != tt.expected {
+				t.Errorf("STTType(%q).IsValid() = %v, want %v", tt.sttType, !tt.expected, tt.expected)
+			}
+		})
+	}
+}
+
+func TestSTTTypeValidValues(t *testing.T) {
+	values := STTTypeNone.ValidValues()
+
+	if len(values) == 0 {
+		t.Fatal("ValidValues() returned empty slice")
+	}
+
+	// Should not contain empty string
+	for _, v := range values {
+		if v == "" {
+			t.Error("ValidValues() should not contain empty string")
+		}
+	}
+
+	// Should be sorted
+	for i := 1; i < len(values); i++ {
+		if values[i] < values[i-1] {
+			t.Errorf("ValidValues() not sorted: %q comes after %q", values[i], values[i-1])
+		}
+	}
+
+	// Should contain known values
+	knownValues := map[string]bool{
+		"deepgram": false, "cartesia": false, "elevenlabs": false,
+	}
+	for _, v := range values {
+		if _, ok := knownValues[v]; ok {
+			knownValues[v] = true
+		}
+	}
+	for k, found := range knownValues {
+		if !found {
+			t.Errorf("ValidValues() missing expected value: %q", k)
+		}
+	}
+}

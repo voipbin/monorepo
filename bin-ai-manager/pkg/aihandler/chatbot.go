@@ -3,6 +3,8 @@ package aihandler
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
 
@@ -27,6 +29,14 @@ func (h *aiHandler) Create(
 
 	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+
+	if !ttsType.IsValid() {
+		return nil, fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
+	}
+
+	if !sttType.IsValid() {
+		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
 	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
@@ -55,6 +65,14 @@ func (h *aiHandler) Update(
 
 	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+
+	if !ttsType.IsValid() {
+		return nil, fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
+	}
+
+	if !sttType.IsValid() {
+		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
 	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
