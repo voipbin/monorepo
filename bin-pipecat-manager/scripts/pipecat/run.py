@@ -507,11 +507,23 @@ async def init_team_pipeline(
             routing_llm, routing_tts, routing_stt,
         )
 
+        # FlowManager's create_adapter checks the LLM class type to determine
+        # the provider adapter (OpenAI, Google, Anthropic, etc.). Pass the start
+        # member's actual LLM service so the adapter is created correctly, then
+        # swap the internal reference to routing_llm so register_function and
+        # unregister_function delegate to ALL member services.
+        active_llm = routing_llm.active_service
+        if active_llm is None:
+            raise ValueError(f"No active LLM service for start_member_id={start_member_id}")
+
         flow_manager = FlowManager(
             task=task,
-            llm=routing_llm,
+            llm=active_llm,
             context_aggregator=context_aggregator,
         )
+        # CAUTION: Relies on FlowManager storing the LLM as _llm.
+        # Verified with pipecat-ai-flows>=0.0.10. Re-verify after upgrades.
+        flow_manager._llm = routing_llm
 
         # --- Step 8: Event handlers ---
         async def handle_disconnect_or_error(name, transport, error=None):

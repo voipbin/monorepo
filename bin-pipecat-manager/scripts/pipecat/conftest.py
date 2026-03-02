@@ -72,6 +72,8 @@ _mocks = {
     ),
     # deepgram SDK
     "deepgram": _make_mock_module("LiveOptions"),
+    # aiohttp (used by team_flow.py)
+    "aiohttp": _make_mock_module("ClientSession", "ClientTimeout"),
     # pipecat-flows
     "pipecat_flows": _make_mock_module("FlowManager", "FlowArgs", "FlowsFunctionSchema", "NodeConfig"),
     # local modules that may not exist in test env

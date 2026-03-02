@@ -57,6 +57,8 @@ spec:
               value: ${DEEPGRAM_API_KEY}
             - name: XAI_API_KEY
               value: ${XAI_API_KEY}
+            - name: GOOGLE_API_KEY
+              value: ${GOOGLE_API_KEY}
           ports:
             - name: metrics
               protocol: "TCP"
@@ -88,6 +90,8 @@ spec:
               value: ${DEEPGRAM_API_KEY}
             - name: XAI_API_KEY
               value: ${XAI_API_KEY}
+            - name: GOOGLE_API_KEY
+              value: ${GOOGLE_API_KEY}
           resources:
             requests:
               cpu: "20m"
