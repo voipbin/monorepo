@@ -507,11 +507,17 @@ async def init_team_pipeline(
             routing_llm, routing_tts, routing_stt,
         )
 
+        # FlowManager's create_adapter checks the LLM class type to determine
+        # the provider adapter (OpenAI, Google, Anthropic, etc.). Pass the start
+        # member's actual LLM service so the adapter is created correctly, then
+        # swap the internal reference to routing_llm so register_function and
+        # unregister_function delegate to ALL member services.
         flow_manager = FlowManager(
             task=task,
-            llm=routing_llm,
+            llm=routing_llm.active_service,
             context_aggregator=context_aggregator,
         )
+        flow_manager._llm = routing_llm
 
         # --- Step 8: Event handlers ---
         async def handle_disconnect_or_error(name, transport, error=None):

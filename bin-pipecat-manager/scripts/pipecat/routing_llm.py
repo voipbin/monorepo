@@ -39,10 +39,17 @@ class RoutingLLMService(FrameProcessor):
         else:
             await self.push_frame(frame, direction)
 
-    # Delegate FlowManager-facing methods to all services so transitions work
-    def register_function(self, name, handler):
+    # Delegate FlowManager-facing methods to all services so transitions work.
+    # Signature matches pipecat's LLMService.register_function so FlowManager
+    # can call us with cancel_on_interruption and other kwargs.
+    def register_function(self, function_name=None, handler=None, start_callback=None, *, cancel_on_interruption=True, **kwargs):
         for svc in self._services.values():
-            svc.register_function(name, handler)
+            svc.register_function(
+                function_name=function_name,
+                handler=handler,
+                start_callback=start_callback,
+                cancel_on_interruption=cancel_on_interruption,
+            )
 
     def unregister_function(self, name):
         # Unregister from ALL services since function may have been registered
