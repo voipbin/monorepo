@@ -36,6 +36,7 @@ _mocks = {
     "pipecat.services.google": MagicMock(),
     "pipecat.services.google.tts": _make_mock_module("GoogleTTSService"),
     "pipecat.services.google.stt": _make_mock_module("GoogleSTTService"),
+    "pipecat.services.google.llm": _make_mock_module("GoogleLLMService"),
     "pipecat.services.deepgram": MagicMock(),
     "pipecat.services.deepgram.stt": _make_mock_module("DeepgramSTTService"),
     "pipecat.services.whisper": MagicMock(),
