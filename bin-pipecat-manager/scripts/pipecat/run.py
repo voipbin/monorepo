@@ -521,6 +521,8 @@ async def init_team_pipeline(
             llm=active_llm,
             context_aggregator=context_aggregator,
         )
+        # CAUTION: Relies on FlowManager storing the LLM as _llm.
+        # Verified with pipecat-ai-flows>=0.0.10. Re-verify after upgrades.
         flow_manager._llm = routing_llm
 
         # --- Step 8: Event handlers ---
