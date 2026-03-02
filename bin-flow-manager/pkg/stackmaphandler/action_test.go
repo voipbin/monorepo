@@ -718,6 +718,78 @@ func Test_GetNextAction(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "the current action is start action with empty actions on main stack",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:             stack.IDMain,
+					Actions:        []action.Action{},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+			currentStackID:  stack.IDMain,
+			currentActionID: action.IDStart,
+
+			expectedResStackID: stack.IDEmpty,
+			expectedResAction:  &action.ActionFinish,
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:             stack.IDMain,
+					Actions:        []action.Action{},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+			},
+		},
+		{
+			name: "the current action is start action with empty actions on non-main stack",
+
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+				uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"): {
+					ID:             uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+					Actions:        []action.Action{},
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
+				},
+			},
+			currentStackID:  uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+			currentActionID: action.IDStart,
+
+			expectedResStackID: stack.IDEmpty,
+			expectedResAction:  &action.ActionFinish,
+			expectedResStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID: stack.IDMain,
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  stack.IDEmpty,
+					ReturnActionID: action.IDEmpty,
+				},
+				uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"): {
+					ID:             uuid.FromStringOrNil("e9d59e50-d466-11ec-a214-7795c33e5df4"),
+					Actions:        []action.Action{},
+					ReturnStackID:  stack.IDMain,
+					ReturnActionID: uuid.FromStringOrNil("ff9c0da6-d3b6-11ec-b1e7-e35b7eafa103"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

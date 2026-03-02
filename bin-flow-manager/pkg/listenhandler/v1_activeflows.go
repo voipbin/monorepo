@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -251,6 +252,11 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.
 	id := uuid.FromStringOrNil(tmpVals[3])
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("Recovered from panic during activeflow execution. activeflow_id: %s, panic: %v, stack: %s", id, r, string(debug.Stack()))
+			}
+		}()
 		if err := h.activeflowHandler.Execute(context.Background(), id); err != nil {
 			log.Errorf("Could not execute the activeflow correctly. err: %v", err)
 		}
@@ -424,6 +430,11 @@ func (h *listenHandler) v1ActiveflowsIDContinuePost(ctx context.Context, m *sock
 	}
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("Recovered from panic during activeflow continue. activeflow_id: %s, panic: %v, stack: %s", id, r, string(debug.Stack()))
+			}
+		}()
 		if errContinue := h.activeflowHandler.ExecuteContinue(context.Background(), id, req.CurrentActionID); errContinue != nil {
 			log.Errorf("Could not continue the activeflow correctly. err: %v", errContinue)
 		}
