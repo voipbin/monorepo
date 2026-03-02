@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -187,6 +188,16 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
+	// Validate tts_type
+	if ttsType != "" && !ttsType.IsValid() {
+		return fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
+	}
+
+	// Validate stt_type
+	if sttType != "" && !sttType.IsValid() {
+		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
+	}
+
 	res, err := handler.Create(
 		context.Background(),
 		customerID,
@@ -277,6 +288,16 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	// Validate engine model if provided
 	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
 		return fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+
+	// Validate tts_type
+	if ttsType != "" && !ttsType.IsValid() {
+		return fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
+	}
+
+	// Validate stt_type
+	if sttType != "" && !sttType.IsValid() {
+		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
 	res, err := handler.Update(

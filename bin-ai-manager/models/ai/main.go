@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -186,6 +187,34 @@ const (
 	TTSTypeXTTS       TTSType = "xtts"        // XTTS (cross-lingual TTS)
 )
 
+var validTTSTypes = map[TTSType]bool{
+	TTSTypeNone: true, TTSTypeAsync: true, TTSTypeAWS: true,
+	TTSTypeAzure: true, TTSTypeCartesia: true, TTSTypeDeepgram: true,
+	TTSTypeElevenLabs: true, TTSTypeFish: true, TTSTypeGoogle: true,
+	TTSTypeGroq: true, TTSTypeHume: true, TTSTypeInworld: true,
+	TTSTypeLMNT: true, TTSTypeMiniMax: true, TTSTypeNeuphonic: true,
+	TTSTypeNvidiaRiva: true, TTSTypeOpenAI: true, TTSTypePiper: true,
+	TTSTypePlayHT: true, TTSTypeRime: true, TTSTypeSarvam: true,
+	TTSTypeXTTS: true,
+}
+
+// IsValid returns true if the TTSType is a known valid value.
+func (t TTSType) IsValid() bool {
+	return validTTSTypes[t]
+}
+
+// ValidValues returns a sorted list of valid TTSType values (excluding empty string).
+func (t TTSType) ValidValues() []string {
+	res := make([]string, 0, len(validTTSTypes))
+	for k := range validTTSTypes {
+		if k != TTSTypeNone {
+			res = append(res, string(k))
+		}
+	}
+	sort.Strings(res)
+	return res
+}
+
 // STTType define
 type STTType string
 
@@ -195,3 +224,25 @@ const (
 	STTTypeDeepgram   STTType = "deepgram"
 	STTTypeElevenLabs STTType = "elevenlabs"
 )
+
+var validSTTTypes = map[STTType]bool{
+	STTTypeNone: true, STTTypeCartesia: true,
+	STTTypeDeepgram: true, STTTypeElevenLabs: true,
+}
+
+// IsValid returns true if the STTType is a known valid value.
+func (s STTType) IsValid() bool {
+	return validSTTTypes[s]
+}
+
+// ValidValues returns a sorted list of valid STTType values (excluding empty string).
+func (s STTType) ValidValues() []string {
+	res := make([]string, 0, len(validSTTTypes))
+	for k := range validSTTTypes {
+		if k != STTTypeNone {
+			res = append(res, string(k))
+		}
+	}
+	sort.Strings(res)
+	return res
+}
