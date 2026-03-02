@@ -105,7 +105,10 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 		}
 
 		if tmpActionID == action.IDStart {
-			// start action
+			if len(s.Actions) == 0 {
+				log.Warnf("Stack has empty actions. Finishing flow. stack_id: %s", tmpStackID)
+				return stack.IDEmpty, &action.ActionFinish
+			}
 			return tmpStackID, &s.Actions[0]
 		}
 
