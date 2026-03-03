@@ -286,6 +286,23 @@ class TestLazyStart:
 
 
 # ---------------------------------------------------------------------------
+# _check_started override
+# ---------------------------------------------------------------------------
+
+class TestCheckStarted:
+    def test_base_stub_returns_false(self):
+        """The FrameProcessor stub's _check_started returns False by default."""
+        from conftest import _FrameProcessor, _Frame
+        fp = _FrameProcessor()
+        assert fp._check_started(_Frame()) is False
+
+    def test_routing_service_overrides_to_true(self):
+        """RoutingServiceBase overrides _check_started to always return True."""
+        router, _, _ = _make_router(RoutingSTTService)
+        assert router._check_started(_Frame()) is True
+
+
+# ---------------------------------------------------------------------------
 # set_active_member behavior
 # ---------------------------------------------------------------------------
 

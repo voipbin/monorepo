@@ -25,6 +25,10 @@ class _FrameProcessor:
     def __init__(self, **kwargs):
         self.push_frame = self._default_push_frame
 
+    def _check_started(self, frame):
+        """Default: not started (matches pipecat before StartFrame is received)."""
+        return False
+
     async def _default_push_frame(self, frame, direction=_FrameDirection.DOWNSTREAM):
         pass
 
