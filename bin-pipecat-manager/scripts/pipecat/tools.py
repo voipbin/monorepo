@@ -48,6 +48,33 @@ def convert_to_openai_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str,
     return openai_tools
 
 
+def _strip_unsupported_schema_fields(schema: Any) -> Any:
+    """Recursively strip JSON Schema fields that Gemini does not support.
+
+    Gemini's function-calling API rejects fields like ``additionalProperties``
+    and ``default``.  This helper walks a schema dict tree and removes them
+    so the declarations are accepted.
+    """
+    if not isinstance(schema, dict):
+        return schema
+
+    unsupported = {"additionalProperties", "default"}
+    cleaned = {k: v for k, v in schema.items() if k not in unsupported}
+
+    # Recurse into nested property definitions
+    if "properties" in cleaned and isinstance(cleaned["properties"], dict):
+        cleaned["properties"] = {
+            k: _strip_unsupported_schema_fields(v)
+            for k, v in cleaned["properties"].items()
+        }
+
+    # Recurse into items (for array types)
+    if "items" in cleaned and isinstance(cleaned["items"], dict):
+        cleaned["items"] = _strip_unsupported_schema_fields(cleaned["items"])
+
+    return cleaned
+
+
 def convert_to_gemini_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Convert tools from ai-manager format to Gemini function_declarations format.
@@ -63,16 +90,20 @@ def convert_to_gemini_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str,
     [{"function_declarations": [
         {"name": "connect_call", "description": "...", "parameters": {...}},
     ]}]
+
+    Unsupported JSON Schema fields (additionalProperties, default) are
+    stripped so that Gemini's API does not reject the declarations.
     """
     if not tools_data:
         return []
 
     declarations = []
     for tool in tools_data:
+        params = tool.get("parameters", {"type": "object", "properties": {}, "required": []})
         declarations.append({
             "name": tool.get("name", ""),
             "description": tool.get("description", ""),
-            "parameters": tool.get("parameters", {"type": "object", "properties": {}, "required": []}),
+            "parameters": _strip_unsupported_schema_fields(params),
         })
 
     return [{"function_declarations": declarations}]

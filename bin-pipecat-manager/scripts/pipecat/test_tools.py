@@ -12,6 +12,7 @@ _spec.loader.exec_module(_tools)
 
 convert_to_openai_format = _tools.convert_to_openai_format
 convert_to_gemini_format = _tools.convert_to_gemini_format
+_strip_unsupported_schema_fields = _tools._strip_unsupported_schema_fields
 
 
 SAMPLE_TOOLS = [
@@ -98,3 +99,99 @@ class TestConvertToGeminiFormat:
             assert "name" in decl
             assert "description" in decl
             assert "parameters" in decl
+
+    def test_strips_additional_properties(self):
+        """Gemini rejects additionalProperties — must be stripped."""
+        tools = [
+            {
+                "name": "set_variables",
+                "description": "Save variables",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "variables": {
+                            "type": "object",
+                            "description": "Key-value pairs",
+                            "additionalProperties": {"type": "string"},
+                        },
+                    },
+                    "required": ["variables"],
+                },
+            },
+        ]
+        result = convert_to_gemini_format(tools)
+        decl = result[0]["function_declarations"][0]
+        variables_schema = decl["parameters"]["properties"]["variables"]
+        assert "additionalProperties" not in variables_schema
+        assert variables_schema["type"] == "object"
+        assert variables_schema["description"] == "Key-value pairs"
+
+    def test_strips_default_field(self):
+        """Gemini rejects default — must be stripped."""
+        tools = [
+            {
+                "name": "test_tool",
+                "description": "A tool",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "count": {"type": "integer", "default": 10},
+                    },
+                    "required": [],
+                },
+            },
+        ]
+        result = convert_to_gemini_format(tools)
+        count_schema = result[0]["function_declarations"][0]["parameters"]["properties"]["count"]
+        assert "default" not in count_schema
+        assert count_schema["type"] == "integer"
+
+
+class TestStripUnsupportedSchemaFields:
+    def test_returns_non_dict_unchanged(self):
+        assert _strip_unsupported_schema_fields("hello") == "hello"
+        assert _strip_unsupported_schema_fields(42) == 42
+        assert _strip_unsupported_schema_fields(None) is None
+
+    def test_strips_top_level(self):
+        schema = {"type": "object", "additionalProperties": {"type": "string"}}
+        result = _strip_unsupported_schema_fields(schema)
+        assert result == {"type": "object"}
+
+    def test_strips_nested_properties(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "inner": {
+                    "type": "object",
+                    "additionalProperties": {"type": "number"},
+                    "default": {},
+                },
+            },
+        }
+        result = _strip_unsupported_schema_fields(schema)
+        assert "additionalProperties" not in result["properties"]["inner"]
+        assert "default" not in result["properties"]["inner"]
+        assert result["properties"]["inner"]["type"] == "object"
+
+    def test_strips_inside_array_items(self):
+        schema = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": True,
+            },
+        }
+        result = _strip_unsupported_schema_fields(schema)
+        assert "additionalProperties" not in result["items"]
+        assert result["items"]["type"] == "object"
+
+    def test_preserves_supported_fields(self):
+        schema = {
+            "type": "object",
+            "description": "A schema",
+            "properties": {"name": {"type": "string"}},
+            "required": ["name"],
+        }
+        result = _strip_unsupported_schema_fields(schema)
+        assert result == schema
