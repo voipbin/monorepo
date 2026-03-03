@@ -76,6 +76,7 @@ _processor_module = _make_mock_module(
 _mocks = {
     "pipecat": MagicMock(),
     "pipecat.services": MagicMock(),
+    "pipecat.services.llm_service": _make_mock_module("FunctionCallParams"),
     "pipecat.services.cartesia": MagicMock(),
     "pipecat.services.cartesia.tts": _make_mock_module("CartesiaTTSService"),
     "pipecat.services.elevenlabs": MagicMock(),
@@ -125,7 +126,7 @@ _mocks = {
     "pipecat_flows": _make_mock_module("FlowManager", "FlowArgs", "FlowsFunctionSchema", "NodeConfig"),
     # local modules that may not exist in test env
     "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPECATCALL_HTTP_URL="http://localhost", PIPELINE_SESSION_TIMEOUT=300),
-    "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "get_tool_names"),
+    "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "convert_to_gemini_format", "get_tool_names", "tool_execute"),
     "task": _make_mock_module("task_manager"),
 }
 

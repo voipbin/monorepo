@@ -48,6 +48,36 @@ def convert_to_openai_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str,
     return openai_tools
 
 
+def convert_to_gemini_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Convert tools from ai-manager format to Gemini function_declarations format.
+
+    ai-manager format:
+    {
+        "name": "connect_call",
+        "description": "...",
+        "parameters": {...}
+    }
+
+    Gemini format:
+    [{"function_declarations": [
+        {"name": "connect_call", "description": "...", "parameters": {...}},
+    ]}]
+    """
+    if not tools_data:
+        return []
+
+    declarations = []
+    for tool in tools_data:
+        declarations.append({
+            "name": tool.get("name", ""),
+            "description": tool.get("description", ""),
+            "parameters": tool.get("parameters", {"type": "object", "properties": {}, "required": []}),
+        })
+
+    return [{"function_declarations": declarations}]
+
+
 def get_tool_names(tools_data: List[Dict[str, Any]]) -> List[str]:
     """Extract tool names from tools data."""
     if not tools_data:

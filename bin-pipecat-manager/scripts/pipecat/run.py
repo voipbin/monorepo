@@ -40,7 +40,7 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
+from tools import tool_register, tool_unregister, convert_to_openai_format, convert_to_gemini_format, get_tool_names
 from task import task_manager
 from routing_llm import RoutingLLMService
 from routing_tts import RoutingTTSService
@@ -111,7 +111,6 @@ async def init_single_ai_pipeline(
 
     if tools_data is None:
         tools_data = []
-    openai_tools = convert_to_openai_format(tools_data)
     tool_names = get_tool_names(tools_data)
     logger.info(f"[INIT] Received {len(tool_names)} tools: {tool_names}")
 
@@ -143,7 +142,7 @@ async def init_single_ai_pipeline(
 
     async def init_llm():
         start = time.monotonic()
-        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, openai_tools)
+        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, tools_data)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "llm_service": llm_service,
@@ -354,7 +353,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         api_key = key or os.getenv("OPENAI_API_KEY")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        formatted_tools = convert_to_openai_format(tools)
+        ctx = OpenAILLMContext(messages=valid_messages, tools=formatted_tools)
         aggregator = llm.create_context_aggregator(ctx)
 
         return llm, aggregator
@@ -367,7 +367,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
             base_url="https://api.x.ai/v1"
         )
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        formatted_tools = convert_to_openai_format(tools)
+        ctx = OpenAILLMContext(messages=valid_messages, tools=formatted_tools)
         aggregator = llm.create_context_aggregator(ctx)
 
         return llm, aggregator
@@ -376,7 +377,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         api_key = key or os.getenv("GOOGLE_API_KEY")
         llm = GoogleLLMService(api_key=api_key, model=model_name)
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        formatted_tools = convert_to_gemini_format(tools)
+        ctx = OpenAILLMContext(messages=valid_messages, tools=formatted_tools)
         aggregator = llm.create_context_aggregator(ctx)
 
         return llm, aggregator
