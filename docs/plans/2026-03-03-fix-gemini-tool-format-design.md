@@ -1,7 +1,7 @@
 # Fix Gemini Tool Format in Pipecat Manager
 
 **Date:** 2026-03-03
-**Status:** Draft
+**Status:** Implemented
 
 ## Problem
 
@@ -84,7 +84,11 @@ Use pipecat-ai's universal `LLMContext` + `LLMContextAggregatorPair` for the Gem
        # Use universal LLMContext so GeminiLLMAdapter properly converts
        # OpenAI-format tools to Google's function_declarations format.
        standard_tools = _openai_tools_to_standard(tools)
-       tools_schema = ToolsSchema(standard_tools=standard_tools)
+       if standard_tools:
+           tools_schema = ToolsSchema(standard_tools=standard_tools)
+           logger.debug(f"Converted {len(standard_tools)} tools to FunctionSchema for Gemini")
+       else:
+           tools_schema = NOT_GIVEN
        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
        aggregator = LLMContextAggregatorPair(ctx)
 
