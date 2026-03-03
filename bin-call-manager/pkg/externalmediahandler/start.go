@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
@@ -112,6 +113,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(directionListen), channel.SnoopDirection(directionSpeak))
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
+		_ = h.bridgeHandler.Destroy(ctx, br.ID)
 		return nil, err
 	}
 	log.WithField("snoop_channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
@@ -121,6 +123,8 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	// because if we play the silence playback to the call's channel, it blocks other media play on the call's channel.
 	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixExternalMedia, id.String())
 	if errPlay := h.bridgeHandler.Play(ctx, c.BridgeID, playbackID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
+		_, _ = h.channelHandler.HangingUp(ctx, tmp.ID, ari.ChannelCauseNormalClearing)
+		_ = h.bridgeHandler.Destroy(ctx, br.ID)
 		return nil, errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", ch.ID)
 	}
 	log.WithField("playback_id", playbackID).Debugf("Started silence playback for the channel. channel_id: %s", ch.ID)
@@ -145,6 +149,8 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, tmp.ID, ari.ChannelCauseNormalClearing)
+		_ = h.bridgeHandler.Destroy(ctx, br.ID)
 		return nil, err
 	}
 
@@ -323,22 +329,30 @@ func (h *externalMediaHandler) startExternalMedia(
 	)
 	if err != nil {
 		log.Errorf("Could not create a external media channel. err: %v", err)
+		_ = h.db.ExternalMediaDelete(ctx, id)
 		return nil, err
+	}
+
+	// cleanup helper for failures after Asterisk channel creation
+	cleanupOnError := func() {
+		_ = h.channelHandler.HangingUpWithAsteriskID(ctx, asteriskID, extChannelID, ari.ChannelCauseNormalClearing)
+		_ = h.db.ExternalMediaDelete(ctx, id)
 	}
 
 	// parse local localIP and port
 	localIP := ""
 	localPort := 0
-	if tmp := extCh.Data[ChannelValiableExternalMediaLocalAddress]; tmp != nil {
-		localIP = tmp.(string)
+	if tmp, ok := extCh.Data[ChannelValiableExternalMediaLocalAddress].(string); ok {
+		localIP = tmp
 	}
-	if tmp := extCh.Data[ChannelValiableExternalMediaLocalPort]; tmp != nil {
-		localPort, _ = strconv.Atoi(tmp.(string))
+	if tmp, ok := extCh.Data[ChannelValiableExternalMediaLocalPort].(string); ok {
+		localPort, _ = strconv.Atoi(tmp)
 	}
 
 	res, err := h.UpdateLocalAddress(ctx, id, localIP, localPort)
 	if err != nil {
 		log.Errorf("Could not update the local address. err: %v", err)
+		cleanupOnError()
 		return nil, err
 	}
 
@@ -346,11 +360,13 @@ func (h *externalMediaHandler) startExternalMedia(
 	if transport == externalmedia.TransportWebsocket {
 		connectionID, ok := extCh.Data[ChannelVariableWebSocketConnectionID].(string)
 		if !ok || connectionID == "" {
+			cleanupOnError()
 			return nil, fmt.Errorf("could not get WebSocket connection ID from channel variables")
 		}
 
 		asteriskIP, errCache := h.cache.AsteriskAddressInternalGet(ctx, asteriskID)
 		if errCache != nil {
+			cleanupOnError()
 			return nil, errors.Wrapf(errCache, "could not get asterisk internal address. asterisk_id: %s", asteriskID)
 		}
 
@@ -359,6 +375,7 @@ func (h *externalMediaHandler) startExternalMedia(
 
 		// persist the updated MediaURI
 		if errDB := h.db.ExternalMediaSet(ctx, res); errDB != nil {
+			cleanupOnError()
 			return nil, errors.Wrapf(errDB, "could not update external media with media URI")
 		}
 	}
