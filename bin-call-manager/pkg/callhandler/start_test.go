@@ -252,7 +252,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseConference.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
@@ -449,7 +449,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
@@ -642,7 +642,7 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
@@ -749,7 +749,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 			mockDB.EXPECT().CallSetBridgeID(ctx, tt.expectCallID, gomock.Any()).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)

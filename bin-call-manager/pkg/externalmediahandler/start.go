@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
-	"monorepo/bin-call-manager/models/playback"
 )
 
 // Start starts the external media processing
@@ -118,24 +117,13 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 	}
 	log.WithField("snoop_channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
-	// start silence playback
-	// we are playing a silence playback to the call's callbridge.
-	// because if we play the silence playback to the call's channel, it blocks other media play on the call's channel.
-	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixExternalMedia, id.String())
-	if errPlay := h.bridgeHandler.Play(ctx, c.BridgeID, playbackID, []string{defaultSilencePlaybackMedia}, "", 0, 0); errPlay != nil {
-		_, _ = h.channelHandler.HangingUp(ctx, tmp.ID, ari.ChannelCauseNormalClearing)
-		_ = h.bridgeHandler.Destroy(ctx, br.ID)
-		return nil, errors.Wrapf(errPlay, "could not start silence playback for channel_id: %s", ch.ID)
-	}
-	log.WithField("playback_id", playbackID).Debugf("Started silence playback for the channel. channel_id: %s", ch.ID)
-
 	// start external media
 	res, err := h.startExternalMedia(
 		ctx,
 		id,
 		ch.AsteriskID,
 		br.ID,
-		playbackID,
+		"",
 		externalmedia.ReferenceTypeCall,
 		c.ID,
 		externalHost,
