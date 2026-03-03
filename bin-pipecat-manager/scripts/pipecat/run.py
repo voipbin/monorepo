@@ -309,6 +309,10 @@ def create_tts_service(name: str, **options):
             language=language,
         )
     elif name == "google":
+        # Default to Chirp3 HD voice based on language when no voice specified.
+        if not options.get("voice_id"):
+            lang_code = language if language else "en-US"
+            voice_id = f"{lang_code}-Chirp3-HD-Charon"
         # Extract language from voice name (e.g., "en-US-Chirp3-HD-Fenrir" -> "en-US")
         # Google TTS API requires language_code to match the voice's language.
         parts = voice_id.split("-")
