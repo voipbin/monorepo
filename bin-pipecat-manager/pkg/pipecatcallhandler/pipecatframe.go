@@ -90,7 +90,8 @@ func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatc
 	case <-timer.C:
 		dropped := pc.DroppedFrames.Add(1)
 		if dropped == 1 || dropped%100 == 0 {
-			logrus.WithField("pipecatcall_id", pc.ID).Warnf("Audio frame dropped due to channel backpressure. total_dropped: %d", dropped)
+			log := logrus.WithField("pipecatcall_id", pc.ID)
+			log.Warnf("Audio frame dropped due to channel backpressure. total_dropped: %d", dropped)
 		}
 		return
 	}
