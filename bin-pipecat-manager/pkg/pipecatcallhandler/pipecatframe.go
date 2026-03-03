@@ -65,17 +65,34 @@ func (h *pipecatframeHandler) RunSender(se *pipecatcall.Session, ws *websocket.C
 }
 
 func (h *pipecatframeHandler) pushFrame(pc *pipecatcall.Session, frame *pipecatcall.SessionFrame) {
+	// Fast path: non-blocking send avoids timer allocation in the common case.
 	select {
 	case <-pc.Ctx.Done():
 		return
-
 	case pc.RunnerWebsocketChan <- frame:
 		return
+	default:
+		// Channel full — fall through to timed wait.
+	}
 
-	case <-time.After(defaultPushFrameTimeout):
-		// timeout pushing frame
-		// note: we don't log here to avoid flooding the logs
-		// just drop the frame
+	// Slow path: channel was full, wait briefly with a proper timer.
+	// Unlike time.After, time.NewTimer + defer Stop releases the timer
+	// immediately when the send succeeds, avoiding GC pressure from
+	// leaked timers (~50 allocations/sec in the hot audio path).
+	timer := time.NewTimer(defaultPushFrameTimeout)
+	defer timer.Stop()
+
+	select {
+	case <-pc.Ctx.Done():
+		return
+	case pc.RunnerWebsocketChan <- frame:
+		return
+	case <-timer.C:
+		dropped := pc.DroppedFrames.Add(1)
+		if dropped == 1 || dropped%100 == 0 {
+			log := logrus.WithField("pipecatcall_id", pc.ID)
+			log.Warnf("Audio frame dropped due to channel backpressure. total_dropped: %d", dropped)
+		}
 		return
 	}
 }

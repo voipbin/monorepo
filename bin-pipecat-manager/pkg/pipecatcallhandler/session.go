@@ -85,6 +85,10 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		return
 	}
 
+	if dropped := pc.DroppedFrames.Load(); dropped > 0 {
+		log.Warnf("Session had %d dropped audio frames. pipecatcall_id: %s", dropped, id)
+	}
+
 	if pc.ConnAst != nil {
 		if errClose := pc.ConnAst.Close(); errClose != nil {
 			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
