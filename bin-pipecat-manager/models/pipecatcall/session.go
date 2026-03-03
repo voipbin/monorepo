@@ -3,6 +3,7 @@ package pipecatcall
 import (
 	"context"
 	"monorepo/bin-common-handler/models/identity"
+	"sync/atomic"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -28,6 +29,9 @@ type Session struct {
 	// llm
 	LLMKey     string `json:"-"`
 	LLMBotText string `json:"-"`
+
+	// audio quality monitoring
+	DroppedFrames atomic.Int64 `json:"-"`
 }
 
 // SessionFrame represents a websocket frame that will be sent to the pipecat runner.

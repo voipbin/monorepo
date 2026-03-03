@@ -192,8 +192,12 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 			log.Debugf("Received Close message from client.")
 			return
 		case websocket.PingMessage:
-			log.Debugf("Received Ping message from client. Sending Pong.")
-			h.pipecatframeHandler.SendData(se, websocket.PongMessage, []byte{})
+			// Note: gorilla/websocket handles Ping/Pong control frames internally
+			// via WriteControl (concurrent-safe with WriteMessage). ReadMessage
+			// never returns PingMessage to the caller, so this case is defensive
+			// only. Do NOT route Pong through the audio channel (SendData) as that
+			// competes with audio frames and can be dropped under backpressure.
+			log.Debugf("Received Ping message from client (handled by gorilla internally).")
 		case websocket.PongMessage:
 			log.Debugf("Received Pong message from client.")
 		default:
@@ -271,7 +275,11 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
 				if errAudio := h.runnerWebsocketHandleAudio(se, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
-					return nil
+					// Log and continue instead of terminating the output handler.
+					// A single transient write error should not kill all TTS audio
+					// for the remainder of the call. The Asterisk WebSocket lifecycle
+					// monitor (ConnAstDone) handles true disconnects.
+					log.Errorf("Could not handle audio frame, skipping. err: %v", errAudio)
 				}
 
 			case *pipecatframe.Frame_Transcription:
