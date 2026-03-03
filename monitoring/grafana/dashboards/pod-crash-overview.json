@@ -631,6 +631,248 @@
           }
         }
       ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 105,
+      "title": "Pod Lifecycle",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3600 },
+              { "color": "blue", "value": 86400 }
+            ]
+          },
+          "unit": "s",
+          "custom": {
+            "align": "auto",
+            "displayMode": "color-background-solid"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Pod" },
+            "properties": [{ "id": "custom.width", "value": 300 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Namespace" },
+            "properties": [{ "id": "custom.width", "value": 120 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 60 },
+      "id": 13,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": false, "displayName": "Uptime" }]
+      },
+      "title": "Pod Uptime (how long each pod has been running)",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "time() - kube_pod_start_time{namespace=~\"bin-manager|voip\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "uid": true,
+              "endpoint": true,
+              "service": true
+            },
+            "renameByName": {
+              "pod": "Pod",
+              "namespace": "Namespace",
+              "Value": "Uptime"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "drawStyle": "points",
+            "gradientMode": "none",
+            "spanNulls": false
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 70 },
+      "id": 14,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["sum", "lastNotNull"]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "title": "All Pod Restarts Over Time (bin-manager) — includes deployment rollouts",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "changes(kube_pod_start_time{namespace=\"bin-manager\"}[5m]) > 0",
+          "legendFormat": "{{ pod }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "drawStyle": "points",
+            "gradientMode": "none",
+            "spanNulls": false
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 78 },
+      "id": 15,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["sum", "lastNotNull"]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "title": "All Pod Restarts Over Time (voip) — includes deployment rollouts",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "changes(kube_pod_start_time{namespace=\"voip\"}[5m]) > 0",
+          "legendFormat": "{{ pod }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 86 },
+      "id": 106,
+      "title": "Deployment Rollouts",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 87 },
+      "id": 16,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull"]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "title": "Updated vs Desired Replicas (bin-manager)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "kube_deployment_spec_replicas{namespace=\"bin-manager\"} - kube_deployment_status_replicas_updated{namespace=\"bin-manager\"} != 0",
+          "legendFormat": "{{ deployment }} (pending)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 87 },
+      "id": 17,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull"]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "title": "Updated vs Desired Replicas (voip)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "kube_deployment_spec_replicas{namespace=\"voip\"} - kube_deployment_status_replicas_updated{namespace=\"voip\"} != 0",
+          "legendFormat": "{{ deployment }} (pending)",
+          "refId": "A"
+        }
+      ]
     }
   ],
   "schemaVersion": 30,
