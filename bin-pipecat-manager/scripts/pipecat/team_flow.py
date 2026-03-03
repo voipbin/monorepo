@@ -1,10 +1,30 @@
 import json
+import re
 import aiohttp
 import asyncio
 import common
 
 from loguru import logger
 from pipecat_flows import FlowManager, FlowArgs, FlowsFunctionSchema, NodeConfig
+
+# Google Gemini requires function names: start with letter/underscore,
+# alphanumeric + _.-: only, max 64 chars.
+_MAX_FUNCTION_NAME_LENGTH = 64
+_INVALID_CHARS_RE = re.compile(r'[^a-zA-Z0-9_.\-:]')
+
+
+def _sanitize_function_name(name: str) -> str:
+    """Sanitize a function name for LLM provider compatibility (Gemini 64-char limit)."""
+    sanitized = _INVALID_CHARS_RE.sub('_', name)
+    if sanitized and not sanitized[0].isalpha() and sanitized[0] != '_':
+        sanitized = '_' + sanitized
+    if len(sanitized) > _MAX_FUNCTION_NAME_LENGTH:
+        logger.warning(
+            f"Function name truncated from {len(sanitized)} to {_MAX_FUNCTION_NAME_LENGTH} chars: "
+            f"'{sanitized}' -> '{sanitized[:_MAX_FUNCTION_NAME_LENGTH]}'"
+        )
+        sanitized = sanitized[:_MAX_FUNCTION_NAME_LENGTH]
+    return sanitized
 
 
 def build_team_flow(
@@ -37,7 +57,7 @@ def build_team_flow(
         tool_functions = []
         for tool in member.get("tools", []):
             tool_functions.append(FlowsFunctionSchema(
-                name=tool["name"],
+                name=_sanitize_function_name(tool["name"]),
                 description=tool.get("description", ""),
                 properties=tool.get("parameters", {}).get("properties", {}),
                 required=tool.get("parameters", {}).get("required", []),
@@ -47,7 +67,7 @@ def build_team_flow(
         # Build transition functions
         for transition in member.get("transitions", []):
             tool_functions.append(FlowsFunctionSchema(
-                name=transition["function_name"],
+                name=_sanitize_function_name(transition["function_name"]),
                 description=transition["description"],
                 properties={},
                 required=[],
