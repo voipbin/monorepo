@@ -383,7 +383,24 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, ca
 		"channel_id": cn.ID,
 	})
 
-	// create call bridge
+	// CreateBridge initializes a new bridge for the call.
+	//
+	// We explicitly set the bridge type to "mixing,video_sfu" to bypass Asterisk's
+	// Smart Bridge optimization. By default, Asterisk may downgrade a standard
+	// "mixing" bridge to a "simple_bridge" to save CPU resources if there are few
+	// participants or no active RTP streams.
+	//
+	// A "simple_bridge" lacks an internal timing source (clocking) and relies entirely
+	// on incoming RTP packets to drive the media pipeline. If a base channel is alone
+	// in the bridge or the caller goes silent, the media loop halts. Consequently,
+	// any audio injected via ARI 'snoop' (e.g., for whisper functionality) will be
+	// delayed, jittery, or completely dropped.
+	//
+	// Appending "video_sfu" forces Asterisk to allocate the "bridge_softmix" engine
+	// immediately. The softmix engine utilizes its own internal timer (e.g.,
+	// res_timing_timerfd) to continuously pump empty audio frames every 20ms.
+	// This guarantees a stable, uninterrupted media clock, allowing seamless whisper
+	// and snoop audio injections regardless of the base channel's actual media state.
 	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
 	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU})
