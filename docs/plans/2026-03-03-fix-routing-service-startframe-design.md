@@ -52,27 +52,39 @@ When `process_frame` receives a `StartFrame`:
 - Track which children have been started (`_started_ids` set)
 - Do NOT push `StartFrame` downstream explicitly — the child's monkey-patched `push_frame` handles it
 
-#### 3. Handle EndFrame: forward to active child only
+#### 3. Handle EndFrame: forward to ALL started children
 
-Forward `EndFrame` to the active child only. Inactive services clean up naturally when the
-process ends. This avoids N duplicate `EndFrame` pushes downstream from the monkey-patched `push_frame`.
+Forward `EndFrame` to every child in `_started_ids`, not just the active one. This ensures
+previously active services (e.g., Google STT gRPC streams) receive a clean shutdown signal
+instead of relying on process exit for cleanup.
 
-#### 4. Lazy start on `set_active_member()`
+To avoid N duplicate `EndFrame` pushes downstream from the monkey-patched `push_frame`, the
+`_suppress_propagation` flag is set during forwarding, then one `EndFrame` is pushed explicitly
+by the routing service.
 
-When switching to a new member:
-- If the new member's service hasn't received `StartFrame` yet (not in `_started_ids`)
-  AND we have a stored `StartFrame`, forward it to the new service before switching
-- Mark the new service as started
+#### 4. Lazy start on next `process_frame` after `set_active_member()`
+
+`set_active_member()` is synchronous (called from sync FlowManager transition handlers in
+`team_flow.py`). The actual lazy-start happens in `_ensure_started()`, which is called at the
+top of the regular-frame path in `process_frame`. This way the new child receives `StartFrame`
+on the very next audio/text frame after a member switch.
 
 #### 5. Regular frames: no change
 
 Audio, transcription, and other frames delegate to the active child service as before.
 
+#### 6. Base class extraction
+
+All shared logic (setup propagation, StartFrame/EndFrame handling, lazy-start, suppression,
+push_frame monkey-patching) is extracted into `RoutingServiceBase` in `routing_base.py`.
+Subclasses only override `set_active_member` and add service-specific methods.
+
 ### Files to Modify
 
-1. `bin-pipecat-manager/scripts/pipecat/routing_stt.py`
-2. `bin-pipecat-manager/scripts/pipecat/routing_tts.py`
-3. `bin-pipecat-manager/scripts/pipecat/routing_llm.py`
+1. `bin-pipecat-manager/scripts/pipecat/routing_base.py` (new — shared base class)
+2. `bin-pipecat-manager/scripts/pipecat/routing_stt.py`
+3. `bin-pipecat-manager/scripts/pipecat/routing_tts.py`
+4. `bin-pipecat-manager/scripts/pipecat/routing_llm.py`
 
 ### Imports Required
 

@@ -1,8 +1,38 @@
-"""Mock pipecat and other unavailable modules so run.py can be imported in tests."""
+"""Mock pipecat and other unavailable modules so routing tests can run without pipecat installed."""
 
 import sys
 import enum
 from unittest.mock import MagicMock
+
+
+# --- Real stub classes needed for isinstance() checks in routing services -----
+
+class _Frame:
+    pass
+
+class _StartFrame(_Frame):
+    pass
+
+class _EndFrame(_Frame):
+    pass
+
+class _FrameDirection(enum.Enum):
+    DOWNSTREAM = "downstream"
+    UPSTREAM = "upstream"
+
+class _FrameProcessor:
+    """Minimal stub replicating the interface used by routing services."""
+    def __init__(self, **kwargs):
+        self.push_frame = self._default_push_frame
+
+    async def _default_push_frame(self, frame, direction=_FrameDirection.DOWNSTREAM):
+        pass
+
+    async def setup(self, setup):
+        pass
+
+    async def process_frame(self, frame, direction):
+        pass
 
 
 class _Language(enum.Enum):
@@ -25,7 +55,20 @@ def _make_mock_module(*attrs, **kw_attrs):
     return m
 
 
-# Build mock module tree before anything imports pipecat
+# Build mock module tree before anything imports pipecat.
+# frames and frame_processor use real classes so isinstance() works in routing code.
+_frames_module = _make_mock_module(
+    "LLMRunFrame",
+    Frame=_Frame,
+    StartFrame=_StartFrame,
+    EndFrame=_EndFrame,
+)
+
+_processor_module = _make_mock_module(
+    FrameDirection=_FrameDirection,
+    FrameProcessor=_FrameProcessor,
+)
+
 _mocks = {
     "pipecat": MagicMock(),
     "pipecat.services": MagicMock(),
@@ -46,7 +89,7 @@ _mocks = {
     "pipecat.transcriptions": MagicMock(),
     "pipecat.transcriptions.language": _make_mock_module(Language=_Language),
     "pipecat.processors": MagicMock(),
-    "pipecat.processors.frame_processor": _make_mock_module("FrameDirection", "FrameProcessor"),
+    "pipecat.processors.frame_processor": _processor_module,
     "pipecat.processors.filters": MagicMock(),
     "pipecat.processors.filters.stt_mute_filter": _make_mock_module(
         "STTMuteConfig", "STTMuteFilter", "STTMuteStrategy"
@@ -58,7 +101,7 @@ _mocks = {
     "pipecat.audio.vad.silero": _make_mock_module("SileroVADAnalyzer"),
     "pipecat.audio.vad.vad_analyzer": _make_mock_module("VADParams"),
     "pipecat.frames": MagicMock(),
-    "pipecat.frames.frames": _make_mock_module("LLMRunFrame"),
+    "pipecat.frames.frames": _frames_module,
     "pipecat.pipeline": MagicMock(),
     "pipecat.pipeline.pipeline": _make_mock_module("Pipeline"),
     "pipecat.pipeline.runner": _make_mock_module("PipelineRunner"),
