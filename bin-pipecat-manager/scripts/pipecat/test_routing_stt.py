@@ -19,6 +19,12 @@ class _StubFrameProcessor:
     def __init__(self, **kwargs):
         pass
 
+    async def setup(self, setup):
+        pass
+
+    async def cleanup(self):
+        pass
+
     async def process_frame(self, frame, direction):
         pass
 
@@ -39,9 +45,13 @@ def _make_services():
     """Create two mock STT services."""
     svc_a = MagicMock()
     svc_a.process_frame = AsyncMock()
+    svc_a.setup = AsyncMock()
+    svc_a.cleanup = AsyncMock()
 
     svc_b = MagicMock()
     svc_b.process_frame = AsyncMock()
+    svc_b.setup = AsyncMock()
+    svc_b.cleanup = AsyncMock()
 
     return {"member-a": svc_a, "member-b": svc_b}
 
@@ -156,3 +166,24 @@ class TestPushFrameRouting:
         RoutingSTTService(services)
         assert services["member-a"].push_frame is not original_push_a
         assert callable(services["member-a"].push_frame)
+
+
+class TestSetupCleanupPropagation:
+    @pytest.mark.asyncio
+    async def test_setup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingSTTService(services)
+        setup_obj = MagicMock()
+        await routing.setup(setup_obj)
+
+        for svc in services.values():
+            svc.setup.assert_awaited_once_with(setup_obj)
+
+    @pytest.mark.asyncio
+    async def test_cleanup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingSTTService(services)
+        await routing.cleanup()
+
+        for svc in services.values():
+            svc.cleanup.assert_awaited_once()

@@ -46,7 +46,10 @@ _mocks = {
     "pipecat.transcriptions": MagicMock(),
     "pipecat.transcriptions.language": _make_mock_module(Language=_Language),
     "pipecat.processors": MagicMock(),
-    "pipecat.processors.frame_processor": _make_mock_module("FrameDirection", "FrameProcessor"),
+    "pipecat.processors.frame_processor": _make_mock_module(
+        "FrameDirection", "FrameProcessor",
+        FrameProcessorSetup=type("FrameProcessorSetup", (), {}),
+    ),
     "pipecat.processors.filters": MagicMock(),
     "pipecat.processors.filters.stt_mute_filter": _make_mock_module(
         "STTMuteConfig", "STTMuteFilter", "STTMuteStrategy"

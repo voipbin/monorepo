@@ -20,6 +20,12 @@ class _StubFrameProcessor:
     def __init__(self, **kwargs):
         pass
 
+    async def setup(self, setup):
+        pass
+
+    async def cleanup(self):
+        pass
+
     async def process_frame(self, frame, direction):
         pass
 
@@ -43,11 +49,15 @@ def _make_services():
     """Create two mock LLM services."""
     svc_a = MagicMock()
     svc_a.process_frame = AsyncMock()
+    svc_a.setup = AsyncMock()
+    svc_a.cleanup = AsyncMock()
     svc_a.register_function = MagicMock()
     svc_a.unregister_function = MagicMock()
 
     svc_b = MagicMock()
     svc_b.process_frame = AsyncMock()
+    svc_b.setup = AsyncMock()
+    svc_b.cleanup = AsyncMock()
     svc_b.register_function = MagicMock()
     svc_b.unregister_function = MagicMock()
 
@@ -333,3 +343,24 @@ class TestPushFrameRouting:
         assert services["member-b"].push_frame is not original_push_b
         assert callable(services["member-a"].push_frame)
         assert callable(services["member-b"].push_frame)
+
+
+class TestSetupCleanupPropagation:
+    @pytest.mark.asyncio
+    async def test_setup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        setup_obj = MagicMock()
+        await routing.setup(setup_obj)
+
+        for svc in services.values():
+            svc.setup.assert_awaited_once_with(setup_obj)
+
+    @pytest.mark.asyncio
+    async def test_cleanup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        await routing.cleanup()
+
+        for svc in services.values():
+            svc.cleanup.assert_awaited_once()

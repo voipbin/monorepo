@@ -1,7 +1,7 @@
 from loguru import logger
 
 from pipecat.frames.frames import CancelFrame, EndFrame, Frame, StartFrame
-from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
+from pipecat.processors.frame_processor import FrameDirection, FrameProcessor, FrameProcessorSetup
 
 
 class RoutingTTSService(FrameProcessor):
@@ -20,6 +20,16 @@ class RoutingTTSService(FrameProcessor):
         async def routing_push(frame: Frame, direction: FrameDirection = FrameDirection.DOWNSTREAM):
             await self.push_frame(frame, direction)
         return routing_push
+
+    async def setup(self, setup: FrameProcessorSetup):
+        await super().setup(setup)
+        for svc in self._services.values():
+            await svc.setup(setup)
+
+    async def cleanup(self):
+        await super().cleanup()
+        for svc in self._services.values():
+            await svc.cleanup()
 
     def set_active_member(self, member_id: str):
         if member_id not in self._services:
