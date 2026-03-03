@@ -500,8 +500,14 @@ async def init_team_pipeline(
         start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
     start_messages.extend([m for m in llm_messages if m.get("role") and m.get("content")])
 
-    context = OpenAILLMContext(messages=start_messages, tools=[])
-    context_aggregator = llm_services[start_member_id].create_context_aggregator(context)
+    # Use universal LLMContext + LLMContextAggregatorPair so FlowManager's
+    # create_adapter() returns UniversalLLMAdapter. This ensures tools are
+    # converted through ToolsSchema/FunctionSchema, which all providers
+    # (OpenAI, Gemini, Anthropic) handle correctly. The legacy path
+    # (OpenAILLMContext + provider-specific aggregator) causes tool format
+    # mismatches — e.g. Gemini rejects OpenAI-format tools passed as-is.
+    context = LLMContext(messages=start_messages, tools=NOT_GIVEN)
+    context_aggregator = LLMContextAggregatorPair(context)
 
     # --- Step 4: Create transports ---
     transport_input = None
