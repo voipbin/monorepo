@@ -386,7 +386,7 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, ca
 	// create call bridge
 	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
-	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
+	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU})
 	if err != nil {
 		log.Errorf("Could not create a bridge for call bridge. bridge_id: %s, error: %v", bridgeID, err)
 		return "", err
