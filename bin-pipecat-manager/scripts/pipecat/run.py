@@ -26,6 +26,10 @@ from pipecat.services.google.llm import GoogleLLMService
 
 # aggregators / context
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
+from pipecat.processors.aggregators.llm_context import LLMContext, NOT_GIVEN
+from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
+from pipecat.adapters.schemas.function_schema import FunctionSchema
+from pipecat.adapters.schemas.tools_schema import ToolsSchema
 
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
@@ -339,6 +343,28 @@ def create_stt_service(name: str, **options):
         raise ValueError(f"Unsupported STT service: {name}")
 
 
+def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
+    """Convert OpenAI-format tools to pipecat FunctionSchema objects.
+
+    OpenAI format: [{"type": "function", "function": {"name": ..., "description": ..., "parameters": {...}}}]
+    FunctionSchema: FunctionSchema(name=..., description=..., properties=..., required=...)
+    """
+    if not openai_tools:
+        return []
+
+    schemas = []
+    for tool in openai_tools:
+        func = tool.get("function", {})
+        params = func.get("parameters", {})
+        schemas.append(FunctionSchema(
+            name=func.get("name", ""),
+            description=func.get("description", ""),
+            properties=params.get("properties", {}),
+            required=params.get("required", []),
+        ))
+    return schemas
+
+
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], **options):
     valid_messages = [m for m in messages if m.get("role") and m.get("content")]
 
@@ -376,8 +402,18 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         api_key = key or os.getenv("GOOGLE_API_KEY")
         llm = GoogleLLMService(api_key=api_key, model=model_name)
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
-        aggregator = llm.create_context_aggregator(ctx)
+        # Use universal LLMContext so GeminiLLMAdapter properly converts
+        # OpenAI-format tools to Google's function_declarations format.
+        # OpenAILLMContext passes tools as-is to GenerateContentConfig,
+        # which rejects the OpenAI {"type":"function","function":{...}} format.
+        standard_tools = _openai_tools_to_standard(tools)
+        if standard_tools:
+            tools_schema = ToolsSchema(standard_tools=standard_tools)
+            logger.debug(f"Converted {len(standard_tools)} tools to FunctionSchema for Gemini")
+        else:
+            tools_schema = NOT_GIVEN
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = LLMContextAggregatorPair(ctx)
 
         return llm, aggregator
 
