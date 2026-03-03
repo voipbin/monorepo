@@ -1,3 +1,5 @@
+from typing import Any
+
 from loguru import logger
 
 from pipecat.frames.frames import EndFrame, Frame, StartFrame
@@ -14,7 +16,7 @@ class RoutingServiceBase(FrameProcessor):
     downstream pushes.
     """
 
-    def __init__(self, member_services: dict[str, any]):
+    def __init__(self, member_services: dict[str, Any]):
         super().__init__()
         self._services = member_services
         self._active_id = None

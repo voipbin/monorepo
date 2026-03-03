@@ -204,24 +204,28 @@ class TestCreateLLMService:
 
     @patch("run.GoogleLLMService")
     @patch("run.OpenAILLMContext")
-    def test_gemini_passes_tools_to_context(self, mock_context, mock_service):
-        """Test tools list is correctly passed to OpenAILLMContext."""
+    @patch("run.convert_to_gemini_format")
+    def test_gemini_passes_tools_to_context(self, mock_convert, mock_context, mock_service):
+        """Test tools list is converted to Gemini format and passed to OpenAILLMContext."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
         mock_llm.create_context_aggregator.return_value = MagicMock()
 
-        tools = [{"type": "function", "function": {"name": "connect_call", "parameters": {}}}]
+        raw_tools = [{"name": "connect_call", "description": "Connect", "parameters": {"type": "object", "properties": {}, "required": []}}]
+        gemini_tools = [{"function_declarations": [{"name": "connect_call", "description": "Connect", "parameters": {"type": "object", "properties": {}, "required": []}}]}]
+        mock_convert.return_value = gemini_tools
 
         create_llm_service(
             type="gemini.gemini-2.5-flash",
             key="test-key",
             messages=[],
-            tools=tools
+            tools=raw_tools
         )
 
-        mock_context.assert_called_once_with(messages=[], tools=tools)
+        mock_convert.assert_called_once_with(raw_tools)
+        mock_context.assert_called_once_with(messages=[], tools=gemini_tools)
 
     @patch("run.GoogleLLMService")
     @patch("run.OpenAILLMContext")
