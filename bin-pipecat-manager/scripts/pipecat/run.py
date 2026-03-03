@@ -309,8 +309,20 @@ def create_tts_service(name: str, **options):
             language=language,
         )
     elif name == "google":
+        # Default to Chirp3 HD voice based on language when no voice specified.
+        if not options.get("voice_id"):
+            lang_code = language if language else "en-US"
+            voice_id = f"{lang_code}-Chirp3-HD-Charon"
+        # Extract language from voice name (e.g., "en-US-Chirp3-HD-Fenrir" -> "en-US")
+        # Google TTS API requires language_code to match the voice's language.
+        parts = voice_id.split("-")
+        if len(parts) >= 2:
+            lang = _parse_language(f"{parts[0]}-{parts[1]}")
+        else:
+            lang = _parse_language(language) if language else Language.EN_US
         return GoogleTTSService(
             voice_id=voice_id,
+            params=GoogleTTSService.InputParams(language=lang),
         )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
@@ -500,8 +512,14 @@ async def init_team_pipeline(
         start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
     start_messages.extend([m for m in llm_messages if m.get("role") and m.get("content")])
 
-    context = OpenAILLMContext(messages=start_messages, tools=[])
-    context_aggregator = llm_services[start_member_id].create_context_aggregator(context)
+    # Use universal LLMContext + LLMContextAggregatorPair so FlowManager's
+    # create_adapter() returns UniversalLLMAdapter. This ensures tools are
+    # converted through ToolsSchema/FunctionSchema, which all providers
+    # (OpenAI, Gemini, Anthropic) handle correctly. The legacy path
+    # (OpenAILLMContext + provider-specific aggregator) causes tool format
+    # mismatches — e.g. Gemini rejects OpenAI-format tools passed as-is.
+    context = LLMContext(messages=start_messages, tools=NOT_GIVEN)
+    context_aggregator = LLMContextAggregatorPair(context)
 
     # --- Step 4: Create transports ---
     transport_input = None

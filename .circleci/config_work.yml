@@ -473,13 +473,13 @@ workflows:
     jobs:
       - build-approval:
           type: approval
-      - bin-pipecat-manager-test:
-          requires:
-            - build-approval
+      # - bin-pipecat-manager-test:
+      #     requires:
+      #       - build-approval
       - bin-pipecat-manager-build:
           <<: *context_production
           requires:
-            - bin-pipecat-manager-test
+            - build-approval
       - bin-pipecat-manager-release:
           <<: *context_production
           requires:

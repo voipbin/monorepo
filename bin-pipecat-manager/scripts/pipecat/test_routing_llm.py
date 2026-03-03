@@ -20,6 +20,15 @@ class _StubFrameProcessor:
     def __init__(self, **kwargs):
         pass
 
+    async def setup(self, setup):
+        pass
+
+    async def cleanup(self):
+        pass
+
+    async def process_frame(self, frame, direction):
+        pass
+
     async def push_frame(self, frame, direction=None):
         pass
 
@@ -40,11 +49,15 @@ def _make_services():
     """Create two mock LLM services."""
     svc_a = MagicMock()
     svc_a.process_frame = AsyncMock()
+    svc_a.setup = AsyncMock()
+    svc_a.cleanup = AsyncMock()
     svc_a.register_function = MagicMock()
     svc_a.unregister_function = MagicMock()
 
     svc_b = MagicMock()
     svc_b.process_frame = AsyncMock()
+    svc_b.setup = AsyncMock()
+    svc_b.cleanup = AsyncMock()
     svc_b.register_function = MagicMock()
     svc_b.unregister_function = MagicMock()
 
@@ -239,6 +252,84 @@ class TestProcessFrame:
             svc.process_frame.assert_not_awaited()
 
 
+class TestLifecycleFramePropagation:
+    """Tests that StartFrame, CancelFrame, EndFrame propagate to all inner services."""
+
+    @pytest.mark.asyncio
+    async def test_start_frame_propagates_to_all_services(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-a")
+        frame = _frames_mod.StartFrame()
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        for svc in services.values():
+            svc.process_frame.assert_awaited_once_with(frame, _FrameDirection.DOWNSTREAM)
+
+    @pytest.mark.asyncio
+    async def test_cancel_frame_propagates_to_all_services(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-a")
+        frame = _frames_mod.CancelFrame()
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        for svc in services.values():
+            svc.process_frame.assert_awaited_once_with(frame, _FrameDirection.DOWNSTREAM)
+
+    @pytest.mark.asyncio
+    async def test_end_frame_propagates_to_all_services(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-a")
+        frame = _frames_mod.EndFrame()
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        for svc in services.values():
+            svc.process_frame.assert_awaited_once_with(frame, _FrameDirection.DOWNSTREAM)
+
+    @pytest.mark.asyncio
+    async def test_start_frame_does_not_route_to_active_only(self):
+        """StartFrame must go to ALL services, not just the active one."""
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-a")
+        frame = _frames_mod.StartFrame()
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        # Both services must receive it, not just member-a
+        services["member-a"].process_frame.assert_awaited_once()
+        services["member-b"].process_frame.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_lifecycle_frame_without_active_member(self):
+        """Lifecycle frames propagate even when no active member is set."""
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        frame = _frames_mod.StartFrame()
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        for svc in services.values():
+            svc.process_frame.assert_awaited_once_with(frame, _FrameDirection.DOWNSTREAM)
+
+    @pytest.mark.asyncio
+    async def test_non_lifecycle_frame_not_broadcast(self):
+        """Regular frames still route only to the active service."""
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-a")
+        frame = MagicMock()  # Not a lifecycle frame
+        await routing.process_frame(frame, _FrameDirection.DOWNSTREAM)
+
+        services["member-a"].process_frame.assert_awaited_once()
+        services["member-b"].process_frame.assert_not_awaited()
+
+
 class TestPushFrameRouting:
     def test_push_frame_overridden_on_init(self):
         """Init overrides each service's push_frame to route through the routing service."""
@@ -252,3 +343,24 @@ class TestPushFrameRouting:
         assert services["member-b"].push_frame is not original_push_b
         assert callable(services["member-a"].push_frame)
         assert callable(services["member-b"].push_frame)
+
+
+class TestSetupCleanupPropagation:
+    @pytest.mark.asyncio
+    async def test_setup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        setup_obj = MagicMock()
+        await routing.setup(setup_obj)
+
+        for svc in services.values():
+            svc.setup.assert_awaited_once_with(setup_obj)
+
+    @pytest.mark.asyncio
+    async def test_cleanup_propagates_to_all_services(self):
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        await routing.cleanup()
+
+        for svc in services.values():
+            svc.cleanup.assert_awaited_once()

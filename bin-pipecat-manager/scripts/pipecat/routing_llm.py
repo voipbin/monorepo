@@ -1,7 +1,7 @@
 from loguru import logger
 
-from pipecat.frames.frames import Frame
-from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
+from pipecat.frames.frames import CancelFrame, EndFrame, Frame, StartFrame
+from pipecat.processors.frame_processor import FrameDirection, FrameProcessor, FrameProcessorSetup
 
 
 class RoutingLLMService(FrameProcessor):
@@ -27,6 +27,16 @@ class RoutingLLMService(FrameProcessor):
             await self.push_frame(frame, direction)
         return routing_push
 
+    async def setup(self, setup: FrameProcessorSetup):
+        await super().setup(setup)
+        for svc in self._services.values():
+            await svc.setup(setup)
+
+    async def cleanup(self):
+        await super().cleanup()
+        for svc in self._services.values():
+            await svc.cleanup()
+
     def set_active_member(self, member_id: str):
         if member_id not in self._services:
             raise ValueError(f"Unknown member_id for LLM routing: {member_id}")
@@ -34,6 +44,13 @@ class RoutingLLMService(FrameProcessor):
         logger.info(f"LLM routing switched to member: {member_id}")
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
+        # Lifecycle frames must initialize the router itself and propagate to all inner services.
+        if isinstance(frame, (StartFrame, CancelFrame, EndFrame)):
+            await super().process_frame(frame, direction)
+            for svc in self._services.values():
+                await svc.process_frame(frame, direction)
+            return
+
         if self._active_id and self._active_id in self._services:
             await self._services[self._active_id].process_frame(frame, direction)
         else:

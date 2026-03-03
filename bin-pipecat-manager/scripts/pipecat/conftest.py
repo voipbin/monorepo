@@ -46,7 +46,10 @@ _mocks = {
     "pipecat.transcriptions": MagicMock(),
     "pipecat.transcriptions.language": _make_mock_module(Language=_Language),
     "pipecat.processors": MagicMock(),
-    "pipecat.processors.frame_processor": _make_mock_module("FrameDirection", "FrameProcessor"),
+    "pipecat.processors.frame_processor": _make_mock_module(
+        "FrameDirection", "FrameProcessor",
+        FrameProcessorSetup=type("FrameProcessorSetup", (), {}),
+    ),
     "pipecat.processors.filters": MagicMock(),
     "pipecat.processors.filters.stt_mute_filter": _make_mock_module(
         "STTMuteConfig", "STTMuteFilter", "STTMuteStrategy"
@@ -58,7 +61,13 @@ _mocks = {
     "pipecat.audio.vad.silero": _make_mock_module("SileroVADAnalyzer"),
     "pipecat.audio.vad.vad_analyzer": _make_mock_module("VADParams"),
     "pipecat.frames": MagicMock(),
-    "pipecat.frames.frames": _make_mock_module("LLMRunFrame"),
+    "pipecat.frames.frames": _make_mock_module(
+        "LLMRunFrame",
+        Frame=type("Frame", (), {}),
+        StartFrame=type("StartFrame", (), {}),
+        CancelFrame=type("CancelFrame", (), {}),
+        EndFrame=type("EndFrame", (), {}),
+    ),
     "pipecat.pipeline": MagicMock(),
     "pipecat.pipeline.pipeline": _make_mock_module("Pipeline"),
     "pipecat.pipeline.runner": _make_mock_module("PipelineRunner"),
