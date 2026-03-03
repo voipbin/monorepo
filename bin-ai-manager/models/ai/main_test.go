@@ -432,6 +432,11 @@ func TestSTTTypeConstants(t *testing.T) {
 			constant: STTTypeElevenLabs,
 			expected: "elevenlabs",
 		},
+		{
+			name:     "stt_type_google",
+			constant: STTTypeGoogle,
+			expected: "google",
+		},
 	}
 
 	for _, tt := range tests {
@@ -532,8 +537,8 @@ func TestSTTTypeIsValid(t *testing.T) {
 		{"cartesia_is_valid", STTTypeCartesia, true},
 		{"deepgram_is_valid", STTTypeDeepgram, true},
 		{"elevenlabs_is_valid", STTTypeElevenLabs, true},
+		{"google_is_valid", STTTypeGoogle, true},
 		{"gcp_is_invalid", STTType("gcp"), false},
-		{"google_is_invalid", STTType("google"), false},
 		{"random_string_is_invalid", STTType("random"), false},
 	}
 
@@ -569,7 +574,7 @@ func TestSTTTypeValidValues(t *testing.T) {
 
 	// Should contain known values
 	knownValues := map[string]bool{
-		"deepgram": false, "cartesia": false, "elevenlabs": false,
+		"deepgram": false, "cartesia": false, "elevenlabs": false, "google": false,
 	}
 	for _, v := range values {
 		if _, ok := knownValues[v]; ok {

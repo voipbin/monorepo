@@ -223,11 +223,13 @@ const (
 	STTTypeCartesia   STTType = "cartesia"
 	STTTypeDeepgram   STTType = "deepgram"
 	STTTypeElevenLabs STTType = "elevenlabs"
+	STTTypeGoogle     STTType = "google"
 )
 
 var validSTTTypes = map[STTType]bool{
 	STTTypeNone: true, STTTypeCartesia: true,
 	STTTypeDeepgram: true, STTTypeElevenLabs: true,
+	STTTypeGoogle: true,
 }
 
 // IsValid returns true if the STTType is a known valid value.
