@@ -309,8 +309,16 @@ def create_tts_service(name: str, **options):
             language=language,
         )
     elif name == "google":
+        # Extract language from voice name (e.g., "en-US-Chirp3-HD-Fenrir" -> "en-US")
+        # Google TTS API requires language_code to match the voice's language.
+        parts = voice_id.split("-")
+        if len(parts) >= 2:
+            lang = _parse_language(f"{parts[0]}-{parts[1]}")
+        else:
+            lang = _parse_language(language) if language else Language.EN_US
         return GoogleTTSService(
             voice_id=voice_id,
+            params=GoogleTTSService.InputParams(language=lang),
         )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
