@@ -38,6 +38,15 @@ class RoutingServiceBase(FrameProcessor):
         for svc in self._services.values():
             await svc.setup(setup)
 
+    def _check_started(self, frame: Frame):
+        # Override pipecat's started check. The base FrameProcessor sets __started
+        # inside process_frame() when it sees StartFrame, but we override
+        # process_frame to route frames to children. Calling super().process_frame()
+        # is not feasible because __start() requires full pipeline internals
+        # (observer, clock, TaskManager tasks). Since we handle StartFrame
+        # explicitly and manage our own lifecycle, push_frame is always safe.
+        return True
+
     async def _ensure_started(self, member_id: str):
         """Lazily forward stored StartFrame to a child that hasn't been started yet."""
         if member_id in self._started_ids or not self._start_frame:
@@ -69,9 +78,7 @@ class RoutingServiceBase(FrameProcessor):
                             await self._services[mid].process_frame(frame, direction)
                 finally:
                     self._suppress_propagation = False
-                await self.push_frame(frame, direction)
-            else:
-                await self.push_frame(frame, direction)
+            await self.push_frame(frame, direction)
             return
 
         if self._active_id and self._active_id in self._services:
