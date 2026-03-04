@@ -35,7 +35,8 @@ const (
 	RoleUser      Role = "user"
 	RoleAssistant Role = "assistant"
 	RoleFunction  Role = "function"
-	RoleTool      Role = "tool"
+	RoleTool         Role = "tool"
+	RoleNotification Role = "notification"
 )
 
 type Direction string

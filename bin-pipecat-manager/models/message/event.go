@@ -6,4 +6,6 @@ const (
 
 	EventTypeBotLLM  string = "message_bot_llm"
 	EventTypeUserLLM string = "message_user_llm"
+
+	EventTypeTeamMemberSwitched string = "team_member_switched"
 )

@@ -94,6 +94,18 @@ func (mr *MockMessageHandlerMockRecorder) EventPMMessageUserTranscription(ctx, e
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageUserTranscription", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageUserTranscription), ctx, evt)
 }
 
+// EventPMTeamMemberSwitched mocks base method.
+func (m *MockMessageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *message0.MemberSwitchedEvent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMTeamMemberSwitched", ctx, evt)
+}
+
+// EventPMTeamMemberSwitched indicates an expected call of EventPMTeamMemberSwitched.
+func (mr *MockMessageHandlerMockRecorder) EventPMTeamMemberSwitched(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMTeamMemberSwitched", reflect.TypeOf((*MockMessageHandler)(nil).EventPMTeamMemberSwitched), ctx, evt)
+}
+
 // Get mocks base method.
 func (m *MockMessageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()

@@ -28,6 +28,11 @@ func TestEventTypes(t *testing.T) {
 			constant: EventTypeUserLLM,
 			want:     "message_user_llm",
 		},
+		{
+			name:     "team member switched",
+			constant: EventTypeTeamMemberSwitched,
+			want:     "team_member_switched",
+		},
 	}
 
 	for _, tt := range tests {

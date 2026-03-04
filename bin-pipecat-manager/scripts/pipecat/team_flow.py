@@ -47,6 +47,7 @@ def build_team_flow(
         Tuple of (member_nodes dict mapping member_id -> NodeConfig, start_node NodeConfig).
     """
     member_nodes = {}
+    current_state = {"active_member_id": resolved_team["start_member_id"]}
 
     for member in resolved_team["members"]:
         member_id = member["id"]
@@ -77,6 +78,10 @@ def build_team_flow(
                     routing_llm,
                     routing_tts,
                     routing_stt,
+                    current_state,
+                    pipecatcall_id,
+                    resolved_team,
+                    transition["function_name"],
                 ),
             ))
 
@@ -119,6 +124,10 @@ def _create_transition_handler(
     routing_llm,
     routing_tts,
     routing_stt,
+    current_state: dict,
+    pipecatcall_id: str,
+    resolved_team: dict,
+    function_name: str,
 ):
     """Create a FlowsFunctionSchema handler for member transitions."""
     async def handler(args: FlowArgs, flow_manager: FlowManager):
@@ -128,15 +137,83 @@ def _create_transition_handler(
             logger.error(f"No NodeConfig for member {next_member_id}")
             return {"error": f"unknown member {next_member_id}"}, None
 
+        from_member_id = current_state["active_member_id"]
+
         routing_llm.set_active_member(next_member_id)
         if routing_tts:
             routing_tts.set_active_member(next_member_id)
         if routing_stt:
             routing_stt.set_active_member(next_member_id)
 
+        current_state["active_member_id"] = next_member_id
+
+        # Fire-and-forget notification to Go
+        asyncio.create_task(_notify_member_switched(
+            pipecatcall_id, from_member_id, next_member_id,
+            function_name, resolved_team,
+        ))
+
         logger.info(f"Transition to member {next_member_id} successful")
         return {"status": "transferred"}, next_node
     return handler
+
+
+def _find_member(resolved_team: dict, member_id: str) -> dict | None:
+    """Find a member dict by ID in the resolved team."""
+    for member in resolved_team.get("members", []):
+        if member["id"] == member_id:
+            return member
+    return None
+
+
+def _build_member_info(member: dict) -> dict:
+    """Build a MemberInfo dict from a resolved member, excluding sensitive fields."""
+    ai = member.get("ai", {})
+    return {
+        "id": member["id"],
+        "name": member.get("name", ""),
+        "engine_model": ai.get("engine_model", ""),
+        "tts_type": ai.get("tts_type", ""),
+        "tts_voice_id": ai.get("tts_voice_id", ""),
+        "stt_type": ai.get("stt_type", ""),
+    }
+
+
+async def _notify_member_switched(
+    pipecatcall_id: str,
+    from_member_id: str,
+    to_member_id: str,
+    function_name: str,
+    resolved_team: dict,
+):
+    """Fire-and-forget HTTP notification to Go about a member switch."""
+    from_member = _find_member(resolved_team, from_member_id)
+    to_member = _find_member(resolved_team, to_member_id)
+
+    if from_member is None or to_member is None:
+        logger.warning(
+            f"[team_flow] Could not find member details for notification. "
+            f"from={from_member_id} to={to_member_id}"
+        )
+        return
+
+    http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/member-switched"
+    http_body = {
+        "transition_function_name": function_name,
+        "from_member": _build_member_info(from_member),
+        "to_member": _build_member_info(to_member),
+    }
+
+    try:
+        session = await _get_http_session()
+        async with session.post(http_url, json=http_body) as response:
+            if response.status >= 400:
+                text = await response.text()
+                logger.warning(f"[team_flow][member-switched] HTTP {response.status}: {text[:500]}")
+            else:
+                logger.debug(f"[team_flow][member-switched] Notification sent successfully")
+    except Exception as e:
+        logger.warning(f"[team_flow][member-switched] Failed to notify: {e}")
 
 
 # Module-level shared HTTP session for connection reuse across tool calls.

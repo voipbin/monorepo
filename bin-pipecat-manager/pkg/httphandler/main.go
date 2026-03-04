@@ -45,6 +45,7 @@ func (h *httpHandler) Run() error {
 
 	router.GET("/:id/ws", h.wsHandle)
 	router.POST("/:id/tools", h.toolHandle)
+	router.POST("/:id/member-switched", h.memberSwitchedHandle)
 
 	server := &http.Server{
 		Handler: router,
@@ -100,6 +101,25 @@ func (h *httpHandler) toolHandle(c *gin.Context) {
 
 	if errHandle := h.pipecatcallHandler.RunnerToolHandle(id, c); errHandle != nil {
 		log.Errorf("Could not handle tool request. pipecatcall_id: %s, err: %v", id, errHandle)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errHandle.Error()})
+		return
+	}
+}
+
+func (h *httpHandler) memberSwitchedHandle(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "memberSwitchedHandle",
+	})
+
+	id := uuid.FromStringOrNil(c.Param("id"))
+	if id == uuid.Nil {
+		log.Errorf("Invalid pipecatcall ID: %s", c.Param("id"))
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	if errHandle := h.pipecatcallHandler.RunnerMemberSwitchedHandle(id, c); errHandle != nil {
+		log.Errorf("Could not handle member-switched request. pipecatcall_id: %s, err: %v", id, errHandle)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errHandle.Error()})
 		return
 	}
