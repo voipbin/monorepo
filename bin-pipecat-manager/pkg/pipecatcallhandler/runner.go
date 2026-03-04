@@ -93,7 +93,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		pc.TTSVoiceID,
 		tools,
 		resolvedTeam,
-		0.5,
+		defaultVADStopSecs,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}

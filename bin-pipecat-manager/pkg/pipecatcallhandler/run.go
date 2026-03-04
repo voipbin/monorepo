@@ -18,6 +18,7 @@ import (
 const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
+	defaultVADStopSecs     = 0.5
 )
 
 // resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.

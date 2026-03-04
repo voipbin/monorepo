@@ -11,7 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 )
 
 func (h *pipecatcallHandler) Start(
@@ -142,7 +141,12 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 		h.RunnerStart(pc, se)
 	}()
 
-	// Wait for Asterisk connection phase to complete
+	// Wait for Asterisk connection phase to complete.
+	// If Asterisk setup fails, cancel the session context and delete.
+	// The RunnerStart goroutine (already running) will observe the context
+	// cancellation. If the Python HTTP POST already succeeded, the Python
+	// runner's WebSocket callback will get "session not found" and treat
+	// it as a normal disconnect.
 	if astErr := <-astErrCh; astErr != nil {
 		se.Cancel()
 		h.sessionDelete(pc.ID)
@@ -174,26 +178,20 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		"pipecatcall_id": pc.ID,
 	})
 
-	// Parallel Phase: fetch AIcall info and LLM key concurrently
-	g, gctx := errgroup.WithContext(ctx)
-	var c *amaicall.AIcall
-	var llmKey string
+	// Fetch AIcall info, then derive LLM key from the same result to avoid a duplicate RPC.
+	c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get ai call info")
+	}
+	log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
 
-	g.Go(func() error {
-		var errGet error
-		c, errGet = h.requestHandler.AIV1AIcallGet(gctx, pc.ReferenceID)
-		if errGet != nil {
-			return fmt.Errorf("could not get ai call info: %w", errGet)
-		}
-		log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
-		return nil
-	})
-	g.Go(func() error {
-		llmKey = h.runGetLLMKey(gctx, pc)
-		return nil // runGetLLMKey logs errors internally and returns ""
-	})
-	if err := g.Wait(); err != nil {
-		return errors.Wrap(err, "parallel RPC phase failed")
+	// Derive LLM key from the AIcall we already fetched (no extra AIV1AIcallGet RPC).
+	var llmKey string
+	ai, errAI := h.resolveAIFromAIcall(ctx, c)
+	if errAI != nil {
+		log.Warnf("Could not resolve AI for LLM key, proceeding without key. err: %v", errAI)
+	} else {
+		llmKey = ai.EngineKey
 	}
 
 	switch c.ReferenceType {
@@ -249,7 +247,8 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 			h.RunnerStart(pc, se)
 		}()
 
-		// Wait for Asterisk connection phase to complete
+		// Wait for Asterisk connection phase to complete.
+		// See startReferenceTypeCall for timing documentation.
 		if astErr := <-astErrCh; astErr != nil {
 			se.Cancel()
 			h.sessionDelete(pc.ID)
