@@ -2,6 +2,7 @@ package pipecatcallhandler
 
 import (
 	"context"
+	"fmt"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
@@ -10,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 func (h *pipecatcallHandler) Start(
@@ -87,54 +89,67 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	}
 	log.WithField("call", c).Info("Retrieved call info. call_id: ", c.ID)
 
-	// start the external media
-	em, err := h.requestHandler.CallV1ExternalMediaStart(
-		ctx,
-		pc.ID,
-		cmexternalmedia.ReferenceTypeCall,
-		c.ID,
-		"INCOMING",
-		defaultEncapsulation,
-		defaultTransport,
-		"", // transportData
-		defaultConnectionType,
-		defaultFormat,
-		cmexternalmedia.DirectionIn,
-		cmexternalmedia.DirectionOut,
-	)
-	if err != nil {
-		return errors.Wrapf(err, "could not create external media")
-	}
-	log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
-
-	// Connect to Asterisk via WebSocket
-	conn, err := h.websocketAsteriskConnect(ctx, em.MediaURI)
-	if err != nil {
-		log.Errorf("Could not connect WebSocket to Asterisk. err: %v", err)
-		if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
-			log.Errorf("Could not stop orphaned external media. err: %v", errStop)
-		}
-		return errors.Wrapf(err, "could not connect to asterisk websocket")
-	}
-	log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
-
-	connAstDone := make(chan struct{})
-
 	llmKey := h.runGetLLMKey(ctx, pc)
-	se, err := h.SessionCreate(pc, pc.ID, conn, connAstDone, llmKey)
+
+	// Create session with nil Asterisk connection — Python runner can start immediately
+	se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmKey)
 	if err != nil {
-		_ = conn.Close()
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
 
-	// Start pipecat runner
+	// Parallel: Asterisk WS connect + Python runner init
+	astErrCh := make(chan error, 1)
+	go func() {
+		em, errEM := h.requestHandler.CallV1ExternalMediaStart(
+			ctx,
+			pc.ID,
+			cmexternalmedia.ReferenceTypeCall,
+			c.ID,
+			"INCOMING",
+			defaultEncapsulation,
+			defaultTransport,
+			"", // transportData
+			defaultConnectionType,
+			defaultFormat,
+			cmexternalmedia.DirectionIn,
+			cmexternalmedia.DirectionOut,
+		)
+		if errEM != nil {
+			astErrCh <- fmt.Errorf("could not create external media: %w", errEM)
+			return
+		}
+		log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
+
+		conn, errConn := h.websocketAsteriskConnect(ctx, em.MediaURI)
+		if errConn != nil {
+			log.Errorf("Could not connect WebSocket to Asterisk. err: %v", errConn)
+			if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
+				log.Errorf("Could not stop orphaned external media. err: %v", errStop)
+			}
+			astErrCh <- fmt.Errorf("could not connect to asterisk websocket: %w", errConn)
+			return
+		}
+		log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
+
+		connAstDone := make(chan struct{})
+		se.SetConnAst(conn, connAstDone)
+		astErrCh <- nil
+	}()
+
+	// Start pipecat runner in parallel with Asterisk setup
 	go func() {
 		defer se.Cancel()
 		h.RunnerStart(pc, se)
 	}()
 
-	// Start media handler — sole reader on the Asterisk WebSocket.
-	// Closes connAstDone on exit to signal the lifecycle monitor.
+	// Wait for Asterisk connection phase to complete
+	if astErr := <-astErrCh; astErr != nil {
+		se.Cancel()
+		h.sessionDelete(pc.ID)
+		return errors.Wrap(astErr, "asterisk setup failed")
+	}
+
+	// Start media handler (now that ConnAst is set)
 	go func() {
 		defer se.Cancel()
 		h.runAsteriskReceivedMediaHandle(se)
@@ -144,7 +159,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	go func() {
 		select {
 		case <-se.Ctx.Done():
-		case <-connAstDone:
+		case <-se.ConnAstDone:
 		}
 		log.Debugf("Asterisk connection or context done, terminating. pipecatcall_id: %s", pc.ID)
 		h.terminate(context.Background(), pc)
@@ -159,62 +174,89 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		"pipecatcall_id": pc.ID,
 	})
 
-	c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
-	if err != nil {
-		return errors.Wrapf(err, "could not get ai call info")
+	// Parallel Phase: fetch AIcall info and LLM key concurrently
+	g, gctx := errgroup.WithContext(ctx)
+	var c *amaicall.AIcall
+	var llmKey string
+
+	g.Go(func() error {
+		var errGet error
+		c, errGet = h.requestHandler.AIV1AIcallGet(gctx, pc.ReferenceID)
+		if errGet != nil {
+			return fmt.Errorf("could not get ai call info: %w", errGet)
+		}
+		log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
+		return nil
+	})
+	g.Go(func() error {
+		llmKey = h.runGetLLMKey(gctx, pc)
+		return nil // runGetLLMKey logs errors internally and returns ""
+	})
+	if err := g.Wait(); err != nil {
+		return errors.Wrap(err, "parallel RPC phase failed")
 	}
-	log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
 
 	switch c.ReferenceType {
 	case amaicall.ReferenceTypeCall:
-		// start the external media
-		em, err := h.requestHandler.CallV1ExternalMediaStart(
-			ctx,
-			pc.ID,
-			cmexternalmedia.ReferenceTypeCall,
-			c.ReferenceID,
-			"INCOMING",
-			defaultEncapsulation,
-			defaultTransport,
-			"", // transportData
-			defaultConnectionType,
-			defaultFormat,
-			cmexternalmedia.DirectionIn,
-			cmexternalmedia.DirectionOut,
-		)
+		// Create session with nil Asterisk connection — Python runner can start immediately
+		se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmKey)
 		if err != nil {
-			return errors.Wrapf(err, "could not create external media")
-		}
-		log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
-
-		// Connect to Asterisk via WebSocket
-		conn, err := h.websocketAsteriskConnect(ctx, em.MediaURI)
-		if err != nil {
-			log.Errorf("Could not connect WebSocket to Asterisk. err: %v", err)
-			if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
-				log.Errorf("Could not stop orphaned external media. err: %v", errStop)
-			}
-			return errors.Wrapf(err, "could not connect to asterisk websocket")
-		}
-		log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
-
-		connAstDone := make(chan struct{})
-
-		llmKey := h.runGetLLMKey(ctx, pc)
-		se, err := h.SessionCreate(pc, pc.ID, conn, connAstDone, llmKey)
-		if err != nil {
-			_ = conn.Close()
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
 
-		// Start pipecat runner
+		// Parallel Phase 2: Asterisk WS connect + Python runner init
+		astErrCh := make(chan error, 1)
+		go func() {
+			em, errEM := h.requestHandler.CallV1ExternalMediaStart(
+				ctx,
+				pc.ID,
+				cmexternalmedia.ReferenceTypeCall,
+				c.ReferenceID,
+				"INCOMING",
+				defaultEncapsulation,
+				defaultTransport,
+				"", // transportData
+				defaultConnectionType,
+				defaultFormat,
+				cmexternalmedia.DirectionIn,
+				cmexternalmedia.DirectionOut,
+			)
+			if errEM != nil {
+				astErrCh <- fmt.Errorf("could not create external media: %w", errEM)
+				return
+			}
+			log.WithField("external_media", em).Info("Created external media. external_media_id: ", em.ID)
+
+			conn, errConn := h.websocketAsteriskConnect(ctx, em.MediaURI)
+			if errConn != nil {
+				log.Errorf("Could not connect WebSocket to Asterisk. err: %v", errConn)
+				if _, errStop := h.requestHandler.CallV1ExternalMediaStop(ctx, em.ID); errStop != nil {
+					log.Errorf("Could not stop orphaned external media. err: %v", errStop)
+				}
+				astErrCh <- fmt.Errorf("could not connect to asterisk websocket: %w", errConn)
+				return
+			}
+			log.Debugf("WebSocket connected to Asterisk. media_uri: %s", em.MediaURI)
+
+			connAstDone := make(chan struct{})
+			se.SetConnAst(conn, connAstDone)
+			astErrCh <- nil
+		}()
+
+		// Start pipecat runner in parallel with Asterisk setup
 		go func() {
 			defer se.Cancel()
 			h.RunnerStart(pc, se)
 		}()
 
-		// Start media handler — sole reader on the Asterisk WebSocket.
-		// Closes connAstDone on exit to signal the lifecycle monitor.
+		// Wait for Asterisk connection phase to complete
+		if astErr := <-astErrCh; astErr != nil {
+			se.Cancel()
+			h.sessionDelete(pc.ID)
+			return errors.Wrap(astErr, "asterisk setup failed")
+		}
+
+		// Start media handler (now that ConnAst is set)
 		go func() {
 			defer se.Cancel()
 			h.runAsteriskReceivedMediaHandle(se)
@@ -224,7 +266,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		go func() {
 			select {
 			case <-se.Ctx.Done():
-			case <-connAstDone:
+			case <-se.ConnAstDone:
 			}
 			log.Debugf("Asterisk connection or context done, terminating. pipecatcall_id: %s", pc.ID)
 			h.terminate(context.Background(), pc)
@@ -233,7 +275,6 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		return nil
 
 	default:
-		llmKey := h.runGetLLMKey(ctx, pc)
 		se, err := h.SessionCreate(pc, uuid.Nil, nil, nil, llmKey)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")

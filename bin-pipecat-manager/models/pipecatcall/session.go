@@ -25,6 +25,7 @@ type Session struct {
 	AsteriskStreamingID uuid.UUID       `json:"-"`
 	ConnAst             *websocket.Conn `json:"-"`
 	ConnAstDone         chan struct{}    `json:"-"`
+	ConnAstReady        chan struct{}    `json:"-"` // closed when ConnAst is set
 
 	// llm
 	LLMKey     string `json:"-"`
@@ -32,6 +33,14 @@ type Session struct {
 
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`
+}
+
+// SetConnAst sets the Asterisk WebSocket connection and signals readiness.
+// Must be called exactly once per session.
+func (s *Session) SetConnAst(conn *websocket.Conn, done chan struct{}) {
+	s.ConnAst = conn
+	s.ConnAstDone = done
+	close(s.ConnAstReady)
 }
 
 // SessionFrame represents a websocket frame that will be sent to the pipecat runner.

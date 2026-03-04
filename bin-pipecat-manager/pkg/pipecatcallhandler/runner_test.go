@@ -119,9 +119,12 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		// ConnAst is non-nil so WriteMessage will be called to forward
 		// the audio data directly to Asterisk.
 		conn := &websocket.Conn{}
+		connAstReady := make(chan struct{})
+		close(connAstReady)
 		se := &pipecatcall.Session{
-			Ctx:     context.Background(),
-			ConnAst: conn,
+			Ctx:          context.Background(),
+			ConnAst:      conn,
+			ConnAstReady: connAstReady,
 		}
 
 		data := []byte{0x01, 0x02, 0x03, 0x04}
@@ -144,9 +147,12 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		}
 
 		conn := &websocket.Conn{}
+		connAstReady := make(chan struct{})
+		close(connAstReady)
 		se := &pipecatcall.Session{
-			Ctx:     context.Background(),
-			ConnAst: conn,
+			Ctx:          context.Background(),
+			ConnAst:      conn,
+			ConnAstReady: connAstReady,
 		}
 
 		inputData := []byte{0x01, 0x02, 0x03, 0x04}
@@ -172,9 +178,12 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		}
 
 		conn := &websocket.Conn{}
+		connAstReady := make(chan struct{})
+		close(connAstReady)
 		se := &pipecatcall.Session{
-			Ctx:     context.Background(),
-			ConnAst: conn,
+			Ctx:          context.Background(),
+			ConnAst:      conn,
+			ConnAstReady: connAstReady,
 		}
 
 		// 24kHz is Pipecat's default audio_out_sample_rate. If PipelineParams
@@ -211,9 +220,12 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		defer mc.Finish()
 
 		h := &pipecatcallHandler{}
+		connAstReady := make(chan struct{})
+		close(connAstReady) // simulate ready but nil conn (e.g., non-call reference type)
 		se := &pipecatcall.Session{
-			Ctx:     context.Background(),
-			ConnAst: nil,
+			Ctx:          context.Background(),
+			ConnAst:      nil,
+			ConnAstReady: connAstReady,
 		}
 
 		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, []byte{0x01, 0x02}); err != nil {

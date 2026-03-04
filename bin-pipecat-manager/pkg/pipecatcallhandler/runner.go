@@ -93,6 +93,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		pc.TTSVoiceID,
 		tools,
 		resolvedTeam,
+		0.5,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
@@ -512,7 +513,18 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		}
 	}
 
-	if se.ConnAst == nil || len(audioData) == 0 {
+	if len(audioData) == 0 {
+		return nil
+	}
+
+	// Wait for Asterisk connection to be ready before writing audio
+	select {
+	case <-se.ConnAstReady:
+	case <-se.Ctx.Done():
+		return nil
+	}
+
+	if se.ConnAst == nil {
 		return nil
 	}
 

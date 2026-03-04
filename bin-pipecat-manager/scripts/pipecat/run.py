@@ -65,6 +65,7 @@ async def init_pipeline(
     tts_voice_id: str = None,
     tools_data: list = None,
     resolved_team: dict = None,
+    vad_stop_secs: float = 0.5,
 ) -> dict:
     """Initialize the pipeline. Returns context dict. Raises on failure."""
     if resolved_team:
@@ -73,6 +74,7 @@ async def init_pipeline(
             stt_language=stt_language,
             tts_language=tts_language,
             llm_messages=llm_messages,
+            vad_stop_secs=vad_stop_secs,
         )
         ctx["type"] = "team"
         return ctx
@@ -81,6 +83,7 @@ async def init_pipeline(
             id, llm_type, llm_key, llm_messages,
             stt_type, stt_language, tts_type, tts_language,
             tts_voice_id, tools_data,
+            vad_stop_secs=vad_stop_secs,
         )
         ctx["type"] = "single"
         return ctx
@@ -105,6 +108,7 @@ async def init_single_ai_pipeline(
     tts_language: str = None,
     tts_voice_id: str = None,
     tools_data: list = None,
+    vad_stop_secs: float = 0.5,
 ) -> dict:
     """Initialize single AI pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -125,7 +129,7 @@ async def init_single_ai_pipeline(
         async def init_stt_and_input_ws():
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language)
-            vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
+            vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=max(vad_stop_secs, 0.3)))
             transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
@@ -456,6 +460,7 @@ async def init_team_pipeline(
     stt_language: str = None,
     tts_language: str = None,
     llm_messages: list = None,
+    vad_stop_secs: float = 0.5,
 ) -> dict:
     """Initialize team pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -472,19 +477,40 @@ async def init_team_pipeline(
     tts_services = {}
     stt_services = {}
 
-    for member in members:
+    async def _init_member_services(member):
         mid = member["id"]
         ai = member["ai"]
+        start = time.monotonic()
 
-        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [])
-        llm_services[mid] = llm_svc
+        llm_svc, _ = await asyncio.to_thread(
+            create_llm_service, ai["engine_model"], ai["engine_key"], [], []
+        )
 
+        tts_svc = None
         if ai.get("tts_type"):
-            tts_svc = create_tts_service(ai["tts_type"], voice_id=ai.get("tts_voice_id"), language=tts_language)
-            tts_services[mid] = tts_svc
+            tts_svc = await asyncio.to_thread(
+                create_tts_service, ai["tts_type"],
+                voice_id=ai.get("tts_voice_id"), language=tts_language,
+            )
 
+        stt_svc = None
         if ai.get("stt_type"):
-            stt_svc = create_stt_service(ai["stt_type"], language=stt_language)
+            stt_svc = await asyncio.to_thread(
+                create_stt_service, ai["stt_type"], language=stt_language,
+            )
+
+        logger.info(f"[TEAM][INIT] Member {mid} services created in {time.monotonic() - start:.3f}s")
+        return mid, llm_svc, tts_svc, stt_svc
+
+    member_results = await asyncio.gather(*[
+        _init_member_services(m) for m in members
+    ])
+
+    for mid, llm_svc, tts_svc, stt_svc in member_results:
+        llm_services[mid] = llm_svc
+        if tts_svc:
+            tts_services[mid] = tts_svc
+        if stt_svc:
             stt_services[mid] = stt_svc
 
     logger.info(f"[TEAM][INIT] Created {len(llm_services)} LLM, {len(tts_services)} TTS, {len(stt_services)} STT services. pipeline id={id}")
@@ -524,7 +550,7 @@ async def init_team_pipeline(
     # --- Step 4: Create transports ---
     transport_input = None
     if routing_stt:
-        vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=0.8))
+        vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=max(vad_stop_secs, 0.3)))
         transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
     transport_output = create_websocket_transport("output", id, vad_analyzer=None)
 

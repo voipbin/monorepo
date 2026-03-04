@@ -123,12 +123,14 @@ func Test_runAsteriskReceivedMediaHandle(t *testing.T) {
 			mockPF := NewMockPipecatframeHandler(mc)
 
 			var conn *websocket.Conn
+			connAstReady := make(chan struct{})
 			if tt.readMessages != nil {
 				conn = &websocket.Conn{}
 				for _, msg := range tt.readMessages {
 					mockWS.EXPECT().ReadMessage(conn).Return(msg.msgType, msg.data, msg.err)
 				}
 			}
+			close(connAstReady) // signal that ConnAst is ready (even if nil for the nil test case)
 
 			if tt.expectAudioFrames > 0 {
 				mockPF.EXPECT().SendAudio(gomock.Any(), gomock.Any(), gomock.Any()).Times(tt.expectAudioFrames).Return(nil)
@@ -138,8 +140,9 @@ func Test_runAsteriskReceivedMediaHandle(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.Must(uuid.NewV4()),
 				},
-				Ctx:     context.Background(),
-				ConnAst: conn,
+				Ctx:          context.Background(),
+				ConnAst:      conn,
+				ConnAstReady: connAstReady,
 			}
 
 			h := &pipecatcallHandler{
@@ -163,12 +166,16 @@ func Test_runAsteriskReceivedMediaHandle_contextCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // cancel immediately
 
+	// ConnAstReady is never closed — cancelled context unblocks the wait
+	connAstReady := make(chan struct{})
+
 	se := &pipecatcall.Session{
 		Identity: commonidentity.Identity{
 			ID: uuid.Must(uuid.NewV4()),
 		},
-		Ctx:     ctx,
-		ConnAst: &websocket.Conn{},
+		Ctx:          ctx,
+		ConnAst:      &websocket.Conn{},
+		ConnAstReady: connAstReady,
 	}
 
 	h := &pipecatcallHandler{

@@ -11,6 +11,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -55,9 +56,13 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 	defer mc.Finish()
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockPythonRunner := NewMockPythonRunner(mc)
+	mockTool := toolhandler.NewMockToolHandler(mc)
 
 	h := &pipecatcallHandler{
 		requestHandler:        mockReq,
+		pythonRunner:          mockPythonRunner,
+		toolHandler:           mockTool,
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},
 	}
@@ -99,6 +104,13 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 		cmexternalmedia.DirectionOut,
 	).Return(nil, fmt.Errorf("external media creation failed"))
 
+	// RunnerStart goroutine may call these before context is cancelled
+	mockTool.EXPECT().GetAll().AnyTimes()
+	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockPythonRunner.EXPECT().Stop(gomock.Any(), gomock.Any()).AnyTimes()
+
 	err := h.startReferenceTypeCall(context.Background(), pc)
 	if err == nil {
 		t.Fatal("expected error but got nil")
@@ -111,10 +123,14 @@ func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockWS := NewMockWebsocketHandler(mc)
+	mockPythonRunner := NewMockPythonRunner(mc)
+	mockTool := toolhandler.NewMockToolHandler(mc)
 
 	h := &pipecatcallHandler{
 		requestHandler:        mockReq,
 		websocketHandler:      mockWS,
+		pythonRunner:          mockPythonRunner,
+		toolHandler:           mockTool,
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},
 	}
@@ -168,6 +184,13 @@ func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 	// Cleanup: CallV1ExternalMediaStop should be called with em.ID
 	mockReq.EXPECT().CallV1ExternalMediaStop(gomock.Any(), emID).
 		Return(&cmexternalmedia.ExternalMedia{ID: emID}, nil)
+
+	// RunnerStart goroutine may call these before context is cancelled
+	mockTool.EXPECT().GetAll().AnyTimes()
+	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockPythonRunner.EXPECT().Stop(gomock.Any(), gomock.Any()).AnyTimes()
 
 	err := h.startReferenceTypeCall(context.Background(), pc)
 	if err == nil {
