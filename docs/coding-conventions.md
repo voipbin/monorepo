@@ -303,4 +303,182 @@ import (
     "monorepo/bin-common-handler/pkg/requesthandler"
     "fmt"
 )
+
+---
+
+## 4. Error Handling
+
+### 4.1 Sentinel Errors
+
+Define sentinel errors as package-level variables in `dbhandler/main.go`:
+
+```go
+// CORRECT — dbhandler/main.go
+var ErrNotFound = errors.New("record not found")
+
+// For services with more error types:
+var (
+    ErrNotFound            = errors.New("record not found")
+    ErrInsufficientBalance = errors.New("insufficient balance")
+    ErrDuplicateKey        = errors.New("duplicate key")
+)
+```
+
+**Wrong:**
+```go
+// WRONG — sentinel errors defined in business handler
+// pkg/agenthandler/main.go
+var ErrNotFound = errors.New("not found")  // Should be in dbhandler
+```
+
+### 4.2 Error Wrapping
+
+Use `fmt.Errorf` with `%w` or `errors.Wrap`/`errors.Wrapf` from `github.com/pkg/errors`:
+
+```go
+// CORRECT — wrapping with context
+return nil, fmt.Errorf("could not get flow count: %w", err)
+return nil, errors.Wrap(err, "could not create an agent")
+return nil, errors.Wrapf(err, "could not update flow actions. flow_id: %s", id)
+
+// CORRECT — creating new errors with context
+return nil, errors.Errorf("agent is guest agent")
+return nil, fmt.Errorf("resource limit exceeded")
+
+// WRONG — returning raw errors without context
+return nil, err  // No context about where or why it failed
+```
+
+### 4.3 Checking Sentinel Errors
+
+Compare sentinel errors directly (not with `errors.Is` unless wrapping is involved):
+
+```go
+// CORRECT — direct comparison for dbhandler sentinel errors
+ag, err := h.GetByCustomerIDAndAddress(ctx, a.CustomerID, &address)
+if err != nil && err != dbhandler.ErrNotFound {
+    return nil, errors.Wrap(err, "could not get agent info of the address")
+}
+
+// CORRECT — errors.Is when error might be wrapped
+if errors.Is(err, dbhandler.ErrNotFound) {
+    return nil, fmt.Errorf("resource not found")
+}
+```
+
+### 4.4 Log-Then-Return Pattern
+
+Always log the error before returning, especially at handler boundaries:
+
+```go
+// CORRECT — log then return
+af, err := h.Get(ctx, activeflowID)
+if err != nil {
+    log.Errorf("Could not get activeflow info: %v", err)
+    return errors.Wrapf(err, "could not get activeflow info")
+}
+
+// WRONG — returning without logging
+af, err := h.Get(ctx, activeflowID)
+if err != nil {
+    return errors.Wrapf(err, "could not get activeflow info")  // No log = invisible in production
+}
+```
+
+---
+
+## 5. Logging
+
+### 5.1 Function-Scoped Logger
+
+**MANDATORY:** Create a function-scoped log variable as the first statement of every function:
+
+```go
+// CORRECT — multiple context fields
+func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+    log := logrus.WithFields(logrus.Fields{
+        "func": "Get",
+        "id":   id,
+    })
+    // use log throughout the function
+}
+
+// CORRECT — single context field
+func (h *handler) processRequest(m *sock.Request) (*sock.Response, error) {
+    log := logrus.WithField("func", "processRequest")
+    // ...
+}
+
+// WRONG — using package-level logger
+func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+    logrus.Debugf("Getting flow %s", id)  // No function context
+}
+```
+
+### 5.2 Log Levels
+
+| Level | Use For | Example |
+|-------|---------|---------|
+| `Debug` | Routine operations, entry/progress | `log.Debug("Creating a new flow.")` |
+| `Info` | Non-error notable events | `log.Infof("Could not get call: %v", err)` (not-found is not an error) |
+| `Warn` | Safe-default fallbacks | `log.Warnf("Cache miss, falling back to DB")` |
+| `Error` | All failures | `log.Errorf("Could not get channel: %v", err)` |
+
+### 5.3 Structured Object Logging After Data Retrieval
+
+**MANDATORY:** Add debug logs when retrieving data from other services or databases:
+
+```go
+// CORRECT — log the full object and key identifier after retrieval
+call, err := h.callGet(ctx, callID)
+if err != nil {
+    log.Infof("Could not get call: %v", err)
+    return nil, fmt.Errorf("call not found")
+}
+log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
+
+ch, err := h.reqHandler.CallV1ChannelGet(ctx, call.ChannelID)
+if err != nil {
+    log.Errorf("Could not get channel: %v", err)
+    return nil, fmt.Errorf("no data available")
+}
+log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
+
+// WRONG — no logging after retrieval
+call, err := h.callGet(ctx, callID)
+if err != nil {
+    return nil, err  // Also missing: no log, no context
+}
+// silently continues without logging the retrieved object
+```
+
+### 5.4 Error Message Format
+
+Use the consistent format `"Could not <action>: %v"` or `"Could not <action>. err: %v"`:
+
+```go
+// CORRECT
+log.Errorf("Could not get flow info: %v", err)
+log.Errorf("Could not get flow info. err: %v", err)
+
+// WRONG — inconsistent formats
+log.Errorf("Error getting flow: %v", err)
+log.Errorf("failed to get flow %v", err)
+log.Errorf("GetFlow failed: %v", err)
+```
+
+### 5.5 Import Pattern
+
+Always import logrus directly without alias:
+
+```go
+// CORRECT
+import "github.com/sirupsen/logrus"
+
+func (h *handler) Get(ctx context.Context, id uuid.UUID) {
+    log := logrus.WithFields(logrus.Fields{"func": "Get", "id": id})
+}
+
+// WRONG — aliasing logrus
+import log "github.com/sirupsen/logrus"  // Confusing: shadows log variable pattern
 ```
