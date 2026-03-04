@@ -112,12 +112,13 @@ const (
 
 // Defines values for AIManagerMessageRole.
 const (
-	AIManagerMessageRoleAssistant AIManagerMessageRole = "assistant"
-	AIManagerMessageRoleFunction  AIManagerMessageRole = "function"
-	AIManagerMessageRoleNone      AIManagerMessageRole = ""
-	AIManagerMessageRoleSystem    AIManagerMessageRole = "system"
-	AIManagerMessageRoleTool      AIManagerMessageRole = "tool"
-	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
+	AIManagerMessageRoleAssistant    AIManagerMessageRole = "assistant"
+	AIManagerMessageRoleFunction     AIManagerMessageRole = "function"
+	AIManagerMessageRoleNone         AIManagerMessageRole = ""
+	AIManagerMessageRoleNotification AIManagerMessageRole = "notification"
+	AIManagerMessageRoleSystem       AIManagerMessageRole = "system"
+	AIManagerMessageRoleTool         AIManagerMessageRole = "tool"
+	AIManagerMessageRoleUser         AIManagerMessageRole = "user"
 )
 
 // Defines values for AIManagerSummaryReferenceType.

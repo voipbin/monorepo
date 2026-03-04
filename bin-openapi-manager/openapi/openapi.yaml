@@ -2174,6 +2174,7 @@ components:
         - assistant
         - function
         - tool
+        - notification
       x-enum-varnames:
         - AIManagerMessageRoleNone
         - AIManagerMessageRoleSystem
@@ -2181,6 +2182,7 @@ components:
         - AIManagerMessageRoleAssistant
         - AIManagerMessageRoleFunction
         - AIManagerMessageRoleTool
+        - AIManagerMessageRoleNotification
 
     AIManagerMessage:
       type: object

@@ -287,12 +287,13 @@ func (e AIManagerMessageDirection) Valid() bool {
 
 // Defines values for AIManagerMessageRole.
 const (
-	AIManagerMessageRoleAssistant AIManagerMessageRole = "assistant"
-	AIManagerMessageRoleFunction  AIManagerMessageRole = "function"
-	AIManagerMessageRoleNone      AIManagerMessageRole = ""
-	AIManagerMessageRoleSystem    AIManagerMessageRole = "system"
-	AIManagerMessageRoleTool      AIManagerMessageRole = "tool"
-	AIManagerMessageRoleUser      AIManagerMessageRole = "user"
+	AIManagerMessageRoleAssistant    AIManagerMessageRole = "assistant"
+	AIManagerMessageRoleFunction     AIManagerMessageRole = "function"
+	AIManagerMessageRoleNone         AIManagerMessageRole = ""
+	AIManagerMessageRoleNotification AIManagerMessageRole = "notification"
+	AIManagerMessageRoleSystem       AIManagerMessageRole = "system"
+	AIManagerMessageRoleTool         AIManagerMessageRole = "tool"
+	AIManagerMessageRoleUser         AIManagerMessageRole = "user"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerMessageRole enum.
@@ -303,6 +304,8 @@ func (e AIManagerMessageRole) Valid() bool {
 	case AIManagerMessageRoleFunction:
 		return true
 	case AIManagerMessageRoleNone:
+		return true
+	case AIManagerMessageRoleNotification:
 		return true
 	case AIManagerMessageRoleSystem:
 		return true
