@@ -240,40 +240,57 @@ func (h *dbHandler) GetByName(ctx context.Context, customerID uuid.UUID, name st
 ### Single Row
 
 ```go
-var m Model
-err := row.Scan(
-    &m.ID,
-    &m.CustomerID,
-    &m.Name,
-    &m.TMCreate,
-    &m.TMUpdate,
-    &m.TMDelete,
-)
+fields := commondatabasehandler.GetDBFields(&Model{})
+query, args, _ := squirrel.Select(fields...).
+    From(tableName).
+    Where(squirrel.Eq{"id": id.Bytes()}).
+    PlaceholderFormat(squirrel.Question).ToSql()
+
+row, err := h.db.QueryContext(ctx, query, args...)
+if err != nil {
+    return nil, err
+}
+
+res := &Model{}
+if err := commondatabasehandler.ScanRow(row, res); err != nil {
+    return nil, err
+}
+return res, nil
 ```
 
 ### Multiple Rows
 
 ```go
-rows, err := h.db.QueryContext(ctx, sql, args...)
+fields := commondatabasehandler.GetDBFields(&Model{})
+query, args, _ := squirrel.Select(fields...).
+    From(tableName).
+    Where(squirrel.Lt{"tm_create": token}).
+    OrderBy("tm_create DESC").
+    Limit(size).
+    PlaceholderFormat(squirrel.Question).ToSql()
+
+rows, err := h.db.QueryContext(ctx, query, args...)
 if err != nil {
     return nil, err
 }
 defer rows.Close()
 
-var results []*Model
+res := []*Model{}  // MANDATORY: empty slice, not nil
 for rows.Next() {
-    var m Model
-    if err := rows.Scan(&m.ID, &m.Name); err != nil {
+    m := &Model{}
+    if err := commondatabasehandler.ScanRow(rows, m); err != nil {
         return nil, err
     }
-    results = append(results, &m)
+    res = append(res, m)
 }
 
 if err := rows.Err(); err != nil {
     return nil, err
 }
-return results, nil
+return res, nil
 ```
+
+> **Note:** Manual `rows.Scan(&var1, &var2, ...)` is FORBIDDEN. Always use `commondatabasehandler.ScanRow()` which handles UUID binary conversion and JSON field unmarshaling automatically. See [coding-conventions.md Section 7.2](coding-conventions.md#72-crud-operations).
 
 ## Transaction Pattern
 
