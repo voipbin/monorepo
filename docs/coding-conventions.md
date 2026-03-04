@@ -1124,3 +1124,305 @@ func initLog() {
     logrus.SetLevel(logrus.DebugLevel)
 }
 ```
+
+---
+
+## 13. Testing
+
+### 13.1 Table-Driven Tests
+
+All tests use anonymous struct slices with `name` as the first field:
+
+```go
+// CORRECT
+func Test_Create(t *testing.T) {
+    tests := []struct {
+        name string
+        // inputs
+        customerID uuid.UUID
+        // mock returns
+        responseAgent *agent.Agent
+        // expected
+        expectErr bool
+    }{
+        {
+            name:          "normal",
+            customerID:    uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+            responseAgent: &agent.Agent{...},
+            expectErr:     false,
+        },
+        {
+            name:      "limit reached",
+            expectErr: true,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mc := gomock.NewController(t)
+            defer mc.Finish()
+
+            mockDB := dbhandler.NewMockDBHandler(mc)
+            h := &agentHandler{
+                db: mockDB,
+            }
+
+            ctx := context.Background()
+
+            // Set expectations
+            mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+
+            // Execute
+            res, err := h.Create(ctx, tt.customerID, ...)
+
+            // Assert
+            if tt.expectErr {
+                if err == nil {
+                    t.Errorf("Wrong match. expect: err, got: ok")
+                }
+                return
+            }
+            if err != nil {
+                t.Errorf("Wrong match. expect: ok, got: %v", err)
+            }
+        })
+    }
+}
+```
+
+### 13.2 Mock Generation
+
+Mocks are generated via `//go:generate` and live in the same package as the interface:
+
+```go
+// In main.go of any handler package:
+//go:generate mockgen -package flowhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+// Generated file: mock_main.go (co-located, NOT in separate mocks/ directory)
+```
+
+Run `go generate ./...` to regenerate all mocks.
+
+### 13.3 Test Structure Conventions
+
+Tests instantiate the private struct directly, not via the public constructor:
+
+```go
+// CORRECT — direct struct instantiation for testing
+h := &flowHandler{
+    db:            mockDB,
+    reqHandler:    mockReq,
+    notifyHandler: mockNotify,
+}
+
+// WRONG — using constructor (hides dependencies)
+h := NewFlowHandler(mockDB, mockReq, mockNotify)
+```
+
+### 13.4 UUID Values in Tests
+
+Use hardcoded real-looking UUID strings:
+
+```go
+// CORRECT
+customerID := uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071")
+agentID := uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d")
+
+// WRONG — using uuid.Nil or uuid.Must(uuid.NewV4())
+customerID := uuid.Nil
+agentID := uuid.Must(uuid.NewV4())  // non-deterministic
+```
+
+### 13.5 Assertion Pattern
+
+Use `t.Errorf` with the consistent format "Wrong match":
+
+```go
+// CORRECT
+if err != nil {
+    t.Errorf("Wrong match. expect: ok, got: %v", err)
+}
+if !reflect.DeepEqual(res, tt.responseAgent) {
+    t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAgent, res)
+}
+
+// WRONG — using t.Fatal (stops test early)
+if err != nil {
+    t.Fatalf("unexpected error: %v", err)
+}
+```
+
+### 13.6 Test Function Naming
+
+Use `Test_<MethodName>`:
+
+```go
+// CORRECT
+func Test_Create(t *testing.T) { ... }
+func Test_Delete(t *testing.T) { ... }
+func Test_FlowGet(t *testing.T) { ... }
+
+// WRONG
+func TestCreate(t *testing.T) { ... }  // Missing underscore
+func TestHandler_Create(t *testing.T) { ... }  // Extra prefix
+```
+
+### 13.7 gomock.Any() Usage
+
+`gomock.Any()` is a MATCHER — it can only be used in `EXPECT()`, never in `Return()`:
+
+```go
+// CORRECT
+mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
+
+// WRONG — gomock.Any() in Return() causes runtime panic
+mockDB.EXPECT().AgentGet(ctx, id).Return(gomock.Any(), nil)  // PANIC
+```
+
+---
+
+## 14. Prometheus Metrics
+
+### 14.1 Service Metrics Registration
+
+Register metrics via `init()` in the `metricshandler` package:
+
+```go
+// CORRECT — pkg/metricshandler/main.go
+var (
+    CallCreateTotal = prometheus.NewCounterVec(
+        prometheus.CounterOpts{
+            Namespace: "call_manager",
+            Name:      "call_create_total",
+            Help:      "Total number of call create operations",
+        },
+        []string{"status"},
+    )
+)
+
+func init() {
+    prometheus.MustRegister(CallCreateTotal)
+}
+```
+
+### 14.2 Avoid Name Collisions
+
+The shared `requesthandler` auto-registers these metrics per service:
+- `<namespace>_request_process_time`
+- `<namespace>_event_publish_total`
+
+**NEVER reuse these names** in service-level `metricshandler`:
+
+```go
+// WRONG — collides with requesthandler's event_publish_total → PANIC at startup
+EventPublishTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Namespace: "agent_manager",
+        Name:      "event_publish_total",  // Already registered!
+    },
+    []string{"type"},
+)
+
+// CORRECT — use unique name
+ServiceEventTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Namespace: "agent_manager",
+        Name:      "service_event_total",  // Unique
+    },
+    []string{"type"},
+)
+```
+
+**Before adding metrics:** Check `bin-common-handler/pkg/requesthandler/main.go` `initPrometheus()` for existing names.
+
+---
+
+## 15. Security
+
+### 15.1 XSS Prevention
+
+Never inject user input into HTML via `fmt.Sprintf`:
+
+```go
+// WRONG — XSS vulnerability
+html := fmt.Sprintf("<h1>Welcome %s</h1>", userInput)
+
+// CORRECT — validate input format strictly first
+if !regexp.MustCompile(`^[a-f0-9]{64}$`).MatchString(token) {
+    return fmt.Errorf("invalid token format")
+}
+// Only use validated input in templates
+```
+
+### 15.2 Token Generation
+
+Use `crypto/rand` for all token generation:
+
+```go
+// CORRECT
+import "crypto/rand"
+
+b := make([]byte, 32)
+crypto_rand.Read(b)
+token := hex.EncodeToString(b)  // 64 hex chars
+
+// WRONG — predictable tokens
+import "math/rand"
+token := fmt.Sprintf("%d", rand.Int63())
+```
+
+### 15.3 Username Enumeration Prevention
+
+Password-forgot endpoints always return 200 regardless of user existence:
+
+```go
+// CORRECT
+func (h *serviceHandler) AuthPasswordForgot(ctx context.Context, email string) error {
+    // Always return nil — don't leak whether user exists
+    return nil
+}
+```
+
+### 15.4 Guest Agent Protection
+
+Check for the guest agent UUID in all mutation operations:
+
+```go
+// CORRECT — check before mutation
+const guestAgentID = "d819c626-0284-4df8-99d6-d03e1c6fba88"
+
+func (h *agentHandler) Delete(ctx context.Context, id uuid.UUID) error {
+    if id.String() == guestAgentID {
+        return errors.New("cannot delete guest agent")
+    }
+    // ...
+}
+```
+
+### 15.5 Validation at System Boundaries
+
+Validate at service entry points (API layer, RPC handlers). Trust internal code:
+
+```go
+// CORRECT — validate at boundary
+func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+    var req request.V1DataAgentsPost
+    if err := json.Unmarshal(m.Data, &req); err != nil {
+        return simpleResponse(400), nil  // Validate input here
+    }
+    // Internal handler trusts the parsed input
+    res, err := h.agentHandler.Create(ctx, req.CustomerID, ...)
+}
+```
+
+### 15.6 No Secrets in Code
+
+Never commit secrets, API keys, or credentials:
+
+```go
+// WRONG
+const apiKey = "sk-1234567890abcdef"
+
+// CORRECT — use environment variables
+apiKey := viper.GetString("api_key")
+```
