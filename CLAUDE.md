@@ -25,6 +25,11 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 - **Event-driven architecture** - Pub/sub events via RabbitMQ and ZeroMQ
 - **Kubernetes deployment** - Services designed for GCP GKE with Prometheus monitoring
 
+**Key Documentation:**
+- **[Coding Conventions](docs/coding-conventions.md)** — Authoritative reference for all coding patterns and rules
+- **[Architecture Deep Dive](docs/architecture-deep-dive.md)** — Service categories, communication, deployment
+- **[Common Workflows](docs/common-workflows.md)** — Step-by-step guides for common tasks
+
 ## CRITICAL: Before Committing Changes
 
 **⚠️ MANDATORY: ALWAYS run the verification workflow after making ANY code changes and BEFORE committing.**
@@ -381,14 +386,13 @@ Topics covered:
 
 ## Code Quality
 
-Follow these standards:
-- Generate mocks after interface changes (`go generate ./...`)
-- Write table-driven tests
-- Use function-scoped logging pattern
-- Follow Go naming conventions (List not Gets)
-- Handle errors properly
+**For the complete, authoritative coding conventions reference, see [coding-conventions.md](docs/coding-conventions.md).**
 
-**For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
+This covers: package structure, naming, imports, error handling, logging, models, database patterns, handler architecture, inter-service communication, API design, events, configuration, testing, metrics, and security.
+
+**For detailed standards and supplementary examples, see [code-quality-standards.md](docs/code-quality-standards.md)**
+
+The sections below contain CRITICAL rules that are duplicated here for high visibility. The conventions doc is the source of truth.
 
 ### bin-common-handler Admission Rule
 
