@@ -1363,7 +1363,7 @@ Use `crypto/rand` for all token generation:
 import "crypto/rand"
 
 b := make([]byte, 32)
-crypto_rand.Read(b)
+rand.Read(b)
 token := hex.EncodeToString(b)  // 64 hex chars
 
 // WRONG — predictable tokens
