@@ -482,3 +482,311 @@ func (h *handler) Get(ctx context.Context, id uuid.UUID) {
 // WRONG — aliasing logrus
 import log "github.com/sirupsen/logrus"  // Confusing: shadows log variable pattern
 ```
+
+---
+
+## 6. Model Definitions
+
+### 6.1 Identity Embedding
+
+All models with an ID and customer ownership embed `commonidentity.Identity`:
+
+```go
+// CORRECT
+type Agent struct {
+    commonidentity.Identity  // Provides ID uuid.UUID `db:"id,uuid"` and CustomerID uuid.UUID `db:"customer_id,uuid"`
+
+    Username string `json:"username" db:"username"`
+    // ...
+}
+
+// WRONG — defining ID fields manually
+type Agent struct {
+    ID         uuid.UUID `json:"id" db:"id,uuid"`
+    CustomerID uuid.UUID `json:"customer_id" db:"customer_id,uuid"`
+    Username   string    `json:"username" db:"username"`
+}
+```
+
+### 6.2 DB Tag Conventions
+
+| Tag | Usage | Example |
+|-----|-------|---------|
+| `db:"column_name"` | Plain column | `Name string \`db:"name"\`` |
+| `db:"column_name,uuid"` | UUID stored as BINARY(16) | `ID uuid.UUID \`db:"id,uuid"\`` |
+| `db:"column_name,json"` | Slice/map/struct as JSON text | `TagIDs []uuid.UUID \`db:"tag_ids,json"\`` |
+| `db:"-"` | Excluded from DB operations | `TempField string \`db:"-"\`` |
+
+```go
+// CORRECT — all tags present and correct
+type Agent struct {
+    commonidentity.Identity
+
+    Username     string                  `json:"username" db:"username"`
+    PasswordHash string                  `json:"-" db:"password_hash"`           // json:"-" hides from API
+    Name         string                  `json:"name" db:"name"`
+    Status       Status                  `json:"status" db:"status"`
+    TagIDs       []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`      // JSON-serialized in DB
+    Addresses    []commonaddress.Address `json:"addresses" db:"addresses,json"`  // JSON-serialized in DB
+
+    TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+    TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
+    TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
+}
+
+// WRONG — missing ,uuid tag on UUID field
+type Agent struct {
+    ID uuid.UUID `db:"id"`  // BUG: queries will fail silently
+}
+```
+
+### 6.3 Timestamp Fields
+
+All models use pointer timestamps: `TMCreate`, `TMUpdate`, `TMDelete` as `*time.Time`:
+
+```go
+// CORRECT
+TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
+TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"` // nil = active (soft delete)
+```
+
+### 6.4 Field Type Definition
+
+Each model defines a `Field` type in `models/<entity>/field.go` for type-safe update maps:
+
+```go
+// CORRECT — field.go
+package agent
+
+type Field string
+
+const (
+    FieldID         Field = "id"
+    FieldCustomerID Field = "customer_id"
+    FieldUsername    Field = "username"
+    FieldName       Field = "name"
+    FieldStatus     Field = "status"
+    FieldTMCreate   Field = "tm_create"
+    FieldTMUpdate   Field = "tm_update"
+    FieldTMDelete   Field = "tm_delete"
+    FieldDeleted    Field = "deleted"  // Filter sentinel: maps to "tm_delete IS NULL"
+)
+```
+
+### 6.5 Event Constants
+
+Event types are defined in `models/<entity>/event.go`:
+
+```go
+// CORRECT — event.go
+package agent
+
+const (
+    EventTypeAgentCreated       = "agent_created"
+    EventTypeAgentUpdated       = "agent_updated"
+    EventTypeAgentDeleted       = "agent_deleted"
+    EventTypeAgentStatusUpdated = "agent_status_updated"
+)
+```
+
+### 6.6 WebhookMessage Pattern
+
+**MANDATORY:** All external-facing API responses use `WebhookMessage`, never the internal model struct.
+
+```go
+// CORRECT — webhook.go
+type WebhookMessage struct {
+    commonidentity.Identity
+
+    Username   string                  `json:"username"`
+    Name       string                  `json:"name"`
+    Detail     string                  `json:"detail"`
+    RingMethod RingMethod              `json:"ring_method"`
+    Status     Status                  `json:"status"`
+    Permission Permission              `json:"permission"`
+    TagIDs     []uuid.UUID             `json:"tag_ids"`
+    Addresses  []commonaddress.Address `json:"addresses"`
+    TMCreate   *time.Time              `json:"tm_create,omitempty"`
+    TMUpdate   *time.Time              `json:"tm_update,omitempty"`
+    TMDelete   *time.Time              `json:"tm_delete,omitempty"`
+    // NOTE: PasswordHash intentionally omitted — internal only
+}
+
+func (h *Agent) ConvertWebhookMessage() *WebhookMessage {
+    return &WebhookMessage{
+        Identity:   h.Identity,
+        Username:   h.Username,
+        Name:       h.Name,
+        // ... all safe fields
+    }
+}
+
+func (h *Agent) CreateWebhookEvent() ([]byte, error) {
+    e := h.ConvertWebhookMessage()
+    return json.Marshal(e)
+}
+```
+
+**Compound result structs** must also have WebhookMessage variants:
+```go
+// CORRECT — compound result with webhook variant
+type SignupResult struct {
+    Customer *Customer
+    Token    string
+}
+
+type SignupResultWebhookMessage struct {
+    Customer *WebhookMessage  // Uses WebhookMessage, not internal Customer
+    Token    string
+}
+
+func (h *SignupResult) ConvertWebhookMessage() *SignupResultWebhookMessage {
+    return &SignupResultWebhookMessage{
+        Customer: h.Customer.ConvertWebhookMessage(),
+        Token:    h.Token,
+    }
+}
+```
+
+---
+
+## 7. Database Patterns
+
+### 7.1 Squirrel Query Builder (Mandatory)
+
+All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.
+
+```go
+// CORRECT — squirrel
+query, args, _ := squirrel.Select(fields...).
+    From(agentTable).
+    Where(squirrel.Eq{string(agent.FieldID): id.Bytes()}).
+    PlaceholderFormat(squirrel.Question).
+    ToSql()
+
+// WRONG — raw SQL
+query := "SELECT * FROM agent_agents WHERE id = ?"
+```
+
+**Exception:** Computed expressions that squirrel cannot express (e.g., `cost_per_unit * ?`). Document WHY with a comment.
+
+### 7.2 CRUD Operations
+
+**INSERT:**
+```go
+// CORRECT
+a.TMCreate = h.utilHandler.TimeNow()
+fields, _ := commondatabasehandler.PrepareFields(a)
+sb := squirrel.Insert(agentTable).SetMap(fields).PlaceholderFormat(squirrel.Question)
+query, args, _ := sb.ToSql()
+_, err := h.db.ExecContext(ctx, query, args...)
+```
+
+**SELECT:**
+```go
+// CORRECT — using GetDBFields + ScanRow
+fields := commondatabasehandler.GetDBFields(&agent.Agent{})
+query, args, _ := squirrel.Select(fields...).
+    From(agentTable).
+    Where(squirrel.Eq{string(agent.FieldID): id.Bytes()}).
+    PlaceholderFormat(squirrel.Question).ToSql()
+row, err := h.db.QueryContext(ctx, query, args...)
+res := &agent.Agent{}
+if err := commondatabasehandler.ScanRow(row, res); err != nil { ... }
+
+// WRONG — manual rows.Scan
+row.Scan(&m.ID, &m.CustomerID, &m.Name)  // FORBIDDEN
+```
+
+**UPDATE:**
+```go
+// CORRECT
+fields[agent.FieldTMUpdate] = h.utilHandler.TimeNow()
+tmpFields, _ := commondatabasehandler.PrepareFields(fields)
+q := squirrel.Update(agentTable).SetMap(tmpFields).Where(squirrel.Eq{"id": id.Bytes()})
+```
+
+**DELETE (soft):**
+```go
+// CORRECT — soft delete by setting TMDelete
+now := h.utilHandler.TimeNow()
+return h.agentUpdate(ctx, id, map[agent.Field]any{
+    agent.FieldTMDelete: now,
+    agent.FieldTMUpdate: now,
+})
+```
+
+### 7.3 Empty Slice Initialization
+
+**MANDATORY:** List functions must initialize result slices as empty, never nil:
+
+```go
+// CORRECT — empty slice
+res := []*agent.Agent{}
+
+// WRONG — nil slice serializes to null in JSON instead of []
+var res []*agent.Agent
+```
+
+### 7.4 Cache-Aside Pattern
+
+DB reads: cache-first, fallback to DB. Mutations: write-through.
+
+```go
+// CORRECT — cache-aside read
+func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+    if res, err := h.agentGetFromCache(ctx, id); err == nil {
+        return res, nil  // cache hit
+    }
+    return h.agentGetFromDB(ctx, id)  // cache miss → DB → set cache
+}
+
+// CORRECT — write-through on mutation
+func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
+    // ... insert to DB ...
+    _ = h.agentUpdateToCache(ctx, a.ID)  // update cache after DB write
+    return nil
+}
+```
+
+### 7.5 Cursor-Based Pagination
+
+Pagination uses `TMCreate` timestamp as cursor token:
+
+```go
+// CORRECT
+if token == "" {
+    token = h.utilHandler.TimeGetCurTime()
+}
+sb := squirrel.Select(fields...).From(agentTable).
+    Where(squirrel.Lt{string(agent.FieldTMCreate): token}).
+    OrderBy(string(agent.FieldTMCreate) + " DESC").
+    Limit(size)
+```
+
+### 7.6 Filter Application
+
+Use `commondatabasehandler.ApplyFields()` for type-safe filter maps:
+
+```go
+// CORRECT
+sb, _ = commondatabasehandler.ApplyFields(sb, filters)
+// Handles: uuid → bytes, "deleted: false" → tm_delete IS NULL, etc.
+```
+
+### 7.7 DB Operations Location
+
+All database operations MUST live in `pkg/dbhandler/`. Business logic handlers receive `DBHandler` interface only.
+
+```go
+// CORRECT — business handler uses interface
+type agentHandler struct {
+    db dbhandler.DBHandler  // interface, not *sql.DB
+}
+
+// WRONG — business handler accessing DB directly
+type agentHandler struct {
+    db *sql.DB  // FORBIDDEN outside dbhandler
+}
+```
