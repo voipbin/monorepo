@@ -477,41 +477,30 @@ async def init_team_pipeline(
     tts_services = {}
     stt_services = {}
 
-    async def _init_member_services(member):
+    # Create per-member services directly (no asyncio.to_thread).
+    # Some service constructors (e.g. GoogleTTSService) internally create gRPC
+    # async channels that require a running event loop, which thread pool threads
+    # lack. Running them on the event loop is safe — they are fast object creation.
+    for member in members:
         mid = member["id"]
         ai = member["ai"]
         start = time.monotonic()
 
-        llm_svc, _ = await asyncio.to_thread(
-            create_llm_service, ai["engine_model"], ai["engine_key"], [], []
-        )
+        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [])
+        llm_services[mid] = llm_svc
 
-        tts_svc = None
         if ai.get("tts_type"):
-            tts_svc = await asyncio.to_thread(
-                create_tts_service, ai["tts_type"],
+            tts_services[mid] = create_tts_service(
+                ai["tts_type"],
                 voice_id=ai.get("tts_voice_id"), language=tts_language,
             )
 
-        stt_svc = None
         if ai.get("stt_type"):
-            stt_svc = await asyncio.to_thread(
-                create_stt_service, ai["stt_type"], language=stt_language,
+            stt_services[mid] = create_stt_service(
+                ai["stt_type"], language=stt_language,
             )
 
         logger.info(f"[TEAM][INIT] Member {mid} services created in {time.monotonic() - start:.3f}s")
-        return mid, llm_svc, tts_svc, stt_svc
-
-    member_results = await asyncio.gather(*[
-        _init_member_services(m) for m in members
-    ])
-
-    for mid, llm_svc, tts_svc, stt_svc in member_results:
-        llm_services[mid] = llm_svc
-        if tts_svc:
-            tts_services[mid] = tts_svc
-        if stt_svc:
-            stt_services[mid] = stt_svc
 
     logger.info(f"[TEAM][INIT] Created {len(llm_services)} LLM, {len(tts_services)} TTS, {len(stt_services)} STT services. pipeline id={id}")
 
