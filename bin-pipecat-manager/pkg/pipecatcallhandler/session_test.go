@@ -1,6 +1,7 @@
 package pipecatcallhandler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -124,6 +125,18 @@ func TestSessionCreate(t *testing.T) {
 
 			if result.RunnerWebsocketChan == nil {
 				t.Errorf("SessionCreate() RunnerWebsocketChan is nil")
+			}
+
+			if result.ConnAstReady == nil {
+				t.Errorf("SessionCreate() ConnAstReady is nil")
+			}
+
+			// When connAst is nil, ConnAstReady should NOT be closed
+			select {
+			case <-result.ConnAstReady:
+				t.Errorf("SessionCreate() ConnAstReady should not be closed when connAst is nil")
+			default:
+				// expected: channel is open
 			}
 		})
 	}
@@ -321,11 +334,20 @@ func TestSessionStop_closesWebSocket(t *testing.T) {
 		muPipecatcallSession:  sync.Mutex{},
 	}
 
+	connAstReady := make(chan struct{})
+	close(connAstReady) // connection is already set
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	h.mapPipecatcallSession[id] = &pipecatcall.Session{
 		Identity: commonidentity.Identity{
 			ID: id,
 		},
-		ConnAst: conn,
+		Ctx:          ctx,
+		Cancel:       cancel,
+		ConnAst:      conn,
+		ConnAstReady: connAstReady,
 	}
 
 	mockPythonRunner.EXPECT().Stop(gomock.Any(), id).Return(nil)

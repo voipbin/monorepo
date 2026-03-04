@@ -86,6 +86,7 @@ class PipelineRequest(BaseModel):
     tts_voice_id: Optional[str] = None
     tools: Optional[List[Tool]] = Field(default_factory=list)
     resolved_team: Optional[ResolvedTeam] = None
+    vad_stop_secs: float = 0.5
 
 async def execute_pipeline_wrapper(id: str, ctx: dict):
     """Background task wrapper for execute_pipeline."""
@@ -128,6 +129,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
             req.tts_voice_id,
             tools_data,
             resolved_team=resolved_team_data,
+            vad_stop_secs=req.vad_stop_secs,
         )
     except ValueError as e:
         logger.error(f"Pipeline validation failed (id={req.id}): {e}")

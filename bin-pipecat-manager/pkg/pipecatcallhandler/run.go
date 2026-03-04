@@ -18,6 +18,7 @@ import (
 const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
+	defaultVADStopSecs     = 0.5
 )
 
 // resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.
@@ -54,6 +55,14 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Sess
 		"func":           "runAsteriskReceivedMediaHandle",
 		"pipecatcall_id": se.ID,
 	})
+
+	// Wait for Asterisk connection to be established
+	select {
+	case <-se.ConnAstReady:
+	case <-se.Ctx.Done():
+		log.Debugf("Context cancelled while waiting for Asterisk connection.")
+		return
+	}
 
 	if se.ConnAst == nil {
 		log.Debugf("No Asterisk WebSocket connection, skipping media handle.")

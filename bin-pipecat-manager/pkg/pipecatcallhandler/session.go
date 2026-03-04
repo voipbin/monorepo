@@ -20,6 +20,11 @@ func (h *pipecatcallHandler) SessionCreate(
 ) (*pipecatcall.Session, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
+	connAstReady := make(chan struct{})
+	if connAst != nil {
+		close(connAstReady)
+	}
+
 	res := &pipecatcall.Session{
 		Identity: commonidentity.Identity{
 			ID:         pc.ID,
@@ -37,6 +42,7 @@ func (h *pipecatcallHandler) SessionCreate(
 		AsteriskStreamingID: asteriskStreamingID,
 		ConnAst:             connAst,
 		ConnAstDone:         connAstDone,
+		ConnAstReady:        connAstReady,
 
 		LLMKey: llmKey,
 	}
@@ -87,6 +93,14 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 
 	if dropped := pc.DroppedFrames.Load(); dropped > 0 {
 		log.Warnf("Session had %d dropped audio frames. pipecatcall_id: %s", dropped, id)
+	}
+
+	// Wait for Asterisk connection to be ready (or context cancelled) before closing
+	if pc.ConnAstReady != nil {
+		select {
+		case <-pc.ConnAstReady:
+		case <-pc.Ctx.Done():
+		}
 	}
 
 	if pc.ConnAst != nil {
