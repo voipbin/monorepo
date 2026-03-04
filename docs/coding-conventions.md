@@ -942,3 +942,185 @@ return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}
 return &sock.Response{StatusCode: 404}, nil
 return &sock.Response{StatusCode: 500}, nil
 ```
+
+---
+
+## 10. API & External Interfaces
+
+### 10.1 Atomic API Responses
+
+API endpoints return single resource types without combining data from other services:
+
+```go
+// CORRECT — single resource
+func (h *serviceHandler) BillingGet(ctx context.Context, ...) (*bmbilling.WebhookMessage, error) {
+    // Returns just the billing record
+}
+
+// WRONG — combined resources
+func (h *serviceHandler) BillingGet(ctx context.Context, ...) (*BillingWithAccount, error) {
+    // Returns billing + account + call details
+}
+```
+
+**Exceptions:** Pagination metadata (`next_page_token`) and atomic operations that create multiple resources in one transaction.
+
+### 10.2 Two-Level ServiceHandler
+
+In `bin-api-manager/pkg/servicehandler/`, private helpers return internal structs; public methods return `*WebhookMessage`:
+
+```go
+// CORRECT — private: internal struct for permission checks
+func (h *serviceHandler) agentGet(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
+    res, err := h.reqHandler.AgentV1AgentGet(ctx, id)
+    log.WithField("agent", res).Debug("Received result.")
+    return res, nil
+}
+
+// CORRECT — public: WebhookMessage for API response, with permission check
+func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+    tmp, err := h.agentGet(ctx, agentID)
+    if a.ID != agentID && !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+    return tmp.ConvertWebhookMessage(), nil
+}
+```
+
+### 10.3 Filters from Request Body
+
+Filters are parsed from the request body, not URL query parameters:
+
+```go
+// CORRECT — filters in request body
+type V1DataAgentsGet struct {
+    PageSize  uint64                `json:"page_size"`
+    PageToken string                `json:"page_token"`
+    Filters   map[agent.Field]any   `json:"filters"`
+}
+
+// For detailed filter parsing patterns, see docs/common-workflows.md
+```
+
+### 10.4 OpenAPI Schema Sync
+
+When modifying API-facing structs, update the OpenAPI schema to match `WebhookMessage` fields (not internal struct). See the [verification workflow](../CLAUDE.md#critical-before-committing-changes) for the required regeneration steps.
+
+---
+
+## 11. Event Publishing
+
+### 11.1 PublishWebhookEvent
+
+Use `notifyHandler.PublishWebhookEvent()` for both internal event and customer webhook:
+
+```go
+// CORRECT — fires both internal event + customer webhook
+h.notifyHandler.PublishWebhookEvent(ctx, agent.CustomerID, agent.EventTypeAgentCreated, agent)
+
+// CORRECT — internal event only (no customer webhook)
+h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentStatusUpdated, agent)
+```
+
+### 11.2 Fire-and-Forget
+
+Events are published asynchronously via goroutines. Do not wait for event delivery:
+
+```go
+// This is how PublishWebhookEvent works internally:
+go h.PublishEvent(ctx, eventType, data)      // async
+go h.PublishWebhook(ctx, customerID, eventType, data)  // async
+```
+
+### 11.3 Delayed Events
+
+Use `EventPublishWithDelay` for events that should fire after a delay:
+
+```go
+// CORRECT — delayed event via RabbitMQ x-delayed-message plugin
+h.notifyHandler.PublishDelayedEvent(ctx, eventType, data, delaySeconds)
+```
+
+### 11.4 Event Handler Return Values
+
+Event handlers must return `nil` to acknowledge the message. Returning an error requeues the message:
+
+```go
+// CORRECT — return nil to acknowledge, even on handled errors
+func (h *handler) EventCMCallHangup(ctx context.Context, call *cmcall.Call) error {
+    if err := h.processHangup(ctx, call); err != nil {
+        log.Errorf("Could not process hangup: %v", err)
+        return nil  // Acknowledge — don't requeue on business logic errors
+    }
+    return nil
+}
+```
+
+---
+
+## 12. Configuration
+
+### 12.1 Cobra + Viper + sync.Once
+
+Every service uses the same configuration pattern:
+
+```go
+// CORRECT — internal/config/main.go
+package config
+
+var (
+    globalConfig Config
+    once         sync.Once
+)
+
+type Config struct {
+    RabbitMQAddress         string
+    DatabaseDSN             string
+    RedisAddress            string
+    RedisPassword           string
+    RedisDatabase           int
+    PrometheusEndpoint      string
+    PrometheusListenAddress string
+    // service-specific fields...
+}
+
+func Bootstrap(cmd *cobra.Command) error {
+    initLog()
+    return bindConfig(cmd)
+}
+
+func LoadGlobalConfig() {
+    once.Do(func() {
+        globalConfig = Config{
+            DatabaseDSN: viper.GetString("database_dsn"),
+            // ...
+        }
+    })
+}
+
+func Get() *Config { return &globalConfig }
+```
+
+### 12.2 Environment Variable Binding
+
+Each config field maps to a CLI flag and an environment variable:
+
+```go
+// CORRECT
+f := cmd.PersistentFlags()
+f.String("database_dsn", "", "Database connection string")
+viper.BindPFlag("database_dsn", f.Lookup("database_dsn"))
+viper.BindEnv("database_dsn", "DATABASE_DSN")
+```
+
+### 12.3 Logging Initialization
+
+All services set logrus to debug level with joonix formatter:
+
+```go
+// CORRECT
+func initLog() {
+    logrus.SetFormatter(joonix.NewFormatter())
+    logrus.SetLevel(logrus.DebugLevel)
+}
+```
