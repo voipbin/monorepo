@@ -242,6 +242,10 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AI
 		}
 
 		for _, m := range tmpMessages {
+			// skip non-LLM roles (e.g. notification) that would cause API errors
+			if m.Role == message.RoleNotification {
+				continue
+			}
 
 			tmp := map[string]any{
 				"role":    string(m.Role),
