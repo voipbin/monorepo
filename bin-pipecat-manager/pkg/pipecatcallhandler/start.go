@@ -95,6 +95,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	if err != nil {
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
+	se.JitterBuffer = pipecatcall.NewAudioJitterBuffer()
 
 	// Parallel: Asterisk WS connect + Python runner init
 	astErrCh := make(chan error, 1)
@@ -159,6 +160,12 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 		h.runAsteriskReceivedMediaHandle(se)
 	}()
 
+	// Start jitter buffer drain goroutine (fixed 20ms cadence to Asterisk)
+	go func() {
+		defer se.Cancel()
+		h.runJitterBufferDrain(se)
+	}()
+
 	// Monitor lifecycle — when context or WebSocket dies, terminate
 	go func() {
 		select {
@@ -201,6 +208,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
+		se.JitterBuffer = pipecatcall.NewAudioJitterBuffer()
 
 		// Parallel Phase 2: Asterisk WS connect + Python runner init
 		astErrCh := make(chan error, 1)
@@ -259,6 +267,12 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		go func() {
 			defer se.Cancel()
 			h.runAsteriskReceivedMediaHandle(se)
+		}()
+
+		// Start jitter buffer drain goroutine (fixed 20ms cadence to Asterisk)
+		go func() {
+			defer se.Cancel()
+			h.runJitterBufferDrain(se)
 		}()
 
 		// Monitor lifecycle — when context or WebSocket dies, terminate

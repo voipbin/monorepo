@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -566,7 +567,12 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		return nil
 	}
 
-	// Wait for Asterisk connection to be ready before writing audio
+	if se.JitterBuffer != nil {
+		se.JitterBuffer.Write(audioData)
+		return nil
+	}
+
+	// Fallback: direct write when no jitter buffer (e.g. non-call reference types)
 	select {
 	case <-se.ConnAstReady:
 	case <-se.Ctx.Done():
@@ -582,4 +588,45 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 	}
 
 	return nil
+}
+
+// runJitterBufferDrain drains the jitter buffer at a fixed 20ms cadence,
+// writing each chunk to the Asterisk WebSocket. This absorbs timing
+// irregularities from the Python pipecat runner's asyncio event loop.
+func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runJitterBufferDrain",
+		"pipecatcall_id": se.ID,
+	})
+
+	// Wait for Asterisk connection before starting the drain loop
+	select {
+	case <-se.ConnAstReady:
+	case <-se.Ctx.Done():
+		return
+	}
+
+	if se.ConnAst == nil {
+		log.Warnf("Asterisk connection is nil after ready signal, exiting drain loop.")
+		return
+	}
+
+	ticker := time.NewTicker(20 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-se.Ctx.Done():
+			return
+		case <-ticker.C:
+			chunk := se.JitterBuffer.ReadChunk()
+			if chunk == nil {
+				continue
+			}
+			if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
+				log.Errorf("Could not write jitter buffer chunk to asterisk: %v", err)
+				return
+			}
+		}
+	}
 }
