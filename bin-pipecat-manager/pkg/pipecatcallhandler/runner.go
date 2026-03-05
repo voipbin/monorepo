@@ -461,7 +461,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 			Text: msg.Data.Text,
 		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotTranscription, event)
+		// Non-blocking: prevent RabbitMQ publish from stalling audio frame ingestion.
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotTranscription, event)
 
 	case pipecatframe.RTVIFrameTypeUserTranscription:
 		msg := pipecatframe.RTVIUserTranscriptionMessage{}
@@ -487,7 +488,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 			Text: msg.Data.Text,
 		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, event)
+		// Non-blocking: prevent RabbitMQ publish from stalling audio frame ingestion.
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, event)
 
 	case pipecatframe.RTVIFrameTypeUserLLMText:
 		msg := pipecatframe.RTVIUserLLMTextMessage{}
@@ -508,7 +510,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 			Text: msg.Data.Text,
 		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserLLM, event)
+		// Non-blocking: prevent RabbitMQ publish from stalling audio frame ingestion.
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserLLM, event)
 
 	case pipecatframe.RTVIFrameTypeBotLLMText:
 		msg := pipecatframe.RTVIBotLLMTextMessage{}
@@ -524,6 +527,11 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
+		// Capture and reset text before async publish to avoid race with next BotLLMText.
+		botText := se.LLMBotText
+		se.LLMBotText = ""
+		log.Debugf("BotLLMStopped message. text: %s", botText)
+
 		id := h.utilHandler.UUIDCreate()
 		event := message.Message{
 			Identity: commonidentity.Identity{
@@ -535,12 +543,10 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			PipecatcallReferenceType: se.PipecatcallReferenceType,
 			PipecatcallReferenceID:   se.PipecatcallReferenceID,
 
-			Text: se.LLMBotText,
+			Text: botText,
 		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, event)
-
-		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
-		se.LLMBotText = ""
+		// Non-blocking: prevent RabbitMQ publish from stalling audio frame ingestion.
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, event)
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -647,18 +653,31 @@ func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 
+	// Periodic buffer health logging (every ~2s = 100 ticks)
+	var tickCount int
+	var underrunCount int
+
 	for {
 		select {
 		case <-se.Ctx.Done():
 			return
 		case <-ticker.C:
+			tickCount++
 			chunk := se.JitterBuffer.ReadChunk()
 			if chunk == nil {
+				underrunCount++
 				continue
 			}
 			if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
 				log.Errorf("Could not write jitter buffer chunk to asterisk: %v", err)
 				return
+			}
+
+			// Log buffer health every ~2s
+			if tickCount%100 == 0 {
+				log.Debugf("Jitter buffer health: buffered_bytes=%d, underruns_last_2s=%d, pipecatcall_id=%s",
+					se.JitterBuffer.Len(), underrunCount, se.ID)
+				underrunCount = 0
 			}
 		}
 	}

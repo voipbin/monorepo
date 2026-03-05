@@ -2,6 +2,7 @@ package pipecatcallhandler
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -96,11 +97,18 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockNotify.EXPECT().PublishEvent(tt.se.Ctx, tt.expectEvent, tt.expectMessage)
+
+			// PublishEvent is now called in a goroutine; use WaitGroup to synchronize.
+			var wg sync.WaitGroup
+			wg.Add(1)
+			mockNotify.EXPECT().PublishEvent(tt.se.Ctx, tt.expectEvent, tt.expectMessage).Do(
+				func(any, any, any) { wg.Done() },
+			)
 
 			if err := h.receiveMessageFrameTypeMessage(tt.se, tt.m); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
+			wg.Wait()
 		})
 	}
 }
