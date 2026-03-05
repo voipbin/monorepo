@@ -18,7 +18,7 @@ func TestFieldStruct(t *testing.T) {
 				CustomerID:    uuid.Must(uuid.NewV4()),
 				AssistanceType: AssistanceTypeAI,
 				AssistanceID:   uuid.Must(uuid.NewV4()),
-				AIEngineModel: ai.EngineModelOpenaiGPT4O,
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
 				ActiveflowID:  uuid.Must(uuid.NewV4()),
 				ReferenceType: ReferenceTypeCall,
 				ReferenceID:   uuid.Must(uuid.NewV4()),

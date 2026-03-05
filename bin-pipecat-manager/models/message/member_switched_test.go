@@ -19,7 +19,7 @@ func TestMemberSwitchedEvent_JSONRoundTrip(t *testing.T) {
 		FromMember: MemberInfo{
 			ID:          uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000001"),
 			Name:        "Reception",
-			EngineModel: "openai.gpt-4o",
+			EngineModel: "openai.gpt-5",
 			TTSType:     "cartesia",
 			TTSVoiceID:  "voice-123",
 			STTType:     "deepgram",
@@ -27,7 +27,7 @@ func TestMemberSwitchedEvent_JSONRoundTrip(t *testing.T) {
 		ToMember: MemberInfo{
 			ID:          uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000002"),
 			Name:        "Sales Agent",
-			EngineModel: "openai.gpt-4o",
+			EngineModel: "openai.gpt-5",
 			TTSType:     "elevenlabs",
 			TTSVoiceID:  "voice-456",
 			STTType:     "deepgram",

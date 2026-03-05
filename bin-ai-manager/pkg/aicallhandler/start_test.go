@@ -64,7 +64,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				EngineModel: "openai.o1",
+				EngineModel: "openai.gpt-5",
 				InitPrompt:  "hello, this is init prompt message.",
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
@@ -91,7 +91,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel:  ai.EngineModel("openai.o1"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
 				AITTSType:      ai.TTSTypeElevenLabs,
 				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
 				AISTTType:      ai.STTTypeDeepgram,
@@ -123,7 +123,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel:  "openai.o1",
+				AIEngineModel:  "openai.gpt-5",
 				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
 				ReferenceType:  aicall.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
@@ -136,13 +136,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			expectVariables: map[string]string{
 				variableID:            "a6cd01d0-d785-467f-9069-684e46cc2644",
 				variableAIID:          "a4107e6e-f06d-11ef-9b7a-03c848b3bb41",
-				variableAIEngineModel: "openai.o1",
+				variableAIEngineModel: "openai.gpt-5",
 				variableConfbridgeID:  "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
 				variableGender:        string(aicall.GenderFemale),
 				variableLanguage:      "en-US",
 				variablePipecatcallID: "a4e5c7ae-b539-11f0-ac68-c38f244d145b",
 			},
-			expectLLMType: pmpipecatcall.LLMType("openai.o1"),
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5"),
 			expectLLMMessages: &message.Message{
 				Role:    message.RoleSystem,
 				Content: "hello, this is init prompt message.",
@@ -160,7 +160,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
-				AIEngineModel:  ai.EngineModel("openai.o1"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
 				AITTSType:      ai.TTSTypeElevenLabs,
 				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
 				AISTTType:      ai.STTTypeDeepgram,
@@ -391,7 +391,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
 				},
-				AIEngineModel: "openai.gpt-3.5-turbo",
+				AIEngineModel: "openai.gpt-5-nano",
 			},
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("017c1c12-b737-11f0-80ad-032b0dde6a93"),
 			responseMessages: []*message.Message{
@@ -426,7 +426,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				Status:         aicall.StatusInitiating,
 			},
 			expectMessageContent: "test user message.",
-			expectLLMType:        pmpipecatcall.LLMType("openai.gpt-3.5-turbo"),
+			expectLLMType:        pmpipecatcall.LLMType("openai.gpt-5-nano"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
@@ -445,7 +445,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
 				},
-				AIEngineModel: "openai.gpt-3.5-turbo",
+				AIEngineModel: "openai.gpt-5-nano",
 			},
 		},
 	}
@@ -792,7 +792,7 @@ func Test_startPipecatcall(t *testing.T) {
 				},
 				ReferenceType: aicall.ReferenceTypeCall,
 				PipecatcallID: uuid.FromStringOrNil("fa818566-b62b-11f0-b7d9-bf54e3ce1991"),
-				AIEngineModel: "openai.gpt-3.5-turbo",
+				AIEngineModel: "openai.gpt-5-nano",
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "fa5c67b8-b62b-11f0-aab5-630972321af9",
 				AISTTType:     ai.STTTypeDeepgram,
@@ -814,7 +814,7 @@ func Test_startPipecatcall(t *testing.T) {
 				},
 			},
 
-			expectLLMType: pmpipecatcall.LLMType("openai.gpt-3.5-turbo"),
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5-nano"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
@@ -1416,7 +1416,7 @@ func Test_StartTask(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c1d5f4e2-30de-11f0-8bbf-d773a2d31d73"),
 					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter:  map[string]any{},
 
 				InitPrompt: "",
@@ -1556,7 +1556,7 @@ func Test_resolveAI(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1a2b3c4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter:   map[string]any{"key": "value"},
 			},
 
@@ -1564,7 +1564,7 @@ func Test_resolveAI(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1a2b3c4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter:   map[string]any{"key": "value"},
 			},
 			expectTeamParameter: nil,
@@ -1593,14 +1593,14 @@ func Test_resolveAI(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a4d5e6f7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 			},
 
 			expectAI: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a4d5e6f7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 			},
 			expectTeamParameter: map[string]any{"team_key": "team_value"},
 			expectErr:           false,
@@ -1685,14 +1685,14 @@ func Test_resolveAI(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b5c6d7e8-f9a0-11f0-c5d6-e7f8a9b0c1d2"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4,
+				EngineModel: ai.EngineModelOpenaiGPT5,
 			},
 
 			expectAI: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b5c6d7e8-f9a0-11f0-c5d6-e7f8a9b0c1d2"),
 				},
-				EngineModel: ai.EngineModelOpenaiGPT4,
+				EngineModel: ai.EngineModelOpenaiGPT5,
 			},
 			expectTeamParameter: nil,
 			expectErr:           false,

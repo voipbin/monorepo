@@ -32,7 +32,7 @@ func TestAIcall(t *testing.T) {
 
 			assistanceType: AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
-			aiEngineModel:  ai.EngineModelOpenaiGPT4O,
+			aiEngineModel:  ai.EngineModelOpenaiGPT5,
 			aiTTSType:     ai.TTSTypeElevenLabs,
 			aiTTSVoiceID:  "voice-123",
 			aiSTTType:     ai.STTTypeDeepgram,
@@ -68,7 +68,7 @@ func TestAIcall(t *testing.T) {
 
 			assistanceType: AssistanceTypeTeam,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440006"),
-			aiEngineModel:  ai.EngineModelDialogflowCX,
+			aiEngineModel:  ai.EngineModelGeminiGemini2Dot5Flash,
 			aiTTSType:     ai.TTSTypeGoogle,
 			aiTTSVoiceID:  "",
 			aiSTTType:     ai.STTTypeCartesia,
@@ -86,7 +86,7 @@ func TestAIcall(t *testing.T) {
 
 			assistanceType: AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440009"),
-			aiEngineModel:  ai.EngineModelOpenaiGPT4OMini,
+			aiEngineModel:  ai.EngineModelOpenaiGPT5Mini,
 			aiTTSType:     ai.TTSTypeNone,
 			aiTTSVoiceID:  "",
 			aiSTTType:     ai.STTTypeNone,

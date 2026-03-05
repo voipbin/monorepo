@@ -22,7 +22,7 @@ func TestAI(t *testing.T) {
 
 			aiName:      "Test AI Agent",
 			detail:      "A test AI agent for unit testing",
-			engineModel: EngineModelOpenaiGPT4O,
+			engineModel: EngineModelOpenaiGPT5,
 			engineKey:   "sk-test-key",
 			initPrompt:  "You are a helpful assistant.",
 			ttsType:     TTSTypeElevenLabs,
@@ -46,7 +46,7 @@ func TestAI(t *testing.T) {
 
 			aiName:      "Dialogflow Agent",
 			detail:      "A Dialogflow-powered agent",
-			engineModel: EngineModelDialogflowCX,
+			engineModel: EngineModelGeminiGemini2Dot5Flash,
 			engineKey:   "dialogflow-key",
 			initPrompt:  "",
 			ttsType:     TTSTypeGoogle,
@@ -108,9 +108,14 @@ func TestEngineModelTargetConstants(t *testing.T) {
 			expected: "",
 		},
 		{
-			name:     "engine_model_target_dialogflow",
-			constant: EngineModelTargetDialogflow,
-			expected: "dialogflow",
+			name:     "engine_model_target_gemini",
+			constant: EngineModelTargetGemini,
+			expected: "gemini",
+		},
+		{
+			name:     "engine_model_target_deepseek",
+			constant: EngineModelTargetDeepSeek,
+			expected: "deepseek",
 		},
 		{
 			name:     "engine_model_target_anthropic",
@@ -131,11 +136,6 @@ func TestEngineModelTargetConstants(t *testing.T) {
 			name:     "engine_model_target_openai",
 			constant: EngineModelTargetOpenAI,
 			expected: "openai",
-		},
-		{
-			name:     "engine_model_target_gemini",
-			constant: EngineModelTargetGemini,
-			expected: "gemini",
 		},
 		{
 			name:     "engine_model_target_groq",
@@ -165,39 +165,49 @@ func TestEngineModelConstants(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "engine_model_openai_gpt4o",
-			constant: EngineModelOpenaiGPT4O,
-			expected: "openai.gpt-4o",
+			name:     "engine_model_gemini_2_5_flash",
+			constant: EngineModelGeminiGemini2Dot5Flash,
+			expected: "gemini.gemini-2.5-flash",
 		},
 		{
-			name:     "engine_model_openai_gpt4o_mini",
-			constant: EngineModelOpenaiGPT4OMini,
-			expected: "openai.gpt-4o-mini",
+			name:     "engine_model_gemini_2_5_pro",
+			constant: EngineModelGeminiGemini2Dot5Pro,
+			expected: "gemini.gemini-2.5-pro",
 		},
 		{
-			name:     "engine_model_openai_gpt4_turbo",
-			constant: EngineModelOpenaiGPT4Turbo,
-			expected: "openai.gpt-4-turbo",
+			name:     "engine_model_gemini_2_0_flash",
+			constant: EngineModelGeminiGemini2Dot0Flash,
+			expected: "gemini.gemini-2.0-flash",
 		},
 		{
-			name:     "engine_model_openai_gpt4",
-			constant: EngineModelOpenaiGPT4,
-			expected: "openai.gpt-4",
+			name:     "engine_model_gemini_pro_latest",
+			constant: EngineModelGeminiGeminiProLatest,
+			expected: "gemini.gemini-pro-latest",
 		},
 		{
-			name:     "engine_model_openai_gpt3_5_turbo",
-			constant: EngineModelOpenaiGPT3Dot5Turbo,
-			expected: "openai.gpt-3.5-turbo",
+			name:     "engine_model_openai_gpt5_dot2",
+			constant: EngineModelOpenaiGPT5Dot2,
+			expected: "openai.gpt-5.2",
 		},
 		{
-			name:     "engine_model_dialogflow_cx",
-			constant: EngineModelDialogflowCX,
-			expected: "dialogflow.cx",
+			name:     "engine_model_openai_gpt5_dot1",
+			constant: EngineModelOpenaiGPT5Dot1,
+			expected: "openai.gpt-5.1",
 		},
 		{
-			name:     "engine_model_dialogflow_es",
-			constant: EngineModelDialogflowES,
-			expected: "dialogflow.es",
+			name:     "engine_model_openai_gpt5",
+			constant: EngineModelOpenaiGPT5,
+			expected: "openai.gpt-5",
+		},
+		{
+			name:     "engine_model_openai_gpt5_mini",
+			constant: EngineModelOpenaiGPT5Mini,
+			expected: "openai.gpt-5-mini",
+		},
+		{
+			name:     "engine_model_openai_gpt5_nano",
+			constant: EngineModelOpenaiGPT5Nano,
+			expected: "openai.gpt-5-nano",
 		},
 		{
 			name:     "engine_model_grok3",
@@ -227,24 +237,24 @@ func TestGetEngineModelTarget(t *testing.T) {
 		expected    EngineModelTarget
 	}{
 		{
-			name:        "openai_gpt4o_returns_openai",
-			engineModel: EngineModelOpenaiGPT4O,
+			name:        "openai_gpt5_returns_openai",
+			engineModel: EngineModelOpenaiGPT5,
 			expected:    EngineModelTargetOpenAI,
 		},
 		{
-			name:        "openai_gpt4o_mini_returns_openai",
-			engineModel: EngineModelOpenaiGPT4OMini,
+			name:        "openai_gpt5_mini_returns_openai",
+			engineModel: EngineModelOpenaiGPT5Mini,
 			expected:    EngineModelTargetOpenAI,
 		},
 		{
-			name:        "dialogflow_cx_returns_dialogflow",
-			engineModel: EngineModelDialogflowCX,
-			expected:    EngineModelTargetDialogflow,
+			name:        "gemini_2_5_flash_returns_gemini",
+			engineModel: EngineModelGeminiGemini2Dot5Flash,
+			expected:    EngineModelTargetGemini,
 		},
 		{
-			name:        "dialogflow_es_returns_dialogflow",
-			engineModel: EngineModelDialogflowES,
-			expected:    EngineModelTargetDialogflow,
+			name:        "gemini_pro_latest_returns_gemini",
+			engineModel: EngineModelGeminiGeminiProLatest,
+			expected:    EngineModelTargetGemini,
 		},
 		{
 			name:        "unknown_model_returns_none",
@@ -280,14 +290,14 @@ func TestGetEngineModelName(t *testing.T) {
 		expected    string
 	}{
 		{
-			name:        "openai_gpt4o_returns_gpt4o",
-			engineModel: EngineModelOpenaiGPT4O,
-			expected:    "gpt-4o",
+			name:        "openai_gpt5_returns_gpt5",
+			engineModel: EngineModelOpenaiGPT5,
+			expected:    "gpt-5",
 		},
 		{
-			name:        "dialogflow_cx_returns_cx",
-			engineModel: EngineModelDialogflowCX,
-			expected:    "cx",
+			name:        "gemini_2_5_flash_returns_name",
+			engineModel: EngineModelGeminiGemini2Dot5Flash,
+			expected:    "gemini-2.5-flash",
 		},
 		{
 			name:        "invalid_model_returns_empty",
@@ -318,13 +328,13 @@ func TestIsValidEngineModel(t *testing.T) {
 		expected    bool
 	}{
 		{
-			name:        "openai_gpt4o_is_valid",
-			engineModel: EngineModelOpenaiGPT4O,
+			name:        "openai_gpt5_is_valid",
+			engineModel: EngineModelOpenaiGPT5,
 			expected:    true,
 		},
 		{
-			name:        "dialogflow_cx_is_valid",
-			engineModel: EngineModelDialogflowCX,
+			name:        "gemini_2_5_flash_is_valid",
+			engineModel: EngineModelGeminiGemini2Dot5Flash,
 			expected:    true,
 		},
 		{

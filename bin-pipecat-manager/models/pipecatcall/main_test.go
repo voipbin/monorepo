@@ -28,7 +28,7 @@ func TestPipecatcall(t *testing.T) {
 			referenceType: ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
 			hostID:        "host-123",
-			llmType:       LLMType("openai.gpt-4"),
+			llmType:       LLMType("openai.gpt-5"),
 			sttType:       STTTypeDeepgram,
 			sttLanguage:   "en-US",
 			ttsType:       TTSTypeCartesia,

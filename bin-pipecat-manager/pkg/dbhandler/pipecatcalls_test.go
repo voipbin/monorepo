@@ -47,7 +47,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 				HostID: "1.2.3.4",
 
-				LLMType: pipecatcall.LLMType("openai.gpt-4"),
+				LLMType: pipecatcall.LLMType("openai.gpt-5"),
 				LLMMessages: []map[string]any{
 					{
 						"role":    "system",
@@ -80,7 +80,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 				HostID: "1.2.3.4",
 
-				LLMType: pipecatcall.LLMType("openai.gpt-4"),
+				LLMType: pipecatcall.LLMType("openai.gpt-5"),
 				LLMMessages: []map[string]any{
 					{
 						"role":    "system",

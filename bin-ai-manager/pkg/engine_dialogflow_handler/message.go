@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/engine_dialogflow"
 
@@ -77,7 +76,7 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 
 func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.EngineDialogflow, cc *aicall.AIcall, message *message.Message) *dialogflowpb.DetectIntentRequest {
 	sessionPath := fmt.Sprintf("projects/%s/agent/sessions/%s", engineData.ProjectID, cc.ID)
-	if cc.AIEngineModel == ai.EngineModelDialogflowCX {
+	if cc.AIEngineModel == "dialogflow.cx" {
 		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", engineData.ProjectID, engineData.Region, engineData.AgentID, cc.ID)
 	}
 

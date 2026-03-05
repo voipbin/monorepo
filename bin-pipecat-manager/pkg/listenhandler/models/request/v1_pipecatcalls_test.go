@@ -21,7 +21,7 @@ func TestV1DataPipecatcallsPost_Struct(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   uuid.FromStringOrNil("5b5bb704-b48c-11f0-819e-2ff9e60d5c3c"),
-				LLMType:       pipecatcall.LLMType("openai.gpt-4"),
+				LLMType:       pipecatcall.LLMType("openai.gpt-5"),
 				LLMMessages: []map[string]any{
 					{
 						"role":    "system",

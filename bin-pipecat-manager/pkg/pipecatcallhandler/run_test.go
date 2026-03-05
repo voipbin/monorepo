@@ -423,7 +423,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: ai1ID,
 					},
-					EngineModel: amai.EngineModelOpenaiGPT4O,
+					EngineModel: amai.EngineModelOpenaiGPT5,
 					EngineKey:   "key-1",
 					InitPrompt:  "You are a greeter",
 					Parameter:   map[string]any{"temperature": 0.7},
@@ -437,7 +437,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: ai2ID,
 					},
-					EngineModel: amai.EngineModelOpenaiGPT4OMini,
+					EngineModel: amai.EngineModelOpenaiGPT5Mini,
 					EngineKey:   "key-2",
 					InitPrompt:  "You are support",
 					TTSType:     amai.TTSTypeCartesia,
@@ -482,8 +482,8 @@ func Test_resolveTeamForPython(t *testing.T) {
 				if m1.Name != "greeter" {
 					t.Errorf("Wrong member 1 name. expect: greeter, got: %s", m1.Name)
 				}
-				if m1.AI.EngineModel != string(amai.EngineModelOpenaiGPT4O) {
-					t.Errorf("Wrong member 1 engine model. expect: %s, got: %s", amai.EngineModelOpenaiGPT4O, m1.AI.EngineModel)
+				if m1.AI.EngineModel != string(amai.EngineModelOpenaiGPT5) {
+					t.Errorf("Wrong member 1 engine model. expect: %s, got: %s", amai.EngineModelOpenaiGPT5, m1.AI.EngineModel)
 				}
 				if m1.AI.EngineKey != "key-1" {
 					t.Errorf("Wrong member 1 engine key. expect: key-1, got: %s", m1.AI.EngineKey)
@@ -615,7 +615,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: ai1ID,
 					},
-					EngineModel: amai.EngineModelOpenaiGPT4O,
+					EngineModel: amai.EngineModelOpenaiGPT5,
 					EngineKey:   "key-1",
 					InitPrompt:  "You are solo",
 					TTSType:     amai.TTSTypeCartesia,
@@ -864,7 +864,7 @@ func Test_resolvedTeamData_JSONSerialization(t *testing.T) {
 			ID:   uuid.FromStringOrNil("cccccccc-3333-3333-3333-333333333333"),
 			Name: "test-member",
 			AI: resolvedAIData{
-				EngineModel: "openai.gpt-4o",
+				EngineModel: "openai.gpt-5",
 				EngineKey:   "test-key",
 			},
 			Tools:       []aitool.Tool{},

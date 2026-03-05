@@ -49,7 +49,7 @@ func Test_AICreate(t *testing.T) {
 			},
 			aiName:      "test name",
 			detail:      "test detail",
-			engineModel: amai.EngineModelOpenaiGPT4,
+			engineModel: amai.EngineModelOpenaiGPT5,
 			engineData: map[string]any{
 				"key1": "val1",
 			},

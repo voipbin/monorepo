@@ -1686,36 +1686,30 @@ components:
 #########################################
     AIManagerAIEngineModel:
       type: string
-      description: "Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot."
-      example: "openai.gpt-4o"
+      description: "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot."
+      example: "openai.gpt-5"
       enum:
-        - openai.o1-mini
-        - openai.o1-preview
-        - openai.o1
-        - openai.o3-mini
-        - openai.gpt-4o
-        - openai.gpt-4o-mini
-        - openai.gpt-4-turbo
-        - openai.gpt-4-vision-preview
-        - openai.gpt-4
-        - openai.gpt-3.5-turbo
-        - dialogflow.cx
-        - dialogflow.es
+        - gemini.gemini-2.5-flash
+        - gemini.gemini-2.5-pro
+        - gemini.gemini-2.0-flash
+        - gemini.gemini-pro-latest
+        - openai.gpt-5.2
+        - openai.gpt-5.1
+        - openai.gpt-5
+        - openai.gpt-5-mini
+        - openai.gpt-5-nano
         - grok.grok-3
         - grok.grok-3-mini
       x-enum-varnames:
-        - AIManagerAIEngineModelOpenaiO1Mini
-        - AIManagerAIEngineModelOpenaiO1Preview
-        - AIManagerAIEngineModelOpenaiO1
-        - AIManagerAIEngineModelOpenaiO3Mini
-        - AIManagerAIEngineModelOpenaiGPT4O
-        - AIManagerAIEngineModelOpenaiGPT4OMini
-        - AIManagerAIEngineModelOpenaiGPT4Turbo
-        - AIManagerAIEngineModelOpenaiGPT4VisionPreview
-        - AIManagerAIEngineModelOpenaiGPT4
-        - AIManagerAIEngineModelOpenaiGPT3Dot5Turbo
-        - AIManagerAIEngineModelDialogflowCX
-        - AIManagerAIEngineModelDialogflowES
+        - AIManagerAIEngineModelGeminiGemini2Dot5Flash
+        - AIManagerAIEngineModelGeminiGemini2Dot5Pro
+        - AIManagerAIEngineModelGeminiGemini2Dot0Flash
+        - AIManagerAIEngineModelGeminiGeminiProLatest
+        - AIManagerAIEngineModelOpenaiGPT5Dot2
+        - AIManagerAIEngineModelOpenaiGPT5Dot1
+        - AIManagerAIEngineModelOpenaiGPT5
+        - AIManagerAIEngineModelOpenaiGPT5Mini
+        - AIManagerAIEngineModelOpenaiGPT5Nano
         - AIManagerAIEngineModelGrok3
         - AIManagerAIEngineModelGrok3Mini
 
@@ -1745,7 +1739,7 @@ components:
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine.
-          example: "gpt-4o"
+          example: "gemini.gemini-pro-latest"
         parameter:
           type: object
           additionalProperties: true
@@ -2071,7 +2065,7 @@ components:
         ai_engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine used for this call.
-          example: "openai.gpt-4o"
+          example: "gemini.gemini-pro-latest"
         ai_tts_type:
           $ref: '#/components/schemas/AIManagerAITTSType'
           description: Text-to-speech provider type used for this call.

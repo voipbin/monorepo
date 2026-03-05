@@ -115,7 +115,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_model": "openai.gpt-4", "parameter": {"key1": "val1"}, "engine_key": "test engine key", "init_prompt": "test init prompt", "tts_type": "elevenlabs", "tts_voice_id": "test-voice-id", "stt_type": "deepgram"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_model": "openai.gpt-5", "parameter": {"key1": "val1"}, "engine_key": "test engine key", "init_prompt": "test init prompt", "tts_type": "elevenlabs", "tts_voice_id": "test-voice-id", "stt_type": "deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -127,7 +127,7 @@ func Test_processV1AIsPost(t *testing.T) {
 			expectCustomerID:  uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
 			expectName:        "test name",
 			expectDetail:      "test detail",
-			expectEngineModel: ai.EngineModelOpenaiGPT4,
+			expectEngineModel: ai.EngineModelOpenaiGPT5,
 			expectParameter: map[string]any{
 				"key1": "val1",
 			},
@@ -329,7 +329,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				URI:      "/v1/ais/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"new name","detail":"new detail","engine_model":"openai.gpt-4","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"new prompt","tts_type":"cartesia","tts_voice_id":"new-voice-id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"name":"new name","detail":"new detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"new prompt","tts_type":"cartesia","tts_voice_id":"new-voice-id","stt_type":"deepgram"}`),
 			},
 
 			responseAI: &ai.AI{
@@ -341,7 +341,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 			expectID:          uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
 			expectName:        "new name",
 			expectDetail:      "new detail",
-			expectEngineModel: ai.EngineModelOpenaiGPT4,
+			expectEngineModel: ai.EngineModelOpenaiGPT5,
 			expectParameter: map[string]any{
 				"key1": "val1",
 			},

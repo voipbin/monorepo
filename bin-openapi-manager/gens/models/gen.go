@@ -11,52 +11,43 @@ import (
 
 // Defines values for AIManagerAIEngineModel.
 const (
-	AIManagerAIEngineModelDialogflowCX            AIManagerAIEngineModel = "dialogflow.cx"
-	AIManagerAIEngineModelDialogflowES            AIManagerAIEngineModel = "dialogflow.es"
-	AIManagerAIEngineModelGrok3                   AIManagerAIEngineModel = "grok.grok-3"
-	AIManagerAIEngineModelGrok3Mini               AIManagerAIEngineModel = "grok.grok-3-mini"
-	AIManagerAIEngineModelOpenaiGPT3Dot5Turbo     AIManagerAIEngineModel = "openai.gpt-3.5-turbo"
-	AIManagerAIEngineModelOpenaiGPT4              AIManagerAIEngineModel = "openai.gpt-4"
-	AIManagerAIEngineModelOpenaiGPT4O             AIManagerAIEngineModel = "openai.gpt-4o"
-	AIManagerAIEngineModelOpenaiGPT4OMini         AIManagerAIEngineModel = "openai.gpt-4o-mini"
-	AIManagerAIEngineModelOpenaiGPT4Turbo         AIManagerAIEngineModel = "openai.gpt-4-turbo"
-	AIManagerAIEngineModelOpenaiGPT4VisionPreview AIManagerAIEngineModel = "openai.gpt-4-vision-preview"
-	AIManagerAIEngineModelOpenaiO1                AIManagerAIEngineModel = "openai.o1"
-	AIManagerAIEngineModelOpenaiO1Mini            AIManagerAIEngineModel = "openai.o1-mini"
-	AIManagerAIEngineModelOpenaiO1Preview         AIManagerAIEngineModel = "openai.o1-preview"
-	AIManagerAIEngineModelOpenaiO3Mini            AIManagerAIEngineModel = "openai.o3-mini"
+	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
+	AIManagerAIEngineModelGeminiGemini2Dot5Flash AIManagerAIEngineModel = "gemini.gemini-2.5-flash"
+	AIManagerAIEngineModelGeminiGemini2Dot5Pro   AIManagerAIEngineModel = "gemini.gemini-2.5-pro"
+	AIManagerAIEngineModelGeminiGeminiProLatest  AIManagerAIEngineModel = "gemini.gemini-pro-latest"
+	AIManagerAIEngineModelGrok3                  AIManagerAIEngineModel = "grok.grok-3"
+	AIManagerAIEngineModelGrok3Mini              AIManagerAIEngineModel = "grok.grok-3-mini"
+	AIManagerAIEngineModelOpenaiGPT5             AIManagerAIEngineModel = "openai.gpt-5"
+	AIManagerAIEngineModelOpenaiGPT5Dot1         AIManagerAIEngineModel = "openai.gpt-5.1"
+	AIManagerAIEngineModelOpenaiGPT5Dot2         AIManagerAIEngineModel = "openai.gpt-5.2"
+	AIManagerAIEngineModelOpenaiGPT5Mini         AIManagerAIEngineModel = "openai.gpt-5-mini"
+	AIManagerAIEngineModelOpenaiGPT5Nano         AIManagerAIEngineModel = "openai.gpt-5-nano"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerAIEngineModel enum.
 func (e AIManagerAIEngineModel) Valid() bool {
 	switch e {
-	case AIManagerAIEngineModelDialogflowCX:
+	case AIManagerAIEngineModelGeminiGemini2Dot0Flash:
 		return true
-	case AIManagerAIEngineModelDialogflowES:
+	case AIManagerAIEngineModelGeminiGemini2Dot5Flash:
+		return true
+	case AIManagerAIEngineModelGeminiGemini2Dot5Pro:
+		return true
+	case AIManagerAIEngineModelGeminiGeminiProLatest:
 		return true
 	case AIManagerAIEngineModelGrok3:
 		return true
 	case AIManagerAIEngineModelGrok3Mini:
 		return true
-	case AIManagerAIEngineModelOpenaiGPT3Dot5Turbo:
+	case AIManagerAIEngineModelOpenaiGPT5:
 		return true
-	case AIManagerAIEngineModelOpenaiGPT4:
+	case AIManagerAIEngineModelOpenaiGPT5Dot1:
 		return true
-	case AIManagerAIEngineModelOpenaiGPT4O:
+	case AIManagerAIEngineModelOpenaiGPT5Dot2:
 		return true
-	case AIManagerAIEngineModelOpenaiGPT4OMini:
+	case AIManagerAIEngineModelOpenaiGPT5Mini:
 		return true
-	case AIManagerAIEngineModelOpenaiGPT4Turbo:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT4VisionPreview:
-		return true
-	case AIManagerAIEngineModelOpenaiO1:
-		return true
-	case AIManagerAIEngineModelOpenaiO1Mini:
-		return true
-	case AIManagerAIEngineModelOpenaiO1Preview:
-		return true
-	case AIManagerAIEngineModelOpenaiO3Mini:
+	case AIManagerAIEngineModelOpenaiGPT5Nano:
 		return true
 	default:
 		return false
@@ -2927,7 +2918,7 @@ type AIManagerAI struct {
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
 	// Id The unique identifier of the AI.
@@ -2964,7 +2955,7 @@ type AIManagerAI struct {
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 }
 
-// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
 
 // AIManagerAISTTType Speech-to-text provider type.
@@ -2978,7 +2969,7 @@ type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
 	// AiSttType Speech-to-text provider type.
@@ -6128,7 +6119,7 @@ type PostAisJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 	Name        string                 `json:"name"`
@@ -6156,7 +6147,7 @@ type PutAisIdJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-4o). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 	Name        string                 `json:"name"`

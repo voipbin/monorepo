@@ -31,7 +31,7 @@ func TestCreate(t *testing.T) {
 			name:        "creates_ai_with_valid_model",
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
-			engineModel: ai.EngineModelOpenaiGPT4O,
+			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 			name:        "fails_with_invalid_tts_type",
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
-			engineModel: ai.EngineModelOpenaiGPT4O,
+			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSType("gcp"),
 			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -72,7 +72,7 @@ func TestCreate(t *testing.T) {
 			name:        "fails_with_invalid_stt_type",
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
-			engineModel: ai.EngineModelOpenaiGPT4O,
+			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTType("gcp"),
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 			name:        "handles_database_error",
 			customerID:  uuid.Must(uuid.NewV4()),
 			aiName:      "Test AI",
-			engineModel: ai.EngineModelDialogflowCX,
+			engineModel: ai.EngineModelGeminiGemini2Dot5Flash,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -161,7 +161,7 @@ func TestUpdate(t *testing.T) {
 			name:        "updates_ai_with_valid_model",
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
-			engineModel: ai.EngineModelOpenaiGPT4OMini,
+			engineModel: ai.EngineModelOpenaiGPT5Mini,
 			ttsType:     ai.TTSTypeOpenAI,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -189,7 +189,7 @@ func TestUpdate(t *testing.T) {
 			name:        "fails_with_invalid_tts_type",
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
-			engineModel: ai.EngineModelOpenaiGPT4O,
+			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSType("gcp"),
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -202,7 +202,7 @@ func TestUpdate(t *testing.T) {
 			name:        "fails_with_invalid_stt_type",
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
-			engineModel: ai.EngineModelOpenaiGPT4O,
+			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSTypeOpenAI,
 			sttType:     ai.STTType("gcp"),
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -215,7 +215,7 @@ func TestUpdate(t *testing.T) {
 			name:        "handles_database_error",
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
-			engineModel: ai.EngineModelDialogflowES,
+			engineModel: ai.EngineModelGeminiGeminiProLatest,
 			ttsType:     ai.TTSTypeOpenAI,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {

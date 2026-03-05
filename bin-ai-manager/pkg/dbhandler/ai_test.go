@@ -346,7 +346,7 @@ func Test_AIUpdate(t *testing.T) {
 			fields: map[ai.Field]any{
 				ai.FieldName:        "new name",
 				ai.FieldDetail:      "new detail",
-				ai.FieldEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
+				ai.FieldEngineModel: ai.EngineModelOpenaiGPT5Nano,
 				ai.FieldParameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
@@ -365,7 +365,7 @@ func Test_AIUpdate(t *testing.T) {
 				},
 				Name:        "new name",
 				Detail:      "new detail",
-				EngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Nano,
 				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,

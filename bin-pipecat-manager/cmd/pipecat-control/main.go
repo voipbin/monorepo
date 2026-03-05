@@ -165,7 +165,7 @@ func cmdStart() *cobra.Command {
 	flags.String("activeflow-id", "", "Activeflow ID (required)")
 	flags.String("reference-type", "", "Reference type: 'call' or 'ai_call' (required)")
 	flags.String("reference-id", "", "Reference ID (required)")
-	flags.String("llm-type", "", "LLM type (e.g., 'openai.gpt-4') (required)")
+	flags.String("llm-type", "", "LLM type (e.g., 'gemini.gemini-pro-latest') (required)")
 	flags.String("stt-type", "", "STT type: 'deepgram' or empty")
 	flags.String("stt-language", "", "STT language code (e.g., 'en')")
 	flags.String("tts-type", "", "TTS type: 'cartesia', 'elevenlabs', or empty")

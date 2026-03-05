@@ -33,7 +33,7 @@ func Test_getRequest(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53ae45c0-ff1b-11ef-9018-7b56cb798145"),
 				},
-				AIEngineModel: ai.EngineModelDialogflowES,
+				AIEngineModel: ai.EngineModelGeminiGeminiProLatest,
 				Language:      "en-US",
 			},
 			message: &message.Message{
@@ -64,7 +64,7 @@ func Test_getRequest(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae"),
 				},
-				AIEngineModel: ai.EngineModelDialogflowCX,
+				AIEngineModel: "dialogflow.cx",
 				Language:      "en-US",
 			},
 			message: &message.Message{

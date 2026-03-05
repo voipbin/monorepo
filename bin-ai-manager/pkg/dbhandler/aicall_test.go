@@ -40,7 +40,7 @@ func Test_AIcallCreate(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
-				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				AIEngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
@@ -66,7 +66,7 @@ func Test_AIcallCreate(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("b171a2be-a5e1-11ed-a547-cf7c662e9b6b"),
-				AIEngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				AIEngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter: map[string]any{
 					"key1": "val1",
 					"key2": 2.0,
