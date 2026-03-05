@@ -19,7 +19,7 @@ const (
 	jitterBufPreFillBytes = 6400
 )
 
-// AudioJitterBuffer is a simple byte-level ring buffer that absorbs timing
+// AudioJitterBuffer is a simple byte-level FIFO buffer that absorbs timing
 // irregularities from the Python pipecat runner and drains at a fixed 20ms
 // cadence toward Asterisk.
 type AudioJitterBuffer struct {

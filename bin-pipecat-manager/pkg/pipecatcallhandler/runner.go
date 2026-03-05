@@ -628,17 +628,27 @@ func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 
 	// Wait for pre-fill: accumulate enough audio before starting to drain.
 	// Poll every 5ms to stay responsive without busy-spinning.
+	// Timeout after 10s to avoid spinning indefinitely if Python never sends audio.
 	preFillTicker := time.NewTicker(5 * time.Millisecond)
-	defer preFillTicker.Stop()
-	for !se.JitterBuffer.PreFillReady() {
+	preFillTimeout := time.NewTimer(10 * time.Second)
+	defer preFillTimeout.Stop()
+
+	preFillDone := false
+	for !preFillDone && !se.JitterBuffer.PreFillReady() {
 		select {
 		case <-se.Ctx.Done():
+			preFillTicker.Stop()
 			return
+		case <-preFillTimeout.C:
+			log.Warnf("Jitter buffer pre-fill timeout (10s), starting drain with partial buffer. buffered_bytes: %d", se.JitterBuffer.Len())
+			preFillDone = true
 		case <-preFillTicker.C:
 		}
 	}
 	preFillTicker.Stop()
-	log.Debugf("Jitter buffer pre-fill reached, starting drain. buffered_bytes: %d", se.JitterBuffer.Len())
+	if !preFillDone {
+		log.Debugf("Jitter buffer pre-fill reached, starting drain. buffered_bytes: %d", se.JitterBuffer.Len())
+	}
 
 	// Write first chunk immediately (no tick wait), matching tts-manager pattern.
 	chunk := se.JitterBuffer.ReadChunk()
@@ -657,6 +667,11 @@ func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 	var tickCount int
 	var underrunCount int
 
+	// Write-error tolerance: tolerate transient errors before giving up,
+	// matching the output handler's error-tolerance pattern.
+	const maxConsecutiveWriteErrors = 500
+	var consecutiveWriteErrors int
+
 	for {
 		select {
 		case <-se.Ctx.Done():
@@ -669,9 +684,17 @@ func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 				continue
 			}
 			if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
-				log.Errorf("Could not write jitter buffer chunk to asterisk: %v", err)
-				return
+				consecutiveWriteErrors++
+				if consecutiveWriteErrors == 1 || consecutiveWriteErrors%100 == 0 {
+					log.Errorf("Could not write jitter buffer chunk to asterisk. consecutive_errors: %d, err: %v", consecutiveWriteErrors, err)
+				}
+				if consecutiveWriteErrors > maxConsecutiveWriteErrors {
+					log.Errorf("Too many consecutive write errors (%d), stopping drain loop.", consecutiveWriteErrors)
+					return
+				}
+				continue
 			}
+			consecutiveWriteErrors = 0
 
 			// Log buffer health every ~2s
 			if tickCount%100 == 0 {
