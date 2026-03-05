@@ -44,7 +44,7 @@ func TestCreate(t *testing.T) {
 			activeflowID:  uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
 			referenceType: pipecatcall.ReferenceTypeAICall,
 			referenceID:   uuid.FromStringOrNil("5b5bb704-b48c-11f0-819e-2ff9e60d5c3c"),
-			llmType:       pipecatcall.LLMType("openai.gpt-4"),
+			llmType:       pipecatcall.LLMType("openai.gpt-5"),
 			llmMessages: []map[string]any{
 				{"role": "system", "content": "test"},
 			},

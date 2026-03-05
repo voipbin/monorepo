@@ -68,7 +68,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 					ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
 					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				},
-				EngineModel: ai.EngineModel("openai.gpt-4"),
+				EngineModel: ai.EngineModel("openai.gpt-5"),
 				InitPrompt:  "hello, this is init prompt message.",
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
@@ -101,7 +101,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
 				ActiveflowID:   uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
-				AIEngineModel:  ai.EngineModel("openai.gpt-4"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
 				AITTSType:      ai.TTSTypeElevenLabs,
 				AITTSVoiceID:   "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 				AISTTType:      ai.STTTypeDeepgram,
@@ -117,7 +117,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				defaultCommonAIcallSystemPrompt,
 				"hello, this is init prompt message.",
 			},
-			expectLLMType: pmpipecatcall.LLMType("openai.gpt-4"),
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
@@ -280,7 +280,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c3cd8518-b885-11f0-bae4-fb5033fa2df2"),
 					CustomerID: uuid.FromStringOrNil("c468f26e-b885-11f0-b106-fb180bad9fd1"),
 				},
-				EngineModel: ai.EngineModel("openai.gpt-4"),
+				EngineModel: ai.EngineModel("openai.gpt-5"),
 				InitPrompt:  "hello, this is init prompt message.",
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
@@ -299,7 +299,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("c3cd8518-b885-11f0-bae4-fb5033fa2df2"),
 				ActiveflowID:   uuid.FromStringOrNil("c3ff93fa-b885-11f0-82cb-3f47ec04d13d"),
-				AIEngineModel:  ai.EngineModel("openai.gpt-4"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
 				AITTSType:      ai.TTSTypeElevenLabs,
 				AITTSVoiceID:   "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 				AISTTType:      ai.STTTypeDeepgram,
@@ -334,7 +334,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			},
 
 			expectMessageText: "hello world",
-			expectLLMType:     pmpipecatcall.LLMType("openai.gpt-4"),
+			expectLLMType:     pmpipecatcall.LLMType("openai.gpt-5"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",
@@ -463,7 +463,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 					ID:         uuid.FromStringOrNil("48021ad4-d70c-11f0-9a63-c38f93e192a7"),
 					CustomerID: uuid.FromStringOrNil("c468f26e-b885-11f0-b106-fb180bad9fd1"),
 				},
-				EngineModel: ai.EngineModel("openai.gpt-4"),
+				EngineModel: ai.EngineModel("openai.gpt-5"),
 				InitPrompt:  "hello, this is init prompt message.",
 			},
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
@@ -492,7 +492,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				},
 				AssistanceType: aicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("48021ad4-d70c-11f0-9a63-c38f93e192a7"),
-				AIEngineModel:  ai.EngineModel("openai.gpt-4"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
 				ActiveflowID:   uuid.FromStringOrNil("4838bc74-d70c-11f0-b4ff-af530084525d"),
 				ReferenceType:  aicall.ReferenceTypeTask,
 				PipecatcallID:  uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
@@ -502,7 +502,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				defaultCommonAItaskSystemPrompt,
 				"hello, this is init prompt message.",
 			},
-			expectLLMType: pmpipecatcall.LLMType("openai.gpt-4"),
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5"),
 			expectLLMMessages: []map[string]any{
 				{
 					"role":    "system",

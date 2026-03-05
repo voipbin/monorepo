@@ -25,7 +25,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 				},
 				AssistanceType: AssistanceTypeAI,
 				AssistanceID:   uuid.Must(uuid.NewV4()),
-				AIEngineModel:  ai.EngineModelOpenaiGPT4O,
+				AIEngineModel:  ai.EngineModelOpenaiGPT5,
 				Parameter:  map[string]any{"key": "value"},
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "voice-123",

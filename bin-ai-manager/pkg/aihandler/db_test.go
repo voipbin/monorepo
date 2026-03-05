@@ -44,7 +44,7 @@ func Test_Create(t *testing.T) {
 			customerID:  uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineModel: ai.EngineModelOpenaiGPT4Turbo,
+			engineModel: ai.EngineModelOpenaiGPT5Dot1,
 			parameter: map[string]any{
 				"key1": "val1",
 			},
@@ -68,7 +68,7 @@ func Test_Create(t *testing.T) {
 				},
 				Name:        "test name",
 				Detail:      "test detail",
-				EngineModel: ai.EngineModelOpenaiGPT4Turbo,
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter: map[string]any{
 					"key1": "val1",
 				},
@@ -317,7 +317,7 @@ func Test_Update(t *testing.T) {
 			id:          uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
 			aiName:      "new name",
 			detail:      "new detail",
-			engineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
+			engineModel: ai.EngineModelOpenaiGPT5Nano,
 			parameter: map[string]any{
 				"key1": "val1",
 			},

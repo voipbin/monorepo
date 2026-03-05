@@ -41,8 +41,6 @@ type EngineModelTarget string
 
 const (
 	EngineModelTargetNone       EngineModelTarget = ""
-	EngineModelTargetDialogflow EngineModelTarget = "dialogflow" // dialogflow use
-
 	EngineModelTargetAnthropic  EngineModelTarget = "anthropic"  // Anthropic Claude
 	EngineModelTargetAWS        EngineModelTarget = "aws"        // AWS Bedrock
 	EngineModelTargetAzure      EngineModelTarget = "azure"      // Azure OpenAI
@@ -64,8 +62,6 @@ const (
 )
 
 var EngineModelTargets = []EngineModelTarget{
-	EngineModelTargetDialogflow,
-
 	EngineModelTargetAnthropic,
 	EngineModelTargetAWS,
 	EngineModelTargetAzure,
@@ -90,19 +86,16 @@ type EngineModel string
 
 // list of engine models
 const (
-	EngineModelOpenaiO1Mini            EngineModel = "openai.o1-mini"
-	EngineModelOpenaiO1Preview         EngineModel = "openai.o1-preview"
-	EngineModelOpenaiO1                EngineModel = "openai.o1"
-	EngineModelOpenaiO3Mini            EngineModel = "openai.o3-mini"
-	EngineModelOpenaiGPT4O             EngineModel = "openai.gpt-4o"
-	EngineModelOpenaiGPT4OMini         EngineModel = "openai.gpt-4o-mini"
-	EngineModelOpenaiGPT4Turbo         EngineModel = "openai.gpt-4-turbo"
-	EngineModelOpenaiGPT4VisionPreview EngineModel = "openai.gpt-4-vision-preview"
-	EngineModelOpenaiGPT4              EngineModel = "openai.gpt-4"
-	EngineModelOpenaiGPT3Dot5Turbo     EngineModel = "openai.gpt-3.5-turbo"
+	EngineModelGeminiGemini2Dot5Flash EngineModel = "gemini.gemini-2.5-flash"
+	EngineModelGeminiGemini2Dot5Pro   EngineModel = "gemini.gemini-2.5-pro"
+	EngineModelGeminiGemini2Dot0Flash EngineModel = "gemini.gemini-2.0-flash"
+	EngineModelGeminiGeminiProLatest  EngineModel = "gemini.gemini-pro-latest"
 
-	EngineModelDialogflowCX EngineModel = "dialogflow.cx"
-	EngineModelDialogflowES EngineModel = "dialogflow.es"
+	EngineModelOpenaiGPT5Dot2 EngineModel = "openai.gpt-5.2"
+	EngineModelOpenaiGPT5Dot1 EngineModel = "openai.gpt-5.1"
+	EngineModelOpenaiGPT5     EngineModel = "openai.gpt-5"
+	EngineModelOpenaiGPT5Mini EngineModel = "openai.gpt-5-mini"
+	EngineModelOpenaiGPT5Nano EngineModel = "openai.gpt-5-nano"
 
 	EngineModelGrok3     EngineModel = "grok.grok-3"
 	EngineModelGrok3Mini EngineModel = "grok.grok-3-mini"
@@ -110,19 +103,16 @@ const (
 
 func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 	mapModelTarget := map[EngineModel]EngineModelTarget{
-		EngineModelOpenaiO1Mini:            EngineModelTargetOpenAI,
-		EngineModelOpenaiO1Preview:         EngineModelTargetOpenAI,
-		EngineModelOpenaiO1:                EngineModelTargetOpenAI,
-		EngineModelOpenaiO3Mini:            EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT4O:             EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT4OMini:         EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT4Turbo:         EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT4VisionPreview: EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT4:              EngineModelTargetOpenAI,
-		EngineModelOpenaiGPT3Dot5Turbo:     EngineModelTargetOpenAI,
+		EngineModelGeminiGemini2Dot5Flash: EngineModelTargetGemini,
+		EngineModelGeminiGemini2Dot5Pro:   EngineModelTargetGemini,
+		EngineModelGeminiGemini2Dot0Flash: EngineModelTargetGemini,
+		EngineModelGeminiGeminiProLatest:  EngineModelTargetGemini,
 
-		EngineModelDialogflowCX: EngineModelTargetDialogflow,
-		EngineModelDialogflowES: EngineModelTargetDialogflow,
+		EngineModelOpenaiGPT5Dot2: EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT5Dot1: EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT5:     EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT5Mini: EngineModelTargetOpenAI,
+		EngineModelOpenaiGPT5Nano: EngineModelTargetOpenAI,
 
 		EngineModelGrok3:     EngineModelTargetGrok,
 		EngineModelGrok3Mini: EngineModelTargetGrok,
@@ -137,11 +127,12 @@ func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 }
 
 func GetEngineModelName(engineModel EngineModel) string {
-	tmp := strings.Split(string(engineModel), ".")
-	if len(tmp) < 2 {
+	s := string(engineModel)
+	idx := strings.Index(s, ".")
+	if idx < 0 || idx == len(s)-1 {
 		return ""
 	}
-	return tmp[1]
+	return s[idx+1:]
 }
 
 func IsValidEngineModel(engineModel EngineModel) bool {

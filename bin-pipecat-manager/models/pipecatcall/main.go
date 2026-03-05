@@ -40,7 +40,7 @@ const (
 
 // LLMType
 // consist of (vendor) + . + (model)
-// e.g. openai.gpt-4, anthropic.claude-2
+// e.g. openai.gpt-5, gemini.gemini-pro-latest
 type LLMType string
 
 type STTType string

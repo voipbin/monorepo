@@ -184,7 +184,7 @@ func Test_AIV1AICreate(t *testing.T) {
 			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineModel: amai.EngineModelOpenaiGPT4,
+			engineModel: amai.EngineModelOpenaiGPT5,
 			parameter: map[string]any{
 				"key1": "value1",
 				"key2": 2,
@@ -206,7 +206,7 @@ func Test_AIV1AICreate(t *testing.T) {
 				URI:      "/v1/ais",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-4","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
@@ -331,7 +331,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
 			aiName:      "test name",
 			detail:      "test detail",
-			engineModel: amai.EngineModelOpenaiGPT4,
+			engineModel: amai.EngineModelOpenaiGPT5,
 			parameter: map[string]any{
 				"key1": "value1",
 				"key2": 2,
@@ -353,7 +353,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 				URI:      "/v1/ais/76380ede-f84a-11ed-a288-2bf54d8b92e6",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-4","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram"}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
