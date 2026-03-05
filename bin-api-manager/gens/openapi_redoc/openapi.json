@@ -16022,7 +16022,8 @@
           "user",
           "assistant",
           "function",
-          "tool"
+          "tool",
+          "notification"
         ],
         "x-enum-varnames": [
           "AIManagerMessageRoleNone",
@@ -16030,7 +16031,8 @@
           "AIManagerMessageRoleUser",
           "AIManagerMessageRoleAssistant",
           "AIManagerMessageRoleFunction",
-          "AIManagerMessageRoleTool"
+          "AIManagerMessageRoleTool",
+          "AIManagerMessageRoleNotification"
         ]
       },
       "AIManagerMessage": {
@@ -16834,11 +16836,13 @@
           },
           "secret": {
             "type": "string",
+            "writeOnly": true,
             "description": "Webhook secret for signature verification. Write-only.",
             "example": "whsec_...redacted..."
           },
           "token": {
             "type": "string",
+            "writeOnly": true,
             "description": "API token for the messaging platform. Write-only.",
             "example": "xoxb_...redacted..."
           },

@@ -59,6 +59,20 @@ func (mr *MockPipecatcallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPipecatcallHandler)(nil).Get), ctx, id)
 }
 
+// RunnerMemberSwitchedHandle mocks base method.
+func (m *MockPipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunnerMemberSwitchedHandle", id, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunnerMemberSwitchedHandle indicates an expected call of RunnerMemberSwitchedHandle.
+func (mr *MockPipecatcallHandlerMockRecorder) RunnerMemberSwitchedHandle(id, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunnerMemberSwitchedHandle", reflect.TypeOf((*MockPipecatcallHandler)(nil).RunnerMemberSwitchedHandle), id, c)
+}
+
 // RunnerToolHandle mocks base method.
 func (m *MockPipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) error {
 	m.ctrl.T.Helper()

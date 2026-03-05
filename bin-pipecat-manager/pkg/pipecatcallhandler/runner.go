@@ -373,6 +373,55 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) erro
 	return nil
 }
 
+func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Context) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "RunnerMemberSwitchedHandle",
+		"pipecatcall_id": id,
+	})
+	ctx := c.Request.Context()
+
+	se, err := h.SessionGet(id)
+	if err != nil {
+		return fmt.Errorf("could not get pipecatcall session: %w", err)
+	}
+	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+
+	pc, err := h.Get(ctx, id)
+	if err != nil {
+		return fmt.Errorf("could not get pipecatcall: %w", err)
+	}
+	log.WithField("pipecatcall", pc).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
+
+	if pc.ReferenceType != pipecatcall.ReferenceTypeAICall {
+		return fmt.Errorf("pipecatcall reference type is not ai-call. reference_type: %s", pc.ReferenceType)
+	}
+
+	request := struct {
+		TransitionFunctionName string         `json:"transition_function_name"`
+		FromMember             message.MemberInfo `json:"from_member"`
+		ToMember               message.MemberInfo `json:"to_member"`
+	}{}
+	if errBind := c.BindJSON(&request); errBind != nil {
+		return fmt.Errorf("could not bind member-switched request JSON: %w", errBind)
+	}
+
+	evt := message.MemberSwitchedEvent{
+		CustomerID:               pc.CustomerID,
+		PipecatcallID:            pc.ID,
+		PipecatcallReferenceType: pc.ReferenceType,
+		PipecatcallReferenceID:   pc.ReferenceID,
+		TransitionFunctionName:   request.TransitionFunctionName,
+		FromMember:               request.FromMember,
+		ToMember:                 request.ToMember,
+	}
+
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeTeamMemberSwitched, evt)
+	log.WithField("event", evt).Debugf("Published team member switched event.")
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	return nil
+}
+
 func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Session, m []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "receiveMessageFrameMessage",

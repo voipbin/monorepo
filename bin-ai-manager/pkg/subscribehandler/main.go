@@ -174,6 +174,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmpipecatcall.EventTypeInitialized):
 		err = h.processEventPMPipecatcallInitialized(ctx, m)
 
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeTeamMemberSwitched):
+		err = h.processEventPMTeamMemberSwitched(ctx, m)
+
 	default:
 		// ignore the event.
 		return

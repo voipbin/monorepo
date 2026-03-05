@@ -554,6 +554,40 @@ func Test_getPipecatcallMessages(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "filters out notification role messages",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6754cd08-b62a-11f0-b4a3-13e4f1d01c60"),
+				},
+			},
+
+			responseMessages: []*message.Message{
+				{
+					Role:    message.RoleAssistant,
+					Content: "Hello, how can I help?",
+				},
+				{
+					Role:    message.RoleNotification,
+					Content: `{"type":"member_switched","from_member":{"name":"Reception"},"to_member":{"name":"Sales"}}`,
+				},
+				{
+					Role:    message.RoleUser,
+					Content: "I need help with billing.",
+				},
+			},
+			expectRes: []map[string]any{
+				{
+					"role":    "user",
+					"content": "I need help with billing.",
+				},
+				{
+					"role":    "assistant",
+					"content": "Hello, how can I help?",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

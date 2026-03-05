@@ -50,6 +50,13 @@ func TestMessage(t *testing.T) {
 			role:      RoleTool,
 			content:   "Tool execution result",
 		},
+		{
+			name:      "creates_message_with_notification_role",
+			aicallID:  uuid.Must(uuid.NewV4()),
+			direction: DirectionOutgoing,
+			role:      RoleNotification,
+			content:   `{"type":"member_switched","transition_function_name":"transfer_to_sales"}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -114,6 +121,11 @@ func TestRoleConstants(t *testing.T) {
 			name:     "role_tool",
 			constant: RoleTool,
 			expected: "tool",
+		},
+		{
+			name:     "role_notification",
+			constant: RoleNotification,
+			expected: "notification",
 		},
 	}
 
