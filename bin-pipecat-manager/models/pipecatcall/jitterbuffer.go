@@ -4,13 +4,19 @@ import "sync"
 
 const (
 	// jitterBufMaxBytes is the maximum number of bytes the jitter buffer will
-	// hold. Beyond this limit the oldest data is discarded. 500ms of 16kHz
-	// mono 16-bit PCM = 16000 bytes.
-	jitterBufMaxBytes = 16000
+	// hold. Beyond this limit the oldest data is discarded. 1s of 16kHz
+	// mono 16-bit PCM = 32000 bytes.
+	jitterBufMaxBytes = 32000
 
 	// jitterBufDrainChunkSize is the number of bytes drained per tick. 20ms
 	// of 16kHz mono 16-bit PCM = 640 bytes — matching Asterisk's mixing timer.
 	jitterBufDrainChunkSize = 640
+
+	// jitterBufPreFillBytes is the number of bytes that must accumulate before
+	// the drain goroutine starts sending to Asterisk. This pre-fill absorbs
+	// timing irregularities from Python's asyncio event loop by building a
+	// head-start buffer. 200ms = 6400 bytes (10 chunks).
+	jitterBufPreFillBytes = 6400
 )
 
 // AudioJitterBuffer is a simple byte-level ring buffer that absorbs timing
@@ -65,6 +71,15 @@ func (jb *AudioJitterBuffer) Len() int {
 	defer jb.mu.Unlock()
 
 	return len(jb.buf)
+}
+
+// PreFillReady returns true when the buffer has accumulated at least
+// jitterBufPreFillBytes, indicating it is safe to start draining.
+func (jb *AudioJitterBuffer) PreFillReady() bool {
+	jb.mu.Lock()
+	defer jb.mu.Unlock()
+
+	return len(jb.buf) >= jitterBufPreFillBytes
 }
 
 // Reset clears the buffer.

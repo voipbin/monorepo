@@ -169,6 +169,35 @@ func TestConcurrentWriteRead(t *testing.T) {
 	}
 }
 
+func TestPreFillReady(t *testing.T) {
+	jb := NewAudioJitterBuffer()
+
+	// Empty buffer — not ready
+	if jb.PreFillReady() {
+		t.Error("expected PreFillReady=false for empty buffer")
+	}
+
+	// Write just under threshold
+	jb.Write(make([]byte, jitterBufPreFillBytes-1))
+	if jb.PreFillReady() {
+		t.Errorf("expected PreFillReady=false with %d bytes (threshold=%d)", jb.Len(), jitterBufPreFillBytes)
+	}
+
+	// Write one more byte to reach threshold
+	jb.Write(make([]byte, 1))
+	if !jb.PreFillReady() {
+		t.Errorf("expected PreFillReady=true with %d bytes (threshold=%d)", jb.Len(), jitterBufPreFillBytes)
+	}
+
+	// After draining below threshold, should be false again
+	for jb.PreFillReady() {
+		jb.ReadChunk()
+	}
+	if jb.PreFillReady() {
+		t.Error("expected PreFillReady=false after draining below threshold")
+	}
+}
+
 func TestMultipleChunksInSequence(t *testing.T) {
 	jb := NewAudioJitterBuffer()
 
@@ -180,7 +209,7 @@ func TestMultipleChunksInSequence(t *testing.T) {
 	jb.Write(data)
 
 	// Read 3 chunks, verify each has the expected fill byte
-	for chunkIdx := 0; chunkIdx < 3; chunkIdx++ {
+	for chunkIdx := range 3 {
 		chunk := jb.ReadChunk()
 		if chunk == nil {
 			t.Fatalf("expected chunk %d, got nil", chunkIdx)

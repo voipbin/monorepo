@@ -591,8 +591,17 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 }
 
 // runJitterBufferDrain drains the jitter buffer at a fixed 20ms cadence,
-// writing each chunk to the Asterisk WebSocket. This absorbs timing
-// irregularities from the Python pipecat runner's asyncio event loop.
+// writing each chunk to the Asterisk WebSocket.
+//
+// It waits for the buffer to reach a pre-fill threshold before starting to
+// drain. This pre-fill creates a head-start that absorbs timing irregularities
+// from Python's asyncio event loop (which runs STT, LLM, and TTS on a single
+// loop with ~9 gRPC connections). Without pre-fill the buffer runs dry whenever
+// Python's audio production dips below real-time, causing Asterisk to mix
+// silence and produce choppy audio.
+//
+// The first chunk is written immediately (no tick wait), matching
+// tts-manager's websocketWrite pattern.
 func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runJitterBufferDrain",
@@ -611,6 +620,30 @@ func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
 		return
 	}
 
+	// Wait for pre-fill: accumulate enough audio before starting to drain.
+	// Poll every 5ms to stay responsive without busy-spinning.
+	preFillTicker := time.NewTicker(5 * time.Millisecond)
+	defer preFillTicker.Stop()
+	for !se.JitterBuffer.PreFillReady() {
+		select {
+		case <-se.Ctx.Done():
+			return
+		case <-preFillTicker.C:
+		}
+	}
+	preFillTicker.Stop()
+	log.Debugf("Jitter buffer pre-fill reached, starting drain. buffered_bytes: %d", se.JitterBuffer.Len())
+
+	// Write first chunk immediately (no tick wait), matching tts-manager pattern.
+	chunk := se.JitterBuffer.ReadChunk()
+	if chunk != nil {
+		if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
+			log.Errorf("Could not write first jitter buffer chunk to asterisk: %v", err)
+			return
+		}
+	}
+
+	// Drain remaining audio at fixed 20ms cadence
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 
