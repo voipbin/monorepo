@@ -258,56 +258,5 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		}
 	})
 
-	t.Run("audio writes to jitter buffer when present", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-
-		// No mock WS needed — audio should go to the jitter buffer, not the websocket.
-		h := &pipecatcallHandler{}
-
-		jb := pipecatcall.NewAudioJitterBuffer()
-		se := &pipecatcall.Session{
-			Ctx:          context.Background(),
-			JitterBuffer: jb,
-		}
-
-		data := []byte{0x01, 0x02, 0x03, 0x04}
-		if err := h.runnerWebsocketHandleAudio(se, 16000, 1, data); err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-
-		if jb.Len() != len(data) {
-			t.Errorf("expected jitter buffer length %d, got %d", len(data), jb.Len())
-		}
-	})
-
-	t.Run("resampled audio writes to jitter buffer when present", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-
-		mockAudio := NewMockAudiosocketHandler(mc)
-		h := &pipecatcallHandler{
-			audiosocketHandler: mockAudio,
-		}
-
-		jb := pipecatcall.NewAudioJitterBuffer()
-		se := &pipecatcall.Session{
-			Ctx:          context.Background(),
-			JitterBuffer: jb,
-		}
-
-		inputData := []byte{0x01, 0x02, 0x03, 0x04}
-		resampledData := []byte{0x10, 0x20}
-
-		mockAudio.EXPECT().GetDataSamples(8000, inputData).Return(resampledData, nil)
-
-		if err := h.runnerWebsocketHandleAudio(se, 8000, 1, inputData); err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-
-		if jb.Len() != len(resampledData) {
-			t.Errorf("expected jitter buffer length %d, got %d", len(resampledData), jb.Len())
-		}
-	})
 }
 

@@ -11,7 +11,6 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -573,12 +572,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		return nil
 	}
 
-	if se.JitterBuffer != nil {
-		se.JitterBuffer.Write(audioData)
-		return nil
-	}
-
-	// Fallback: direct write when no jitter buffer (e.g. non-call reference types)
 	select {
 	case <-se.ConnAstReady:
 	case <-se.Ctx.Done():
@@ -596,112 +589,3 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 	return nil
 }
 
-// runJitterBufferDrain drains the jitter buffer at a fixed 20ms cadence,
-// writing each chunk to the Asterisk WebSocket.
-//
-// It waits for the buffer to reach a pre-fill threshold before starting to
-// drain. This pre-fill creates a head-start that absorbs timing irregularities
-// from Python's asyncio event loop (which runs STT, LLM, and TTS on a single
-// loop with ~9 gRPC connections). Without pre-fill the buffer runs dry whenever
-// Python's audio production dips below real-time, causing Asterisk to mix
-// silence and produce choppy audio.
-//
-// The first chunk is written immediately (no tick wait), matching
-// tts-manager's websocketWrite pattern.
-func (h *pipecatcallHandler) runJitterBufferDrain(se *pipecatcall.Session) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "runJitterBufferDrain",
-		"pipecatcall_id": se.ID,
-	})
-
-	// Wait for Asterisk connection before starting the drain loop
-	select {
-	case <-se.ConnAstReady:
-	case <-se.Ctx.Done():
-		return
-	}
-
-	if se.ConnAst == nil {
-		log.Warnf("Asterisk connection is nil after ready signal, exiting drain loop.")
-		return
-	}
-
-	// Wait for pre-fill: accumulate enough audio before starting to drain.
-	// Poll every 5ms to stay responsive without busy-spinning.
-	// Timeout after 10s to avoid spinning indefinitely if Python never sends audio.
-	preFillTicker := time.NewTicker(5 * time.Millisecond)
-	preFillTimeout := time.NewTimer(10 * time.Second)
-	defer preFillTimeout.Stop()
-
-	preFillDone := false
-	for !preFillDone && !se.JitterBuffer.PreFillReady() {
-		select {
-		case <-se.Ctx.Done():
-			preFillTicker.Stop()
-			return
-		case <-preFillTimeout.C:
-			log.Warnf("Jitter buffer pre-fill timeout (10s), starting drain with partial buffer. buffered_bytes: %d", se.JitterBuffer.Len())
-			preFillDone = true
-		case <-preFillTicker.C:
-		}
-	}
-	preFillTicker.Stop()
-	if !preFillDone {
-		log.Debugf("Jitter buffer pre-fill reached, starting drain. buffered_bytes: %d", se.JitterBuffer.Len())
-	}
-
-	// Write first chunk immediately (no tick wait), matching tts-manager pattern.
-	chunk := se.JitterBuffer.ReadChunk()
-	if chunk != nil {
-		if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
-			log.Errorf("Could not write first jitter buffer chunk to asterisk: %v", err)
-			return
-		}
-	}
-
-	// Drain remaining audio at fixed 20ms cadence
-	ticker := time.NewTicker(20 * time.Millisecond)
-	defer ticker.Stop()
-
-	// Periodic buffer health logging (every ~2s = 100 ticks)
-	var tickCount int
-	var underrunCount int
-
-	// Write-error tolerance: tolerate transient errors before giving up,
-	// matching the output handler's error-tolerance pattern.
-	const maxConsecutiveWriteErrors = 500
-	var consecutiveWriteErrors int
-
-	for {
-		select {
-		case <-se.Ctx.Done():
-			return
-		case <-ticker.C:
-			tickCount++
-			chunk := se.JitterBuffer.ReadChunk()
-			if chunk == nil {
-				underrunCount++
-				continue
-			}
-			if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, chunk); err != nil {
-				consecutiveWriteErrors++
-				if consecutiveWriteErrors == 1 || consecutiveWriteErrors%100 == 0 {
-					log.Errorf("Could not write jitter buffer chunk to asterisk. consecutive_errors: %d, err: %v", consecutiveWriteErrors, err)
-				}
-				if consecutiveWriteErrors > maxConsecutiveWriteErrors {
-					log.Errorf("Too many consecutive write errors (%d), stopping drain loop.", consecutiveWriteErrors)
-					return
-				}
-				continue
-			}
-			consecutiveWriteErrors = 0
-
-			// Log buffer health every ~2s
-			if tickCount%100 == 0 {
-				log.Debugf("Jitter buffer health: buffered_bytes=%d, underruns_last_2s=%d, pipecatcall_id=%s",
-					se.JitterBuffer.Len(), underrunCount, se.ID)
-				underrunCount = 0
-			}
-		}
-	}
-}

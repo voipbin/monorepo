@@ -95,11 +95,6 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		log.Warnf("Session had %d dropped audio frames. pipecatcall_id: %s", dropped, id)
 	}
 
-	if pc.JitterBuffer != nil {
-		log.Debugf("Jitter buffer remaining bytes: %d. pipecatcall_id: %s", pc.JitterBuffer.Len(), id)
-		pc.JitterBuffer.Reset()
-	}
-
 	// Wait for Asterisk connection to be ready (or context cancelled) before closing
 	if pc.ConnAstReady != nil {
 		select {

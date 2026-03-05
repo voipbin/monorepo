@@ -33,9 +33,6 @@ type Session struct {
 	LLMKey     string `json:"-"`
 	LLMBotText string `json:"-"`
 
-	// audio jitter buffer (absorbs Python timing irregularities before draining to Asterisk)
-	JitterBuffer *AudioJitterBuffer `json:"-"`
-
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`
 }
