@@ -310,7 +310,7 @@ func Test_flushAudioTextFrameDispatch(t *testing.T) {
 			}
 
 			if tt.expectFlush {
-				mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, gomock.Any()).Return(nil)
+				mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, gomock.Any()).Return(nil).Times(defaultFlushSilenceFrames)
 			}
 
 			h := &pipecatcallHandler{

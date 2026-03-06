@@ -33,11 +33,14 @@ func Test_defaultMediaConstants(t *testing.T) {
 	}
 }
 
-func Test_defaultFlushSilenceBytes(t *testing.T) {
-	// 500ms at 16kHz 16-bit mono: 16000 samples/sec * 0.5 sec * 2 bytes/sample = 16000 bytes
-	expected := 16000
-	if defaultFlushSilenceBytes != expected {
-		t.Errorf("defaultFlushSilenceBytes = %d, want %d (500ms of 16kHz 16-bit mono silence)", defaultFlushSilenceBytes, expected)
+func Test_defaultFlushSilenceConstants(t *testing.T) {
+	// 20ms slin16 frame at 16kHz: 16000 * 0.02 * 2 = 640 bytes
+	if defaultFlushSilenceFrameSize != 640 {
+		t.Errorf("defaultFlushSilenceFrameSize = %d, want 640 (20ms slin16 frame)", defaultFlushSilenceFrameSize)
+	}
+	// 25 frames * 20ms = 500ms
+	if defaultFlushSilenceFrames != 25 {
+		t.Errorf("defaultFlushSilenceFrames = %d, want 25 (500ms total)", defaultFlushSilenceFrames)
 	}
 }
 
@@ -45,40 +48,40 @@ func Test_flushAsteriskAudioBuffer(t *testing.T) {
 	tests := []struct {
 		name string
 
-		connAst        *websocket.Conn
-		connAstReady   chan struct{}
-		ctxCancelled   bool
-		writeErr       error
-		expectWrite    bool
-		expectSilence  int
+		connAst      *websocket.Conn
+		connAstReady chan struct{}
+		ctxCancelled bool
+		writeErr     error
+		// writeErrOn is the 1-based frame index where writeErr triggers (0 = no error)
+		writeErrOn   int
+		expectWrites int
 	}{
 		{
-			name:          "sends silence to asterisk on flush",
-			connAst:       &websocket.Conn{},
-			connAstReady:  func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
-			expectWrite:   true,
-			expectSilence: defaultFlushSilenceBytes,
+			name:         "sends silence frames to asterisk on flush",
+			connAst:      &websocket.Conn{},
+			connAstReady: func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
+			expectWrites: defaultFlushSilenceFrames,
 		},
 		{
 			name:         "nil ConnAst skips flush",
 			connAst:      nil,
 			connAstReady: func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
-			expectWrite:  false,
+			expectWrites: 0,
 		},
 		{
 			name:         "cancelled context skips flush",
 			connAst:      &websocket.Conn{},
 			connAstReady: make(chan struct{}), // not closed
 			ctxCancelled: true,
-			expectWrite:  false,
+			expectWrites: 0,
 		},
 		{
-			name:          "write error is logged but does not panic",
-			connAst:       &websocket.Conn{},
-			connAstReady:  func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
-			writeErr:      fmt.Errorf("write failed"),
-			expectWrite:   true,
-			expectSilence: defaultFlushSilenceBytes,
+			name:         "write error on first frame stops sending",
+			connAst:      &websocket.Conn{},
+			connAstReady: func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
+			writeErr:     fmt.Errorf("write failed"),
+			writeErrOn:   1,
+			expectWrites: 1,
 		},
 	}
 
@@ -97,22 +100,27 @@ func Test_flushAsteriskAudioBuffer(t *testing.T) {
 			}
 			defer cancel()
 
-			if tt.expectWrite {
+			if tt.expectWrites > 0 {
+				callCount := 0
 				mockWS.EXPECT().WriteMessage(tt.connAst, websocket.BinaryMessage, gomock.Any()).DoAndReturn(
 					func(_ *websocket.Conn, _ int, data []byte) error {
-						if len(data) != tt.expectSilence {
-							t.Errorf("silence bytes = %d, want %d", len(data), tt.expectSilence)
+						callCount++
+						if len(data) != defaultFlushSilenceFrameSize {
+							t.Errorf("frame %d: silence bytes = %d, want %d", callCount, len(data), defaultFlushSilenceFrameSize)
 						}
 						// Verify all bytes are zero (silence)
 						for i, b := range data {
 							if b != 0 {
-								t.Errorf("byte[%d] = %d, want 0 (silence)", i, b)
+								t.Errorf("frame %d: byte[%d] = %d, want 0 (silence)", callCount, i, b)
 								break
 							}
 						}
-						return tt.writeErr
+						if tt.writeErrOn > 0 && callCount >= tt.writeErrOn {
+							return tt.writeErr
+						}
+						return nil
 					},
-				)
+				).Times(tt.expectWrites)
 			}
 
 			se := &pipecatcall.Session{

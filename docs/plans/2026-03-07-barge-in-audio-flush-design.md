@@ -14,7 +14,7 @@ Send a burst of silence from Go to Asterisk when Pipecat signals an interruption
 User speaks → Pipecat VAD detects speech → InterruptionFrame flows through pipeline
   → Python process_frame() sends TextFrame(text="flush_audio") via protobuf WebSocket to Go
   → Go receives TextFrame with text "flush_audio"
-  → Go writes 500ms of silence (16,000 zero bytes) to Asterisk WebSocket
+  → Go writes 25 × 640-byte silence frames (20ms slin16 each, 500ms total) to Asterisk WebSocket
   → Asterisk's buffer is overwritten with silence
   → User hears silence instead of stale TTS audio
 ```
@@ -49,15 +49,21 @@ New method:
 
 ```go
 func (h *pipecatcallHandler) flushAsteriskAudioBuffer(se *pipecatcall.Session) {
-    // 500ms of silence at 16kHz 16-bit mono = 16000 samples/sec * 0.5 sec * 2 bytes = 16000 bytes
-    silence := make([]byte, defaultFlushSilenceBytes)
-    h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, silence)
+    silence := make([]byte, defaultFlushSilenceFrameSize)
+    for i := 0; i < defaultFlushSilenceFrames; i++ {
+        h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, silence)
+    }
 }
 ```
 
 ### Constants
 
-- `defaultFlushSilenceBytes = 16000` (500ms at 16kHz 16-bit mono PCM)
+- `defaultFlushSilenceFrameSize = 640` (20ms slin16 frame: 16000 samples/sec × 0.02 sec × 2 bytes)
+- `defaultFlushSilenceFrames = 25` (25 × 20ms = 500ms total)
+
+### Why chunked frames?
+
+Asterisk's `chan_websocket` rejects oversized binary frames with close code 1003 (unsupported data). Audio must be sent in frames matching the codec frame size — 20ms / 640 bytes for slin16 at 16kHz.
 
 ### Why 500ms?
 
