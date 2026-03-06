@@ -56,6 +56,12 @@ _mocks = {
     ),
     "pipecat.processors.aggregators": MagicMock(),
     "pipecat.processors.aggregators.openai_llm_context": _make_mock_module("OpenAILLMContext"),
+    "pipecat.processors.aggregators.llm_context": _make_mock_module("LLMContext", "NOT_GIVEN"),
+    "pipecat.processors.aggregators.llm_response_universal": _make_mock_module("LLMContextAggregatorPair"),
+    "pipecat.adapters": MagicMock(),
+    "pipecat.adapters.schemas": MagicMock(),
+    "pipecat.adapters.schemas.function_schema": _make_mock_module("FunctionSchema"),
+    "pipecat.adapters.schemas.tools_schema": _make_mock_module("ToolsSchema"),
     "pipecat.audio": MagicMock(),
     "pipecat.audio.vad": MagicMock(),
     "pipecat.audio.vad.silero": _make_mock_module("SileroVADAnalyzer"),
@@ -77,7 +83,7 @@ _mocks = {
     "pipecat.transports": MagicMock(),
     "pipecat.transports.websocket": MagicMock(),
     "pipecat.transports.websocket.client": _make_mock_module(
-        "WebsocketClientParams", "WebsocketClientTransport"
+        "WebsocketClientParams", "WebsocketClientTransport", "WebsocketClientOutputTransport"
     ),
     # deepgram SDK
     "deepgram": _make_mock_module("LiveOptions"),
@@ -89,6 +95,10 @@ _mocks = {
     "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPECATCALL_HTTP_URL="http://localhost", PIPELINE_SESSION_TIMEOUT=300),
     "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "get_tool_names"),
     "task": _make_mock_module("task_manager"),
+    "routing_llm": _make_mock_module("RoutingLLMService"),
+    "routing_tts": _make_mock_module("RoutingTTSService"),
+    "routing_stt": _make_mock_module("RoutingSTTService"),
+    "team_flow": _make_mock_module("build_team_flow"),
 }
 
 for mod_name, mock_obj in _mocks.items():
