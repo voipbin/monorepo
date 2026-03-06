@@ -277,6 +277,15 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 			switch x := frame.Frame.(type) {
 			case *pipecatframe.Frame_Text:
 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
+				if x.Text.Text == "FLUSH_MEDIA" {
+					if se.ConnAst == nil {
+						log.Warnf("Cannot send FLUSH_MEDIA: Asterisk WebSocket not connected")
+					} else if errFlush := h.websocketHandler.WriteMessage(se.ConnAst, websocket.TextMessage, []byte("FLUSH_MEDIA")); errFlush != nil {
+						log.Errorf("Could not send FLUSH_MEDIA to Asterisk: %v", errFlush)
+					} else {
+						log.Debugf("Sent FLUSH_MEDIA to Asterisk to flush audio buffer")
+					}
+				}
 
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio

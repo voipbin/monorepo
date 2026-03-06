@@ -34,12 +34,13 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import LLMRunFrame
+from pipecat.frames.frames import InterruptionFrame, LLMRunFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.transports.websocket.client import (
+    WebsocketClientOutputTransport,
     WebsocketClientParams,
     WebsocketClientTransport,
 )
@@ -455,21 +456,52 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
 
+class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
+    """Output transport that delivers audio faster than real-time.
+
+    No-ops _write_audio_sleep() so TTS frames are forwarded immediately to
+    Asterisk's chan_websocket, which handles re-timing internally.
+
+    On InterruptionFrame (barge-in), sends FLUSH_MEDIA text command so
+    Asterisk discards queued audio instantly.
+    """
+
+    async def _write_audio_sleep(self, running_time: float):
+        pass
+
+    async def process_frame(self, frame, direction):
+        if isinstance(frame, InterruptionFrame):
+            await self._write_frame(TextFrame(text="FLUSH_MEDIA"))
+        await super().process_frame(frame, direction)
+
+
+class UnpacedWebsocketClientTransport(WebsocketClientTransport):
+    """WebSocket transport using unpaced output for audio delivery."""
+
+    def __init__(self, uri: str, params: WebsocketClientParams):
+        super().__init__(uri=uri, params=params)
+        self._output = UnpacedWebsocketClientOutputTransport(
+            params, serializer=self._serializer
+        )
+
+
 def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
-    transport = WebsocketClientTransport(
-        uri=uri,
-        params=WebsocketClientParams(
-            serializer=ProtobufFrameSerializer(),
-            audio_in_enabled=True,
-            audio_out_enabled=True,
-            add_wav_header=False,
-            vad_analyzer=vad_analyzer,
-            session_timeout=common.PIPELINE_SESSION_TIMEOUT,
-        )
+    params = WebsocketClientParams(
+        serializer=ProtobufFrameSerializer(),
+        audio_in_enabled=True,
+        audio_out_enabled=True,
+        add_wav_header=False,
+        vad_analyzer=vad_analyzer,
+        session_timeout=common.PIPELINE_SESSION_TIMEOUT,
     )
+
+    if direction == "output":
+        transport = UnpacedWebsocketClientTransport(uri=uri, params=params)
+    else:
+        transport = WebsocketClientTransport(uri=uri, params=params)
 
     return transport
 

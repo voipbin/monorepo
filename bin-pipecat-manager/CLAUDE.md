@@ -186,7 +186,7 @@ Asterisk PBX
 - **Session management**: `pipecatcall.Session` tracks active connections (`ConnAst` for Asterisk WebSocket, `ConnAstDone` channel for disconnect signalling)
 - **WebSocket external media**: Go dials Asterisk's `chan_websocket` endpoint as a client (encapsulation: none, transport: websocket, connection_type: server, format: slin16)
 - **16kHz end-to-end**: `audio_out_sample_rate=16000` in PipelineParams ensures TTS generates 16kHz natively, matching Asterisk slin16 with zero resampling. Pipecat defaults to 24kHz — always keep the explicit 16kHz setting.
-- **Paced audio delivery**: The standard `WebsocketClientTransport` delivers TTS audio at real-time rate via Pipecat's built-in `_write_audio_sleep()`. This keeps Asterisk's buffer minimal (~20ms), enabling native barge-in support — when the user speaks, Pipecat's `InterruptionFrame` cancels the output task and audio stops almost instantly.
+- **Unpaced audio delivery + FLUSH_MEDIA barge-in**: `UnpacedWebsocketClientOutputTransport` no-ops `_write_audio_sleep()` to deliver TTS audio faster than real-time — Asterisk's `chan_websocket` handles re-timing internally, eliminating audio gaps from asyncio contention. On barge-in, the transport sends a `TextFrame("FLUSH_MEDIA")` which Go forwards as a WebSocket text message to Asterisk, instantly discarding all queued audio. This combines gap-free playback with instant interruption.
 - **ConnAstDone pattern**: `runAsteriskReceivedMediaHandle` goroutine closes `ConnAstDone` channel on WebSocket disconnect, used by lifecycle monitor for cleanup
 - **Context propagation**: All handler methods accept `context.Context` for cancellation
 - **UUID-based IDs**: Using `github.com/gofrs/uuid` throughout
