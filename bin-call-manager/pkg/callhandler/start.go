@@ -474,8 +474,14 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 		return nil
 	}
 
-	// create temp flow for conference join
+	// create temp flow for conference join.
+	// the answer action is required to transition the call status from ringing to progressing
+	// before joining the conference. without it, the conference-manager health check
+	// will terminate the conferencecall because it expects the call to be in progressing status.
 	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeAnswer,
+		},
 		{
 			Type: fmaction.TypeConferenceJoin,
 			Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
