@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -8,6 +9,36 @@ import (
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/models/identity"
 )
+
+// VADConfig holds Voice Activity Detection parameters.
+// Nil pointer fields mean "use Pipecat default".
+// Pipecat defaults: confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6.
+type VADConfig struct {
+	Confidence *float64 `json:"confidence,omitempty"`
+	StartSecs  *float64 `json:"start_secs,omitempty"`
+	StopSecs   *float64 `json:"stop_secs,omitempty"`
+	MinVolume  *float64 `json:"min_volume,omitempty"`
+}
+
+// Validate checks that VADConfig values are within acceptable ranges.
+func (v *VADConfig) Validate() error {
+	if v == nil {
+		return nil
+	}
+	if v.Confidence != nil && (*v.Confidence < 0 || *v.Confidence > 1) {
+		return fmt.Errorf("confidence must be between 0.0 and 1.0")
+	}
+	if v.MinVolume != nil && (*v.MinVolume < 0 || *v.MinVolume > 1) {
+		return fmt.Errorf("min_volume must be between 0.0 and 1.0")
+	}
+	if v.StartSecs != nil && (*v.StartSecs < 0 || *v.StartSecs > 30) {
+		return fmt.Errorf("start_secs must be between 0.0 and 30.0")
+	}
+	if v.StopSecs != nil && (*v.StopSecs < 0 || *v.StopSecs > 30) {
+		return fmt.Errorf("stop_secs must be between 0.0 and 30.0")
+	}
+	return nil
+}
 
 // AI define
 type AI struct {
@@ -25,7 +56,8 @@ type AI struct {
 	TTSType    TTSType `json:"tts_type,omitempty" db:"tts_type"`
 	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
-	STTType STTType `json:"stt_type,omitempty" db:"stt_type"`
+	STTType   STTType    `json:"stt_type,omitempty" db:"stt_type"`
+	VADConfig *VADConfig `json:"vad_config,omitempty" db:"vad_config,json"`
 
 	// ToolNames defines which tools are enabled for this AI
 	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools

@@ -170,6 +170,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
 				gomock.Any(), // toolNames
+				gomock.Any(), // vadConfig
 			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -385,6 +386,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
 				gomock.Any(), // toolNames
+				gomock.Any(), // vadConfig
 			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

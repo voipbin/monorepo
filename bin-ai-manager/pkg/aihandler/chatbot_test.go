@@ -15,6 +15,10 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
+func float64Ptr(v float64) *float64 {
+	return &v
+}
+
 func TestCreate(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -23,6 +27,7 @@ func TestCreate(t *testing.T) {
 		engineModel ai.EngineModel
 		ttsType     ai.TTSType
 		sttType     ai.STTType
+		vadConfig   *ai.VADConfig
 		setupMock   func(*dbhandler.MockDBHandler)
 		wantError   bool
 		errorMsg    string
@@ -94,6 +99,36 @@ func TestCreate(t *testing.T) {
 			wantError: true,
 			errorMsg:  "could not create ai",
 		},
+		{
+			name:        "fails_with_invalid_vad_config",
+			customerID:  uuid.Must(uuid.NewV4()),
+			aiName:      "Test AI",
+			engineModel: ai.EngineModelOpenaiGPT5,
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTTypeNone,
+			vadConfig:   &ai.VADConfig{Confidence: float64Ptr(1.5)},
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid vad_config",
+		},
+		{
+			name:        "creates_ai_with_valid_vad_config",
+			customerID:  uuid.Must(uuid.NewV4()),
+			aiName:      "Test AI with VAD",
+			engineModel: ai.EngineModelOpenaiGPT5,
+			ttsType:     ai.TTSTypeNone,
+			sttType:     ai.STTTypeNone,
+			vadConfig:   &ai.VADConfig{Confidence: float64Ptr(0.8), StopSecs: float64Ptr(0.5)},
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				testAI := &ai.AI{Name: "Test AI with VAD"}
+				testAI.ID = uuid.Must(uuid.NewV4())
+				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
+			},
+			wantError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -125,6 +160,7 @@ func TestCreate(t *testing.T) {
 				"",
 				tt.sttType,
 				[]tool.ToolName{},
+				tt.vadConfig,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -153,6 +189,7 @@ func TestUpdate(t *testing.T) {
 		engineModel ai.EngineModel
 		ttsType     ai.TTSType
 		sttType     ai.STTType
+		vadConfig   *ai.VADConfig
 		setupMock   func(*dbhandler.MockDBHandler)
 		wantError   bool
 		errorMsg    string
@@ -224,6 +261,36 @@ func TestUpdate(t *testing.T) {
 			wantError: true,
 			errorMsg:  "could not update ai",
 		},
+		{
+			name:        "fails_with_invalid_vad_config",
+			aiID:        uuid.Must(uuid.NewV4()),
+			aiName:      "Updated AI",
+			engineModel: ai.EngineModelOpenaiGPT5,
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTTypeDeepgram,
+			vadConfig:   &ai.VADConfig{MinVolume: float64Ptr(-0.1)},
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				// Should not call database
+			},
+			wantError: true,
+			errorMsg:  "invalid vad_config",
+		},
+		{
+			name:        "updates_ai_with_valid_vad_config",
+			aiID:        uuid.Must(uuid.NewV4()),
+			aiName:      "Updated AI with VAD",
+			engineModel: ai.EngineModelOpenaiGPT5,
+			ttsType:     ai.TTSTypeOpenAI,
+			sttType:     ai.STTTypeDeepgram,
+			vadConfig:   &ai.VADConfig{StopSecs: float64Ptr(0.3), MinVolume: float64Ptr(0.5)},
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				updatedAI := &ai.AI{Name: "Updated AI with VAD"}
+				updatedAI.ID = uuid.Must(uuid.NewV4())
+				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(1)
+			},
+			wantError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -254,6 +321,7 @@ func TestUpdate(t *testing.T) {
 				"voice-id",
 				tt.sttType,
 				[]tool.ToolName{},
+				tt.vadConfig,
 			)
 
 			if (err != nil) != tt.wantError {

@@ -2953,6 +2953,9 @@ type AIManagerAI struct {
 
 	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
+
+	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
+	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
@@ -2980,6 +2983,9 @@ type AIManagerAIcall struct {
 
 	// AiTtsVoiceId Text-to-speech voice identifier used for this call.
 	AiTtsVoiceId *string `json:"ai_tts_voice_id,omitempty"`
+
+	// AiVadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
+	AiVadConfig *AIManagerVADConfig `json:"ai_vad_config,omitempty"`
 
 	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
 	AssistanceId *string `json:"assistance_id,omitempty"`
@@ -3193,6 +3199,21 @@ type AIManagerTeamTransition struct {
 
 	// NextMemberId The member ID to transition to. Must reference an existing member in the team.
 	NextMemberId string `json:"next_member_id"`
+}
+
+// AIManagerVADConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
+type AIManagerVADConfig struct {
+	// Confidence Minimum confidence threshold to detect voice. Range 0.0–1.0. Omitted fields use Pipecat default.
+	Confidence *float64 `json:"confidence,omitempty"`
+
+	// MinVolume Minimum audio volume for voice detection. Range 0.0–1.0. Omitted fields use Pipecat default.
+	MinVolume *float64 `json:"min_volume,omitempty"`
+
+	// StartSecs Duration in seconds of continuous speech needed to confirm speaking started. Range 0.0–30.0. Omitted fields use Pipecat default.
+	StartSecs *float64 `json:"start_secs,omitempty"`
+
+	// StopSecs Duration in seconds of silence needed to confirm speaking stopped. Range 0.0–30.0. Omitted fields use Pipecat default.
+	StopSecs *float64 `json:"stop_secs,omitempty"`
 }
 
 // AgentManagerAgent Represents an agent resource.
@@ -6207,6 +6228,9 @@ type PostAisJSONBody struct {
 
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
+
+	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
+	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
 
 // PutAisIdJSONBody defines parameters for PutAisId.
@@ -6235,6 +6259,9 @@ type PutAisIdJSONBody struct {
 
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
+
+	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
+	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
 
 // GetAisummariesParams defines parameters for GetAisummaries.

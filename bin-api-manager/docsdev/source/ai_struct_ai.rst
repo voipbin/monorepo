@@ -22,6 +22,12 @@ AI
         "tts_type": "<string>",
         "tts_voice_id": "<string>",
         "stt_type": "<string>",
+        "vad_config": {
+            "confidence": <number>,
+            "start_secs": <number>,
+            "stop_secs": <number>,
+            "min_volume": <number>
+        },
         "tool_names": ["<string>"],
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -39,6 +45,7 @@ AI
 * ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``stt_type`` (enum string, Required): Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.
+* ``vad_config`` (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See :ref:`VAD Config <ai-struct-ai-vad_config>`.
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.
@@ -69,6 +76,9 @@ Example
         "tts_type": "elevenlabs",
         "tts_voice_id": "EXAVITQu4vr4xnSDxMaL",
         "stt_type": "deepgram",
+        "vad_config": {
+            "stop_secs": 0.5
+        },
         "tool_names": ["connect_call", "send_email", "stop_service"],
         "tm_create": "2024-02-09 07:01:35.666687",
         "tm_update": "9999-01-01 00:00:00.000000",
@@ -169,6 +179,27 @@ deepgram         Deepgram speech recognition (recommended)
 cartesia         Cartesia speech recognition
 elevenlabs       ElevenLabs speech recognition
 ================ =======================================
+
+.. _ai-struct-ai-vad_config:
+
+VAD Config
+----------
+Voice Activity Detection configuration for tuning speech detection sensitivity and timing.
+
+All fields are optional. Omitted fields use Pipecat's native defaults.
+
+================ ======== ===== ===== ====================================
+Field            Default  Min   Max   Description
+================ ======== ===== ===== ====================================
+confidence       0.7      0.0   1.0   Minimum confidence threshold to detect voice.
+start_secs       0.2      0.0   30.0  Duration in seconds of continuous speech needed to confirm speaking started.
+stop_secs        0.2      0.0   30.0  Duration in seconds of silence needed to confirm speaking stopped.
+min_volume       0.6      0.0   1.0   Minimum audio volume for voice detection.
+================ ======== ===== ===== ====================================
+
+.. note:: **AI Implementation Hint**
+
+   When ``vad_config`` is ``null`` or omitted, Pipecat's native defaults apply (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6). To keep the AI responsive but avoid cutting off speech mid-sentence, increase ``stop_secs`` (e.g., 0.5). To make the AI more patient before responding, increase both ``stop_secs`` and ``start_secs``.
 
 .. _ai-struct-ai-tool_names:
 

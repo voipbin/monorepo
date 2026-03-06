@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	amai "monorepo/bin-ai-manager/models/ai"
 	aitool "monorepo/bin-ai-manager/models/tool"
 
 	"github.com/gofrs/uuid"
@@ -49,7 +50,7 @@ type PythonRunner interface {
 		ttsVoiceID string,
 		tools []aitool.Tool,
 		resolvedTeam *resolvedTeamData,
-		vadStopSecs float64,
+		vadConfig *amai.VADConfig,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -71,7 +72,7 @@ func (h *pythonRunner) Start(
 	ttsVoiceID string,
 	tools []aitool.Tool,
 	resolvedTeam *resolvedTeamData,
-	vadStopSecs float64,
+	vadConfig *amai.VADConfig,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -90,7 +91,7 @@ func (h *pythonRunner) Start(
 		TTSVoiceID   string            `json:"tts_voice_id,omitempty"`
 		Tools        []aitool.Tool     `json:"tools,omitempty"` // Python defaults to [] via Field(default_factory=list) when absent
 		ResolvedTeam *resolvedTeamData `json:"resolved_team,omitempty"`
-		VADStopSecs  float64           `json:"vad_stop_secs,omitempty"`
+		VADConfig    *amai.VADConfig   `json:"vad_config,omitempty"`
 	}{
 		ID:           pipecatcallID,
 		LLMType:      llmType,
@@ -103,7 +104,7 @@ func (h *pythonRunner) Start(
 		TTSVoiceID:   ttsVoiceID,
 		Tools:        tools,
 		ResolvedTeam: resolvedTeam,
-		VADStopSecs:  vadStopSecs,
+		VADConfig:    vadConfig,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

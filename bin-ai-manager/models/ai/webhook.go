@@ -25,7 +25,8 @@ type WebhookMessage struct {
 	TTSType    TTSType `json:"tts_type,omitempty"`
 	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
 
-	STTType STTType `json:"stt_type,omitempty"`
+	STTType   STTType    `json:"stt_type,omitempty"`
+	VADConfig *VADConfig `json:"vad_config,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
@@ -52,7 +53,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		TTSType:    h.TTSType,
 		TTSVoiceID: h.TTSVoiceID,
 
-		STTType: h.STTType,
+		STTType:   h.STTType,
+		VADConfig: h.VADConfig,
 
 		ToolNames: h.ToolNames,
 

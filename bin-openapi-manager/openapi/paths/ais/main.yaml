@@ -57,6 +57,9 @@ post:
             stt_type:
               type: string
               description: Speech-to-text engine type.
+            vad_config:
+              $ref: '#/components/schemas/AIManagerVADConfig'
+              description: Voice Activity Detection configuration. All fields are optional.
             tool_names:
               type: array
               items:

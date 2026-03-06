@@ -97,6 +97,7 @@ func cmdCreate() *cobra.Command {
 	flags.String("tts-type", "", "TTS type (e.g., openai, elevenlabs, cartesia)")
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
+	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
 
 	return cmd
 }
@@ -146,6 +147,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("tts-type", "", "TTS type (e.g., openai, elevenlabs, cartesia)")
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
+	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
 
 	return cmd
 }
@@ -183,6 +185,14 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	ttsVoiceID := viper.GetString("tts-voice-id")
 	sttType := ai.STTType(viper.GetString("stt-type"))
 
+	var vadConfig *ai.VADConfig
+	if vadConfigStr := viper.GetString("vad-config"); vadConfigStr != "" {
+		vadConfig = &ai.VADConfig{}
+		if err := json.Unmarshal([]byte(vadConfigStr), vadConfig); err != nil {
+			return fmt.Errorf("invalid vad-config JSON: %w", err)
+		}
+	}
+
 	// Validate engine model
 	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
 		return fmt.Errorf("invalid engine model: %s", engineModel)
@@ -198,6 +208,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
+	// Validate vad_config
+	if err := vadConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid vad-config: %w", err)
+	}
+
 	res, err := handler.Create(
 		context.Background(),
 		customerID,
@@ -211,6 +226,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		ttsVoiceID,
 		sttType,
 		nil, // toolNames - nil means default (all tools)
+		vadConfig,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create AI")
@@ -285,6 +301,14 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	ttsVoiceID := viper.GetString("tts-voice-id")
 	sttType := ai.STTType(viper.GetString("stt-type"))
 
+	var vadConfig *ai.VADConfig
+	if vadConfigStr := viper.GetString("vad-config"); vadConfigStr != "" {
+		vadConfig = &ai.VADConfig{}
+		if err := json.Unmarshal([]byte(vadConfigStr), vadConfig); err != nil {
+			return fmt.Errorf("invalid vad-config JSON: %w", err)
+		}
+	}
+
 	// Validate engine model if provided
 	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
 		return fmt.Errorf("invalid engine model: %s", engineModel)
@@ -300,6 +324,11 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
+	// Validate vad_config
+	if err := vadConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid vad-config: %w", err)
+	}
+
 	res, err := handler.Update(
 		context.Background(),
 		targetID,
@@ -313,6 +342,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		ttsVoiceID,
 		sttType,
 		nil, // toolNames - nil keeps existing value
+		vadConfig,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update AI")

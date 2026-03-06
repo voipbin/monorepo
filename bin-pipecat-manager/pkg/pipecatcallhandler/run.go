@@ -18,7 +18,6 @@ import (
 const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
-	defaultVADStopSecs     = 0.5
 )
 
 // resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.
@@ -41,13 +40,14 @@ type resolvedMemberData struct {
 // resolvedAIData contains the AI engine configuration for a team member,
 // including credentials, model, prompt, and TTS/STT settings.
 type resolvedAIData struct {
-	EngineModel string         `json:"engine_model"`
-	EngineKey   string         `json:"engine_key"`
-	InitPrompt  string         `json:"init_prompt"`
-	Parameter   map[string]any `json:"parameter,omitempty"`
-	TTSType     string         `json:"tts_type"`
-	TTSVoiceID  string         `json:"tts_voice_id"`
-	STTType     string         `json:"stt_type"`
+	EngineModel string          `json:"engine_model"`
+	EngineKey   string          `json:"engine_key"`
+	InitPrompt  string          `json:"init_prompt"`
+	Parameter   map[string]any  `json:"parameter,omitempty"`
+	TTSType     string          `json:"tts_type"`
+	TTSVoiceID  string          `json:"tts_voice_id"`
+	STTType     string          `json:"stt_type"`
+	VADConfig   *amai.VADConfig `json:"vad_config,omitempty"`
 }
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
@@ -177,6 +177,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 				TTSType:     string(ai.TTSType),
 				TTSVoiceID:  ai.TTSVoiceID,
 				STTType:     string(ai.STTType),
+				VADConfig:   ai.VADConfig,
 			},
 			Tools:       tools,
 			Transitions: transitions,

@@ -54,6 +54,24 @@ from team_flow import build_team_flow
 from pipecat_flows import FlowManager
 
 
+def build_vad_params(vad_config: dict | None) -> VADParams:
+    """Build VADParams from config dict. None/empty = Pipecat defaults."""
+    if not vad_config:
+        return VADParams()
+
+    kwargs = {}
+    if vad_config.get("confidence") is not None:
+        kwargs["confidence"] = vad_config["confidence"]
+    if vad_config.get("start_secs") is not None:
+        kwargs["start_secs"] = vad_config["start_secs"]
+    if vad_config.get("stop_secs") is not None:
+        kwargs["stop_secs"] = vad_config["stop_secs"]
+    if vad_config.get("min_volume") is not None:
+        kwargs["min_volume"] = vad_config["min_volume"]
+
+    return VADParams(**kwargs)
+
+
 async def init_pipeline(
     id: str,
     llm_type: str,
@@ -66,7 +84,7 @@ async def init_pipeline(
     tts_voice_id: str = None,
     tools_data: list = None,
     resolved_team: dict = None,
-    vad_stop_secs: float = 0.5,
+    vad_config: dict = None,
 ) -> dict:
     """Initialize the pipeline. Returns context dict. Raises on failure."""
     if resolved_team:
@@ -75,7 +93,7 @@ async def init_pipeline(
             stt_language=stt_language,
             tts_language=tts_language,
             llm_messages=llm_messages,
-            vad_stop_secs=vad_stop_secs,
+            vad_config=vad_config,
         )
         ctx["type"] = "team"
         return ctx
@@ -84,7 +102,7 @@ async def init_pipeline(
             id, llm_type, llm_key, llm_messages,
             stt_type, stt_language, tts_type, tts_language,
             tts_voice_id, tools_data,
-            vad_stop_secs=vad_stop_secs,
+            vad_config=vad_config,
         )
         ctx["type"] = "single"
         return ctx
@@ -109,7 +127,7 @@ async def init_single_ai_pipeline(
     tts_language: str = None,
     tts_voice_id: str = None,
     tools_data: list = None,
-    vad_stop_secs: float = 0.5,
+    vad_config: dict = None,
 ) -> dict:
     """Initialize single AI pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -130,7 +148,7 @@ async def init_single_ai_pipeline(
         async def init_stt_and_input_ws():
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language)
-            vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=max(vad_stop_secs, 0.3)))
+            vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config))
             transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
@@ -502,7 +520,7 @@ async def init_team_pipeline(
     stt_language: str = None,
     tts_language: str = None,
     llm_messages: list = None,
-    vad_stop_secs: float = 0.5,
+    vad_config: dict = None,
 ) -> dict:
     """Initialize team pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -581,7 +599,7 @@ async def init_team_pipeline(
     # --- Step 4: Create transports ---
     transport_input = None
     if routing_stt:
-        vad_analyzer = SileroVADAnalyzer(params=VADParams(stop_secs=max(vad_stop_secs, 0.3)))
+        vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config))
         transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
     transport_output = create_websocket_transport("output", id, vad_analyzer=None)
 

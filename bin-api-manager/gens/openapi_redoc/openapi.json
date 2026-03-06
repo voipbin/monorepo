@@ -1583,6 +1583,10 @@
                     "type": "string",
                     "description": "Speech-to-text engine type."
                   },
+                  "vad_config": {
+                    "$ref": "#/components/schemas/AIManagerVADConfig",
+                    "description": "Voice Activity Detection configuration. All fields are optional."
+                  },
                   "tool_names": {
                     "type": "array",
                     "items": {
@@ -1708,6 +1712,10 @@
                   "stt_type": {
                     "type": "string",
                     "description": "Speech-to-text engine type."
+                  },
+                  "vad_config": {
+                    "$ref": "#/components/schemas/AIManagerVADConfig",
+                    "description": "Voice Activity Detection configuration. All fields are optional."
                   },
                   "tool_names": {
                     "type": "array",
@@ -15529,6 +15537,48 @@
           "AIManagerAIEngineModelGrok3Mini"
         ]
       },
+      "AIManagerVADConfig": {
+        "type": "object",
+        "description": "Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).",
+        "properties": {
+          "confidence": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum confidence threshold to detect voice. Range 0.0–1.0. Omitted fields use Pipecat default.",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.7,
+            "example": 0.7
+          },
+          "start_secs": {
+            "type": "number",
+            "format": "double",
+            "description": "Duration in seconds of continuous speech needed to confirm speaking started. Range 0.0–30.0. Omitted fields use Pipecat default.",
+            "minimum": 0,
+            "maximum": 30,
+            "default": 0.2,
+            "example": 0.2
+          },
+          "stop_secs": {
+            "type": "number",
+            "format": "double",
+            "description": "Duration in seconds of silence needed to confirm speaking stopped. Range 0.0–30.0. Omitted fields use Pipecat default.",
+            "minimum": 0,
+            "maximum": 30,
+            "default": 0.2,
+            "example": 0.5
+          },
+          "min_volume": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum audio volume for voice detection. Range 0.0–1.0. Omitted fields use Pipecat default.",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.6,
+            "example": 0.6
+          }
+        }
+      },
       "AIManagerAI": {
         "type": "object",
         "properties": {
@@ -15590,6 +15640,9 @@
             "$ref": "#/components/schemas/AIManagerAISTTType",
             "description": "Speech-to-text provider type.",
             "example": "deepgram"
+          },
+          "vad_config": {
+            "$ref": "#/components/schemas/AIManagerVADConfig"
           },
           "tool_names": {
             "type": "array",
@@ -15958,6 +16011,9 @@
             "$ref": "#/components/schemas/AIManagerAISTTType",
             "description": "Speech-to-text provider type used for this call.",
             "example": "deepgram"
+          },
+          "ai_vad_config": {
+            "$ref": "#/components/schemas/AIManagerVADConfig"
           },
           "parameter": {
             "type": "object",

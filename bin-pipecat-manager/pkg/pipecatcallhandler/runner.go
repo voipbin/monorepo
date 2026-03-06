@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	amai "monorepo/bin-ai-manager/models/ai"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	aitool "monorepo/bin-ai-manager/models/tool"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -49,12 +50,15 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	// Team-backed calls skip resolveAIFromAIcall since per-member tools come from resolvedTeam.
 	var tools []aitool.Tool
 	var resolvedTeam *resolvedTeamData
+	var vadConfig *amai.VADConfig
 
 	if pc.ReferenceType == pipecatcall.ReferenceTypeAICall {
 		aicall, err := h.requestHandler.AIV1AIcallGet(se.Ctx, pc.ReferenceID)
 		if err != nil {
 			return fmt.Errorf("could not get AIcall for pipecatcall %s: %w", pc.ID, err)
 		}
+
+		vadConfig = aicall.AIVADConfig
 
 		// Resolve team first — if team-backed, per-member tools come from resolvedTeam
 		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
@@ -93,7 +97,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		pc.TTSVoiceID,
 		tools,
 		resolvedTeam,
-		defaultVADStopSecs,
+		vadConfig,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}

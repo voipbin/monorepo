@@ -19,6 +19,8 @@ create table ai_ais(
 
   stt_type    varchar(255),
 
+  vad_config  json,           -- VAD configuration
+
   tool_names  json,           -- enabled tools for this AI
 
   -- timestamps
