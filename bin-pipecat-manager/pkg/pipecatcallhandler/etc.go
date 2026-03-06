@@ -2,7 +2,6 @@ package pipecatcallhandler
 
 import (
 	"context"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/message"
 
 	"github.com/gofrs/uuid"
@@ -15,19 +14,7 @@ func (h *pipecatcallHandler) SendMessage(ctx context.Context, id uuid.UUID, mess
 		return nil, errors.Wrapf(err, "could not get pipecatcall info")
 	}
 
-	tmpID := h.utilHandler.UUIDCreate()
-	res := message.Message{
-		Identity: commonidentity.Identity{
-			ID:         tmpID,
-			CustomerID: se.CustomerID,
-		},
-
-		PipecatcallID:            se.ID,
-		PipecatcallReferenceType: se.PipecatcallReferenceType,
-		PipecatcallReferenceID:   se.PipecatcallReferenceID,
-
-		Text: messageText,
-	}
+	res := h.newMessageEvent(se, messageText)
 
 	if errSend := h.pipecatframeHandler.SendRTVIText(se, messageID, messageText, runImmediately, audioResponse); errSend != nil {
 		return nil, errors.Wrapf(errSend, "could not send the message to pipecatcall")

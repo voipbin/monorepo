@@ -422,6 +422,26 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 	return nil
 }
 
+// newMessageEvent creates a message.Message populated from the session and the given text.
+func (h *pipecatcallHandler) newMessageEvent(se *pipecatcall.Session, text string) message.Message {
+	return message.Message{
+		Identity: commonidentity.Identity{
+			ID:         h.utilHandler.UUIDCreate(),
+			CustomerID: se.CustomerID,
+		},
+
+		PipecatcallID:            se.ID,
+		PipecatcallReferenceType: se.PipecatcallReferenceType,
+		PipecatcallReferenceID:   se.PipecatcallReferenceID,
+
+		Text: text,
+	}
+}
+
+// receiveMessageFrameTypeMessage handles RTVI message frames from the pipecat runner.
+//
+// All PublishEvent calls are dispatched in goroutines so that RabbitMQ publish
+// latency does not stall the WebSocket read loop (which also ingests audio frames).
 func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Session, m []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "receiveMessageFrameMessage",
@@ -447,20 +467,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-transcription message")
 		}
 
-		id := h.utilHandler.UUIDCreate()
-		event := message.Message{
-			Identity: commonidentity.Identity{
-				ID:         id,
-				CustomerID: se.CustomerID,
-			},
-
-			PipecatcallID:            se.ID,
-			PipecatcallReferenceType: se.PipecatcallReferenceType,
-			PipecatcallReferenceID:   se.PipecatcallReferenceID,
-
-			Text: msg.Data.Text,
-		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotTranscription, event)
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotTranscription, h.newMessageEvent(se, msg.Data.Text))
 
 	case pipecatframe.RTVIFrameTypeUserTranscription:
 		msg := pipecatframe.RTVIUserTranscriptionMessage{}
@@ -473,20 +480,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return nil
 		}
 
-		id := h.utilHandler.UUIDCreate()
-		event := message.Message{
-			Identity: commonidentity.Identity{
-				ID:         id,
-				CustomerID: se.CustomerID,
-			},
-
-			PipecatcallID:            se.ID,
-			PipecatcallReferenceType: se.PipecatcallReferenceType,
-			PipecatcallReferenceID:   se.PipecatcallReferenceID,
-
-			Text: msg.Data.Text,
-		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, event)
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserTranscription, h.newMessageEvent(se, msg.Data.Text))
 
 	case pipecatframe.RTVIFrameTypeUserLLMText:
 		msg := pipecatframe.RTVIUserLLMTextMessage{}
@@ -494,20 +488,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal user-llm-text message")
 		}
 
-		id := h.utilHandler.UUIDCreate()
-		event := message.Message{
-			Identity: commonidentity.Identity{
-				ID:         id,
-				CustomerID: se.CustomerID,
-			},
-
-			PipecatcallID:            se.ID,
-			PipecatcallReferenceType: se.PipecatcallReferenceType,
-			PipecatcallReferenceID:   se.PipecatcallReferenceID,
-
-			Text: msg.Data.Text,
-		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserLLM, event)
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeUserLLM, h.newMessageEvent(se, msg.Data.Text))
 
 	case pipecatframe.RTVIFrameTypeBotLLMText:
 		msg := pipecatframe.RTVIBotLLMTextMessage{}
@@ -523,23 +504,12 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
-		id := h.utilHandler.UUIDCreate()
-		event := message.Message{
-			Identity: commonidentity.Identity{
-				ID:         id,
-				CustomerID: se.CustomerID,
-			},
-
-			PipecatcallID:            se.ID,
-			PipecatcallReferenceType: se.PipecatcallReferenceType,
-			PipecatcallReferenceID:   se.PipecatcallReferenceID,
-
-			Text: se.LLMBotText,
-		}
-		h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, event)
-
-		log.Debugf("Cleaning BotLLMStopped message. text: %s", se.LLMBotText)
+		// Capture and reset text before async publish to avoid race with next BotLLMText.
+		botText := se.LLMBotText
 		se.LLMBotText = ""
+		log.Debugf("BotLLMStopped message. text: %s", botText)
+
+		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, h.newMessageEvent(se, botText))
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -566,7 +536,6 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 		return nil
 	}
 
-	// Wait for Asterisk connection to be ready before writing audio
 	select {
 	case <-se.ConnAstReady:
 	case <-se.Ctx.Done():
@@ -583,3 +552,4 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 
 	return nil
 }
+

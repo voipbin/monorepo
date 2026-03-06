@@ -42,6 +42,7 @@ from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.transports.websocket.client import (
     WebsocketClientParams,
     WebsocketClientTransport,
+    WebsocketClientOutputTransport,
 )
 
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
@@ -437,11 +438,50 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
 
+class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
+    """Output transport that skips real-time audio pacing.
+
+    Pipecat's default WebsocketClientOutputTransport sleeps between audio
+    frames to simulate real-time playback (via _write_audio_sleep). This is
+    correct for browser/speaker endpoints but counterproductive when forwarding
+    to Asterisk via Go: it prevents faster-than-real-time delivery, so any
+    asyncio contention causes audio gaps. By no-oping the sleep, TTS audio is
+    forwarded as fast as the TTS generates it — matching the proven pattern
+    from bin-tts-manager where ElevenLabs delivers audio faster than real-time.
+    Asterisk's chan_websocket buffers incoming audio internally.
+    """
+
+    async def _write_audio_sleep(self):
+        pass
+
+
+class UnpacedWebsocketClientTransport(WebsocketClientTransport):
+    """WebSocket transport that uses UnpacedWebsocketClientOutputTransport.
+
+    CAUTION: Relies on WebsocketClientTransport internals (_output, _session,
+    _params). Verified with pipecat-ai>=0.0.101. Re-verify after upgrades.
+    """
+
+    def output(self) -> UnpacedWebsocketClientOutputTransport:
+        if not self._output:
+            self._output = UnpacedWebsocketClientOutputTransport(
+                self, self._session, self._params
+            )
+        return self._output
+
+
 def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
-    return WebsocketClientTransport(
+    # For output direction, use unpaced transport so TTS audio is forwarded
+    # to Go as fast as the TTS generates it. Asterisk's chan_websocket buffers
+    # incoming audio internally. Without this, pipecat paces audio at real-time
+    # rate (via _write_audio_sleep), leaving zero buffer margin and causing
+    # choppy audio when asyncio contention delays frame delivery.
+    transport_cls = UnpacedWebsocketClientTransport if direction == "output" else WebsocketClientTransport
+
+    transport = transport_cls(
         uri=uri,
         params=WebsocketClientParams(
             serializer=ProtobufFrameSerializer(),
@@ -452,6 +492,8 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
             session_timeout=common.PIPELINE_SESSION_TIMEOUT,
         )
     )
+
+    return transport
 
 
 async def init_team_pipeline(
