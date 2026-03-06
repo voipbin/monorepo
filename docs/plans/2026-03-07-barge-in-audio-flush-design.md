@@ -4,81 +4,36 @@
 
 When a user speaks during AI TTS playback (barge-in), the AI voice doesn't stop immediately despite Pipecat detecting the interruption via VAD. The root cause: `UnpacedWebsocketClientOutputTransport` delivers TTS audio faster than real-time to Asterisk's `chan_websocket`, which buffers it internally. By the time Pipecat cancels its output task, Asterisk already has seconds of audio queued for playback. There's no mechanism to flush that buffer.
 
-## Solution
+## Approaches Considered and Rejected
 
-Send a burst of silence from Go to Asterisk when Pipecat signals an interruption. This overwrites the buffered TTS audio in Asterisk's playback queue.
+### 1. Send silence to Asterisk on barge-in (REJECTED)
 
-### Signal Flow
+Override `process_frame()` in `UnpacedWebsocketClientOutputTransport` to send a `TextFrame("flush_audio")` to Go on `InterruptionFrame`. Go then writes silence frames to Asterisk.
 
-```
-User speaks → Pipecat VAD detects speech → InterruptionFrame flows through pipeline
-  → Python process_frame() sends TextFrame(text="flush_audio") via protobuf WebSocket to Go
-  → Go receives TextFrame with text "flush_audio"
-  → Go writes 25 × 640-byte silence frames (20ms slin16 each, 500ms total) to Asterisk WebSocket
-  → Asterisk's buffer is overwritten with silence
-  → User hears silence instead of stale TTS audio
-```
+**Why it failed:** Asterisk's `chan_websocket` uses a playback queue, not a fixed-size ring buffer. Sending silence just appends to the queue — it doesn't replace buffered audio. The user hears `[stale TTS] → [silence] → [new TTS]` instead of immediate cutoff.
 
-### Python Changes (`scripts/pipecat/run.py`)
+Additional issue: a single large silence write (16000 bytes) caused Asterisk to close the WebSocket with code 1003 (unsupported data). Chunking into 640-byte frames (20ms slin16) fixed the crash but didn't solve the fundamental buffering problem.
 
-Override `process_frame()` in `UnpacedWebsocketClientOutputTransport` to send a flush signal when an `InterruptionFrame` is processed. This is preferred over overriding `_start_interruption()` because `process_frame` is a more public API and `_write_frame` properly goes through the transport's frame pipeline:
+### 2. Go-side audio pacing with flush support (REJECTED)
 
-```python
-class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
-    async def _write_audio_sleep(self):
-        pass
+Buffer audio in Go and deliver to Asterisk at real-time rate. On flush, discard the Go-side buffer.
 
-    async def process_frame(self, frame, direction):
-        await super().process_frame(frame, direction)
-        if isinstance(frame, InterruptionFrame):
-            await self._write_frame(TextFrame(text="flush_audio"))
-```
+**Why rejected:** Adds significant complexity (audio queue, writer goroutine, timing logic) when Pipecat already has built-in audio pacing that handles this correctly.
 
-### Go Changes (`pkg/pipecatcallhandler/runner.go`)
+## Solution: Use Pipecat's Standard Paced Transport
 
-In `RunnerWebsocketHandleOutput`, when receiving a TextFrame with text "flush_audio", write silence to the Asterisk WebSocket:
+Remove `UnpacedWebsocketClientOutputTransport` and `UnpacedWebsocketClientTransport` entirely. Use Pipecat's standard `WebsocketClientTransport` for both input and output directions.
 
-```go
-case *pipecatframe.Frame_Text:
-    if x.Text.Text == "flush_audio" {
-        h.flushAsteriskAudioBuffer(se)
-    }
-```
+With paced transport:
+- Pipecat's `_write_audio_sleep()` delivers audio at real-time rate
+- Asterisk has at most ~20ms of audio buffered at any time
+- On barge-in, Pipecat's native `InterruptionFrame` handling cancels the output task
+- Audio stops almost instantly — no flush mechanism needed
 
-New method:
+### Trade-off
 
-```go
-func (h *pipecatcallHandler) flushAsteriskAudioBuffer(se *pipecatcall.Session) {
-    silence := make([]byte, defaultFlushSilenceFrameSize)
-    for i := 0; i < defaultFlushSilenceFrames; i++ {
-        h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, silence)
-    }
-}
-```
-
-### Constants
-
-- `defaultFlushSilenceFrameSize = 640` (20ms slin16 frame: 16000 samples/sec × 0.02 sec × 2 bytes)
-- `defaultFlushSilenceFrames = 25` (25 × 20ms = 500ms total)
-
-### Why chunked frames?
-
-Asterisk's `chan_websocket` rejects oversized binary frames with close code 1003 (unsupported data). Audio must be sent in frames matching the codec frame size — 20ms / 640 bytes for slin16 at 16kHz.
-
-### Why 500ms?
-
-- Asterisk's `chan_websocket` buffer is bounded. 500ms of silence is enough to overwrite any buffered audio from the unpaced delivery without introducing a noticeable gap.
-- If the silence burst is too short, stale TTS audio may still play through.
-- If too long, there's an unnecessary pause before the next AI response.
+The unpaced transport was originally introduced to avoid audio gaps caused by asyncio contention in Python. With `audio_out_sample_rate=16000` (matching Asterisk's slin16), each frame is smaller, reducing contention pressure. If audio gaps reappear, the fix should be Go-side pacing (approach #2 above), not disabling pacing entirely.
 
 ## Files Changed
 
-1. `bin-pipecat-manager/scripts/pipecat/run.py` - Override `process_frame()` in `UnpacedWebsocketClientOutputTransport`
-2. `bin-pipecat-manager/pkg/pipecatcallhandler/runner.go` - Handle "flush_audio" TextFrame, add `flushAsteriskAudioBuffer` method
-3. `bin-pipecat-manager/pkg/pipecatcallhandler/run.go` - Add `defaultFlushSilenceBytes` constant
-
-## Risks
-
-- **Pipecat internals**: `process_frame()` is a public API on `BaseOutputTransport`, but the `_write_frame` method is internal. Pin pipecat version (>=0.0.101) and re-verify after upgrades.
-- **Serialization**: The flush TextFrame is serialized via `_write_frame`, which uses the transport's configured `ProtobufFrameSerializer`.
-- **Timing**: The flush arrives after the last audio frame. Since Go processes frames sequentially in the same loop, the silence write happens immediately after the last audio write.
+1. `bin-pipecat-manager/scripts/pipecat/run.py` - Remove `UnpacedWebsocketClientOutputTransport`, `UnpacedWebsocketClientTransport`, and unpaced transport selection in `create_websocket_transport`

@@ -277,9 +277,6 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 			switch x := frame.Frame.(type) {
 			case *pipecatframe.Frame_Text:
 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
-				if x.Text.Text == "flush_audio" {
-					h.flushAsteriskAudioBuffer(se)
-				}
 
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
@@ -558,41 +555,5 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 	}
 
 	return nil
-}
-
-// flushAsteriskAudioBuffer writes a burst of silence to Asterisk's WebSocket to
-// overwrite any buffered TTS audio on barge-in. Because audio is delivered
-// faster than real-time (via UnpacedWebsocketClientOutputTransport), Asterisk
-// may still be playing stale audio when the user starts speaking. The silence
-// burst overwrites that buffer so the user hears silence instead of stale TTS.
-//
-// Silence is sent as multiple 640-byte frames (20ms slin16 each) rather than a
-// single large write, because Asterisk's chan_websocket rejects oversized frames
-// with close code 1003 (unsupported data).
-func (h *pipecatcallHandler) flushAsteriskAudioBuffer(se *pipecatcall.Session) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "flushAsteriskAudioBuffer",
-		"pipecatcall_id": se.ID,
-	})
-
-	select {
-	case <-se.ConnAstReady:
-	case <-se.Ctx.Done():
-		return
-	}
-
-	if se.ConnAst == nil {
-		return
-	}
-
-	silence := make([]byte, defaultFlushSilenceFrameSize)
-	for i := 0; i < defaultFlushSilenceFrames; i++ {
-		if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, silence); err != nil {
-			log.Errorf("Could not flush audio buffer to asterisk on frame %d/%d. err: %v", i+1, defaultFlushSilenceFrames, err)
-			return
-		}
-	}
-
-	log.Debugf("Flushed asterisk audio buffer with %d frames of %d bytes silence.", defaultFlushSilenceFrames, defaultFlushSilenceFrameSize)
 }
 

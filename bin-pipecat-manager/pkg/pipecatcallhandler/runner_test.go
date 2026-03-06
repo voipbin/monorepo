@@ -10,12 +10,10 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
-	"monorepo/bin-pipecat-manager/models/pipecatframe"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
-	"google.golang.org/protobuf/proto"
 )
 
 func Test_receiveMessageFrameTypeMessage(t *testing.T) {
@@ -260,90 +258,5 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 		}
 	})
 
-}
-
-// Test_flushAudioTextFrameDispatch verifies that the protobuf TextFrame with
-// text="flush_audio" triggers flushAsteriskAudioBuffer, and that other TextFrames
-// do not. This tests the same dispatch logic used in RunnerWebsocketHandleOutput
-// (runner.go:278-282) without requiring gin/WebSocket upgrade plumbing.
-func Test_flushAudioTextFrameDispatch(t *testing.T) {
-	tests := []struct {
-		name        string
-		text        string
-		expectFlush bool
-	}{
-		{
-			name:        "flush_audio text triggers flush",
-			text:        "flush_audio",
-			expectFlush: true,
-		},
-		{
-			name:        "other text does not trigger flush",
-			text:        "hello world",
-			expectFlush: false,
-		},
-		{
-			name:        "empty text does not trigger flush",
-			text:        "",
-			expectFlush: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockWS := NewMockWebsocketHandler(mc)
-
-			conn := &websocket.Conn{}
-			connAstReady := make(chan struct{})
-			close(connAstReady)
-
-			se := &pipecatcall.Session{
-				Identity: commonidentity.Identity{
-					ID: uuid.Must(uuid.NewV4()),
-				},
-				Ctx:          context.Background(),
-				ConnAst:      conn,
-				ConnAstReady: connAstReady,
-			}
-
-			if tt.expectFlush {
-				mockWS.EXPECT().WriteMessage(conn, websocket.BinaryMessage, gomock.Any()).Return(nil).Times(defaultFlushSilenceFrames)
-			}
-
-			h := &pipecatcallHandler{
-				websocketHandler: mockWS,
-			}
-
-			// Build a protobuf TextFrame, serialize it, then unmarshal and
-			// run the same dispatch logic as RunnerWebsocketHandleOutput.
-			frame := &pipecatframe.Frame{
-				Frame: &pipecatframe.Frame_Text{
-					Text: &pipecatframe.TextFrame{
-						Text: tt.text,
-					},
-				},
-			}
-
-			data, err := proto.Marshal(frame)
-			if err != nil {
-				t.Fatalf("failed to marshal frame: %v", err)
-			}
-
-			var decoded pipecatframe.Frame
-			if err := proto.Unmarshal(data, &decoded); err != nil {
-				t.Fatalf("failed to unmarshal frame: %v", err)
-			}
-
-			// Replicate the TextFrame dispatch from RunnerWebsocketHandleOutput
-			if x, ok := decoded.Frame.(*pipecatframe.Frame_Text); ok {
-				if x.Text.Text == "flush_audio" {
-					h.flushAsteriskAudioBuffer(se)
-				}
-			}
-		})
-	}
 }
 
