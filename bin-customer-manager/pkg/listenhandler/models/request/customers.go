@@ -41,6 +41,13 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
 
+// V1DataCustomersIDMetadataPut is
+// v1 data type request struct for
+// /v1/customers/<customer-id>/metadata PUT
+type V1DataCustomersIDMetadataPut struct {
+	Metadata customer.Metadata `json:"metadata"`
+}
+
 // V1DataCustomersSignupPost is request struct for POST /v1/customers/signup
 type V1DataCustomersSignupPost struct {
 	Name   string `json:"name,omitempty"`

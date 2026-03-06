@@ -2141,6 +2141,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, a, customerID, billingAccountID)
 }
 
+// CustomerUpdateMetadata mocks base method.
+func (m *MockServiceHandler) CustomerUpdateMetadata(ctx context.Context, a *agent.Agent, customerID uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerUpdateMetadata", ctx, a, customerID, metadata)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerUpdateMetadata indicates an expected call of CustomerUpdateMetadata.
+func (mr *MockServiceHandlerMockRecorder) CustomerUpdateMetadata(ctx, a, customerID, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateMetadata", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateMetadata), ctx, a, customerID, metadata)
+}
+
 // EmailDelete mocks base method.
 func (m *MockServiceHandler) EmailDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()

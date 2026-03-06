@@ -25,4 +25,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'

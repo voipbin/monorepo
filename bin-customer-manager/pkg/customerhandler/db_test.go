@@ -350,6 +350,51 @@ func Test_UpdateBillingAccountID(t *testing.T) {
 	}
 }
 
+func Test_UpdateMetadata(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id       uuid.UUID
+		metadata customer.Metadata
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("f2eb3d1e-0f8f-11ee-b3bb-178ed8e3acb7"),
+			customer.Metadata{
+				RTPDebug: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			_, err := h.UpdateMetadata(ctx, tt.id, tt.metadata)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
 func Test_List_Error(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

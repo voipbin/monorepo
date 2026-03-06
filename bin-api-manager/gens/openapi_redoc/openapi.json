@@ -5972,7 +5972,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -6002,7 +6002,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -6050,10 +6050,58 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/customers/{id}/metadata": {
+      "put": {
+        "summary": "Update a customer's metadata.",
+        "description": "Updates internal configuration flags for a customer account. Requires `ProjectSuperAdmin` permission.\nRegular users cannot access this endpoint. The response returns the full admin customer object\nincluding the updated metadata.\n",
+        "tags": [
+          "Customer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the customer (UUID). Obtained from the `id` field of `GET /customers`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerManagerMetadata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated customer object with the new metadata applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Possible causes:\n- The `id` path parameter is not a valid UUID.\n- The request body is not valid JSON or does not match the `CustomerManagerMetadata` schema.\n"
+          },
+          "403": {
+            "description": "Permission denied. The authenticated agent does not have `ProjectSuperAdmin` permission.\nOnly ProjectSuperAdmin agents can update customer metadata.\n"
           }
         }
       }
@@ -6080,7 +6128,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -6150,7 +6198,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -6178,7 +6226,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -6217,7 +6265,7 @@
                         "result": {
                           "type": "array",
                           "items": {
-                            "$ref": "#/components/schemas/CustomerManagerCustomer"
+                            "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                           }
                         }
                       }
@@ -6282,7 +6330,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
                 }
               }
             }
@@ -17254,6 +17302,17 @@
           "CustomerManagerCustomerWebhookMethodDelete"
         ]
       },
+      "CustomerManagerMetadata": {
+        "type": "object",
+        "description": "Internal configuration flags for a customer account. These flags control low-level platform behavior\n(e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via\n`PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.\n",
+        "properties": {
+          "rtp_debug": {
+            "type": "boolean",
+            "description": "When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.\nUse this to debug audio quality issues (one-way audio, codec problems, jitter).\nDefault is `false`. Enabling this increases storage usage — disable after debugging.\n",
+            "example": true
+          }
+        }
+      },
       "CustomerManagerCustomerStatus": {
         "type": "string",
         "description": "Account lifecycle status.",
@@ -17362,6 +17421,35 @@
             "example": "2026-01-15T09:30:00.000000Z"
           }
         }
+      },
+      "CustomerManagerCustomerAdmin": {
+        "description": "Full customer object returned by admin-only endpoints (`/customers`, `/customers/{id}`,\n`/customers/{id}/metadata`, `/customers/{id}/billing_account_id`, `/customers/{id}/freeze`,\n`/customers/{id}/recover`). Extends `CustomerManagerCustomer` with internal fields that are\nnever exposed to regular users via `/customer` (singular) endpoints.\n",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CustomerManagerCustomer"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "terms_agreed_version": {
+                "type": "string",
+                "description": "Version identifier of the Terms of Service the customer agreed to. Format: `YYYY-MM-DD` date string matching a published ToS revision.",
+                "example": "2026-01-01"
+              },
+              "terms_agreed_ip": {
+                "type": "string",
+                "format": "ipv4",
+                "x-go-type": "string",
+                "description": "IPv4 address from which the customer accepted the Terms of Service. Logged for legal compliance and audit trail.",
+                "example": "203.0.113.42"
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/CustomerManagerMetadata",
+                "description": "Internal configuration flags managed exclusively by ProjectSuperAdmin via `PUT /customers/{id}/metadata`. Not visible to regular users."
+              }
+            }
+          }
+        ]
       },
       "EmailManagerEmailAttachmentReferenceType": {
         "type": "string",

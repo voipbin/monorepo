@@ -55,6 +55,7 @@ var (
 	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
 	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
+	regV1CustomersIDIsMetadata         = regexp.MustCompile("/v1/customers/" + regUUID + "/metadata$")
 
 	regV1CustomersSignup         = regexp.MustCompile("/v1/customers/signup$")
 	regV1CustomersEmailVerify    = regexp.MustCompile("/v1/customers/email_verify$")
@@ -197,6 +198,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CustomersIDFreezeAndDelete.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersIDFreezeAndDeletePost(ctx, m)
 		requestType = "/v1/customers/freeze_and_delete"
+
+	// PUT /customers/<customer-id>/metadata
+	case regV1CustomersIDIsMetadata.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1CustomersIDMetadataPut(ctx, m)
+		requestType = "/v1/customers/<customer_id>/metadata"
 
 	// GET /customers/<customer-id>
 	case regV1CustomersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

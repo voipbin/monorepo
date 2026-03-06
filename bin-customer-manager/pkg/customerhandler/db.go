@@ -208,3 +208,33 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 
 	return res, nil
 }
+
+// UpdateMetadata updates the customer's metadata.
+func (h *customerHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "UpdateMetadata",
+		"customer_id": id,
+	})
+	log.Debug("Updating the customer's metadata.")
+
+	fields := map[customer.Field]any{
+		customer.FieldMetadata: metadata,
+	}
+
+	if err := h.db.CustomerUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update the metadata. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil, fmt.Errorf("could not get updated customer")
+	}
+	log.WithField("customer", res).Debugf("Retrieved updated customer info. customer_id: %s", res.ID)
+
+	// notify
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+
+	return res, nil
+}

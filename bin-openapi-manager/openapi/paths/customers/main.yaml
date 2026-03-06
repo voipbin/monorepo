@@ -19,7 +19,7 @@ get:
                   result:
                     type: array
                     items:
-                      $ref: '#/components/schemas/CustomerManagerCustomer'
+                      $ref: '#/components/schemas/CustomerManagerCustomerAdmin'
 
 post:
   summary: Create a new customer.
@@ -60,4 +60,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'

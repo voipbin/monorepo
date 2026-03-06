@@ -2425,6 +2425,65 @@ type CustomerManagerCustomer struct {
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
+// CustomerManagerCustomerAdmin defines model for CustomerManagerCustomerAdmin.
+type CustomerManagerCustomerAdmin struct {
+	// Address Address of the customer.
+	Address *string `json:"address,omitempty"`
+
+	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
+	BillingAccountId *string `json:"billing_account_id,omitempty"`
+
+	// Detail Details about the customer.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address of the customer.
+	Email *string `json:"email,omitempty"`
+
+	// EmailVerified Whether the customer's email has been verified.
+	EmailVerified *bool `json:"email_verified,omitempty"`
+
+	// Id The unique identifier of the customer.
+	Id *string `json:"id,omitempty"`
+
+	// Metadata Internal configuration flags for a customer account. These flags control low-level platform behavior
+	// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
+	// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
+
+	// Name Name of the customer.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Customer's contact phone number in E.164 format.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Status Account lifecycle status.
+	Status *CustomerManagerCustomerStatus `json:"status,omitempty"`
+
+	// TermsAgreedIp IPv4 address from which the customer accepted the Terms of Service. Logged for legal compliance and audit trail.
+	TermsAgreedIp *string `json:"terms_agreed_ip,omitempty"`
+
+	// TermsAgreedVersion Version identifier of the Terms of Service the customer agreed to. Format: `YYYY-MM-DD` date string matching a published ToS revision.
+	TermsAgreedVersion *string `json:"terms_agreed_version,omitempty"`
+
+	// TmCreate Timestamp when the customer was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the customer was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmDeletionScheduled Timestamp when account deletion was requested. Null if not scheduled.
+	TmDeletionScheduled *string `json:"tm_deletion_scheduled,omitempty"`
+
+	// TmUpdate Timestamp when the customer was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI where webhook events are delivered.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
+}
+
 // CustomerManagerCustomerStatus Account lifecycle status.
 type CustomerManagerCustomerStatus string
 
@@ -2435,6 +2494,16 @@ type CustomerManagerCustomerWebhookMethod string
 type CustomerManagerEmailVerifyResult struct {
 	Accesskey CustomerManagerAccesskey `json:"accesskey"`
 	Customer  CustomerManagerCustomer  `json:"customer"`
+}
+
+// CustomerManagerMetadata Internal configuration flags for a customer account. These flags control low-level platform behavior
+// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
+// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+type CustomerManagerMetadata struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
 }
 
 // CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.
@@ -6042,6 +6111,9 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
 
+// PutCustomersIdMetadataJSONRequestBody defines body for PutCustomersIdMetadata for application/json ContentType.
+type PutCustomersIdMetadataJSONRequestBody = CustomerManagerMetadata
+
 // PostEmailsJSONRequestBody defines body for PostEmails for application/json ContentType.
 type PostEmailsJSONRequestBody PostEmailsJSONBody
 
@@ -6605,6 +6677,9 @@ type ServerInterface interface {
 	// Schedule customer deletion (freeze account).
 	// (POST /customers/{id}/freeze)
 	PostCustomersIdFreeze(c *gin.Context, id string)
+	// Update a customer's metadata.
+	// (PUT /customers/{id}/metadata)
+	PutCustomersIdMetadata(c *gin.Context, id string)
 	// Cancel customer deletion (recover account).
 	// (POST /customers/{id}/recover)
 	PostCustomersIdRecover(c *gin.Context, id string)
@@ -10344,6 +10419,30 @@ func (siw *ServerInterfaceWrapper) PostCustomersIdFreeze(c *gin.Context) {
 	}
 
 	siw.Handler.PostCustomersIdFreeze(c, id)
+}
+
+// PutCustomersIdMetadata operation middleware
+func (siw *ServerInterfaceWrapper) PutCustomersIdMetadata(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCustomersIdMetadata(c, id)
 }
 
 // PostCustomersIdRecover operation middleware
@@ -14787,6 +14886,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/customers/:id", wrapper.PutCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id/billing_account_id", wrapper.PutCustomersIdBillingAccountId)
 	router.POST(options.BaseURL+"/customers/:id/freeze", wrapper.PostCustomersIdFreeze)
+	router.PUT(options.BaseURL+"/customers/:id/metadata", wrapper.PutCustomersIdMetadata)
 	router.POST(options.BaseURL+"/customers/:id/recover", wrapper.PostCustomersIdRecover)
 	router.GET(options.BaseURL+"/emails", wrapper.GetEmails)
 	router.POST(options.BaseURL+"/emails", wrapper.PostEmails)
@@ -17316,8 +17416,8 @@ type GetCustomersResponseObject interface {
 
 type GetCustomers200JSONResponse struct {
 	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
-	NextPageToken *string                    `json:"next_page_token,omitempty"`
-	Result        *[]CustomerManagerCustomer `json:"result,omitempty"`
+	NextPageToken *string                         `json:"next_page_token,omitempty"`
+	Result        *[]CustomerManagerCustomerAdmin `json:"result,omitempty"`
 }
 
 func (response GetCustomers200JSONResponse) VisitGetCustomersResponse(w http.ResponseWriter) error {
@@ -17335,7 +17435,7 @@ type PostCustomersResponseObject interface {
 	VisitPostCustomersResponse(w http.ResponseWriter) error
 }
 
-type PostCustomers200JSONResponse CustomerManagerCustomer
+type PostCustomers200JSONResponse CustomerManagerCustomerAdmin
 
 func (response PostCustomers200JSONResponse) VisitPostCustomersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -17352,7 +17452,7 @@ type DeleteCustomersIdResponseObject interface {
 	VisitDeleteCustomersIdResponse(w http.ResponseWriter) error
 }
 
-type DeleteCustomersId200JSONResponse CustomerManagerCustomer
+type DeleteCustomersId200JSONResponse CustomerManagerCustomerAdmin
 
 func (response DeleteCustomersId200JSONResponse) VisitDeleteCustomersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -17369,7 +17469,7 @@ type GetCustomersIdResponseObject interface {
 	VisitGetCustomersIdResponse(w http.ResponseWriter) error
 }
 
-type GetCustomersId200JSONResponse CustomerManagerCustomer
+type GetCustomersId200JSONResponse CustomerManagerCustomerAdmin
 
 func (response GetCustomersId200JSONResponse) VisitGetCustomersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -17387,7 +17487,7 @@ type PutCustomersIdResponseObject interface {
 	VisitPutCustomersIdResponse(w http.ResponseWriter) error
 }
 
-type PutCustomersId200JSONResponse CustomerManagerCustomer
+type PutCustomersId200JSONResponse CustomerManagerCustomerAdmin
 
 func (response PutCustomersId200JSONResponse) VisitPutCustomersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -17405,7 +17505,7 @@ type PutCustomersIdBillingAccountIdResponseObject interface {
 	VisitPutCustomersIdBillingAccountIdResponse(w http.ResponseWriter) error
 }
 
-type PutCustomersIdBillingAccountId200JSONResponse CustomerManagerCustomer
+type PutCustomersIdBillingAccountId200JSONResponse CustomerManagerCustomerAdmin
 
 func (response PutCustomersIdBillingAccountId200JSONResponse) VisitPutCustomersIdBillingAccountIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -17422,13 +17522,47 @@ type PostCustomersIdFreezeResponseObject interface {
 	VisitPostCustomersIdFreezeResponse(w http.ResponseWriter) error
 }
 
-type PostCustomersIdFreeze200JSONResponse CustomerManagerCustomer
+type PostCustomersIdFreeze200JSONResponse CustomerManagerCustomerAdmin
 
 func (response PostCustomersIdFreeze200JSONResponse) VisitPostCustomersIdFreezeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomersIdMetadataRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCustomersIdMetadataJSONRequestBody
+}
+
+type PutCustomersIdMetadataResponseObject interface {
+	VisitPutCustomersIdMetadataResponse(w http.ResponseWriter) error
+}
+
+type PutCustomersIdMetadata200JSONResponse CustomerManagerCustomerAdmin
+
+func (response PutCustomersIdMetadata200JSONResponse) VisitPutCustomersIdMetadataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomersIdMetadata400Response struct {
+}
+
+func (response PutCustomersIdMetadata400Response) VisitPutCustomersIdMetadataResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PutCustomersIdMetadata403Response struct {
+}
+
+func (response PutCustomersIdMetadata403Response) VisitPutCustomersIdMetadataResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
 }
 
 type PostCustomersIdRecoverRequestObject struct {
@@ -17439,7 +17573,7 @@ type PostCustomersIdRecoverResponseObject interface {
 	VisitPostCustomersIdRecoverResponse(w http.ResponseWriter) error
 }
 
-type PostCustomersIdRecover200JSONResponse CustomerManagerCustomer
+type PostCustomersIdRecover200JSONResponse CustomerManagerCustomerAdmin
 
 func (response PostCustomersIdRecover200JSONResponse) VisitPostCustomersIdRecoverResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -21218,6 +21352,9 @@ type StrictServerInterface interface {
 	// Schedule customer deletion (freeze account).
 	// (POST /customers/{id}/freeze)
 	PostCustomersIdFreeze(ctx context.Context, request PostCustomersIdFreezeRequestObject) (PostCustomersIdFreezeResponseObject, error)
+	// Update a customer's metadata.
+	// (PUT /customers/{id}/metadata)
+	PutCustomersIdMetadata(ctx context.Context, request PutCustomersIdMetadataRequestObject) (PutCustomersIdMetadataResponseObject, error)
 	// Cancel customer deletion (recover account).
 	// (POST /customers/{id}/recover)
 	PostCustomersIdRecover(ctx context.Context, request PostCustomersIdRecoverRequestObject) (PostCustomersIdRecoverResponseObject, error)
@@ -25622,6 +25759,41 @@ func (sh *strictHandler) PostCustomersIdFreeze(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostCustomersIdFreezeResponseObject); ok {
 		if err := validResponse.VisitPostCustomersIdFreezeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCustomersIdMetadata operation middleware
+func (sh *strictHandler) PutCustomersIdMetadata(ctx *gin.Context, id string) {
+	var request PutCustomersIdMetadataRequestObject
+
+	request.Id = id
+
+	var body PutCustomersIdMetadataJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCustomersIdMetadata(ctx, request.(PutCustomersIdMetadataRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCustomersIdMetadata")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCustomersIdMetadataResponseObject); ok {
+		if err := validResponse.VisitPutCustomersIdMetadataResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
