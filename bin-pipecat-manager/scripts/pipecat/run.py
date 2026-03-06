@@ -480,7 +480,7 @@ class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
     async def process_frame(self, frame, direction):
         await super().process_frame(frame, direction)
         if isinstance(frame, InterruptionFrame):
-            logger.info("Barge-in detected, sending flush_audio signal to Go.")
+            logger.debug("Barge-in detected, sending flush_audio signal to Go.")
             await self._write_frame(TextFrame(text="flush_audio"))
 
 
