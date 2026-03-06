@@ -33,6 +33,106 @@ func Test_defaultMediaConstants(t *testing.T) {
 	}
 }
 
+func Test_defaultFlushSilenceBytes(t *testing.T) {
+	// 500ms at 16kHz 16-bit mono: 16000 samples/sec * 0.5 sec * 2 bytes/sample = 16000 bytes
+	expected := 16000
+	if defaultFlushSilenceBytes != expected {
+		t.Errorf("defaultFlushSilenceBytes = %d, want %d (500ms of 16kHz 16-bit mono silence)", defaultFlushSilenceBytes, expected)
+	}
+}
+
+func Test_flushAsteriskAudioBuffer(t *testing.T) {
+	tests := []struct {
+		name string
+
+		connAst        *websocket.Conn
+		connAstReady   chan struct{}
+		ctxCancelled   bool
+		writeErr       error
+		expectWrite    bool
+		expectSilence  int
+	}{
+		{
+			name:          "sends silence to asterisk on flush",
+			connAst:       &websocket.Conn{},
+			connAstReady:  func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
+			expectWrite:   true,
+			expectSilence: defaultFlushSilenceBytes,
+		},
+		{
+			name:         "nil ConnAst skips flush",
+			connAst:      nil,
+			connAstReady: func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
+			expectWrite:  false,
+		},
+		{
+			name:         "cancelled context skips flush",
+			connAst:      &websocket.Conn{},
+			connAstReady: make(chan struct{}), // not closed
+			ctxCancelled: true,
+			expectWrite:  false,
+		},
+		{
+			name:          "write error is logged but does not panic",
+			connAst:       &websocket.Conn{},
+			connAstReady:  func() chan struct{} { ch := make(chan struct{}); close(ch); return ch }(),
+			writeErr:      fmt.Errorf("write failed"),
+			expectWrite:   true,
+			expectSilence: defaultFlushSilenceBytes,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockWS := NewMockWebsocketHandler(mc)
+
+			ctx := context.Background()
+			cancel := func() {}
+			if tt.ctxCancelled {
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			}
+			defer cancel()
+
+			if tt.expectWrite {
+				mockWS.EXPECT().WriteMessage(tt.connAst, websocket.BinaryMessage, gomock.Any()).DoAndReturn(
+					func(_ *websocket.Conn, _ int, data []byte) error {
+						if len(data) != tt.expectSilence {
+							t.Errorf("silence bytes = %d, want %d", len(data), tt.expectSilence)
+						}
+						// Verify all bytes are zero (silence)
+						for i, b := range data {
+							if b != 0 {
+								t.Errorf("byte[%d] = %d, want 0 (silence)", i, b)
+								break
+							}
+						}
+						return tt.writeErr
+					},
+				)
+			}
+
+			se := &pipecatcall.Session{
+				Identity: commonidentity.Identity{
+					ID: uuid.Must(uuid.NewV4()),
+				},
+				Ctx:          ctx,
+				ConnAst:      tt.connAst,
+				ConnAstReady: tt.connAstReady,
+			}
+
+			h := &pipecatcallHandler{
+				websocketHandler: mockWS,
+			}
+
+			h.flushAsteriskAudioBuffer(se)
+		})
+	}
+}
+
 func Test_runAsteriskReceivedMediaHandle(t *testing.T) {
 	tests := []struct {
 		name string

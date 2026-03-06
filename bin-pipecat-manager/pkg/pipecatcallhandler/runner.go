@@ -277,6 +277,9 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 			switch x := frame.Frame.(type) {
 			case *pipecatframe.Frame_Text:
 				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
+				if x.Text.Text == "flush_audio" {
+					h.flushAsteriskAudioBuffer(se)
+				}
 
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
@@ -555,5 +558,35 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 	}
 
 	return nil
+}
+
+// flushAsteriskAudioBuffer writes a burst of silence to Asterisk's WebSocket to
+// overwrite any buffered TTS audio on barge-in. Because audio is delivered
+// faster than real-time (via UnpacedWebsocketClientOutputTransport), Asterisk
+// may still be playing stale audio when the user starts speaking. The silence
+// burst overwrites that buffer so the user hears silence instead of stale TTS.
+func (h *pipecatcallHandler) flushAsteriskAudioBuffer(se *pipecatcall.Session) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "flushAsteriskAudioBuffer",
+		"pipecatcall_id": se.ID,
+	})
+
+	select {
+	case <-se.ConnAstReady:
+	case <-se.Ctx.Done():
+		return
+	}
+
+	if se.ConnAst == nil {
+		return
+	}
+
+	silence := make([]byte, defaultFlushSilenceBytes)
+	if err := h.websocketHandler.WriteMessage(se.ConnAst, websocket.BinaryMessage, silence); err != nil {
+		log.Errorf("Could not flush audio buffer to asterisk. err: %v", err)
+		return
+	}
+
+	log.Debugf("Flushed asterisk audio buffer with %d bytes of silence.", defaultFlushSilenceBytes)
 }
 

@@ -18,6 +18,11 @@ import (
 const (
 	defaultMediaSampleRate = 16000
 	defaultMediaNumChannel = 1
+
+	// defaultFlushSilenceBytes is the number of zero bytes sent to Asterisk to
+	// overwrite its playback buffer on barge-in. 500ms at 16kHz 16-bit mono:
+	// 16000 samples/sec * 0.5 sec * 2 bytes/sample = 16000 bytes.
+	defaultFlushSilenceBytes = 16000
 )
 
 // resolvedTeamData is the Python-facing team struct sent via HTTP POST to the pipecat runner.

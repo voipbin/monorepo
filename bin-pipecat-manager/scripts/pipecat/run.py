@@ -34,7 +34,7 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import LLMRunFrame
+from pipecat.frames.frames import InterruptionFrame, LLMRunFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -457,7 +457,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
 
 
 class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
-    """Output transport that skips real-time audio pacing.
+    """Output transport that skips real-time audio pacing and flushes on interruption.
 
     Pipecat's default WebsocketClientOutputTransport sleeps between audio
     frames to simulate real-time playback (via _write_audio_sleep). This is
@@ -467,10 +467,21 @@ class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
     forwarded as fast as the TTS generates it — matching the proven pattern
     from bin-tts-manager where ElevenLabs delivers audio faster than real-time.
     Asterisk's chan_websocket buffers incoming audio internally.
+
+    Because audio is delivered faster than real-time, Asterisk may have buffered
+    audio that continues playing after Pipecat detects a barge-in (user speech).
+    On InterruptionFrame, we send a TextFrame("flush_audio") to Go so it can
+    overwrite Asterisk's playback buffer with silence.
     """
 
     async def _write_audio_sleep(self):
         pass
+
+    async def process_frame(self, frame, direction):
+        await super().process_frame(frame, direction)
+        if isinstance(frame, InterruptionFrame):
+            logger.info("Barge-in detected, sending flush_audio signal to Go.")
+            await self._write_frame(TextFrame(text="flush_audio"))
 
 
 class UnpacedWebsocketClientTransport(WebsocketClientTransport):
