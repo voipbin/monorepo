@@ -1280,16 +1280,16 @@ type AIManagerTeamTransition struct {
 
 // AIManagerVADConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 type AIManagerVADConfig struct {
-	// Confidence Minimum confidence threshold to detect voice (0.0-1.0).
+	// Confidence Minimum confidence threshold to detect voice. Range 0.0–1.0. Omitted fields use Pipecat default.
 	Confidence *float64 `json:"confidence,omitempty"`
 
-	// MinVolume Minimum audio volume for voice detection (0.0-1.0).
+	// MinVolume Minimum audio volume for voice detection. Range 0.0–1.0. Omitted fields use Pipecat default.
 	MinVolume *float64 `json:"min_volume,omitempty"`
 
-	// StartSecs Duration of continuous speech needed to confirm speaking started (0.0-30.0).
+	// StartSecs Duration in seconds of continuous speech needed to confirm speaking started. Range 0.0–30.0. Omitted fields use Pipecat default.
 	StartSecs *float64 `json:"start_secs,omitempty"`
 
-	// StopSecs Duration of silence needed to confirm speaking stopped (0.0-30.0).
+	// StopSecs Duration in seconds of silence needed to confirm speaking stopped. Range 0.0–30.0. Omitted fields use Pipecat default.
 	StopSecs *float64 `json:"stop_secs,omitempty"`
 }
 

@@ -15544,33 +15544,37 @@
           "confidence": {
             "type": "number",
             "format": "double",
-            "description": "Minimum confidence threshold to detect voice (0.0-1.0).",
+            "description": "Minimum confidence threshold to detect voice. Range 0.0–1.0. Omitted fields use Pipecat default.",
             "minimum": 0,
             "maximum": 1,
+            "default": 0.7,
             "example": 0.7
           },
           "start_secs": {
             "type": "number",
             "format": "double",
-            "description": "Duration of continuous speech needed to confirm speaking started (0.0-30.0).",
+            "description": "Duration in seconds of continuous speech needed to confirm speaking started. Range 0.0–30.0. Omitted fields use Pipecat default.",
             "minimum": 0,
             "maximum": 30,
+            "default": 0.2,
             "example": 0.2
           },
           "stop_secs": {
             "type": "number",
             "format": "double",
-            "description": "Duration of silence needed to confirm speaking stopped (0.0-30.0).",
+            "description": "Duration in seconds of silence needed to confirm speaking stopped. Range 0.0–30.0. Omitted fields use Pipecat default.",
             "minimum": 0,
             "maximum": 30,
+            "default": 0.2,
             "example": 0.5
           },
           "min_volume": {
             "type": "number",
             "format": "double",
-            "description": "Minimum audio volume for voice detection (0.0-1.0).",
+            "description": "Minimum audio volume for voice detection. Range 0.0–1.0. Omitted fields use Pipecat default.",
             "minimum": 0,
             "maximum": 1,
+            "default": 0.6,
             "example": 0.6
           }
         }
