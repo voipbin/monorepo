@@ -200,6 +200,12 @@
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;stt_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vad_config&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;start_secs&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;stop_secs&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;min_volume&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -219,6 +225,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_type</span></code> (enum string, Required): Text-to-Speech provider. See <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code> (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stt_type</span></code> (enum string, Required): Speech-to-Text provider. See <a class="reference internal" href="#ai-struct-ai-stt-type"><span class="std std-ref">STT Types</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vad_config</span></code> (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See <a class="reference internal" href="#ai-struct-ai-vad-config"><span class="std std-ref">VAD Config</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tool_names</span></code> (Array of String, Optional): List of enabled tool functions. Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> to enable all tools, <code class="docutils literal notranslate"><span class="pre">[]</span></code> to disable all tools, or list specific tool names. See <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the AI configuration was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the AI configuration was last updated.</p></li>
@@ -248,6 +255,9 @@
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;EXAVITQu4vr4xnSDxMaL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;stt_type&quot;</span><span class="p">:</span> <span class="s2">&quot;deepgram&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vad_config&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;stop_secs&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;connect_call&quot;</span><span class="p">,</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_service&quot;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-09 07:01:35.666687&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
@@ -475,6 +485,42 @@
 </tbody>
 </table>
 </section>
+<section id="vad-config">
+<span id="ai-struct-ai-vad-config"></span><h2>VAD Config<a class="headerlink" href="#vad-config" title="Link to this heading"></a></h2>
+<p>Voice Activity Detection configuration for tuning speech detection sensitivity and timing.</p>
+<p>All fields are optional. Omitted fields use Pipecat’s native defaults.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>confidence</p></td>
+<td><p>0.7</p></td>
+<td><p>Minimum confidence threshold (0.0-1.0) to detect voice.</p></td>
+</tr>
+<tr class="row-odd"><td><p>start_secs</p></td>
+<td><p>0.2</p></td>
+<td><p>Duration (seconds) of continuous speech needed to confirm speaking started.</p></td>
+</tr>
+<tr class="row-even"><td><p>stop_secs</p></td>
+<td><p>0.2</p></td>
+<td><p>Duration (seconds) of silence needed to confirm speaking stopped.</p></td>
+</tr>
+<tr class="row-odd"><td><p>min_volume</p></td>
+<td><p>0.6</p></td>
+<td><p>Minimum audio volume (0.0-1.0) for voice detection.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When <code class="docutils literal notranslate"><span class="pre">vad_config</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code> or omitted, Pipecat’s native defaults apply (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6). To keep the AI responsive but avoid cutting off speech mid-sentence, increase <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> (e.g., 0.5). To make the AI more patient before responding, increase both <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> and <code class="docutils literal notranslate"><span class="pre">start_secs</span></code>.</p>
+</div>
+</section>
 <section id="tool-names">
 <span id="ai-struct-ai-tool-names"></span><h2>Tool Names<a class="headerlink" href="#tool-names" title="Link to this heading"></a></h2>
 <p>The tool_names field controls which tool functions the AI can invoke during conversations.</p>
@@ -532,6 +578,7 @@
 <li><a class="reference internal" href="#engine-model">Engine Model</a></li>
 <li><a class="reference internal" href="#tts-type">TTS Type</a></li>
 <li><a class="reference internal" href="#stt-type">STT Type</a></li>
+<li><a class="reference internal" href="#vad-config">VAD Config</a></li>
 <li><a class="reference internal" href="#tool-names">Tool Names</a></li>
 </ul>
 </li>

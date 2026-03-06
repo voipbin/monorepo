@@ -125,6 +125,7 @@ func TestCreate(t *testing.T) {
 				"",
 				tt.sttType,
 				[]tool.ToolName{},
+				nil,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -254,6 +255,7 @@ func TestUpdate(t *testing.T) {
 				"voice-id",
 				tt.sttType,
 				[]tool.ToolName{},
+				nil,
 			)
 
 			if (err != nil) != tt.wantError {

@@ -25,6 +25,7 @@ func (h *aiHandler) dbCreate(
 	ttsVoiceID string,
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
+	vadConfig *ai.VADConfig,
 ) (*ai.AI, error) {
 	id := h.utilHandler.UUIDCreate()
 	c := &ai.AI{
@@ -48,6 +49,8 @@ func (h *aiHandler) dbCreate(
 		STTType: sttType,
 
 		ToolNames: toolNames,
+
+		VADConfig: vadConfig,
 	}
 
 	if err := h.db.AICreate(ctx, c); err != nil {
@@ -112,6 +115,7 @@ func (h *aiHandler) dbUpdate(
 	ttsVoice string,
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
+	vadConfig *ai.VADConfig,
 ) (*ai.AI, error) {
 	fields := map[ai.Field]any{
 		ai.FieldName:        name,
@@ -124,6 +128,7 @@ func (h *aiHandler) dbUpdate(
 		ai.FieldTTSVoiceID:  ttsVoice,
 		ai.FieldSTTType:     sttType,
 		ai.FieldToolNames:   toolNames,
+		ai.FieldVADConfig:   vadConfig,
 	}
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {

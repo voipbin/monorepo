@@ -27,6 +27,8 @@ type V1DataAIsPost struct {
 	STTType ai.STTType `json:"stt_type,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
+
+	VADConfig *ai.VADConfig `json:"vad_config,omitempty"`
 }
 
 // V1DataAIsIDPut is
@@ -48,4 +50,6 @@ type V1DataAIsIDPut struct {
 	STTType ai.STTType `json:"stt_type,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
+
+	VADConfig *ai.VADConfig `json:"vad_config,omitempty"`
 }

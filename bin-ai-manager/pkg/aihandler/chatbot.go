@@ -25,6 +25,7 @@ func (h *aiHandler) Create(
 	ttsVoiceID string,
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
+	vadConfig *ai.VADConfig,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
@@ -39,7 +40,7 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -61,6 +62,7 @@ func (h *aiHandler) Update(
 	ttsVoiceID string,
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
+	vadConfig *ai.VADConfig,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
@@ -75,7 +77,7 @@ func (h *aiHandler) Update(
 		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
-	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
