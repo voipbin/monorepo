@@ -466,7 +466,7 @@ class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
     Asterisk discards queued audio instantly.
     """
 
-    async def _write_audio_sleep(self, running_time: float):
+    async def _write_audio_sleep(self):
         pass
 
     async def process_frame(self, frame, direction):
@@ -478,11 +478,12 @@ class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
 class UnpacedWebsocketClientTransport(WebsocketClientTransport):
     """WebSocket transport using unpaced output for audio delivery."""
 
-    def __init__(self, uri: str, params: WebsocketClientParams):
-        super().__init__(uri=uri, params=params)
-        self._output = UnpacedWebsocketClientOutputTransport(
-            params, serializer=self._serializer
-        )
+    def output(self) -> UnpacedWebsocketClientOutputTransport:
+        if not self._output:
+            self._output = UnpacedWebsocketClientOutputTransport(
+                self, self._session, self._params
+            )
+        return self._output
 
 
 def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
