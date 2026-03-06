@@ -456,7 +456,11 @@ class UnpacedWebsocketClientOutputTransport(WebsocketClientOutputTransport):
 
 
 class UnpacedWebsocketClientTransport(WebsocketClientTransport):
-    """WebSocket transport that uses UnpacedWebsocketClientOutputTransport."""
+    """WebSocket transport that uses UnpacedWebsocketClientOutputTransport.
+
+    CAUTION: Relies on WebsocketClientTransport internals (_output, _session,
+    _params). Verified with pipecat-ai>=0.0.101. Re-verify after upgrades.
+    """
 
     def output(self) -> UnpacedWebsocketClientOutputTransport:
         if not self._output:

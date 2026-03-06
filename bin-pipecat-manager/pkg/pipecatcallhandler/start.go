@@ -95,6 +95,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	if err != nil {
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
+
 	// Parallel: Asterisk WS connect + Python runner init
 	astErrCh := make(chan error, 1)
 	go func() {
@@ -200,6 +201,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
+
 		// Parallel Phase 2: Asterisk WS connect + Python runner init
 		astErrCh := make(chan error, 1)
 		go func() {
