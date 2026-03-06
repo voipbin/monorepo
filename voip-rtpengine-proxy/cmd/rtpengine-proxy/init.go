@@ -100,7 +100,7 @@ func initProm(endpoint, listen string) {
 	go func() {
 		for {
 			if err := http.ListenAndServe(listen, nil); err != nil {
-				logrus.Errorf("Could not start prometheus listener")
+				logrus.WithError(err).Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second)
 				continue
 			}

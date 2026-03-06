@@ -19,8 +19,9 @@ func (h *listenHandler) processCommandPost(m *sock.Request) (*sock.Response, err
 		return simpleResponse(400), nil
 	}
 
-	if cmd["command"] == "" || cmd["command"] == nil {
-		log.Debug("Missing required field: command")
+	cmdStr, ok := cmd["command"].(string)
+	if !ok || cmdStr == "" {
+		log.Debug("Missing or invalid required field: command")
 		return simpleResponse(400), nil
 	}
 

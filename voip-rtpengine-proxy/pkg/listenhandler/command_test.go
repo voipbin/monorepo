@@ -80,6 +80,25 @@ func TestProcessCommandPost_InvalidJSON(t *testing.T) {
 	}
 }
 
+func TestProcessCommandPost_NonStringCommand(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{ngClient: ngclient.NewMockNGClient(ctrl)}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"command":123,"call-id":"abc"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for non-string command, got %d", resp.StatusCode)
+	}
+}
+
 func TestProcessCommandPost_EmptyCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

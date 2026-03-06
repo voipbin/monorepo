@@ -49,3 +49,4 @@ workflows:
             bin-webhook-manager/.*      run-bin-webhook-manager true
 
             voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
+            voip-rtpengine-proxy/.*     run-voip-rtpengine-proxy true

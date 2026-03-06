@@ -158,6 +158,10 @@ parameters:
     type: boolean
     default: false
 
+  run-voip-rtpengine-proxy:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -718,6 +722,17 @@ workflows:
       - build-approval:
           type: approval
       - voip-asterisk-proxy-build:
+          <<: *context_production
+          requires:
+            - build-approval
+
+  voip-rtpengine-proxy:
+    when:
+      or: [<< pipeline.parameters.run-voip-rtpengine-proxy >>]
+    jobs:
+      - build-approval:
+          type: approval
+      - voip-rtpengine-proxy-build:
           <<: *context_production
           requires:
             - build-approval
@@ -1601,6 +1616,16 @@ jobs:
           project-id: voipbin
           project-repository: voip-asterisk-proxy
           source-directory: voip-asterisk-proxy
+
+  # voip-rtpengine-proxy
+  voip-rtpengine-proxy-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: voip-rtpengine-proxy
+          source-directory: voip-rtpengine-proxy
 
 
 #########################################################################################################################################################################
