@@ -1,6 +1,7 @@
 package ngclient
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -39,12 +40,14 @@ func newNGClient(addr string, timeout time.Duration) (*ngClient, error) {
 
 func (c *ngClient) Send(cmd map[string]interface{}) (map[string]interface{}, error) {
 	cookie := newCookie()
-	cmd["cookie"] = cookie
 
+	// Encode without cookie — do not mutate caller's map.
+	// NG protocol wire format: "<cookie> <bencode>"
 	encoded, err := bencode.EncodeString(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("bencode encode: %w", err)
 	}
+	payload := cookie + " " + encoded
 
 	ch := make(chan map[string]interface{}, 1)
 	c.mu.Lock()
@@ -57,7 +60,7 @@ func (c *ngClient) Send(cmd map[string]interface{}) (map[string]interface{}, err
 		c.mu.Unlock()
 	}()
 
-	if _, err := c.conn.Write([]byte(encoded)); err != nil {
+	if _, err := c.conn.Write([]byte(payload)); err != nil {
 		return nil, fmt.Errorf("send NG command: %w", err)
 	}
 
@@ -81,17 +84,21 @@ func (c *ngClient) readLoop() {
 			logrus.WithError(err).Debug("NG client read loop terminated")
 			return
 		}
+
+		// Parse NG protocol: "<cookie> <bencode>"
+		data := buf[:n]
+		idx := bytes.IndexByte(data, ' ')
+		if idx < 0 {
+			logrus.Warn("NG response missing space separator")
+			continue
+		}
+		cookie := string(data[:idx])
+
 		var resp map[string]interface{}
-		if err := bencode.DecodeString(string(buf[:n]), &resp); err != nil {
+		if err := bencode.DecodeString(string(data[idx+1:]), &resp); err != nil {
 			logrus.WithError(err).Warn("Failed to decode NG response")
 			continue
 		}
-		cookie, ok := resp["cookie"].(string)
-		if !ok {
-			logrus.Warn("NG response missing cookie")
-			continue
-		}
-		delete(resp, "cookie")
 
 		c.mu.Lock()
 		ch, found := c.pending[cookie]
