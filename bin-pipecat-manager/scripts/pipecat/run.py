@@ -42,7 +42,6 @@ from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.transports.websocket.client import (
     WebsocketClientParams,
     WebsocketClientTransport,
-    WebsocketClientOutputTransport,
 )
 
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names

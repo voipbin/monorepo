@@ -37,3 +37,4 @@ The unpaced transport was originally introduced to avoid audio gaps caused by as
 ## Files Changed
 
 1. `bin-pipecat-manager/scripts/pipecat/run.py` - Remove `UnpacedWebsocketClientOutputTransport`, `UnpacedWebsocketClientTransport`, and unpaced transport selection in `create_websocket_transport`
+2. `bin-pipecat-manager/CLAUDE.md` - Update audio delivery documentation to reflect paced transport
