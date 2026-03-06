@@ -1286,10 +1286,10 @@ type AIManagerVADConfig struct {
 	// MinVolume Minimum audio volume for voice detection (0.0-1.0).
 	MinVolume *float64 `json:"min_volume,omitempty"`
 
-	// StartSecs Duration of continuous speech needed to confirm speaking started.
+	// StartSecs Duration of continuous speech needed to confirm speaking started (0.0-30.0).
 	StartSecs *float64 `json:"start_secs,omitempty"`
 
-	// StopSecs Duration of silence needed to confirm speaking stopped.
+	// StopSecs Duration of silence needed to confirm speaking stopped (0.0-30.0).
 	StopSecs *float64 `json:"stop_secs,omitempty"`
 }
 

@@ -208,6 +208,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
+	// Validate vad_config
+	if err := vadConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid vad-config: %w", err)
+	}
+
 	res, err := handler.Create(
 		context.Background(),
 		customerID,
@@ -317,6 +322,11 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	// Validate stt_type
 	if sttType != "" && !sttType.IsValid() {
 		return fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
+	}
+
+	// Validate vad_config
+	if err := vadConfig.Validate(); err != nil {
+		return fmt.Errorf("invalid vad-config: %w", err)
 	}
 
 	res, err := handler.Update(

@@ -44,6 +44,7 @@ class ResolvedAI(BaseModel):
     tts_type: Optional[str] = None
     tts_voice_id: Optional[str] = None
     stt_type: Optional[str] = None
+    vad_config: Optional[dict] = None
 
     class Config:
         extra = "ignore"

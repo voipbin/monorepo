@@ -31,11 +31,11 @@ func (v *VADConfig) Validate() error {
 	if v.MinVolume != nil && (*v.MinVolume < 0 || *v.MinVolume > 1) {
 		return fmt.Errorf("min_volume must be between 0.0 and 1.0")
 	}
-	if v.StartSecs != nil && *v.StartSecs < 0 {
-		return fmt.Errorf("start_secs must be non-negative")
+	if v.StartSecs != nil && (*v.StartSecs < 0 || *v.StartSecs > 30) {
+		return fmt.Errorf("start_secs must be between 0.0 and 30.0")
 	}
-	if v.StopSecs != nil && *v.StopSecs < 0 {
-		return fmt.Errorf("stop_secs must be non-negative")
+	if v.StopSecs != nil && (*v.StopSecs < 0 || *v.StopSecs > 30) {
+		return fmt.Errorf("stop_secs must be between 0.0 and 30.0")
 	}
 	return nil
 }

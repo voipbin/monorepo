@@ -91,7 +91,15 @@ func TestVADConfig_Validate(t *testing.T) {
 				StartSecs: float64Ptr(-1.0),
 			},
 			wantError: true,
-			errorMsg:  "start_secs must be non-negative",
+			errorMsg:  "start_secs must be between 0.0 and 30.0",
+		},
+		{
+			name: "start_secs above 30 is invalid",
+			config: &VADConfig{
+				StartSecs: float64Ptr(31.0),
+			},
+			wantError: true,
+			errorMsg:  "start_secs must be between 0.0 and 30.0",
 		},
 		{
 			name: "negative stop_secs is invalid",
@@ -99,7 +107,15 @@ func TestVADConfig_Validate(t *testing.T) {
 				StopSecs: float64Ptr(-0.01),
 			},
 			wantError: true,
-			errorMsg:  "stop_secs must be non-negative",
+			errorMsg:  "stop_secs must be between 0.0 and 30.0",
+		},
+		{
+			name: "stop_secs above 30 is invalid",
+			config: &VADConfig{
+				StopSecs: float64Ptr(30.1),
+			},
+			wantError: true,
+			errorMsg:  "stop_secs must be between 0.0 and 30.0",
 		},
 		{
 			name: "partial config with only stop_secs",
@@ -116,16 +132,16 @@ func TestVADConfig_Validate(t *testing.T) {
 			wantError: false,
 		},
 		{
-			name: "large valid start_secs",
+			name: "boundary start_secs 30.0 is valid",
 			config: &VADConfig{
-				StartSecs: float64Ptr(10.0),
+				StartSecs: float64Ptr(30.0),
 			},
 			wantError: false,
 		},
 		{
-			name: "large valid stop_secs",
+			name: "boundary stop_secs 30.0 is valid",
 			config: &VADConfig{
-				StopSecs: float64Ptr(5.0),
+				StopSecs: float64Ptr(30.0),
 			},
 			wantError: false,
 		},

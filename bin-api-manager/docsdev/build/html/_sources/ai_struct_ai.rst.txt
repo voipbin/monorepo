@@ -191,10 +191,10 @@ All fields are optional. Omitted fields use Pipecat's native defaults.
 ================ ======== ====================================
 Field            Default  Description
 ================ ======== ====================================
-confidence       0.7      Minimum confidence threshold (0.0-1.0) to detect voice.
-start_secs       0.2      Duration (seconds) of continuous speech needed to confirm speaking started.
-stop_secs        0.2      Duration (seconds) of silence needed to confirm speaking stopped.
-min_volume       0.6      Minimum audio volume (0.0-1.0) for voice detection.
+confidence       0.7      Minimum confidence threshold (0.0–1.0) to detect voice.
+start_secs       0.2      Duration in seconds (0.0–30.0) of continuous speech needed to confirm speaking started.
+stop_secs        0.2      Duration in seconds (0.0–30.0) of silence needed to confirm speaking stopped.
+min_volume       0.6      Minimum audio volume (0.0–1.0) for voice detection.
 ================ ======== ====================================
 
 .. note:: **AI Implementation Hint**
