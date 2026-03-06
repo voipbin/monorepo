@@ -254,6 +254,50 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+func (h *server) PutCustomersIdMetadata(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutCustomersIdMetadata",
+		"request_address": c.ClientIP,
+		"customer_id":     id,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCustomersIdMetadataJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	metadata := cucustomer.Metadata{
+		RTPDebug: req.RtpDebug != nil && *req.RtpDebug,
+	}
+
+	res, err := h.serviceHandler.CustomerUpdateMetadata(c.Request.Context(), &a, target, metadata)
+	if err != nil {
+		log.Errorf("Could not update the customer metadata. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) PostCustomersIdFreeze(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostCustomersIdFreeze",

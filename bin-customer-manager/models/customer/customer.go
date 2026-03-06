@@ -41,6 +41,8 @@ type Customer struct {
 	TermsAgreedVersion string `json:"terms_agreed_version,omitempty" db:"terms_agreed_version"`
 	TermsAgreedIP      string `json:"terms_agreed_ip,omitempty" db:"terms_agreed_ip"`
 
+	Metadata Metadata `json:"metadata" db:"metadata,json"` // internal options (admin-only)
+
 	TMDeletionScheduled *time.Time `json:"tm_deletion_scheduled" db:"tm_deletion_scheduled"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.

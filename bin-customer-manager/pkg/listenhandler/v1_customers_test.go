@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -52,7 +53,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -80,7 +81,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -167,7 +168,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -238,7 +239,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -300,7 +301,7 @@ func Test_processV1CustomersIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -377,7 +378,7 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -441,7 +442,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -462,6 +463,106 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			}
 
 			mockCustomer.EXPECT().UpdateBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID).Return(tt.responseCustomer, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CustomersIDMetadataPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		id       uuid.UUID
+		metadata customer.Metadata
+
+		responseCustomer *customer.Customer
+		expectRes        *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/metadata",
+				Method:   sock.RequestMethodPut,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"metadata":{"rtp_debug":true}}`),
+			},
+
+			id:       uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+			metadata: customer.Metadata{RTPDebug: true},
+
+			responseCustomer: &customer.Customer{
+				ID:       uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+				Metadata: customer.Metadata{RTPDebug: true},
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","metadata":{"rtp_debug":true},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "invalid json body",
+			request: &sock.Request{
+				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/metadata",
+				Method:   sock.RequestMethodPut,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{invalid`),
+			},
+
+			expectRes: &sock.Response{
+				StatusCode: 400,
+			},
+		},
+		{
+			name: "update error",
+			request: &sock.Request{
+				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/metadata",
+				Method:   sock.RequestMethodPut,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"metadata":{"rtp_debug":true}}`),
+			},
+
+			id:               uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+			metadata:         customer.Metadata{RTPDebug: true},
+			responseCustomer: nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 400,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			switch tt.name {
+			case "normal":
+				mockCustomer.EXPECT().UpdateMetadata(gomock.Any(), tt.id, tt.metadata).Return(tt.responseCustomer, nil)
+			case "update error":
+				mockCustomer.EXPECT().UpdateMetadata(gomock.Any(), tt.id, tt.metadata).Return(nil, fmt.Errorf("update failed"))
+			}
+
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

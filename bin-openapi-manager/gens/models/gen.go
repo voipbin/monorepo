@@ -4348,6 +4348,65 @@ type CustomerManagerCustomer struct {
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
+// CustomerManagerCustomerAdmin defines model for CustomerManagerCustomerAdmin.
+type CustomerManagerCustomerAdmin struct {
+	// Address Address of the customer.
+	Address *string `json:"address,omitempty"`
+
+	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
+	BillingAccountId *string `json:"billing_account_id,omitempty"`
+
+	// Detail Details about the customer.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address of the customer.
+	Email *string `json:"email,omitempty"`
+
+	// EmailVerified Whether the customer's email has been verified.
+	EmailVerified *bool `json:"email_verified,omitempty"`
+
+	// Id The unique identifier of the customer.
+	Id *string `json:"id,omitempty"`
+
+	// Metadata Internal configuration flags for a customer account. These flags control low-level platform behavior
+	// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
+	// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
+
+	// Name Name of the customer.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Customer's contact phone number in E.164 format.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Status Account lifecycle status.
+	Status *CustomerManagerCustomerStatus `json:"status,omitempty"`
+
+	// TermsAgreedIp IPv4 address from which the customer accepted the Terms of Service. Logged for legal compliance and audit trail.
+	TermsAgreedIp *string `json:"terms_agreed_ip,omitempty"`
+
+	// TermsAgreedVersion Version identifier of the Terms of Service the customer agreed to. Format: `YYYY-MM-DD` date string matching a published ToS revision.
+	TermsAgreedVersion *string `json:"terms_agreed_version,omitempty"`
+
+	// TmCreate Timestamp when the customer was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the customer was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmDeletionScheduled Timestamp when account deletion was requested. Null if not scheduled.
+	TmDeletionScheduled *string `json:"tm_deletion_scheduled,omitempty"`
+
+	// TmUpdate Timestamp when the customer was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI where webhook events are delivered.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
+}
+
 // CustomerManagerCustomerStatus Account lifecycle status.
 type CustomerManagerCustomerStatus string
 
@@ -4358,6 +4417,16 @@ type CustomerManagerCustomerWebhookMethod string
 type CustomerManagerEmailVerifyResult struct {
 	Accesskey CustomerManagerAccesskey `json:"accesskey"`
 	Customer  CustomerManagerCustomer  `json:"customer"`
+}
+
+// CustomerManagerMetadata Internal configuration flags for a customer account. These flags control low-level platform behavior
+// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
+// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+type CustomerManagerMetadata struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
 }
 
 // CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.
@@ -7964,6 +8033,9 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
+
+// PutCustomersIdMetadataJSONRequestBody defines body for PutCustomersIdMetadata for application/json ContentType.
+type PutCustomersIdMetadataJSONRequestBody = CustomerManagerMetadata
 
 // PostEmailsJSONRequestBody defines body for PostEmails for application/json ContentType.
 type PostEmailsJSONRequestBody PostEmailsJSONBody

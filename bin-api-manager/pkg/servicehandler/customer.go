@@ -456,6 +456,35 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	return res, nil
 }
 
+// CustomerUpdateMetadata updates the customer's internal metadata.
+// Requires ProjectSuperAdmin permission.
+func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerUpdateMetadata",
+		"customer_id": customerID,
+	})
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	c, err := h.customerGet(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+
+	res, err := h.reqHandler.CustomerV1CustomerUpdateMetadata(ctx, customerID, metadata)
+	if err != nil {
+		log.Errorf("Could not update the customer's metadata. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CustomerSelfUpdateBillingAccountID updates the authenticated agent's own customer's billing account ID.
 // Requires CustomerAdmin permission.
 func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {

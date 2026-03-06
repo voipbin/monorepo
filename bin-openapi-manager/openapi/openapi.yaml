@@ -3206,6 +3206,20 @@ components:
         - CustomerManagerCustomerWebhookMethodGet
         - CustomerManagerCustomerWebhookMethodPut
         - CustomerManagerCustomerWebhookMethodDelete
+    CustomerManagerMetadata:
+      type: object
+      description: |
+        Internal configuration flags for a customer account. These flags control low-level platform behavior
+        (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
+        `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+      properties:
+        rtp_debug:
+          type: boolean
+          description: |
+            When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+            Use this to debug audio quality issues (one-way audio, codec problems, jitter).
+            Default is `false`. Enabling this increases storage usage — disable after debugging.
+          example: true
     CustomerManagerCustomerStatus:
       type: string
       description: Account lifecycle status.
@@ -3295,6 +3309,30 @@ components:
           x-go-type: string
           description: Timestamp when the customer was deleted.
           example: "2026-01-15T09:30:00.000000Z"
+
+    CustomerManagerCustomerAdmin:
+      description: |
+        Full customer object returned by admin-only endpoints (`/customers`, `/customers/{id}`,
+        `/customers/{id}/metadata`, `/customers/{id}/billing_account_id`, `/customers/{id}/freeze`,
+        `/customers/{id}/recover`). Extends `CustomerManagerCustomer` with internal fields that are
+        never exposed to regular users via `/customer` (singular) endpoints.
+      allOf:
+        - $ref: '#/components/schemas/CustomerManagerCustomer'
+        - type: object
+          properties:
+            terms_agreed_version:
+              type: string
+              description: "Version identifier of the Terms of Service the customer agreed to. Format: `YYYY-MM-DD` date string matching a published ToS revision."
+              example: "2026-01-01"
+            terms_agreed_ip:
+              type: string
+              format: ipv4
+              x-go-type: string
+              description: "IPv4 address from which the customer accepted the Terms of Service. Logged for legal compliance and audit trail."
+              example: "203.0.113.42"
+            metadata:
+              $ref: '#/components/schemas/CustomerManagerMetadata'
+              description: "Internal configuration flags managed exclusively by ProjectSuperAdmin via `PUT /customers/{id}/metadata`. Not visible to regular users."
 
 #########################################
 # Email Manager
@@ -6545,6 +6583,8 @@ paths:
     $ref: './paths/customers/id_recover.yaml'
   /customers/{id}/billing_account_id:
     $ref: './paths/customers/id_billing_account_id.yaml'
+  /customers/{id}/metadata:
+    $ref: './paths/customers/id_metadata.yaml'
   /customers/{id}:
     $ref: './paths/customers/id.yaml'
   /customers:

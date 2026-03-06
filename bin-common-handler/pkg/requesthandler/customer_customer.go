@@ -286,6 +286,33 @@ func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Co
 	return &res, nil
 }
 
+// CustomerV1CustomerUpdateMetadata sends a request to customer-manager
+// to update the customer's metadata.
+func (r *requestHandler) CustomerV1CustomerUpdateMetadata(ctx context.Context, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/metadata", customerID)
+
+	data := &csrequest.V1DataCustomersIDMetadataPut{
+		Metadata: metadata,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers/<customer-id>/metadata", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // CustomerV1CustomerFreeze sends the request to freeze the customer
 func (r *requestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/freeze", customerID)

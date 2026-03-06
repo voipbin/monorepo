@@ -245,3 +245,18 @@ func (mr *MockCustomerHandlerMockRecorder) UpdateBillingAccountID(ctx, id, billi
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBillingAccountID", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateBillingAccountID), ctx, id, billingAccountID)
 }
+
+// UpdateMetadata mocks base method.
+func (m *MockCustomerHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, metadata)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateMetadata indicates an expected call of UpdateMetadata.
+func (mr *MockCustomerHandlerMockRecorder) UpdateMetadata(ctx, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateMetadata), ctx, id, metadata)
+}

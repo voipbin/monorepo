@@ -22,6 +22,8 @@ create table customer_customers(
   terms_agreed_version varchar(64) not null default '',
   terms_agreed_ip varchar(45) not null default '',
 
+  metadata json,
+
   tm_deletion_scheduled datetime(6),
 
   tm_create datetime(6),

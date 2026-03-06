@@ -25,6 +25,8 @@ const (
 	FieldTermsAgreedVersion Field = "terms_agreed_version"
 	FieldTermsAgreedIP      Field = "terms_agreed_ip"
 
+	FieldMetadata Field = "metadata"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"

@@ -1,0 +1,37 @@
+put:
+  summary: Update a customer's metadata.
+  description: |
+    Updates internal configuration flags for a customer account. Requires `ProjectSuperAdmin` permission.
+    Regular users cannot access this endpoint. The response returns the full admin customer object
+    including the updated metadata.
+  tags:
+    - Customer
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: "The unique identifier of the customer (UUID). Obtained from the `id` field of `GET /customers`."
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CustomerManagerMetadata'
+  responses:
+    '200':
+      description: The updated customer object with the new metadata applied.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'
+    '400':
+      description: |
+        Invalid request. Possible causes:
+        - The `id` path parameter is not a valid UUID.
+        - The request body is not valid JSON or does not match the `CustomerManagerMetadata` schema.
+    '403':
+      description: |
+        Permission denied. The authenticated agent does not have `ProjectSuperAdmin` permission.
+        Only ProjectSuperAdmin agents can update customer metadata.

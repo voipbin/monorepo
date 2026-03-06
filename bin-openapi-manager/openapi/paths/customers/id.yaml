@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'
 
 put:
   summary: Update a customer.
@@ -61,7 +61,7 @@ put:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'
 
 delete:
   summary: Delete a customer.
@@ -79,4 +79,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CustomerManagerCustomer'
+            $ref: '#/components/schemas/CustomerManagerCustomerAdmin'
