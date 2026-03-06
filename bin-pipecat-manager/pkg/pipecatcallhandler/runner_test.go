@@ -2,6 +2,7 @@ package pipecatcallhandler
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -111,6 +112,78 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 			wg.Wait()
 		})
 	}
+}
+
+func Test_runnerHandleTextFrame(t *testing.T) {
+
+	t.Run("FLUSH_MEDIA is forwarded to Asterisk", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockWS := NewMockWebsocketHandler(mc)
+		h := &pipecatcallHandler{
+			websocketHandler: mockWS,
+		}
+
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
+
+		mockWS.EXPECT().WriteMessage(conn, websocket.TextMessage, []byte("FLUSH_MEDIA")).Return(nil)
+
+		h.runnerHandleTextFrame(se, "FLUSH_MEDIA")
+	})
+
+	t.Run("FLUSH_MEDIA with nil ConnAst does not panic", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &pipecatcallHandler{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: nil,
+		}
+
+		// Should log a warning but not panic or call WriteMessage
+		h.runnerHandleTextFrame(se, "FLUSH_MEDIA")
+	})
+
+	t.Run("FLUSH_MEDIA WriteMessage error is logged without panic", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockWS := NewMockWebsocketHandler(mc)
+		h := &pipecatcallHandler{
+			websocketHandler: mockWS,
+		}
+
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
+
+		mockWS.EXPECT().WriteMessage(conn, websocket.TextMessage, []byte("FLUSH_MEDIA")).Return(fmt.Errorf("write error"))
+
+		h.runnerHandleTextFrame(se, "FLUSH_MEDIA")
+	})
+
+	t.Run("non-FLUSH_MEDIA text is ignored", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &pipecatcallHandler{}
+		conn := &websocket.Conn{}
+		se := &pipecatcall.Session{
+			Ctx:     context.Background(),
+			ConnAst: conn,
+		}
+
+		// No WriteMessage expectation — should not be called
+		h.runnerHandleTextFrame(se, "some other text")
+	})
 }
 
 func Test_runnerWebsocketHandleAudio(t *testing.T) {
