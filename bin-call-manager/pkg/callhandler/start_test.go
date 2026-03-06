@@ -168,6 +168,9 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			expectActions: []fmaction.Action{
 				{
+					Type: fmaction.TypeAnswer,
+				},
+				{
 					Type: fmaction.TypeConferenceJoin,
 					Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
 						ConferenceID: uuid.FromStringOrNil("bad943d8-9b59-11ea-b409-4ba263721f17"),
