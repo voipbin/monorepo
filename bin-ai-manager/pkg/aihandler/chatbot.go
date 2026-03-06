@@ -40,6 +40,10 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
 	}
 
+	if err := vadConfig.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid vad_config: %w", err)
+	}
+
 	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
@@ -75,6 +79,10 @@ func (h *aiHandler) Update(
 
 	if !sttType.IsValid() {
 		return nil, fmt.Errorf("invalid stt_type: %s. valid values: %s", sttType, strings.Join(sttType.ValidValues(), ", "))
+	}
+
+	if err := vadConfig.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
 	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig)

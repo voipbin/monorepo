@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -17,6 +18,26 @@ type VADConfig struct {
 	StartSecs  *float64 `json:"start_secs,omitempty"`
 	StopSecs   *float64 `json:"stop_secs,omitempty"`
 	MinVolume  *float64 `json:"min_volume,omitempty"`
+}
+
+// Validate checks that VADConfig values are within acceptable ranges.
+func (v *VADConfig) Validate() error {
+	if v == nil {
+		return nil
+	}
+	if v.Confidence != nil && (*v.Confidence < 0 || *v.Confidence > 1) {
+		return fmt.Errorf("confidence must be between 0.0 and 1.0")
+	}
+	if v.MinVolume != nil && (*v.MinVolume < 0 || *v.MinVolume > 1) {
+		return fmt.Errorf("min_volume must be between 0.0 and 1.0")
+	}
+	if v.StartSecs != nil && *v.StartSecs < 0 {
+		return fmt.Errorf("start_secs must be non-negative")
+	}
+	if v.StopSecs != nil && *v.StopSecs < 0 {
+		return fmt.Errorf("stop_secs must be non-negative")
+	}
+	return nil
 }
 
 // AI define

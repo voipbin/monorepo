@@ -40,13 +40,13 @@ type resolvedMemberData struct {
 // resolvedAIData contains the AI engine configuration for a team member,
 // including credentials, model, prompt, and TTS/STT settings.
 type resolvedAIData struct {
-	EngineModel string         `json:"engine_model"`
-	EngineKey   string         `json:"engine_key"`
-	InitPrompt  string         `json:"init_prompt"`
-	Parameter   map[string]any `json:"parameter,omitempty"`
-	TTSType     string         `json:"tts_type"`
-	TTSVoiceID  string         `json:"tts_voice_id"`
-	STTType     string         `json:"stt_type"`
+	EngineModel string          `json:"engine_model"`
+	EngineKey   string          `json:"engine_key"`
+	InitPrompt  string          `json:"init_prompt"`
+	Parameter   map[string]any  `json:"parameter,omitempty"`
+	TTSType     string          `json:"tts_type"`
+	TTSVoiceID  string          `json:"tts_voice_id"`
+	STTType     string          `json:"stt_type"`
 	VADConfig   *amai.VADConfig `json:"vad_config,omitempty"`
 }
 
@@ -177,7 +177,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 				TTSType:     string(ai.TTSType),
 				TTSVoiceID:  ai.TTSVoiceID,
 				STTType:     string(ai.STTType),
-			VADConfig:   ai.VADConfig,
+				VADConfig:   ai.VADConfig,
 			},
 			Tools:       tools,
 			Transitions: transitions,
