@@ -124,12 +124,18 @@ func registerProxyRedis(addr, password string, db int, proxyID, internalAddr str
 		DB:       db,
 	})
 	key := fmt.Sprintf("rtpengine.%s.address-internal", proxyID)
+
+	// Write synchronously first so the key exists before we start accepting commands.
+	if err := client.Set(context.Background(), key, internalAddr, 24*time.Hour).Err(); err != nil {
+		return fmt.Errorf("initial Redis registration: %w", err)
+	}
+
 	go func() {
 		for {
-			if err := client.Set(context.Background(), key, internalAddr, 24*time.Hour).Err(); err != nil {
-				logrus.WithError(err).Errorf("Could not register proxy in Redis. key: %s", key)
-			}
 			time.Sleep(5 * time.Minute)
+			if err := client.Set(context.Background(), key, internalAddr, 24*time.Hour).Err(); err != nil {
+				logrus.WithError(err).Errorf("Could not refresh proxy in Redis. key: %s", key)
+			}
 		}
 	}()
 	return nil
