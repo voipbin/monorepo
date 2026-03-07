@@ -732,10 +732,13 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+      - voip-rtpengine-proxy-test:
+          requires:
+            - build-approval
       - voip-rtpengine-proxy-build:
           <<: *context_production
           requires:
-            - build-approval
+            - voip-rtpengine-proxy-test
 
 
 #########################################################################################################################################################################
@@ -1618,6 +1621,13 @@ jobs:
           source-directory: voip-asterisk-proxy
 
   # voip-rtpengine-proxy
+  voip-rtpengine-proxy-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: voip-rtpengine-proxy
+
   voip-rtpengine-proxy-build:
     docker: *gcp_image
     resource_class: small

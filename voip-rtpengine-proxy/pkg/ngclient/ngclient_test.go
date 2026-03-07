@@ -86,9 +86,13 @@ func TestSend_RoundTrip(t *testing.T) {
 // that cookie does not appear inside the bencode dict.
 func TestSend_WireFormat(t *testing.T) {
 	var received []byte
+	// captured is closed by the handler after writing to received, providing the
+	// happens-before guarantee needed to read received safely in the test goroutine.
+	captured := make(chan struct{})
 	addr := newTestUDPServer(t, func(req []byte) []byte {
 		received = make([]byte, len(req))
 		copy(received, req)
+		close(captured)
 		idx := bytes.IndexByte(req, ' ')
 		if idx < 0 {
 			return nil
@@ -106,6 +110,7 @@ func TestSend_WireFormat(t *testing.T) {
 
 	cmd := map[string]interface{}{"command": "ping"}
 	c.Send(cmd) //nolint:errcheck
+	<-captured // wait for handler to finish writing received
 
 	// cookie must be the prefix before the first space
 	idx := bytes.IndexByte(received, ' ')
