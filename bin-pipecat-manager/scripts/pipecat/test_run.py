@@ -499,6 +499,130 @@ class TestParseLanguage:
         assert _parse_language("") == Language.EN_US
 
 
+class TestUnpacedTransport:
+    """Tests for unpaced transport classes and create_websocket_transport.
+
+    Uses AST inspection to verify class structure without triggering module-level
+    mock pollution that breaks subsequent imports.
+    """
+
+    def _parse_run_py(self):
+        """Parse run.py into an AST."""
+        run_path = os.path.join(os.path.dirname(__file__), "run.py")
+        with open(run_path) as f:
+            return ast.parse(f.read(), filename="run.py")
+
+    def test_unpaced_output_transport_class_exists(self):
+        """UnpacedWebsocketClientOutputTransport must be defined in run.py."""
+        tree = self._parse_run_py()
+        class_names = [
+            node.name for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef)
+        ]
+        assert "UnpacedWebsocketClientOutputTransport" in class_names
+
+    def test_unpaced_output_transport_subclasses_correctly(self):
+        """UnpacedWebsocketClientOutputTransport must subclass WebsocketClientOutputTransport."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == "UnpacedWebsocketClientOutputTransport":
+                base_names = [
+                    b.id if isinstance(b, ast.Name) else
+                    b.attr if isinstance(b, ast.Attribute) else None
+                    for b in node.bases
+                ]
+                assert "WebsocketClientOutputTransport" in base_names, (
+                    f"Expected WebsocketClientOutputTransport as base class, got {base_names}"
+                )
+                return
+        pytest.fail("UnpacedWebsocketClientOutputTransport class not found")
+
+    def test_write_audio_sleep_is_noop(self):
+        """_write_audio_sleep must be overridden to no-op (body is 'pass')."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == "UnpacedWebsocketClientOutputTransport":
+                for item in node.body:
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == "_write_audio_sleep":
+                        # Body should be a single 'pass' statement
+                        assert len(item.body) == 1 and isinstance(item.body[0], ast.Pass), (
+                            "_write_audio_sleep body must be a single 'pass' statement (no-op)"
+                        )
+                        return
+                pytest.fail("_write_audio_sleep method not found in UnpacedWebsocketClientOutputTransport")
+        pytest.fail("UnpacedWebsocketClientOutputTransport class not found")
+
+    def test_process_frame_sends_flush_media_on_interruption(self):
+        """process_frame must check for InterruptionFrame and send FLUSH_MEDIA."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == "UnpacedWebsocketClientOutputTransport":
+                for item in node.body:
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == "process_frame":
+                        source = ast.dump(item)
+                        assert "InterruptionFrame" in source, (
+                            "process_frame must check for InterruptionFrame"
+                        )
+                        assert "FLUSH_MEDIA" in source, (
+                            "process_frame must send FLUSH_MEDIA TextFrame on interruption"
+                        )
+                        return
+                pytest.fail("process_frame method not found in UnpacedWebsocketClientOutputTransport")
+        pytest.fail("UnpacedWebsocketClientOutputTransport class not found")
+
+    def test_unpaced_transport_class_exists(self):
+        """UnpacedWebsocketClientTransport must be defined in run.py."""
+        tree = self._parse_run_py()
+        class_names = [
+            node.name for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef)
+        ]
+        assert "UnpacedWebsocketClientTransport" in class_names
+
+    def test_unpaced_transport_subclasses_correctly(self):
+        """UnpacedWebsocketClientTransport must subclass WebsocketClientTransport."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == "UnpacedWebsocketClientTransport":
+                base_names = [
+                    b.id if isinstance(b, ast.Name) else
+                    b.attr if isinstance(b, ast.Attribute) else None
+                    for b in node.bases
+                ]
+                assert "WebsocketClientTransport" in base_names, (
+                    f"Expected WebsocketClientTransport as base class, got {base_names}"
+                )
+                return
+        pytest.fail("UnpacedWebsocketClientTransport class not found")
+
+    def test_unpaced_transport_overrides_output_method(self):
+        """UnpacedWebsocketClientTransport must override output() to return unpaced transport."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == "UnpacedWebsocketClientTransport":
+                for item in node.body:
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == "output":
+                        source = ast.dump(item)
+                        assert "UnpacedWebsocketClientOutputTransport" in source, (
+                            "output() must create UnpacedWebsocketClientOutputTransport"
+                        )
+                        return
+                pytest.fail("output method not found in UnpacedWebsocketClientTransport")
+        pytest.fail("UnpacedWebsocketClientTransport class not found")
+
+    def test_output_direction_uses_unpaced_transport(self):
+        """create_websocket_transport with direction='output' must use UnpacedWebsocketClientTransport."""
+        tree = self._parse_run_py()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == "create_websocket_transport":
+                source = ast.dump(node)
+                assert "UnpacedWebsocketClientTransport" in source, (
+                    "create_websocket_transport must use UnpacedWebsocketClientTransport for output direction"
+                )
+                return
+        pytest.fail("create_websocket_transport function not found")
+
+
 class TestCreateTTSService:
     """Tests for create_tts_service function."""
 
