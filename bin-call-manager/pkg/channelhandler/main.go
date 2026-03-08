@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
@@ -121,6 +122,7 @@ type channelHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	cache         cachehandler.CacheHandler
 }
 
 // list of default values
@@ -171,13 +173,14 @@ func init() {
 }
 
 // NewChannelHandler returns new service handler
-func NewChannelHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler) ChannelHandler {
+func NewChannelHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ChannelHandler {
 
 	h := &channelHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
 		notifyHandler: n,
 		db:            db,
+		cache:         cache,
 	}
 
 	return h

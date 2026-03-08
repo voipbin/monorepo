@@ -71,7 +71,7 @@ func initCallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (callhandle
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCallEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
-	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
+	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db, cache)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler, cache, config.Get().AsteriskWSPort)
 	recordingHandlerInst := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
