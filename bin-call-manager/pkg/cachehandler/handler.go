@@ -170,6 +170,12 @@ func (h *handler) RecordingSet(ctx context.Context, record *recording.Recording)
 	return nil
 }
 
+// KamailioMetadataGet returns the Kamailio call metadata hash for the given SIP Call-ID.
+func (h *handler) KamailioMetadataGet(ctx context.Context, sipCallID string) (map[string]string, error) {
+	key := fmt.Sprintf("kamailio:%s", sipCallID)
+	return h.Cache.HGetAll(ctx, key).Result()
+}
+
 // CallAppAMDGet gets the given callapplication amd info from the cache.
 func (h *handler) CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error) {
 

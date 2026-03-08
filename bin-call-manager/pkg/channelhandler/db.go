@@ -509,6 +509,14 @@ func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn 
 		log.Debugf("Could not get channel variable. variable: CHANNEL(pjsip,Call-ID), err: %v", err)
 	}
 
+	if sipCallID != "" {
+		if meta, errMeta := h.cache.KamailioMetadataGet(ctx, sipCallID); errMeta != nil {
+			log.Debugf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
+		} else if len(meta) > 0 {
+			log.WithField("kamailio_metadata", meta).Infof("Kamailio call metadata. channel_id: %s, sip_call_id: %s", cn.ID, sipCallID)
+		}
+	}
+
 	if errSet := h.db.ChannelSetSIPCallID(ctx, cn.ID, sipCallID); errSet != nil {
 		return nil, errors.Wrap(errSet, "could not set channel's sip_call_id")
 	}
@@ -531,6 +539,14 @@ func (h *channelHandler) UpdateSIPInfo(ctx context.Context, id string, sipCallID
 		"sip_privacy":   sipPrivacy,
 		"sip_transport": sipTransport,
 	})
+
+	if sipCallID != "" {
+		if meta, errMeta := h.cache.KamailioMetadataGet(ctx, sipCallID); errMeta != nil {
+			log.Debugf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
+		} else if len(meta) > 0 {
+			log.WithField("kamailio_metadata", meta).Infof("Kamailio call metadata. channel_id: %s, sip_call_id: %s", id, sipCallID)
+		}
+	}
 
 	// set sip call-id
 	if errSet := h.setSIPCallID(ctx, id, sipCallID); errSet != nil {

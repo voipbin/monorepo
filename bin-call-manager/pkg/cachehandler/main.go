@@ -57,6 +57,8 @@ type CacheHandler interface {
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingSet(ctx context.Context, record *recording.Recording) error
+
+	KamailioMetadataGet(ctx context.Context, sipCallID string) (map[string]string, error)
 }
 
 // NewHandler creates DBHandler

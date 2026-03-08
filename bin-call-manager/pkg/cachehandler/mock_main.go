@@ -310,6 +310,21 @@ func (mr *MockCacheHandlerMockRecorder) GroupcallSet(ctx, data any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSet", reflect.TypeOf((*MockCacheHandler)(nil).GroupcallSet), ctx, data)
 }
 
+// KamailioMetadataGet mocks base method.
+func (m *MockCacheHandler) KamailioMetadataGet(ctx context.Context, sipCallID string) (map[string]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KamailioMetadataGet", ctx, sipCallID)
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// KamailioMetadataGet indicates an expected call of KamailioMetadataGet.
+func (mr *MockCacheHandlerMockRecorder) KamailioMetadataGet(ctx, sipCallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KamailioMetadataGet", reflect.TypeOf((*MockCacheHandler)(nil).KamailioMetadataGet), ctx, sipCallID)
+}
+
 // RecordingGet mocks base method.
 func (m *MockCacheHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
