@@ -359,7 +359,7 @@ func TestUtilHandler_TimeNow(t *testing.T) {
 	result := h.TimeNow()
 
 	if result == nil {
-		t.Error("TimeNow() returned nil")
+		t.Fatal("TimeNow() returned nil")
 	}
 
 	if result.IsZero() {
@@ -373,7 +373,7 @@ func TestUtilHandler_TimeNowAdd(t *testing.T) {
 	result := h.TimeNowAdd(duration)
 
 	if result == nil {
-		t.Error("TimeNowAdd() returned nil")
+		t.Fatal("TimeNowAdd() returned nil")
 	}
 
 	if result.IsZero() {

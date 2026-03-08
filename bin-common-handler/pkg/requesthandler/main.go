@@ -375,6 +375,9 @@ type RequestHandler interface {
 	// asterisk proxy
 	AstProxyRecordingFileMove(ctx context.Context, asteriskID string, filenames []string, timeout int) error
 
+	// RTPEngine
+	RTPEngineV1CommandsSend(ctx context.Context, rtpengineID string, command map[string]interface{}) (map[string]interface{}, error)
+
 	// agent-manager agent
 	AgentV1AgentCreate(
 		ctx context.Context,
