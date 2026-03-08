@@ -2,6 +2,7 @@ package cachehandler
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -171,9 +172,26 @@ func (h *handler) RecordingSet(ctx context.Context, record *recording.Recording)
 }
 
 // KamailioMetadataGet returns the Kamailio call metadata hash for the given SIP Call-ID.
+// Values are hex-encoded by Kamailio (using s.encode.hexa), so they are decoded here.
 func (h *handler) KamailioMetadataGet(ctx context.Context, sipCallID string) (map[string]string, error) {
 	key := fmt.Sprintf("kamailio:%s", sipCallID)
-	return h.Cache.HGetAll(ctx, key).Result()
+	raw, err := h.Cache.HGetAll(ctx, key).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	res := make(map[string]string, len(raw))
+	for k, v := range raw {
+		decoded, errDecode := hex.DecodeString(v)
+		if errDecode != nil {
+			// not hex-encoded, use raw value
+			res[k] = v
+			continue
+		}
+		res[k] = string(decoded)
+	}
+
+	return res, nil
 }
 
 // CallAppAMDGet gets the given callapplication amd info from the cache.

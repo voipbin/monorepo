@@ -747,6 +747,20 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetSIPCallID(ctx, id, sipID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetSIPCallID", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetSIPCallID), ctx, id, sipID)
 }
 
+// ChannelSetSIPData mocks base method.
+func (m *MockDBHandler) ChannelSetSIPData(ctx context.Context, id string, sipData map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetSIPData", ctx, id, sipData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetSIPData indicates an expected call of ChannelSetSIPData.
+func (mr *MockDBHandlerMockRecorder) ChannelSetSIPData(ctx, id, sipData any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetSIPData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetSIPData), ctx, id, sipData)
+}
+
 // ChannelSetSIPTransport mocks base method.
 func (m *MockDBHandler) ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
 	m.ctrl.T.Helper()

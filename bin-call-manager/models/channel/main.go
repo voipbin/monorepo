@@ -17,8 +17,9 @@ type Channel struct {
 	Tech       Tech   `json:"tech"`
 
 	// sip information
-	SIPCallID    string       `json:"sip_call_id"`   // sip's call id
-	SIPTransport SIPTransport `json:"sip_transport"` // sip's transport
+	SIPCallID    string            `json:"sip_call_id"`         // sip's call id
+	SIPTransport SIPTransport      `json:"sip_transport"`       // sip's transport
+	SIPData      map[string]string `json:"sip_data"` // sip metadata from kamailio
 
 	// source/destination
 	SourceName        string `json:"source_name"`

@@ -90,6 +90,7 @@ type DBHandler interface {
 	ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error
 	ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
+	ChannelSetSIPData(ctx context.Context, id string, sipData map[string]string) error
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
 	ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error
