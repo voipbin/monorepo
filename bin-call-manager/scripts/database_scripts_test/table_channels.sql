@@ -9,6 +9,7 @@ create table call_channels(
   -- sip info
   sip_call_id     varchar(255), -- sip call id.
   sip_transport   varchar(255), -- sip transport type. udp, tcp, tls, wss, ...
+  sip_data        json,         -- sip metadata from kamailio
 
   -- src/dst
   src_name    varchar(255), -- source name

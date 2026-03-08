@@ -27,6 +27,7 @@ const (
 
 		sip_call_id,
 		sip_transport,
+		sip_data,
 
 		src_name,
 		src_number,
@@ -62,6 +63,7 @@ const (
 // channelGetFromRow gets the channel from the row.
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	var data sql.NullString
+	var sipData sql.NullString
 	var stasisData sql.NullString
 	var tmCreateStr, tmUpdateStr, tmDeleteStr, tmAnswerStr, tmRingingStr, tmEndStr sql.NullString
 
@@ -75,6 +77,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 
 		&res.SIPCallID,
 		&res.SIPTransport,
+		&sipData,
 
 		&res.SourceName,
 		&res.SourceNumber,
@@ -113,6 +116,13 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	}
 	if res.Data == nil {
 		res.Data = map[string]interface{}{}
+	}
+
+	// SIPData
+	if sipData.Valid {
+		if err := json.Unmarshal([]byte(sipData.String), &res.SIPData); err != nil {
+			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the sip_data. err: %v", err)
+		}
 	}
 
 	// StasisData
@@ -177,6 +187,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 		sip_call_id,
 		sip_transport,
+		sip_data,
 
 		src_name,
 		src_number,
@@ -206,7 +217,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 	) values(
 		?, ?, ?, ?, ?,
-		?, ?,
+		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?,
@@ -219,6 +230,10 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	data, err := json.Marshal(c.Data)
 	if err != nil {
 		return fmt.Errorf("ChannelCreate: Could not marshal the data. err: %v", err)
+	}
+	sipData, err := json.Marshal(c.SIPData)
+	if err != nil {
+		return fmt.Errorf("ChannelCreate: Could not marshal the sip_data. err: %v", err)
 	}
 	stasisData, err := json.Marshal(c.StasisData)
 	if err != nil {
@@ -234,6 +249,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 		c.SIPCallID,
 		c.SIPTransport,
+		sipData,
 
 		c.SourceName,
 		c.SourceNumber,
@@ -505,6 +521,33 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 	_, err := h.db.Exec(q, sipID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPCallID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.channelUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ChannelSetSIPData sets the channel's sip_data
+func (h *handler) ChannelSetSIPData(ctx context.Context, id string, sipData map[string]string) error {
+	//prepare
+	q := `
+	update call_channels set
+		sip_data = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpData, err := json.Marshal(sipData)
+	if err != nil {
+		return fmt.Errorf("ChannelSetSIPData: Could not marshal the sip_data. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeNow(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetSIPData. err: %v", err)
 	}
 
 	// update the cache
