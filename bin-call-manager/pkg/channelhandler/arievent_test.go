@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
@@ -131,18 +132,21 @@ func Test_ARIStasisStart(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := channelHandler{
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
+				cache:         mockCache,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelSetStasisInfo(ctx, tt.expectID, tt.expectType, tt.expectStasisName, tt.expectStasisData, tt.expectDirection).Return(nil)
 			mockDB.EXPECT().ChannelGet(ctx, tt.expectID).Return(tt.responseChannel, nil)
 
+			mockCache.EXPECT().KamailioMetadataGet(ctx, tt.expectSIPCallID).Return(map[string]string{}, nil)
 			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.expectID, tt.expectSIPCallID).Return(nil)
 			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_pai", tt.expectSIPPai).Return(nil)
 			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_privacy", tt.expectSIPPrivacy).Return(nil)
@@ -329,9 +333,11 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := channelHandler{
 				db:         mockDB,
 				reqHandler: mockRequest,
+				cache:      mockCache,
 			}
 
 			ctx := context.Background()
@@ -341,6 +347,7 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 
 			// set sip_call_id
 			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,call-id)`).Return(tt.responseValCallID, nil)
+			mockCache.EXPECT().KamailioMetadataGet(ctx, tt.responseValCallID).Return(map[string]string{}, nil)
 			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.responseChannel.ID, tt.responseValCallID).Return(nil)
 
 			mockDB.EXPECT().ChannelGet(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)

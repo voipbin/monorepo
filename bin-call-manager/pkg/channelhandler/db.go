@@ -511,7 +511,7 @@ func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn 
 
 	if sipCallID != "" {
 		if meta, errMeta := h.cache.KamailioMetadataGet(ctx, sipCallID); errMeta != nil {
-			log.Debugf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
+			log.Warnf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
 		} else if len(meta) > 0 {
 			log.WithField("kamailio_metadata", meta).Infof("Kamailio call metadata. channel_id: %s, sip_call_id: %s", cn.ID, sipCallID)
 		}
@@ -542,7 +542,7 @@ func (h *channelHandler) UpdateSIPInfo(ctx context.Context, id string, sipCallID
 
 	if sipCallID != "" {
 		if meta, errMeta := h.cache.KamailioMetadataGet(ctx, sipCallID); errMeta != nil {
-			log.Debugf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
+			log.Warnf("Could not get Kamailio metadata from Redis. sip_call_id: %s, err: %v", sipCallID, errMeta)
 		} else if len(meta) > 0 {
 			log.WithField("kamailio_metadata", meta).Infof("Kamailio call metadata. channel_id: %s, sip_call_id: %s", id, sipCallID)
 		}
