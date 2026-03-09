@@ -32,10 +32,14 @@ func New(recordingDir string, uploader gcsuploader.Uploader) Watcher {
 func (w *watcher) Run(ctx context.Context) error {
 	metadataDir := filepath.Join(w.recordingDir, "metadata")
 
-	// Use 0777 so both the proxy and RTPEngine (uid 901) can write to this directory.
-	// RTPEngine needs write access to move metadata files from tmp/ into metadata/.
 	if err := os.MkdirAll(metadataDir, 0777); err != nil {
 		return fmt.Errorf("could not create metadata dir: %w", err)
+	}
+	// Explicitly chmod because MkdirAll is affected by umask (0022 → 0755),
+	// and won't change permissions on an existing directory.
+	// RTPEngine (uid 901) needs write access to move metadata files from tmp/.
+	if err := os.Chmod(metadataDir, 0777); err != nil {
+		return fmt.Errorf("could not chmod metadata dir: %w", err)
 	}
 
 	// Startup scan for unprocessed files
