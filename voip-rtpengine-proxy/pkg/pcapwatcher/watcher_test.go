@@ -29,7 +29,7 @@ func TestProcessMetadataFile(t *testing.T) {
 	metadataContent := pcapPath + "\n\nSDP mode: offer\n"
 	_ = os.WriteFile(metadataPath, []byte(metadataContent), 0644)
 
-	expectedObject := "rtp-recordings/testcall/testcall-tag1-ssrc1.pcap"
+	expectedObject := "rtp-recordings/testcall-tag1-ssrc1.pcap"
 	mockUploader.EXPECT().
 		Upload(pcapPath, expectedObject).
 		Return("gs://bucket/"+expectedObject, nil)
@@ -79,11 +79,11 @@ func TestScanAndProcess(t *testing.T) {
 	_ = os.WriteFile(metadataPath2, []byte(pcapPath2+"\n"), 0644)
 
 	mockUploader.EXPECT().
-		Upload(pcapPath1, "rtp-recordings/call1/call1-tag1-ssrc1.pcap").
-		Return("gs://bucket/rtp-recordings/call1/call1-tag1-ssrc1.pcap", nil)
+		Upload(pcapPath1, "rtp-recordings/call1-tag1-ssrc1.pcap").
+		Return("gs://bucket/rtp-recordings/call1-tag1-ssrc1.pcap", nil)
 	mockUploader.EXPECT().
-		Upload(pcapPath2, "rtp-recordings/call2/call2-tag2-ssrc2.pcap").
-		Return("gs://bucket/rtp-recordings/call2/call2-tag2-ssrc2.pcap", nil)
+		Upload(pcapPath2, "rtp-recordings/call2-tag2-ssrc2.pcap").
+		Return("gs://bucket/rtp-recordings/call2-tag2-ssrc2.pcap", nil)
 
 	w := &watcher{
 		recordingDir: tmpDir,
