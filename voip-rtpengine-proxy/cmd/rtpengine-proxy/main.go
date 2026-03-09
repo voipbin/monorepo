@@ -11,8 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/voip-rtpengine-proxy/pkg/gcsuploader"
 	"monorepo/voip-rtpengine-proxy/pkg/listenhandler"
 	"monorepo/voip-rtpengine-proxy/pkg/ngclient"
+	"monorepo/voip-rtpengine-proxy/pkg/pcapwatcher"
 )
 
 const serviceName = "rtpengine-proxy"
@@ -31,6 +33,9 @@ var (
 
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
+
+	recordingDir  = ""
+	gcsBucketName = ""
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -76,6 +81,32 @@ func main() {
 		return
 	}
 	log.Infof("%s running. ID: %s", serviceName, proxyID)
+
+	// Start pcap watcher if recording and GCS are configured
+	if recordingDir != "" && gcsBucketName != "" {
+		uploader, err := gcsuploader.New(gcsBucketName)
+		if err != nil {
+			log.WithError(err).Error("could not create GCS uploader, pcap watcher disabled")
+		} else {
+			defer uploader.Close()
+
+			w := pcapwatcher.New(recordingDir, uploader)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			go func() {
+				if err := w.Run(ctx); err != nil {
+					log.WithError(err).Error("pcap watcher error")
+				}
+			}()
+			log.WithFields(logrus.Fields{
+				"recording_dir": recordingDir,
+				"gcs_bucket":    gcsBucketName,
+			}).Info("pcap watcher enabled")
+		}
+	} else {
+		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCS_BUCKET_NAME not set)")
+	}
 
 	sig := <-chSigs
 	log.Infof("Terminating %s. sig: %v", serviceName, sig)
