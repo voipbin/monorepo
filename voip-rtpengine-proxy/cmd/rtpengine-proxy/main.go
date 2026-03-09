@@ -88,7 +88,11 @@ func main() {
 		if err != nil {
 			log.WithError(err).Error("could not create GCS uploader, pcap watcher disabled")
 		} else {
-			defer uploader.Close()
+			defer func() {
+				if err := uploader.Close(); err != nil {
+					log.WithError(err).Warn("could not close GCS uploader")
+				}
+			}()
 
 			w := pcapwatcher.New(recordingDir, uploader)
 			ctx, cancel := context.WithCancel(context.Background())

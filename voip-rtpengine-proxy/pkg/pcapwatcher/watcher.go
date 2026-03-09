@@ -43,7 +43,11 @@ func (w *watcher) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not create fsnotify watcher: %w", err)
 	}
-	defer fsWatcher.Close()
+	defer func() {
+		if err := fsWatcher.Close(); err != nil {
+			log.WithError(err).Warn("could not close fsnotify watcher")
+		}
+	}()
 
 	if err := fsWatcher.Add(metadataDir); err != nil {
 		return fmt.Errorf("could not watch metadata dir: %w", err)
@@ -132,7 +136,9 @@ func (w *watcher) processProcessingFile(processingPath string) error {
 
 	pcapPath, err := parsePcapPathFromMetadata(string(content))
 	if err != nil {
-		os.Remove(processingPath)
+		if removeErr := os.Remove(processingPath); removeErr != nil {
+			log.WithError(removeErr).WithField("file", processingPath).Warn("could not remove invalid processing file")
+		}
 		return fmt.Errorf("could not parse metadata: %w", err)
 	}
 
