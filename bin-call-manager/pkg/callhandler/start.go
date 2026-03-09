@@ -642,6 +642,27 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 	log.WithField("call", c).Debugf("Created a call. call: %s", c.ID)
 
+	// RTP debug: check if customer has RTP debug enabled
+	cs, errCS := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if errCS != nil {
+		log.Errorf("Could not get customer for RTP debug check. customer_id: %s, err: %v", customerID, errCS)
+	} else {
+		log.WithField("customer", cs).Debugf("Retrieved customer for RTP debug check. customer_id: %s", cs.ID)
+		if cs.Metadata.RTPDebug {
+			if c.Metadata == nil {
+				c.Metadata = map[string]interface{}{}
+			}
+			c.Metadata[call.MetadataKeyRTPDebug] = true
+			if errMeta := h.db.CallUpdate(ctx, c.ID, map[call.Field]any{
+				call.FieldMetadata: c.Metadata,
+			}); errMeta != nil {
+				log.Errorf("Could not update call metadata for RTP debug. err: %v", errMeta)
+			} else {
+				h.rtpDebugStartRecording(ctx, cn)
+			}
+		}
+	}
+
 	// set variables
 	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
 		log.Errorf("Could not set variables. err: %v", errVariables)

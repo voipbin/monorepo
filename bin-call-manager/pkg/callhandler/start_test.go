@@ -252,7 +252,8 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
 
 			// addCallBridge
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseConference.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
+			// Times(2): first call for ValidateCustomerNotFrozen, second for RTP debug check
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseConference.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}).Return(tt.responseBridge, nil)
@@ -448,7 +449,8 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
+			// Times(2): first call for ValidateCustomerNotFrozen, second for RTP debug check
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
@@ -641,7 +643,8 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
+			// Times(2): first call for ValidateCustomerNotFrozen, second for RTP debug check
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)

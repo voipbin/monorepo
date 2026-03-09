@@ -35,8 +35,9 @@ type WebhookMessage struct {
 
 	// info
 	Status        Status          `json:"status,omitempty"`
-	Action        fmaction.Action `json:"action,omitempty"`
-	Direction     Direction       `json:"direction,omitempty"`
+	Action        fmaction.Action        `json:"action,omitempty"`
+	Metadata      map[string]interface{} `json:"metadata,omitempty"`
+	Direction     Direction              `json:"direction,omitempty"`
 	MuteDirection MuteDirection   `json:"mute_direction,omitempty"`
 
 	HangupBy     HangupBy     `json:"hangup_by,omitempty"`
@@ -72,6 +73,7 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 
 		Status:        h.Status,
 		Action:        h.Action,
+		Metadata:      h.Metadata,
 		Direction:     h.Direction,
 		MuteDirection: h.MuteDirection,
 

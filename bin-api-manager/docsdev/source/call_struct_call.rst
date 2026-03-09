@@ -34,6 +34,7 @@ Call
         "action": {
             ...
         },
+        "metadata": {},
         "direction": "<string>",
         "hangup_by": "<string>",
         "hangup_reason": "<string>",
@@ -55,6 +56,7 @@ Call
 * ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
 * ``status`` (enum string): The call's current status. See :ref:`Status <call-struct-call-status>`.
 * ``action`` (Object): The call's currently executing flow action. See :ref:`Action <flow-struct-action>`.
+* ``metadata`` (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: ``rtp_debug`` (boolean) — when true, RTPEngine is capturing RTP traffic for this call.
 * ``direction`` (enum string): The call's direction. See :ref:`Direction <call-struct-call-direction>`.
 * ``hangup_by`` (enum string): Which endpoint initiated the hangup. See :ref:`Hangup by <call-struct-call-hangupby>`.
 * ``hangup_reason`` (enum string): The reason the call ended. See :ref:`Hangup reason <call-struct-call-hangupreason>`.
@@ -106,6 +108,7 @@ Example
             },
             "tm_execute": "2022-05-01 15:10:38.785510878"
         },
+        "metadata": {},
         "direction": "outgoing",
         "hangup_by": "local",
         "hangup_reason": "normal",

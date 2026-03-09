@@ -1516,6 +1516,11 @@ type CallManagerCall struct {
 	// MasterCallId The unique identifier of the master call that initiated this call. Returned from the `POST /calls` or `GET /calls` response.
 	MasterCallId *string `json:"master_call_id,omitempty"`
 
+	// Metadata Internal metadata for the call. Contains key-value pairs set by the system.
+	// Currently supported keys:
+	// - `rtp_debug` (boolean): When `true`, RTPEngine is capturing RTP traffic for this call.
+	Metadata *map[string]interface{} `json:"metadata"`
+
 	// MuteDirection Possible mute directions for the call
 	MuteDirection *CallManagerCallMuteDirection `json:"mute_direction,omitempty"`
 
