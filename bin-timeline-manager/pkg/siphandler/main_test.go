@@ -22,7 +22,7 @@ func TestNewSIPHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockHomer := homerhandler.NewMockHomerHandler(ctrl)
-	handler := NewSIPHandler(mockHomer)
+	handler := NewSIPHandler(mockHomer, nil, "")
 
 	if handler == nil {
 		t.Error("NewSIPHandler() returned nil")
@@ -166,7 +166,7 @@ func TestGetSIPAnalysis(t *testing.T) {
 			mockHomer := homerhandler.NewMockHomerHandler(mc)
 			mockHomer.EXPECT().GetSIPMessages(gomock.Any(), tt.sipCallID, fromTime, toTime).Return(tt.homerMessages, tt.homerErr)
 
-			h := NewSIPHandler(mockHomer)
+			h := NewSIPHandler(mockHomer, nil, "")
 
 			resp, err := h.GetSIPAnalysis(context.Background(), tt.sipCallID, fromTime, toTime)
 			if tt.wantErr {
@@ -300,7 +300,7 @@ func TestGetPcap(t *testing.T) {
 				mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), tt.sipCallID, fromTime, toTime).Return(tt.rtcpPcapData, tt.rtcpPcapErr)
 			}
 
-			h := NewSIPHandler(mockHomer)
+			h := NewSIPHandler(mockHomer, nil, "")
 
 			result, err := h.GetPcap(context.Background(), tt.sipCallID, fromTime, toTime)
 			if tt.wantErr {
@@ -577,7 +577,7 @@ func TestGetPcap_EmptyRTCP(t *testing.T) {
 	mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 	mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
 
-	h := NewSIPHandler(mockHomer)
+	h := NewSIPHandler(mockHomer, nil, "")
 
 	result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
 	if err != nil {
@@ -609,7 +609,7 @@ func TestGetPcap_MergeError(t *testing.T) {
 	mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 	mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return(invalidRTCP, nil)
 
-	h := NewSIPHandler(mockHomer)
+	h := NewSIPHandler(mockHomer, nil, "")
 
 	result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
 	if err != nil {
@@ -779,7 +779,7 @@ func TestGetPcap_FilterError(t *testing.T) {
 	mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(invalidPcap, nil)
 	mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
 
-	h := NewSIPHandler(mockHomer)
+	h := NewSIPHandler(mockHomer, nil, "")
 
 	result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
 	if err != nil {
@@ -801,7 +801,7 @@ func TestGetSIPAnalysis_NilMessages(t *testing.T) {
 	mockHomer := homerhandler.NewMockHomerHandler(ctrl)
 	mockHomer.EXPECT().GetSIPMessages(gomock.Any(), "call-1", fromTime, toTime).Return(nil, nil)
 
-	h := NewSIPHandler(mockHomer)
+	h := NewSIPHandler(mockHomer, nil, "")
 
 	resp, err := h.GetSIPAnalysis(context.Background(), "call-1", fromTime, toTime)
 	if err != nil {
@@ -864,7 +864,7 @@ func TestGetPcap_MergeSuccess(t *testing.T) {
 	mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 	mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return(rtcpPcap, nil)
 
-	h := NewSIPHandler(mockHomer)
+	h := NewSIPHandler(mockHomer, nil, "")
 
 	result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
 	if err != nil {
@@ -1234,6 +1234,159 @@ func TestMergeMultiplePcaps(t *testing.T) {
 		// Only the 2 Ethernet packets should be included; Raw excluded.
 		if count != 2 {
 			t.Errorf("expected 2 packets (Raw excluded), got %d", count)
+		}
+	})
+}
+
+func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
+	fromTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	toTime := time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC)
+
+	createPcapWithTimestamp := func(srcIP, dstIP string, ts time.Time) []byte {
+		var buf bytes.Buffer
+		writer := pcapgo.NewWriter(&buf)
+		_ = writer.WriteFileHeader(65536, layers.LinkTypeEthernet)
+
+		eth := &layers.Ethernet{
+			SrcMAC:       []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+			DstMAC:       []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x02},
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+		ip := &layers.IPv4{
+			Version:  4,
+			SrcIP:    []byte(srcIP),
+			DstIP:    []byte(dstIP),
+			Protocol: layers.IPProtocolUDP,
+		}
+		udp := &layers.UDP{SrcPort: 5060, DstPort: 5060}
+		_ = udp.SetNetworkLayerForChecksum(ip)
+
+		packetBuf := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{ComputeChecksums: true}
+		_ = gopacket.SerializeLayers(packetBuf, opts, eth, ip, udp, gopacket.Payload([]byte("test")))
+		packetData := packetBuf.Bytes()
+
+		ci := gopacket.CaptureInfo{Timestamp: ts, CaptureLength: len(packetData), Length: len(packetData)}
+		_ = writer.WritePacket(ci, packetData)
+
+		return buf.Bytes()
+	}
+
+	t.Run("GCS returns RTP pcaps that get merged", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockHomer := homerhandler.NewMockHomerHandler(mc)
+		mockGCS := NewMockGCSReader(mc)
+
+		sipPcap := createPcapWithTimestamp("\x0a\x00\x00\x01", "\xcb\x00\x71\x01", fromTime.Add(time.Second))
+		rtpPcap := createPcapWithTimestamp("\xcb\x00\x71\x01", "\x0a\x00\x00\x01", fromTime.Add(2*time.Second))
+
+		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
+		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
+
+		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(
+			[]string{"rtp-recordings/call-1-ssrc1.pcap"}, nil,
+		)
+		mockGCS.EXPECT().DownloadObject(gomock.Any(), "rtp-recordings/call-1-ssrc1.pcap", gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ string, dest io.Writer) error {
+				_, err := dest.Write(rtpPcap)
+				return err
+			},
+		)
+
+		h := NewSIPHandler(mockHomer, mockGCS, "test-bucket")
+
+		result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		count := 0
+		for {
+			_, _, err := reader.ReadPacketData()
+			if err != nil {
+				break
+			}
+			count++
+		}
+		if count != 2 {
+			t.Errorf("expected 2 packets (SIP + RTP), got %d", count)
+		}
+	})
+
+	t.Run("GCS list error degrades gracefully", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockHomer := homerhandler.NewMockHomerHandler(mc)
+		mockGCS := NewMockGCSReader(mc)
+
+		sipPcap := createPcapWithTimestamp("\x0a\x00\x00\x01", "\xcb\x00\x71\x01", fromTime.Add(time.Second))
+
+		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
+		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
+		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(nil, fmt.Errorf("GCS unavailable"))
+
+		h := NewSIPHandler(mockHomer, mockGCS, "test-bucket")
+
+		result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(result) == 0 {
+			t.Error("expected SIP-only result, got empty")
+		}
+	})
+
+	t.Run("GCS empty list returns SIP only", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockHomer := homerhandler.NewMockHomerHandler(mc)
+		mockGCS := NewMockGCSReader(mc)
+
+		sipPcap := createPcapWithTimestamp("\x0a\x00\x00\x01", "\xcb\x00\x71\x01", fromTime.Add(time.Second))
+
+		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
+		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
+		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return([]string{}, nil)
+
+		h := NewSIPHandler(mockHomer, mockGCS, "test-bucket")
+
+		result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(result) == 0 {
+			t.Error("expected SIP-only result, got empty")
+		}
+	})
+
+	t.Run("GCS disabled when bucket empty", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockHomer := homerhandler.NewMockHomerHandler(mc)
+
+		sipPcap := createPcapWithTimestamp("\x0a\x00\x00\x01", "\xcb\x00\x71\x01", fromTime.Add(time.Second))
+
+		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
+		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
+
+		h := NewSIPHandler(mockHomer, nil, "")
+
+		result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(result) == 0 {
+			t.Error("expected SIP-only result, got empty")
 		}
 	})
 }

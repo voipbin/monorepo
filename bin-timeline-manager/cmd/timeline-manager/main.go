@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"cloud.google.com/go/storage"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/clickhouse"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -143,7 +145,21 @@ func runServices() error {
 	evtHandler := eventhandler.NewEventHandler(db)
 
 	homerH := homerhandler.NewHomerHandler(config.Get().HomerAPIAddress, config.Get().HomerAuthToken)
-	sipH := siphandler.NewSIPHandler(homerH)
+
+	// Initialize GCS reader for RTP pcap fetching (optional)
+	var gcsReader siphandler.GCSReader
+	gcsBucket := config.Get().GCSBucketName
+	if gcsBucket != "" {
+		client, err := storage.NewClient(context.Background())
+		if err != nil {
+			logrus.Warnf("Could not create GCS client, RTP pcap merge disabled: %v", err)
+		} else {
+			gcsReader = siphandler.NewGCSReader(client, gcsBucket)
+			logrus.WithField("bucket", gcsBucket).Info("GCS reader initialized for RTP pcap merge.")
+		}
+	}
+
+	sipH := siphandler.NewSIPHandler(homerH, gcsReader, gcsBucket)
 
 	if errListen := runListen(sockHandler, evtHandler, sipH); errListen != nil {
 		return errors.Wrapf(errListen, "failed to run service listen")

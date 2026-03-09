@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/google/gopacket"
@@ -17,6 +20,11 @@ import (
 
 	"monorepo/bin-timeline-manager/models/sipmessage"
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
+)
+
+const (
+	gcsRTPPrefix = "rtp-recordings/"
+	gcsTimeout   = 30 * time.Second
 )
 
 // RFC 1918 private address ranges
@@ -55,12 +63,16 @@ type SIPHandler interface {
 
 type sipHandler struct {
 	homerHandler homerhandler.HomerHandler
+	gcsReader    GCSReader
+	gcsBucket    string
 }
 
 // NewSIPHandler creates a new SIPHandler.
-func NewSIPHandler(homerHandler homerhandler.HomerHandler) SIPHandler {
+func NewSIPHandler(homerHandler homerhandler.HomerHandler, gcsReader GCSReader, gcsBucket string) SIPHandler {
 	return &sipHandler{
 		homerHandler: homerHandler,
+		gcsReader:    gcsReader,
+		gcsBucket:    gcsBucket,
 	}
 }
 
@@ -112,8 +124,101 @@ func (h *sipHandler) GetSIPAnalysis(ctx context.Context, sipCallID string, fromT
 	return res, nil
 }
 
+// fetchRTPPcaps downloads RTP pcap files from GCS for the given SIP Call-ID.
+// Returns open file handles and a cleanup function. Caller must call cleanup after use.
+func (h *sipHandler) fetchRTPPcaps(ctx context.Context, sipCallID string) ([]*os.File, func(), error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "fetchRTPPcaps",
+		"sip_callid": sipCallID,
+	})
+
+	if h.gcsReader == nil || h.gcsBucket == "" {
+		return nil, func() {}, nil
+	}
+
+	gcsCtx, cancel := context.WithTimeout(ctx, gcsTimeout)
+	defer cancel()
+
+	prefix := gcsRTPPrefix + sipCallID + "-"
+	objects, err := h.gcsReader.ListObjects(gcsCtx, prefix)
+	if err != nil {
+		log.Warnf("Could not list RTP pcap objects from GCS, continuing without RTP: %v", err)
+		return nil, func() {}, nil
+	}
+
+	if len(objects) == 0 {
+		log.Debug("No RTP pcap files found in GCS.")
+		return nil, func() {}, nil
+	}
+
+	log.WithField("count", len(objects)).Debugf("Found RTP pcap files in GCS. sip_callid: %s", sipCallID)
+
+	type downloadResult struct {
+		file *os.File
+		err  error
+	}
+
+	results := make([]downloadResult, len(objects))
+	var wg sync.WaitGroup
+
+	for i, objName := range objects {
+		wg.Add(1)
+		go func(idx int, name string) {
+			defer wg.Done()
+
+			tmpFile, err := os.CreateTemp("", "rtp-pcap-*.pcap")
+			if err != nil {
+				results[idx] = downloadResult{err: fmt.Errorf("could not create temp file: %w", err)}
+				return
+			}
+
+			if err := h.gcsReader.DownloadObject(gcsCtx, name, tmpFile); err != nil {
+				_ = tmpFile.Close()
+				_ = os.Remove(tmpFile.Name())
+				results[idx] = downloadResult{err: fmt.Errorf("could not download %s: %w", name, err)}
+				return
+			}
+
+			if _, err := tmpFile.Seek(0, 0); err != nil {
+				_ = tmpFile.Close()
+				_ = os.Remove(tmpFile.Name())
+				results[idx] = downloadResult{err: fmt.Errorf("could not seek temp file: %w", err)}
+				return
+			}
+
+			log.WithField("object", filepath.Base(name)).Debugf("Downloaded RTP pcap file. object: %s", name)
+			results[idx] = downloadResult{file: tmpFile}
+		}(i, objName)
+	}
+
+	wg.Wait()
+
+	var files []*os.File
+	var cleanupPaths []string
+
+	for i, r := range results {
+		if r.err != nil {
+			log.WithField("object", objects[i]).Warnf("Skipping RTP pcap download: %v", r.err)
+			continue
+		}
+		files = append(files, r.file)
+		cleanupPaths = append(cleanupPaths, r.file.Name())
+	}
+
+	cleanup := func() {
+		for _, f := range files {
+			_ = f.Close()
+		}
+		for _, p := range cleanupPaths {
+			_ = os.Remove(p)
+		}
+	}
+
+	return files, cleanup, nil
+}
+
 // GetPcap retrieves PCAP data for a given SIP call ID and time range.
-// It fetches both SIP (hepid 1) and RTCP (hepid 5) packets from Homer,
+// It fetches SIP (hepid 1), RTCP (hepid 5), and RTP pcap files from GCS,
 // merges them, and filters out internal-to-internal packets.
 func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -146,15 +251,35 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 		log.WithField("rtcp_pcap_size", len(rtcpPcapData)).Debug("Retrieved RTCP PCAP data.")
 	}
 
-	// Merge SIP and RTCP PCAPs if both are available
-	var mergedData []byte
+	// Fetch RTP pcap files from GCS (best-effort)
+	rtpFiles, cleanup, rtpErr := h.fetchRTPPcaps(ctx, sipCallID)
+	if rtpErr != nil {
+		log.Warnf("Could not fetch RTP pcaps from GCS: %v", rtpErr)
+	}
+	defer cleanup()
+
+	// Build merge sources
+	var sources []io.Reader
+	sources = append(sources, bytes.NewReader(sipPcapData))
 	if len(rtcpPcapData) > 0 {
-		mergedData, err = mergePcaps(sipPcapData, rtcpPcapData)
+		sources = append(sources, bytes.NewReader(rtcpPcapData))
+	}
+	for _, f := range rtpFiles {
+		sources = append(sources, f)
+	}
+
+	// Merge all sources
+	var mergedData []byte
+	if len(sources) > 1 {
+		mergedData, err = mergeMultiplePcaps(sources)
 		if err != nil {
-			log.Warnf("Could not merge SIP and RTCP PCAPs, using SIP only: %v", err)
+			log.Warnf("Could not merge PCAPs, using SIP only: %v", err)
 			mergedData = sipPcapData
 		} else {
-			log.WithField("merged_pcap_size", len(mergedData)).Debug("Merged SIP and RTCP PCAPs.")
+			log.WithFields(logrus.Fields{
+				"merged_pcap_size": len(mergedData),
+				"source_count":     len(sources),
+			}).Debug("Merged all PCAP sources.")
 		}
 	} else {
 		mergedData = sipPcapData
