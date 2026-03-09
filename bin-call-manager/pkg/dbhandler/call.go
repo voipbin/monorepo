@@ -41,6 +41,9 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	if res.Data == nil {
 		res.Data = map[call.DataType]string{}
 	}
+	if res.Metadata == nil {
+		res.Metadata = map[string]interface{}{}
+	}
 	if res.Dialroutes == nil {
 		res.Dialroutes = []rmroute.Route{}
 	}
@@ -69,6 +72,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	}
 	if c.ExternalMediaIDs == nil {
 		c.ExternalMediaIDs = []uuid.UUID{}
+	}
+	if c.Metadata == nil {
+		c.Metadata = map[string]interface{}{}
 	}
 	if c.Dialroutes == nil {
 		c.Dialroutes = []rmroute.Route{}

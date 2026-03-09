@@ -307,6 +307,98 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 	}
 }
 
+func Test_UpdateStatusProgressing_rtpDebugEnabled(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+
+		responseCall *call.Call
+	}{
+		{
+			"outgoing call with rtp debug enabled",
+			&channel.Channel{
+				ID:        "ch-rtp-debug-001",
+				SIPCallID: "sip-call-id-001",
+				TMAnswer:  testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
+				SIPData: map[string]string{
+					"rtpengine_address": "10.0.0.1:2223",
+				},
+			},
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000002"),
+				},
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+			},
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000002"),
+				},
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+
+			// RTP debug: customer has RTPDebug=true
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{
+				Metadata: cucustomer.Metadata{
+					RTPDebug: true,
+				},
+			}, nil)
+
+			// RTP debug: metadata update
+			mockDB.EXPECT().CallUpdate(ctx, tt.responseCall.ID, gomock.Any()).Return(nil)
+
+			// RTP debug: start recording command to RTPEngine
+			mockReq.EXPECT().RTPEngineV1CommandsSend(ctx, "10.0.0.1:2223", gomock.Any()).Return(map[string]interface{}{"result": "ok"}, nil)
+
+			// ActionNext path: returns tt.call (no activeflow_id) → hangup flow
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
+
+			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
 func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 
 	tests := []struct {

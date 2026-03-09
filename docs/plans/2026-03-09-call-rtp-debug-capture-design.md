@@ -177,8 +177,8 @@ const (
      - After call creation, send `"start recording"` to RTPEngine using `Channel.SIPData[SIPDataKeyRTPEngineAddress]` and `Channel.SIPCallID`
      - Log the result; do not block the call on failure
 
-**File:** `bin-call-manager/pkg/callhandler/arievent.go` (outgoing call trigger)
-- In `ARIChannelStateChange()`, when an outgoing call transitions to Up state (channel has SIPData populated by `UpdateSIPInfoByChannelVariable()`):
+**File:** `bin-call-manager/pkg/callhandler/status.go` (outgoing call trigger)
+- In `updateStatusProgressing()`, when an outgoing call reaches progressing state (channel has SIPData populated by `UpdateSIPInfoByChannelVariable()`):
   1. Fetch customer: `reqHandler.CustomerV1CustomerGet(ctx, call.CustomerID)`
   2. Check `customer.Metadata.RTPDebug`
   3. If true:

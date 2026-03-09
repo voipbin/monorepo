@@ -82,6 +82,7 @@ func Test_CallCreate(t *testing.T) {
 
 				Status: call.StatusHangup,
 				Data:   map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
@@ -143,6 +144,7 @@ func Test_CallCreate(t *testing.T) {
 
 				Status: call.StatusHangup,
 				Data:   map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
@@ -184,6 +186,7 @@ func Test_CallCreate(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMProgressing: nil,
@@ -283,6 +286,7 @@ func Test_CallList(t *testing.T) {
 					RecordingIDs:   []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
 					Data:           map[call.DataType]string{},
+					Metadata: map[string]interface{}{},
 					Dialroutes:     []rmroute.Route{},
 
 					TMProgressing: nil,
@@ -303,6 +307,7 @@ func Test_CallList(t *testing.T) {
 					RecordingIDs:   []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
 					Data:           map[call.DataType]string{},
+					Metadata: map[string]interface{}{},
 					Dialroutes:     []rmroute.Route{},
 
 					TMProgressing: nil,
@@ -414,6 +419,7 @@ func Test_CallList_delete(t *testing.T) {
 					RecordingIDs:   []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
 					Data:           map[call.DataType]string{},
+					Metadata: map[string]interface{}{},
 					Dialroutes:     []rmroute.Route{},
 
 					TMProgressing: nil,
@@ -513,6 +519,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Data: map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 
 				Dialroutes: []rmroute.Route{},
 
@@ -616,6 +623,7 @@ func Test_CallSetStatus(t *testing.T) {
 				Status:    call.StatusTerminating,
 				Direction: call.DirectionIncoming,
 				Data:      map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 
 				Dialroutes: []rmroute.Route{},
 
@@ -715,6 +723,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Status:     call.StatusRinging,
 				Direction:  call.DirectionIncoming,
 				Data:       map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -765,6 +774,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Status:     call.StatusRinging,
 				Direction:  call.DirectionIncoming,
 				Data:       map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -872,6 +882,7 @@ func Test_CallSetHangup(t *testing.T) {
 				HangupReason: call.HangupReasonNormal,
 				HangupBy:     call.HangupByLocal,
 				Data:         map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:   []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -961,6 +972,7 @@ func Test_CallSetFlowID(t *testing.T) {
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
 				Data:       map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1052,6 +1064,7 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
 				Data:       map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1171,6 +1184,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Status:         call.StatusRinging,
 				Direction:      call.DirectionIncoming,
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1228,6 +1242,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Status:         call.StatusRinging,
 				Direction:      call.DirectionIncoming,
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1317,6 +1332,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
@@ -1349,6 +1365,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1438,6 +1455,7 @@ func Test_CallSetRecordingID(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
@@ -1472,6 +1490,7 @@ func Test_CallSetRecordingID(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1572,6 +1591,7 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 				Dialroutes:     []rmroute.Route{},
 
@@ -1660,6 +1680,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1690,6 +1711,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				Data:           map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1782,6 +1804,7 @@ func Test_CallDelete(t *testing.T) {
 				Destination: commonaddress.Address{},
 
 				Data:       map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1875,6 +1898,7 @@ func Test_CallSetData(t *testing.T) {
 				Data: map[call.DataType]string{
 					call.DataTypeExecuteNextMasterOnHangup: "false",
 				},
+				Metadata: map[string]interface{}{},
 
 				Dialroutes: []rmroute.Route{},
 
@@ -1966,6 +1990,7 @@ func Test_CallSetMuteDirection(t *testing.T) {
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Data:          map[call.DataType]string{},
+				Metadata: map[string]interface{}{},
 				MuteDirection: call.MuteDirectionBoth,
 
 				Dialroutes: []rmroute.Route{},
