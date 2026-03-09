@@ -74,7 +74,7 @@ func (w *watcher) Run(ctx context.Context) error {
 			if !ok {
 				return nil
 			}
-			if event.Has(fsnotify.Create) {
+			if event.Has(fsnotify.Create) && !strings.HasSuffix(event.Name, ".processing") {
 				log.WithField("file", event.Name).Debug("new metadata file detected")
 				if err := w.processMetadataFile(event.Name); err != nil {
 					log.WithError(err).WithField("file", event.Name).Warn("failed to process metadata file")
