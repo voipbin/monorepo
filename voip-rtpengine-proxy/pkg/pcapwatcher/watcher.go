@@ -32,7 +32,9 @@ func New(recordingDir string, uploader gcsuploader.Uploader) Watcher {
 func (w *watcher) Run(ctx context.Context) error {
 	metadataDir := filepath.Join(w.recordingDir, "metadata")
 
-	if err := os.MkdirAll(metadataDir, 0755); err != nil {
+	// Use 0777 so both the proxy and RTPEngine (uid 901) can write to this directory.
+	// RTPEngine needs write access to move metadata files from tmp/ into metadata/.
+	if err := os.MkdirAll(metadataDir, 0777); err != nil {
 		return fmt.Errorf("could not create metadata dir: %w", err)
 	}
 
