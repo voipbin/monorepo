@@ -4978,6 +4978,21 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1ServiceTypeQueuecallStart", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1ServiceTypeQueuecallStart), ctx, queueID, activeflowID, referenceType, referenceID)
 }
 
+// RTPEngineV1CommandsSend mocks base method.
+func (m *MockRequestHandler) RTPEngineV1CommandsSend(ctx context.Context, rtpengineID string, command map[string]any) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RTPEngineV1CommandsSend", ctx, rtpengineID, command)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RTPEngineV1CommandsSend indicates an expected call of RTPEngineV1CommandsSend.
+func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengineID, command any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1CommandsSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1CommandsSend), ctx, rtpengineID, command)
+}
+
 // RagV1RagQuery mocks base method.
 func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*raghandler.QueryResponse, error) {
 	m.ctrl.T.Helper()

@@ -310,3 +310,15 @@ func (r *requestHandler) sendRequestRag(ctx context.Context, uri string, method 
 
 	return r.sendRequest(ctx, commonoutline.QueueNameRagRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestRTPEngine sends a request to the rtpengine-proxy and returns the response.
+// The queue name is dynamically constructed from the rtpengineID: rtpengine.<rtpengineID>.request
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestRTPEngine(ctx context.Context, rtpengineID, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
+
+	// create target
+	target := fmt.Sprintf("rtpengine.%s.request", rtpengineID)
+
+	return r.sendRequest(ctx, commonoutline.QueueName(target), uri, method, resource, timeout, delayed, dataType, data)
+}
