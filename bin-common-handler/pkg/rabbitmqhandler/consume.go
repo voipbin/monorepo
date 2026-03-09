@@ -159,6 +159,12 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 	// execute callback
 	res, err := cbConsume(&req)
 	if err != nil {
+		// Send a 500 error response so the caller does not time out waiting
+		// for a reply that will never arrive. Without this, transport-level
+		// timeouts accumulate and can trip the circuit breaker.
+		if message.ReplyTo != "" {
+			r.publishRPCErrorResponse(message)
+		}
 		return fmt.Errorf("message consumer returns error. err: %v", err)
 	} else if res == nil {
 		// nothing to return
@@ -199,4 +205,44 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 	}
 
 	return nil
+}
+
+// publishRPCErrorResponse sends a 500 error response back to the RPC caller.
+// This prevents the caller from timing out when the handler returns an error
+// without a response, which would otherwise be misinterpreted as a transport
+// failure and trip the circuit breaker.
+func (r *rabbit) publishRPCErrorResponse(message amqp.Delivery) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "publishRPCErrorResponse",
+	})
+
+	errRes := &sock.Response{StatusCode: 500}
+	resMsg, err := json.Marshal(errRes)
+	if err != nil {
+		log.Errorf("Could not marshal error response. err: %v", err)
+		return
+	}
+
+	channel, err := r.connection.Channel()
+	if err != nil {
+		log.Errorf("Could not create channel for error response. err: %v", err)
+		return
+	}
+	defer func() {
+		_ = channel.Close()
+	}()
+
+	if err := channel.PublishWithContext(
+		context.Background(),
+		"",              // exchange
+		message.ReplyTo, // routing key
+		false,           // mandatory
+		false,           // immediate
+		amqp.Publishing{
+			ContentType:   "text/plain",
+			CorrelationId: message.CorrelationId,
+			Body:          resMsg,
+		}); err != nil {
+		log.Errorf("Could not publish error response. err: %v", err)
+	}
 }

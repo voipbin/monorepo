@@ -24,20 +24,20 @@ func (h *listenHandler) v1SpeakingsPost(ctx context.Context, m *sock.Request) (*
 	var req request.V1DataSpeakingsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 	log.WithField("request", req).Debugf("Processing v1SpeakingsPost.")
 
 	tmp, err := h.speakingHandler.Create(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Provider, req.VoiceID, req.Direction)
 	if err != nil {
 		log.Errorf("Could not create a speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -59,7 +59,7 @@ func (h *listenHandler) v1SpeakingsGet(ctx context.Context, m *sock.Request) (*s
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		log.Errorf("Could not parse URI. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	q := u.Query()
@@ -97,13 +97,13 @@ func (h *listenHandler) v1SpeakingsGet(ctx context.Context, m *sock.Request) (*s
 	tmp, err := h.speakingHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get speakings. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -123,7 +123,7 @@ func (h *listenHandler) v1SpeakingsIDGet(ctx context.Context, m *sock.Request) (
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
@@ -133,13 +133,13 @@ func (h *listenHandler) v1SpeakingsIDGet(ctx context.Context, m *sock.Request) (
 	tmp, err := h.speakingHandler.Get(ctx, speakingID)
 	if err != nil {
 		log.Errorf("Could not get the speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -159,7 +159,7 @@ func (h *listenHandler) v1SpeakingsIDSayPost(ctx context.Context, m *sock.Reques
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/say"
@@ -169,20 +169,20 @@ func (h *listenHandler) v1SpeakingsIDSayPost(ctx context.Context, m *sock.Reques
 	var req request.V1DataSpeakingsIDSayPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 	log.WithField("request", req).Debugf("Processing v1SpeakingsIDSayPost. speaking_id: %s", speakingID)
 
 	tmp, err := h.speakingHandler.Say(ctx, speakingID, req.Text)
 	if err != nil {
 		log.Errorf("Could not say text to speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -202,7 +202,7 @@ func (h *listenHandler) v1SpeakingsIDFlushPost(ctx context.Context, m *sock.Requ
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/flush"
@@ -212,13 +212,13 @@ func (h *listenHandler) v1SpeakingsIDFlushPost(ctx context.Context, m *sock.Requ
 	tmp, err := h.speakingHandler.Flush(ctx, speakingID)
 	if err != nil {
 		log.Errorf("Could not flush the speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -238,7 +238,7 @@ func (h *listenHandler) v1SpeakingsIDStopPost(ctx context.Context, m *sock.Reque
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/stop"
@@ -248,13 +248,13 @@ func (h *listenHandler) v1SpeakingsIDStopPost(ctx context.Context, m *sock.Reque
 	tmp, err := h.speakingHandler.Stop(ctx, speakingID)
 	if err != nil {
 		log.Errorf("Could not stop the speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -274,7 +274,7 @@ func (h *listenHandler) v1SpeakingsIDDelete(ctx context.Context, m *sock.Request
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
@@ -284,13 +284,13 @@ func (h *listenHandler) v1SpeakingsIDDelete(ctx context.Context, m *sock.Request
 	tmp, err := h.speakingHandler.Delete(ctx, speakingID)
 	if err != nil {
 		log.Errorf("Could not delete the speaking. err: %v", err)
-		return nil, err
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
