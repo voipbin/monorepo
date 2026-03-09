@@ -30,7 +30,7 @@ func newTestUDPServer(t *testing.T, handler func(req []byte) []byte) string {
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	t.Cleanup(func() { conn.Close() })
+	t.Cleanup(func() { _ = conn.Close() })
 	go func() {
 		buf := make([]byte, 65535)
 		for {
@@ -40,7 +40,7 @@ func newTestUDPServer(t *testing.T, handler func(req []byte) []byte) string {
 			}
 			resp := handler(buf[:n])
 			if resp != nil {
-				conn.WriteTo(resp, peer)
+				_, _ = conn.WriteTo(resp, peer)
 			}
 		}
 	}()

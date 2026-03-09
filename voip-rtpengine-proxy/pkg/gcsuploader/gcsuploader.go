@@ -38,14 +38,20 @@ func (u *gcsUploader) Upload(localPath string, objectPath string) (string, error
 	if err != nil {
 		return "", fmt.Errorf("could not open file %s: %w", localPath, err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.WithError(err).WithField("file", localPath).Warn("could not close local file")
+		}
+	}()
 
 	obj := u.client.Bucket(u.bucketName).Object(objectPath)
 	w := obj.NewWriter(ctx)
 	w.ContentType = "application/vnd.tcpdump.pcap"
 
 	if _, err := io.Copy(w, f); err != nil {
-		w.Close()
+		if closeErr := w.Close(); closeErr != nil {
+			log.WithError(closeErr).Warn("could not close GCS writer after upload failure")
+		}
 		return "", fmt.Errorf("could not upload to GCS: %w", err)
 	}
 

@@ -19,15 +19,15 @@ func TestProcessMetadataFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	pcapDir := filepath.Join(tmpDir, "pcap")
 	metadataDir := filepath.Join(tmpDir, "metadata")
-	os.MkdirAll(pcapDir, 0755)
-	os.MkdirAll(metadataDir, 0755)
+	_ = os.MkdirAll(pcapDir, 0755)
+	_ = os.MkdirAll(metadataDir, 0755)
 
 	pcapPath := filepath.Join(pcapDir, "testcall-tag1-ssrc1.pcap")
-	os.WriteFile(pcapPath, []byte("fake pcap data"), 0644)
+	_ = os.WriteFile(pcapPath, []byte("fake pcap data"), 0644)
 
 	metadataPath := filepath.Join(metadataDir, "testcall-tag1")
 	metadataContent := pcapPath + "\n\nSDP mode: offer\n"
-	os.WriteFile(metadataPath, []byte(metadataContent), 0644)
+	_ = os.WriteFile(metadataPath, []byte(metadataContent), 0644)
 
 	expectedObject := "rtp-recordings/testcall/testcall-tag1-ssrc1.pcap"
 	mockUploader.EXPECT().
@@ -64,19 +64,19 @@ func TestScanAndProcess(t *testing.T) {
 	tmpDir := t.TempDir()
 	pcapDir := filepath.Join(tmpDir, "pcap")
 	metadataDir := filepath.Join(tmpDir, "metadata")
-	os.MkdirAll(pcapDir, 0755)
-	os.MkdirAll(metadataDir, 0755)
+	_ = os.MkdirAll(pcapDir, 0755)
+	_ = os.MkdirAll(metadataDir, 0755)
 
 	// Create two recordings
 	pcapPath1 := filepath.Join(pcapDir, "call1-tag1-ssrc1.pcap")
-	os.WriteFile(pcapPath1, []byte("pcap1"), 0644)
+	_ = os.WriteFile(pcapPath1, []byte("pcap1"), 0644)
 	metadataPath1 := filepath.Join(metadataDir, "call1-tag1")
-	os.WriteFile(metadataPath1, []byte(pcapPath1+"\n"), 0644)
+	_ = os.WriteFile(metadataPath1, []byte(pcapPath1+"\n"), 0644)
 
 	pcapPath2 := filepath.Join(pcapDir, "call2-tag2-ssrc2.pcap")
-	os.WriteFile(pcapPath2, []byte("pcap2"), 0644)
+	_ = os.WriteFile(pcapPath2, []byte("pcap2"), 0644)
 	metadataPath2 := filepath.Join(metadataDir, "call2-tag2")
-	os.WriteFile(metadataPath2, []byte(pcapPath2+"\n"), 0644)
+	_ = os.WriteFile(metadataPath2, []byte(pcapPath2+"\n"), 0644)
 
 	mockUploader.EXPECT().
 		Upload(pcapPath1, "rtp-recordings/call1/call1-tag1-ssrc1.pcap").

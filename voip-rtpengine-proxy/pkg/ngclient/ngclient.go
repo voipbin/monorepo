@@ -73,7 +73,9 @@ func (c *ngClient) Send(cmd map[string]interface{}) (map[string]interface{}, err
 }
 
 func (c *ngClient) Close() {
-	c.conn.Close()
+	if err := c.conn.Close(); err != nil {
+		logrus.WithError(err).Warn("could not close NG client connection")
+	}
 }
 
 func (c *ngClient) readLoop() {
@@ -112,6 +114,9 @@ func (c *ngClient) readLoop() {
 
 func newCookie() string {
 	b := make([]byte, 8)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// crypto/rand.Read should never fail on supported platforms
+		panic(fmt.Sprintf("crypto/rand.Read failed: %v", err))
+	}
 	return hex.EncodeToString(b)
 }
