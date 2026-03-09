@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net"
-	"sort"
 	"time"
 
 	"github.com/google/gopacket"
@@ -175,62 +175,114 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 	return filteredData, nil
 }
 
-// packetEntry holds raw packet data and its capture info for sorting during merge.
-type packetEntry struct {
-	ci   gopacket.CaptureInfo
-	data []byte
-}
-
 // mergePcaps merges two PCAP byte slices into a single PCAP, sorted by timestamp.
 func mergePcaps(pcap1, pcap2 []byte) ([]byte, error) {
-	var packets []packetEntry
-
-	// Read packets from first PCAP
-	reader1, err := pcapgo.NewReader(bytes.NewReader(pcap1))
-	if err != nil {
-		return nil, err
-	}
-	snaplen := reader1.Snaplen()
-	linkType := reader1.LinkType()
-
-	for {
-		data, ci, readErr := reader1.ReadPacketData()
-		if readErr != nil {
-			break
-		}
-		packets = append(packets, packetEntry{ci: ci, data: data})
-	}
-
-	// Read packets from second PCAP
-	reader2, err := pcapgo.NewReader(bytes.NewReader(pcap2))
-	if err != nil {
-		return nil, err
-	}
-	if reader2.LinkType() != linkType {
-		return nil, fmt.Errorf("link type mismatch: pcap1=%v, pcap2=%v", linkType, reader2.LinkType())
-	}
-	for {
-		data, ci, readErr := reader2.ReadPacketData()
-		if readErr != nil {
-			break
-		}
-		packets = append(packets, packetEntry{ci: ci, data: data})
-	}
-
-	// Sort by timestamp
-	sort.Slice(packets, func(i, j int) bool {
-		return packets[i].ci.Timestamp.Before(packets[j].ci.Timestamp)
+	return mergeMultiplePcaps([]io.Reader{
+		bytes.NewReader(pcap1),
+		bytes.NewReader(pcap2),
 	})
+}
 
-	// Write merged PCAP
+// readerEntry tracks a pcap reader and its currently buffered packet.
+type readerEntry struct {
+	reader   *pcapgo.Reader
+	ci       gopacket.CaptureInfo
+	data     []byte
+	done     bool
+	linkType layers.LinkType
+	snaplen  uint32
+}
+
+// mergeMultiplePcaps merges N pcap sources into a single pcap sorted by timestamp.
+func mergeMultiplePcaps(sources []io.Reader) ([]byte, error) {
+	if len(sources) == 0 {
+		return []byte{}, nil
+	}
+
+	log := logrus.WithField("func", "mergeMultiplePcaps")
+
+	var entries []*readerEntry
+	for i, src := range sources {
+		reader, err := pcapgo.NewReader(src)
+		if err != nil {
+			log.WithField("source_index", i).Warnf("Could not open pcap source, skipping: %v", err)
+			continue
+		}
+
+		entry := &readerEntry{
+			reader:   reader,
+			linkType: reader.LinkType(),
+			snaplen:  reader.Snaplen(),
+		}
+
+		data, ci, err := reader.ReadPacketData()
+		if err != nil {
+			entry.done = true
+		} else {
+			entry.ci = ci
+			entry.data = data
+		}
+
+		entries = append(entries, entry)
+	}
+
+	if len(entries) == 0 {
+		return []byte{}, nil
+	}
+
+	primaryLinkType := entries[0].linkType
+
+	var included []*readerEntry
+	var maxSnaplen uint32
+	for _, e := range entries {
+		if e.linkType != primaryLinkType {
+			log.WithFields(logrus.Fields{
+				"expected": primaryLinkType,
+				"actual":   e.linkType,
+			}).Warn("Link type mismatch, excluding source from merge.")
+			continue
+		}
+		included = append(included, e)
+		if e.snaplen > maxSnaplen {
+			maxSnaplen = e.snaplen
+		}
+	}
+
+	if len(included) == 0 {
+		return []byte{}, nil
+	}
+
 	var buf bytes.Buffer
 	writer := pcapgo.NewWriter(&buf)
-	if err := writer.WriteFileHeader(snaplen, linkType); err != nil {
-		return nil, err
+	if err := writer.WriteFileHeader(maxSnaplen, primaryLinkType); err != nil {
+		return nil, fmt.Errorf("could not write pcap header: %w", err)
 	}
-	for _, p := range packets {
-		if err := writer.WritePacket(p.ci, p.data); err != nil {
-			return nil, err
+
+	for {
+		minIdx := -1
+		for i, e := range included {
+			if e.done {
+				continue
+			}
+			if minIdx == -1 || e.ci.Timestamp.Before(included[minIdx].ci.Timestamp) {
+				minIdx = i
+			}
+		}
+
+		if minIdx == -1 {
+			break
+		}
+
+		if err := writer.WritePacket(included[minIdx].ci, included[minIdx].data); err != nil {
+			return nil, fmt.Errorf("could not write packet: %w", err)
+		}
+
+		data, ci, err := included[minIdx].reader.ReadPacketData()
+		if err != nil {
+			included[minIdx].done = true
+		} else {
+			included[minIdx].ci = ci
+			included[minIdx].data = data
 		}
 	}
 

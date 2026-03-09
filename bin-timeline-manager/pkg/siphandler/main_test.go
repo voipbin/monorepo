@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
+	"io"
 	"testing"
 	"time"
 
@@ -394,17 +394,51 @@ func TestMergePcaps(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid pcap1 returns error", func(t *testing.T) {
-		_, err := mergePcaps([]byte("invalid"), createTimestampedPcap(time.Now()))
-		if err == nil {
-			t.Error("expected error for invalid pcap1, got nil")
+	t.Run("invalid pcap1 skips source", func(t *testing.T) {
+		ts := time.Now()
+		result, err := mergePcaps([]byte("invalid"), createTimestampedPcap(ts))
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		// Invalid first source is skipped, second source passes through.
+		reader, rErr := pcapgo.NewReader(bytes.NewReader(result))
+		if rErr != nil {
+			t.Fatalf("failed to read result: %v", rErr)
+		}
+		count := 0
+		for {
+			_, _, readErr := reader.ReadPacketData()
+			if readErr != nil {
+				break
+			}
+			count++
+		}
+		if count != 1 {
+			t.Errorf("expected 1 packet from valid source, got %d", count)
 		}
 	})
 
-	t.Run("invalid pcap2 returns error", func(t *testing.T) {
-		_, err := mergePcaps(createTimestampedPcap(time.Now()), []byte("invalid"))
-		if err == nil {
-			t.Error("expected error for invalid pcap2, got nil")
+	t.Run("invalid pcap2 skips source", func(t *testing.T) {
+		ts := time.Now()
+		result, err := mergePcaps(createTimestampedPcap(ts), []byte("invalid"))
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		// Invalid second source is skipped, first source passes through.
+		reader, rErr := pcapgo.NewReader(bytes.NewReader(result))
+		if rErr != nil {
+			t.Fatalf("failed to read result: %v", rErr)
+		}
+		count := 0
+		for {
+			_, _, readErr := reader.ReadPacketData()
+			if readErr != nil {
+				break
+			}
+			count++
+		}
+		if count != 1 {
+			t.Errorf("expected 1 packet from valid source, got %d", count)
 		}
 	})
 }
@@ -698,7 +732,6 @@ func TestFilterInternalPackets_NoIPLayer(t *testing.T) {
 }
 
 func TestMergePcaps_LinkTypeMismatch(t *testing.T) {
-	// Create two PCAPs with different link types
 	createPcapWithLinkType := func(linkType layers.LinkType) []byte {
 		var buf bytes.Buffer
 		writer := pcapgo.NewWriter(&buf)
@@ -709,12 +742,27 @@ func TestMergePcaps_LinkTypeMismatch(t *testing.T) {
 	pcap1 := createPcapWithLinkType(layers.LinkTypeEthernet)
 	pcap2 := createPcapWithLinkType(layers.LinkTypeRaw)
 
-	_, err := mergePcaps(pcap1, pcap2)
-	if err == nil {
-		t.Error("expected error for link type mismatch, got nil")
+	// With mergeMultiplePcaps, mismatched sources are excluded (not errored).
+	result, err := mergePcaps(pcap1, pcap2)
+	if err != nil {
+		t.Fatalf("expected no error for link type mismatch (excluded), got: %v", err)
 	}
-	if !strings.Contains(err.Error(), "link type mismatch") {
-		t.Errorf("expected link type mismatch error, got: %v", err)
+
+	reader, err := pcapgo.NewReader(bytes.NewReader(result))
+	if err != nil {
+		t.Fatalf("failed to read result: %v", err)
+	}
+
+	count := 0
+	for {
+		_, _, err := reader.ReadPacketData()
+		if err != nil {
+			break
+		}
+		count++
+	}
+	if count != 0 {
+		t.Errorf("expected 0 packets, got %d", count)
 	}
 }
 
@@ -973,4 +1021,219 @@ func TestFilterInternalPackets_Mixed(t *testing.T) {
 	if count != 2 {
 		t.Errorf("expected 2 packets after filtering, got %d", count)
 	}
+}
+
+func TestMergeMultiplePcaps(t *testing.T) {
+	// Helper to create a PCAP with a single packet at a specific timestamp and link type/snaplen.
+	createTimestampedPcapExt := func(ts time.Time, linkType layers.LinkType, snaplen uint32) []byte {
+		var buf bytes.Buffer
+		writer := pcapgo.NewWriter(&buf)
+		_ = writer.WriteFileHeader(snaplen, linkType)
+
+		eth := &layers.Ethernet{
+			SrcMAC:       []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+			DstMAC:       []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x02},
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+		ip := &layers.IPv4{
+			Version:  4,
+			SrcIP:    []byte{10, 0, 0, 1},
+			DstIP:    []byte{10, 0, 0, 2},
+			Protocol: layers.IPProtocolUDP,
+		}
+		udp := &layers.UDP{SrcPort: 5060, DstPort: 5060}
+		_ = udp.SetNetworkLayerForChecksum(ip)
+
+		packetBuf := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{ComputeChecksums: true}
+		_ = gopacket.SerializeLayers(packetBuf, opts, eth, ip, udp, gopacket.Payload([]byte("test")))
+		packetData := packetBuf.Bytes()
+
+		ci := gopacket.CaptureInfo{
+			Timestamp:     ts,
+			CaptureLength: len(packetData),
+			Length:        len(packetData),
+		}
+		_ = writer.WritePacket(ci, packetData)
+
+		return buf.Bytes()
+	}
+
+	// Convenience wrapper using Ethernet and default snaplen.
+	createTimestampedPcap := func(ts time.Time) []byte {
+		return createTimestampedPcapExt(ts, layers.LinkTypeEthernet, 65536)
+	}
+
+	// Helper to create a Raw link-type PCAP with a single packet at a specific timestamp.
+	createRawPcap := func(ts time.Time) []byte {
+		var buf bytes.Buffer
+		writer := pcapgo.NewWriter(&buf)
+		_ = writer.WriteFileHeader(65536, layers.LinkTypeRaw)
+
+		// For LinkTypeRaw, write a minimal IPv4 packet directly (no Ethernet layer).
+		ip := &layers.IPv4{
+			Version:  4,
+			SrcIP:    []byte{10, 0, 0, 1},
+			DstIP:    []byte{10, 0, 0, 2},
+			Protocol: layers.IPProtocolUDP,
+		}
+		udp := &layers.UDP{SrcPort: 5060, DstPort: 5060}
+		_ = udp.SetNetworkLayerForChecksum(ip)
+
+		packetBuf := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{ComputeChecksums: true}
+		_ = gopacket.SerializeLayers(packetBuf, opts, ip, udp, gopacket.Payload([]byte("raw")))
+		packetData := packetBuf.Bytes()
+
+		ci := gopacket.CaptureInfo{
+			Timestamp:     ts,
+			CaptureLength: len(packetData),
+			Length:        len(packetData),
+		}
+		_ = writer.WritePacket(ci, packetData)
+
+		return buf.Bytes()
+	}
+
+	t.Run("zero sources returns empty pcap", func(t *testing.T) {
+		result, err := mergeMultiplePcaps(nil)
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		if len(result) != 0 {
+			t.Errorf("expected empty result, got %d bytes", len(result))
+		}
+	})
+
+	t.Run("single source passthrough", func(t *testing.T) {
+		ts := time.Date(2026, 1, 1, 0, 0, 1, 0, time.UTC)
+		pcapData := createTimestampedPcap(ts)
+
+		result, err := mergeMultiplePcaps([]io.Reader{bytes.NewReader(pcapData)})
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		count := 0
+		for {
+			_, _, err := reader.ReadPacketData()
+			if err != nil {
+				break
+			}
+			count++
+		}
+		if count != 1 {
+			t.Errorf("expected 1 packet, got %d", count)
+		}
+	})
+
+	t.Run("three sources sorted by timestamp", func(t *testing.T) {
+		ts1 := time.Date(2026, 1, 1, 0, 0, 2, 0, time.UTC) // middle
+		ts2 := time.Date(2026, 1, 1, 0, 0, 3, 0, time.UTC) // latest
+		ts3 := time.Date(2026, 1, 1, 0, 0, 1, 0, time.UTC) // earliest
+
+		pcap1 := createTimestampedPcap(ts1)
+		pcap2 := createTimestampedPcap(ts2)
+		pcap3 := createTimestampedPcap(ts3)
+
+		result, err := mergeMultiplePcaps([]io.Reader{
+			bytes.NewReader(pcap1),
+			bytes.NewReader(pcap2),
+			bytes.NewReader(pcap3),
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		var timestamps []time.Time
+		for {
+			_, ci, err := reader.ReadPacketData()
+			if err != nil {
+				break
+			}
+			timestamps = append(timestamps, ci.Timestamp)
+		}
+
+		if len(timestamps) != 3 {
+			t.Fatalf("expected 3 packets, got %d", len(timestamps))
+		}
+
+		// Verify timestamps are in ascending order.
+		for i := 1; i < len(timestamps); i++ {
+			if timestamps[i].Before(timestamps[i-1]) {
+				t.Errorf("packets not sorted: ts[%d]=%v is before ts[%d]=%v", i, timestamps[i], i-1, timestamps[i-1])
+			}
+		}
+	})
+
+	t.Run("uses max snaplen across sources", func(t *testing.T) {
+		ts := time.Date(2026, 1, 1, 0, 0, 1, 0, time.UTC)
+		pcapSmall := createTimestampedPcapExt(ts, layers.LinkTypeEthernet, 1500)
+		pcapLarge := createTimestampedPcapExt(ts.Add(time.Second), layers.LinkTypeEthernet, 65536)
+
+		result, err := mergeMultiplePcaps([]io.Reader{
+			bytes.NewReader(pcapSmall),
+			bytes.NewReader(pcapLarge),
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		if reader.Snaplen() != 65536 {
+			t.Errorf("expected snaplen 65536, got %d", reader.Snaplen())
+		}
+	})
+
+	t.Run("link type mismatch excludes mismatched source", func(t *testing.T) {
+		ts1 := time.Date(2026, 1, 1, 0, 0, 1, 0, time.UTC)
+		ts2 := time.Date(2026, 1, 1, 0, 0, 2, 0, time.UTC)
+		ts3 := time.Date(2026, 1, 1, 0, 0, 3, 0, time.UTC)
+
+		ethPcap1 := createTimestampedPcap(ts1)       // Ethernet
+		rawPcap := createRawPcap(ts2)                 // Raw (mismatched)
+		ethPcap2 := createTimestampedPcap(ts3)        // Ethernet
+
+		result, err := mergeMultiplePcaps([]io.Reader{
+			bytes.NewReader(ethPcap1),
+			bytes.NewReader(rawPcap),
+			bytes.NewReader(ethPcap2),
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		count := 0
+		for {
+			_, _, err := reader.ReadPacketData()
+			if err != nil {
+				break
+			}
+			count++
+		}
+
+		// Only the 2 Ethernet packets should be included; Raw excluded.
+		if count != 2 {
+			t.Errorf("expected 2 packets (Raw excluded), got %d", count)
+		}
+	})
 }
