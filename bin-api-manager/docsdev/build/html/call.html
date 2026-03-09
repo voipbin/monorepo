@@ -1133,6 +1133,7 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1156,6 +1157,7 @@ This process will continue until one of the destinations answers the call, at wh
 <li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The call’s current status. See <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">action</span></code> (Object): The call’s currently executing flow action. See <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (boolean) — when true, RTPEngine is capturing RTP traffic for this call.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The call’s direction. See <a class="reference internal" href="call_struct_call.html#call-struct-call-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hangup_by</span></code> (enum string): Which endpoint initiated the hangup. See <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupby"><span class="std std-ref">Hangup by</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> (enum string): The reason the call ended. See <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupreason"><span class="std std-ref">Hangup reason</span></a>.</p></li>
@@ -1205,6 +1207,7 @@ This process will continue until one of the destinations answers the call, at wh
         <span class="p">},</span>
         <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.785510878&quot;</span>
     <span class="p">},</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>

@@ -45,8 +45,9 @@ type Call struct {
 
 	// info
 	Status         Status              `json:"status,omitempty" db:"status"`
-	Data           map[DataType]string `json:"data,omitempty" db:"data,json"`
-	Action         fmaction.Action     `json:"action,omitempty" db:"action,json"`             // call's current action.
+	Data           map[DataType]string    `json:"data,omitempty" db:"data,json"`
+	Metadata       map[string]interface{} `json:"metadata,omitempty" db:"metadata,json"`
+	Action         fmaction.Action        `json:"action,omitempty" db:"action,json"` // call's current action.
 	ActionNextHold bool                `json:"action_next_hold,omitempty" db:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
 	Direction      Direction           `json:"direction,omitempty" db:"direction"`               //  direction of call. incoming/outgoing
 	MuteDirection  MuteDirection       `json:"mute_direction,omitempty" db:"mute_direction"`     // mute direction

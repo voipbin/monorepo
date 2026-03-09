@@ -35,6 +35,7 @@ create table call_calls(
   -- info
   status            varchar(255),   -- current status of call.
   data              json,           -- additional data. sip headers, and so on...
+  metadata          json,           -- call metadata (e.g. rtp_debug flag)
   action            json,           -- current action
   action_next_hold  boolean,        -- hold the action next
   direction         varchar(16),    -- direction of call. incoming/outgoing

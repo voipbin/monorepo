@@ -882,6 +882,16 @@ components:
           description: Reason the call was hung up.
           example: "normal"
           $ref: '#/components/schemas/CallManagerCallHangupReason'
+        metadata:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: |
+            Internal metadata for the call. Contains key-value pairs set by the system.
+            Currently supported keys:
+            - `rtp_debug` (boolean): When `true`, RTPEngine is capturing RTP traffic for this call.
+          example:
+            rtp_debug: true
         tm_progressing:
           type: string
           format: date-time

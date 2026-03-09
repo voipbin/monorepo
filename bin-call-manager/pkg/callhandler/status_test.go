@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -287,6 +289,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
 			if tt.call.Direction != call.DirectionIncoming {
+				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{}, nil)
 
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
@@ -375,6 +378,8 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{}, nil)
 
 			mockGroupcall.EXPECT().AnswerCall(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
 

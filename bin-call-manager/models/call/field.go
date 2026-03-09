@@ -28,6 +28,7 @@ const (
 
 	FieldStatus         Field = "status"           // status
 	FieldData           Field = "data"             // data
+	FieldMetadata       Field = "metadata"         // metadata
 	FieldAction         Field = "action"           // action
 	FieldActionNextHold Field = "action_next_hold" // action_next_hold
 	FieldDirection      Field = "direction"        // direction
