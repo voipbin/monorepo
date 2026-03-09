@@ -136,10 +136,6 @@ func (w *watcher) processProcessingFile(processingPath string) error {
 		return fmt.Errorf("could not read metadata file: %w", err)
 	}
 
-	baseName := filepath.Base(processingPath)
-	baseName = strings.TrimSuffix(baseName, ".processing")
-	callID := extractCallIDFromFilename(baseName)
-
 	pcapPath, err := parsePcapPathFromMetadata(string(content))
 	if err != nil {
 		if removeErr := os.Remove(processingPath); removeErr != nil {
@@ -149,7 +145,7 @@ func (w *watcher) processProcessingFile(processingPath string) error {
 	}
 
 	pcapFilename := filepath.Base(pcapPath)
-	objectPath := buildObjectPath(callID, pcapFilename)
+	objectPath := buildObjectPath(pcapFilename)
 
 	if _, err := w.uploader.Upload(pcapPath, objectPath); err != nil {
 		return fmt.Errorf("could not upload pcap: %w", err)
@@ -164,7 +160,6 @@ func (w *watcher) processProcessingFile(processingPath string) error {
 	}
 
 	log.WithFields(log.Fields{
-		"call_id":  callID,
 		"pcap":     pcapFilename,
 		"gcs_path": objectPath,
 	}).Info("recording processed and uploaded")
