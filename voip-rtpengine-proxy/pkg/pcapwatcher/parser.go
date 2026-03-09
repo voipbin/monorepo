@@ -9,6 +9,9 @@ import (
 // RTPEngine metadata filenames follow the pattern: <call-id>-<tag>
 // The call-id may contain hyphens (e.g., UUID format), so we split on the
 // last hyphen-separated segment that looks like a tag.
+//
+// Assumption: RTPEngine's from-tag does not contain hyphens. This holds for
+// standard SIP implementations where from-tag is an opaque token without hyphens.
 func extractCallIDFromFilename(filename string) string {
 	// Remove file extension if present
 	if idx := strings.LastIndex(filename, "."); idx >= 0 {

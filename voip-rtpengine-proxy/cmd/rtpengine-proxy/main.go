@@ -86,23 +86,24 @@ func main() {
 	if recordingDir != "" && gcsBucketName != "" {
 		uploader, err := gcsuploader.New(gcsBucketName)
 		if err != nil {
-			log.WithError(err).Fatal("could not create GCS uploader")
+			log.WithError(err).Error("could not create GCS uploader, pcap watcher disabled")
+		} else {
+			defer uploader.Close()
+
+			w := pcapwatcher.New(recordingDir, uploader)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			go func() {
+				if err := w.Run(ctx); err != nil {
+					log.WithError(err).Error("pcap watcher error")
+				}
+			}()
+			log.WithFields(logrus.Fields{
+				"recording_dir": recordingDir,
+				"gcs_bucket":    gcsBucketName,
+			}).Info("pcap watcher enabled")
 		}
-		defer uploader.Close()
-
-		w := pcapwatcher.New(recordingDir, uploader)
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		go func() {
-			if err := w.Run(ctx); err != nil {
-				log.WithError(err).Error("pcap watcher error")
-			}
-		}()
-		log.WithFields(logrus.Fields{
-			"recording_dir": recordingDir,
-			"gcs_bucket":    gcsBucketName,
-		}).Info("pcap watcher enabled")
 	} else {
 		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCS_BUCKET_NAME not set)")
 	}
