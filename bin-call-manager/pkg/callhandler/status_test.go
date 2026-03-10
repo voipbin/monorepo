@@ -324,6 +324,7 @@ func Test_UpdateStatusProgressing_rtpDebugEnabled(t *testing.T) {
 				TMAnswer:  testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 				SIPData: map[string]string{
 					"rtpengine_address": "10.0.0.1:2223",
+					"from_tag":          "abc123",
 				},
 			},
 			&call.Call{
