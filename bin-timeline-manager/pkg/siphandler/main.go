@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcapgo"
 	"github.com/sirupsen/logrus"
 
@@ -113,8 +112,8 @@ func (h *sipHandler) GetSIPAnalysis(ctx context.Context, sipCallID string, fromT
 }
 
 // GetPcap retrieves PCAP data for a given SIP call ID and time range.
-// It fetches both SIP (hepid 1) and RTCP (hepid 5) packets from Homer,
-// merges them, and filters out internal-to-internal packets.
+// It fetches both SIP (hepid 1) and RTCP (hepid 5) packets from Homer
+// and merges them into a single PCAP sorted by timestamp.
 func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "GetPcap",
@@ -160,19 +159,7 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 		mergedData = sipPcapData
 	}
 
-	// Filter internal packets from PCAP
-	filteredData, err := filterInternalPackets(mergedData)
-	if err != nil {
-		log.Warnf("Could not filter PCAP data, returning unfiltered: %v", err)
-		return mergedData, nil
-	}
-
-	log.WithFields(logrus.Fields{
-		"original_size": len(mergedData),
-		"filtered_size": len(filteredData),
-	}).Debug("Filtered internal packets from PCAP.")
-
-	return filteredData, nil
+	return mergedData, nil
 }
 
 // packetEntry holds raw packet data and its capture info for sorting during merge.
@@ -230,56 +217,6 @@ func mergePcaps(pcap1, pcap2 []byte) ([]byte, error) {
 	}
 	for _, p := range packets {
 		if err := writer.WritePacket(p.ci, p.data); err != nil {
-			return nil, err
-		}
-	}
-
-	return buf.Bytes(), nil
-}
-
-// filterInternalPackets removes packets where both src and dst IPs are internal.
-func filterInternalPackets(pcapData []byte) ([]byte, error) {
-	reader, err := pcapgo.NewReader(bytes.NewReader(pcapData))
-	if err != nil {
-		return nil, err
-	}
-
-	var buf bytes.Buffer
-	writer := pcapgo.NewWriter(&buf)
-	if err := writer.WriteFileHeader(reader.Snaplen(), reader.LinkType()); err != nil {
-		return nil, err
-	}
-
-	for {
-		data, ci, err := reader.ReadPacketData()
-		if err != nil {
-			break // End of file or error
-		}
-
-		// Parse the packet
-		packet := gopacket.NewPacket(data, reader.LinkType(), gopacket.Default)
-
-		// Extract IP layer
-		var srcIP, dstIP net.IP
-		if ipv4Layer := packet.Layer(layers.LayerTypeIPv4); ipv4Layer != nil {
-			ipv4, _ := ipv4Layer.(*layers.IPv4)
-			srcIP = ipv4.SrcIP
-			dstIP = ipv4.DstIP
-		} else if ipv6Layer := packet.Layer(layers.LayerTypeIPv6); ipv6Layer != nil {
-			ipv6, _ := ipv6Layer.(*layers.IPv6)
-			srcIP = ipv6.SrcIP
-			dstIP = ipv6.DstIP
-		}
-
-		// Skip if both IPs are internal
-		if srcIP != nil && dstIP != nil {
-			if isPrivateIP(srcIP.String()) && isPrivateIP(dstIP.String()) {
-				continue
-			}
-		}
-
-		// Write packet to output
-		if err := writer.WritePacket(ci, data); err != nil {
 			return nil, err
 		}
 	}
