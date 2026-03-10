@@ -10,6 +10,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -294,6 +296,26 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 		mergedData = sipPcapData
 	}
 
+	// Rewrite IP addresses in RTP packets to match SDP endpoints so Wireshark
+	// can correlate RTP streams with the SIP/SDP negotiation.
+	if len(rtpFiles) > 0 {
+		messages, msgErr := h.homerHandler.GetSIPMessages(ctx, sipCallID, fromTime, toTime)
+		if msgErr != nil {
+			log.Warnf("Could not get SIP messages for SDP parsing, RTP IPs will not be rewritten: %v", msgErr)
+		} else {
+			endpoints := parseSDPEndpoints(messages)
+			if len(endpoints) > 0 {
+				rewritten, rwErr := rewriteRTPPacketIPs(mergedData, endpoints)
+				if rwErr != nil {
+					log.Warnf("Could not rewrite RTP packet IPs: %v", rwErr)
+				} else {
+					mergedData = rewritten
+					log.WithField("endpoint_count", len(endpoints)).Debug("Rewrote RTP packet IPs to match SDP.")
+				}
+			}
+		}
+	}
+
 	// Filter internal packets from PCAP
 	filteredData, err := filterInternalPackets(mergedData)
 	if err != nil {
@@ -421,6 +443,213 @@ func mergeMultiplePcaps(sources []io.Reader) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// sdpMediaEndpoint represents a media endpoint extracted from SDP negotiation.
+type sdpMediaEndpoint struct {
+	IP   net.IP
+	Port int
+}
+
+// parseSDPEndpoints extracts media endpoints (IP + port) from SDP bodies in SIP messages.
+// It parses INVITE and 200 OK messages to find the negotiated media addresses.
+func parseSDPEndpoints(messages []*sipmessage.SIPMessage) []sdpMediaEndpoint {
+	var endpoints []sdpMediaEndpoint
+	for _, msg := range messages {
+		if msg.Raw == "" {
+			continue
+		}
+
+		sdpBody := extractSDPBody(msg.Raw)
+		if sdpBody == "" {
+			continue
+		}
+
+		var sessionIP string
+		var mediaPort int
+		var mediaIP string
+
+		for _, line := range strings.Split(sdpBody, "\n") {
+			line = strings.TrimRight(line, "\r")
+			line = strings.TrimSpace(line)
+
+			if strings.HasPrefix(line, "c=IN IP4 ") {
+				ip := strings.TrimSpace(line[len("c=IN IP4 "):])
+				if mediaPort == 0 {
+					sessionIP = ip // session-level (before first m= line)
+				} else {
+					mediaIP = ip // media-level (after m= line, overrides session)
+				}
+			}
+
+			if strings.HasPrefix(line, "m=audio ") {
+				fields := strings.Fields(line)
+				if len(fields) >= 2 {
+					port, err := strconv.Atoi(fields[1])
+					if err == nil {
+						mediaPort = port
+						mediaIP = "" // reset media-level IP for this section
+					}
+				}
+			}
+		}
+
+		if mediaPort > 0 {
+			ip := mediaIP
+			if ip == "" {
+				ip = sessionIP
+			}
+			if ip != "" {
+				parsedIP := net.ParseIP(ip)
+				if parsedIP != nil {
+					endpoints = append(endpoints, sdpMediaEndpoint{IP: parsedIP.To4(), Port: mediaPort})
+				}
+			}
+		}
+	}
+
+	return endpoints
+}
+
+// extractSDPBody returns the SDP body from a raw SIP message (everything after the first blank line).
+func extractSDPBody(rawSIP string) string {
+	for _, sep := range []string{"\r\n\r\n", "\n\n"} {
+		if idx := strings.Index(rawSIP, sep); idx >= 0 {
+			return rawSIP[idx+len(sep):]
+		}
+	}
+	return ""
+}
+
+// rewriteRTPPacketIPs rewrites IP addresses in pcap packets to match SDP endpoints.
+// For each UDP packet whose src or dst port matches an SDP media port, the corresponding
+// IP address is rewritten to the SDP-advertised IP. This allows Wireshark to correlate
+// RTP streams with SIP/SDP negotiation when the capture was taken behind NAT.
+func rewriteRTPPacketIPs(pcapData []byte, endpoints []sdpMediaEndpoint) ([]byte, error) {
+	if len(endpoints) == 0 {
+		return pcapData, nil
+	}
+
+	// Build port → IP mapping (including RTCP port = media port + 1)
+	portToIP := make(map[int]net.IP)
+	for _, ep := range endpoints {
+		portToIP[ep.Port] = ep.IP
+		portToIP[ep.Port+1] = ep.IP // RTCP
+	}
+
+	reader, err := pcapgo.NewReader(bytes.NewReader(pcapData))
+	if err != nil {
+		return nil, err
+	}
+
+	linkType := reader.LinkType()
+
+	var buf bytes.Buffer
+	writer := pcapgo.NewWriter(&buf)
+	if err := writer.WriteFileHeader(reader.Snaplen(), linkType); err != nil {
+		return nil, err
+	}
+
+	for {
+		data, ci, err := reader.ReadPacketData()
+		if err != nil {
+			break
+		}
+
+		rewritten := rewritePacketIPs(data, linkType, portToIP)
+		if err := writer.WritePacket(ci, rewritten); err != nil {
+			return nil, err
+		}
+	}
+
+	return buf.Bytes(), nil
+}
+
+// rewritePacketIPs rewrites IP addresses in a single packet based on port-to-IP mapping.
+// It modifies raw packet bytes directly and recalculates the IPv4 header checksum.
+func rewritePacketIPs(data []byte, linkType layers.LinkType, portToIP map[int]net.IP) []byte {
+	packet := gopacket.NewPacket(data, linkType, gopacket.NoCopy)
+
+	ipv4Layer := packet.Layer(layers.LayerTypeIPv4)
+	if ipv4Layer == nil {
+		return data
+	}
+
+	udpLayer := packet.Layer(layers.LayerTypeUDP)
+	if udpLayer == nil {
+		return data
+	}
+
+	udp, _ := udpLayer.(*layers.UDP)
+	srcPort := int(udp.SrcPort)
+	dstPort := int(udp.DstPort)
+
+	newSrcIP, srcRewrite := portToIP[srcPort]
+	newDstIP, dstRewrite := portToIP[dstPort]
+
+	if !srcRewrite && !dstRewrite {
+		return data
+	}
+
+	// Determine Ethernet header length
+	var ipOffset int
+	switch linkType {
+	case layers.LinkTypeEthernet:
+		ipOffset = 14
+		if len(data) > 16 {
+			etherType := uint16(data[12])<<8 | uint16(data[13])
+			if etherType == 0x8100 { // 802.1Q VLAN tag
+				ipOffset = 18
+			}
+		}
+	case layers.LinkTypeRaw:
+		ipOffset = 0
+	default:
+		return data
+	}
+
+	ihl := int(data[ipOffset]&0x0f) * 4
+	if ihl < 20 || len(data) < ipOffset+ihl+8 {
+		return data
+	}
+
+	// Copy data to avoid modifying the original
+	newData := make([]byte, len(data))
+	copy(newData, data)
+
+	if srcRewrite {
+		ip4 := newSrcIP.To4()
+		if ip4 != nil {
+			copy(newData[ipOffset+12:ipOffset+16], ip4)
+		}
+	}
+	if dstRewrite {
+		ip4 := newDstIP.To4()
+		if ip4 != nil {
+			copy(newData[ipOffset+16:ipOffset+20], ip4)
+		}
+	}
+
+	// Recalculate IPv4 header checksum
+	newData[ipOffset+10] = 0
+	newData[ipOffset+11] = 0
+	var sum uint32
+	for i := 0; i < ihl; i += 2 {
+		sum += uint32(newData[ipOffset+i])<<8 | uint32(newData[ipOffset+i+1])
+	}
+	for sum > 0xffff {
+		sum = (sum >> 16) + (sum & 0xffff)
+	}
+	checksum := ^uint16(sum)
+	newData[ipOffset+10] = byte(checksum >> 8)
+	newData[ipOffset+11] = byte(checksum)
+
+	// Zero out UDP checksum (optional for IPv4, avoids recalculating pseudo-header)
+	udpOffset := ipOffset + ihl
+	newData[udpOffset+6] = 0
+	newData[udpOffset+7] = 0
+
+	return newData
 }
 
 // filterInternalPackets removes packets where both src and dst IPs are internal.
