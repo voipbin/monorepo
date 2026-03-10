@@ -1368,6 +1368,61 @@ func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
 		}
 	})
 
+	t.Run("GCS returns multiple RTP pcaps that get merged", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockHomer := homerhandler.NewMockHomerHandler(mc)
+		mockGCS := NewMockGCSReader(mc)
+
+		sipPcap := createPcapWithTimestamp("\x0a\x00\x00\x01", "\xcb\x00\x71\x01", fromTime.Add(time.Second))
+		rtpPcap1 := createPcapWithTimestamp("\xcb\x00\x71\x01", "\x0a\x00\x00\x01", fromTime.Add(2*time.Second))
+		rtpPcap2 := createPcapWithTimestamp("\xcb\x00\x71\x01", "\x0a\x00\x00\x01", fromTime.Add(3*time.Second))
+
+		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
+		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
+
+		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(
+			[]string{"rtp-recordings/call-1-ssrc1.pcap", "rtp-recordings/call-1-ssrc2.pcap"}, nil,
+		)
+		mockGCS.EXPECT().DownloadObject(gomock.Any(), "rtp-recordings/call-1-ssrc1.pcap", gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ string, dest io.Writer) error {
+				_, err := dest.Write(rtpPcap1)
+				return err
+			},
+		)
+		mockGCS.EXPECT().DownloadObject(gomock.Any(), "rtp-recordings/call-1-ssrc2.pcap", gomock.Any()).DoAndReturn(
+			func(_ context.Context, _ string, dest io.Writer) error {
+				_, err := dest.Write(rtpPcap2)
+				return err
+			},
+		)
+
+		h := NewSIPHandler(mockHomer, mockGCS, "test-bucket")
+
+		result, err := h.GetPcap(context.Background(), "call-1", fromTime, toTime)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		reader, err := pcapgo.NewReader(bytes.NewReader(result))
+		if err != nil {
+			t.Fatalf("failed to read result: %v", err)
+		}
+
+		count := 0
+		for {
+			_, _, err := reader.ReadPacketData()
+			if err != nil {
+				break
+			}
+			count++
+		}
+		if count != 3 {
+			t.Errorf("expected 3 packets (SIP + 2 RTP), got %d", count)
+		}
+	})
+
 	t.Run("GCS disabled when bucket empty", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
