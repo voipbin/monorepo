@@ -59,7 +59,7 @@ func (r *requestHandler) TimelineV1SIPPcapGet(ctx context.Context, callID uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTimeline(ctx, uri, sock.RequestMethodPost, "timeline/sip-pcap", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTimeline(ctx, uri, sock.RequestMethodPost, "timeline/sip-pcap", requestTimeoutLong, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
