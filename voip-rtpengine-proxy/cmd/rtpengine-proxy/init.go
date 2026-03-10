@@ -53,7 +53,7 @@ func initVariable() {
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "Prometheus metrics path")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Prometheus listen address")
 	pflag.String("rtpengine_recording_dir", "", "Directory for RTPEngine pcap recordings")
-	pflag.String("gcs_bucket_name", "", "GCS bucket for pcap uploads")
+	pflag.String("gcp_bucket_name_media", "", "GCP bucket for media/pcap uploads")
 
 	pflag.Parse()
 
@@ -79,7 +79,7 @@ func initVariable() {
 	bindVar("prometheus_endpoint", "PROMETHEUS_ENDPOINT", &prometheusEndpoint)
 	bindVar("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS", &prometheusListenAddress)
 	bindVar("rtpengine_recording_dir", "RTPENGINE_RECORDING_DIR", &recordingDir)
-	bindVar("gcs_bucket_name", "GCS_BUCKET_NAME", &gcsBucketName)
+	bindVar("gcp_bucket_name_media", "GCP_BUCKET_NAME_MEDIA", &gcpBucketNameMedia)
 
 	if err := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); err != nil {
 		panic(err)
