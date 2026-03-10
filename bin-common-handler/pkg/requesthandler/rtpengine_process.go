@@ -25,6 +25,10 @@ func (r *requestHandler) RTPEngineV1ProcessSend(ctx context.Context, rtpengineID
 		return err
 	}
 
-	_, err = r.sendRequestRTPEngine(ctx, rtpengineID, uri, sock.RequestMethodPost, "rtpengine/process", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	return err
+	tmp, err := r.sendRequestRTPEngine(ctx, rtpengineID, uri, sock.RequestMethodPost, "rtpengine/process", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return err
+	}
+
+	return parseResponse(tmp, nil)
 }

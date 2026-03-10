@@ -82,7 +82,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 			}); errMeta != nil {
 				log.Errorf("Could not update call metadata for RTP debug. err: %v", errMeta)
 			} else {
-				h.rtpDebugStartRecording(ctx, cn)
+				h.rtpDebugStartRecording(ctx, res, cn)
 			}
 		}
 	}

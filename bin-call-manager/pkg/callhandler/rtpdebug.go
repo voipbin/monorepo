@@ -11,9 +11,10 @@ import (
 
 // rtpDebugStartRecording queries RTPEngine for allocated ports and starts a tcpdump capture
 // via rtpengine-proxy. Best-effort: logs errors but does not return them (must not block call flow).
-func (h *callHandler) rtpDebugStartRecording(ctx context.Context, cn *channel.Channel) {
+func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, cn *channel.Channel) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "rtpDebugStartRecording",
+		"call_id":    c.ID,
 		"channel_id": cn.ID,
 	})
 
@@ -45,7 +46,7 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, cn *channel.Ch
 
 	// Step 3: Build exec message with BPF filter
 	bpfFilter := buildBPFFilter(ports)
-	callID := cn.ID
+	callID := c.ID.String()
 
 	execMsg := map[string]interface{}{
 		"type":       "exec",
