@@ -125,7 +125,7 @@ var (
 )
 
 const requestTimeoutDefault int = 3000  // default request timeout(3 sec)
-const requestTimeoutLong int = 15000    // long request timeout(15 sec) for operations involving external fetches (e.g., GCS + merge)
+const requestTimeoutLong int = 30000    // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
 
 // delay units
 const (
