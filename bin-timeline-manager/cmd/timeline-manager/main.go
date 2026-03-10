@@ -146,7 +146,10 @@ func runServices() error {
 
 	homerH := homerhandler.NewHomerHandler(config.Get().HomerAPIAddress, config.Get().HomerAuthToken)
 
-	// Initialize GCS reader for RTP pcap fetching (optional)
+	// Initialize GCS reader for RTP pcap fetching (optional).
+	// Note: The GCS client is intentionally not closed. runServices() returns immediately
+	// (listenHandler.Run() is non-blocking), so defer client.Close() would close prematurely.
+	// The client lives for the process lifetime, matching other long-lived resources (sockHandler, db).
 	var gcsReader siphandler.GCSReader
 	gcsBucket := config.Get().GCSBucketName
 	if gcsBucket != "" {

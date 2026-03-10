@@ -23,8 +23,9 @@ import (
 )
 
 const (
-	gcsRTPPrefix = "rtp-recordings/"
-	gcsTimeout   = 30 * time.Second
+	gcsRTPPrefix    = "rtp-recordings/"
+	gcsTimeout      = 30 * time.Second
+	maxRTPPcapFiles = 20
 )
 
 // RFC 1918 private address ranges
@@ -149,6 +150,14 @@ func (h *sipHandler) fetchRTPPcaps(ctx context.Context, sipCallID string) ([]*os
 	if len(objects) == 0 {
 		log.Debug("No RTP pcap files found in GCS.")
 		return nil, func() {}, nil
+	}
+
+	if len(objects) > maxRTPPcapFiles {
+		log.WithFields(logrus.Fields{
+			"found": len(objects),
+			"limit": maxRTPPcapFiles,
+		}).Warnf("Too many RTP pcap files, truncating to %d", maxRTPPcapFiles)
+		objects = objects[:maxRTPPcapFiles]
 	}
 
 	log.WithField("count", len(objects)).Debugf("Found RTP pcap files in GCS. sip_callid: %s", sipCallID)

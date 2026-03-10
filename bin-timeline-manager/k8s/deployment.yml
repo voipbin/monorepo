@@ -47,7 +47,7 @@ spec:
             - name: HOMER_AUTH_TOKEN
               value: ${HOMER_AUTH_TOKEN}
             - name: GCS_BUCKET_NAME
-              value: ${GCS_BUCKET_NAME}
+              value: ${GCP_BUCKET_NAME_MEDIA}
           ports:
             - name: metrics
               protocol: "TCP"
