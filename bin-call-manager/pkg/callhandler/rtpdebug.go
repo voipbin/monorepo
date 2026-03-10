@@ -45,12 +45,13 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 	log.Debugf("Extracted ports from RTPEngine: %v", ports)
 
 	// Step 3: Build exec message with BPF filter
+	// Use SIP Call-ID (not internal call UUID) so the PCAP filename matches
+	// what timeline-manager uses to search GCS (it searches by SIP Call-ID).
 	bpfFilter := buildBPFFilter(ports)
-	callID := c.ID.String()
 
 	execMsg := map[string]interface{}{
 		"type":       "exec",
-		"id":         callID,
+		"id":         cn.SIPCallID,
 		"command":    "tcpdump",
 		"parameters": []string{bpfFilter},
 	}
@@ -61,7 +62,7 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 		return
 	}
 
-	log.Debugf("Sent tcpdump exec to rtpengine-proxy. rtpengine_address: %s, call_id: %s, ports: %v", rtpengineAddress, callID, ports)
+	log.Debugf("Sent tcpdump exec to rtpengine-proxy. rtpengine_address: %s, sip_call_id: %s, ports: %v", rtpengineAddress, cn.SIPCallID, ports)
 }
 
 // rtpDebugStopRecording sends a kill message to rtpengine-proxy to stop the tcpdump capture.
@@ -87,7 +88,7 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 
 	killMsg := map[string]interface{}{
 		"type": "kill",
-		"id":   c.ID.String(),
+		"id":   cn.SIPCallID,
 	}
 
 	if _, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, killMsg); err != nil {
@@ -95,5 +96,5 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 		return
 	}
 
-	log.Debugf("Sent tcpdump kill to rtpengine-proxy. rtpengine_address: %s, call_id: %s", rtpengineAddress, c.ID)
+	log.Debugf("Sent tcpdump kill to rtpengine-proxy. rtpengine_address: %s, sip_call_id: %s", rtpengineAddress, cn.SIPCallID)
 }
