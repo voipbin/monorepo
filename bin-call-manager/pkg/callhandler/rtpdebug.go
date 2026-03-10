@@ -23,9 +23,16 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, cn *channel.Ch
 		return
 	}
 
+	fromTag := cn.SIPData[channel.SIPDataKeyFromTag]
+	if fromTag == "" {
+		log.Debugf("No from_tag in SIPData. Skipping RTP debug start.")
+		return
+	}
+
 	command := map[string]interface{}{
-		"command": "start recording",
-		"call-id": cn.SIPCallID,
+		"command":  "start recording",
+		"call-id":  cn.SIPCallID,
+		"from-tag": fromTag,
 	}
 
 	res, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, command)
@@ -58,9 +65,16 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 		return
 	}
 
+	fromTag := cn.SIPData[channel.SIPDataKeyFromTag]
+	if fromTag == "" {
+		log.Debugf("No from_tag in SIPData. Skipping RTP debug stop.")
+		return
+	}
+
 	command := map[string]interface{}{
-		"command": "stop recording",
-		"call-id": cn.SIPCallID,
+		"command":  "stop recording",
+		"call-id":  cn.SIPCallID,
+		"from-tag": fromTag,
 	}
 
 	res, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, command)
