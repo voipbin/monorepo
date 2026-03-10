@@ -103,6 +103,7 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 		req.STTType,
 		req.ToolNames,
 		req.VADConfig,
+		req.SmartTurnEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not create ai. err: %v", err)
@@ -228,6 +229,7 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 		req.STTType,
 		req.ToolNames,
 		req.VADConfig,
+		req.SmartTurnEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not update ai. err: %v", err)

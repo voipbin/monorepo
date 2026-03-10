@@ -161,6 +161,7 @@ func TestCreate(t *testing.T) {
 				tt.sttType,
 				[]tool.ToolName{},
 				tt.vadConfig,
+				false,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -322,6 +323,7 @@ func TestUpdate(t *testing.T) {
 				tt.sttType,
 				[]tool.ToolName{},
 				tt.vadConfig,
+				false,
 			)
 
 			if (err != nil) != tt.wantError {

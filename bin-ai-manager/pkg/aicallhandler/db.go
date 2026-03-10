@@ -48,7 +48,8 @@ func (h *aicallHandler) Create(
 		AITTSType:     c.TTSType,
 		AITTSVoiceID:  c.TTSVoiceID,
 		AISTTType:     c.STTType,
-		AIVADConfig:   c.VADConfig,
+		AIVADConfig:        c.VADConfig,
+		AISmartTurnEnabled: c.SmartTurnEnabled,
 
 		Parameter: parameter,
 

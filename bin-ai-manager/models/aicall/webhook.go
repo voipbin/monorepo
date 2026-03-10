@@ -21,7 +21,8 @@ type WebhookMessage struct {
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty"`
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty"`
-	AIVADConfig   *ai.VADConfig  `json:"ai_vad_config,omitempty"`
+	AIVADConfig        *ai.VADConfig  `json:"ai_vad_config,omitempty"`
+	AISmartTurnEnabled bool           `json:"ai_smart_turn_enabled,omitempty"`
 
 	Parameter map[string]any `json:"parameter,omitempty"`
 
@@ -54,7 +55,8 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		AITTSType:     h.AITTSType,
 		AITTSVoiceID:  h.AITTSVoiceID,
 		AISTTType:     h.AISTTType,
-		AIVADConfig:   h.AIVADConfig,
+		AIVADConfig:        h.AIVADConfig,
+		AISmartTurnEnabled: h.AISmartTurnEnabled,
 
 		Parameter: h.Parameter,
 

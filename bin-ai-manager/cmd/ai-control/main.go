@@ -98,6 +98,7 @@ func cmdCreate() *cobra.Command {
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
 	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
+	flags.Bool("smart-turn-enabled", false, "Enable smart turn detection")
 
 	return cmd
 }
@@ -148,6 +149,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
 	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
+	flags.Bool("smart-turn-enabled", false, "Enable smart turn detection")
 
 	return cmd
 }
@@ -213,6 +215,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid vad-config: %w", err)
 	}
 
+	smartTurnEnabled := viper.GetBool("smart-turn-enabled")
+
 	res, err := handler.Create(
 		context.Background(),
 		customerID,
@@ -227,6 +231,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		sttType,
 		nil, // toolNames - nil means default (all tools)
 		vadConfig,
+		smartTurnEnabled,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create AI")
@@ -329,6 +334,8 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid vad-config: %w", err)
 	}
 
+	smartTurnEnabled := viper.GetBool("smart-turn-enabled")
+
 	res, err := handler.Update(
 		context.Background(),
 		targetID,
@@ -343,6 +350,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		sttType,
 		nil, // toolNames - nil keeps existing value
 		vadConfig,
+		smartTurnEnabled,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update AI")

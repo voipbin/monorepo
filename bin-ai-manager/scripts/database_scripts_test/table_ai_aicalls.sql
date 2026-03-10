@@ -10,6 +10,7 @@ create table ai_aicalls(
   ai_tts_voice_id  varchar(255),
   ai_stt_type      varchar(255),
   ai_vad_config    json,
+  ai_smart_turn_enabled boolean not null default 0,
   parameter        json,
 
   activeflow_id     binary(16),

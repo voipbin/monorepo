@@ -1813,6 +1813,10 @@ components:
           example: "deepgram"
         vad_config:
           $ref: '#/components/schemas/AIManagerVADConfig'
+        smart_turn_enabled:
+          type: boolean
+          description: Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.
+          example: false
         tool_names:
           type: array
           items:
@@ -2129,6 +2133,10 @@ components:
           example: "deepgram"
         ai_vad_config:
           $ref: '#/components/schemas/AIManagerVADConfig'
+        ai_smart_turn_enabled:
+          type: boolean
+          description: Smart turn detection setting frozen from the AI configuration at call start.
+          example: false
         parameter:
           type: object
           additionalProperties: true

@@ -56,8 +56,9 @@ type AI struct {
 	TTSType    TTSType `json:"tts_type,omitempty" db:"tts_type"`
 	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
-	STTType   STTType    `json:"stt_type,omitempty" db:"stt_type"`
-	VADConfig *VADConfig `json:"vad_config,omitempty" db:"vad_config,json"`
+	STTType          STTType    `json:"stt_type,omitempty" db:"stt_type"`
+	VADConfig        *VADConfig `json:"vad_config,omitempty" db:"vad_config,json"`
+	SmartTurnEnabled bool       `json:"smart_turn_enabled,omitempty" db:"smart_turn_enabled"`
 
 	// ToolNames defines which tools are enabled for this AI
 	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools

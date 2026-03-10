@@ -1010,6 +1010,9 @@ type AIManagerAI struct {
 	// Parameter Custom key-value configuration data specific to the AI engine type.
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
+	// SmartTurnEnabled Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.
+	SmartTurnEnabled *bool `json:"smart_turn_enabled,omitempty"`
+
 	// SttType Speech-to-text provider type.
 	SttType *AIManagerAISTTType `json:"stt_type,omitempty"`
 
@@ -1051,6 +1054,9 @@ type AIManagerAIcall struct {
 
 	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
+
+	// AiSmartTurnEnabled Smart turn detection setting frozen from the AI configuration at call start.
+	AiSmartTurnEnabled *bool `json:"ai_smart_turn_enabled,omitempty"`
 
 	// AiSttType Speech-to-text provider type.
 	AiSttType *AIManagerAISTTType `json:"ai_stt_type,omitempty"`
