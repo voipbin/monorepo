@@ -25,6 +25,7 @@ type Config struct {
 	MigrationsPath          string
 	HomerAPIAddress         string
 	HomerAuthToken          string
+	GCSBucketName           string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -47,6 +48,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("migrations_path", "./migrations", "Path to migration files")
 	f.String("homer_api_address", "", "Homer API address")
 	f.String("homer_auth_token", "", "Homer auth token")
+	f.String("gcs_bucket_name", "", "GCS bucket for RTP pcap recordings")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -57,6 +59,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"migrations_path":           "MIGRATIONS_PATH",
 		"homer_api_address":         "HOMER_API_ADDRESS",
 		"homer_auth_token":          "HOMER_AUTH_TOKEN",
+		"gcs_bucket_name":           "GCS_BUCKET_NAME",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -86,6 +89,7 @@ func LoadGlobalConfig() {
 			MigrationsPath:          viper.GetString("migrations_path"),
 			HomerAPIAddress:         viper.GetString("homer_api_address"),
 			HomerAuthToken:          viper.GetString("homer_auth_token"),
+			GCSBucketName:           viper.GetString("gcs_bucket_name"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

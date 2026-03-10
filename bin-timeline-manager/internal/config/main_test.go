@@ -40,6 +40,10 @@ func TestConfig_DefaultValues(t *testing.T) {
 	if cfg.MigrationsPath != "" {
 		t.Errorf("MigrationsPath = %q, want empty", cfg.MigrationsPath)
 	}
+
+	if cfg.GCSBucketName != "" {
+		t.Errorf("GCSBucketName = %q, want empty", cfg.GCSBucketName)
+	}
 }
 
 func TestConfig_AllFields(t *testing.T) {
@@ -50,6 +54,7 @@ func TestConfig_AllFields(t *testing.T) {
 		ClickHouseAddress:       "localhost:9000",
 		ClickHouseDatabase:      "voipbin",
 		MigrationsPath:          "/app/migrations",
+		GCSBucketName:           "my-bucket",
 	}
 
 	if cfg.RabbitMQAddress != "amqp://localhost:5672" {
@@ -75,6 +80,10 @@ func TestConfig_AllFields(t *testing.T) {
 	if cfg.MigrationsPath != "/app/migrations" {
 		t.Errorf("MigrationsPath = %q, want %q", cfg.MigrationsPath, "/app/migrations")
 	}
+
+	if cfg.GCSBucketName != "my-bucket" {
+		t.Errorf("GCSBucketName = %q, want %q", cfg.GCSBucketName, "my-bucket")
+	}
 }
 
 func TestBindConfig(t *testing.T) {
@@ -92,6 +101,7 @@ func TestBindConfig(t *testing.T) {
 		"clickhouse_address",
 		"clickhouse_database",
 		"migrations_path",
+		"gcs_bucket_name",
 	}
 
 	for _, flagName := range flags {
