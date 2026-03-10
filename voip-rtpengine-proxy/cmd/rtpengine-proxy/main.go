@@ -90,7 +90,7 @@ func main() {
 			}
 		}()
 	}
-	procMgr := processmanager.NewManager(interfaceName, 10*time.Minute, uploader)
+	procMgr := processmanager.NewManager(interfaceName, 20*time.Minute, uploader)
 	procMgr.CleanOrphans()
 
 	lh := listenhandler.NewListenHandler(sockHandler, permanentQueue, volatileQueue, ng, procMgr)
