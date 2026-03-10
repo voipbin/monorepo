@@ -16,7 +16,6 @@ const (
 	SIPDataKeyToURI            SIPDataKey = "to_uri"
 	SIPDataKeyPAI              SIPDataKey = "pai"
 	SIPDataKeyRTPEngineAddress SIPDataKey = "rtpengine_address"
-	SIPDataKeyFromTag          SIPDataKey = "from_tag"
 	SIPDataKeyDirection        SIPDataKey = "direction"
 	SIPDataKeySourceIP         SIPDataKey = "source_ip"
 	SIPDataKeyTransport        SIPDataKey = "transport"
