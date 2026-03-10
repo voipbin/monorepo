@@ -377,6 +377,7 @@ type RequestHandler interface {
 
 	// RTPEngine
 	RTPEngineV1CommandsSend(ctx context.Context, rtpengineID string, command map[string]interface{}) (map[string]interface{}, error)
+	RTPEngineV1ProcessSend(ctx context.Context, rtpengineID string, data interface{}) error
 
 	// agent-manager agent
 	AgentV1AgentCreate(

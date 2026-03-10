@@ -9,8 +9,8 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 )
 
-// rtpDebugStartRecording sends "start recording" to RTPEngine if the customer has RTP debug enabled.
-// Best-effort: logs errors but does not return them (must not block call flow).
+// rtpDebugStartRecording queries RTPEngine for allocated ports and starts a tcpdump capture
+// via rtpengine-proxy. Best-effort: logs errors but does not return them (must not block call flow).
 func (h *callHandler) rtpDebugStartRecording(ctx context.Context, cn *channel.Channel) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "rtpDebugStartRecording",
@@ -23,20 +23,47 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, cn *channel.Ch
 		return
 	}
 
-	command := map[string]interface{}{
-		"command": "start recording",
+	// Step 1: Query RTPEngine for allocated ports
+	queryCommand := map[string]interface{}{
+		"command": "query",
 		"call-id": cn.SIPCallID,
 	}
 
-	res, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, command)
+	queryRes, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, queryCommand)
 	if err != nil {
-		log.Errorf("Could not send start recording to RTPEngine. rtpengine_address: %s, err: %v", rtpengineAddress, err)
+		log.Errorf("Could not query RTPEngine. rtpengine_address: %s, err: %v", rtpengineAddress, err)
 		return
 	}
-	log.WithField("response", res).Debugf("Sent start recording to RTPEngine. rtpengine_address: %s, sip_call_id: %s", rtpengineAddress, cn.SIPCallID)
+
+	// Step 2: Extract local ports from query response
+	ports, err := extractLocalPorts(queryRes)
+	if err != nil {
+		log.Errorf("Could not extract ports from query response. err: %v", err)
+		return
+	}
+	log.Debugf("Extracted ports from RTPEngine: %v", ports)
+
+	// Step 3: Build exec message with BPF filter
+	bpfFilter := buildBPFFilter(ports)
+	callID := cn.ID
+
+	execMsg := map[string]interface{}{
+		"type":       "exec",
+		"id":         callID,
+		"command":    "tcpdump",
+		"parameters": []string{bpfFilter},
+	}
+
+	// Step 4: Send exec message to rtpengine-proxy
+	if err := h.reqHandler.RTPEngineV1ProcessSend(ctx, rtpengineAddress, execMsg); err != nil {
+		log.Errorf("Could not send exec to rtpengine-proxy. err: %v", err)
+		return
+	}
+
+	log.Debugf("Sent tcpdump exec to rtpengine-proxy. rtpengine_address: %s, call_id: %s, ports: %v", rtpengineAddress, callID, ports)
 }
 
-// rtpDebugStopRecording sends "stop recording" to RTPEngine for a call that had RTP debug enabled.
+// rtpDebugStopRecording sends a kill message to rtpengine-proxy to stop the tcpdump capture.
 // Fetches a fresh channel from DB (hangup channel may be stale).
 // Best-effort: logs errors but does not return them (must not block hangup flow).
 func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
@@ -50,7 +77,6 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 		log.Errorf("Could not get fresh channel for RTP debug stop. channel_id: %s, err: %v", c.ChannelID, err)
 		return
 	}
-	log.WithField("channel", cn).Debugf("Retrieved fresh channel for RTP debug stop. channel_id: %s", cn.ID)
 
 	rtpengineAddress := cn.SIPData[channel.SIPDataKeyRTPEngineAddress]
 	if rtpengineAddress == "" {
@@ -58,15 +84,15 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 		return
 	}
 
-	command := map[string]interface{}{
-		"command": "stop recording",
-		"call-id": cn.SIPCallID,
+	killMsg := map[string]interface{}{
+		"type": "kill",
+		"id":   c.ID.String(),
 	}
 
-	res, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, command)
-	if err != nil {
-		log.Errorf("Could not send stop recording to RTPEngine. rtpengine_address: %s, err: %v", rtpengineAddress, err)
+	if err := h.reqHandler.RTPEngineV1ProcessSend(ctx, rtpengineAddress, killMsg); err != nil {
+		log.Errorf("Could not send kill to rtpengine-proxy. err: %v", err)
 		return
 	}
-	log.WithField("response", res).Debugf("Sent stop recording to RTPEngine. rtpengine_address: %s, sip_call_id: %s", rtpengineAddress, cn.SIPCallID)
+
+	log.Debugf("Sent tcpdump kill to rtpengine-proxy. rtpengine_address: %s, call_id: %s", rtpengineAddress, c.ID)
 }
