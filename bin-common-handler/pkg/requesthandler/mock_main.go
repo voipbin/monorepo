@@ -4993,20 +4993,6 @@ func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengine
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1CommandsSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1CommandsSend), ctx, rtpengineID, command)
 }
 
-// RTPEngineV1ProcessSend mocks base method.
-func (m *MockRequestHandler) RTPEngineV1ProcessSend(ctx context.Context, rtpengineID string, data any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RTPEngineV1ProcessSend", ctx, rtpengineID, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RTPEngineV1ProcessSend indicates an expected call of RTPEngineV1ProcessSend.
-func (mr *MockRequestHandlerMockRecorder) RTPEngineV1ProcessSend(ctx, rtpengineID, data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1ProcessSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1ProcessSend), ctx, rtpengineID, data)
-}
-
 // RagV1RagQuery mocks base method.
 func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*raghandler.QueryResponse, error) {
 	m.ctrl.T.Helper()

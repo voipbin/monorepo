@@ -6,13 +6,17 @@ import (
 	"go.uber.org/mock/gomock"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/voip-rtpengine-proxy/pkg/ngclient"
+	"monorepo/voip-rtpengine-proxy/pkg/processmanager"
 )
 
 func TestProcessRequest_UnknownURI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h := &listenHandler{ngClient: ngclient.NewMockNGClient(ctrl)}
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
 	resp, err := h.processRequest(&sock.Request{
 		URI:    "/v1/unknown",
 		Method: sock.RequestMethodPost,
@@ -29,7 +33,10 @@ func TestProcessRequest_WrongMethod(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h := &listenHandler{ngClient: ngclient.NewMockNGClient(ctrl)}
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
 	resp, err := h.processRequest(&sock.Request{
 		URI:    "/v1/commands",
 		Method: sock.RequestMethodGet,

@@ -55,8 +55,8 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 		"parameters": []string{bpfFilter},
 	}
 
-	// Step 4: Send exec message to rtpengine-proxy
-	if err := h.reqHandler.RTPEngineV1ProcessSend(ctx, rtpengineAddress, execMsg); err != nil {
+	// Step 4: Send exec message to rtpengine-proxy via /v1/commands
+	if _, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, execMsg); err != nil {
 		log.Errorf("Could not send exec to rtpengine-proxy. err: %v", err)
 		return
 	}
@@ -90,7 +90,7 @@ func (h *callHandler) rtpDebugStopRecording(ctx context.Context, c *call.Call) {
 		"id":   c.ID.String(),
 	}
 
-	if err := h.reqHandler.RTPEngineV1ProcessSend(ctx, rtpengineAddress, killMsg); err != nil {
+	if _, err := h.reqHandler.RTPEngineV1CommandsSend(ctx, rtpengineAddress, killMsg); err != nil {
 		log.Errorf("Could not send kill to rtpengine-proxy. err: %v", err)
 		return
 	}

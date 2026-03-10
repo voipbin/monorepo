@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/voip-rtpengine-proxy/pkg/ngclient"
+	"monorepo/voip-rtpengine-proxy/pkg/processmanager"
 )
 
 // ListenHandler processes incoming RabbitMQ requests.
@@ -21,6 +22,7 @@ type listenHandler struct {
 	rabbitQueueListenRequestPermanent string
 	rabbitQueueListenRequestVolatile  string
 	ngClient                          ngclient.NGClient
+	procMgr                           processmanager.ProcessManager
 }
 
 var regCommandPost = regexp.MustCompile(`^/v1/commands$`)
@@ -35,12 +37,14 @@ func NewListenHandler(
 	permanentQueue string,
 	volatileQueue string,
 	ng ngclient.NGClient,
+	procMgr processmanager.ProcessManager,
 ) ListenHandler {
 	return &listenHandler{
 		sockHandler:                       sockHandler,
 		rabbitQueueListenRequestPermanent: permanentQueue,
 		rabbitQueueListenRequestVolatile:  volatileQueue,
 		ngClient:                          ng,
+		procMgr:                           procMgr,
 	}
 }
 

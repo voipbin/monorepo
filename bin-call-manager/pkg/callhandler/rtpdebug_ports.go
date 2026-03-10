@@ -63,13 +63,19 @@ func extractLocalPorts(queryResponse map[string]interface{}) ([]int, error) {
 					continue
 				}
 
+				var port int
 				switch p := portRaw.(type) {
 				case float64:
-					ports = append(ports, int(p))
+					port = int(p)
 				case int64:
-					ports = append(ports, int(p))
+					port = int(p)
 				case int:
-					ports = append(ports, p)
+					port = p
+				default:
+					continue
+				}
+				if port > 0 && port <= 65535 {
+					ports = append(ports, port)
 				}
 			}
 		}
