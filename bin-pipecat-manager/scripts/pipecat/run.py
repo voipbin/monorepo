@@ -70,6 +70,8 @@ def build_vad_params(vad_config: dict | None, smart_turn_enabled: bool = False) 
 
     # Smart turn requires stop_secs=0.2 (matches training data)
     if smart_turn_enabled:
+        if vad_config.get("stop_secs") is not None and vad_config["stop_secs"] != 0.2:
+            logger.warning(f"smart_turn_enabled: overriding vad_config stop_secs={vad_config['stop_secs']} to 0.2")
         kwargs["stop_secs"] = 0.2
     elif vad_config.get("stop_secs") is not None:
         kwargs["stop_secs"] = vad_config["stop_secs"]

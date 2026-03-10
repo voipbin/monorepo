@@ -48,7 +48,7 @@ type resolvedAIData struct {
 	TTSVoiceID       string          `json:"tts_voice_id"`
 	STTType          string          `json:"stt_type"`
 	VADConfig        *amai.VADConfig `json:"vad_config,omitempty"`
-	SmartTurnEnabled bool            `json:"smart_turn_enabled,omitempty"`
+	SmartTurnEnabled bool            `json:"smart_turn_enabled"`
 }
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {

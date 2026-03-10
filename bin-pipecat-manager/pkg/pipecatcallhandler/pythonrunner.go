@@ -94,7 +94,7 @@ func (h *pythonRunner) Start(
 		Tools            []aitool.Tool     `json:"tools,omitempty"` // Python defaults to [] via Field(default_factory=list) when absent
 		ResolvedTeam     *resolvedTeamData `json:"resolved_team,omitempty"`
 		VADConfig        *amai.VADConfig   `json:"vad_config,omitempty"`
-		SmartTurnEnabled bool              `json:"smart_turn_enabled,omitempty"`
+		SmartTurnEnabled bool              `json:"smart_turn_enabled"`
 	}{
 		ID:               pipecatcallID,
 		LLMType:          llmType,
