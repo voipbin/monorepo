@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"testing"
 	"time"
 
@@ -1285,7 +1284,6 @@ func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
 
 		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
-		mockHomer.EXPECT().GetSIPMessages(gomock.Any(), "call-1", fromTime, toTime).Return(nil, nil)
 
 		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(
 			[]string{"rtp-recordings/call-1-ssrc1.pcap"}, nil,
@@ -1383,7 +1381,6 @@ func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
 
 		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
-		mockHomer.EXPECT().GetSIPMessages(gomock.Any(), "call-1", fromTime, toTime).Return(nil, nil)
 
 		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(
 			[]string{"rtp-recordings/call-1-ssrc1.pcap", "rtp-recordings/call-1-ssrc2.pcap"}, nil,
@@ -1438,7 +1435,6 @@ func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
 
 		mockHomer.EXPECT().GetPcap(gomock.Any(), "call-1", fromTime, toTime).Return(sipPcap, nil)
 		mockHomer.EXPECT().GetRTCPPcap(gomock.Any(), "call-1", fromTime, toTime).Return([]byte{}, nil)
-		mockHomer.EXPECT().GetSIPMessages(gomock.Any(), "call-1", fromTime, toTime).Return(nil, nil)
 
 		mockGCS.EXPECT().ListObjects(gomock.Any(), "rtp-recordings/call-1-").Return(
 			[]string{"rtp-recordings/call-1-ssrc1.pcap", "rtp-recordings/call-1-ssrc2.pcap"}, nil,
@@ -1502,254 +1498,3 @@ func TestGetPcap_WithGCSRTPPcaps(t *testing.T) {
 	})
 }
 
-func TestParseSDPEndpoints(t *testing.T) {
-	tests := []struct {
-		name     string
-		messages []*sipmessage.SIPMessage
-		wantLen  int
-		wantIP   string
-		wantPort int
-	}{
-		{
-			name: "INVITE with SDP",
-			messages: []*sipmessage.SIPMessage{
-				{
-					Method: "INVITE",
-					Raw: "INVITE sip:user@example.com SIP/2.0\r\n" +
-						"Content-Type: application/sdp\r\n\r\n" +
-						"v=0\r\n" +
-						"o=- 123 456 IN IP4 34.91.40.0\r\n" +
-						"s=call\r\n" +
-						"c=IN IP4 34.91.40.0\r\n" +
-						"t=0 0\r\n" +
-						"m=audio 36542 RTP/AVP 0 8\r\n" +
-						"a=rtpmap:0 PCMU/8000\r\n",
-				},
-			},
-			wantLen:  1,
-			wantIP:   "34.91.40.0",
-			wantPort: 36542,
-		},
-		{
-			name: "200 OK with SDP",
-			messages: []*sipmessage.SIPMessage{
-				{
-					Method: "200",
-					Raw: "SIP/2.0 200 Ok\r\n" +
-						"Content-Type: application/sdp\r\n\r\n" +
-						"v=0\r\n" +
-						"c=IN IP4 192.168.45.152\r\n" +
-						"t=0 0\r\n" +
-						"m=audio 7078 RTP/AVP 0 8\r\n",
-				},
-			},
-			wantLen:  1,
-			wantIP:   "192.168.45.152",
-			wantPort: 7078,
-		},
-		{
-			name: "INVITE and 200 OK produce two endpoints",
-			messages: []*sipmessage.SIPMessage{
-				{
-					Method: "INVITE",
-					Raw:    "INVITE sip:u@ex SIP/2.0\r\n\r\nv=0\r\nc=IN IP4 34.91.40.0\r\nt=0 0\r\nm=audio 36542 RTP/AVP 0\r\n",
-				},
-				{
-					Method: "200",
-					Raw:    "SIP/2.0 200 Ok\r\n\r\nv=0\r\nc=IN IP4 192.168.45.152\r\nt=0 0\r\nm=audio 7078 RTP/AVP 0\r\n",
-				},
-			},
-			wantLen: 2,
-		},
-		{
-			name: "media-level c= overrides session-level",
-			messages: []*sipmessage.SIPMessage{
-				{
-					Method: "INVITE",
-					Raw:    "INVITE sip:u@ex SIP/2.0\r\n\r\nv=0\r\nc=IN IP4 1.1.1.1\r\nt=0 0\r\nm=audio 5000 RTP/AVP 0\r\nc=IN IP4 2.2.2.2\r\n",
-				},
-			},
-			wantLen:  1,
-			wantIP:   "2.2.2.2",
-			wantPort: 5000,
-		},
-		{
-			name:     "no SDP in message",
-			messages: []*sipmessage.SIPMessage{{Method: "BYE", Raw: "BYE sip:u@ex SIP/2.0\r\n\r\n"}},
-			wantLen:  0,
-		},
-		{
-			name:     "nil messages",
-			messages: nil,
-			wantLen:  0,
-		},
-		{
-			name:     "empty raw",
-			messages: []*sipmessage.SIPMessage{{Method: "INVITE", Raw: ""}},
-			wantLen:  0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			endpoints := parseSDPEndpoints(tt.messages)
-			if len(endpoints) != tt.wantLen {
-				t.Fatalf("expected %d endpoints, got %d", tt.wantLen, len(endpoints))
-			}
-			if tt.wantLen > 0 && tt.wantIP != "" {
-				if endpoints[0].IP.String() != tt.wantIP {
-					t.Errorf("expected IP %s, got %s", tt.wantIP, endpoints[0].IP.String())
-				}
-				if endpoints[0].Port != tt.wantPort {
-					t.Errorf("expected port %d, got %d", tt.wantPort, endpoints[0].Port)
-				}
-			}
-		})
-	}
-}
-
-func TestRewriteRTPPacketIPs(t *testing.T) {
-	// Create a UDP packet: srcIP:srcPort → dstIP:dstPort
-	createUDPPcap := func(srcIP, dstIP net.IP, srcPort, dstPort uint16, ts time.Time) []byte {
-		var buf bytes.Buffer
-		writer := pcapgo.NewWriter(&buf)
-		_ = writer.WriteFileHeader(65536, layers.LinkTypeEthernet)
-
-		eth := &layers.Ethernet{
-			SrcMAC:       net.HardwareAddr{0, 0, 0, 0, 0, 1},
-			DstMAC:       net.HardwareAddr{0, 0, 0, 0, 0, 2},
-			EthernetType: layers.EthernetTypeIPv4,
-		}
-		ip := &layers.IPv4{
-			Version:  4,
-			IHL:      5,
-			TTL:      64,
-			Protocol: layers.IPProtocolUDP,
-			SrcIP:    srcIP,
-			DstIP:    dstIP,
-		}
-		udp := &layers.UDP{
-			SrcPort: layers.UDPPort(srcPort),
-			DstPort: layers.UDPPort(dstPort),
-		}
-		_ = udp.SetNetworkLayerForChecksum(ip)
-
-		payload := make([]byte, 160) // RTP-like payload
-
-		serBuf := gopacket.NewSerializeBuffer()
-		opts := gopacket.SerializeOptions{ComputeChecksums: true, FixLengths: true}
-		_ = gopacket.SerializeLayers(serBuf, opts, eth, ip, udp, gopacket.Payload(payload))
-
-		ci := gopacket.CaptureInfo{
-			Timestamp:     ts,
-			CaptureLength: len(serBuf.Bytes()),
-			Length:        len(serBuf.Bytes()),
-		}
-		_ = writer.WritePacket(ci, serBuf.Bytes())
-		return buf.Bytes()
-	}
-
-	t.Run("rewrites src IP matching SDP port", func(t *testing.T) {
-		// Packet: 211.187.233.49:7078 → 10.164.0.13:36542
-		// SDP says port 7078 belongs to 192.168.45.152
-		pcapData := createUDPPcap(
-			net.ParseIP("211.187.233.49"), net.ParseIP("10.164.0.13"),
-			7078, 36542, time.Now(),
-		)
-
-		endpoints := []sdpMediaEndpoint{
-			{IP: net.ParseIP("192.168.45.152").To4(), Port: 7078},
-			{IP: net.ParseIP("34.91.40.0").To4(), Port: 36542},
-		}
-
-		result, err := rewriteRTPPacketIPs(pcapData, endpoints)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		reader, _ := pcapgo.NewReader(bytes.NewReader(result))
-		data, _, _ := reader.ReadPacketData()
-		packet := gopacket.NewPacket(data, layers.LinkTypeEthernet, gopacket.Default)
-		ipv4 := packet.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
-
-		if ipv4.SrcIP.String() != "192.168.45.152" {
-			t.Errorf("expected src IP 192.168.45.152, got %s", ipv4.SrcIP)
-		}
-		if ipv4.DstIP.String() != "34.91.40.0" {
-			t.Errorf("expected dst IP 34.91.40.0, got %s", ipv4.DstIP)
-		}
-	})
-
-	t.Run("no rewrite for non-matching ports", func(t *testing.T) {
-		pcapData := createUDPPcap(
-			net.ParseIP("1.2.3.4"), net.ParseIP("5.6.7.8"),
-			5060, 5070, time.Now(),
-		)
-
-		endpoints := []sdpMediaEndpoint{
-			{IP: net.ParseIP("10.0.0.1").To4(), Port: 7078},
-		}
-
-		result, err := rewriteRTPPacketIPs(pcapData, endpoints)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		reader, _ := pcapgo.NewReader(bytes.NewReader(result))
-		data, _, _ := reader.ReadPacketData()
-		packet := gopacket.NewPacket(data, layers.LinkTypeEthernet, gopacket.Default)
-		ipv4 := packet.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
-
-		if ipv4.SrcIP.String() != "1.2.3.4" {
-			t.Errorf("expected unchanged src IP 1.2.3.4, got %s", ipv4.SrcIP)
-		}
-		if ipv4.DstIP.String() != "5.6.7.8" {
-			t.Errorf("expected unchanged dst IP 5.6.7.8, got %s", ipv4.DstIP)
-		}
-	})
-
-	t.Run("RTCP port rewritten too", func(t *testing.T) {
-		// RTCP is media port + 1
-		pcapData := createUDPPcap(
-			net.ParseIP("211.187.233.49"), net.ParseIP("10.164.0.13"),
-			7079, 36543, time.Now(),
-		)
-
-		endpoints := []sdpMediaEndpoint{
-			{IP: net.ParseIP("192.168.45.152").To4(), Port: 7078},
-			{IP: net.ParseIP("34.91.40.0").To4(), Port: 36542},
-		}
-
-		result, err := rewriteRTPPacketIPs(pcapData, endpoints)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		reader, _ := pcapgo.NewReader(bytes.NewReader(result))
-		data, _, _ := reader.ReadPacketData()
-		packet := gopacket.NewPacket(data, layers.LinkTypeEthernet, gopacket.Default)
-		ipv4 := packet.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
-
-		if ipv4.SrcIP.String() != "192.168.45.152" {
-			t.Errorf("expected RTCP src IP 192.168.45.152, got %s", ipv4.SrcIP)
-		}
-		if ipv4.DstIP.String() != "34.91.40.0" {
-			t.Errorf("expected RTCP dst IP 34.91.40.0, got %s", ipv4.DstIP)
-		}
-	})
-
-	t.Run("empty endpoints returns data unchanged", func(t *testing.T) {
-		pcapData := createUDPPcap(
-			net.ParseIP("1.2.3.4"), net.ParseIP("5.6.7.8"),
-			1000, 2000, time.Now(),
-		)
-
-		result, err := rewriteRTPPacketIPs(pcapData, nil)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if !bytes.Equal(result, pcapData) {
-			t.Error("expected unchanged pcap data with empty endpoints")
-		}
-	})
-}

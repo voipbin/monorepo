@@ -47,18 +47,26 @@ Extend `bin-timeline-manager` to also fetch RTP pcap files from GCS, merge them 
 
 ```
 GetPcap(callID, sipCallID, from, to)
-    ├── Homer API: fetch SIP pcap (hepid=1)        ─┐
-    ├── Homer API: fetch RTCP pcap (hepid=5)         ├── parallel
-    └── GCS: list + download rtp-recordings/<sipCallID>-*.pcap ─┘
+    ├── Homer API: fetch SIP pcap (hepid=1)
+    ├── Homer API: fetch RTCP pcap (hepid=5)
+            ↓
+    Merge SIP + RTCP
+            ↓
+    Filter internal-to-internal IP packets (SIP/RTCP only)
+            ↓
+    GCS: list + download rtp-recordings/<sipCallID>-*.pcap
             ↓
     Write GCS downloads to temp files
             ↓
-    K-way merge all pcap sources by timestamp (file-based readers)
-            ↓
-    Filter internal-to-internal IP packets
+    Merge filtered SIP/RTCP with unfiltered RTP pcaps (by timestamp)
             ↓
     Return merged pcap bytes
 ```
+
+**Key design choice:** Internal IP filtering is applied only to SIP/RTCP packets from Homer,
+NOT to RTP pcaps from GCS. RTP pcaps contain the actual media streams which use internal IPs
+by nature (RTPEngine captures traffic on the internal network). Filtering them would remove
+the very data we want to provide.
 
 ## Design Decisions
 
