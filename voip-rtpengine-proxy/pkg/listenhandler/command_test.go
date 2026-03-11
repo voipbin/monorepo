@@ -12,40 +12,12 @@ import (
 	"monorepo/voip-rtpengine-proxy/pkg/processmanager"
 )
 
-func TestProcessCommandPost_MissingCommand(t *testing.T) {
+func TestProcessCommandPost_MissingType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	h := &listenHandler{
 		ngClient: ngclient.NewMockNGClient(ctrl),
-		procMgr:  processmanager.NewMockProcessManager(ctrl),
-	}
-	req := &sock.Request{
-		URI:    "/v1/commands",
-		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"call-id":"abc123"}`),
-	}
-	resp, err := h.processCommandPost(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if resp.StatusCode != 400 {
-		t.Errorf("expected 400, got %d", resp.StatusCode)
-	}
-}
-
-func TestProcessCommandPost_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockNG := ngclient.NewMockNGClient(ctrl)
-	mockNG.EXPECT().Send(gomock.Any()).Return(map[string]interface{}{
-		"result":  "ok",
-		"call-id": "abc123",
-	}, nil)
-
-	h := &listenHandler{
-		ngClient: mockNG,
 		procMgr:  processmanager.NewMockProcessManager(ctrl),
 	}
 	req := &sock.Request{
@@ -57,15 +29,52 @@ func TestProcessCommandPost_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if resp.StatusCode != 200 {
-		t.Errorf("expected 200, got %d", resp.StatusCode)
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for missing type, got %d", resp.StatusCode)
 	}
-	var result map[string]interface{}
-	if err := json.Unmarshal(resp.Data, &result); err != nil {
-		t.Fatalf("unmarshal response: %v", err)
+}
+
+func TestProcessCommandPost_UnknownType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
 	}
-	if result["result"] != "ok" {
-		t.Errorf("expected result ok, got %v", result["result"])
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"unknown","command":"query","call-id":"abc123"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for unknown type, got %d", resp.StatusCode)
+	}
+}
+
+func TestProcessCommandPost_EmptyType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"","command":"query"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for empty type, got %d", resp.StatusCode)
 	}
 }
 
@@ -91,7 +100,7 @@ func TestProcessCommandPost_InvalidJSON(t *testing.T) {
 	}
 }
 
-func TestProcessCommandPost_NonStringCommand(t *testing.T) {
+func TestProcessCommandPost_NonStringParameters(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -102,18 +111,53 @@ func TestProcessCommandPost_NonStringCommand(t *testing.T) {
 	req := &sock.Request{
 		URI:    "/v1/commands",
 		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"command":123,"call-id":"abc"}`),
+		Data:   json.RawMessage(`{"type":"exec","id":"00000000-0000-0000-0000-000000000001","command":"tcpdump","parameters":[123]}`),
 	}
 	resp, err := h.processCommandPost(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if resp.StatusCode != 400 {
-		t.Errorf("expected 400 for non-string command, got %d", resp.StatusCode)
+		t.Errorf("expected 400 for non-string parameter, got %d", resp.StatusCode)
 	}
 }
 
-func TestProcessCommandPost_EmptyCommand(t *testing.T) {
+func TestProcessNG_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNG := ngclient.NewMockNGClient(ctrl)
+	mockNG.EXPECT().Send(gomock.Any()).Return(map[string]interface{}{
+		"result":  "ok",
+		"call-id": "abc123",
+	}, nil)
+
+	h := &listenHandler{
+		ngClient: mockNG,
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"ng","command":"query","call-id":"abc123"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 200 {
+		t.Errorf("expected 200, got %d", resp.StatusCode)
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal(resp.Data, &result); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if result["result"] != "ok" {
+		t.Errorf("expected result ok, got %v", result["result"])
+	}
+}
+
+func TestProcessNG_MissingCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -124,7 +168,7 @@ func TestProcessCommandPost_EmptyCommand(t *testing.T) {
 	req := &sock.Request{
 		URI:    "/v1/commands",
 		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"command":"","call-id":"abc"}`),
+		Data:   json.RawMessage(`{"type":"ng","call-id":"abc123"}`),
 	}
 	resp, err := h.processCommandPost(req)
 	if err != nil {
@@ -135,7 +179,51 @@ func TestProcessCommandPost_EmptyCommand(t *testing.T) {
 	}
 }
 
-func TestProcessCommandPost_NGError(t *testing.T) {
+func TestProcessNG_EmptyCommand(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"ng","command":"","call-id":"abc123"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestProcessNG_NonStringCommand(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{
+		ngClient: ngclient.NewMockNGClient(ctrl),
+		procMgr:  processmanager.NewMockProcessManager(ctrl),
+	}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"ng","command":123,"call-id":"abc"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for non-string command, got %d", resp.StatusCode)
+	}
+}
+
+func TestProcessNG_NGError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -149,7 +237,7 @@ func TestProcessCommandPost_NGError(t *testing.T) {
 	req := &sock.Request{
 		URI:    "/v1/commands",
 		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"command":"query","call-id":"abc"}`),
+		Data:   json.RawMessage(`{"type":"ng","command":"query","call-id":"abc"}`),
 	}
 	resp, err := h.processCommandPost(req)
 	if err != nil {
@@ -259,6 +347,25 @@ func TestProcessExec_Error(t *testing.T) {
 	}
 }
 
+func TestProcessExec_NonUUIDID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &listenHandler{procMgr: processmanager.NewMockProcessManager(ctrl)}
+	req := &sock.Request{
+		URI:    "/v1/commands",
+		Method: sock.RequestMethodPost,
+		Data:   json.RawMessage(`{"type":"exec","id":"not-a-uuid","command":"tcpdump"}`),
+	}
+	resp, err := h.processCommandPost(req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("expected 400 for non-UUID id, got %d", resp.StatusCode)
+	}
+}
+
 func TestProcessKill_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -307,25 +414,6 @@ func TestProcessKill_MissingID(t *testing.T) {
 	}
 	if resp.StatusCode != 400 {
 		t.Errorf("expected 400, got %d", resp.StatusCode)
-	}
-}
-
-func TestProcessExec_NonUUIDID(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	h := &listenHandler{procMgr: processmanager.NewMockProcessManager(ctrl)}
-	req := &sock.Request{
-		URI:    "/v1/commands",
-		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"type":"exec","id":"not-a-uuid","command":"tcpdump"}`),
-	}
-	resp, err := h.processCommandPost(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if resp.StatusCode != 400 {
-		t.Errorf("expected 400 for non-UUID id, got %d", resp.StatusCode)
 	}
 }
 

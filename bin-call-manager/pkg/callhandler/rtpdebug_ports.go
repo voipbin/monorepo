@@ -5,9 +5,10 @@ import (
 	"strings"
 )
 
-// extractLocalPorts extracts all "local port" values from an RTPEngine NG query response.
+// extractLocalPorts extracts "local port" values from an RTPEngine NG query response.
 // The response has nested structure: tags -> <tag> -> medias -> [] -> streams -> [] -> "local port".
-func extractLocalPorts(queryResponse map[string]interface{}) ([]int, error) {
+// If excludeTag is non-empty, ports under that tag key are skipped (used to exclude the internal/Asterisk side).
+func extractLocalPorts(queryResponse map[string]interface{}, excludeTag string) ([]int, error) {
 	tagsRaw, ok := queryResponse["tags"]
 	if !ok {
 		return nil, fmt.Errorf("no 'tags' in query response")
@@ -20,7 +21,10 @@ func extractLocalPorts(queryResponse map[string]interface{}) ([]int, error) {
 
 	var ports []int
 
-	for _, tagDataRaw := range tags {
+	for tagKey, tagDataRaw := range tags {
+		if excludeTag != "" && tagKey == excludeTag {
+			continue
+		}
 		tagData, ok := tagDataRaw.(map[string]interface{})
 		if !ok {
 			continue

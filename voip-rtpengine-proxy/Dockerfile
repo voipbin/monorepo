@@ -11,5 +11,7 @@ RUN cd voip-rtpengine-proxy && go mod vendor && go build -o /app/bin/ ./cmd/...
 # run
 FROM public.ecr.aws/docker/library/alpine:latest
 
+RUN apk add --no-cache tcpdump
+
 WORKDIR /app/bin/
 COPY --from=build /app/bin /app/bin
