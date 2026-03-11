@@ -38,13 +38,16 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 	}
 	log.WithField("query_response", queryRes).Debugf("RTPEngine query response. sip_call_id: %s", cn.SIPCallID)
 
-	// Step 2: Extract local ports from query response
-	ports, err := extractLocalPorts(queryRes)
+	// Step 2: Extract external-facing local ports from query response.
+	// For outgoing calls, from_tag is our internal side (Asterisk); exclude it
+	// so we only capture RTP between RTPEngine and the external endpoint.
+	fromTag := cn.SIPData["from_tag"]
+	ports, err := extractLocalPorts(queryRes, fromTag)
 	if err != nil {
 		log.Errorf("Could not extract ports from query response. err: %v", err)
 		return
 	}
-	log.Debugf("Extracted ports from RTPEngine: %v", ports)
+	log.Debugf("Extracted external ports from RTPEngine: %v (excluded from_tag: %s)", ports, fromTag)
 
 	// Step 3: Build exec message with BPF filter
 	// Use SIP Call-ID (not internal call UUID) so the PCAP filename matches

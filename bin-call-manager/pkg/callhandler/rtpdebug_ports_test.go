@@ -6,13 +6,14 @@ import (
 
 func Test_extractLocalPorts(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     map[string]interface{}
-		wantPorts []int
-		wantErr   bool
+		name       string
+		input      map[string]interface{}
+		excludeTag string
+		wantPorts  []int
+		wantErr    bool
 	}{
 		{
-			name: "two tags with two streams each",
+			name: "two tags with two streams each, no exclusion",
 			input: map[string]interface{}{
 				"tags": map[string]interface{}{
 					"from-tag-1": map[string]interface{}{
@@ -37,8 +38,39 @@ func Test_extractLocalPorts(t *testing.T) {
 					},
 				},
 			},
-			wantPorts: nil, // order is non-deterministic; checked separately
-			wantErr:   false,
+			excludeTag: "",
+			wantPorts:  nil, // order is non-deterministic; checked separately
+			wantErr:    false,
+		},
+		{
+			name: "exclude internal tag, return only external ports",
+			input: map[string]interface{}{
+				"tags": map[string]interface{}{
+					"internal-tag": map[string]interface{}{
+						"medias": []interface{}{
+							map[string]interface{}{
+								"streams": []interface{}{
+									map[string]interface{}{"local port": float64(30000)},
+									map[string]interface{}{"local port": float64(30001)},
+								},
+							},
+						},
+					},
+					"external-tag": map[string]interface{}{
+						"medias": []interface{}{
+							map[string]interface{}{
+								"streams": []interface{}{
+									map[string]interface{}{"local port": float64(30010)},
+									map[string]interface{}{"local port": float64(30011)},
+								},
+							},
+						},
+					},
+				},
+			},
+			excludeTag: "internal-tag",
+			wantPorts:  []int{30010, 30011},
+			wantErr:    false,
 		},
 		{
 			name:    "no tags key",
@@ -51,6 +83,24 @@ func Test_extractLocalPorts(t *testing.T) {
 				"tags": map[string]interface{}{},
 			},
 			wantErr: true,
+		},
+		{
+			name: "all tags excluded results in error",
+			input: map[string]interface{}{
+				"tags": map[string]interface{}{
+					"only-tag": map[string]interface{}{
+						"medias": []interface{}{
+							map[string]interface{}{
+								"streams": []interface{}{
+									map[string]interface{}{"local port": float64(30000)},
+								},
+							},
+						},
+					},
+				},
+			},
+			excludeTag: "only-tag",
+			wantErr:    true,
 		},
 		{
 			name: "no streams in media",
@@ -87,7 +137,7 @@ func Test_extractLocalPorts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := extractLocalPorts(tt.input)
+			got, err := extractLocalPorts(tt.input, tt.excludeTag)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("extractLocalPorts() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -96,8 +146,8 @@ func Test_extractLocalPorts(t *testing.T) {
 				return
 			}
 
-			// For the two-tag case, just check we got 4 ports
-			if tt.name == "two tags with two streams each" {
+			// For the two-tag no-exclusion case, just check we got 4 ports
+			if tt.name == "two tags with two streams each, no exclusion" {
 				if len(got) != 4 {
 					t.Errorf("expected 4 ports, got %d: %v", len(got), got)
 				}
