@@ -34,7 +34,6 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.frames.frames import InterruptionFrame, LLMRunFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -163,7 +162,10 @@ async def init_single_ai_pipeline(
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language)
             vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
-            turn_analyzer = LocalSmartTurnAnalyzerV3() if smart_turn_enabled else None
+            turn_analyzer = None
+            if smart_turn_enabled:
+                from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
+                turn_analyzer = LocalSmartTurnAnalyzerV3()
             transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
@@ -610,7 +612,10 @@ async def init_team_pipeline(
     transport_input = None
     if routing_stt:
         vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
-        turn_analyzer = LocalSmartTurnAnalyzerV3() if smart_turn_enabled else None
+        turn_analyzer = None
+        if smart_turn_enabled:
+            from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
+            turn_analyzer = LocalSmartTurnAnalyzerV3()
         transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
     transport_output = create_websocket_transport("output", id, vad_analyzer=None)
 
