@@ -40,14 +40,15 @@ type resolvedMemberData struct {
 // resolvedAIData contains the AI engine configuration for a team member,
 // including credentials, model, prompt, and TTS/STT settings.
 type resolvedAIData struct {
-	EngineModel string          `json:"engine_model"`
-	EngineKey   string          `json:"engine_key"`
-	InitPrompt  string          `json:"init_prompt"`
-	Parameter   map[string]any  `json:"parameter,omitempty"`
-	TTSType     string          `json:"tts_type"`
-	TTSVoiceID  string          `json:"tts_voice_id"`
-	STTType     string          `json:"stt_type"`
-	VADConfig   *amai.VADConfig `json:"vad_config,omitempty"`
+	EngineModel      string          `json:"engine_model"`
+	EngineKey        string          `json:"engine_key"`
+	InitPrompt       string          `json:"init_prompt"`
+	Parameter        map[string]any  `json:"parameter,omitempty"`
+	TTSType          string          `json:"tts_type"`
+	TTSVoiceID       string          `json:"tts_voice_id"`
+	STTType          string          `json:"stt_type"`
+	VADConfig        *amai.VADConfig `json:"vad_config,omitempty"`
+	SmartTurnEnabled bool            `json:"smart_turn_enabled"`
 }
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
@@ -170,14 +171,15 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 			ID:   m.ID,
 			Name: m.Name,
 			AI: resolvedAIData{
-				EngineModel: string(ai.EngineModel),
-				EngineKey:   ai.EngineKey,
-				InitPrompt:  ai.InitPrompt,
-				Parameter:   ai.Parameter,
-				TTSType:     string(ai.TTSType),
-				TTSVoiceID:  ai.TTSVoiceID,
-				STTType:     string(ai.STTType),
-				VADConfig:   ai.VADConfig,
+				EngineModel:      string(ai.EngineModel),
+				EngineKey:        ai.EngineKey,
+				InitPrompt:       ai.InitPrompt,
+				Parameter:        ai.Parameter,
+				TTSType:          string(ai.TTSType),
+				TTSVoiceID:       ai.TTSVoiceID,
+				STTType:          string(ai.STTType),
+				VADConfig:        ai.VADConfig,
+				SmartTurnEnabled: ai.SmartTurnEnabled,
 			},
 			Tools:       tools,
 			Transitions: transitions,

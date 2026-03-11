@@ -20,7 +20,8 @@ type AIcall struct {
 	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
 	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
 	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
-	AIVADConfig   *ai.VADConfig  `json:"ai_vad_config,omitempty" db:"ai_vad_config,json"`
+	AIVADConfig        *ai.VADConfig  `json:"ai_vad_config,omitempty" db:"ai_vad_config,json"`
+	AISmartTurnEnabled bool           `json:"ai_smart_turn_enabled,omitempty" db:"ai_smart_turn_enabled"`
 
 	Parameter map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 

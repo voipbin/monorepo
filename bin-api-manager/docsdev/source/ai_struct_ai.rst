@@ -28,6 +28,7 @@ AI
             "stop_secs": <number>,
             "min_volume": <number>
         },
+        "smart_turn_enabled": <boolean>,
         "tool_names": ["<string>"],
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -46,6 +47,7 @@ AI
 * ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``stt_type`` (enum string, Required): Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.
 * ``vad_config`` (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See :ref:`VAD Config <ai-struct-ai-vad_config>`.
+* ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.
@@ -79,6 +81,7 @@ Example
         "vad_config": {
             "stop_secs": 0.5
         },
+        "smart_turn_enabled": true,
         "tool_names": ["connect_call", "send_email", "stop_service"],
         "tm_create": "2024-02-09 07:01:35.666687",
         "tm_update": "9999-01-01 00:00:00.000000",
@@ -200,6 +203,16 @@ min_volume       0.6      0.0   1.0   Minimum audio volume for voice detection.
 .. note:: **AI Implementation Hint**
 
    When ``vad_config`` is ``null`` or omitted, Pipecat's native defaults apply (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6). To keep the AI responsive but avoid cutting off speech mid-sentence, increase ``stop_secs`` (e.g., 0.5). To make the AI more patient before responding, increase both ``stop_secs`` and ``start_secs``.
+
+.. _ai-struct-ai-smart_turn:
+
+Smart Turn
+----------
+When ``smart_turn_enabled`` is ``true``, the Pipecat pipeline uses ``LocalSmartTurnAnalyzerV3`` — a local ONNX model that analyzes speech and transcription context to detect when the user has truly finished their turn, rather than pausing mid-sentence. This results in more natural conversations with fewer premature interruptions.
+
+.. note:: **AI Implementation Hint**
+
+   Smart Turn detection requires VAD ``stop_secs=0.2``. When ``smart_turn_enabled`` is ``true``, any ``stop_secs`` value in ``vad_config`` is silently overridden to ``0.2``. This value matches the model's training data and allows Smart Turn to dynamically adjust timing.
 
 .. _ai-struct-ai-tool_names:
 

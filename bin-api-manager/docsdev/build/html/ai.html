@@ -969,6 +969,7 @@ for errors; verify WebSocket stability</p></td>
         <span class="s2">&quot;stop_secs&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
         <span class="s2">&quot;min_volume&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
     <span class="p">},</span>
+    <span class="s2">&quot;smart_turn_enabled&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -989,6 +990,7 @@ for errors; verify WebSocket stability</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code> (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stt_type</span></code> (enum string, Required): Speech-to-Text provider. See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-stt-type"><span class="std std-ref">STT Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">vad_config</span></code> (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-vad-config"><span class="std std-ref">VAD Config</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">smart_turn_enabled</span></code> (Boolean, Optional): Enable smart turn detection using Pipecat’s LocalSmartTurnAnalyzerV3 for more natural turn-taking. When <code class="docutils literal notranslate"><span class="pre">true</span></code>, the VAD <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> parameter is automatically forced to <code class="docutils literal notranslate"><span class="pre">0.2</span></code> regardless of <code class="docutils literal notranslate"><span class="pre">vad_config</span></code> settings. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>. See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-smart-turn"><span class="std std-ref">Smart Turn</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tool_names</span></code> (Array of String, Optional): List of enabled tool functions. Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> to enable all tools, <code class="docutils literal notranslate"><span class="pre">[]</span></code> to disable all tools, or list specific tool names. See <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the AI configuration was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the AI configuration was last updated.</p></li>
@@ -1021,6 +1023,7 @@ for errors; verify WebSocket stability</p></td>
     <span class="s2">&quot;vad_config&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;stop_secs&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
     <span class="p">},</span>
+    <span class="s2">&quot;smart_turn_enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;connect_call&quot;</span><span class="p">,</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_service&quot;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-09 07:01:35.666687&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
@@ -1292,6 +1295,15 @@ for errors; verify WebSocket stability</p></td>
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>When <code class="docutils literal notranslate"><span class="pre">vad_config</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code> or omitted, Pipecat’s native defaults apply (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6). To keep the AI responsive but avoid cutting off speech mid-sentence, increase <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> (e.g., 0.5). To make the AI more patient before responding, increase both <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> and <code class="docutils literal notranslate"><span class="pre">start_secs</span></code>.</p>
+</div>
+</section>
+<section id="smart-turn">
+<span id="ai-struct-ai-smart-turn"></span><h3>Smart Turn<a class="headerlink" href="#smart-turn" title="Link to this heading"></a></h3>
+<p>When <code class="docutils literal notranslate"><span class="pre">smart_turn_enabled</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, the Pipecat pipeline uses <code class="docutils literal notranslate"><span class="pre">LocalSmartTurnAnalyzerV3</span></code> — a local ONNX model that analyzes speech and transcription context to detect when the user has truly finished their turn, rather than pausing mid-sentence. This results in more natural conversations with fewer premature interruptions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Smart Turn detection requires VAD <code class="docutils literal notranslate"><span class="pre">stop_secs=0.2</span></code>. When <code class="docutils literal notranslate"><span class="pre">smart_turn_enabled</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, any <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> value in <code class="docutils literal notranslate"><span class="pre">vad_config</span></code> is silently overridden to <code class="docutils literal notranslate"><span class="pre">0.2</span></code>. This value matches the model’s training data and allows Smart Turn to dynamically adjust timing.</p>
 </div>
 </section>
 <section id="tool-names">
@@ -2271,6 +2283,7 @@ for errors; verify WebSocket stability</p></td>
 <li><a class="reference internal" href="#tts-type">TTS Type</a></li>
 <li><a class="reference internal" href="#stt-type">STT Type</a></li>
 <li><a class="reference internal" href="#vad-config">VAD Config</a></li>
+<li><a class="reference internal" href="#smart-turn">Smart Turn</a></li>
 <li><a class="reference internal" href="#tool-names">Tool Names</a></li>
 </ul>
 </li>

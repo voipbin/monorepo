@@ -15,7 +15,8 @@ const (
 	FieldAITTSType     Field = "ai_tts_type"
 	FieldAITTSVoiceID  Field = "ai_tts_voice_id"
 	FieldAISTTType     Field = "ai_stt_type"
-	FieldAIVADConfig   Field = "ai_vad_config"
+	FieldAIVADConfig        Field = "ai_vad_config"
+	FieldAISmartTurnEnabled Field = "ai_smart_turn_enabled"
 
 	FieldParameter Field = "parameter"
 

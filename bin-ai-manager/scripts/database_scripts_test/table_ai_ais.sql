@@ -21,6 +21,8 @@ create table ai_ais(
 
   vad_config  json,           -- VAD configuration
 
+  smart_turn_enabled  boolean not null default 0,      -- smart turn detection enabled
+
   tool_names  json,           -- enabled tools for this AI
 
   -- timestamps

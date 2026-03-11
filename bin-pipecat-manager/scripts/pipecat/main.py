@@ -45,6 +45,7 @@ class ResolvedAI(BaseModel):
     tts_voice_id: Optional[str] = None
     stt_type: Optional[str] = None
     vad_config: Optional[dict] = None
+    smart_turn_enabled: Optional[bool] = False
 
     class Config:
         extra = "ignore"
@@ -88,6 +89,7 @@ class PipelineRequest(BaseModel):
     tools: Optional[List[Tool]] = Field(default_factory=list)
     resolved_team: Optional[ResolvedTeam] = None
     vad_config: Optional[dict] = None
+    smart_turn_enabled: Optional[bool] = False
 
 async def execute_pipeline_wrapper(id: str, ctx: dict):
     """Background task wrapper for execute_pipeline."""
@@ -131,6 +133,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
             tools_data,
             resolved_team=resolved_team_data,
             vad_config=req.vad_config,
+            smart_turn_enabled=req.smart_turn_enabled,
         )
     except ValueError as e:
         logger.error(f"Pipeline validation failed (id={req.id}): {e}")

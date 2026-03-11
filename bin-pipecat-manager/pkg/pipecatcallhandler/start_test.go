@@ -108,7 +108,7 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 	mockTool.EXPECT().GetAll().AnyTimes()
 	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mockPythonRunner.EXPECT().Stop(gomock.Any(), gomock.Any()).AnyTimes()
 
 	err := h.startReferenceTypeCall(context.Background(), pc)
@@ -189,7 +189,7 @@ func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 	mockTool.EXPECT().GetAll().AnyTimes()
 	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mockPythonRunner.EXPECT().Stop(gomock.Any(), gomock.Any()).AnyTimes()
 
 	err := h.startReferenceTypeCall(context.Background(), pc)

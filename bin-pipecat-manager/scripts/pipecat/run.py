@@ -34,6 +34,7 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
+from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.frames.frames import InterruptionFrame, LLMRunFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -54,18 +55,27 @@ from team_flow import build_team_flow
 from pipecat_flows import FlowManager
 
 
-def build_vad_params(vad_config: dict | None) -> VADParams:
-    """Build VADParams from config dict. None/empty = Pipecat defaults."""
+def build_vad_params(vad_config: dict | None, smart_turn_enabled: bool = False) -> VADParams:
+    """Build VADParams from config dict. None/empty = Pipecat defaults.
+    When smart_turn_enabled is True, forces stop_secs=0.2 for optimal turn detection.
+    """
     if not vad_config:
-        return VADParams()
+        vad_config = {}
 
     kwargs = {}
     if vad_config.get("confidence") is not None:
         kwargs["confidence"] = vad_config["confidence"]
     if vad_config.get("start_secs") is not None:
         kwargs["start_secs"] = vad_config["start_secs"]
-    if vad_config.get("stop_secs") is not None:
+
+    # Smart turn requires stop_secs=0.2 (matches training data)
+    if smart_turn_enabled:
+        if vad_config.get("stop_secs") is not None and vad_config["stop_secs"] != 0.2:
+            logger.warning(f"smart_turn_enabled: overriding vad_config stop_secs={vad_config['stop_secs']} to 0.2")
+        kwargs["stop_secs"] = 0.2
+    elif vad_config.get("stop_secs") is not None:
         kwargs["stop_secs"] = vad_config["stop_secs"]
+
     if vad_config.get("min_volume") is not None:
         kwargs["min_volume"] = vad_config["min_volume"]
 
@@ -85,6 +95,7 @@ async def init_pipeline(
     tools_data: list = None,
     resolved_team: dict = None,
     vad_config: dict = None,
+    smart_turn_enabled: bool = False,
 ) -> dict:
     """Initialize the pipeline. Returns context dict. Raises on failure."""
     if resolved_team:
@@ -94,6 +105,7 @@ async def init_pipeline(
             tts_language=tts_language,
             llm_messages=llm_messages,
             vad_config=vad_config,
+            smart_turn_enabled=smart_turn_enabled,
         )
         ctx["type"] = "team"
         return ctx
@@ -103,6 +115,7 @@ async def init_pipeline(
             stt_type, stt_language, tts_type, tts_language,
             tts_voice_id, tools_data,
             vad_config=vad_config,
+            smart_turn_enabled=smart_turn_enabled,
         )
         ctx["type"] = "single"
         return ctx
@@ -128,6 +141,7 @@ async def init_single_ai_pipeline(
     tts_voice_id: str = None,
     tools_data: list = None,
     vad_config: dict = None,
+    smart_turn_enabled: bool = False,
 ) -> dict:
     """Initialize single AI pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -148,8 +162,9 @@ async def init_single_ai_pipeline(
         async def init_stt_and_input_ws():
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language)
-            vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config))
-            transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+            vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
+            turn_analyzer = LocalSmartTurnAnalyzerV3() if smart_turn_enabled else None
+            transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
                 "stt_service": stt_service,
@@ -486,7 +501,7 @@ class UnpacedWebsocketClientTransport(WebsocketClientTransport):
         return self._output
 
 
-def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
+def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_analyzer=None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
@@ -496,6 +511,7 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None):
         audio_out_enabled=True,
         add_wav_header=False,
         vad_analyzer=vad_analyzer,
+        turn_analyzer=turn_analyzer,
         session_timeout=common.PIPELINE_SESSION_TIMEOUT,
     )
 
@@ -514,6 +530,7 @@ async def init_team_pipeline(
     tts_language: str = None,
     llm_messages: list = None,
     vad_config: dict = None,
+    smart_turn_enabled: bool = False,
 ) -> dict:
     """Initialize team pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -592,8 +609,9 @@ async def init_team_pipeline(
     # --- Step 4: Create transports ---
     transport_input = None
     if routing_stt:
-        vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config))
-        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer)
+        vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
+        turn_analyzer = LocalSmartTurnAnalyzerV3() if smart_turn_enabled else None
+        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
     transport_output = create_websocket_transport("output", id, vad_analyzer=None)
 
     # --- Step 5: Build pipeline ---

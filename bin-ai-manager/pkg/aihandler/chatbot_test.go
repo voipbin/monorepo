@@ -21,16 +21,17 @@ func float64Ptr(v float64) *float64 {
 
 func TestCreate(t *testing.T) {
 	tests := []struct {
-		name        string
-		customerID  uuid.UUID
-		aiName      string
-		engineModel ai.EngineModel
-		ttsType     ai.TTSType
-		sttType     ai.STTType
-		vadConfig   *ai.VADConfig
-		setupMock   func(*dbhandler.MockDBHandler)
-		wantError   bool
-		errorMsg    string
+		name             string
+		customerID       uuid.UUID
+		aiName           string
+		engineModel      ai.EngineModel
+		ttsType          ai.TTSType
+		sttType          ai.STTType
+		vadConfig        *ai.VADConfig
+		smartTurnEnabled bool
+		setupMock        func(*dbhandler.MockDBHandler)
+		wantError        bool
+		errorMsg         string
 	}{
 		{
 			name:        "creates_ai_with_valid_model",
@@ -129,6 +130,22 @@ func TestCreate(t *testing.T) {
 			},
 			wantError: false,
 		},
+		{
+			name:             "creates_ai_with_smart_turn_enabled",
+			customerID:       uuid.Must(uuid.NewV4()),
+			aiName:           "Test AI with Smart Turn",
+			engineModel:      ai.EngineModelOpenaiGPT5,
+			ttsType:          ai.TTSTypeNone,
+			sttType:          ai.STTTypeNone,
+			smartTurnEnabled: true,
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				testAI := &ai.AI{Name: "Test AI with Smart Turn", SmartTurnEnabled: true}
+				testAI.ID = uuid.Must(uuid.NewV4())
+				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
+			},
+			wantError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -161,6 +178,7 @@ func TestCreate(t *testing.T) {
 				tt.sttType,
 				[]tool.ToolName{},
 				tt.vadConfig,
+				tt.smartTurnEnabled,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -183,16 +201,17 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	tests := []struct {
-		name        string
-		aiID        uuid.UUID
-		aiName      string
-		engineModel ai.EngineModel
-		ttsType     ai.TTSType
-		sttType     ai.STTType
-		vadConfig   *ai.VADConfig
-		setupMock   func(*dbhandler.MockDBHandler)
-		wantError   bool
-		errorMsg    string
+		name             string
+		aiID             uuid.UUID
+		aiName           string
+		engineModel      ai.EngineModel
+		ttsType          ai.TTSType
+		sttType          ai.STTType
+		vadConfig        *ai.VADConfig
+		smartTurnEnabled bool
+		setupMock        func(*dbhandler.MockDBHandler)
+		wantError        bool
+		errorMsg         string
 	}{
 		{
 			name:        "updates_ai_with_valid_model",
@@ -291,6 +310,22 @@ func TestUpdate(t *testing.T) {
 			},
 			wantError: false,
 		},
+		{
+			name:             "updates_ai_with_smart_turn_enabled",
+			aiID:             uuid.Must(uuid.NewV4()),
+			aiName:           "Updated AI with Smart Turn",
+			engineModel:      ai.EngineModelOpenaiGPT5,
+			ttsType:          ai.TTSTypeOpenAI,
+			sttType:          ai.STTTypeDeepgram,
+			smartTurnEnabled: true,
+			setupMock: func(m *dbhandler.MockDBHandler) {
+				updatedAI := &ai.AI{Name: "Updated AI with Smart Turn", SmartTurnEnabled: true}
+				updatedAI.ID = uuid.Must(uuid.NewV4())
+				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(1)
+			},
+			wantError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -322,6 +357,7 @@ func TestUpdate(t *testing.T) {
 				tt.sttType,
 				[]tool.ToolName{},
 				tt.vadConfig,
+				tt.smartTurnEnabled,
 			)
 
 			if (err != nil) != tt.wantError {

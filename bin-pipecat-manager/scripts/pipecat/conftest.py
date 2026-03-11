@@ -66,6 +66,9 @@ _mocks = {
     "pipecat.audio.vad": MagicMock(),
     "pipecat.audio.vad.silero": _make_mock_module("SileroVADAnalyzer"),
     "pipecat.audio.vad.vad_analyzer": _make_mock_module("VADParams"),
+    "pipecat.audio.turn": MagicMock(),
+    "pipecat.audio.turn.smart_turn": MagicMock(),
+    "pipecat.audio.turn.smart_turn.local_smart_turn_v3": _make_mock_module("LocalSmartTurnAnalyzerV3"),
     "pipecat.frames": MagicMock(),
     "pipecat.frames.frames": _make_mock_module(
         "LLMRunFrame",

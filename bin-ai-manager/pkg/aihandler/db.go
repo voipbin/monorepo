@@ -26,6 +26,7 @@ func (h *aiHandler) dbCreate(
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
+	smartTurnEnabled bool,
 ) (*ai.AI, error) {
 	id := h.utilHandler.UUIDCreate()
 	c := &ai.AI{
@@ -50,7 +51,8 @@ func (h *aiHandler) dbCreate(
 
 		ToolNames: toolNames,
 
-		VADConfig: vadConfig,
+		VADConfig:        vadConfig,
+		SmartTurnEnabled: smartTurnEnabled,
 	}
 
 	if err := h.db.AICreate(ctx, c); err != nil {
@@ -116,6 +118,7 @@ func (h *aiHandler) dbUpdate(
 	sttType ai.STTType,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
+	smartTurnEnabled bool,
 ) (*ai.AI, error) {
 	fields := map[ai.Field]any{
 		ai.FieldName:        name,
@@ -127,8 +130,9 @@ func (h *aiHandler) dbUpdate(
 		ai.FieldTTSType:     ttsType,
 		ai.FieldTTSVoiceID:  ttsVoice,
 		ai.FieldSTTType:     sttType,
-		ai.FieldToolNames:   toolNames,
-		ai.FieldVADConfig:   vadConfig,
+		ai.FieldToolNames:        toolNames,
+		ai.FieldVADConfig:        vadConfig,
+		ai.FieldSmartTurnEnabled: smartTurnEnabled,
 	}
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {

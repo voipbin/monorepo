@@ -51,6 +51,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	var tools []aitool.Tool
 	var resolvedTeam *resolvedTeamData
 	var vadConfig *amai.VADConfig
+	var smartTurnEnabled bool
 
 	if pc.ReferenceType == pipecatcall.ReferenceTypeAICall {
 		aicall, err := h.requestHandler.AIV1AIcallGet(se.Ctx, pc.ReferenceID)
@@ -59,6 +60,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		}
 
 		vadConfig = aicall.AIVADConfig
+		smartTurnEnabled = aicall.AISmartTurnEnabled
 
 		// Resolve team first — if team-backed, per-member tools come from resolvedTeam
 		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
@@ -98,6 +100,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		tools,
 		resolvedTeam,
 		vadConfig,
+		smartTurnEnabled,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}

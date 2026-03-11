@@ -28,7 +28,8 @@ type V1DataAIsPost struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
-	VADConfig *ai.VADConfig `json:"vad_config,omitempty"`
+	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
+	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`
 }
 
 // V1DataAIsIDPut is
@@ -51,5 +52,6 @@ type V1DataAIsIDPut struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
-	VADConfig *ai.VADConfig `json:"vad_config,omitempty"`
+	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
+	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`
 }

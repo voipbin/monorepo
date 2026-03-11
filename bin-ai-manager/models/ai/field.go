@@ -20,8 +20,9 @@ const (
 	FieldTTSType    Field = "tts_type"
 	FieldTTSVoiceID Field = "tts_voice_id"
 
-	FieldSTTType   Field = "stt_type"
-	FieldVADConfig Field = "vad_config"
+	FieldSTTType          Field = "stt_type"
+	FieldVADConfig        Field = "vad_config"
+	FieldSmartTurnEnabled Field = "smart_turn_enabled"
 
 	FieldToolNames Field = "tool_names"
 
