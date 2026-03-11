@@ -24,6 +24,8 @@ type WebhookMessage struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
 
+	Metadata Metadata `json:"metadata"` // customer metadata
+
 	EmailVerified bool `json:"email_verified"`
 
 	Status              Status     `json:"status"`
@@ -50,6 +52,8 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 		WebhookURI:    h.WebhookURI,
 
 		BillingAccountID: h.BillingAccountID,
+
+		Metadata: h.Metadata,
 
 		EmailVerified: h.EmailVerified,
 

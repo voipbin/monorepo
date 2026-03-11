@@ -2096,6 +2096,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdateBillingAccountID(ctx
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfUpdateBillingAccountID), ctx, a, billingAccountID)
 }
 
+// CustomerSelfUpdateMetadata mocks base method.
+func (m *MockServiceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *agent.Agent, metadata customer.Metadata) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerSelfUpdateMetadata", ctx, a, metadata)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerSelfUpdateMetadata indicates an expected call of CustomerSelfUpdateMetadata.
+func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdateMetadata(ctx, a, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfUpdateMetadata", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfUpdateMetadata), ctx, a, metadata)
+}
+
 // CustomerSignup mocks base method.
 func (m *MockServiceHandler) CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI, clientIP string) (*customer.SignupResultWebhookMessage, error) {
 	m.ctrl.T.Helper()

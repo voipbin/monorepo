@@ -490,6 +490,7 @@ type ServiceHandler interface {
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerUpdateMetadata(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error)
 	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerSelfUpdateMetadata(ctx context.Context, a *amagent.Agent, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
 		ctx context.Context,
 		name string,

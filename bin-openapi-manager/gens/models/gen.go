@@ -4352,6 +4352,12 @@ type CustomerManagerCustomer struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
+	// Metadata Configuration flags for a customer account. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues.
+	// Updatable by CustomerAdmin via `PUT /customer/metadata`
+	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
+	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
+
 	// Name Name of the customer.
 	Name *string `json:"name,omitempty"`
 
@@ -4400,9 +4406,10 @@ type CustomerManagerCustomerAdmin struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
-	// Metadata Internal configuration flags for a customer account. These flags control low-level platform behavior
-	// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
-	// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+	// Metadata Configuration flags for a customer account. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues.
+	// Updatable by CustomerAdmin via `PUT /customer/metadata`
+	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
 
 	// Name Name of the customer.
@@ -4451,9 +4458,10 @@ type CustomerManagerEmailVerifyResult struct {
 	Customer  CustomerManagerCustomer  `json:"customer"`
 }
 
-// CustomerManagerMetadata Internal configuration flags for a customer account. These flags control low-level platform behavior
-// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
-// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+// CustomerManagerMetadata Configuration flags for a customer account. Controls platform behavior
+// such as RTP packet capture for debugging audio issues.
+// Updatable by CustomerAdmin via `PUT /customer/metadata`
+// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 type CustomerManagerMetadata struct {
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
 	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
@@ -6832,6 +6840,13 @@ type PutCustomerBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
+// PutCustomerMetadataJSONBody defines parameters for PutCustomerMetadata.
+type PutCustomerMetadataJSONBody struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
+}
+
 // GetCustomersParams defines parameters for GetCustomers.
 type GetCustomersParams struct {
 	// PageSize Number of results to return per page.
@@ -8062,6 +8077,9 @@ type PutCustomerJSONRequestBody PutCustomerJSONBody
 
 // PutCustomerBillingAccountIdJSONRequestBody defines body for PutCustomerBillingAccountId for application/json ContentType.
 type PutCustomerBillingAccountIdJSONRequestBody PutCustomerBillingAccountIdJSONBody
+
+// PutCustomerMetadataJSONRequestBody defines body for PutCustomerMetadata for application/json ContentType.
+type PutCustomerMetadataJSONRequestBody PutCustomerMetadataJSONBody
 
 // PostCustomersJSONRequestBody defines body for PostCustomers for application/json ContentType.
 type PostCustomersJSONRequestBody PostCustomersJSONBody

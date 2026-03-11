@@ -1,0 +1,26 @@
+put:
+  summary: Update customer metadata
+  description: Update the metadata configuration for the authenticated customer's account.
+  tags:
+    - Customer
+  requestBody:
+    description: Customer metadata update payload
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            rtp_debug:
+              type: boolean
+              description: |
+                When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+                Default is `false`. Enabling this increases storage usage — disable after debugging.
+              example: true
+  responses:
+    '200':
+      description: The updated customer information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'

@@ -20,6 +20,9 @@ Customer
         "webhook_method": "<string>",
         "webhook_uri": "<string>",
         "billing_account_id": "<string>",
+        "metadata": {
+            "rtp_debug": <boolean>
+        },
         "email_verified": <boolean>,
         "status": "<string>",
         "tm_deletion_scheduled": "<string>",
@@ -37,6 +40,10 @@ Customer
 * ``webhook_method`` (enum string, Optional): The HTTP method used for webhook notifications. One of: ``POST``, ``GET``, ``PUT``, ``DELETE``.
 * ``webhook_uri`` (String, Optional): The URI where webhook event notifications are sent for this customer.
 * ``billing_account_id`` (UUID, Optional): The default billing account ID for this customer. Obtained from ``GET https://api.voipbin.net/v1.0/billing_accounts``.
+* ``metadata`` (Object): Configuration flags for the customer account. Contains:
+
+  - ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for this customer's calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is ``false``. Updatable by CustomerAdmin via ``PUT https://api.voipbin.net/v1.0/customer/metadata``.
+
 * ``email_verified`` (Boolean): Whether the customer's email address has been verified. ``true`` if verified, ``false`` otherwise.
 * ``status`` (enum string): The current account status. One of:
 
@@ -70,6 +77,9 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "metadata": {
+            "rtp_debug": false
+        },
         "email_verified": true,
         "status": "active",
         "tm_deletion_scheduled": null,

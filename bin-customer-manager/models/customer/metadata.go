@@ -8,8 +8,9 @@ const (
 	MetadataKeyRTPDebug MetadataKey = "rtp_debug"
 )
 
-// Metadata holds internal-use configuration flags for a customer.
-// Managed exclusively by ProjectSuperAdmin. Not exposed in WebhookMessage.
+// Metadata holds configuration flags for a customer.
+// Can be updated by ProjectSuperAdmin via PUT /customers/{id}/metadata
+// or by CustomerAdmin via PUT /customer/metadata.
 type Metadata struct {
 	RTPDebug bool `json:"rtp_debug"` // enable RTPEngine RTP capture (PCAP)
 }

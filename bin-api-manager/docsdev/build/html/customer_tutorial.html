@@ -318,6 +318,44 @@
 </pre></div>
 </div>
 </section>
+<section id="update-customer-metadata">
+<h3>Update customer metadata<a class="headerlink" href="#update-customer-metadata" title="Link to this heading"></a></h3>
+<p>Update configuration flags for your customer account, such as enabling RTP debug capture.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture for debugging audio quality issues. Only agents with CustomerAdmin permission can update metadata. Enabling this increases storage usage — disable after debugging.</p>
+</div>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;rtp_debug&quot;: true
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: true
+    },
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
+}
+</pre></div>
+</div>
+</section>
 <section id="unregister-account-schedule-deletion">
 <h3>Unregister account (schedule deletion)<a class="headerlink" href="#unregister-account-schedule-deletion" title="Link to this heading"></a></h3>
 <p>Request account deletion with a 30-day grace period. The account transitions to <code class="docutils literal notranslate"><span class="pre">frozen</span></code> status and a deletion date is scheduled.</p>
@@ -431,6 +469,7 @@
 <li><a class="reference internal" href="#get-detail-of-customer">Get detail of customer</a></li>
 <li><a class="reference internal" href="#create-a-new-customer">Create a new customer</a></li>
 <li><a class="reference internal" href="#delete-customer">Delete customer</a></li>
+<li><a class="reference internal" href="#update-customer-metadata">Update customer metadata</a></li>
 <li><a class="reference internal" href="#unregister-account-schedule-deletion">Unregister account (schedule deletion)</a></li>
 <li><a class="reference internal" href="#unregister-account-immediately">Unregister account immediately</a></li>
 <li><a class="reference internal" href="#cancel-unregistration-recover-account">Cancel unregistration (recover account)</a></li>

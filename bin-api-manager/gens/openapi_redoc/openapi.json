@@ -5828,6 +5828,45 @@
         }
       }
     },
+    "/customer/metadata": {
+      "put": {
+        "summary": "Update customer metadata",
+        "description": "Update the metadata configuration for the authenticated customer's account.",
+        "tags": [
+          "Customer"
+        ],
+        "requestBody": {
+          "description": "Customer metadata update payload",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rtp_debug": {
+                    "type": "boolean",
+                    "description": "When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.\nDefault is `false`. Enabling this increases storage usage — disable after debugging.\n",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated customer information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/customer/billing_account_id": {
       "put": {
         "summary": "Update a customer's billing account ID",
@@ -17379,7 +17418,7 @@
       },
       "CustomerManagerMetadata": {
         "type": "object",
-        "description": "Internal configuration flags for a customer account. These flags control low-level platform behavior\n(e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via\n`PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.\n",
+        "description": "Configuration flags for a customer account. Controls platform behavior\nsuch as RTP packet capture for debugging audio issues.\nUpdatable by CustomerAdmin via `PUT /customer/metadata`\nor by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.\n",
         "properties": {
           "rtp_debug": {
             "type": "boolean",
@@ -17456,6 +17495,10 @@
             "x-go-type": "string",
             "description": "The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.",
             "example": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/CustomerManagerMetadata",
+            "description": "Customer configuration flags (e.g., RTP debug). Updatable by CustomerAdmin via `PUT /customer/metadata`."
           },
           "email_verified": {
             "type": "boolean",

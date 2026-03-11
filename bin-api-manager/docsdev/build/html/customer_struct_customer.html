@@ -198,6 +198,9 @@
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -217,6 +220,11 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string, Optional): The HTTP method used for webhook notifications. One of: <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String, Optional): The URI where webhook event notifications are sent for this customer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">billing_account_id</span></code> (UUID, Optional): The default billing account ID for this customer. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/billing_accounts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object): Configuration flags for the customer account. Contains:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean): When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic as PCAP files for this customer’s calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>. Updatable by CustomerAdmin via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer/metadata</span></code>.</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">email_verified</span></code> (Boolean): Whether the customer’s email address has been verified. <code class="docutils literal notranslate"><span class="pre">true</span></code> if verified, <code class="docutils literal notranslate"><span class="pre">false</span></code> otherwise.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The current account status. One of:</p>
 <ul>
@@ -249,6 +257,9 @@
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>

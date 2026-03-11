@@ -2429,6 +2429,12 @@ type CustomerManagerCustomer struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
+	// Metadata Configuration flags for a customer account. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues.
+	// Updatable by CustomerAdmin via `PUT /customer/metadata`
+	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
+	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
+
 	// Name Name of the customer.
 	Name *string `json:"name,omitempty"`
 
@@ -2477,9 +2483,10 @@ type CustomerManagerCustomerAdmin struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
-	// Metadata Internal configuration flags for a customer account. These flags control low-level platform behavior
-	// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
-	// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+	// Metadata Configuration flags for a customer account. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues.
+	// Updatable by CustomerAdmin via `PUT /customer/metadata`
+	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
 
 	// Name Name of the customer.
@@ -2528,9 +2535,10 @@ type CustomerManagerEmailVerifyResult struct {
 	Customer  CustomerManagerCustomer  `json:"customer"`
 }
 
-// CustomerManagerMetadata Internal configuration flags for a customer account. These flags control low-level platform behavior
-// (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
-// `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+// CustomerManagerMetadata Configuration flags for a customer account. Controls platform behavior
+// such as RTP packet capture for debugging audio issues.
+// Updatable by CustomerAdmin via `PUT /customer/metadata`
+// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 type CustomerManagerMetadata struct {
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
 	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
@@ -4909,6 +4917,13 @@ type PutCustomerBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
+// PutCustomerMetadataJSONBody defines parameters for PutCustomerMetadata.
+type PutCustomerMetadataJSONBody struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
+}
+
 // GetCustomersParams defines parameters for GetCustomers.
 type GetCustomersParams struct {
 	// PageSize Number of results to return per page.
@@ -6140,6 +6155,9 @@ type PutCustomerJSONRequestBody PutCustomerJSONBody
 // PutCustomerBillingAccountIdJSONRequestBody defines body for PutCustomerBillingAccountId for application/json ContentType.
 type PutCustomerBillingAccountIdJSONRequestBody PutCustomerBillingAccountIdJSONBody
 
+// PutCustomerMetadataJSONRequestBody defines body for PutCustomerMetadata for application/json ContentType.
+type PutCustomerMetadataJSONRequestBody PutCustomerMetadataJSONBody
+
 // PostCustomersJSONRequestBody defines body for PostCustomers for application/json ContentType.
 type PostCustomersJSONRequestBody PostCustomersJSONBody
 
@@ -6694,6 +6712,9 @@ type ServerInterface interface {
 	// Update a customer's billing account ID
 	// (PUT /customer/billing_account_id)
 	PutCustomerBillingAccountId(c *gin.Context)
+	// Update customer metadata
+	// (PUT /customer/metadata)
+	PutCustomerMetadata(c *gin.Context)
 	// Gets a list of customers.
 	// (GET /customers)
 	GetCustomers(c *gin.Context, params GetCustomersParams)
@@ -10290,6 +10311,19 @@ func (siw *ServerInterfaceWrapper) PutCustomerBillingAccountId(c *gin.Context) {
 	}
 
 	siw.Handler.PutCustomerBillingAccountId(c)
+}
+
+// PutCustomerMetadata operation middleware
+func (siw *ServerInterfaceWrapper) PutCustomerMetadata(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCustomerMetadata(c)
 }
 
 // GetCustomers operation middleware
@@ -14917,6 +14951,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/customer", wrapper.GetCustomer)
 	router.PUT(options.BaseURL+"/customer", wrapper.PutCustomer)
 	router.PUT(options.BaseURL+"/customer/billing_account_id", wrapper.PutCustomerBillingAccountId)
+	router.PUT(options.BaseURL+"/customer/metadata", wrapper.PutCustomerMetadata)
 	router.GET(options.BaseURL+"/customers", wrapper.GetCustomers)
 	router.POST(options.BaseURL+"/customers", wrapper.PostCustomers)
 	router.DELETE(options.BaseURL+"/customers/:id", wrapper.DeleteCustomersId)
@@ -17438,6 +17473,23 @@ type PutCustomerBillingAccountIdResponseObject interface {
 type PutCustomerBillingAccountId200JSONResponse CustomerManagerCustomer
 
 func (response PutCustomerBillingAccountId200JSONResponse) VisitPutCustomerBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerMetadataRequestObject struct {
+	Body *PutCustomerMetadataJSONRequestBody
+}
+
+type PutCustomerMetadataResponseObject interface {
+	VisitPutCustomerMetadataResponse(w http.ResponseWriter) error
+}
+
+type PutCustomerMetadata200JSONResponse CustomerManagerCustomer
+
+func (response PutCustomerMetadata200JSONResponse) VisitPutCustomerMetadataResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -21369,6 +21421,9 @@ type StrictServerInterface interface {
 	// Update a customer's billing account ID
 	// (PUT /customer/billing_account_id)
 	PutCustomerBillingAccountId(ctx context.Context, request PutCustomerBillingAccountIdRequestObject) (PutCustomerBillingAccountIdResponseObject, error)
+	// Update customer metadata
+	// (PUT /customer/metadata)
+	PutCustomerMetadata(ctx context.Context, request PutCustomerMetadataRequestObject) (PutCustomerMetadataResponseObject, error)
 	// Gets a list of customers.
 	// (GET /customers)
 	GetCustomers(ctx context.Context, request GetCustomersRequestObject) (GetCustomersResponseObject, error)
@@ -25586,6 +25641,39 @@ func (sh *strictHandler) PutCustomerBillingAccountId(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCustomerBillingAccountIdResponseObject); ok {
 		if err := validResponse.VisitPutCustomerBillingAccountIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCustomerMetadata operation middleware
+func (sh *strictHandler) PutCustomerMetadata(ctx *gin.Context) {
+	var request PutCustomerMetadataRequestObject
+
+	var body PutCustomerMetadataJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCustomerMetadata(ctx, request.(PutCustomerMetadataRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCustomerMetadata")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCustomerMetadataResponseObject); ok {
+		if err := validResponse.VisitPutCustomerMetadataResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
