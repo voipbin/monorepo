@@ -3268,9 +3268,10 @@ components:
     CustomerManagerMetadata:
       type: object
       description: |
-        Internal configuration flags for a customer account. These flags control low-level platform behavior
-        (e.g., RTP packet capture) and are managed exclusively by ProjectSuperAdmin via
-        `PUT /customers/{id}/metadata`. Regular users cannot read or modify these fields.
+        Configuration flags for a customer account. Controls platform behavior
+        such as RTP packet capture for debugging audio issues.
+        Updatable by CustomerAdmin via `PUT /customer/metadata`
+        or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
       properties:
         rtp_debug:
           type: boolean
@@ -3336,6 +3337,9 @@ components:
           x-go-type: string
           description: "The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response."
           example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+        metadata:
+          $ref: '#/components/schemas/CustomerManagerMetadata'
+          description: "Customer configuration flags (e.g., RTP debug). Updatable by CustomerAdmin via `PUT /customer/metadata`."
         email_verified:
           type: boolean
           description: Whether the customer's email has been verified.
@@ -6631,6 +6635,8 @@ paths:
   /conversations:
     $ref: './paths/conversations/main.yaml'
 
+  /customer/metadata:
+    $ref: './paths/customer/metadata.yaml'
   /customer/billing_account_id:
     $ref: './paths/customer/billing_account_id.yaml'
   /customer:
