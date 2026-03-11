@@ -27,6 +27,8 @@ type WebhookMessage struct {
 	T38Enabled       bool `json:"t38_enabled"`
 	EmergencyEnabled bool `json:"emergency_enabled"`
 
+	Metadata Metadata `json:"metadata"`
+
 	TMPurchase *time.Time `json:"tm_purchase"`
 	TMRenew    *time.Time `json:"tm_renew"`
 
@@ -53,6 +55,8 @@ func (h *Number) ConvertWebhookMessage() *WebhookMessage {
 
 		T38Enabled:       h.T38Enabled,
 		EmergencyEnabled: h.EmergencyEnabled,
+
+		Metadata: h.Metadata,
 
 		TMPurchase: h.TMPurchase,
 		TMRenew:    h.TMRenew,

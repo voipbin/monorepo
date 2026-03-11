@@ -983,6 +983,7 @@ type RequestHandler interface {
 	NumberV1NumberList(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error)
 	NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
+	NumberV1NumberUpdateMetadata(ctx context.Context, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.Number, error)
 	NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]nmnumber.Number, error)

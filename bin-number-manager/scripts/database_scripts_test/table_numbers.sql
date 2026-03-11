@@ -19,6 +19,8 @@ create table number_numbers(
   t38_enabled         boolean,    -- T38 eanbled
   emergency_enabled   boolean,    -- Emergency available
 
+  metadata  json,   -- metadata
+
   -- timestamps
   tm_purchase datetime(6),
   tm_renew    datetime(6),

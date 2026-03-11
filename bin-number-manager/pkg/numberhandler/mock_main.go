@@ -237,3 +237,18 @@ func (mr *MockNumberHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockNumberHandler)(nil).Update), ctx, id, fields)
 }
+
+// UpdateMetadata mocks base method.
+func (m *MockNumberHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata number.Metadata) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, metadata)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateMetadata indicates an expected call of UpdateMetadata.
+func (mr *MockNumberHandlerMockRecorder) UpdateMetadata(ctx, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockNumberHandler)(nil).UpdateMetadata), ctx, id, metadata)
+}

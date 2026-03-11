@@ -25,6 +25,8 @@ const (
 	FieldT38Enabled       Field = "t38_enabled"
 	FieldEmergencyEnabled Field = "emergency_enabled"
 
+	FieldMetadata Field = "metadata"
+
 	FieldTMPurchase Field = "tm_purchase"
 	FieldTMRenew    Field = "tm_renew"
 

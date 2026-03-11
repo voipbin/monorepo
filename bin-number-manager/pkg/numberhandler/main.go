@@ -49,6 +49,7 @@ type NumberHandler interface {
 	) (*number.Number, error)
 
 	Update(ctx context.Context, id uuid.UUID, fields map[number.Field]any) (*number.Number, error)
+	UpdateMetadata(ctx context.Context, id uuid.UUID, metadata number.Metadata) (*number.Number, error)
 
 	CountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 

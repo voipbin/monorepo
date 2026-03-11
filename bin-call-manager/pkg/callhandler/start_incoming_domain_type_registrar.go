@@ -138,7 +138,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination, nil)
 
 	return nil
 }
@@ -204,7 +204,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination, nil)
 
 	return nil
 }
@@ -258,7 +258,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination, nil)
 
 	return nil
 }
@@ -320,7 +320,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination, nil)
 
 	return nil
 }

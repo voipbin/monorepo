@@ -316,3 +316,25 @@ func (h *numberHandler) Update(ctx context.Context, id uuid.UUID, fields map[num
 
 	return res, nil
 }
+
+// UpdateMetadata updates the number's metadata.
+func (h *numberHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata number.Metadata) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "UpdateMetadata",
+		"number_id": id,
+		"metadata":  metadata,
+	})
+	log.Debugf("UpdateMetadata. number_id: %s", id)
+
+	fields := map[number.Field]any{
+		number.FieldMetadata: metadata,
+	}
+
+	res, err := h.dbUpdate(ctx, id, fields, number.EventTypeNumberUpdated)
+	if err != nil {
+		log.Errorf("Could not update the number metadata. err: %v", err)
+		return nil, errors.Wrap(err, "could not update the number metadata")
+	}
+
+	return res, nil
+}

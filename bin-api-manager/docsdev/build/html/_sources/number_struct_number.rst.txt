@@ -21,6 +21,9 @@ Number
         "status": "<string>",
         "t38_enabled": <boolean>,
         "emergency_enabled": <boolean>,
+        "metadata": {
+            "rtp_debug": <boolean>
+        },
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -36,6 +39,10 @@ Number
 * ``status`` (enum string): The number's current status. See :ref:`Status <number-struct-number-status>`.
 * ``t38_enabled`` (Boolean): Whether T.38 fax support is enabled on this number.
 * ``emergency_enabled`` (Boolean): Whether emergency calling (e.g., 911) is enabled on this number.
+* ``metadata`` (Object): Configuration flags for this number. See :ref:`Metadata <number-struct-number-metadata>`.
+
+  * ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for calls to this number. This flag is OR'd with the customer-level ``rtp_debug`` -- if either is ``true``, capture is enabled. Default is ``false``.
+
 * ``tm_create`` (string, ISO 8601): Timestamp when the number was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any number property.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the number was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
@@ -60,6 +67,9 @@ Example
         "status": "active",
         "t38_enabled": false,
         "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": false
+        },
         "tm_create": "2022-02-01 00:00:00.000000",
         "tm_update": "2022-03-20 19:37:53.135685",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -96,4 +106,18 @@ purchase-pending The number purchase has been submitted to the provider but not 
 suspended        The number is temporarily disabled. Inbound calls and messages will not be handled. Can be reactivated.
 deleted          The number has been released and is no longer active. Returned after calling ``DELETE /numbers/{id}``.
 ================ ===========
+
+
+.. _number-struct-number-metadata:
+
+Metadata
+--------
+
+The ``metadata`` object contains configuration flags for the number.
+
+================ ======= ===========
+Field            Type    Description
+================ ======= ===========
+rtp_debug        Boolean When ``true``, RTPEngine captures RTP traffic (PCAP) for incoming PSTN and virtual number calls to this number. OR'd with customer-level flag -- if either is ``true``, capture is enabled. Default ``false``. Disable after debugging to reduce storage.
+================ ======= ===========
 

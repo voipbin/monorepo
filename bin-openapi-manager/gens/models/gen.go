@@ -5127,6 +5127,17 @@ type NumberManagerAvailableNumberFeature struct {
 	Region *string `json:"region,omitempty"`
 }
 
+// NumberManagerMetadata Configuration flags for a number. Controls platform behavior
+// such as RTP packet capture for debugging audio issues on this specific number.
+// Updatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.
+type NumberManagerMetadata struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for calls to this number.
+	// This flag is OR'd with the customer-level `rtp_debug` — if either is `true`, capture is enabled.
+	// Use this to debug audio quality issues on a specific number without enabling capture for all customer calls.
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
+}
+
 // NumberManagerNumber defines model for NumberManagerNumber.
 type NumberManagerNumber struct {
 	// CallFlowId The unique identifier of the flow to execute for incoming calls. Returned from the `POST /flows` or `GET /flows` response.
@@ -5146,6 +5157,11 @@ type NumberManagerNumber struct {
 
 	// MessageFlowId The unique identifier of the flow to execute for incoming messages. Returned from the `POST /flows` or `GET /flows` response.
 	MessageFlowId *string `json:"message_flow_id,omitempty"`
+
+	// Metadata Configuration flags for a number. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues on this specific number.
+	// Updatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.
+	Metadata *NumberManagerMetadata `json:"metadata,omitempty"`
 
 	// Name The name of the number.
 	Name *string `json:"name,omitempty"`
@@ -8128,6 +8144,9 @@ type PutNumbersIdJSONRequestBody PutNumbersIdJSONBody
 
 // PutNumbersIdFlowIdsJSONRequestBody defines body for PutNumbersIdFlowIds for application/json ContentType.
 type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
+
+// PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
+type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
 
 // PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
 type PostOutdialsJSONRequestBody PostOutdialsJSONBody
