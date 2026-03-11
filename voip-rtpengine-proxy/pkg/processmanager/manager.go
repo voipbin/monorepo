@@ -89,6 +89,8 @@ func (m *manager) Exec(id, command string, parameters []string) error {
 		return fmt.Errorf("validate write path: %w", err)
 	}
 
+	log.WithFields(logrus.Fields{"args": args, "parameters": parameters}).Debugf("Constructed tcpdump args")
+
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = nil
 	cmd.Stderr = nil
@@ -157,7 +159,7 @@ func (m *manager) killAndUpload(id string) (string, error) {
 
 	uploaded := false
 	if m.uploader != nil {
-		remoteName := fmt.Sprintf("rtp-recordings/%s.pcap", id)
+		remoteName := fmt.Sprintf("rtp-recordings/%s-%d.pcap", id, time.Now().Unix())
 		log.Infof("Uploading %s to %s", tracked.pcapPath, remoteName)
 
 		if _, err := m.uploader.Upload(tracked.pcapPath, remoteName); err != nil {

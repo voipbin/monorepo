@@ -36,6 +36,7 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 		log.Errorf("Could not query RTPEngine. rtpengine_address: %s, err: %v", rtpengineAddress, err)
 		return
 	}
+	log.WithField("query_response", queryRes).Debugf("RTPEngine query response. sip_call_id: %s", cn.SIPCallID)
 
 	// Step 2: Extract local ports from query response
 	ports, err := extractLocalPorts(queryRes)
