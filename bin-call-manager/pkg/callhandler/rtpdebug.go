@@ -26,6 +26,7 @@ func (h *callHandler) rtpDebugStartRecording(ctx context.Context, c *call.Call, 
 
 	// Step 1: Query RTPEngine for allocated ports
 	queryCommand := map[string]interface{}{
+		"type":    "ng",
 		"command": "query",
 		"call-id": cn.SIPCallID,
 	}
