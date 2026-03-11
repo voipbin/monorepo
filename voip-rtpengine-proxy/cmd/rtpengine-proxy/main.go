@@ -43,6 +43,7 @@ var chSigs = make(chan os.Signal, 1)
 
 func main() {
 	log := logrus.WithField("func", "main")
+	log.Infof("Supported command types: ng, exec, kill")
 
 	proxyID, proxyAddress, err := getInterfaceIP(interfaceName)
 	if err != nil {
