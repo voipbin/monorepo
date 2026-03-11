@@ -1,6 +1,6 @@
 python-dotenv
 uvicorn
-pipecat-ai[silero,deepgram,openai,cartesia,websocket,google]>=0.0.101
+pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn-v3]>=0.0.101
 pipecat-ai-flows>=0.0.10
 onnxruntime==1.20.1
 loguru
