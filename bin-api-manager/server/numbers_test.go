@@ -468,6 +468,103 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 	}
 }
 
+func TestNumbersIDMetadataPUT(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		responseNumber *nmnumber.WebhookMessage
+
+		expectNumberID uuid.UUID
+		expectMetadata nmnumber.Metadata
+		expectRes      string
+	}
+
+	tests := []test{
+		{
+			name: "enable rtp_debug",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/numbers/c1a2b3c4-1111-2222-3333-444455556666/metadata",
+			reqBody:  []byte(`{"rtp_debug":true}`),
+
+			responseNumber: &nmnumber.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+				},
+				Metadata: nmnumber.Metadata{RTPDebug: true},
+			},
+
+			expectNumberID: uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+			expectMetadata: nmnumber.Metadata{RTPDebug: true},
+			expectRes:      `{"id":"c1a2b3c4-1111-2222-3333-444455556666","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":true},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "disable rtp_debug",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/numbers/d2b3c4d5-1111-2222-3333-444455556666/metadata",
+			reqBody:  []byte(`{"rtp_debug":false}`),
+
+			responseNumber: &nmnumber.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+				},
+				Metadata: nmnumber.Metadata{RTPDebug: false},
+			},
+
+			expectNumberID: uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+			expectMetadata: nmnumber.Metadata{RTPDebug: false},
+			expectRes:      `{"id":"d2b3c4d5-1111-2222-3333-444455556666","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			mockSvc.EXPECT().NumberUpdateMetadata(req.Context(), &tt.agent, tt.expectNumberID, tt.expectMetadata).Return(tt.responseNumber, nil)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
 func Test_NumbersRenewPOST(t *testing.T) {
 
 	type test struct {
