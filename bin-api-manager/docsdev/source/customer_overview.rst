@@ -88,6 +88,8 @@ Key properties of a customer account.
 +------------------------+----------------------------------------------------------------+
 | billing_account_id     | (UUID) Default billing account. From ``GET /billing_accounts`` |
 +------------------------+----------------------------------------------------------------+
+| metadata               | (Object) Configuration flags. Contains ``rtp_debug`` (Boolean) |
++------------------------+----------------------------------------------------------------+
 | email_verified         | (Boolean) Whether the email address has been verified          |
 +------------------------+----------------------------------------------------------------+
 | status                 | (enum string) Account status: initial, active, frozen,         |
@@ -133,6 +135,9 @@ Access and update customer account information.
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "metadata": {
+            "rtp_debug": false
+        },
         "email_verified": true,
         "status": "active",
         "tm_deletion_scheduled": null,
@@ -151,6 +156,22 @@ Access and update customer account information.
             "name": "Acme Corporation Inc.",
             "detail": "Updated enterprise account"
         }'
+
+**Update Customer Metadata**
+
+Update configuration flags for your customer account. Requires CustomerAdmin permission.
+
+.. code::
+
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "rtp_debug": true
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   The ``rtp_debug`` flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting ``rtp_debug`` to ``false``.
 
 
 Account Deletion Lifecycle

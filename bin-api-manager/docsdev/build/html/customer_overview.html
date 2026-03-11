@@ -280,10 +280,13 @@
 <tr class="row-even"><td><p>billing_account_id</p></td>
 <td><p>(UUID) Default billing account. From <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>email_verified</p></td>
+<tr class="row-odd"><td><p>metadata</p></td>
+<td><p>(Object) Configuration flags. Contains <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean)</p></td>
+</tr>
+<tr class="row-even"><td><p>email_verified</p></td>
 <td><p>(Boolean) Whether the email address has been verified</p></td>
 </tr>
-<tr class="row-even"><td><p>status</p></td>
+<tr class="row-odd"><td><p>status</p></td>
 <td><p>(enum string) Account status: initial, active, frozen,
 deleted, expired</p></td>
 </tr>
@@ -330,6 +333,9 @@ deleted, expired</p></td>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
@@ -347,6 +353,20 @@ deleted, expired</p></td>
         &quot;detail&quot;: &quot;Updated enterprise account&quot;
     }&#39;
 </pre></div>
+</div>
+<p><strong>Update Customer Metadata</strong></p>
+<p>Update configuration flags for your customer account. Requires CustomerAdmin permission.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;rtp_debug&quot;: true
+    }&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </div>
 </section>
 <section id="account-deletion-lifecycle">

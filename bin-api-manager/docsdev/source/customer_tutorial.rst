@@ -141,6 +141,46 @@ Example
         "tm_delete": "2024-03-10T15:59:08Z"
     }
 
+Update customer metadata
+------------------------
+
+Update configuration flags for your customer account, such as enabling RTP debug capture.
+
+.. note:: **AI Implementation Hint**
+
+   The ``rtp_debug`` flag enables RTP packet capture for debugging audio quality issues. Only agents with CustomerAdmin permission can update metadata. Enabling this increases storage usage — disable after debugging.
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "rtp_debug": true
+        }'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "metadata": {
+            "rtp_debug": true
+        },
+        "email_verified": true,
+        "status": "active",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:22:35Z",
+        "tm_delete": null
+    }
+
 Unregister account (schedule deletion)
 ---------------------------------------
 
