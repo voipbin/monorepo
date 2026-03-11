@@ -36,7 +36,7 @@ var (
 	prometheusListenAddress = ""
 
 	recordingDir  = ""
-	gcsBucketName = ""
+	gcpBucketNameMedia = ""
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -78,8 +78,8 @@ func main() {
 
 	// Create process manager for tcpdump captures.
 	var uploader gcsuploader.Uploader
-	if gcsBucketName != "" {
-		uploader, err = gcsuploader.New(gcsBucketName)
+	if gcpBucketNameMedia != "" {
+		uploader, err = gcsuploader.New(gcpBucketNameMedia)
 		if err != nil {
 			log.WithError(err).Error("Could not create GCS uploader for process manager")
 			return
@@ -90,7 +90,7 @@ func main() {
 			}
 		}()
 	}
-	procMgr := processmanager.NewManager(interfaceName, 10*time.Minute, uploader)
+	procMgr := processmanager.NewManager(interfaceName, 20*time.Minute, uploader)
 	procMgr.CleanOrphans()
 
 	lh := listenhandler.NewListenHandler(sockHandler, permanentQueue, volatileQueue, ng, procMgr)
@@ -113,10 +113,10 @@ func main() {
 		}()
 		log.WithFields(logrus.Fields{
 			"recording_dir": recordingDir,
-			"gcs_bucket":    gcsBucketName,
+			"gcs_bucket":    gcpBucketNameMedia,
 		}).Info("pcap watcher enabled")
 	} else {
-		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCS_BUCKET_NAME not set)")
+		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCP_BUCKET_NAME_MEDIA not set)")
 	}
 
 	sig := <-chSigs
