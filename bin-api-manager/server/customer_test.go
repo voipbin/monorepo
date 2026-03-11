@@ -46,7 +46,7 @@ func Test_customerGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
 			},
 
-			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -127,7 +127,7 @@ func Test_customerPut(t *testing.T) {
 			expectedAddress:       "somewhere",
 			expectedWebhookMethod: cscustomer.WebhookMethodPost,
 			expectedWebhookURI:    "test.com",
-			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -198,7 +198,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			},
 
 			expectedBillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
-			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -224,6 +224,82 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CustomerSelfUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_customerMetadataPut(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		responseCustomer *cscustomer.WebhookMessage
+
+		expectedMetadata cscustomer.Metadata
+		expectedRes      string
+	}{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			reqQuery: "/customer/metadata",
+			reqBody:  []byte(`{"rtp_debug":true}`),
+
+			responseCustomer: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
+				Metadata: cscustomer.Metadata{
+					RTPDebug: true,
+				},
+			},
+
+			expectedMetadata: cscustomer.Metadata{
+				RTPDebug: true,
+			},
+			expectedRes: `{"id":"b2c3d4e5-f6a7-8901-bcde-f12345678901","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":true},"email_verified":false,"status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CustomerSelfUpdateMetadata(req.Context(), &tt.agent, tt.expectedMetadata).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

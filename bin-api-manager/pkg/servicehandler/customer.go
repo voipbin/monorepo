@@ -519,6 +519,29 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 	return res.ConvertWebhookMessage(), nil
 }
 
+// CustomerSelfUpdateMetadata updates the authenticated agent's own customer's metadata.
+// Requires CustomerAdmin permission.
+func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *amagent.Agent, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerSelfUpdateMetadata",
+		"customer_id": a.CustomerID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerUpdateMetadata(ctx, a.CustomerID, metadata)
+	if err != nil {
+		log.Errorf("Could not update the customer's metadata. err: %v", err)
+		return nil, err
+	}
+	log.WithField("customer", res).Debugf("Updated customer metadata. customer_id: %s", res.ID)
+
+	return res.ConvertWebhookMessage(), nil
+}
+
 // CustomerSignup creates an unverified customer and sends a verification email.
 // This is a public endpoint — no authentication required.
 func (h *serviceHandler) CustomerSignup(
