@@ -199,6 +199,9 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;t38_enabled&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;emergency_enabled&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -216,6 +219,11 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The number’s current status. See <a class="reference internal" href="#number-struct-number-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">t38_enabled</span></code> (Boolean): Whether T.38 fax support is enabled on this number.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">emergency_enabled</span></code> (Boolean): Whether emergency calling (e.g., 911) is enabled on this number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object): Configuration flags for this number. See <a class="reference internal" href="#number-struct-number-metadata"><span class="std std-ref">Metadata</span></a>.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean): When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic as PCAP files for calls to this number. This flag is OR’d with the customer-level <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> – if either is <code class="docutils literal notranslate"><span class="pre">true</span></code>, capture is enabled. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the number was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any number property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the number was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
@@ -238,6 +246,9 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="s2">&quot;t38_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">&quot;emergency_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-20 19:37:53.135685&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -290,6 +301,24 @@
 </tbody>
 </table>
 </section>
+<section id="metadata">
+<span id="number-struct-number-metadata"></span><h2>Metadata<a class="headerlink" href="#metadata" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> object contains configuration flags for the number.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>rtp_debug</p></td>
+<td><p>Boolean</p></td>
+<td><p>When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic (PCAP) for incoming PSTN and virtual number calls to this number. OR’d with customer-level flag – if either is <code class="docutils literal notranslate"><span class="pre">true</span></code>, capture is enabled. Default <code class="docutils literal notranslate"><span class="pre">false</span></code>. Disable after debugging to reduce storage.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 </section>
 
 </main>
@@ -307,6 +336,7 @@
 </li>
 <li><a class="reference internal" href="#type">Type</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
+<li><a class="reference internal" href="#metadata">Metadata</a></li>
 </ul>
 </li>
 </ul>

@@ -171,6 +171,34 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid
 	return &res, nil
 }
 
+// NumberV1NumberUpdateMetadata sends a request to the number-manager
+// to update a number's metadata.
+// Returns updated number info
+func (r *requestHandler) NumberV1NumberUpdateMetadata(ctx context.Context, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/%s/metadata", id)
+
+	data := &nmrequest.V1DataNumbersIDMetadataPut{
+		Metadata: metadata,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodPut, "number/numbers/<number-id>/metadata", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res nmnumber.Number
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 type virtualNumberCountByCustomerRequest struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 }

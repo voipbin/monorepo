@@ -69,7 +69,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)
+	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination, &numb)
 	return nil
 }
 
@@ -131,7 +131,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Cont
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, ext.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, ext.CustomerID, f.ID, source, destination, nil)
 
 	return nil
 }

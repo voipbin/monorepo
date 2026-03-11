@@ -568,6 +568,7 @@ type ServiceHandler interface {
 	NumberDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberUpdateFlowIDs(ctx context.Context, a *amagent.Agent, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberUpdateMetadata(ctx context.Context, a *amagent.Agent, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error)
 	NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.Number, error)
 
 	// outdials

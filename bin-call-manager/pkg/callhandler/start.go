@@ -508,7 +508,7 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, tmpFlow.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, tmpFlow.ID, source, destination, nil)
 
 	return nil
 }
@@ -550,12 +550,12 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	log.WithField("number", numb).Infof("Found number info. number_id: %s", numb.ID)
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)
+	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination, &numb)
 	return nil
 }
 
 // startCallTypeFlow handles flow calltype start.
-func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address) {
+func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address, num *nmnumber.Number) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startCallTypeFlow",
 		"channel":     cn,
@@ -642,13 +642,17 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 	log.WithField("call", c).Debugf("Created a call. call: %s", c.ID)
 
-	// RTP debug: check if customer has RTP debug enabled
+	// RTP debug: check if customer or number has RTP debug enabled (inclusive OR)
 	cs, errCS := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 	if errCS != nil {
 		log.Errorf("Could not get customer for RTP debug check. customer_id: %s, err: %v", customerID, errCS)
 	} else {
 		log.WithField("customer", cs).Debugf("Retrieved customer for RTP debug check. customer_id: %s", cs.ID)
-		if cs.Metadata.RTPDebug {
+		rtpDebugEnabled := cs.Metadata.RTPDebug
+		if num != nil {
+			rtpDebugEnabled = rtpDebugEnabled || num.Metadata.RTPDebug
+		}
+		if rtpDebugEnabled {
 			if c.Metadata == nil {
 				c.Metadata = map[string]interface{}{}
 			}

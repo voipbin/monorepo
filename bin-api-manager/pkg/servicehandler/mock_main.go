@@ -2621,6 +2621,21 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdateFlowIDs(ctx, a, id, callFl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateFlowIDs", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdateFlowIDs), ctx, a, id, callFlowID, messageFlowID)
 }
 
+// NumberUpdateMetadata mocks base method.
+func (m *MockServiceHandler) NumberUpdateMetadata(ctx context.Context, a *agent.Agent, id uuid.UUID, metadata number.Metadata) (*number.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateMetadata", ctx, a, id, metadata)
+	ret0, _ := ret[0].(*number.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberUpdateMetadata indicates an expected call of NumberUpdateMetadata.
+func (mr *MockServiceHandlerMockRecorder) NumberUpdateMetadata(ctx, a, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateMetadata", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdateMetadata), ctx, a, id, metadata)
+}
+
 // OutdialCreate mocks base method.
 func (m *MockServiceHandler) OutdialCreate(ctx context.Context, a *agent.Agent, campaignID uuid.UUID, name, detail, data string) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()

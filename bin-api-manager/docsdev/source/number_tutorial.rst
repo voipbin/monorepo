@@ -185,6 +185,47 @@ Example
         "tm_delete": "2021-03-03 06:52:53.848439"
     }
 
+Update number metadata
+----------------------
+
+Update per-number configuration flags. Requires ``CustomerAdmin`` or ``CustomerManager`` permission.
+
+.. note:: **AI Implementation Hint**
+
+   The ``rtp_debug`` flag enables RTP packet capture (PCAP) for incoming calls to this specific number.
+   It is OR'd with the customer-level ``rtp_debug`` flag -- if either is ``true``, capture is enabled.
+   Use this when you need to debug audio issues on a specific number without enabling capture for all customer calls.
+   Disable after debugging to reduce storage usage.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/metadata?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "rtp_debug": true
+    }'
+
+    {
+        "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+        "number": "+16195734778",
+        "type": "normal",
+        "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "Support Line",
+        "detail": "",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": true
+        },
+        "tm_create": "2020-10-11 01:00:00.000001",
+        "tm_update": "2026-03-12 10:30:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
 Create number
 -------------
 

@@ -52,7 +52,7 @@ func TestNumbersGET(t *testing.T) {
 			},
 			expectPageSize:  10,
 			expectPageToken: "2021-03-02T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"31ee638c-7b23-11eb-858a-33e73c4f82f7","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"31ee638c-7b23-11eb-858a-33e73c4f82f7","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -120,7 +120,7 @@ func Test_NumbersIDGET(t *testing.T) {
 			},
 
 			expectNumberID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
-			expectRes:      `{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -190,7 +190,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 			},
 
 			expectNumberID: uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
-			expectRes:      `{"id":"d905c26e-7be6-11eb-b92a-ab4802b4bde3","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:      `{"id":"d905c26e-7be6-11eb-b92a-ab4802b4bde3","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -272,7 +272,7 @@ func TestNumbersPOST(t *testing.T) {
 			expectMessageFlowID: uuid.FromStringOrNil("354120a2-d938-11ef-a7fa-a37e9ed87b6c"),
 			expectName:          "test name",
 			expectDetail:        "test detail",
-			expectRes:           `{"id":"b244d2b6-d937-11ef-9ac7-2bcab0184b07","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"b244d2b6-d937-11ef-9ac7-2bcab0184b07","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -354,7 +354,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			expectMessageFlowID: uuid.FromStringOrNil("e26b0eb6-2ca3-11ee-b7ce-d36a5a962472"),
 			expectName:          "test name",
 			expectDetail:        "test detail",
-			expectRes:           `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -430,7 +430,7 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 			expectNumberID:      uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
 			expectCallFlowID:    uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
 			expectMessageFlowID: uuid.FromStringOrNil("6e7ecc24-a881-11ec-bb4f-4b5822260cbe"),
-			expectRes:           `{"id":"a440c6b8-94cd-11ec-a524-af82f0c3ee68","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"a440c6b8-94cd-11ec-a524-af82f0c3ee68","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -456,6 +456,103 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
 			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.agent, tt.expectNumberID, tt.expectCallFlowID, tt.expectMessageFlowID).Return(tt.responseNumber, nil)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func TestNumbersIDMetadataPUT(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  []byte
+
+		responseNumber *nmnumber.WebhookMessage
+
+		expectNumberID uuid.UUID
+		expectMetadata nmnumber.Metadata
+		expectRes      string
+	}
+
+	tests := []test{
+		{
+			name: "enable rtp_debug",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/numbers/c1a2b3c4-1111-2222-3333-444455556666/metadata",
+			reqBody:  []byte(`{"rtp_debug":true}`),
+
+			responseNumber: &nmnumber.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+				},
+				Metadata: nmnumber.Metadata{RTPDebug: true},
+			},
+
+			expectNumberID: uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+			expectMetadata: nmnumber.Metadata{RTPDebug: true},
+			expectRes:      `{"id":"c1a2b3c4-1111-2222-3333-444455556666","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":true},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "disable rtp_debug",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/numbers/d2b3c4d5-1111-2222-3333-444455556666/metadata",
+			reqBody:  []byte(`{"rtp_debug":false}`),
+
+			responseNumber: &nmnumber.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+				},
+				Metadata: nmnumber.Metadata{RTPDebug: false},
+			},
+
+			expectNumberID: uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+			expectMetadata: nmnumber.Metadata{RTPDebug: false},
+			expectRes:      `{"id":"d2b3c4d5-1111-2222-3333-444455556666","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			mockSvc.EXPECT().NumberUpdateMetadata(req.Context(), &tt.agent, tt.expectNumberID, tt.expectMetadata).Return(tt.responseNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -509,7 +606,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			},
 
 			expectTMRenew: "2023-04-06T14:54:24.652558Z",
-			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 		},
 	}
 

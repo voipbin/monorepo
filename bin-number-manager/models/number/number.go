@@ -38,6 +38,8 @@ type Number struct {
 	T38Enabled       bool `json:"t38_enabled" db:"t38_enabled"`
 	EmergencyEnabled bool `json:"emergency_enabled" db:"emergency_enabled"`
 
+	Metadata Metadata `json:"metadata" db:"metadata,json"`
+
 	// timestamp
 	TMPurchase *time.Time `json:"tm_purchase" db:"tm_purchase"`
 	TMRenew    *time.Time `json:"tm_renew" db:"tm_renew"`

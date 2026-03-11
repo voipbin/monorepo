@@ -432,6 +432,118 @@ func Test_Update(t *testing.T) {
 	}
 }
 
+func Test_UpdateMetadata(t *testing.T) {
+
+	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		id       uuid.UUID
+		metadata number.Metadata
+
+		responseNumber *number.Number
+		expectErr      bool
+	}{
+		{
+			"normal - enable rtp_debug",
+
+			uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+			number.Metadata{RTPDebug: true},
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1a2b3c4-1111-2222-3333-444455556666"),
+					CustomerID: uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
+				},
+				Number:   "+821021656521",
+				Status:   number.StatusActive,
+				Metadata: number.Metadata{RTPDebug: true},
+				TMCreate: &curTime,
+			},
+
+			false,
+		},
+		{
+			"normal - disable rtp_debug",
+
+			uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+			number.Metadata{RTPDebug: false},
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d2b3c4d5-1111-2222-3333-444455556666"),
+					CustomerID: uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
+				},
+				Number:   "+821021656521",
+				Status:   number.StatusActive,
+				Metadata: number.Metadata{RTPDebug: false},
+				TMCreate: &curTime,
+			},
+
+			false,
+		},
+		{
+			"db update error",
+
+			uuid.FromStringOrNil("e3c4d5e6-1111-2222-3333-444455556666"),
+			number.Metadata{RTPDebug: true},
+
+			nil,
+
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+
+			h := numberHandler{
+				reqHandler:          mockReq,
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				numberHandlerTelnyx: mockTelnyx,
+			}
+			ctx := context.Background()
+
+			expectFields := map[number.Field]any{
+				number.FieldMetadata: tt.metadata,
+			}
+
+			if tt.expectErr {
+				mockDB.EXPECT().NumberUpdate(gomock.Any(), tt.id, expectFields).Return(fmt.Errorf("db error"))
+			} else {
+				mockDB.EXPECT().NumberUpdate(gomock.Any(), tt.id, expectFields).Return(nil)
+				mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.responseNumber, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberUpdated, tt.responseNumber)
+			}
+
+			res, err := h.UpdateMetadata(ctx, tt.id, tt.metadata)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseNumber, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumber, res)
+			}
+		})
+	}
+}
+
 func Test_List(t *testing.T) {
 
 	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)

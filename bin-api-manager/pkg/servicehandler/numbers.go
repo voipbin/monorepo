@@ -258,6 +258,38 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *amagent.Age
 	return res, nil
 }
 
+// NumberUpdateMetadata updates the number's metadata.
+// Requires CustomerAdmin or CustomerManager permission.
+func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *amagent.Agent, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "NumberUpdateMetadata",
+		"number_id": id,
+		"metadata":  metadata,
+	})
+
+	// get number
+	n, err := h.numberGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	// update number metadata
+	tmp, err := h.reqHandler.NumberV1NumberUpdateMetadata(ctx, id, metadata)
+	if err != nil {
+		log.Errorf("Could not update the number metadata. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // NumberRenew handles number renew request.
 // It sends a request to the number-manager to renew the numbers.
 // it returns renewed numbers information if it succeed.

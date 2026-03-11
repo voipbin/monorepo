@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -68,7 +69,7 @@ func Test_processV1NumbersPost(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"7051e796-8821-11ec-9b7d-d322b1036e7d","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"3a379dce-792a-11eb-a8e1-9f51cab620f8","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"7051e796-8821-11ec-9b7d-d322b1036e7d","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -136,7 +137,7 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -204,7 +205,7 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -289,7 +290,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -342,7 +343,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"5c18ee62-8800-11ec-bb8b-b74be365ebf2","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000001","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"69dc1916-8800-11ec-8e68-e74880ae3121","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000002","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"5c18ee62-8800-11ec-bb8b-b74be365ebf2","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000001","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"69dc1916-8800-11ec-8e68-e74880ae3121","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000002","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -425,7 +426,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -510,7 +511,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -578,7 +579,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"2725d60a-150f-11ee-bbb7-5394c1333278","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"2775644a-150f-11ee-b28b-5b82bb21aea0","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"2725d60a-150f-11ee-bbb7-5394c1333278","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"2775644a-150f-11ee-b28b-5b82bb21aea0","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 
 			responseNumbers: []*number.Number{
@@ -772,6 +773,162 @@ func Test_processV1NumbersRenewPost_InvalidJSON(t *testing.T) {
 		Data:     []byte(`{invalid`),
 	}
 
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersIDMetadataPut(t *testing.T) {
+	type test struct {
+		name string
+
+		id       uuid.UUID
+		metadata number.Metadata
+
+		resultData *number.Number
+
+		request  *sock.Request
+		response *sock.Response
+	}
+
+	tests := []test{
+		{
+			"enable rtp_debug",
+
+			uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+			number.Metadata{RTPDebug: true},
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
+					CustomerID: uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				},
+				Number:   "+821021656521",
+				Status:   number.StatusActive,
+				Metadata: number.Metadata{RTPDebug: true},
+			},
+			&sock.Request{
+				URI:      "/v1/numbers/a1b2c3d4-1111-2222-3333-444455556666/metadata",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"metadata":{"rtp_debug":true}}`),
+			},
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"a1b2c3d4-1111-2222-3333-444455556666","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":true},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			"disable rtp_debug",
+
+			uuid.FromStringOrNil("b2c3d4e5-1111-2222-3333-444455556666"),
+			number.Metadata{RTPDebug: false},
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2c3d4e5-1111-2222-3333-444455556666"),
+					CustomerID: uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+				},
+				Number:   "+821021656521",
+				Status:   number.StatusActive,
+				Metadata: number.Metadata{RTPDebug: false},
+			},
+			&sock.Request{
+				URI:      "/v1/numbers/b2c3d4e5-1111-2222-3333-444455556666/metadata",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"metadata":{"rtp_debug":false}}`),
+			},
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"b2c3d4e5-1111-2222-3333-444455556666","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				numberHandler: mockNumber,
+			}
+
+			mockNumber.EXPECT().UpdateMetadata(gomock.Any(), tt.id, tt.metadata).Return(tt.resultData, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_processV1NumbersIDMetadataPut_invalidJSON(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers/a1b2c3d4-1111-2222-3333-444455556666/metadata",
+		Method:   sock.RequestMethodPut,
+		DataType: "application/json",
+		Data:     []byte(`{invalid`),
+	}
+
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersIDMetadataPut_handlerError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:   mockSock,
+		numberHandler: mockNumber,
+	}
+
+	id := uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666")
+	metadata := number.Metadata{RTPDebug: true}
+
+	request := &sock.Request{
+		URI:      "/v1/numbers/a1b2c3d4-1111-2222-3333-444455556666/metadata",
+		Method:   sock.RequestMethodPut,
+		DataType: "application/json",
+		Data:     []byte(`{"metadata":{"rtp_debug":true}}`),
+	}
+
+	mockNumber.EXPECT().UpdateMetadata(gomock.Any(), id, metadata).Return(nil, fmt.Errorf("update failed"))
 	res, err := h.processRequest(request)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)

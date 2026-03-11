@@ -3204,6 +3204,17 @@ type NumberManagerAvailableNumberFeature struct {
 	Region *string `json:"region,omitempty"`
 }
 
+// NumberManagerMetadata Configuration flags for a number. Controls platform behavior
+// such as RTP packet capture for debugging audio issues on this specific number.
+// Updatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.
+type NumberManagerMetadata struct {
+	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for calls to this number.
+	// This flag is OR'd with the customer-level `rtp_debug` — if either is `true`, capture is enabled.
+	// Use this to debug audio quality issues on a specific number without enabling capture for all customer calls.
+	// Default is `false`. Enabling this increases storage usage — disable after debugging.
+	RtpDebug *bool `json:"rtp_debug,omitempty"`
+}
+
 // NumberManagerNumber defines model for NumberManagerNumber.
 type NumberManagerNumber struct {
 	// CallFlowId The unique identifier of the flow to execute for incoming calls. Returned from the `POST /flows` or `GET /flows` response.
@@ -3223,6 +3234,11 @@ type NumberManagerNumber struct {
 
 	// MessageFlowId The unique identifier of the flow to execute for incoming messages. Returned from the `POST /flows` or `GET /flows` response.
 	MessageFlowId *string `json:"message_flow_id,omitempty"`
+
+	// Metadata Configuration flags for a number. Controls platform behavior
+	// such as RTP packet capture for debugging audio issues on this specific number.
+	// Updatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.
+	Metadata *NumberManagerMetadata `json:"metadata,omitempty"`
 
 	// Name The name of the number.
 	Name *string `json:"name,omitempty"`
@@ -6206,6 +6222,9 @@ type PutNumbersIdJSONRequestBody PutNumbersIdJSONBody
 // PutNumbersIdFlowIdsJSONRequestBody defines body for PutNumbersIdFlowIds for application/json ContentType.
 type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 
+// PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
+type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
+
 // PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
 type PostOutdialsJSONRequestBody PostOutdialsJSONBody
 
@@ -6847,6 +6866,9 @@ type ServerInterface interface {
 	// Update the order number's flow ID
 	// (PUT /numbers/{id}/flow_ids)
 	PutNumbersIdFlowIds(c *gin.Context, id string)
+	// Update a number's metadata.
+	// (PUT /numbers/{id}/metadata)
+	PutNumbersIdMetadata(c *gin.Context, id string)
 	// Retrieve a list of outdials.
 	// (GET /outdials)
 	GetOutdials(c *gin.Context, params GetOutdialsParams)
@@ -11352,6 +11374,30 @@ func (siw *ServerInterfaceWrapper) PutNumbersIdFlowIds(c *gin.Context) {
 	siw.Handler.PutNumbersIdFlowIds(c, id)
 }
 
+// PutNumbersIdMetadata operation middleware
+func (siw *ServerInterfaceWrapper) PutNumbersIdMetadata(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutNumbersIdMetadata(c, id)
+}
+
 // GetOutdials operation middleware
 func (siw *ServerInterfaceWrapper) GetOutdials(c *gin.Context) {
 
@@ -14996,6 +15042,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/numbers/:id", wrapper.GetNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id", wrapper.PutNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id/flow_ids", wrapper.PutNumbersIdFlowIds)
+	router.PUT(options.BaseURL+"/numbers/:id/metadata", wrapper.PutNumbersIdMetadata)
 	router.GET(options.BaseURL+"/outdials", wrapper.GetOutdials)
 	router.POST(options.BaseURL+"/outdials", wrapper.PostOutdials)
 	router.DELETE(options.BaseURL+"/outdials/:id", wrapper.DeleteOutdialsId)
@@ -18298,6 +18345,40 @@ func (response PutNumbersIdFlowIds200JSONResponse) VisitPutNumbersIdFlowIdsRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutNumbersIdMetadataRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutNumbersIdMetadataJSONRequestBody
+}
+
+type PutNumbersIdMetadataResponseObject interface {
+	VisitPutNumbersIdMetadataResponse(w http.ResponseWriter) error
+}
+
+type PutNumbersIdMetadata200JSONResponse NumberManagerNumber
+
+func (response PutNumbersIdMetadata200JSONResponse) VisitPutNumbersIdMetadataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutNumbersIdMetadata400Response struct {
+}
+
+func (response PutNumbersIdMetadata400Response) VisitPutNumbersIdMetadataResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PutNumbersIdMetadata403Response struct {
+}
+
+func (response PutNumbersIdMetadata403Response) VisitPutNumbersIdMetadataResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
 type GetOutdialsRequestObject struct {
 	Params GetOutdialsParams
 }
@@ -21556,6 +21637,9 @@ type StrictServerInterface interface {
 	// Update the order number's flow ID
 	// (PUT /numbers/{id}/flow_ids)
 	PutNumbersIdFlowIds(ctx context.Context, request PutNumbersIdFlowIdsRequestObject) (PutNumbersIdFlowIdsResponseObject, error)
+	// Update a number's metadata.
+	// (PUT /numbers/{id}/metadata)
+	PutNumbersIdMetadata(ctx context.Context, request PutNumbersIdMetadataRequestObject) (PutNumbersIdMetadataResponseObject, error)
 	// Retrieve a list of outdials.
 	// (GET /outdials)
 	GetOutdials(ctx context.Context, request GetOutdialsRequestObject) (GetOutdialsResponseObject, error)
@@ -26969,6 +27053,41 @@ func (sh *strictHandler) PutNumbersIdFlowIds(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutNumbersIdFlowIdsResponseObject); ok {
 		if err := validResponse.VisitPutNumbersIdFlowIdsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutNumbersIdMetadata operation middleware
+func (sh *strictHandler) PutNumbersIdMetadata(ctx *gin.Context, id string) {
+	var request PutNumbersIdMetadataRequestObject
+
+	request.Id = id
+
+	var body PutNumbersIdMetadataJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutNumbersIdMetadata(ctx, request.(PutNumbersIdMetadataRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutNumbersIdMetadata")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutNumbersIdMetadataResponseObject); ok {
+		if err := validResponse.VisitPutNumbersIdMetadataResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

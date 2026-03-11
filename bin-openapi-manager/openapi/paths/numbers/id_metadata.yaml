@@ -1,0 +1,35 @@
+put:
+  summary: Update a number's metadata.
+  description: |
+    Updates configuration flags for a number. Requires `CustomerAdmin` or `CustomerManager` permission.
+    The response returns the full number object including the updated metadata.
+  tags:
+    - Number
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: "The unique identifier of the number (UUID). Obtained from the `id` field of `GET /numbers`."
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/NumberManagerMetadata'
+  responses:
+    '200':
+      description: The updated number object with the new metadata applied.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumber'
+    '400':
+      description: |
+        Invalid request. Possible causes:
+        - The `id` path parameter is not a valid UUID.
+        - The request body is not valid JSON or does not match the `NumberManagerMetadata` schema.
+    '403':
+      description: |
+        Permission denied. The authenticated agent does not have `CustomerAdmin` or `CustomerManager` permission.

@@ -95,7 +95,7 @@ func (h *callHandler) startIncomingDomainTypeTrunkDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination, nil)
 
 	return nil
 }

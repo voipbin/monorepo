@@ -4323,6 +4323,21 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdateFlowID(ctx, id, ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberUpdateFlowID", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberUpdateFlowID), ctx, id, callFlowID, messageFlowID)
 }
 
+// NumberV1NumberUpdateMetadata mocks base method.
+func (m *MockRequestHandler) NumberV1NumberUpdateMetadata(ctx context.Context, id uuid.UUID, metadata number.Metadata) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberUpdateMetadata", ctx, id, metadata)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberUpdateMetadata indicates an expected call of NumberV1NumberUpdateMetadata.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdateMetadata(ctx, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberUpdateMetadata", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberUpdateMetadata), ctx, id, metadata)
+}
+
 // NumberV1VirtualNumberCountByCustomerID mocks base method.
 func (m *MockRequestHandler) NumberV1VirtualNumberCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
 	m.ctrl.T.Helper()

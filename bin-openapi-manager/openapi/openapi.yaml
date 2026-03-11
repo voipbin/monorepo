@@ -4722,6 +4722,8 @@ components:
           type: boolean
           description: Whether emergency services are enabled for the number.
           example: false
+        metadata:
+          $ref: '#/components/schemas/NumberManagerMetadata'
         tm_purchase:
           type: string
           format: date-time
@@ -4752,6 +4754,22 @@ components:
           x-go-type: string
           description: The timestamp of when the number was deleted.
           example: "2026-01-15T09:30:00.000000Z"
+
+    NumberManagerMetadata:
+      type: object
+      description: |
+        Configuration flags for a number. Controls platform behavior
+        such as RTP packet capture for debugging audio issues on this specific number.
+        Updatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.
+      properties:
+        rtp_debug:
+          type: boolean
+          description: |
+            When set to `true`, RTPEngine captures RTP traffic as PCAP files for calls to this number.
+            This flag is OR'd with the customer-level `rtp_debug` — if either is `true`, capture is enabled.
+            Use this to debug audio quality issues on a specific number without enabling capture for all customer calls.
+            Default is `false`. Enabling this increases storage usage — disable after debugging.
+          example: false
 
 #########################################
 # Outdial Manager
@@ -6694,6 +6712,8 @@ paths:
     $ref: './paths/numbers/id_flow_id.yaml'
   /numbers/{id}:
     $ref: './paths/numbers/id.yaml'
+  /numbers/{id}/metadata:
+    $ref: './paths/numbers/id_metadata.yaml'
   /numbers:
     $ref: './paths/numbers/main.yaml'
   /numbers/renew:

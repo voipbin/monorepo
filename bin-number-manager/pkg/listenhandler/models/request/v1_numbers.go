@@ -45,3 +45,10 @@ type V1DataNumbersIDFlowIDPut struct {
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
 }
+
+// V1DataNumbersIDMetadataPut is
+// v1 data type request struct for
+// /v1/numbers/<id>/metadata PUT
+type V1DataNumbersIDMetadataPut struct {
+	Metadata number.Metadata `json:"metadata"`
+}

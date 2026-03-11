@@ -52,7 +52,8 @@ var (
 	regV1NumbersGet       = regexp.MustCompile(`/v1/numbers\?`)
 	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
 	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
-	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
+	regV1NumbersIDFlowIDs  = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
+	regV1NumbersIDMetadata = regexp.MustCompile("/v1/numbers/" + regUUID + "/metadata$")
 	regV1NumbersRenew                  = regexp.MustCompile(`/v1/numbers/renew$`)
 	regV1NumbersCountVirtualByCustomer = regexp.MustCompile(`/v1/numbers/count_virtual_by_customer$`)
 )
@@ -152,6 +153,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// numbers
 	////////////////////
 
+	// PUT /numbers/<id>/flow_id
+	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
+		requestType = "/v1/numbers/<number-id>/flow_id"
+
+	// PUT /numbers/<id>/metadata
+	case regV1NumbersIDMetadata.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1NumbersIDMetadataPut(ctx, m)
+		requestType = "/v1/numbers/<number-id>/metadata"
+
 	// DELETE /numbers/<number-id>
 	case regV1NumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1NumbersIDDelete(ctx, m)
@@ -166,11 +177,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1NumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1NumbersIDPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>"
-
-	// PUT /numbers/<id>/flow_id
-	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
-		requestType = "/v1/numbers/<number-id>/flow_id"
 
 	// POST /numbers/renew
 	case regV1NumbersRenew.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

@@ -256,6 +256,57 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutNumbersIdMetadata",
+		"request_address": c.ClientIP,
+		"number_id":       id,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutNumbersIdMetadataJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	rtpDebug := false
+	if req.RtpDebug != nil {
+		rtpDebug = *req.RtpDebug
+	}
+
+	metadata := nmnumber.Metadata{
+		RTPDebug: rtpDebug,
+	}
+
+	res, err := h.serviceHandler.NumberUpdateMetadata(c.Request.Context(), &a, target, metadata)
+	if err != nil {
+		log.Errorf("Could not update the number's metadata. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) PostNumbersRenew(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostNumbersRenew",

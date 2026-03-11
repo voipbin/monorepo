@@ -7695,6 +7695,54 @@
         }
       }
     },
+    "/numbers/{id}/metadata": {
+      "put": {
+        "summary": "Update a number's metadata.",
+        "description": "Updates configuration flags for a number. Requires `CustomerAdmin` or `CustomerManager` permission.\nThe response returns the full number object including the updated metadata.\n",
+        "tags": [
+          "Number"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the number (UUID). Obtained from the `id` field of `GET /numbers`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberManagerMetadata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated number object with the new metadata applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberManagerNumber"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Possible causes:\n- The `id` path parameter is not a valid UUID.\n- The request body is not valid JSON or does not match the `NumberManagerMetadata` schema.\n"
+          },
+          "403": {
+            "description": "Permission denied. The authenticated agent does not have `CustomerAdmin` or `CustomerManager` permission.\n"
+          }
+        }
+      }
+    },
     "/numbers": {
       "get": {
         "summary": "List order numbers",
@@ -19086,6 +19134,9 @@
             "description": "Whether emergency services are enabled for the number.",
             "example": false
           },
+          "metadata": {
+            "$ref": "#/components/schemas/NumberManagerMetadata"
+          },
           "tm_purchase": {
             "type": "string",
             "format": "date-time",
@@ -19120,6 +19171,17 @@
             "x-go-type": "string",
             "description": "The timestamp of when the number was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
+          }
+        }
+      },
+      "NumberManagerMetadata": {
+        "type": "object",
+        "description": "Configuration flags for a number. Controls platform behavior\nsuch as RTP packet capture for debugging audio issues on this specific number.\nUpdatable by CustomerAdmin or CustomerManager via `PUT /numbers/{id}/metadata`.\n",
+        "properties": {
+          "rtp_debug": {
+            "type": "boolean",
+            "description": "When set to `true`, RTPEngine captures RTP traffic as PCAP files for calls to this number.\nThis flag is OR'd with the customer-level `rtp_debug` — if either is `true`, capture is enabled.\nUse this to debug audio quality issues on a specific number without enabling capture for all customer calls.\nDefault is `false`. Enabling this increases storage usage — disable after debugging.\n",
+            "example": false
           }
         }
       },
