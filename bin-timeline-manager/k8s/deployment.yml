@@ -46,6 +46,8 @@ spec:
               value: ${HOMER_API_ADDRESS}
             - name: HOMER_AUTH_TOKEN
               value: ${HOMER_AUTH_TOKEN}
+            - name: GCS_BUCKET_NAME
+              value: ${GCP_BUCKET_NAME_MEDIA}
           ports:
             - name: metrics
               protocol: "TCP"
@@ -56,4 +58,4 @@ spec:
               memory: "3Mi"
             limits:
               cpu: "30m"
-              memory: "30Mi"
+              memory: "64Mi"

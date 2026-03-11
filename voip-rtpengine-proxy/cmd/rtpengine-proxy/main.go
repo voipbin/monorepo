@@ -15,6 +15,7 @@ import (
 	"monorepo/voip-rtpengine-proxy/pkg/listenhandler"
 	"monorepo/voip-rtpengine-proxy/pkg/ngclient"
 	"monorepo/voip-rtpengine-proxy/pkg/pcapwatcher"
+	"monorepo/voip-rtpengine-proxy/pkg/processmanager"
 )
 
 const serviceName = "rtpengine-proxy"
@@ -35,7 +36,7 @@ var (
 	prometheusListenAddress = ""
 
 	recordingDir  = ""
-	gcsBucketName = ""
+	gcpBucketNameMedia = ""
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -75,45 +76,52 @@ func main() {
 	}
 	defer ng.Close()
 
-	lh := listenhandler.NewListenHandler(sockHandler, permanentQueue, volatileQueue, ng)
+	// Create process manager for tcpdump captures.
+	var uploader gcsuploader.Uploader
+	if gcpBucketNameMedia != "" {
+		uploader, err = gcsuploader.New(gcpBucketNameMedia)
+		if err != nil {
+			log.WithError(err).Error("Could not create GCS uploader for process manager")
+			return
+		}
+		defer func() {
+			if err := uploader.Close(); err != nil {
+				log.WithError(err).Warn("Could not close process manager GCS uploader")
+			}
+		}()
+	}
+	procMgr := processmanager.NewManager(interfaceName, 20*time.Minute, uploader)
+	procMgr.CleanOrphans()
+
+	lh := listenhandler.NewListenHandler(sockHandler, permanentQueue, volatileQueue, ng, procMgr)
 	if err := lh.Run(); err != nil {
 		log.Errorf("Could not run listen handler: %v", err)
 		return
 	}
 	log.Infof("%s running. ID: %s", serviceName, proxyID)
 
-	// Start pcap watcher if recording and GCS are configured
-	if recordingDir != "" && gcsBucketName != "" {
-		uploader, err := gcsuploader.New(gcsBucketName)
-		if err != nil {
-			log.WithError(err).Error("could not create GCS uploader, pcap watcher disabled")
-		} else {
-			defer func() {
-				if err := uploader.Close(); err != nil {
-					log.WithError(err).Warn("could not close GCS uploader")
-				}
-			}()
+	// Start pcap watcher if recording dir is configured (reuses the shared GCS uploader).
+	if recordingDir != "" && uploader != nil {
+		w := pcapwatcher.New(recordingDir, uploader)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
-			w := pcapwatcher.New(recordingDir, uploader)
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			go func() {
-				if err := w.Run(ctx); err != nil {
-					log.WithError(err).Error("pcap watcher error")
-				}
-			}()
-			log.WithFields(logrus.Fields{
-				"recording_dir": recordingDir,
-				"gcs_bucket":    gcsBucketName,
-			}).Info("pcap watcher enabled")
-		}
+		go func() {
+			if err := w.Run(ctx); err != nil {
+				log.WithError(err).Error("pcap watcher error")
+			}
+		}()
+		log.WithFields(logrus.Fields{
+			"recording_dir": recordingDir,
+			"gcs_bucket":    gcpBucketNameMedia,
+		}).Info("pcap watcher enabled")
 	} else {
-		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCS_BUCKET_NAME not set)")
+		log.Info("pcap watcher disabled (RTPENGINE_RECORDING_DIR or GCP_BUCKET_NAME_MEDIA not set)")
 	}
 
 	sig := <-chSigs
 	log.Infof("Terminating %s. sig: %v", serviceName, sig)
+	procMgr.Shutdown()
 }
 
 // getInterfaceIP returns the IPv4 address of the given network interface.

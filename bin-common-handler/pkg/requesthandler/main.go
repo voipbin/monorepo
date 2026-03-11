@@ -124,7 +124,8 @@ var (
 	AsteriskIDConference = "conference" // asterisk-conference
 )
 
-const requestTimeoutDefault int = 3000 // default request timeout(3 sec)
+const requestTimeoutDefault int = 3000  // default request timeout(3 sec)
+const requestTimeoutLong int = 30000    // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
 
 // delay units
 const (
