@@ -1,6 +1,6 @@
 """number_numbers add column metadata
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 4a3dcfccbba3
 Revises: 9dddf595c42f
 Create Date: 2026-03-12 00:00:00.000000
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a1b2c3d4e5f6'
+revision = '4a3dcfccbba3'
 down_revision = '9dddf595c42f'
 branch_labels = None
 depends_on = None
