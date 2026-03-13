@@ -1,0 +1,45 @@
+get:
+  summary: Get aggregated timeline events
+  description: |
+    Returns all timeline events associated with a single activeflow execution.
+    Query by activeflow_id directly, or by call_id (which resolves to the call's activeflow).
+    Exactly one of activeflow_id or call_id must be provided.
+  tags:
+    - Timeline
+  parameters:
+    - name: activeflow_id
+      in: query
+      required: false
+      description: "The UUID of the activeflow. Obtained from the `id` field of `GET /activeflows` or from the `activeflow_id` field of a call."
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+    - name: call_id
+      in: query
+      required: false
+      description: "The UUID of the call. Obtained from the `id` field of `GET /calls`. The call's activeflow_id will be used to query events."
+      schema:
+        type: string
+        format: uuid
+        example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of aggregated timeline events sorted by timestamp descending.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimelineManagerEvent'
+    '400':
+      description: "Invalid request. Either both or neither query params provided."
+    '404':
+      description: "Resource not found or call has no activeflow."

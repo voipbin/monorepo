@@ -4259,6 +4259,21 @@ type PutAgentsIdTagIdsJSONBody struct {
 	TagIds *[]string `json:"tag_ids,omitempty"`
 }
 
+// GetAggregatedEventsParams defines parameters for GetAggregatedEvents.
+type GetAggregatedEventsParams struct {
+	// ActiveflowId The UUID of the activeflow. Obtained from the `id` field of `GET /activeflows` or from the `activeflow_id` field of a call.
+	ActiveflowId *openapi_types.UUID `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
+
+	// CallId The UUID of the call. Obtained from the `id` field of `GET /calls`. The call's activeflow_id will be used to query events.
+	CallId *openapi_types.UUID `form:"call_id,omitempty" json:"call_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetAicallsParams defines parameters for GetAicalls.
 type GetAicallsParams struct {
 	// PageSize Number of results to return per page.
@@ -6428,6 +6443,9 @@ type ServerInterface interface {
 	// Update an agent's tag IDs
 	// (PUT /agents/{id}/tag_ids)
 	PutAgentsIdTagIds(c *gin.Context, id string)
+	// Get aggregated timeline events
+	// (GET /aggregated-events)
+	GetAggregatedEvents(c *gin.Context, params GetAggregatedEventsParams)
 	// Gets a list of ai calls
 	// (GET /aicalls)
 	GetAicalls(c *gin.Context, params GetAicallsParams)
@@ -7785,6 +7803,56 @@ func (siw *ServerInterfaceWrapper) PutAgentsIdTagIds(c *gin.Context) {
 	}
 
 	siw.Handler.PutAgentsIdTagIds(c, id)
+}
+
+// GetAggregatedEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetAggregatedEvents(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAggregatedEventsParams
+
+	// ------------- Optional query parameter "activeflow_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "activeflow_id", c.Request.URL.Query(), &params.ActiveflowId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter activeflow_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "call_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "call_id", c.Request.URL.Query(), &params.CallId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter call_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAggregatedEvents(c, params)
 }
 
 // GetAicalls operation middleware
@@ -14896,6 +14964,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/agents/:id/permission", wrapper.PutAgentsIdPermission)
 	router.PUT(options.BaseURL+"/agents/:id/status", wrapper.PutAgentsIdStatus)
 	router.PUT(options.BaseURL+"/agents/:id/tag_ids", wrapper.PutAgentsIdTagIds)
+	router.GET(options.BaseURL+"/aggregated-events", wrapper.GetAggregatedEvents)
 	router.GET(options.BaseURL+"/aicalls", wrapper.GetAicalls)
 	router.POST(options.BaseURL+"/aicalls", wrapper.PostAicalls)
 	router.DELETE(options.BaseURL+"/aicalls/:id", wrapper.DeleteAicallsId)
@@ -15594,6 +15663,43 @@ func (response PutAgentsIdTagIds200JSONResponse) VisitPutAgentsIdTagIdsResponse(
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAggregatedEventsRequestObject struct {
+	Params GetAggregatedEventsParams
+}
+
+type GetAggregatedEventsResponseObject interface {
+	VisitGetAggregatedEventsResponse(w http.ResponseWriter) error
+}
+
+type GetAggregatedEvents200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                 `json:"next_page_token,omitempty"`
+	Result        *[]TimelineManagerEvent `json:"result,omitempty"`
+}
+
+func (response GetAggregatedEvents200JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAggregatedEvents400Response struct {
+}
+
+func (response GetAggregatedEvents400Response) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetAggregatedEvents404Response struct {
+}
+
+func (response GetAggregatedEvents404Response) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
 }
 
 type GetAicallsRequestObject struct {
@@ -21199,6 +21305,9 @@ type StrictServerInterface interface {
 	// Update an agent's tag IDs
 	// (PUT /agents/{id}/tag_ids)
 	PutAgentsIdTagIds(ctx context.Context, request PutAgentsIdTagIdsRequestObject) (PutAgentsIdTagIdsResponseObject, error)
+	// Get aggregated timeline events
+	// (GET /aggregated-events)
+	GetAggregatedEvents(ctx context.Context, request GetAggregatedEventsRequestObject) (GetAggregatedEventsResponseObject, error)
 	// Gets a list of ai calls
 	// (GET /aicalls)
 	GetAicalls(ctx context.Context, request GetAicallsRequestObject) (GetAicallsResponseObject, error)
@@ -22675,6 +22784,33 @@ func (sh *strictHandler) PutAgentsIdTagIds(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutAgentsIdTagIdsResponseObject); ok {
 		if err := validResponse.VisitPutAgentsIdTagIdsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAggregatedEvents operation middleware
+func (sh *strictHandler) GetAggregatedEvents(ctx *gin.Context, params GetAggregatedEventsParams) {
+	var request GetAggregatedEventsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAggregatedEvents(ctx, request.(GetAggregatedEventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAggregatedEvents")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAggregatedEventsResponseObject); ok {
+		if err := validResponse.VisitGetAggregatedEventsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
