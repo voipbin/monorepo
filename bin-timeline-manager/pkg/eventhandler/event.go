@@ -64,3 +64,45 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 
 	return res, nil
 }
+
+// AggregatedList returns all events matching the given activeflow ID.
+func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "AggregatedList",
+		"activeflow_id": req.ActiveflowID,
+	})
+
+	// Validate request
+	if req.ActiveflowID == uuid.Nil {
+		return nil, errors.New("activeflow_id is required")
+	}
+
+	// Apply defaults
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = request.DefaultPageSize
+	}
+	if pageSize > request.MaxPageSize {
+		pageSize = request.MaxPageSize
+	}
+
+	// Query database (request pageSize + 1 to determine if more results exist)
+	events, err := h.db.AggregatedEventList(ctx, req.ActiveflowID.String(), req.PageToken, pageSize+1)
+	if err != nil {
+		log.Errorf("Could not list aggregated events. err: %v", err)
+		return nil, errors.Wrap(err, "could not list aggregated events")
+	}
+
+	// Build response with pagination
+	res := &response.V1DataAggregatedEventsPost{
+		Result: events,
+	}
+
+	// If we got more than pageSize, there are more results
+	if len(events) > pageSize {
+		res.Result = events[:pageSize]
+		res.NextPageToken = events[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
+	}
+
+	return res, nil
+}

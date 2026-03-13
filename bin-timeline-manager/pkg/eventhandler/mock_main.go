@@ -42,6 +42,21 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 	return m.recorder
 }
 
+// AggregatedList mocks base method.
+func (m *MockEventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AggregatedList", ctx, req)
+	ret0, _ := ret[0].(*response.V1DataAggregatedEventsPost)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AggregatedList indicates an expected call of AggregatedList.
+func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedList", reflect.TypeOf((*MockEventHandler)(nil).AggregatedList), ctx, req)
+}
+
 // List mocks base method.
 func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
 	m.ctrl.T.Helper()
