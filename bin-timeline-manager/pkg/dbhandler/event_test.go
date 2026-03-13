@@ -259,6 +259,109 @@ func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 	}
 }
 
+func TestBuildAggregatedEventQuery(t *testing.T) {
+	tests := []struct {
+		name          string
+		activeflowID  string
+		pageToken     string
+		pageSize      int
+		wantArgCount  int
+		wantPaginate  bool
+	}{
+		{
+			name:         "basic query without page token",
+			activeflowID: "af-12345",
+			pageToken:    "",
+			pageSize:     10,
+			wantArgCount: 2,
+			wantPaginate: false,
+		},
+		{
+			name:         "query with page token",
+			activeflowID: "af-67890",
+			pageToken:    "2024-01-15T10:29:00.123000Z",
+			pageSize:     20,
+			wantArgCount: 3,
+			wantPaginate: true,
+		},
+		{
+			name:         "query with large page size",
+			activeflowID: "af-99999",
+			pageToken:    "",
+			pageSize:     1000,
+			wantArgCount: 2,
+			wantPaginate: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query, args := buildAggregatedEventQuery(tt.activeflowID, tt.pageToken, tt.pageSize)
+
+			// Check query contains expected parts
+			if !strings.Contains(query, "SELECT timestamp, event_type, publisher, data_type, data") {
+				t.Error("Query missing SELECT clause")
+			}
+			if !strings.Contains(query, "FROM events") {
+				t.Error("Query missing FROM clause")
+			}
+			if !strings.Contains(query, "WHERE activeflow_id = ?") {
+				t.Error("Query missing activeflow_id condition")
+			}
+			if !strings.Contains(query, "ORDER BY timestamp DESC LIMIT ?") {
+				t.Error("Query missing ORDER BY and LIMIT clause")
+			}
+
+			// Check pagination condition
+			if tt.wantPaginate && !strings.Contains(query, "AND timestamp < ?") {
+				t.Error("Query missing pagination condition")
+			}
+			if !tt.wantPaginate && strings.Contains(query, "AND timestamp < ?") {
+				t.Error("Query should not have pagination condition")
+			}
+
+			// Check arg count
+			if len(args) != tt.wantArgCount {
+				t.Errorf("Expected %d args, got %d", tt.wantArgCount, len(args))
+			}
+
+			// Check first arg is activeflowID
+			if args[0] != tt.activeflowID {
+				t.Errorf("First arg should be activeflowID (%s), got %v", tt.activeflowID, args[0])
+			}
+
+			// Check last arg is pageSize
+			if args[len(args)-1] != tt.pageSize {
+				t.Errorf("Last arg should be pageSize (%d), got %v", tt.pageSize, args[len(args)-1])
+			}
+
+			// If paginating, check pageToken arg
+			if tt.wantPaginate && args[1] != tt.pageToken {
+				t.Errorf("Second arg should be pageToken (%s), got %v", tt.pageToken, args[1])
+			}
+		})
+	}
+}
+
+func TestAggregatedEventList_NoConnection(t *testing.T) {
+	handler := &dbHandler{
+		address:  "localhost:9000",
+		database: "test",
+		conn:     nil, // No connection established
+	}
+
+	ctx := context.Background()
+
+	_, err := handler.AggregatedEventList(ctx, "af-12345", "", 10)
+	if err == nil {
+		t.Error("AggregatedEventList() expected error when conn is nil, got nil")
+	}
+
+	if err.Error() != "clickhouse connection not established" {
+		t.Errorf("AggregatedEventList() error = %q, want %q", err.Error(), "clickhouse connection not established")
+	}
+}
+
 func TestWaitForConnection_ContextCancelled(t *testing.T) {
 	handler := &dbHandler{
 		address:  "localhost:9000",

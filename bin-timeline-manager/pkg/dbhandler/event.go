@@ -100,6 +100,74 @@ func (h *dbHandler) EventList(
 	return result, nil
 }
 
+// buildAggregatedEventQuery constructs the SQL query for listing aggregated events by activeflow_id.
+func buildAggregatedEventQuery(activeflowID string, pageToken string, pageSize int) (string, []any) {
+	query := `
+		SELECT timestamp, event_type, publisher, data_type, data
+		FROM events
+		WHERE activeflow_id = ?
+	`
+	args := []any{activeflowID}
+
+	// Pagination by timestamp
+	if pageToken != "" {
+		query += " AND timestamp < ?"
+		args = append(args, pageToken)
+	}
+
+	query += " ORDER BY timestamp DESC LIMIT ?"
+	args = append(args, pageSize)
+
+	return query, args
+}
+
+// AggregatedEventList queries events from ClickHouse filtered by activeflow_id.
+func (h *dbHandler) AggregatedEventList(
+	ctx context.Context,
+	activeflowID string,
+	pageToken string,
+	pageSize int,
+) ([]*event.Event, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "AggregatedEventList",
+		"activeflow_id": activeflowID,
+		"page_token":    pageToken,
+		"page_size":     pageSize,
+	})
+
+	if h.conn == nil {
+		return nil, errors.New("clickhouse connection not established")
+	}
+
+	query, args := buildAggregatedEventQuery(activeflowID, pageToken, pageSize)
+
+	log.Debugf("Executing query: %s with args: %v", query, args)
+
+	rows, err := h.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query aggregated events")
+	}
+	defer func() { _ = rows.Close() }()
+
+	result := []*event.Event{}
+	for rows.Next() {
+		var e event.Event
+		var publisherStr, data string
+		if err := rows.Scan(&e.Timestamp, &e.EventType, &publisherStr, &e.DataType, &data); err != nil {
+			return nil, errors.Wrap(err, "could not scan event row")
+		}
+		e.Publisher = commonoutline.ServiceName(publisherStr)
+		e.Data = []byte(data)
+		result = append(result, &e)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "error iterating rows")
+	}
+
+	return result, nil
+}
+
 // buildEventConditions converts event patterns to SQL conditions.
 // Examples:
 //   - "activeflow_created" -> "event_type = 'activeflow_created'"
