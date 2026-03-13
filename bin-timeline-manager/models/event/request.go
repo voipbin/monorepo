@@ -17,3 +17,13 @@ type EventListRequest struct {
 	PageToken string `json:"page_token,omitempty"`
 	PageSize  int    `json:"page_size,omitempty"`
 }
+
+// AggregatedEventListRequest represents the request for listing aggregated events
+// across all resource types for a given activeflow.
+type AggregatedEventListRequest struct {
+	ActiveflowID uuid.UUID `json:"activeflow_id"`
+
+	// Pagination
+	PageToken string `json:"page_token,omitempty"`
+	PageSize  int    `json:"page_size,omitempty"`
+}
