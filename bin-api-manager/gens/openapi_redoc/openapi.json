@@ -10421,10 +10421,19 @@
                     "type": "string",
                     "format": "binary",
                     "description": "The file to upload."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The type/category of the file. Must be 'talk' for this endpoint.",
+                    "enum": [
+                      "talk"
+                    ],
+                    "example": "talk"
                   }
                 },
                 "required": [
-                  "file"
+                  "file",
+                  "type"
                 ]
               }
             }
@@ -12742,10 +12751,19 @@
                   "file": {
                     "type": "string",
                     "format": "binary"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The type/category of the file. Must be 'rag' for this endpoint.",
+                    "enum": [
+                      "rag"
+                    ],
+                    "example": "rag"
                   }
                 },
                 "required": [
-                  "file"
+                  "file",
+                  "type"
                 ]
               }
             }
@@ -20007,6 +20025,23 @@
         ],
         "example": "recording"
       },
+      "StorageManagerFileType": {
+        "type": "string",
+        "description": "The type/category of the file. Indicates the purpose of the uploaded file.",
+        "enum": [
+          "",
+          "rag",
+          "talk",
+          "recording"
+        ],
+        "x-enum-varnames": [
+          "StorageManagerFileTypeNone",
+          "StorageManagerFileTypeRAG",
+          "StorageManagerFileTypeTalk",
+          "StorageManagerFileTypeRecording"
+        ],
+        "example": "rag"
+      },
       "StorageManagerFile": {
         "type": "object",
         "properties": {
@@ -20047,6 +20082,11 @@
             "x-go-type": "string",
             "description": "The unique identifier of the referenced resource. Returned from the corresponding resource endpoint.",
             "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "type": {
+            "$ref": "#/components/schemas/StorageManagerFileType",
+            "description": "The type/category of the file.",
+            "example": "rag"
           },
           "name": {
             "type": "string",

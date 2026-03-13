@@ -23,6 +23,7 @@ func Test_FileCreate(t *testing.T) {
 		ownerID       uuid.UUID
 		referenceType file.ReferenceType
 		referenceID   uuid.UUID
+		fileType      file.Type
 		fileName      string
 		detail        string
 		filename      string
@@ -40,6 +41,7 @@ func Test_FileCreate(t *testing.T) {
 			ownerID:       uuid.FromStringOrNil("86593c2c-1534-11ef-a02f-e32b18b3c9fe"),
 			referenceType: file.ReferenceTypeNone,
 			referenceID:   uuid.FromStringOrNil("43201fc0-1539-11ef-bd86-7f2a2e346825"),
+			fileType:      file.TypeNone,
 			fileName:      "test name",
 			detail:        "test detail",
 			filename:      "test_filename.txt",
@@ -72,9 +74,9 @@ func Test_FileCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Create(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
+			mockFile.EXPECT().Create(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileType, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
 
-			res, err := h.FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath)
+			res, err := h.FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileType, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -9,6 +9,8 @@ create table storage_files(
   reference_type  varchar(255),   -- reference type
   reference_id    binary(16),     -- reference id
 
+  type      varchar(255),         -- file type
+
   name      varchar(255),
   detail    text,
   filename  varchar(1023),

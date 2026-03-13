@@ -238,6 +238,7 @@ func runFileCreate(cmd *cobra.Command, args []string) error {
 		ownerID,
 		file.ReferenceType(referenceType),
 		referenceID,
+		file.TypeNone,
 		name,
 		viper.GetString("detail"),
 		filename,

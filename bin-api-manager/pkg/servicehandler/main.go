@@ -828,7 +828,7 @@ type ServiceHandler interface {
 	ServiceAgentExtensionList(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error)
 
 	// storage file handlers
-	ServiceAgentFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
+	ServiceAgentFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error)
 	ServiceAgentFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	ServiceAgentFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	ServiceAgentFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
@@ -848,7 +848,7 @@ type ServiceHandler interface {
 	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.Account, error)
 
 	// storage file
-	StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
+	StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error)
 	StorageFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	StorageFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
 	StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
