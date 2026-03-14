@@ -2739,6 +2739,21 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostFilesMultipartBodyType.
+const (
+	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
+)
+
+// Valid indicates whether the value is a known member of the PostFilesMultipartBodyType enum.
+func (e PostFilesMultipartBodyType) Valid() bool {
+	switch e {
+	case PostFilesMultipartBodyTypeRag:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -2924,13 +2939,13 @@ func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
 
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
-	Rag PostStorageFilesMultipartBodyType = "rag"
+	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Valid indicates whether the value is a known member of the PostStorageFilesMultipartBodyType enum.
 func (e PostStorageFilesMultipartBodyType) Valid() bool {
 	switch e {
-	case Rag:
+	case PostStorageFilesMultipartBodyTypeRag:
 		return true
 	default:
 		return false
@@ -7045,7 +7060,13 @@ type GetFilesParams struct {
 type PostFilesMultipartBody struct {
 	// File The file to be uploaded.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostFilesMultipartBodyType `json:"type"`
 }
+
+// PostFilesMultipartBodyType defines parameters for PostFiles.
+type PostFilesMultipartBodyType string
 
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {

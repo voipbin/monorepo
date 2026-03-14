@@ -6888,10 +6888,19 @@
                     "type": "string",
                     "format": "binary",
                     "description": "The file to be uploaded."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The type/category of the file. Must be 'rag' for this endpoint.",
+                    "enum": [
+                      "rag"
+                    ],
+                    "example": "rag"
                   }
                 },
                 "required": [
-                  "file"
+                  "file",
+                  "type"
                 ]
               }
             }

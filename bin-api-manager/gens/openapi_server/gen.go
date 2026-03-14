@@ -928,6 +928,11 @@ const (
 	Message GetConversationsJSONBodyType = "message"
 )
 
+// Defines values for PostFilesMultipartBodyType.
+const (
+	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
+)
+
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -991,7 +996,7 @@ const (
 
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
-	Rag PostStorageFilesMultipartBodyType = "rag"
+	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
@@ -5086,7 +5091,13 @@ type GetFilesParams struct {
 type PostFilesMultipartBody struct {
 	// File The file to be uploaded.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostFilesMultipartBodyType `json:"type"`
 }
+
+// PostFilesMultipartBodyType defines parameters for PostFiles.
+type PostFilesMultipartBodyType string
 
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
