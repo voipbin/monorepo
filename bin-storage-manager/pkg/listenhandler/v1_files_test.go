@@ -23,6 +23,7 @@ func Test_v1FilesPost(t *testing.T) {
 		ownerID       uuid.UUID
 		referenceType file.ReferenceType
 		referenceID   uuid.UUID
+		fileType      file.Type
 		fileName      string
 		detail        string
 		filename      string
@@ -45,6 +46,7 @@ func Test_v1FilesPost(t *testing.T) {
 			ownerID:       uuid.FromStringOrNil("4dc51b42-153e-11ef-94b6-63fbe2cffaae"),
 			referenceType: file.ReferenceTypeRecording,
 			referenceID:   uuid.FromStringOrNil("4df207d8-153e-11ef-8e6d-9fc4e34455ba"),
+			fileType:      file.TypeNone,
 			fileName:      "test",
 			detail:        "test detail",
 			filename:      "test_filename.txt",
@@ -59,7 +61,7 @@ func Test_v1FilesPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -77,7 +79,7 @@ func Test_v1FilesPost(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileType, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -131,7 +133,7 @@ func Test_v1FilesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -187,7 +189,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -247,7 +249,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

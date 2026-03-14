@@ -22,6 +22,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 		ownerID        uuid.UUID
 		referenceType  smfile.ReferenceType
 		referenceID    uuid.UUID
+		fileType       smfile.Type
 		fileName       string
 		detail         string
 		filename       string
@@ -42,6 +43,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			ownerID:        uuid.FromStringOrNil("4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f"),
 			referenceType:  smfile.ReferenceTypeRecording,
 			referenceID:    uuid.FromStringOrNil("4f6d6000-160e-11ef-a051-a7a6e34953db"),
+			fileType:       smfile.TypeNone,
 			fileName:       "test name",
 			detail:         "test detail",
 			filename:       "test_filename.txt",
@@ -54,7 +56,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 				URI:      "/v1/files",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f","reference_type":"recording","reference_id":"4f6d6000-160e-11ef-a051-a7a6e34953db","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
+				Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f","reference_type":"recording","reference_id":"4f6d6000-160e-11ef-a051-a7a6e34953db","type":"","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
 			},
 
 			response: &sock.Response{
@@ -83,7 +85,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.requestTimeout)
+			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileType, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -104,6 +106,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 		ownerID       uuid.UUID
 		referenceType smfile.ReferenceType
 		referenceID   uuid.UUID
+		fileType      smfile.Type
 		fileName      string
 		detail        string
 		filename      string
@@ -124,6 +127,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 			ownerID:       uuid.FromStringOrNil("78a2b97c-1d91-11ef-8897-bb58d4f1853d"),
 			referenceType: smfile.ReferenceTypeRecording,
 			referenceID:   uuid.FromStringOrNil("78d6f98a-1d91-11ef-80d5-937f9fac88bd"),
+			fileType:      smfile.TypeNone,
 			fileName:      "test name",
 			detail:        "test detail",
 			filename:      "test_filename.txt",
@@ -136,7 +140,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 				URI:      "/v1/files",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"785e19ca-1d91-11ef-8d6a-3bfa80d939d5","owner_id":"78a2b97c-1d91-11ef-8897-bb58d4f1853d","reference_type":"recording","reference_id":"78d6f98a-1d91-11ef-80d5-937f9fac88bd","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
+				Data:     []byte(`{"customer_id":"785e19ca-1d91-11ef-8d6a-3bfa80d939d5","owner_id":"78a2b97c-1d91-11ef-8897-bb58d4f1853d","reference_type":"recording","reference_id":"78d6f98a-1d91-11ef-80d5-937f9fac88bd","type":"","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
 			},
 
 			response: &sock.Response{
@@ -165,7 +169,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			err := reqHandler.StorageV1FileCreateWithDelay(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.delay)
+			err := reqHandler.StorageV1FileCreateWithDelay(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileType, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.delay)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

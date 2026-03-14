@@ -15,6 +15,7 @@ func (h *storageHandler) FileCreate(
 	ownerID uuid.UUID,
 	referenceType file.ReferenceType,
 	referenceID uuid.UUID,
+	fileType file.Type,
 	name string,
 	detail string,
 	filename string,
@@ -27,6 +28,7 @@ func (h *storageHandler) FileCreate(
 		"owner_id":       ownerID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
+		"file_type":      fileType,
 		"name":           name,
 		"detail":         detail,
 		"filename":       filename,
@@ -34,7 +36,7 @@ func (h *storageHandler) FileCreate(
 		"filepath":       filepath,
 	})
 
-	res, err := h.fileHandler.Create(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath)
+	res, err := h.fileHandler.Create(ctx, customerID, ownerID, referenceType, referenceID, fileType, name, detail, filename, bucketName, filepath)
 	if err != nil {
 		log.Errorf("Could not create file. err: %v", err)
 		return nil, err

@@ -18,6 +18,8 @@ type File struct {
 	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"`
 
+	Type Type `json:"type" db:"type"`
+
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
@@ -43,4 +45,15 @@ const (
 	ReferenceTypeNone      ReferenceType = ""
 	ReferenceTypeNormal    ReferenceType = "normal"
 	ReferenceTypeRecording ReferenceType = "recording"
+)
+
+// Type defines the file type/category
+type Type string
+
+// list of file types
+const (
+	TypeNone      Type = ""
+	TypeRAG       Type = "rag"
+	TypeTalk      Type = "talk"
+	TypeRecording Type = "recording"
 )

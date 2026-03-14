@@ -35,8 +35,15 @@ post:
             file:
               type: string
               format: binary
+            type:
+              type: string
+              description: "The type/category of the file. Must be 'rag' for this endpoint."
+              enum:
+                - "rag"
+              example: "rag"
           required:
             - file
+            - type
   responses:
     '200':
       description: The created call details.

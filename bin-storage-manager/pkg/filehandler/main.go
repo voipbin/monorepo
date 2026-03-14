@@ -40,6 +40,7 @@ type FileHandler interface {
 		ownerID uuid.UUID,
 		referenceType file.ReferenceType,
 		referenceID uuid.UUID,
+		fileType file.Type,
 		name string,
 		detail string,
 		filename string,

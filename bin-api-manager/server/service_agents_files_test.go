@@ -56,7 +56,7 @@ func Test_GetServiceAgentsFiles(t *testing.T) {
 
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
-			expectRes:       `{"result":[{"id":"89f20424-c063-11ef-850f-ff10a10c813c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"8a56f320-c063-11ef-9e55-37bada852d90","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"89f20424-c063-11ef-850f-ff10a10c813c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"8a56f320-c063-11ef-9e55-37bada852d90","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -121,7 +121,7 @@ func Test_PostServiceAgentsFiles(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"id":"8e4c6f0e-c064-11ef-bb56-1378d1beb8d3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"8e4c6f0e-c064-11ef-bb56-1378d1beb8d3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -156,12 +156,13 @@ func Test_PostServiceAgentsFiles(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+			_ = writer.WriteField("type", "talk")
 			_ = writer.Close()
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().ServiceAgentFileCreate(req.Context(), &tt.agent, gomock.Any(), tt.filename, "Uploaded by agent", tt.filename).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().ServiceAgentFileCreate(req.Context(), &tt.agent, gomock.Any(), smfile.Type("talk"), tt.filename, "Uploaded by agent", tt.filename).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -184,6 +185,7 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
+		fileType string
 	}{
 		{
 			name: "file size over max size",
@@ -196,6 +198,46 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 			reqQuery: "/service_agents/files",
 			filename: "testfile.txt",
 			filesize: int(constMaxFileSize) + 1,
+			fileType: "talk",
+		},
+		{
+			name: "empty type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "",
+		},
+		{
+			name: "wrong type rag",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "rag",
+		},
+		{
+			name: "invalid type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "invalid",
 		},
 	}
 
@@ -229,6 +271,9 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 			_, err = part.Write(testFileData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if tt.fileType != "" {
+				_ = writer.WriteField("type", tt.fileType)
 			}
 			_ = writer.Close()
 
@@ -274,7 +319,7 @@ func Test_GetServiceAgentsFilesId(t *testing.T) {
 			},
 
 			expectFileID: uuid.FromStringOrNil("b88b4e20-c064-11ef-87eb-97539ef68493"),
-			expectRes:    `{"id":"b88b4e20-c064-11ef-87eb-97539ef68493","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"b88b4e20-c064-11ef-87eb-97539ef68493","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -339,7 +384,7 @@ func Test_DeleteServiceAgentsFilesId(t *testing.T) {
 			},
 
 			expectFileID: uuid.FromStringOrNil("b92d7ca4-c064-11ef-92a7-93f60933d0ba"),
-			expectRes:    `{"id":"b92d7ca4-c064-11ef-92a7-93f60933d0ba","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"b92d7ca4-c064-11ef-92a7-93f60933d0ba","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

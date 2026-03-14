@@ -36,6 +36,7 @@ func (h *listenHandler) v1FilesPost(ctx context.Context, m *sock.Request) (*sock
 		req.OwnerID,
 		req.ReferenceType,
 		req.ReferenceID,
+		req.Type,
 		req.Name,
 		req.Detail,
 		req.Filename,

@@ -764,6 +764,14 @@ const (
 	StorageManagerFileReferenceTypeRecording StorageManagerFileReferenceType = "recording"
 )
 
+// Defines values for StorageManagerFileType.
+const (
+	StorageManagerFileTypeNone      StorageManagerFileType = ""
+	StorageManagerFileTypeRAG       StorageManagerFileType = "rag"
+	StorageManagerFileTypeRecording StorageManagerFileType = "recording"
+	StorageManagerFileTypeTalk      StorageManagerFileType = "talk"
+)
+
 // Defines values for TalkManagerMediaType.
 const (
 	TalkManagerMediaTypeAddress TalkManagerMediaType = "address"
@@ -920,6 +928,11 @@ const (
 	Message GetConversationsJSONBodyType = "message"
 )
 
+// Defines values for PostFilesMultipartBodyType.
+const (
+	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
+)
+
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -974,6 +987,16 @@ const (
 	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "mobile"
 	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther  PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "other"
 	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork   PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "work"
+)
+
+// Defines values for PostServiceAgentsFilesMultipartBodyType.
+const (
+	Talk PostServiceAgentsFilesMultipartBodyType = "talk"
+)
+
+// Defines values for PostStorageFilesMultipartBodyType.
+const (
+	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
@@ -3772,12 +3795,18 @@ type StorageManagerFile struct {
 	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
+	// Type The type/category of the file. Indicates the purpose of the uploaded file.
+	Type *StorageManagerFileType `json:"type,omitempty"`
+
 	// UriDownload The URI for downloading the file.
 	UriDownload *string `json:"uri_download,omitempty"`
 }
 
 // StorageManagerFileReferenceType The reference type of the file.
 type StorageManagerFileReferenceType string
+
+// StorageManagerFileType The type/category of the file. Indicates the purpose of the uploaded file.
+type StorageManagerFileType string
 
 // TagManagerTag defines model for TagManagerTag.
 type TagManagerTag struct {
@@ -5062,7 +5091,13 @@ type GetFilesParams struct {
 type PostFilesMultipartBody struct {
 	// File The file to be uploaded.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostFilesMultipartBodyType `json:"type"`
 }
+
+// PostFilesMultipartBodyType defines parameters for PostFiles.
+type PostFilesMultipartBodyType string
 
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
@@ -5684,7 +5719,13 @@ type GetServiceAgentsFilesParams struct {
 type PostServiceAgentsFilesMultipartBody struct {
 	// File The file to upload.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'talk' for this endpoint.
+	Type PostServiceAgentsFilesMultipartBodyType `json:"type"`
 }
+
+// PostServiceAgentsFilesMultipartBodyType defines parameters for PostServiceAgentsFiles.
+type PostServiceAgentsFilesMultipartBodyType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
@@ -5871,7 +5912,13 @@ type GetStorageFilesParams struct {
 // PostStorageFilesMultipartBody defines parameters for PostStorageFiles.
 type PostStorageFilesMultipartBody struct {
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostStorageFilesMultipartBodyType `json:"type"`
 }
+
+// PostStorageFilesMultipartBodyType defines parameters for PostStorageFiles.
+type PostStorageFilesMultipartBodyType string
 
 // GetTagsParams defines parameters for GetTags.
 type GetTagsParams struct {

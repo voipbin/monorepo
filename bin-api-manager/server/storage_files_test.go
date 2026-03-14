@@ -45,7 +45,7 @@ func Test_PostStorageFiles(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"id":"39ae35ca-1710-11ef-bae6-afeb7c57c901","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"39ae35ca-1710-11ef-bae6-afeb7c57c901","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -81,12 +81,13 @@ func Test_PostStorageFiles(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+			_ = writer.WriteField("type", "rag")
 			_ = writer.Close()
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), smfile.Type("rag"), "", "", tt.filename).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -105,8 +106,7 @@ func Test_PostStorageFiles_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
-
-		responseFile *smfile.WebhookMessage
+		fileType string
 	}{
 		{
 			name: "file size over max size",
@@ -119,11 +119,46 @@ func Test_PostStorageFiles_err(t *testing.T) {
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
 			filesize: int(constMaxFileSize) + 1,
-			responseFile: &smfile.WebhookMessage{
+			fileType: "rag",
+		},
+		{
+			name: "empty type",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "",
+		},
+		{
+			name: "wrong type talk",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "talk",
+		},
+		{
+			name: "invalid type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "invalid",
 		},
 	}
 
@@ -158,6 +193,9 @@ func Test_PostStorageFiles_err(t *testing.T) {
 			_, err = part.Write(testFileData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if tt.fileType != "" {
+				_ = writer.WriteField("type", tt.fileType)
 			}
 			_ = writer.Close()
 
@@ -207,7 +245,7 @@ func Test_GetStorageFiles(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -276,7 +314,7 @@ func Test_GetStorageFilesId(t *testing.T) {
 			},
 
 			expectFileID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
-			expectRes:    `{"id":"e1eb02c2-1715-11ef-b15f-f3c445db0e34","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"e1eb02c2-1715-11ef-b15f-f3c445db0e34","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -342,7 +380,7 @@ func Test_DeleteStorageFilesId(t *testing.T) {
 			},
 
 			expectFileID: uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
-			expectRes:    `{"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

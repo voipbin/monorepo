@@ -95,7 +95,7 @@ func (h *recordingHandler) storeRecordingFiles(ctx context.Context, r *recording
 	for _, filename := range r.Filenames {
 
 		filepath := h.getFilepath(filename)
-		tmp, err := h.reqHandler.StorageV1FileCreate(ctx, r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, "recording file", "", filename, defaultBucketName, filepath, 30000)
+		tmp, err := h.reqHandler.StorageV1FileCreate(ctx, r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, smfile.TypeRecording, "recording file", "", filename, defaultBucketName, filepath, 30000)
 		if err != nil {
 			log.Errorf("Could not send the request for the storing the recording correctly. err: %v", err)
 			return err

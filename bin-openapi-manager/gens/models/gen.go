@@ -2247,6 +2247,30 @@ func (e StorageManagerFileReferenceType) Valid() bool {
 	}
 }
 
+// Defines values for StorageManagerFileType.
+const (
+	StorageManagerFileTypeNone      StorageManagerFileType = ""
+	StorageManagerFileTypeRAG       StorageManagerFileType = "rag"
+	StorageManagerFileTypeRecording StorageManagerFileType = "recording"
+	StorageManagerFileTypeTalk      StorageManagerFileType = "talk"
+)
+
+// Valid indicates whether the value is a known member of the StorageManagerFileType enum.
+func (e StorageManagerFileType) Valid() bool {
+	switch e {
+	case StorageManagerFileTypeNone:
+		return true
+	case StorageManagerFileTypeRAG:
+		return true
+	case StorageManagerFileTypeRecording:
+		return true
+	case StorageManagerFileTypeTalk:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TalkManagerMediaType.
 const (
 	TalkManagerMediaTypeAddress TalkManagerMediaType = "address"
@@ -2715,6 +2739,21 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostFilesMultipartBodyType.
+const (
+	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
+)
+
+// Valid indicates whether the value is a known member of the PostFilesMultipartBodyType enum.
+func (e PostFilesMultipartBodyType) Valid() bool {
+	switch e {
+	case PostFilesMultipartBodyTypeRag:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -2877,6 +2916,36 @@ func (e PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType) Valid()
 	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther:
 		return true
 	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostServiceAgentsFilesMultipartBodyType.
+const (
+	Talk PostServiceAgentsFilesMultipartBodyType = "talk"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsFilesMultipartBodyType enum.
+func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
+	switch e {
+	case Talk:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostStorageFilesMultipartBodyType.
+const (
+	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
+)
+
+// Valid indicates whether the value is a known member of the PostStorageFilesMultipartBodyType enum.
+func (e PostStorageFilesMultipartBodyType) Valid() bool {
+	switch e {
+	case PostStorageFilesMultipartBodyTypeRag:
 		return true
 	default:
 		return false
@@ -5695,12 +5764,18 @@ type StorageManagerFile struct {
 	// TmUpdate The last update timestamp.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
+	// Type The type/category of the file. Indicates the purpose of the uploaded file.
+	Type *StorageManagerFileType `json:"type,omitempty"`
+
 	// UriDownload The URI for downloading the file.
 	UriDownload *string `json:"uri_download,omitempty"`
 }
 
 // StorageManagerFileReferenceType The reference type of the file.
 type StorageManagerFileReferenceType string
+
+// StorageManagerFileType The type/category of the file. Indicates the purpose of the uploaded file.
+type StorageManagerFileType string
 
 // TagManagerTag defines model for TagManagerTag.
 type TagManagerTag struct {
@@ -6985,7 +7060,13 @@ type GetFilesParams struct {
 type PostFilesMultipartBody struct {
 	// File The file to be uploaded.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostFilesMultipartBodyType `json:"type"`
 }
+
+// PostFilesMultipartBodyType defines parameters for PostFiles.
+type PostFilesMultipartBodyType string
 
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
@@ -7607,7 +7688,13 @@ type GetServiceAgentsFilesParams struct {
 type PostServiceAgentsFilesMultipartBody struct {
 	// File The file to upload.
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'talk' for this endpoint.
+	Type PostServiceAgentsFilesMultipartBodyType `json:"type"`
 }
+
+// PostServiceAgentsFilesMultipartBodyType defines parameters for PostServiceAgentsFiles.
+type PostServiceAgentsFilesMultipartBodyType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
@@ -7794,7 +7881,13 @@ type GetStorageFilesParams struct {
 // PostStorageFilesMultipartBody defines parameters for PostStorageFiles.
 type PostStorageFilesMultipartBody struct {
 	File openapi_types.File `json:"file"`
+
+	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	Type PostStorageFilesMultipartBodyType `json:"type"`
 }
+
+// PostStorageFilesMultipartBodyType defines parameters for PostStorageFiles.
+type PostStorageFilesMultipartBodyType string
 
 // GetTagsParams defines parameters for GetTags.
 type GetTagsParams struct {

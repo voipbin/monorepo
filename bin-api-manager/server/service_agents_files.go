@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	smfile "monorepo/bin-storage-manager/models/file"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,15 @@ func (h *server) PostServiceAgentsFiles(c *gin.Context) {
 	}
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
 
-	res, err := h.serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, header.Filename, "Uploaded by agent", header.Filename)
+	// read and validate type field
+	fileType := c.PostForm("type")
+	if fileType != "talk" {
+		log.Errorf("Invalid or missing file type. type: %s", fileType)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, smfile.Type(fileType), header.Filename, "Uploaded by agent", header.Filename)
 	if err != nil {
 		log.Errorf("Could not upload the file. err: %v", err)
 		c.AbortWithStatus(400)

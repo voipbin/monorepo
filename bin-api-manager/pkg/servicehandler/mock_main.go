@@ -3718,18 +3718,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionList(ctx, a any) 
 }
 
 // ServiceAgentFileCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentFileCreate", ctx, a, f, name, detail, filename)
+	ret := m.ctrl.Call(m, "ServiceAgentFileCreate", ctx, a, f, fileType, name, detail, filename)
 	ret0, _ := ret[0].(*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentFileCreate indicates an expected call of ServiceAgentFileCreate.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileCreate(ctx, a, f, name, detail, filename any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileCreate(ctx, a, f, fileType, name, detail, filename any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileCreate), ctx, a, f, name, detail, filename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileCreate), ctx, a, f, fileType, name, detail, filename)
 }
 
 // ServiceAgentFileDelete mocks base method.
@@ -4288,18 +4288,18 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountList(ctx, a, size, token
 }
 
 // StorageFileCreate mocks base method.
-func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageFileCreate", ctx, a, f, name, detail, filename)
+	ret := m.ctrl.Call(m, "StorageFileCreate", ctx, a, f, fileType, name, detail, filename)
 	ret0, _ := ret[0].(*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StorageFileCreate indicates an expected call of StorageFileCreate.
-func (mr *MockServiceHandlerMockRecorder) StorageFileCreate(ctx, a, f, name, detail, filename any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) StorageFileCreate(ctx, a, f, fileType, name, detail, filename any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileCreate), ctx, a, f, name, detail, filename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileCreate), ctx, a, f, fileType, name, detail, filename)
 }
 
 // StorageFileDelete mocks base method.

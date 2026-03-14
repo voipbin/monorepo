@@ -92,7 +92,7 @@ func (h *serviceHandler) storageFileDelete(ctx context.Context, id uuid.UUID) (*
 // StorageFileCreate sends a request to storage-manager
 // to creating a file.
 // it returns created file info if it succeed.
-func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "StorageFileCreate",
 		"agent":    a,
@@ -107,7 +107,7 @@ func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent
 	}
 
 	// open file writer
-	filepath := fmt.Sprintf("tmp/%s", h.utilHandler.UUIDCreate())
+	filepath := fmt.Sprintf("storage/%s", h.utilHandler.UUIDCreate())
 	log.Debugf("Filename: %s", filepath)
 	wc := h.storageClient.Bucket(h.bucketName).Object(filepath).NewWriter(ctx)
 
@@ -126,7 +126,7 @@ func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent
 
 	// create file
 	// set timeout for 60 secs
-	tmp, err := h.storageFileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, filename, h.bucketName, filepath)
+	tmp, err := h.storageFileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, fileType, name, detail, filename, h.bucketName, filepath)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return nil, err
@@ -143,13 +143,14 @@ func (h *serviceHandler) storageFileCreate(
 	ownerID uuid.UUID,
 	referenceType smfile.ReferenceType,
 	referenceID uuid.UUID,
+	fileType smfile.Type,
 	name string,
 	detail string,
 	filename string,
 	bucketName string,
 	filepath string,
 ) (*smfile.File, error) {
-	res, err := h.reqHandler.StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, 60000)
+	res, err := h.reqHandler.StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, fileType, name, detail, filename, bucketName, filepath, 60000)
 	if err != nil {
 		return nil, err
 	}

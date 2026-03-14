@@ -12,6 +12,8 @@ const (
 	FieldReferenceType Field = "reference_type" // reference_type
 	FieldReferenceID   Field = "reference_id"   // reference_id
 
+	FieldType Field = "type" // type
+
 	FieldName   Field = "name"   // name
 	FieldDetail Field = "detail" // detail
 
