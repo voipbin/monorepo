@@ -42,6 +42,21 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
+// AggregatedEventList mocks base method.
+func (m *MockDBHandler) AggregatedEventList(ctx context.Context, activeflowID, pageToken string, pageSize int) ([]*event.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AggregatedEventList", ctx, activeflowID, pageToken, pageSize)
+	ret0, _ := ret[0].([]*event.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AggregatedEventList indicates an expected call of AggregatedEventList.
+func (mr *MockDBHandlerMockRecorder) AggregatedEventList(ctx, activeflowID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockDBHandler)(nil).AggregatedEventList), ctx, activeflowID, pageToken, pageSize)
+}
+
 // EventList mocks base method.
 func (m *MockDBHandler) EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error) {
 	m.ctrl.T.Helper()

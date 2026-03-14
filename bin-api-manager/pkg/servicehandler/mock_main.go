@@ -668,6 +668,22 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateTagIDs(ctx, a, agentID, tag
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateTagIDs", reflect.TypeOf((*MockServiceHandler)(nil).AgentUpdateTagIDs), ctx, a, agentID, tagIDs)
 }
 
+// AggregatedEventList mocks base method.
+func (m *MockServiceHandler) AggregatedEventList(ctx context.Context, a *agent.Agent, activeflowID, callID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AggregatedEventList", ctx, a, activeflowID, callID, pageSize, pageToken)
+	ret0, _ := ret[0].([]*TimelineEvent)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// AggregatedEventList indicates an expected call of AggregatedEventList.
+func (mr *MockServiceHandlerMockRecorder) AggregatedEventList(ctx, a, activeflowID, callID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockServiceHandler)(nil).AggregatedEventList), ctx, a, activeflowID, callID, pageSize, pageToken)
+}
+
 // AuthAccesskeyParse mocks base method.
 func (m *MockServiceHandler) AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]any, error) {
 	m.ctrl.T.Helper()
