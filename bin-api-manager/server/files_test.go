@@ -111,24 +111,59 @@ func Test_filesPOST_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
-		resFile  *smfile.WebhookMessage
+		fileType string
 	}{
 		{
-			"file size over max size",
-			amagent.Agent{
+			name: "file size over max size",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
 
-			"/files",
-			"testfile.txt",
-			int(constMaxFileSize) + 1,
-			&smfile.WebhookMessage{
+			reqQuery: "/files",
+			filename: "testfile.txt",
+			filesize: int(constMaxFileSize) + 1,
+			fileType: "rag",
+		},
+		{
+			name: "empty type",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
+
+			reqQuery: "/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "",
+		},
+		{
+			name: "wrong type talk",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "talk",
+		},
+		{
+			name: "invalid type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "invalid",
 		},
 	}
 
@@ -163,6 +198,9 @@ func Test_filesPOST_err(t *testing.T) {
 			_, err = part.Write(testFileData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if tt.fileType != "" {
+				_ = writer.WriteField("type", tt.fileType)
 			}
 			_ = writer.Close()
 

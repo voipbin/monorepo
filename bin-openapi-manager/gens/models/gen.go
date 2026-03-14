@@ -6242,6 +6242,21 @@ type PutAgentsIdTagIdsJSONBody struct {
 	TagIds *[]string `json:"tag_ids,omitempty"`
 }
 
+// GetAggregatedEventsParams defines parameters for GetAggregatedEvents.
+type GetAggregatedEventsParams struct {
+	// ActiveflowId The UUID of the activeflow. Obtained from the `id` field of `GET /activeflows` or from the `activeflow_id` field of a call.
+	ActiveflowId *openapi_types.UUID `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
+
+	// CallId The UUID of the call. Obtained from the `id` field of `GET /calls`. The call's activeflow_id will be used to query events.
+	CallId *openapi_types.UUID `form:"call_id,omitempty" json:"call_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetAicallsParams defines parameters for GetAicalls.
 type GetAicallsParams struct {
 	// PageSize Number of results to return per page.

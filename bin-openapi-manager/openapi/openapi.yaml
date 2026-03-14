@@ -6936,6 +6936,9 @@ paths:
   /timelines/calls/{call_id}/pcap:
     $ref: './paths/timelines/call_pcap.yaml'
 
+  /aggregated-events:
+    $ref: './paths/timelines/aggregated_events.yaml'
+
   /rags/query:
     $ref: './paths/rags/query.yaml'
 

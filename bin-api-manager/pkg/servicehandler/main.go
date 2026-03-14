@@ -899,6 +899,7 @@ type ServiceHandler interface {
 	TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error)
 
 	// timeline
+	AggregatedEventList(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID, callID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
 	TimelineEventList(ctx context.Context, a *amagent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
 	TimelineSIPAnalysisGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*tmsipmessage.SIPAnalysisResponse, error)
 	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)

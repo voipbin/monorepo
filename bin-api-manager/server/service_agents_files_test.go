@@ -185,6 +185,7 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
+		fileType string
 	}{
 		{
 			name: "file size over max size",
@@ -197,6 +198,46 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 			reqQuery: "/service_agents/files",
 			filename: "testfile.txt",
 			filesize: int(constMaxFileSize) + 1,
+			fileType: "talk",
+		},
+		{
+			name: "empty type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "",
+		},
+		{
+			name: "wrong type rag",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "rag",
+		},
+		{
+			name: "invalid type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a396eca-c064-11ef-80a5-83bf037694fc"),
+				},
+			},
+
+			reqQuery: "/service_agents/files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "invalid",
 		},
 	}
 
@@ -230,6 +271,9 @@ func Test_PostServiceAgentsFiles_err(t *testing.T) {
 			_, err = part.Write(testFileData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if tt.fileType != "" {
+				_ = writer.WriteField("type", tt.fileType)
 			}
 			_ = writer.Close()
 

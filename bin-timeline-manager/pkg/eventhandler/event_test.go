@@ -417,3 +417,299 @@ func TestList_MultipleEventFilters(t *testing.T) {
 		t.Errorf("List() returned %d events, want 2", len(result.Result))
 	}
 }
+
+func TestAggregatedList_Validation_MissingActiveflowID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	req := &request.V1DataAggregatedEventsPost{
+		// ActiveflowID is zero value (uuid.Nil)
+	}
+
+	_, err := handler.AggregatedList(context.Background(), req)
+	if err == nil {
+		t.Fatal("AggregatedList() expected error, got nil")
+	}
+	if err.Error() != "activeflow_id is required" {
+		t.Errorf("AggregatedList() error = %q, want %q", err.Error(), "activeflow_id is required")
+	}
+}
+
+func TestAggregatedList_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+	}
+
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
+	expectedEvents := []*event.Event{
+		{Timestamp: ts1, EventType: "activeflow_created"},
+		{Timestamp: ts2, EventType: "call_hangup"},
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", 11).
+		Return(expectedEvents, nil)
+
+	result, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+
+	if len(result.Result) != 2 {
+		t.Errorf("AggregatedList() returned %d events, want 2", len(result.Result))
+	}
+
+	if result.NextPageToken != "" {
+		t.Errorf("AggregatedList() NextPageToken = %q, want empty", result.NextPageToken)
+	}
+}
+
+func TestAggregatedList_Pagination_HasMore(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     2,
+	}
+
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
+	ts3 := time.Date(2024, 1, 15, 10, 28, 0, 123000000, time.UTC)
+	// Return 3 events when requesting pageSize+1 (3), indicating more results
+	expectedEvents := []*event.Event{
+		{Timestamp: ts1, EventType: "activeflow_created"},
+		{Timestamp: ts2, EventType: "call_hangup"},
+		{Timestamp: ts3, EventType: "activeflow_finished"},
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", 3).
+		Return(expectedEvents, nil)
+
+	result, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+
+	if len(result.Result) != 2 {
+		t.Errorf("AggregatedList() returned %d events, want 2", len(result.Result))
+	}
+
+	if result.NextPageToken != "2024-01-15T10:29:00.123000Z" {
+		t.Errorf("AggregatedList() NextPageToken = %q, want %q", result.NextPageToken, "2024-01-15T10:29:00.123000Z")
+	}
+}
+
+func TestAggregatedList_Pagination_NoMore(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+	}
+
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	expectedEvents := []*event.Event{
+		{Timestamp: ts1, EventType: "activeflow_created"},
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", 11).
+		Return(expectedEvents, nil)
+
+	result, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+
+	if len(result.Result) != 1 {
+		t.Errorf("AggregatedList() returned %d events, want 1", len(result.Result))
+	}
+
+	if result.NextPageToken != "" {
+		t.Errorf("AggregatedList() NextPageToken = %q, want empty", result.NextPageToken)
+	}
+}
+
+func TestAggregatedList_DefaultPageSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		// PageSize not set, should use default (100)
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", request.DefaultPageSize+1).
+		Return([]*event.Event{}, nil)
+
+	_, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+}
+
+func TestAggregatedList_NegativePageSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     -5, // Negative, should use default
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", request.DefaultPageSize+1).
+		Return([]*event.Event{}, nil)
+
+	_, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+}
+
+func TestAggregatedList_MaxPageSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     5000, // Over max, should be capped to MaxPageSize (1000)
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", request.MaxPageSize+1).
+		Return([]*event.Event{}, nil)
+
+	_, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+}
+
+func TestAggregatedList_DatabaseError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", 11).
+		Return(nil, errors.New("database connection failed"))
+
+	_, err := handler.AggregatedList(context.Background(), req)
+	if err == nil {
+		t.Fatal("AggregatedList() expected error, got nil")
+	}
+}
+
+func TestAggregatedList_EmptyResult(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), "", 11).
+		Return([]*event.Event{}, nil)
+
+	result, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+
+	if len(result.Result) != 0 {
+		t.Errorf("AggregatedList() returned %d events, want 0", len(result.Result))
+	}
+
+	if result.NextPageToken != "" {
+		t.Errorf("AggregatedList() NextPageToken = %q, want empty", result.NextPageToken)
+	}
+}
+
+func TestAggregatedList_WithPageToken(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	handler := NewEventHandler(mockDB)
+
+	activeflowID := uuid.Must(uuid.NewV4())
+	pageToken := "2024-01-15T10:29:00.123000Z"
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+		PageToken:    pageToken,
+	}
+
+	ts := time.Date(2024, 1, 15, 10, 28, 0, 123000000, time.UTC)
+	expectedEvents := []*event.Event{
+		{Timestamp: ts, EventType: "activeflow_finished"},
+	}
+
+	mockDB.EXPECT().
+		AggregatedEventList(gomock.Any(), activeflowID.String(), pageToken, 11).
+		Return(expectedEvents, nil)
+
+	result, err := handler.AggregatedList(context.Background(), req)
+	if err != nil {
+		t.Fatalf("AggregatedList() error = %v", err)
+	}
+
+	if len(result.Result) != 1 {
+		t.Errorf("AggregatedList() returned %d events, want 1", len(result.Result))
+	}
+
+	if result.NextPageToken != "" {
+		t.Errorf("AggregatedList() NextPageToken = %q, want empty", result.NextPageToken)
+	}
+}

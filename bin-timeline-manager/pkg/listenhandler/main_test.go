@@ -840,6 +840,147 @@ func TestRegexPatterns_SIPPcap(t *testing.T) {
 	}
 }
 
+func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler:  mockSock,
+		eventHandler: mockEvent,
+	}
+
+	testID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: testID,
+		PageSize:     10,
+	}
+	reqData, _ := json.Marshal(req)
+
+	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	expectedResponse := &response.V1DataAggregatedEventsPost{
+		Result: []*event.Event{
+			{Timestamp: ts, EventType: "activeflow_created"},
+		},
+	}
+
+	mockEvent.EXPECT().
+		AggregatedList(gomock.Any(), gomock.Any()).
+		Return(expectedResponse, nil)
+
+	sockReq := &sock.Request{
+		URI:    "/v1/aggregated-events",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.processRequest(sockReq)
+	if err != nil {
+		t.Fatalf("processRequest() error = %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("processRequest() StatusCode = %d, want 200", resp.StatusCode)
+	}
+
+	if resp.DataType != "application/json" {
+		t.Errorf("processRequest() DataType = %q, want %q", resp.DataType, "application/json")
+	}
+}
+
+func TestProcessRequest_V1AggregatedEventsPost_InvalidJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler:  mockSock,
+		eventHandler: mockEvent,
+	}
+
+	sockReq := &sock.Request{
+		URI:    "/v1/aggregated-events",
+		Method: sock.RequestMethodPost,
+		Data:   []byte("invalid json"),
+	}
+
+	resp, err := handler.processRequest(sockReq)
+	if err != nil {
+		t.Fatalf("processRequest() error = %v", err)
+	}
+
+	if resp.StatusCode != 400 {
+		t.Errorf("processRequest() StatusCode = %d, want 400", resp.StatusCode)
+	}
+}
+
+func TestProcessRequest_V1AggregatedEventsPost_HandlerError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler:  mockSock,
+		eventHandler: mockEvent,
+	}
+
+	testID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: testID,
+		PageSize:     10,
+	}
+	reqData, _ := json.Marshal(req)
+
+	mockEvent.EXPECT().
+		AggregatedList(gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("handler error"))
+
+	sockReq := &sock.Request{
+		URI:    "/v1/aggregated-events",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.processRequest(sockReq)
+	if err != nil {
+		t.Fatalf("processRequest() error = %v", err)
+	}
+
+	if resp.StatusCode != 500 {
+		t.Errorf("processRequest() StatusCode = %d, want 500", resp.StatusCode)
+	}
+}
+
+func TestRegexPatterns_AggregatedEvents(t *testing.T) {
+	tests := []struct {
+		name    string
+		uri     string
+		matches bool
+	}{
+		{name: "exact match", uri: "/v1/aggregated-events", matches: true},
+		{name: "with query params should not match", uri: "/v1/aggregated-events?page=1", matches: false},
+		{name: "with trailing slash should not match", uri: "/v1/aggregated-events/", matches: false},
+		{name: "with extra path should not match", uri: "/v1/aggregated-events/123", matches: false},
+		{name: "different path", uri: "/v1/other", matches: false},
+		{name: "v2 version", uri: "/v2/aggregated-events", matches: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := regV1AggregatedEvents.MatchString(tt.uri)
+			if result != tt.matches {
+				t.Errorf("regV1AggregatedEvents.MatchString(%q) = %v, want %v", tt.uri, result, tt.matches)
+			}
+		})
+	}
+}
+
 func TestListenHandler_Interface(t *testing.T) {
 	// Ensure listenHandler implements ListenHandler interface
 	var _ ListenHandler = (*listenHandler)(nil)

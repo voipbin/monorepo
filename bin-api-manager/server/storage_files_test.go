@@ -106,8 +106,7 @@ func Test_PostStorageFiles_err(t *testing.T) {
 		reqQuery string
 		filename string
 		filesize int
-
-		responseFile *smfile.WebhookMessage
+		fileType string
 	}{
 		{
 			name: "file size over max size",
@@ -120,11 +119,46 @@ func Test_PostStorageFiles_err(t *testing.T) {
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
 			filesize: int(constMaxFileSize) + 1,
-			responseFile: &smfile.WebhookMessage{
+			fileType: "rag",
+		},
+		{
+			name: "empty type",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "",
+		},
+		{
+			name: "wrong type talk",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "talk",
+		},
+		{
+			name: "invalid type",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files",
+			filename: "testfile.txt",
+			filesize: int(10 << 20),
+			fileType: "invalid",
 		},
 	}
 
@@ -159,6 +193,9 @@ func Test_PostStorageFiles_err(t *testing.T) {
 			_, err = part.Write(testFileData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if tt.fileType != "" {
+				_ = writer.WriteField("type", tt.fileType)
 			}
 			_ = writer.Close()
 

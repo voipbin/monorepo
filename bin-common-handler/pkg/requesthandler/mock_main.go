@@ -6143,6 +6143,21 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantListWithFilters(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ParticipantListWithFilters", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ParticipantListWithFilters), ctx, filters, pageToken, pageSize)
 }
 
+// TimelineV1AggregatedEventList mocks base method.
+func (m *MockRequestHandler) TimelineV1AggregatedEventList(ctx context.Context, req *event.AggregatedEventListRequest) (*event.AggregatedEventListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1AggregatedEventList", ctx, req)
+	ret0, _ := ret[0].(*event.AggregatedEventListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1AggregatedEventList indicates an expected call of TimelineV1AggregatedEventList.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1AggregatedEventList(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AggregatedEventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AggregatedEventList), ctx, req)
+}
+
 // TimelineV1EventList mocks base method.
 func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()

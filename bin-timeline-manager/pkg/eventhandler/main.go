@@ -13,6 +13,7 @@ import (
 // EventHandler interface for event operations.
 type EventHandler interface {
 	List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error)
+	AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error)
 }
 
 type eventHandler struct {
