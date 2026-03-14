@@ -2,10 +2,20 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amsummary "monorepo/bin-ai-manager/models/summary"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmrecording "monorepo/bin-call-manager/models/recording"
+	cpcampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	tmevent "monorepo/bin-timeline-manager/models/event"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -89,15 +99,90 @@ func (h *serviceHandler) AggregatedEventList(
 		return nil, "", fmt.Errorf("internal error")
 	}
 
-	// Return raw events as-is (data is already WebhookMessage JSON from ClickHouse)
+	// Convert events to WebhookMessage format to strip internal fields
 	result := make([]*TimelineEvent, 0, len(resp.Result))
 	for _, ev := range resp.Result {
-		result = append(result, &TimelineEvent{
-			Timestamp: ev.Timestamp.Format("2006-01-02T15:04:05.000Z"),
-			EventType: ev.EventType,
-			Data:      ev.Data,
-		})
+		converted, err := convertAggregatedEventData(ev)
+		if err != nil {
+			log.Warnf("Failed to convert event. event_type: %s, err: %v", ev.EventType, err)
+			continue // Skip failed conversions
+		}
+		result = append(result, converted)
 	}
 
 	return result, resp.NextPageToken, nil
+}
+
+// convertAggregatedEventData converts a timeline event's raw data to WebhookMessage format.
+// Events are matched by event_type prefix to determine the correct internal struct and conversion.
+// Events with unknown prefixes are skipped (returned as error) to prevent leaking internal fields.
+func convertAggregatedEventData(event *tmevent.Event) (*TimelineEvent, error) {
+	var data any
+
+	switch {
+	case strings.HasPrefix(event.EventType, "call_"):
+		var v cmcall.Call
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "recording_"):
+		var v cmrecording.Recording
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "activeflow_"):
+		var v fmactiveflow.Activeflow
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "aicall_"):
+		var v amaicall.AIcall
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "summary_"):
+		var v amsummary.Summary
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "transcribe_"):
+		var v tmtranscribe.Transcribe
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "conferencecall_"):
+		var v cfconferencecall.Conferencecall
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	case strings.HasPrefix(event.EventType, "campaigncall_"):
+		var v cpcampaigncall.Campaigncall
+		if err := json.Unmarshal(event.Data, &v); err != nil {
+			return nil, err
+		}
+		data = v.ConvertWebhookMessage()
+
+	default:
+		return nil, fmt.Errorf("unsupported event type: %s", event.EventType)
+	}
+
+	return &TimelineEvent{
+		Timestamp: event.Timestamp.Format("2006-01-02T15:04:05.000Z"),
+		EventType: event.EventType,
+		Data:      data,
+	}, nil
 }

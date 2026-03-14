@@ -192,19 +192,21 @@ func Test_AggregatedEventList_ActiveflowSuccess(t *testing.T) {
 		},
 	}
 
-	testData := json.RawMessage(`{"key":"value"}`)
+	// Use valid Call JSON that can be unmarshaled into cmcall.Call
+	callData := json.RawMessage(`{"id":"550e8400-e29b-41d4-a716-446655440000","customer_id":"` + customerID.String() + `","status":"progressing"}`)
+	hangupData := json.RawMessage(`{"id":"550e8400-e29b-41d4-a716-446655440000","customer_id":"` + customerID.String() + `","status":"hangup"}`)
 
 	responseEvents := &tmevent.AggregatedEventListResponse{
 		Result: []*tmevent.Event{
 			{
 				Timestamp: testTimestamp,
 				EventType: "call_created",
-				Data:      testData,
+				Data:      callData,
 			},
 			{
 				Timestamp: testTimestamp.Add(time.Minute),
 				EventType: "call_hangup",
-				Data:      testData,
+				Data:      hangupData,
 			},
 		},
 		NextPageToken: "next-token",
@@ -228,6 +230,11 @@ func Test_AggregatedEventList_ActiveflowSuccess(t *testing.T) {
 
 	if nextToken != "next-token" {
 		t.Errorf("Wrong next token. expect: next-token, got: %s", nextToken)
+	}
+
+	// Verify data is now *cmcall.WebhookMessage (not raw JSON)
+	if _, ok := res[0].Data.(*cmcall.WebhookMessage); !ok {
+		t.Errorf("Wrong data type. expect: *cmcall.WebhookMessage, got: %T", res[0].Data)
 	}
 }
 
@@ -385,14 +392,15 @@ func Test_AggregatedEventList_CallSuccess(t *testing.T) {
 		ActiveflowID: activeflowID,
 	}
 
-	testData := json.RawMessage(`{"key":"value"}`)
+	// Use valid Call JSON that can be unmarshaled into cmcall.Call
+	callData := json.RawMessage(`{"id":"` + callID.String() + `","customer_id":"` + customerID.String() + `","status":"progressing"}`)
 
 	responseEvents := &tmevent.AggregatedEventListResponse{
 		Result: []*tmevent.Event{
 			{
 				Timestamp: testTimestamp,
 				EventType: "call_created",
-				Data:      testData,
+				Data:      callData,
 			},
 		},
 		NextPageToken: "",
@@ -481,6 +489,7 @@ func Test_AggregatedEventList_SuccessWithConversion(t *testing.T) {
 
 	activeflowID := uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a")
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	callID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000")
 	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 
 	agent := &amagent.Agent{
@@ -498,7 +507,8 @@ func Test_AggregatedEventList_SuccessWithConversion(t *testing.T) {
 		},
 	}
 
-	testData := json.RawMessage(`{"call_id":"abc-123","status":"hangup"}`)
+	// Include internal-only field (channel_id) to verify it gets stripped by ConvertWebhookMessage
+	testData := json.RawMessage(`{"id":"` + callID.String() + `","customer_id":"` + customerID.String() + `","status":"hangup","channel_id":"ast-channel-123"}`)
 
 	responseEvents := &tmevent.AggregatedEventListResponse{
 		Result: []*tmevent.Event{
@@ -538,14 +548,91 @@ func Test_AggregatedEventList_SuccessWithConversion(t *testing.T) {
 		t.Errorf("Wrong event type. expect: call_hangup, got: %s", res[0].EventType)
 	}
 
-	// Verify data is preserved as json.RawMessage
-	dataBytes, ok := res[0].Data.(json.RawMessage)
+	// Verify data is now *cmcall.WebhookMessage (converted from internal struct)
+	webhookMsg, ok := res[0].Data.(*cmcall.WebhookMessage)
 	if !ok {
-		t.Errorf("Wrong data type. expect: json.RawMessage, got: %T", res[0].Data)
+		t.Errorf("Wrong data type. expect: *cmcall.WebhookMessage, got: %T", res[0].Data)
 	} else {
-		expectedData := `{"call_id":"abc-123","status":"hangup"}`
-		if string(dataBytes) != expectedData {
-			t.Errorf("Wrong data. expect: %s, got: %s", expectedData, string(dataBytes))
+		// Verify fields are properly converted
+		if webhookMsg.Status != cmcall.StatusHangup {
+			t.Errorf("Wrong status. expect: hangup, got: %s", webhookMsg.Status)
 		}
+		if webhookMsg.ID != callID {
+			t.Errorf("Wrong ID. expect: %s, got: %s", callID, webhookMsg.ID)
+		}
+	}
+}
+
+func Test_AggregatedEventList_UnknownEventTypeSkipped(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	activeflowID := uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a")
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+
+	agent := &amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	}
+
+	testActiveflow := &fmactiveflow.Activeflow{
+		Identity: commonidentity.Identity{
+			ID:         activeflowID,
+			CustomerID: customerID,
+		},
+	}
+
+	// Mix of known (call_) and unknown (confbridge_) event types
+	callData := json.RawMessage(`{"id":"550e8400-e29b-41d4-a716-446655440000","customer_id":"` + customerID.String() + `","status":"progressing"}`)
+	unknownData := json.RawMessage(`{"id":"aaa","bridge_id":"internal-bridge-123"}`)
+
+	responseEvents := &tmevent.AggregatedEventListResponse{
+		Result: []*tmevent.Event{
+			{
+				Timestamp: testTimestamp,
+				EventType: "call_created",
+				Data:      callData,
+			},
+			{
+				Timestamp: testTimestamp.Add(time.Second),
+				EventType: "confbridge_created",
+				Data:      unknownData,
+			},
+		},
+		NextPageToken: "",
+	}
+
+	mockReq.EXPECT().FlowV1ActiveflowGet(ctx, activeflowID).Return(testActiveflow, nil)
+	mockReq.EXPECT().TimelineV1AggregatedEventList(ctx, &tmevent.AggregatedEventListRequest{
+		ActiveflowID: activeflowID,
+		PageSize:     10,
+		PageToken:    "",
+	}).Return(responseEvents, nil)
+
+	res, _, err := h.AggregatedEventList(ctx, agent, activeflowID, uuid.Nil, 10, "")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	// Only the known call event should be in results (confbridge_ is unsupported and skipped)
+	if len(res) != 1 {
+		t.Errorf("Wrong result length. expect: 1, got: %d", len(res))
+	}
+
+	if res[0].EventType != "call_created" {
+		t.Errorf("Wrong event type. expect: call_created, got: %s", res[0].EventType)
 	}
 }
