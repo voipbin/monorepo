@@ -1,7 +1,7 @@
 """storage_files_add_type_column
 
 Revision ID: fd2a3b4c5d6e
-Revises: fc1a2b3d4e5f
+Revises: 4a3dcfccbba3
 Create Date: 2026-03-14 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'fd2a3b4c5d6e'
-down_revision = 'fc1a2b3d4e5f'
+down_revision = '4a3dcfccbba3'
 branch_labels = None
 depends_on = None
 
