@@ -149,7 +149,7 @@ Location: `bin-api-manager/pkg/servicehandler/`
 
 ## Event Coverage
 
-### v1 — Top-level resources (have `activeflow_id` in WebhookMessage)
+### v1 — Top-level resources (have `activeflow_id` AND `ConvertWebhookMessage()`)
 
 | Resource | Events | Service |
 |----------|--------|---------|
@@ -158,9 +158,23 @@ Location: `bin-api-manager/pkg/servicehandler/`
 | AICall | `aicall_created`, `aicall_started`, `aicall_progressing`, `aicall_terminated`, etc. | ai-manager |
 | Recording | `recording_created`, `recording_started`, `recording_stopped`, `recording_ended` | call-manager |
 | Transcribe | `transcribe_created`, `transcribe_progressing`, `transcribe_done`, `transcribe_deleted` | transcribe-manager |
-| Pipecatcall | `pipecatcall_initialized`, `pipecatcall_started`, `pipecatcall_progressing`, `pipecatcall_stopped`, `pipecatcall_terminated` | pipecat-manager |
-| Confbridge | `confbridge_created`, `confbridge_deleted`, `confbridge_terminated`, `confbridge_joined`, `confbridge_leaved` | call-manager |
 | Conferencecall | events from conference-manager | conference-manager |
+| Campaigncall | `campaigncall_created`, `campaigncall_updated`, `campaigncall_deleted` | campaign-manager |
+| Summary | `summary_created`, `summary_updated`, `summary_deleted` | ai-manager |
+
+### Future — Resources with `activeflow_id` but no `ConvertWebhookMessage()`
+
+These resources publish events with `activeflow_id` in their data, so ClickHouse will correlate them.
+However, they lack a `ConvertWebhookMessage()` method, so the aggregated endpoint cannot safely
+return them without potentially leaking internal fields. They are silently skipped in v1.
+To add support: create `webhook.go` with `WebhookMessage` struct and `ConvertWebhookMessage()`,
+then add a case to `convertAggregatedEventData()` in `bin-api-manager`.
+
+| Resource | Events | Service | Missing |
+|----------|--------|---------|---------|
+| Confbridge | `confbridge_created`, `confbridge_deleted`, etc. | call-manager | No `webhook.go` |
+| Pipecatcall | `pipecatcall_initialized`, `pipecatcall_started`, etc. | pipecat-manager | No `webhook.go` |
+| Email | `email_created`, `email_updated`, etc. | email-manager | No `webhook.go` |
 
 ### Future — Sub-resources (do NOT have `activeflow_id` yet)
 
