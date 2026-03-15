@@ -12,7 +12,8 @@ import (
 type WebhookMessage struct {
 	identity.Identity
 
-	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
+	AIcallID     uuid.UUID `json:"aicall_id,omitempty"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
 
 	Role      Role      `json:"role"`
 	Content   string    `json:"content"`
@@ -28,7 +29,8 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
 
-		AIcallID: h.AIcallID,
+		AIcallID:     h.AIcallID,
+		ActiveflowID: h.ActiveflowID,
 
 		Role:      h.Role,
 		Content:   h.Content,

@@ -26,6 +26,7 @@ func TestEventPMMessageUserTranscription(t *testing.T) {
 			event: &pmmessage.Message{
 				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
 				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
 				Text:                     "User transcription text",
 			},
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -81,6 +82,7 @@ func TestEventPMMessageBotLLM(t *testing.T) {
 			event: &pmmessage.Message{
 				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
 				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
 				Text:                     "Bot response text",
 			},
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -95,6 +97,7 @@ func TestEventPMMessageBotLLM(t *testing.T) {
 			event: &pmmessage.Message{
 				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
 				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
 				Text:                     "",
 			},
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -135,6 +138,7 @@ func TestEventPMMessageUserLLM(t *testing.T) {
 			event: &pmmessage.Message{
 				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
 				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
 				Text:                     "User LLM text",
 			},
 			setupMock: func(m *dbhandler.MockDBHandler) {

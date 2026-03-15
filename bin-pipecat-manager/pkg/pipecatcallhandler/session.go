@@ -33,6 +33,7 @@ func (h *pipecatcallHandler) SessionCreate(
 
 		PipecatcallReferenceType: pc.ReferenceType,
 		PipecatcallReferenceID:   pc.ReferenceID,
+		ActiveflowID:             pc.ActiveflowID,
 
 		Ctx:    ctx,
 		Cancel: cancel,

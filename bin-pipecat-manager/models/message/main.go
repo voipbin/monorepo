@@ -15,6 +15,7 @@ type Message struct {
 	PipecatcallID            uuid.UUID                 `json:"pipecatcall_id,omitempty"`
 	PipecatcallReferenceType pipecatcall.ReferenceType `json:"pipecatcall_reference_type,omitempty"`
 	PipecatcallReferenceID   uuid.UUID                 `json:"pipecatcall_reference_id,omitempty"`
+	ActiveflowID             uuid.UUID                 `json:"activeflow_id,omitempty"`
 
 	Text string `json:"text,omitempty"`
 }
