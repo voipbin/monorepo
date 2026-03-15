@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -408,7 +409,7 @@ func initAIHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (aihandler.AI
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	return aihandler.NewAIHandler(reqHandler, notifyHandler, db), nil
 }
@@ -454,7 +455,7 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	// For these operations, we don't need aiHandler and messageHandler
 	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil), nil
