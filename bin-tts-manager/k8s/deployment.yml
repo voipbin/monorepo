@@ -57,13 +57,13 @@ spec:
               value: ${AWS_SECRET_KEY}
             - name: ELEVENLABS_API_KEY
               value: ${ELEVENLABS_API_KEY}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
           command:
             - './tts-manager'
-            - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"
@@ -89,8 +89,6 @@ spec:
             - '80'
             - '-d'
             - '/shared-data'
-            - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: http
               protocol: "TCP"
