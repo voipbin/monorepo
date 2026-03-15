@@ -119,7 +119,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
 	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
 	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)

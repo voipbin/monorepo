@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-number-manager/internal/config"
 	"monorepo/bin-number-manager/models/number"
@@ -66,7 +65,7 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
 
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(
 		reqHandler,

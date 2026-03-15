@@ -134,7 +134,7 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler)
 
 	// run listen

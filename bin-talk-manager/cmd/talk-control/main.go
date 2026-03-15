@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -55,7 +54,7 @@ func initHandlers() (chathandler.ChatHandler, messagehandler.MessageHandler, par
 
 	utilHandler := utilhandler.NewUtilHandler()
 	dbHandler := dbhandler.New(db, redisClient, utilHandler)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName)
 
 	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)
