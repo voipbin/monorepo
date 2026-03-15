@@ -23,3 +23,4 @@ create table ai_messages(
 create index idx_ai_messages_create on ai_messages(tm_create);
 create index idx_ai_messages_customer_id on ai_messages(customer_id);
 create index idx_ai_messages_aicall_id on ai_messages(aicall_id);
+create index idx_ai_messages_activeflow_id on ai_messages(activeflow_id);
