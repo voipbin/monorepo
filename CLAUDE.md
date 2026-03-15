@@ -100,23 +100,7 @@ The full verification workflow consists of 5 steps that MUST all be run:
 | 4 | `go test ./...` | Run all unit tests |
 | 5 | `golangci-lint run -v --timeout 5m` | Run static analysis and linting |
 
-**Do NOT skip any steps.** Each step can catch different issues.
-
-#### Bulk Changes Across Multiple Services (NO EXCEPTIONS)
-
-**CRITICAL: When changing code in multiple services, you MUST run the full verification workflow for EVERY changed service. No exceptions, no shortcuts.**
-
-- "The change is trivial" is NOT a valid reason to skip. Even adding a single stdlib import (e.g., `os.Getenv`) can cause `go.sum` to become stale, which breaks Docker builds with `missing go.sum entry` errors.
-- `go build` passing does NOT mean verification passed. Only `go mod tidy` updates `go.sum` with transitive dependency checksums required by `go mod vendor` in Dockerfiles.
-- For bulk changes, run verification in batches but cover every service:
-  ```bash
-  # Run for each changed service — do NOT skip any
-  for svc in bin-service1 bin-service2 ...; do
-    cd $svc && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m && cd ..
-  done
-  ```
-- Commit the resulting `go.mod`/`go.sum` changes along with the code changes.
-- **Lesson learned (2026-03-15):** PR #689 changed 24 services but skipped `go mod tidy`. ALL deployments failed with missing `go.sum` entries. Required emergency fix PR #690.
+**Do NOT skip any steps.** Each step can catch different issues. "The change is trivial" is NOT a valid reason to skip — even adding a single stdlib call (e.g., `os.Getenv`) can cause `go.sum` to become stale, breaking Docker builds with `missing go.sum entry` errors. `go build` passing locally does NOT mean the service will deploy successfully; only `go mod tidy` updates `go.sum` with the transitive dependency checksums that Dockerfiles require. Commit the resulting `go.mod`/`go.sum` changes along with the code changes.
 
 **IMPORTANT: Vendor directories are NOT committed to git.** The `.gitignore` excludes `vendor/`. Do NOT use `git add -f` for vendor files. Each service's Dockerfile runs `go mod vendor` during Docker build to regenerate dependencies. The local `go mod vendor` step is only for local development and testing.
 
