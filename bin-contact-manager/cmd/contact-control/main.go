@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-contact-manager/internal/config"
 	"monorepo/bin-contact-manager/models/contact"
@@ -64,7 +65,7 @@ func initContactHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (contact
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	return contacthandler.NewContactHandler(reqHandler, db, notifyHandler), nil
 }

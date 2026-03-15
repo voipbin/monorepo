@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -63,7 +64,7 @@ func initTransferHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (transf
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	return transferhandler.NewTransferHandler(reqHandler, notifyHandler, db), nil
 }

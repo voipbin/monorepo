@@ -62,6 +62,8 @@ spec:
               mountPath: /shared-data
           command:
             - './tts-manager'
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"
@@ -87,6 +89,8 @@ spec:
             - '80'
             - '-d'
             - '/shared-data'
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: http
               protocol: "TCP"

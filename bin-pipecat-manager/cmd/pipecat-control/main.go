@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -63,7 +64,7 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
 	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, toolHandler, "cli-host"), nil

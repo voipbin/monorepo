@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-storage-manager/internal/config"
 	"monorepo/bin-storage-manager/models/account"
@@ -67,7 +68,7 @@ func initAccountHandler() (accounthandler.AccountHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	return accounthandler.NewAccountHandler(notifyHandler, dbHandler), nil
 }
@@ -86,7 +87,7 @@ func initHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (storagehandler
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, db)
 	fileHandler := filehandler.NewFileHandler(
 		notifyHandler,

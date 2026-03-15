@@ -117,7 +117,7 @@ func run() error {
 		return fmt.Errorf("could not get the listen ip address")
 	}
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	// Create tool handler and fetch tools from ai-manager
 	toolHandler := toolhandler.NewToolHandler(requestHandler)

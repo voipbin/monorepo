@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-campaign-manager/internal/config"
 	"monorepo/bin-campaign-manager/models/campaign"
@@ -65,7 +66,7 @@ func initCampaignHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (campai
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCampaignEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCampaignEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	campaigncallHandler := campaigncallhandler.NewCampaigncallHandler(db, reqHandler, notifyHandler)
 	outplanHandler := outplanhandler.NewOutplanHandler(db, reqHandler, notifyHandler)
