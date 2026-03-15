@@ -17,6 +17,12 @@ import (
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
+const (
+	batchSize     = 100
+	flushInterval = 1 * time.Second
+	eventChBuffer = 1000
+)
+
 // subscribeTargets lists all service event exchanges to subscribe to.
 var subscribeTargets = []commonoutline.QueueName{
 	commonoutline.QueueNameAIEvent,
@@ -60,10 +66,20 @@ var (
 		},
 		[]string{"publisher", "type"},
 	)
+
+	promSubscribeBatchSize = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "subscribe_batch_size",
+			Help:      "Number of events per ClickHouse batch insert",
+			Buckets:   []float64{1, 5, 10, 25, 50, 100},
+		},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(promSubscribeEventProcessTime)
+	prometheus.MustRegister(promSubscribeBatchSize)
 }
 
 // SubscribeHandler interface
@@ -74,6 +90,7 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	sockHandler sockhandler.SockHandler
 	dbHandler   dbhandler.DBHandler
+	eventCh     chan *sock.Event
 }
 
 // NewSubscribeHandler creates a new SubscribeHandler.
@@ -84,6 +101,7 @@ func NewSubscribeHandler(
 	return &subscribeHandler{
 		sockHandler: sockHandler,
 		dbHandler:   dbHandler,
+		eventCh:     make(chan *sock.Event, eventChBuffer),
 	}
 }
 
@@ -108,6 +126,9 @@ func (h *subscribeHandler) Run() error {
 		log.Debugf("Subscribed to event exchange. target: %s", target)
 	}
 
+	// Start the batch flush worker
+	go h.flushWorker()
+
 	// Start consuming events
 	go func() {
 		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), subscribeQueue, "timeline-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
@@ -119,30 +140,78 @@ func (h *subscribeHandler) Run() error {
 	return nil
 }
 
-// processEventRun dispatches event processing in a goroutine.
+// processEventRun pushes the event into the buffered channel for batch processing.
 func (h *subscribeHandler) processEventRun(m *sock.Event) error {
-	go h.processEvent(m)
+	select {
+	case h.eventCh <- m:
+	default:
+		logrus.Warn("Event channel full, dropping event.")
+	}
 	return nil
 }
 
-// processEvent inserts the received event into ClickHouse.
-func (h *subscribeHandler) processEvent(m *sock.Event) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "processEvent",
-		"publisher":  m.Publisher,
-		"event_type": m.Type,
-	})
+// flushWorker drains the event channel and batch-inserts into ClickHouse.
+// It flushes when the buffer reaches batchSize or flushInterval elapses.
+func (h *subscribeHandler) flushWorker() {
+	ticker := time.NewTicker(flushInterval)
+	defer ticker.Stop()
 
-	start := time.Now()
+	buf := make([]eventEntry, 0, batchSize)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	for {
+		select {
+		case m := <-h.eventCh:
+			buf = append(buf, eventEntry{event: m, receivedAt: time.Now()})
+			if len(buf) >= batchSize {
+				h.flushBatch(buf)
+				buf = buf[:0]
+				ticker.Reset(flushInterval)
+			}
 
-	if err := h.dbHandler.EventInsert(ctx, time.Now(), m.Type, m.Publisher, m.DataType, string(m.Data)); err != nil {
-		log.Errorf("Could not insert event into ClickHouse. err: %v", err)
-		return
+		case <-ticker.C:
+			if len(buf) > 0 {
+				h.flushBatch(buf)
+				buf = buf[:0]
+			}
+		}
+	}
+}
+
+// eventEntry pairs an event with its receive timestamp for metrics.
+type eventEntry struct {
+	event      *sock.Event
+	receivedAt time.Time
+}
+
+// flushBatch inserts all buffered events into ClickHouse in a single batch.
+func (h *subscribeHandler) flushBatch(entries []eventEntry) {
+	log := logrus.WithField("func", "flushBatch")
+
+	rows := make([]dbhandler.EventRow, len(entries))
+	for i, e := range entries {
+		rows[i] = dbhandler.EventRow{
+			Timestamp: e.receivedAt,
+			EventType: e.event.Type,
+			Publisher: e.event.Publisher,
+			DataType:  e.event.DataType,
+			Data:      string(e.event.Data),
+		}
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	if err := h.dbHandler.EventBatchInsert(ctx, rows); err != nil {
+		log.Errorf("Could not batch insert events into ClickHouse. count: %d, err: %v", len(rows), err)
+		return
+	}
 	elapsed := time.Since(start)
-	promSubscribeEventProcessTime.WithLabelValues(m.Publisher, m.Type).Observe(float64(elapsed.Milliseconds()))
+
+	promSubscribeBatchSize.Observe(float64(len(rows)))
+	for _, e := range entries {
+		promSubscribeEventProcessTime.WithLabelValues(e.event.Publisher, e.event.Type).Observe(float64(elapsed.Milliseconds()))
+	}
+
+	log.Debugf("Batch flushed %d events to ClickHouse in %v.", len(rows), elapsed)
 }
