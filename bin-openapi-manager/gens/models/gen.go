@@ -3122,7 +3122,7 @@ type AIManagerAIcallStatus string
 
 // AIManagerMessage defines model for AIManagerMessage.
 type AIManagerMessage struct {
-	// ActiveflowId The unique identifier of the active flow execution. Returned from the `POST /activeflows` response.
+	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
 	// AicallId The unique identifier of the associated AI call. Returned from the `GET /aicalls` response.
