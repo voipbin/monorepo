@@ -50,6 +50,7 @@ func init() {
 	rootCmd.Flags().String("gcs_bucket", "", "GCS bucket for embeddings storage")
 	rootCmd.Flags().String("gcs_embeddings_path", "rag/embeddings.gob", "GCS path for embeddings file")
 	rootCmd.Flags().String("rag_docs_base_path", "", "Base path to document sources")
+	rootCmd.Flags().String("postgresql_dsn", "", "PostgreSQL connection string")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())

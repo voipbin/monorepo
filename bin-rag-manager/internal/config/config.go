@@ -34,6 +34,9 @@ type Config struct {
 
 	// Document sources
 	RAGDocsBasePath string
+
+	// PostgreSQL
+	PostgreSQLDSN string
 }
 
 // Get returns the current configuration
@@ -57,6 +60,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("gcs_bucket", "", "GCS bucket for embeddings storage")
 	f.String("gcs_embeddings_path", "rag/embeddings.gob", "GCS path for embeddings file")
 	f.String("rag_docs_base_path", "", "Base path to document sources")
+	f.String("postgresql_dsn", "", "PostgreSQL connection string")
 
 	bindings := map[string]string{
 		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
@@ -70,6 +74,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"gcs_bucket":               "GCS_BUCKET",
 		"gcs_embeddings_path":      "GCS_EMBEDDINGS_PATH",
 		"rag_docs_base_path":       "RAG_DOCS_BASE_PATH",
+		"postgresql_dsn":            "POSTGRESQL_DSN",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -100,6 +105,7 @@ func LoadGlobalConfig() {
 			GCSBucket:               viper.GetString("gcs_bucket"),
 			GCSEmbeddingsPath:       viper.GetString("gcs_embeddings_path"),
 			RAGDocsBasePath:         viper.GetString("rag_docs_base_path"),
+			PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
 		}
 	})
 }
@@ -143,6 +149,9 @@ func InitConfig(cmd *cobra.Command) error {
 	if err = viper.BindPFlag("rag_docs_base_path", cmd.Flags().Lookup("rag_docs_base_path")); err != nil {
 		return errors.Wrapf(err, "error binding rag_docs_base_path flag")
 	}
+	if err = viper.BindPFlag("postgresql_dsn", cmd.Flags().Lookup("postgresql_dsn")); err != nil {
+		return errors.Wrapf(err, "error binding postgresql_dsn flag")
+	}
 
 	globalConfig = Config{
 		PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
@@ -156,6 +165,7 @@ func InitConfig(cmd *cobra.Command) error {
 		GCSBucket:               viper.GetString("gcs_bucket"),
 		GCSEmbeddingsPath:       viper.GetString("gcs_embeddings_path"),
 		RAGDocsBasePath:         viper.GetString("rag_docs_base_path"),
+		PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
 	}
 
 	return nil
