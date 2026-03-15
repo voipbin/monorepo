@@ -57,14 +57,13 @@ var subscribeTargets = []commonoutline.QueueName{
 var (
 	metricsNamespace = "timeline_manager"
 
-	promSubscribeEventProcessTime = prometheus.NewHistogramVec(
+	promSubscribeBatchInsertTime = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "subscribe_event_process_time",
-			Help:      "Process time of received subscribe event for ClickHouse insert",
+			Name:      "subscribe_batch_insert_time",
+			Help:      "Time in milliseconds for a ClickHouse batch insert",
 			Buckets:   []float64{50, 100, 500, 1000, 3000},
 		},
-		[]string{"publisher", "type"},
 	)
 
 	promSubscribeBatchSize = prometheus.NewHistogram(
@@ -78,13 +77,13 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(promSubscribeEventProcessTime)
+	prometheus.MustRegister(promSubscribeBatchInsertTime)
 	prometheus.MustRegister(promSubscribeBatchSize)
 }
 
 // SubscribeHandler interface
 type SubscribeHandler interface {
-	Run() error
+	Run(ctx context.Context) error
 }
 
 type subscribeHandler struct {
@@ -106,7 +105,9 @@ func NewSubscribeHandler(
 }
 
 // Run creates the subscribe queue, binds to all event exchanges, and starts consuming.
-func (h *subscribeHandler) Run() error {
+// The provided ctx controls the lifetime of the flush worker — when cancelled, the
+// worker performs a final flush of any buffered events before returning.
+func (h *subscribeHandler) Run(ctx context.Context) error {
 	log := logrus.WithField("func", "Run")
 	log.Info("Creating rabbitmq queue for event subscription.")
 
@@ -127,11 +128,11 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// Start the batch flush worker
-	go h.flushWorker()
+	go h.flushWorker(ctx)
 
 	// Start consuming events
 	go func() {
-		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), subscribeQueue, "timeline-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+		if errConsume := h.sockHandler.ConsumeMessage(ctx, subscribeQueue, "timeline-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
 			log.Errorf("Could not consume subscribe events. err: %v", errConsume)
 		}
 	}()
@@ -152,7 +153,10 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 
 // flushWorker drains the event channel and batch-inserts into ClickHouse.
 // It flushes when the buffer reaches batchSize or flushInterval elapses.
-func (h *subscribeHandler) flushWorker() {
+// When ctx is cancelled, it performs a final flush of any remaining buffered
+// and queued events before returning.
+func (h *subscribeHandler) flushWorker(ctx context.Context) {
+	log := logrus.WithField("func", "flushWorker")
 	ticker := time.NewTicker(flushInterval)
 	defer ticker.Stop()
 
@@ -160,6 +164,22 @@ func (h *subscribeHandler) flushWorker() {
 
 	for {
 		select {
+		case <-ctx.Done():
+			// Drain any remaining events from the channel into the buffer
+			for {
+				select {
+				case m := <-h.eventCh:
+					buf = append(buf, eventEntry{event: m, receivedAt: time.Now()})
+				default:
+					if len(buf) > 0 {
+						h.flushBatch(buf)
+						log.Infof("Final flush completed. count: %d", len(buf))
+					}
+					log.Info("Flush worker stopped.")
+					return
+				}
+			}
+
 		case m := <-h.eventCh:
 			buf = append(buf, eventEntry{event: m, receivedAt: time.Now()})
 			if len(buf) >= batchSize {
@@ -209,9 +229,7 @@ func (h *subscribeHandler) flushBatch(entries []eventEntry) {
 	elapsed := time.Since(start)
 
 	promSubscribeBatchSize.Observe(float64(len(rows)))
-	for _, e := range entries {
-		promSubscribeEventProcessTime.WithLabelValues(e.event.Publisher, e.event.Type).Observe(float64(elapsed.Milliseconds()))
-	}
+	promSubscribeBatchInsertTime.Observe(float64(elapsed.Milliseconds()))
 
 	log.Debugf("Batch flushed %d events to ClickHouse in %v.", len(rows), elapsed)
 }

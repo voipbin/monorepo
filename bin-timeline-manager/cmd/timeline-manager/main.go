@@ -68,11 +68,17 @@ func runDaemon() error {
 		return errors.Wrapf(errMigrate, "could not run migrations")
 	}
 
-	if errStart := runServices(); errStart != nil {
+	// Create a context that cancels when the process receives a shutdown signal.
+	// This allows the subscribe handler's flush worker to drain buffered events.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if errStart := runServices(ctx); errStart != nil {
 		return errors.Wrapf(errStart, "could not start services")
 	}
 
 	<-chDone
+	cancel()
 	log.Info("Timeline-manager stopped safely.")
 	return nil
 }
@@ -137,7 +143,7 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-func runServices() error {
+func runServices(ctx context.Context) error {
 	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
 
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
@@ -170,7 +176,7 @@ func runServices() error {
 	}
 
 	// Run subscribe handler to consume events from all services and write to ClickHouse
-	if errSubscribe := runSubscribe(sockHandler, db); errSubscribe != nil {
+	if errSubscribe := runSubscribe(ctx, sockHandler, db); errSubscribe != nil {
 		return errors.Wrapf(errSubscribe, "failed to run subscribe handler")
 	}
 
@@ -189,12 +195,12 @@ func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.Event
 	return nil
 }
 
-func runSubscribe(sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) error {
+func runSubscribe(ctx context.Context, sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) error {
 	log := logrus.WithField("func", "runSubscribe")
 
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, db)
 
-	if errRun := subHandler.Run(); errRun != nil {
+	if errRun := subHandler.Run(ctx); errRun != nil {
 		log.Errorf("Error occurred in subscribe handler. err: %v", errRun)
 		return errRun
 	}

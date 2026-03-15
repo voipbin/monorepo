@@ -10,6 +10,7 @@
 package subscribehandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,15 +41,15 @@ func (m *MockSubscribeHandler) EXPECT() *MockSubscribeHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockSubscribeHandler) Run() error {
+func (m *MockSubscribeHandler) Run(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run")
+	ret := m.ctrl.Call(m, "Run", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockSubscribeHandlerMockRecorder) Run() *gomock.Call {
+func (mr *MockSubscribeHandlerMockRecorder) Run(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSubscribeHandler)(nil).Run))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSubscribeHandler)(nil).Run), ctx)
 }

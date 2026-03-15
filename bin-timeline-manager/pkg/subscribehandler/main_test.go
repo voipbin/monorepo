@@ -1,6 +1,7 @@
 package subscribehandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -412,7 +413,10 @@ func Test_flushWorker_flushOnBatchSize(t *testing.T) {
 		return nil
 	})
 
-	go h.flushWorker()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go h.flushWorker(ctx)
 
 	// Push exactly batchSize events
 	for i := 0; i < batchSize; i++ {
@@ -453,7 +457,10 @@ func Test_flushWorker_flushOnTimer(t *testing.T) {
 		return nil
 	})
 
-	go h.flushWorker()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go h.flushWorker(ctx)
 
 	// Push fewer than batchSize events
 	for i := 0; i < 3; i++ {
@@ -484,13 +491,24 @@ func Test_flushWorker_noFlushOnEmptyBuffer(t *testing.T) {
 		eventCh:   make(chan *sock.Event, eventChBuffer),
 	}
 
-	// EventBatchInsert should NOT be called when there are no events
-	// gomock will fail if it gets an unexpected call
+	// EventBatchInsert should NOT be called when there are no events.
+	// gomock will fail if it gets an unexpected call.
+	// Use context cancellation to stop the worker cleanly instead of time.Sleep.
+	ctx, cancel := context.WithTimeout(context.Background(), 2500*time.Millisecond)
+	defer cancel()
 
-	go h.flushWorker()
+	done := make(chan struct{})
+	go func() {
+		h.flushWorker(ctx)
+		close(done)
+	}()
 
-	// Wait for at least 2 timer ticks with empty buffer
-	time.Sleep(2500 * time.Millisecond)
+	select {
+	case <-done:
+		// Worker exited after context timeout — no unexpected calls
+	case <-time.After(5 * time.Second):
+		t.Error("flushWorker did not exit after context cancellation")
+	}
 }
 
 func Test_flushWorker_multipleBatches(t *testing.T) {
@@ -522,7 +540,10 @@ func Test_flushWorker_multipleBatches(t *testing.T) {
 		}),
 	)
 
-	go h.flushWorker()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go h.flushWorker(ctx)
 
 	// Push batchSize + 5 events
 	for i := 0; i < batchSize+5; i++ {
@@ -539,6 +560,82 @@ func Test_flushWorker_multipleBatches(t *testing.T) {
 		// Both batches flushed
 	case <-time.After(3 * time.Second):
 		t.Error("flushWorker did not flush the second batch")
+	}
+}
+
+func Test_flushWorker_drainOnShutdown(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &subscribeHandler{
+		dbHandler: mockDB,
+		eventCh:   make(chan *sock.Event, eventChBuffer),
+	}
+
+	// Push 3 events into the channel before starting the worker
+	for i := 0; i < 3; i++ {
+		h.eventCh <- &sock.Event{
+			Type:      fmt.Sprintf("event_%d", i),
+			Publisher: "test-publisher",
+			DataType:  "application/json",
+			Data:      json.RawMessage(`{}`),
+		}
+	}
+
+	// Expect exactly one batch insert with 3 events (the final drain flush)
+	mockDB.EXPECT().EventBatchInsert(
+		gomock.Any(),
+		gomock.Len(3),
+	).Return(nil)
+
+	// Create an already-cancelled context so flushWorker goes straight to drain
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	done := make(chan struct{})
+	go func() {
+		h.flushWorker(ctx)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// Worker drained and exited
+	case <-time.After(2 * time.Second):
+		t.Error("flushWorker did not drain and exit on cancelled context")
+	}
+}
+
+func Test_flushWorker_drainOnShutdownEmptyChannel(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &subscribeHandler{
+		dbHandler: mockDB,
+		eventCh:   make(chan *sock.Event, eventChBuffer),
+	}
+
+	// No events in the channel — EventBatchInsert should NOT be called.
+	// gomock will fail if it gets an unexpected call.
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	done := make(chan struct{})
+	go func() {
+		h.flushWorker(ctx)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// Worker exited without flushing
+	case <-time.After(2 * time.Second):
+		t.Error("flushWorker did not exit on cancelled context with empty channel")
 	}
 }
 
