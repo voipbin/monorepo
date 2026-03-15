@@ -120,7 +120,7 @@ func run(db *sql.DB) error {
 
 	// create listen handler
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTTSEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTTSEvent, serviceName)
 
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")

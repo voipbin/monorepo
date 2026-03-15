@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -65,7 +64,7 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
 	requestExternal := requestexternal.NewRequestExternal(config.Get().AuthtokenTelnyx, config.Get().AuthtokenMessagebird)
 
 	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal), nil

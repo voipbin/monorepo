@@ -17,6 +17,7 @@ const clickhouseRetryInterval = 30 * time.Second
 
 // DBHandler interface for database operations.
 type DBHandler interface {
+	EventInsert(ctx context.Context, timestamp time.Time, eventType string, publisher string, dataType string, data string) error
 	EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
 	AggregatedEventList(ctx context.Context, activeflowID string, pageToken string, pageSize int) ([]*event.Event, error)
 	WaitForConnection(ctx context.Context) error

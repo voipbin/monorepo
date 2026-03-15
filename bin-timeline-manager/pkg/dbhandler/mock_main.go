@@ -13,6 +13,7 @@ import (
 	context "context"
 	event "monorepo/bin-timeline-manager/models/event"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -55,6 +56,20 @@ func (m *MockDBHandler) AggregatedEventList(ctx context.Context, activeflowID, p
 func (mr *MockDBHandlerMockRecorder) AggregatedEventList(ctx, activeflowID, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockDBHandler)(nil).AggregatedEventList), ctx, activeflowID, pageToken, pageSize)
+}
+
+// EventInsert mocks base method.
+func (m *MockDBHandler) EventInsert(ctx context.Context, timestamp time.Time, eventType, publisher, dataType, data string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventInsert", ctx, timestamp, eventType, publisher, dataType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventInsert indicates an expected call of EventInsert.
+func (mr *MockDBHandlerMockRecorder) EventInsert(ctx, timestamp, eventType, publisher, dataType, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventInsert", reflect.TypeOf((*MockDBHandler)(nil).EventInsert), ctx, timestamp, eventType, publisher, dataType, data)
 }
 
 // EventList mocks base method.

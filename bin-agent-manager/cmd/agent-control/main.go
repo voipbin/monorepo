@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-agent-manager/internal/config"
 	"monorepo/bin-agent-manager/models/agent"
@@ -64,7 +63,7 @@ func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthand
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
 
 	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler, cache), nil
 }

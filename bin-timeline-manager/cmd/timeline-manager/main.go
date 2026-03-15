@@ -27,6 +27,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
+	"monorepo/bin-timeline-manager/pkg/subscribehandler"
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -168,6 +169,11 @@ func runServices() error {
 		return errors.Wrapf(errListen, "failed to run service listen")
 	}
 
+	// Run subscribe handler to consume events from all services and write to ClickHouse
+	if errSubscribe := runSubscribe(sockHandler, db); errSubscribe != nil {
+		return errors.Wrapf(errSubscribe, "failed to run subscribe handler")
+	}
+
 	return nil
 }
 
@@ -178,6 +184,19 @@ func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.Event
 
 	if errRun := listenHdlr.Run(string(commonoutline.QueueNameTimelineRequest)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
+	}
+
+	return nil
+}
+
+func runSubscribe(sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) error {
+	log := logrus.WithField("func", "runSubscribe")
+
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, db)
+
+	if errRun := subHandler.Run(); errRun != nil {
+		log.Errorf("Error occurred in subscribe handler. err: %v", errRun)
+		return errRun
 	}
 
 	return nil
