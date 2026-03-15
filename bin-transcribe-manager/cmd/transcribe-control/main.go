@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/models/transcribe"
@@ -64,7 +65,7 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 

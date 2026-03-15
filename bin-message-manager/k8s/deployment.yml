@@ -42,6 +42,8 @@ spec:
               value: ${AUTHTOKEN_MESSAGEBIRD}
             - name: AUTHTOKEN_TELNYX
               value: ${TELNYX_TOKEN}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"
