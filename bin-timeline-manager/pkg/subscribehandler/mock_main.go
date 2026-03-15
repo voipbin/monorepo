@@ -41,11 +41,12 @@ func (m *MockSubscribeHandler) EXPECT() *MockSubscribeHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockSubscribeHandler) Run(ctx context.Context) error {
+func (m *MockSubscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Run", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(<-chan struct{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Run indicates an expected call of Run.

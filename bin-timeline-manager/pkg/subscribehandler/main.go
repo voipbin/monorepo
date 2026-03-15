@@ -83,7 +83,9 @@ func init() {
 
 // SubscribeHandler interface
 type SubscribeHandler interface {
-	Run(ctx context.Context) error
+	// Run starts the subscribe handler. The returned channel is closed when
+	// the flush worker finishes draining after ctx is cancelled.
+	Run(ctx context.Context) (<-chan struct{}, error)
 }
 
 type subscribeHandler struct {
@@ -107,7 +109,8 @@ func NewSubscribeHandler(
 // Run creates the subscribe queue, binds to all event exchanges, and starts consuming.
 // The provided ctx controls the lifetime of the flush worker — when cancelled, the
 // worker performs a final flush of any buffered events before returning.
-func (h *subscribeHandler) Run(ctx context.Context) error {
+// The returned channel is closed when the flush worker has finished draining.
+func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 	log := logrus.WithField("func", "Run")
 	log.Info("Creating rabbitmq queue for event subscription.")
 
@@ -115,20 +118,24 @@ func (h *subscribeHandler) Run(ctx context.Context) error {
 
 	// Create durable queue
 	if err := h.sockHandler.QueueCreate(subscribeQueue, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
+		return nil, fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// Subscribe to all service event exchanges
 	for _, target := range subscribeTargets {
 		if errSubscribe := h.sockHandler.QueueSubscribe(subscribeQueue, string(target)); errSubscribe != nil {
 			log.Errorf("Could not subscribe to target. target: %s, err: %v", target, errSubscribe)
-			return errSubscribe
+			return nil, errSubscribe
 		}
 		log.Debugf("Subscribed to event exchange. target: %s", target)
 	}
 
-	// Start the batch flush worker
-	go h.flushWorker(ctx)
+	// Start the batch flush worker; doneCh is closed when the worker exits.
+	doneCh := make(chan struct{})
+	go func() {
+		h.flushWorker(ctx)
+		close(doneCh)
+	}()
 
 	// Start consuming events
 	go func() {
@@ -138,7 +145,7 @@ func (h *subscribeHandler) Run(ctx context.Context) error {
 	}()
 
 	log.Infof("Subscribe handler started. subscribed to %d event exchanges.", len(subscribeTargets))
-	return nil
+	return doneCh, nil
 }
 
 // processEventRun pushes the event into the buffered channel for batch processing.

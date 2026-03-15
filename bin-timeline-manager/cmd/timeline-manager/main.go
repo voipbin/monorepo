@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/golang-migrate/migrate/v4"
@@ -73,12 +74,22 @@ func runDaemon() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if errStart := runServices(ctx); errStart != nil {
+	subscribeDone, errStart := runServices(ctx)
+	if errStart != nil {
 		return errors.Wrapf(errStart, "could not start services")
 	}
 
 	<-chDone
 	cancel()
+
+	// Wait for the flush worker to finish draining buffered events.
+	select {
+	case <-subscribeDone:
+		log.Info("Subscribe handler drain completed.")
+	case <-time.After(15 * time.Second):
+		log.Warn("Subscribe handler drain timed out after 15s.")
+	}
+
 	log.Info("Timeline-manager stopped safely.")
 	return nil
 }
@@ -143,7 +154,7 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-func runServices(ctx context.Context) error {
+func runServices(ctx context.Context) (<-chan struct{}, error) {
 	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
 
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
@@ -172,15 +183,16 @@ func runServices(ctx context.Context) error {
 	sipH := siphandler.NewSIPHandler(homerH, gcsReader, gcsBucket)
 
 	if errListen := runListen(sockHandler, evtHandler, sipH); errListen != nil {
-		return errors.Wrapf(errListen, "failed to run service listen")
+		return nil, errors.Wrapf(errListen, "failed to run service listen")
 	}
 
 	// Run subscribe handler to consume events from all services and write to ClickHouse
-	if errSubscribe := runSubscribe(ctx, sockHandler, db); errSubscribe != nil {
-		return errors.Wrapf(errSubscribe, "failed to run subscribe handler")
+	subscribeDone, errSubscribe := runSubscribe(ctx, sockHandler, db)
+	if errSubscribe != nil {
+		return nil, errors.Wrapf(errSubscribe, "failed to run subscribe handler")
 	}
 
-	return nil
+	return subscribeDone, nil
 }
 
 func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler) error {
@@ -195,15 +207,16 @@ func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.Event
 	return nil
 }
 
-func runSubscribe(ctx context.Context, sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) error {
+func runSubscribe(ctx context.Context, sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) (<-chan struct{}, error) {
 	log := logrus.WithField("func", "runSubscribe")
 
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, db)
 
-	if errRun := subHandler.Run(ctx); errRun != nil {
+	doneCh, errRun := subHandler.Run(ctx)
+	if errRun != nil {
 		log.Errorf("Error occurred in subscribe handler. err: %v", errRun)
-		return errRun
+		return nil, errRun
 	}
 
-	return nil
+	return doneCh, nil
 }
