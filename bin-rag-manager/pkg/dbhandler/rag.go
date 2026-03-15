@@ -158,7 +158,7 @@ func (h *handler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID)
 	if err != nil {
 		return nil, fmt.Errorf("could not execute rag gets query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res, err := ragScanRows(rows)
 	if err != nil {

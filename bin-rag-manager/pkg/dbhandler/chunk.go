@@ -2,7 +2,6 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
@@ -37,74 +36,6 @@ func chunkColumns() []string {
 		"tm_create",
 		"tm_delete",
 	}
-}
-
-// chunkScanRow scans a single row into a chunk.Chunk struct.
-func chunkScanRow(row *sql.Row) (*chunk.Chunk, error) {
-	var c chunk.Chunk
-	var idBytes, documentIDBytes, ragIDBytes, customerIDBytes []byte
-
-	err := row.Scan(
-		&idBytes,
-		&documentIDBytes,
-		&ragIDBytes,
-		&customerIDBytes,
-		&c.ChunkIndex,
-		&c.Text,
-		&c.SectionTitle,
-		&c.TokenCount,
-		&c.TMCreate,
-		&c.TMDelete,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	c.ID, _ = uuid.FromBytes(idBytes)
-	c.DocumentID, _ = uuid.FromBytes(documentIDBytes)
-	c.RagID, _ = uuid.FromBytes(ragIDBytes)
-	c.CustomerID, _ = uuid.FromBytes(customerIDBytes)
-
-	return &c, nil
-}
-
-// chunkScanRows scans multiple rows into chunk.Chunk structs.
-func chunkScanRows(rows *sql.Rows) ([]*chunk.Chunk, error) {
-	res := []*chunk.Chunk{}
-
-	for rows.Next() {
-		var c chunk.Chunk
-		var idBytes, documentIDBytes, ragIDBytes, customerIDBytes []byte
-
-		err := rows.Scan(
-			&idBytes,
-			&documentIDBytes,
-			&ragIDBytes,
-			&customerIDBytes,
-			&c.ChunkIndex,
-			&c.Text,
-			&c.SectionTitle,
-			&c.TokenCount,
-			&c.TMCreate,
-			&c.TMDelete,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		c.ID, _ = uuid.FromBytes(idBytes)
-		c.DocumentID, _ = uuid.FromBytes(documentIDBytes)
-		c.RagID, _ = uuid.FromBytes(ragIDBytes)
-		c.CustomerID, _ = uuid.FromBytes(customerIDBytes)
-
-		res = append(res, &c)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }
 
 // ChunkCreate inserts a new chunk with its embedding vector
@@ -234,7 +165,7 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not execute chunk search query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	chunks := []*chunk.Chunk{}
 	scores := []float64{}

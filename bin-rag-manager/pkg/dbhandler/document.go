@@ -215,7 +215,7 @@ func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*
 	if err != nil {
 		return nil, fmt.Errorf("could not execute document gets by rag_id query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res, err := scanDocumentRows(rows)
 	if err != nil {
@@ -242,7 +242,7 @@ func (h *handler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.
 	if err != nil {
 		return nil, fmt.Errorf("could not execute document gets by customer_id query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	res, err := scanDocumentRows(rows)
 	if err != nil {

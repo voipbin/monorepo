@@ -112,7 +112,7 @@ func runService(cfg config.Config) error {
 	if err != nil {
 		return fmt.Errorf("could not connect to PostgreSQL: %w", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if err := db.Ping(); err != nil {
 		return fmt.Errorf("could not ping PostgreSQL: %w", err)
