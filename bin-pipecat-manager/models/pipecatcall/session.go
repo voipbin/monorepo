@@ -15,6 +15,7 @@ type Session struct {
 
 	PipecatcallReferenceType ReferenceType `json:"reference_type,omitempty"` // copied from pipecatcall
 	PipecatcallReferenceID   uuid.UUID     `json:"reference_id,omitempty"`   // copied from pipecatcall
+	ActiveflowID             uuid.UUID     `json:"activeflow_id,omitempty"`  // copied from pipecatcall
 
 	Ctx    context.Context    `json:"-"`
 	Cancel context.CancelFunc `json:"-"`
