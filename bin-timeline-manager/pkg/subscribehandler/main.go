@@ -42,7 +42,6 @@ var subscribeTargets = []commonoutline.QueueName{
 	commonoutline.QueueNameStorageEvent,
 	commonoutline.QueueNameTagEvent,
 	commonoutline.QueueNameTalkEvent,
-	commonoutline.QueueNameTimelineEvent,
 	commonoutline.QueueNameTranscribeEvent,
 	commonoutline.QueueNameTransferEvent,
 	commonoutline.QueueNameTTSEvent,
