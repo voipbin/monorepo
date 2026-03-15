@@ -16362,6 +16362,13 @@
             "description": "The unique identifier of the associated AI call. Returned from the `GET /aicalls` response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
+          "activeflow_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the active flow execution. Returned from the `POST /activeflows` response.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
           "role": {
             "$ref": "#/components/schemas/AIManagerMessageRole",
             "description": "Role of the entity in the conversation.",
