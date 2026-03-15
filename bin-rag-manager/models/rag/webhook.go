@@ -6,7 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// WebhookMessage is the external-facing representation of a Rag
+// WebhookMessage is the external-facing representation of a Rag.
+// TMDelete is omitted — soft-deleted records are not returned via API.
 type WebhookMessage struct {
 	ID          uuid.UUID  `json:"id,omitempty"`
 	CustomerID  uuid.UUID  `json:"customer_id,omitempty"`
@@ -14,7 +15,6 @@ type WebhookMessage struct {
 	Description string     `json:"description,omitempty"`
 	TMCreate    *time.Time `json:"tm_create,omitempty"`
 	TMUpdate    *time.Time `json:"tm_update,omitempty"`
-	TMDelete    *time.Time `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts the internal Rag to the external representation
@@ -26,6 +26,5 @@ func (r *Rag) ConvertWebhookMessage() *WebhookMessage {
 		Description: r.Description,
 		TMCreate:    r.TMCreate,
 		TMUpdate:    r.TMUpdate,
-		TMDelete:    r.TMDelete,
 	}
 }

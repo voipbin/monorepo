@@ -6,7 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// WebhookMessage is the external-facing representation of a Document
+// WebhookMessage is the external-facing representation of a Document.
+// TMDelete is omitted — soft-deleted records are not returned via API.
 type WebhookMessage struct {
 	ID            uuid.UUID  `json:"id,omitempty"`
 	CustomerID    uuid.UUID  `json:"customer_id,omitempty"`
@@ -19,7 +20,6 @@ type WebhookMessage struct {
 	StatusMessage string     `json:"status_message,omitempty"`
 	TMCreate      *time.Time `json:"tm_create,omitempty"`
 	TMUpdate      *time.Time `json:"tm_update,omitempty"`
-	TMDelete      *time.Time `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts the internal Document to the external representation
@@ -36,6 +36,5 @@ func (d *Document) ConvertWebhookMessage() *WebhookMessage {
 		StatusMessage: d.StatusMessage,
 		TMCreate:      d.TMCreate,
 		TMUpdate:      d.TMUpdate,
-		TMDelete:      d.TMDelete,
 	}
 }

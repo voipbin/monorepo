@@ -6,7 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// Chunk represents a text chunk with its embedding vector
+// Chunk represents a text chunk with its embedding vector.
+// Chunks are immutable (replaced, not updated) so TMUpdate is intentionally omitted.
 type Chunk struct {
 	ID           uuid.UUID  `json:"id,omitempty" db:"id,uuid"`
 	DocumentID   uuid.UUID  `json:"document_id,omitempty" db:"document_id,uuid"`

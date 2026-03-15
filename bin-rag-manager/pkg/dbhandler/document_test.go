@@ -138,7 +138,7 @@ func Test_DocumentGetsByRagID_SQL(t *testing.T) {
 	ragID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003")
 
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"rag_id": ragID.Bytes()}).
 		Where("tm_delete IS NULL")
@@ -162,7 +162,7 @@ func Test_DocumentGet_SQL(t *testing.T) {
 	id := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
 
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"id": id.Bytes()}).
 		Where("tm_delete IS NULL")
@@ -281,7 +281,7 @@ func Test_DocumentGetsByCustomerID_SQL(t *testing.T) {
 	customerID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002")
 
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		Where("tm_delete IS NULL")

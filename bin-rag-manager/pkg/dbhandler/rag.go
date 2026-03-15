@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -31,8 +32,15 @@ func ragScanRow(row *sql.Row) (*rag.Rag, error) {
 		return nil, err
 	}
 
-	r.ID, _ = uuid.FromBytes(idBytes)
-	r.CustomerID, _ = uuid.FromBytes(customerIDBytes)
+	var err2 error
+	r.ID, err2 = uuid.FromBytes(idBytes)
+	if err2 != nil {
+		return nil, fmt.Errorf("could not parse rag id: %w", err2)
+	}
+	r.CustomerID, err2 = uuid.FromBytes(customerIDBytes)
+	if err2 != nil {
+		return nil, fmt.Errorf("could not parse rag customer_id: %w", err2)
+	}
 
 	return &r, nil
 }
@@ -58,8 +66,14 @@ func ragScanRows(rows *sql.Rows) ([]*rag.Rag, error) {
 			return nil, err
 		}
 
-		r.ID, _ = uuid.FromBytes(idBytes)
-		r.CustomerID, _ = uuid.FromBytes(customerIDBytes)
+		r.ID, err = uuid.FromBytes(idBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse rag id: %w", err)
+		}
+		r.CustomerID, err = uuid.FromBytes(customerIDBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse rag customer_id: %w", err)
+		}
 
 		res = append(res, &r)
 	}
@@ -84,8 +98,13 @@ func ragColumns() []string {
 	}
 }
 
-// RagCreate inserts a new rag record
+// RagCreate inserts a new rag record.
+// Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) RagCreate(ctx context.Context, r *rag.Rag) error {
+	now := time.Now()
+	r.TMCreate = &now
+	r.TMUpdate = &now
+
 	q := psql.
 		Insert(tableRagRags).
 		Columns(
@@ -101,8 +120,8 @@ func (h *handler) RagCreate(ctx context.Context, r *rag.Rag) error {
 			r.CustomerID.Bytes(),
 			r.Name,
 			r.Description,
-			sq.Expr("NOW()"),
-			sq.Expr("NOW()"),
+			r.TMCreate,
+			r.TMUpdate,
 		)
 
 	sqlStr, args, err := q.ToSql()

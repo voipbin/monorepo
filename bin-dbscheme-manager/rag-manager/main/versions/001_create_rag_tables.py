@@ -34,6 +34,9 @@ def upgrade():
     """)
 
     # Create rag_documents table
+    # Foreign keys intentionally omit ON DELETE CASCADE — the application layer
+    # controls deletion order: chunks first, then documents, then rags.
+    # This prevents accidental cascading deletes and makes the deletion path explicit.
     op.execute("""
     CREATE TABLE rag_documents (
         id UUID PRIMARY KEY,

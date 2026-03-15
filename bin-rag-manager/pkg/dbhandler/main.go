@@ -6,12 +6,17 @@ import (
 	"context"
 	"database/sql"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-rag-manager/models/chunk"
 	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/models/rag"
 )
+
+// psql is a squirrel StatementBuilder configured for PostgreSQL dollar placeholders.
+// Shared across all dbhandler files (rag.go, document.go, chunk.go).
+var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 // DBHandler defines all database operations for rag-manager
 type DBHandler interface {

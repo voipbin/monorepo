@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -13,24 +14,23 @@ import (
 
 const tableDocuments = "rag_documents"
 
-// documentColumns lists all columns in the rag_documents table in scan order.
-var documentColumns = []string{
-	"id",
-	"customer_id",
-	"rag_id",
-	"name",
-	"doc_type",
-	"storage_file_id",
-	"source_url",
-	"status",
-	"status_message",
-	"tm_create",
-	"tm_update",
-	"tm_delete",
+// documentColumns returns the column names for the rag_documents table in scan order.
+func documentColumns() []string {
+	return []string{
+		"id",
+		"customer_id",
+		"rag_id",
+		"name",
+		"doc_type",
+		"storage_file_id",
+		"source_url",
+		"status",
+		"status_message",
+		"tm_create",
+		"tm_update",
+		"tm_delete",
+	}
 }
-
-// psql is a squirrel StatementBuilder configured for PostgreSQL dollar placeholders.
-var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 // scanDocument scans a single row into a Document struct.
 // UUID columns are scanned as []byte and converted via uuid.FromBytes.
@@ -60,12 +60,25 @@ func scanDocument(row *sql.Row) (*document.Document, error) {
 		return nil, err
 	}
 
-	d.ID, _ = uuid.FromBytes(idBytes)
-	d.CustomerID, _ = uuid.FromBytes(customerIDBytes)
-	d.RagID, _ = uuid.FromBytes(ragIDBytes)
+	var err2 error
+	d.ID, err2 = uuid.FromBytes(idBytes)
+	if err2 != nil {
+		return nil, fmt.Errorf("could not parse document id: %w", err2)
+	}
+	d.CustomerID, err2 = uuid.FromBytes(customerIDBytes)
+	if err2 != nil {
+		return nil, fmt.Errorf("could not parse document customer_id: %w", err2)
+	}
+	d.RagID, err2 = uuid.FromBytes(ragIDBytes)
+	if err2 != nil {
+		return nil, fmt.Errorf("could not parse document rag_id: %w", err2)
+	}
 
 	if storageFileIDBytes != nil {
-		d.StorageFileID, _ = uuid.FromBytes(*storageFileIDBytes)
+		d.StorageFileID, err2 = uuid.FromBytes(*storageFileIDBytes)
+		if err2 != nil {
+			return nil, fmt.Errorf("could not parse document storage_file_id: %w", err2)
+		}
 	}
 	if sourceURL != nil {
 		d.SourceURL = *sourceURL
@@ -103,12 +116,24 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 			return nil, err
 		}
 
-		d.ID, _ = uuid.FromBytes(idBytes)
-		d.CustomerID, _ = uuid.FromBytes(customerIDBytes)
-		d.RagID, _ = uuid.FromBytes(ragIDBytes)
+		d.ID, err = uuid.FromBytes(idBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse document id: %w", err)
+		}
+		d.CustomerID, err = uuid.FromBytes(customerIDBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse document customer_id: %w", err)
+		}
+		d.RagID, err = uuid.FromBytes(ragIDBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse document rag_id: %w", err)
+		}
 
 		if storageFileIDBytes != nil {
-			d.StorageFileID, _ = uuid.FromBytes(*storageFileIDBytes)
+			d.StorageFileID, err = uuid.FromBytes(*storageFileIDBytes)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse document storage_file_id: %w", err)
+			}
 		}
 		if sourceURL != nil {
 			d.SourceURL = *sourceURL
@@ -124,8 +149,13 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 	return res, nil
 }
 
-// DocumentCreate inserts a new document record
+// DocumentCreate inserts a new document record.
+// Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) error {
+	now := time.Now()
+	d.TMCreate = &now
+	d.TMUpdate = &now
+
 	// Handle nullable storage_file_id: use nil for zero UUID
 	var storageFileID any
 	if d.StorageFileID == uuid.Nil {
@@ -159,8 +189,8 @@ func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) erro
 			d.SourceURL,
 			d.Status,
 			d.StatusMessage,
-			sq.Expr("NOW()"),
-			sq.Expr("NOW()"),
+			d.TMCreate,
+			d.TMUpdate,
 		)
 
 	sqlStr, args, err := q.ToSql()
@@ -179,7 +209,7 @@ func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) erro
 // DocumentGet retrieves a document by ID
 func (h *handler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"id": id.Bytes()}).
 		Where("tm_delete IS NULL")
@@ -201,7 +231,7 @@ func (h *handler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Docu
 // DocumentGetsByRagID retrieves all documents for a rag
 func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"rag_id": ragID.Bytes()}).
 		Where("tm_delete IS NULL")
@@ -228,7 +258,7 @@ func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*
 // DocumentGetsByCustomerID retrieves all documents for a customer
 func (h *handler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
 	q := psql.
-		Select(documentColumns...).
+		Select(documentColumns()...).
 		From(tableDocuments).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		Where("tm_delete IS NULL")

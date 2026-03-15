@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -38,8 +39,12 @@ func chunkColumns() []string {
 	}
 }
 
-// ChunkCreate inserts a new chunk with its embedding vector
+// ChunkCreate inserts a new chunk with its embedding vector.
+// Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []float32) error {
+	now := time.Now()
+	c.TMCreate = &now
+
 	embStr := formatEmbedding(embedding)
 
 	q := psql.Insert(tableRagChunks).
@@ -66,7 +71,7 @@ func (h *handler) ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []f
 			// pgvector accepts a string literal cast to vector type
 			sq.Expr("?::vector", embStr),
 			c.TokenCount,
-			sq.Expr("NOW()"),
+			c.TMCreate,
 		)
 
 	sqlStr, args, err := q.ToSql()
@@ -100,7 +105,11 @@ func (h *handler) ChunkCreateBatch(ctx context.Context, chunks []*chunk.Chunk, e
 		_ = tx.Rollback()
 	}()
 
+	now := time.Now()
+
 	for i, c := range chunks {
+		c.TMCreate = &now
+
 		embStr := formatEmbedding(embeddings[i])
 
 		q := psql.Insert(tableRagChunks).
@@ -126,7 +135,7 @@ func (h *handler) ChunkCreateBatch(ctx context.Context, chunks []*chunk.Chunk, e
 				c.SectionTitle,
 				sq.Expr("?::vector", embStr),
 				c.TokenCount,
-				sq.Expr("NOW()"),
+				c.TMCreate,
 			)
 
 		sqlStr, args, err := q.ToSql()
@@ -191,10 +200,22 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
 			return nil, nil, fmt.Errorf("could not scan chunk search row: %w", err)
 		}
 
-		c.ID, _ = uuid.FromBytes(idBytes)
-		c.DocumentID, _ = uuid.FromBytes(documentIDBytes)
-		c.RagID, _ = uuid.FromBytes(ragIDBytes)
-		c.CustomerID, _ = uuid.FromBytes(customerIDBytes)
+		c.ID, err = uuid.FromBytes(idBytes)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not parse chunk id: %w", err)
+		}
+		c.DocumentID, err = uuid.FromBytes(documentIDBytes)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not parse chunk document_id: %w", err)
+		}
+		c.RagID, err = uuid.FromBytes(ragIDBytes)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not parse chunk rag_id: %w", err)
+		}
+		c.CustomerID, err = uuid.FromBytes(customerIDBytes)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not parse chunk customer_id: %w", err)
+		}
 
 		chunks = append(chunks, &c)
 		scores = append(scores, 1-distance)
