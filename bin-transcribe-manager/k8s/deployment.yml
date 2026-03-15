@@ -54,6 +54,8 @@ spec:
               value: "8080"
             - name: STT_PROVIDER_PRIORITY
               value: "GCP,AWS"
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           resources:
             requests:
               cpu: "6m"
@@ -61,8 +63,6 @@ spec:
             limits:
               cpu: "60m"
               memory: "80M"
-            - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"
