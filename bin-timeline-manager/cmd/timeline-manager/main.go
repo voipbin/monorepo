@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/golang-migrate/migrate/v4"
@@ -27,6 +28,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
+	"monorepo/bin-timeline-manager/pkg/subscribehandler"
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -67,11 +69,27 @@ func runDaemon() error {
 		return errors.Wrapf(errMigrate, "could not run migrations")
 	}
 
-	if errStart := runServices(); errStart != nil {
+	// Create a context that cancels when the process receives a shutdown signal.
+	// This allows the subscribe handler's flush worker to drain buffered events.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	subscribeDone, errStart := runServices(ctx)
+	if errStart != nil {
 		return errors.Wrapf(errStart, "could not start services")
 	}
 
 	<-chDone
+	cancel()
+
+	// Wait for the flush worker to finish draining buffered events.
+	select {
+	case <-subscribeDone:
+		log.Info("Subscribe handler drain completed.")
+	case <-time.After(15 * time.Second):
+		log.Warn("Subscribe handler drain timed out after 15s.")
+	}
+
 	log.Info("Timeline-manager stopped safely.")
 	return nil
 }
@@ -136,7 +154,7 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-func runServices() error {
+func runServices(ctx context.Context) (<-chan struct{}, error) {
 	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
 
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
@@ -165,10 +183,16 @@ func runServices() error {
 	sipH := siphandler.NewSIPHandler(homerH, gcsReader, gcsBucket)
 
 	if errListen := runListen(sockHandler, evtHandler, sipH); errListen != nil {
-		return errors.Wrapf(errListen, "failed to run service listen")
+		return nil, errors.Wrapf(errListen, "failed to run service listen")
 	}
 
-	return nil
+	// Run subscribe handler to consume events from all services and write to ClickHouse
+	subscribeDone, errSubscribe := runSubscribe(ctx, sockHandler, db)
+	if errSubscribe != nil {
+		return nil, errors.Wrapf(errSubscribe, "failed to run subscribe handler")
+	}
+
+	return subscribeDone, nil
 }
 
 func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler) error {
@@ -181,4 +205,18 @@ func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.Event
 	}
 
 	return nil
+}
+
+func runSubscribe(ctx context.Context, sockHandler sockhandler.SockHandler, db dbhandler.DBHandler) (<-chan struct{}, error) {
+	log := logrus.WithField("func", "runSubscribe")
+
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, db)
+
+	doneCh, errRun := subHandler.Run(ctx)
+	if errRun != nil {
+		log.Errorf("Error occurred in subscribe handler. err: %v", errRun)
+		return nil, errRun
+	}
+
+	return doneCh, nil
 }

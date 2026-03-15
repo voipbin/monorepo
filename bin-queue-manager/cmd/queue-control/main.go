@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-queue-manager/internal/config"
 	"monorepo/bin-queue-manager/models/queue"
@@ -66,7 +65,7 @@ func initQueueHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (queuehand
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
 
 	return queuehandler.NewQueueHandler(reqHandler, db, notifyHandler), nil
 }
@@ -511,7 +510,7 @@ func initQueuecallHandler() (queuecallhandler.QueuecallHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
 
 	// For these operations, we pass nil for queueHandler since it's not used by Get/List/Delete
 	return queuecallhandler.NewQueuecallHandler(reqHandler, dbHandler, notifyHandler, nil), nil

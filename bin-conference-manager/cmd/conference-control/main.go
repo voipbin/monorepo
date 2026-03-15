@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -65,7 +64,7 @@ func initConferenceHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (conf
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConferenceEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConferenceEvent, serviceName)
 
 	return conferencehandler.NewConferenceHandler(reqHandler, notifyHandler, db), nil
 }

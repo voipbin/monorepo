@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-common-handler/models/sock"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -63,7 +62,7 @@ func initOutdialHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (outdial
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName)
 
 	return outdialhandler.NewOutdialHandler(db, reqHandler, notifyHandler), nil
 }

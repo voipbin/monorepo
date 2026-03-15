@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -36,7 +35,7 @@ func initHandler() (ttshandler.TTSHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNameTTSEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNameTTSEvent, serviceName)
 
 	handler := ttshandler.NewTTSHandler(
 		config.Get().AWSAccessKey,

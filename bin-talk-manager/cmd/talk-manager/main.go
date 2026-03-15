@@ -84,7 +84,6 @@ func runDaemon() error {
 		reqHandler,
 		commonoutline.QueueNameTalkEvent,
 		commonoutline.ServiceNameTalkManager,
-		os.Getenv("CLICKHOUSE_ADDRESS"),
 	)
 
 	// Initialize Redis

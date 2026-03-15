@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-tag-manager/internal/config"
 	"monorepo/bin-tag-manager/models/tag"
@@ -64,7 +63,7 @@ func initTagHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (taghandler.
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName)
 
 	return taghandler.NewTagHandler(reqHandler, db, notifyHandler), nil
 }

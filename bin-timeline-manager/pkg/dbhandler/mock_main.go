@@ -57,6 +57,20 @@ func (mr *MockDBHandlerMockRecorder) AggregatedEventList(ctx, activeflowID, page
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockDBHandler)(nil).AggregatedEventList), ctx, activeflowID, pageToken, pageSize)
 }
 
+// EventBatchInsert mocks base method.
+func (m *MockDBHandler) EventBatchInsert(ctx context.Context, rows []EventRow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventBatchInsert", ctx, rows)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventBatchInsert indicates an expected call of EventBatchInsert.
+func (mr *MockDBHandlerMockRecorder) EventBatchInsert(ctx, rows any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventBatchInsert", reflect.TypeOf((*MockDBHandler)(nil).EventBatchInsert), ctx, rows)
+}
+
 // EventList mocks base method.
 func (m *MockDBHandler) EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error) {
 	m.ctrl.T.Helper()

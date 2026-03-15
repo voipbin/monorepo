@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -681,7 +680,7 @@ func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accoun
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
 	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
 	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler)

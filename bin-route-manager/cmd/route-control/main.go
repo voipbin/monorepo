@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"monorepo/bin-route-manager/internal/config"
 	"monorepo/bin-route-manager/pkg/cachehandler"
@@ -93,7 +92,7 @@ func initRouteHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (routehand
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
 
 	return routehandler.NewRouteHandler(db, reqHandler, notifyHandler), nil
 }
