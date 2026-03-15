@@ -13,6 +13,7 @@ func (h *messageHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	aicallID uuid.UUID,
+	activeflowID uuid.UUID,
 	direction message.Direction,
 	role message.Role,
 	content string,
@@ -31,7 +32,8 @@ func (h *messageHandler) Create(
 			ID:         id,
 			CustomerID: customerID,
 		},
-		AIcallID: aicallID,
+		AIcallID:     aicallID,
+		ActiveflowID: activeflowID,
 
 		Direction:  direction,
 		Role:       role,
