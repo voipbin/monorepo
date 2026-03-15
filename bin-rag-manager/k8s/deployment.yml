@@ -46,6 +46,8 @@ spec:
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
+            - name: POSTGRESQL_DSN
+              value: ${POSTGRESQL_DSN}
           ports:
             - name: metrics
               protocol: "TCP"

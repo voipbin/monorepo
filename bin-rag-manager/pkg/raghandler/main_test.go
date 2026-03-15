@@ -77,7 +77,7 @@ func TestNewRagHandler(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "/tmp/store.gob", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "/tmp/store.gob", 5)
 	if h == nil {
 		t.Error("expected non-nil handler")
 	}
@@ -108,7 +108,7 @@ func TestRagHandler_Query_Success(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	req := &QueryRequest{
@@ -144,7 +144,7 @@ func TestRagHandler_Query_DefaultTopK(t *testing.T) {
 	st := store.NewMemoryStore()
 
 	defaultTopK := 7
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", defaultTopK)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", defaultTopK)
 	ctx := context.Background()
 
 	req := &QueryRequest{
@@ -172,7 +172,7 @@ func TestRagHandler_Query_RetrievalError(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	req := &QueryRequest{Query: "test"}
@@ -194,7 +194,7 @@ func TestRagHandler_Query_GenerationError(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	req := &QueryRequest{Query: "test"}
@@ -211,7 +211,7 @@ func TestRagHandler_IndexStatus(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	status, err := h.IndexStatus(ctx)
@@ -244,7 +244,7 @@ func TestRagHandler_IndexIncremental(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	err = h.IndexIncremental(ctx, []string{mdFile})
@@ -402,7 +402,7 @@ func TestRagHandler_IndexIncremental_EmbedError(t *testing.T) {
 	}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	err = h.IndexIncremental(ctx, []string{mdFile})
@@ -428,7 +428,7 @@ func TestRagHandler_IndexStatus_AfterIndexing(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	// Index the file
@@ -461,7 +461,7 @@ func TestRagHandler_Query_WithDocTypeFilter(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	req := &QueryRequest{
@@ -484,7 +484,7 @@ func TestRagHandler_IndexIncremental_NoChunks(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	// Index with empty file list
@@ -524,7 +524,7 @@ func TestRagHandler_IndexIncremental_WithSaveError(t *testing.T) {
 	// Use invalid store path to trigger save error
 	invalidPath := filepath.Join(tmpDir, "nonexistent", "store.gob")
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, invalidPath, 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, invalidPath, 5)
 	ctx := context.Background()
 
 	// Should not return error but should log it
@@ -552,7 +552,7 @@ func TestRagHandler_IndexFiles_ChunkError(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	// Use non-existent file to trigger chunk error
@@ -582,7 +582,7 @@ func TestRagHandler_LastRunTimestamp(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, "/tmp/docs", "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,"/tmp/docs", "", 5)
 	ctx := context.Background()
 
 	before := time.Now()
@@ -667,7 +667,7 @@ paths:
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	err = h.IndexFull(ctx)
@@ -695,7 +695,7 @@ func TestRagHandler_IndexFull_NonExistentDirs(t *testing.T) {
 	st := store.NewMemoryStore()
 
 	// Use tmpDir that doesn't have expected subdirectories
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	// Should not error even if no directories exist
@@ -741,7 +741,7 @@ paths:
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	err = h.IndexFull(ctx)
@@ -773,7 +773,7 @@ func TestRagHandler_IndexFull_WithRootCLAUDEMD(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	ctx := context.Background()
 
 	err = h.IndexFull(ctx)
@@ -861,7 +861,7 @@ paths:
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	impl := h.(*ragHandler)
 	ctx := context.Background()
 
@@ -895,7 +895,7 @@ func TestRagHandler_IndexFull_ErrorClearance(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	impl := h.(*ragHandler)
 
 	// Set some errors
@@ -928,7 +928,7 @@ func TestRagHandler_IndexIncremental_ErrorClearance(t *testing.T) {
 	emb := &mockEmbedder{}
 	st := store.NewMemoryStore()
 
-	h := NewRagHandler(ret, gen, emb, st, tmpDir, "", 5)
+	h := NewRagHandler(ret, gen, emb, st, nil,tmpDir, "", 5)
 	impl := h.(*ragHandler)
 
 	// Set some errors

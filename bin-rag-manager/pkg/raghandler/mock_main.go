@@ -11,8 +11,12 @@ package raghandler
 
 import (
 	context "context"
+	document "monorepo/bin-rag-manager/models/document"
+	query "monorepo/bin-rag-manager/models/query"
+	rag "monorepo/bin-rag-manager/models/rag"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -38,6 +42,80 @@ func NewMockRagHandler(ctrl *gomock.Controller) *MockRagHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRagHandler) EXPECT() *MockRagHandlerMockRecorder {
 	return m.recorder
+}
+
+// DocumentCreate mocks base method.
+func (m *MockRagHandler) DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, fileIDs []uuid.UUID, urls []string) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentCreate", ctx, customerID, ragID, fileIDs, urls)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentCreate indicates an expected call of DocumentCreate.
+func (mr *MockRagHandlerMockRecorder) DocumentCreate(ctx, customerID, ragID, fileIDs, urls any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentCreate", reflect.TypeOf((*MockRagHandler)(nil).DocumentCreate), ctx, customerID, ragID, fileIDs, urls)
+}
+
+// DocumentDelete mocks base method.
+func (m *MockRagHandler) DocumentDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DocumentDelete indicates an expected call of DocumentDelete.
+func (mr *MockRagHandlerMockRecorder) DocumentDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentDelete", reflect.TypeOf((*MockRagHandler)(nil).DocumentDelete), ctx, id)
+}
+
+// DocumentGet mocks base method.
+func (m *MockRagHandler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGet", ctx, id)
+	ret0, _ := ret[0].(*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGet indicates an expected call of DocumentGet.
+func (mr *MockRagHandlerMockRecorder) DocumentGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGet", reflect.TypeOf((*MockRagHandler)(nil).DocumentGet), ctx, id)
+}
+
+// DocumentGetsByCustomerID mocks base method.
+func (m *MockRagHandler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetsByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetsByCustomerID indicates an expected call of DocumentGetsByCustomerID.
+func (mr *MockRagHandlerMockRecorder) DocumentGetsByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByCustomerID", reflect.TypeOf((*MockRagHandler)(nil).DocumentGetsByCustomerID), ctx, customerID)
+}
+
+// DocumentGetsByRagID mocks base method.
+func (m *MockRagHandler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetsByRagID", ctx, ragID)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetsByRagID indicates an expected call of DocumentGetsByRagID.
+func (mr *MockRagHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockRagHandler)(nil).DocumentGetsByRagID), ctx, ragID)
 }
 
 // IndexFull mocks base method.
@@ -96,4 +174,78 @@ func (m *MockRagHandler) Query(ctx context.Context, req *QueryRequest) (*QueryRe
 func (mr *MockRagHandlerMockRecorder) Query(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRagHandler)(nil).Query), ctx, req)
+}
+
+// QueryRag mocks base method.
+func (m *MockRagHandler) QueryRag(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryRag", ctx, ragID, queryText, topK)
+	ret0, _ := ret[0].(*query.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryRag indicates an expected call of QueryRag.
+func (mr *MockRagHandlerMockRecorder) QueryRag(ctx, ragID, queryText, topK any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryRag", reflect.TypeOf((*MockRagHandler)(nil).QueryRag), ctx, ragID, queryText, topK)
+}
+
+// RagCreate mocks base method.
+func (m *MockRagHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, fileIDs []uuid.UUID, urls []string) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagCreate", ctx, customerID, name, description, fileIDs, urls)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagCreate indicates an expected call of RagCreate.
+func (mr *MockRagHandlerMockRecorder) RagCreate(ctx, customerID, name, description, fileIDs, urls any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockRagHandler)(nil).RagCreate), ctx, customerID, name, description, fileIDs, urls)
+}
+
+// RagDelete mocks base method.
+func (m *MockRagHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RagDelete indicates an expected call of RagDelete.
+func (mr *MockRagHandlerMockRecorder) RagDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDelete", reflect.TypeOf((*MockRagHandler)(nil).RagDelete), ctx, id)
+}
+
+// RagGet mocks base method.
+func (m *MockRagHandler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagGet", ctx, id)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagGet indicates an expected call of RagGet.
+func (mr *MockRagHandlerMockRecorder) RagGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGet", reflect.TypeOf((*MockRagHandler)(nil).RagGet), ctx, id)
+}
+
+// RagGetsByCustomerID mocks base method.
+func (m *MockRagHandler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagGetsByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].([]*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagGetsByCustomerID indicates an expected call of RagGetsByCustomerID.
+func (mr *MockRagHandlerMockRecorder) RagGetsByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGetsByCustomerID", reflect.TypeOf((*MockRagHandler)(nil).RagGetsByCustomerID), ctx, customerID)
 }

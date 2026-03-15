@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,11 +14,13 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	joonix "github.com/joonix/log"
+	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-rag-manager/internal/config"
+	"monorepo/bin-rag-manager/pkg/dbhandler"
 	"monorepo/bin-rag-manager/pkg/embedder"
 	"monorepo/bin-rag-manager/pkg/generator"
 	"monorepo/bin-rag-manager/pkg/listenhandler"
@@ -104,6 +107,20 @@ func runService(cfg config.Config) error {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
+	// PostgreSQL connection
+	db, err := sql.Open("postgres", cfg.PostgreSQLDSN)
+	if err != nil {
+		return fmt.Errorf("could not connect to PostgreSQL: %w", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("could not ping PostgreSQL: %w", err)
+	}
+	log.Info("Connected to PostgreSQL")
+
+	dbH := dbhandler.NewHandler(db)
+
 	// Initialize vector store
 	vectorStore := store.NewMemoryStore()
 
@@ -127,7 +144,7 @@ func runService(cfg config.Config) error {
 	ret := retriever.NewRetriever(emb, vectorStore)
 
 	// Initialize rag handler
-	ragH := raghandler.NewRagHandler(ret, gen, emb, vectorStore, cfg.RAGDocsBasePath, cfg.GCSEmbeddingsPath, cfg.RAGTopK)
+	ragH := raghandler.NewRagHandler(ret, gen, emb, vectorStore, dbH, cfg.RAGDocsBasePath, cfg.GCSEmbeddingsPath, cfg.RAGTopK)
 
 	// Run listen handler
 	if err := runListen(sockHandler, ragH); err != nil {

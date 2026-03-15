@@ -11,13 +11,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-rag-manager/models/document"
+	"monorepo/bin-rag-manager/models/query"
+	"monorepo/bin-rag-manager/models/rag"
 	"monorepo/bin-rag-manager/pkg/chunker"
+	"monorepo/bin-rag-manager/pkg/dbhandler"
 	"monorepo/bin-rag-manager/pkg/embedder"
 	"monorepo/bin-rag-manager/pkg/generator"
 	"monorepo/bin-rag-manager/pkg/retriever"
 	"monorepo/bin-rag-manager/pkg/store"
-
-	"github.com/sirupsen/logrus"
 )
 
 // QueryRequest represents a RAG query request
@@ -50,19 +55,35 @@ type IndexStatusResponse struct {
 
 // RagHandler defines the interface for RAG operations
 type RagHandler interface {
+	// Existing (kept for backward compat)
 	Query(ctx context.Context, req *QueryRequest) (*QueryResponse, error)
 	IndexFull(ctx context.Context) error
 	IndexIncremental(ctx context.Context, files []string) error
 	IndexStatus(ctx context.Context) (*IndexStatusResponse, error)
+
+	// New multi-tenant operations
+	RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, fileIDs []uuid.UUID, urls []string) (*rag.Rag, error)
+	RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error)
+	RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error)
+	RagDelete(ctx context.Context, id uuid.UUID) error
+
+	DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, fileIDs []uuid.UUID, urls []string) ([]*document.Document, error)
+	DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error)
+	DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error)
+	DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error)
+	DocumentDelete(ctx context.Context, id uuid.UUID) error
+
+	QueryRag(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error)
 }
 
 type ragHandler struct {
-	retriever  retriever.Retriever
-	generator  generator.Generator
-	embedder   embedder.Embedder
-	store      store.Store
-	docsPath   string
-	storePath  string
+	retriever   retriever.Retriever
+	generator   generator.Generator
+	embedder    embedder.Embedder
+	store       store.Store
+	dbHandler   dbhandler.DBHandler
+	docsPath    string
+	storePath   string
 	defaultTopK int
 
 	mu          sync.Mutex
@@ -76,6 +97,7 @@ func NewRagHandler(
 	gen generator.Generator,
 	emb embedder.Embedder,
 	st store.Store,
+	dbH dbhandler.DBHandler,
 	docsPath string,
 	storePath string,
 	defaultTopK int,
@@ -85,6 +107,7 @@ func NewRagHandler(
 		generator:   gen,
 		embedder:    emb,
 		store:       st,
+		dbHandler:   dbH,
 		docsPath:    docsPath,
 		storePath:   storePath,
 		defaultTopK: defaultTopK,
@@ -344,4 +367,54 @@ func detectDocType(filePath string) chunker.DocType {
 		return chunker.DocTypeGuideline
 	}
 	return chunker.DocTypeDesign
+}
+
+// RagCreate creates a new RAG configuration for a customer
+func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, fileIDs []uuid.UUID, urls []string) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// RagGet retrieves a RAG configuration by ID
+func (h *ragHandler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// RagGetsByCustomerID retrieves all RAG configurations for a customer
+func (h *ragHandler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// RagDelete deletes a RAG configuration by ID
+func (h *ragHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
+	return fmt.Errorf("not implemented")
+}
+
+// DocumentCreate creates documents for a RAG configuration
+func (h *ragHandler) DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, fileIDs []uuid.UUID, urls []string) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DocumentGet retrieves a document by ID
+func (h *ragHandler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DocumentGetsByRagID retrieves all documents for a RAG configuration
+func (h *ragHandler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DocumentGetsByCustomerID retrieves all documents for a customer
+func (h *ragHandler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DocumentDelete deletes a document by ID
+func (h *ragHandler) DocumentDelete(ctx context.Context, id uuid.UUID) error {
+	return fmt.Errorf("not implemented")
+}
+
+// QueryRag performs a RAG query against a specific RAG configuration
+func (h *ragHandler) QueryRag(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
+	return nil, fmt.Errorf("not implemented")
 }

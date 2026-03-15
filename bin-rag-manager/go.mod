@@ -62,6 +62,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
+	github.com/lib/pq v1.11.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sashabaranov/go-openai v1.41.2

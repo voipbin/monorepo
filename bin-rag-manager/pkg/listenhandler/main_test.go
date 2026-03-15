@@ -4,9 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-rag-manager/models/document"
+	"monorepo/bin-rag-manager/models/query"
+	"monorepo/bin-rag-manager/models/rag"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-rag-manager/pkg/chunker"
@@ -113,6 +120,38 @@ func (m *mockRagHandlerForListen) IndexStatus(ctx context.Context) (*raghandler.
 		ChunkCount: 100,
 		Errors:     []string{},
 	}, nil
+}
+
+// Stub implementations for new multi-tenant interface methods
+func (m *mockRagHandlerForListen) RagCreate(_ context.Context, _ uuid.UUID, _, _ string, _ []uuid.UUID, _ []string) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) RagGet(_ context.Context, _ uuid.UUID) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) RagGetsByCustomerID(_ context.Context, _ uuid.UUID) ([]*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) RagDelete(_ context.Context, _ uuid.UUID) error {
+	return fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) DocumentCreate(_ context.Context, _, _ uuid.UUID, _ []uuid.UUID, _ []string) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) DocumentGet(_ context.Context, _ uuid.UUID) (*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) DocumentGetsByRagID(_ context.Context, _ uuid.UUID) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) DocumentGetsByCustomerID(_ context.Context, _ uuid.UUID) ([]*document.Document, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) DocumentDelete(_ context.Context, _ uuid.UUID) error {
+	return fmt.Errorf("not implemented")
+}
+func (m *mockRagHandlerForListen) QueryRag(_ context.Context, _ uuid.UUID, _ string, _ int) (*query.Response, error) {
+	return nil, fmt.Errorf("not implemented")
 }
 
 func TestListenHandler_Interface(t *testing.T) {
