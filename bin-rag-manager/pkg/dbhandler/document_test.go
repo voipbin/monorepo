@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"testing"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -10,6 +11,8 @@ import (
 )
 
 func Test_DocumentCreate_SQL(t *testing.T) {
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	d := &document.Document{
 		ID:            uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
 		CustomerID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
@@ -20,6 +23,8 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 		SourceURL:     "",
 		Status:        document.StatusPending,
 		StatusMessage: "",
+		TMCreate:      &now,
+		TMUpdate:      &now,
 	}
 
 	var storageFileID any
@@ -54,8 +59,8 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 			d.SourceURL,
 			d.Status,
 			d.StatusMessage,
-			sq.Expr("NOW()"),
-			sq.Expr("NOW()"),
+			d.TMCreate,
+			d.TMUpdate,
 		)
 
 	sqlStr, args, err := q.ToSql()
@@ -63,18 +68,20 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building insert SQL: %v", err)
 	}
 
-	expectedSQL := "INSERT INTO rag_documents (id,customer_id,rag_id,name,doc_type,storage_file_id,source_url,status,status_message,tm_create,tm_update) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())"
+	expectedSQL := "INSERT INTO rag_documents (id,customer_id,rag_id,name,doc_type,storage_file_id,source_url,status,status_message,tm_create,tm_update) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)"
 	if sqlStr != expectedSQL {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
 
-	// 9 args (NOW() expressions are not args)
-	if len(args) != 9 {
-		t.Errorf("unexpected arg count: got %d, want 9", len(args))
+	// 11 args (timestamps are now parameterized)
+	if len(args) != 11 {
+		t.Errorf("unexpected arg count: got %d, want 11", len(args))
 	}
 }
 
 func Test_DocumentCreate_NilStorageFileID(t *testing.T) {
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	d := &document.Document{
 		ID:            uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
 		CustomerID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
@@ -85,6 +92,8 @@ func Test_DocumentCreate_NilStorageFileID(t *testing.T) {
 		SourceURL:     "https://example.com/doc.pdf",
 		Status:        document.StatusPending,
 		StatusMessage: "",
+		TMCreate:      &now,
+		TMUpdate:      &now,
 	}
 
 	var storageFileID any
@@ -119,8 +128,8 @@ func Test_DocumentCreate_NilStorageFileID(t *testing.T) {
 			d.SourceURL,
 			d.Status,
 			d.StatusMessage,
-			sq.Expr("NOW()"),
-			sq.Expr("NOW()"),
+			d.TMCreate,
+			d.TMUpdate,
 		)
 
 	_, args, err := q.ToSql()

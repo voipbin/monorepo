@@ -9,6 +9,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-rag-manager/models/chunk"
 	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/models/rag"
@@ -48,12 +49,14 @@ type DBHandler interface {
 
 // handler implements DBHandler using PostgreSQL
 type handler struct {
-	db *sql.DB
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
 }
 
 // NewHandler creates a new DBHandler
 func NewHandler(db *sql.DB) DBHandler {
 	return &handler{
-		db: db,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
 	}
 }

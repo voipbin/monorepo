@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"strings"
 	"testing"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -14,11 +15,15 @@ func Test_RagCreate_SQL(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	customerID := uuid.Must(uuid.NewV4())
 
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	r := &rag.Rag{
 		ID:          id,
 		CustomerID:  customerID,
 		Name:        "test-rag",
 		Description: "test description",
+		TMCreate:    &now,
+		TMUpdate:    &now,
 	}
 
 	q := psql.
@@ -36,8 +41,8 @@ func Test_RagCreate_SQL(t *testing.T) {
 			r.CustomerID.Bytes(),
 			r.Name,
 			r.Description,
-			sq.Expr("NOW()"),
-			sq.Expr("NOW()"),
+			r.TMCreate,
+			r.TMUpdate,
 		)
 
 	sqlStr, args, err := q.ToSql()
@@ -45,14 +50,14 @@ func Test_RagCreate_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building SQL: %v", err)
 	}
 
-	expectedSQL := "INSERT INTO rag_rags (id,customer_id,name,description,tm_create,tm_update) VALUES ($1,$2,$3,$4,NOW(),NOW())"
+	expectedSQL := "INSERT INTO rag_rags (id,customer_id,name,description,tm_create,tm_update) VALUES ($1,$2,$3,$4,$5,$6)"
 	if sqlStr != expectedSQL {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
 
-	// Should have 4 args: id bytes, customer_id bytes, name, description
-	if len(args) != 4 {
-		t.Errorf("unexpected number of args: got %d, want 4", len(args))
+	// Should have 6 args: id bytes, customer_id bytes, name, description, tm_create, tm_update
+	if len(args) != 6 {
+		t.Errorf("unexpected number of args: got %d, want 6", len(args))
 	}
 
 	// Verify name and description are in args

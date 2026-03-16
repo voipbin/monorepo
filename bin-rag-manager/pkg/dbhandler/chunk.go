@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -42,8 +41,7 @@ func chunkColumns() []string {
 // ChunkCreate inserts a new chunk with its embedding vector.
 // Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []float32) error {
-	now := time.Now()
-	c.TMCreate = &now
+	c.TMCreate = h.utilHandler.TimeNow()
 
 	embStr := formatEmbedding(embedding)
 
@@ -105,10 +103,8 @@ func (h *handler) ChunkCreateBatch(ctx context.Context, chunks []*chunk.Chunk, e
 		_ = tx.Rollback()
 	}()
 
-	now := time.Now()
-
 	for i, c := range chunks {
-		c.TMCreate = &now
+		c.TMCreate = h.utilHandler.TimeNow()
 
 		embStr := formatEmbedding(embeddings[i])
 

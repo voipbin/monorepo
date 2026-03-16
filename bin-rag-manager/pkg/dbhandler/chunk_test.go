@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"testing"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -182,6 +183,7 @@ func Test_ChunkInsert_SQL(t *testing.T) {
 	// Verify the generated SQL for chunk insert with embedding
 	embedding := []float32{0.1, 0.2, 0.3}
 	embStr := formatEmbedding(embedding)
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
 
@@ -195,7 +197,7 @@ func Test_ChunkInsert_SQL(t *testing.T) {
 			fakeID, fakeID, fakeID, fakeID,
 			0, "test text", "test section",
 			sq.Expr("?::vector", embStr),
-			100, sq.Expr("NOW()"),
+			100, &now,
 		)
 
 	sqlStr, args, err := q.ToSql()
@@ -203,17 +205,17 @@ func Test_ChunkInsert_SQL(t *testing.T) {
 		t.Fatalf("ToSql() error: %v", err)
 	}
 
-	expectedSQL := "INSERT INTO rag_chunks (id,document_id,rag_id,customer_id,chunk_index,text,section_title,embedding,token_count,tm_create) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::vector,$9,NOW())"
+	expectedSQL := "INSERT INTO rag_chunks (id,document_id,rag_id,customer_id,chunk_index,text,section_title,embedding,token_count,tm_create) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::vector,$9,$10)"
 	if sqlStr != expectedSQL {
 		t.Errorf("SQL = %q, want %q", sqlStr, expectedSQL)
 	}
 
-	// args should contain: 4 UUIDs + chunk_index + text + section_title + embedding_string + token_count = 9
-	if len(args) != 9 {
-		t.Errorf("args length = %d, want 9", len(args))
+	// args should contain: 4 UUIDs + chunk_index + text + section_title + embedding_string + token_count + tm_create = 10
+	if len(args) != 10 {
+		t.Errorf("args length = %d, want 10", len(args))
 	}
 
-	// The embedding string should be the last meaningful arg (index 7)
+	// The embedding string should be at index 7
 	if embArg, ok := args[7].(string); !ok || embArg != "[0.1,0.2,0.3]" {
 		t.Errorf("embedding arg = %v, want %q", args[7], "[0.1,0.2,0.3]")
 	}

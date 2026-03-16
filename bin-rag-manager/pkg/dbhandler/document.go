@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -152,9 +151,8 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 // DocumentCreate inserts a new document record.
 // Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) error {
-	now := time.Now()
-	d.TMCreate = &now
-	d.TMUpdate = &now
+	d.TMCreate = h.utilHandler.TimeNow()
+	d.TMUpdate = h.utilHandler.TimeNow()
 
 	// Handle nullable storage_file_id: use nil for zero UUID
 	var storageFileID any

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -101,9 +100,8 @@ func ragColumns() []string {
 // RagCreate inserts a new rag record.
 // Timestamps are set in Go so the caller's struct is populated after insert.
 func (h *handler) RagCreate(ctx context.Context, r *rag.Rag) error {
-	now := time.Now()
-	r.TMCreate = &now
-	r.TMUpdate = &now
+	r.TMCreate = h.utilHandler.TimeNow()
+	r.TMUpdate = h.utilHandler.TimeNow()
 
 	q := psql.
 		Insert(tableRagRags).
