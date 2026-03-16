@@ -13,6 +13,9 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	joonix "github.com/joonix/log"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -54,6 +57,7 @@ func init() {
 	rootCmd.Flags().String("gcs_embeddings_path", "rag/embeddings.gob", "GCS path for embeddings file")
 	rootCmd.Flags().String("rag_docs_base_path", "", "Base path to document sources")
 	rootCmd.Flags().String("postgresql_dsn", "", "PostgreSQL connection string")
+	rootCmd.Flags().String("migrations_path", "./migrations", "Path to migration files")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
@@ -84,6 +88,11 @@ func run(cmd *cobra.Command, args []string) error {
 	// Initialize Prometheus
 	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
 
+	// Run database migrations before starting services
+	if err := runMigrations(cfg); err != nil {
+		return fmt.Errorf("could not run migrations: %w", err)
+	}
+
 	if err := runService(cfg); err != nil {
 		log.Errorf("Run func has finished. err: %v", err)
 		return err
@@ -97,6 +106,40 @@ func signalHandler() {
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
+}
+
+// runMigrations applies pending database migrations at startup
+func runMigrations(cfg config.Config) error {
+	log := logrus.WithField("func", "runMigrations")
+
+	if cfg.PostgreSQLDSN == "" {
+		log.Warn("PostgreSQL DSN not configured, skipping migrations")
+		return nil
+	}
+
+	sourceURL := fmt.Sprintf("file://%s", cfg.MigrationsPath)
+
+	log.WithFields(logrus.Fields{
+		"source": sourceURL,
+	}).Info("Running database migrations...")
+
+	m, err := migrate.New(sourceURL, cfg.PostgreSQLDSN)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrate: %w", err)
+	}
+	defer func() { _, _ = m.Close() }()
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("migration failed: %w", err)
+	}
+
+	version, dirty, _ := m.Version()
+	log.WithFields(logrus.Fields{
+		"version": version,
+		"dirty":   dirty,
+	}).Info("Database migrations completed")
+
+	return nil
 }
 
 // runService initializes and starts the RAG service

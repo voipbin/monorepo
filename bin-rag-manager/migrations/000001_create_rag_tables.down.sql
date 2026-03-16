@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS rag_chunks;
+DROP TABLE IF EXISTS rag_documents;
+DROP TABLE IF EXISTS rag_rags;
+DROP EXTENSION IF EXISTS vector;

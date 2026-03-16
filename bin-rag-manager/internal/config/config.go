@@ -36,7 +36,8 @@ type Config struct {
 	RAGDocsBasePath string
 
 	// PostgreSQL
-	PostgreSQLDSN string
+	PostgreSQLDSN  string
+	MigrationsPath string
 }
 
 // Get returns the current configuration
@@ -61,6 +62,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("gcs_embeddings_path", "rag/embeddings.gob", "GCS path for embeddings file")
 	f.String("rag_docs_base_path", "", "Base path to document sources")
 	f.String("postgresql_dsn", "", "PostgreSQL connection string")
+	f.String("migrations_path", "./migrations", "Path to migration files")
 
 	bindings := map[string]string{
 		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
@@ -75,6 +77,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"gcs_embeddings_path":      "GCS_EMBEDDINGS_PATH",
 		"rag_docs_base_path":       "RAG_DOCS_BASE_PATH",
 		"postgresql_dsn":            "POSTGRESQL_DSN",
+		"migrations_path":           "MIGRATIONS_PATH",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -106,6 +109,7 @@ func LoadGlobalConfig() {
 			GCSEmbeddingsPath:       viper.GetString("gcs_embeddings_path"),
 			RAGDocsBasePath:         viper.GetString("rag_docs_base_path"),
 			PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
+			MigrationsPath:          viper.GetString("migrations_path"),
 		}
 	})
 }
@@ -152,6 +156,9 @@ func InitConfig(cmd *cobra.Command) error {
 	if err = viper.BindPFlag("postgresql_dsn", cmd.Flags().Lookup("postgresql_dsn")); err != nil {
 		return errors.Wrapf(err, "error binding postgresql_dsn flag")
 	}
+	if err = viper.BindPFlag("migrations_path", cmd.Flags().Lookup("migrations_path")); err != nil {
+		return errors.Wrapf(err, "error binding migrations_path flag")
+	}
 
 	globalConfig = Config{
 		PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
@@ -166,6 +173,7 @@ func InitConfig(cmd *cobra.Command) error {
 		GCSEmbeddingsPath:       viper.GetString("gcs_embeddings_path"),
 		RAGDocsBasePath:         viper.GetString("rag_docs_base_path"),
 		PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
+		MigrationsPath:          viper.GetString("migrations_path"),
 	}
 
 	return nil
