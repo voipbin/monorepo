@@ -32,6 +32,8 @@ spec:
               value: ":2112"
             - name: RABBITMQ_ADDRESS
               value: ${RABBITMQ_ADDRESS}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

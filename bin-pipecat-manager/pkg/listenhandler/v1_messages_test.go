@@ -56,7 +56,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9bee66ae-b3ab-11f0-8bb6-874d8fe199c7","customer_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","pipecatcall_reference_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"9bee66ae-b3ab-11f0-8bb6-874d8fe199c7","customer_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","pipecatcall_reference_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}

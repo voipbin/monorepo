@@ -695,7 +695,7 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"2e5b56a2-b49e-11ec-a643-5b72b632781f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}]`),
+				Data:       []byte(`[{"id":"2e5b56a2-b49e-11ec-a643-5b72b632781f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}]`),
 			},
 		},
 	}

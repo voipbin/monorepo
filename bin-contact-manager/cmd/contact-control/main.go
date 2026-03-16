@@ -64,7 +64,7 @@ func initContactHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (contact
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
 
 	return contacthandler.NewContactHandler(reqHandler, db, notifyHandler), nil
 }

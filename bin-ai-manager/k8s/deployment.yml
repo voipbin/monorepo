@@ -40,6 +40,8 @@ spec:
               value: "1"
             - name: ENGINE_KEY_CHATGPT
               value: "${AUTHTOKEN_OPENAI}"
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

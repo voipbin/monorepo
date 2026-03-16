@@ -19,9 +19,10 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		aicallID   uuid.UUID
-		direction  message.Direction
+		customerID   uuid.UUID
+		aicallID     uuid.UUID
+		activeflowID uuid.UUID
+		direction    message.Direction
 		role       message.Role
 		content    string
 		toolCalls  []message.ToolCall
@@ -34,9 +35,10 @@ func Test_Create(t *testing.T) {
 		{
 			name: "have all",
 
-			customerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
-			aicallID:   uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
-			direction:  message.DirectionIncoming,
+			customerID:   uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
+			aicallID:     uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
+			activeflowID: uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+			direction:    message.DirectionIncoming,
 			role:       message.RoleUser,
 			content:    "Hello, world!",
 			toolCalls: []message.ToolCall{
@@ -58,7 +60,8 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("751956c2-8482-11f0-846a-c71f69f8c722"),
 					CustomerID: uuid.FromStringOrNil("f227397c-f260-11ef-b217-4f6ff6930cf2"),
 				},
-				AIcallID: uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
+				AIcallID:     uuid.FromStringOrNil("f26fd614-f260-11ef-ae2f-ab1a2508e20d"),
+				ActiveflowID: uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 
 				Direction: message.DirectionIncoming,
 				Role:      message.RoleUser,
@@ -111,7 +114,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID)
+			res, err := h.Create(ctx, tt.customerID, tt.aicallID, tt.activeflowID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

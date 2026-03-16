@@ -15,8 +15,18 @@ import (
 
 const clickhouseRetryInterval = 30 * time.Second
 
+// EventRow represents a single event row for batch insert.
+type EventRow struct {
+	Timestamp time.Time
+	EventType string
+	Publisher string
+	DataType  string
+	Data      string
+}
+
 // DBHandler interface for database operations.
 type DBHandler interface {
+	EventBatchInsert(ctx context.Context, rows []EventRow) error
 	EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
 	AggregatedEventList(ctx context.Context, activeflowID string, pageToken string, pageSize int) ([]*event.Event, error)
 	WaitForConnection(ctx context.Context) error

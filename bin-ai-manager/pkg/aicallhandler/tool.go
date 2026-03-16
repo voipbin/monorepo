@@ -35,7 +35,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 
 	// create a message for tool handle request
-	tmp, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
+	tmp, errCreate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
@@ -97,7 +97,7 @@ func (h *aicallHandler) toolCreateResultMessage(
 		return nil, errors.Wrapf(err, "could not marshal the tool result content")
 	}
 
-	tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID)
+	tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}

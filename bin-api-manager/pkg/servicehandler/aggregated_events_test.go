@@ -636,3 +636,91 @@ func Test_AggregatedEventList_UnknownEventTypeSkipped(t *testing.T) {
 		t.Errorf("Wrong event type. expect: call_created, got: %s", res[0].EventType)
 	}
 }
+
+// Test_convertAggregatedEventData_LongestPrefixMatch verifies that overlapping prefixes
+// resolve to the most specific (longest) converter.
+func Test_convertAggregatedEventData_LongestPrefixMatch(t *testing.T) {
+	tests := []struct {
+		name      string
+		eventType string
+		data      string
+		wantType  string // expected Go type name of the Data field
+	}{
+		{
+			name:      "conversation_message_ beats conversation_",
+			eventType: "conversation_message_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*message.WebhookMessage",
+		},
+		{
+			name:      "conversation_ matches conversation event",
+			eventType: "conversation_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*conversation.WebhookMessage",
+		},
+		{
+			name:      "extension_direct_ beats extension_",
+			eventType: "extension_direct_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*extensiondirect.WebhookMessage",
+		},
+		{
+			name:      "extension_ matches extension event",
+			eventType: "extension_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*extension.WebhookMessage",
+		},
+		{
+			name:      "transcribe_speech_ beats transcribe_",
+			eventType: "transcribe_speech_started",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*streaming.WebhookMessage",
+		},
+		{
+			name:      "transcribe_ matches transcribe event",
+			eventType: "transcribe_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*transcribe.WebhookMessage",
+		},
+		{
+			name:      "account_ case-sensitive does not match Account_",
+			eventType: "account_created",
+			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
+			wantType:  "*account.WebhookMessage",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := &tmevent.Event{
+				Timestamp: time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC),
+				EventType: tt.eventType,
+				Data:      json.RawMessage(tt.data),
+			}
+
+			result, err := convertAggregatedEventData(event)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			gotType := fmt.Sprintf("%T", result.Data)
+			if gotType != tt.wantType {
+				t.Errorf("Wrong data type for %s. want: %s, got: %s", tt.eventType, tt.wantType, gotType)
+			}
+		})
+	}
+}
+
+// Test_convertAggregatedEventData_UnsupportedType verifies that unknown event types return an error.
+func Test_convertAggregatedEventData_UnsupportedType(t *testing.T) {
+	event := &tmevent.Event{
+		Timestamp: time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC),
+		EventType: "unknown_event_type",
+		Data:      json.RawMessage(`{"id":"test"}`),
+	}
+
+	_, err := convertAggregatedEventData(event)
+	if err == nil {
+		t.Error("Expected error for unsupported event type, got nil")
+	}
+}

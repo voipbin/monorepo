@@ -12,7 +12,8 @@ import (
 type Message struct {
 	identity.Identity
 
-	AIcallID uuid.UUID `json:"aicall_id,omitempty" db:"aicall_id,uuid"`
+	AIcallID     uuid.UUID `json:"aicall_id,omitempty" db:"aicall_id,uuid"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 
 	Direction Direction `json:"direction,omitempty" db:"direction"`
 	Role      Role      `json:"role,omitempty" db:"role"`

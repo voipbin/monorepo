@@ -418,6 +418,7 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 		PipecatcallID:            pc.ID,
 		PipecatcallReferenceType: pc.ReferenceType,
 		PipecatcallReferenceID:   pc.ReferenceID,
+		ActiveflowID:             pc.ActiveflowID,
 		TransitionFunctionName:   request.TransitionFunctionName,
 		FromMember:               request.FromMember,
 		ToMember:                 request.ToMember,
@@ -441,6 +442,7 @@ func (h *pipecatcallHandler) newMessageEvent(se *pipecatcall.Session, text strin
 		PipecatcallID:            se.ID,
 		PipecatcallReferenceType: se.PipecatcallReferenceType,
 		PipecatcallReferenceID:   se.PipecatcallReferenceID,
+		ActiveflowID:             se.ActiveflowID,
 
 		Text: text,
 	}

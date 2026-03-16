@@ -405,7 +405,7 @@ func initCustomerHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (custom
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
 	accesskeyHandler := accesskeyhandler.NewAccesskeyHandler(reqHandler, db, notifyHandler)
 
 	return customerhandler.NewCustomerHandler(reqHandler, db, cache, notifyHandler, accesskeyHandler), nil
@@ -464,7 +464,7 @@ func initAccesskeyHandlerWithDeps(sqlDB *sql.DB, cache cachehandler.CacheHandler
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName, "")
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
 
 	return accesskeyhandler.NewAccesskeyHandler(reqHandler, db, notifyHandler), nil
 }

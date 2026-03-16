@@ -37,7 +37,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("pipecatcall", pc).Debugf("Found the pipecatcall.")
 
-	res, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	res, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", c.ID)
 	}
@@ -60,7 +60,7 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
 	aicallID := c.ID
-	res, errTerminate := h.messageHandler.Create(ctx, c.CustomerID, aicallID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	res, errTerminate := h.messageHandler.Create(ctx, c.CustomerID, aicallID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", aicallID)
 	}

@@ -44,6 +44,8 @@ spec:
               value: ${DOMAIN_NAME_EXTENSION}
             - name: DOMAIN_NAME_TRUNK
               value: ${DOMAIN_NAME_TRUNK}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

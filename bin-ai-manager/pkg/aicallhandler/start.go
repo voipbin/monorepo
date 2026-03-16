@@ -175,7 +175,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	log.WithField("aicall", res).Debugf("Found the aicall. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
-	tmp, err := h.messageHandler.Create(ctx, res.CustomerID, res.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	tmp, err := h.messageHandler.Create(ctx, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
 	}
@@ -414,7 +414,7 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	log.Debugf("Parsed parameter. aicall_id: %s", c.ID)
 
 	for _, msg := range messages {
-		tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
+		tmp, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
 		if err != nil {
 			return errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
 		}

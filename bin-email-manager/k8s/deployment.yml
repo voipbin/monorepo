@@ -50,6 +50,8 @@ spec:
               value: ${SENDGRID_API_KEY}
             - name: MAILGUN_API_KEY
               value: ${MAILGUN_API_KEY}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

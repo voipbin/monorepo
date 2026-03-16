@@ -39,6 +39,7 @@ func TestSessionCreate(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   uuid.FromStringOrNil("5b5bb704-b48c-11f0-819e-2ff9e60d5c3c"),
+				ActiveflowID:  uuid.FromStringOrNil("6c6cc815-b48c-11f0-92ae-3ff0e71e6d4d"),
 			},
 			asteriskStreamingID: uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
 			llmKey:              "test-llm-key",
@@ -113,6 +114,10 @@ func TestSessionCreate(t *testing.T) {
 
 			if result.AsteriskStreamingID != tt.asteriskStreamingID {
 				t.Errorf("SessionCreate() AsteriskStreamingID = %v, want %v", result.AsteriskStreamingID, tt.asteriskStreamingID)
+			}
+
+			if result.ActiveflowID != tt.pc.ActiveflowID {
+				t.Errorf("SessionCreate() ActiveflowID = %v, want %v", result.ActiveflowID, tt.pc.ActiveflowID)
 			}
 
 			if result.Ctx == nil {

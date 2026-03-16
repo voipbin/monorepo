@@ -20,7 +20,7 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -39,7 +39,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -53,7 +53,7 @@ func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessa
 		"event": evt,
 	})
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -98,7 +98,7 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "")
+	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "")
 	if err != nil {
 		log.Errorf("Could not create the notification message. err: %v", err)
 		return

@@ -59,6 +59,8 @@ spec:
               value: ${XAI_API_KEY}
             - name: GOOGLE_API_KEY
               value: ${GOOGLE_API_KEY}
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

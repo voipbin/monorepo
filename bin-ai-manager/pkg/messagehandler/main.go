@@ -22,6 +22,7 @@ type MessageHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		aicallID uuid.UUID,
+		activeflowID uuid.UUID,
 		direction message.Direction,
 		role message.Role,
 		content string,
