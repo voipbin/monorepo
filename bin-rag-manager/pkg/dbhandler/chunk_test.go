@@ -1,10 +1,12 @@
 package dbhandler
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
 )
 
 func Test_formatEmbedding(t *testing.T) {
@@ -69,8 +71,7 @@ func Test_chunkColumns(t *testing.T) {
 }
 
 func Test_ChunkDeleteByDocumentID_SQL(t *testing.T) {
-	// Verify the generated SQL for hard delete by document ID
-	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+	fakeID := uuid.Must(uuid.NewV4())
 
 	q := psql.Delete(tableRagChunks).
 		Where(sq.Eq{"document_id": fakeID})
@@ -90,8 +91,7 @@ func Test_ChunkDeleteByDocumentID_SQL(t *testing.T) {
 }
 
 func Test_ChunkDeleteByRagID_SQL(t *testing.T) {
-	// Verify the generated SQL for hard delete by rag ID
-	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+	fakeID := uuid.Must(uuid.NewV4())
 
 	q := psql.Delete(tableRagChunks).
 		Where(sq.Eq{"rag_id": fakeID})
@@ -111,11 +111,11 @@ func Test_ChunkDeleteByRagID_SQL(t *testing.T) {
 }
 
 func Test_ChunkSoftDeleteByDocumentID_SQL(t *testing.T) {
-	// Verify the generated SQL for soft delete by document ID
-	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+	fakeID := uuid.Must(uuid.NewV4())
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	q := psql.Update(tableRagChunks).
-		Set("tm_delete", sq.Expr("NOW()")).
+		Set("tm_delete", &now).
 		Where(sq.Eq{"document_id": fakeID}).
 		Where("tm_delete IS NULL")
 
@@ -124,21 +124,21 @@ func Test_ChunkSoftDeleteByDocumentID_SQL(t *testing.T) {
 		t.Fatalf("ToSql() error: %v", err)
 	}
 
-	expectedSQL := "UPDATE rag_chunks SET tm_delete = NOW() WHERE document_id = $1 AND tm_delete IS NULL"
+	expectedSQL := "UPDATE rag_chunks SET tm_delete = $1 WHERE document_id = $2 AND tm_delete IS NULL"
 	if sqlStr != expectedSQL {
 		t.Errorf("SQL = %q, want %q", sqlStr, expectedSQL)
 	}
-	if len(args) != 1 {
-		t.Errorf("args length = %d, want 1", len(args))
+	if len(args) != 2 {
+		t.Errorf("args length = %d, want 2", len(args))
 	}
 }
 
 func Test_ChunkSoftDeleteByRagID_SQL(t *testing.T) {
-	// Verify the generated SQL for soft delete by rag ID
-	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+	fakeID := uuid.Must(uuid.NewV4())
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	q := psql.Update(tableRagChunks).
-		Set("tm_delete", sq.Expr("NOW()")).
+		Set("tm_delete", &now).
 		Where(sq.Eq{"rag_id": fakeID}).
 		Where("tm_delete IS NULL")
 
@@ -147,18 +147,16 @@ func Test_ChunkSoftDeleteByRagID_SQL(t *testing.T) {
 		t.Fatalf("ToSql() error: %v", err)
 	}
 
-	expectedSQL := "UPDATE rag_chunks SET tm_delete = NOW() WHERE rag_id = $1 AND tm_delete IS NULL"
+	expectedSQL := "UPDATE rag_chunks SET tm_delete = $1 WHERE rag_id = $2 AND tm_delete IS NULL"
 	if sqlStr != expectedSQL {
 		t.Errorf("SQL = %q, want %q", sqlStr, expectedSQL)
 	}
-	if len(args) != 1 {
-		t.Errorf("args length = %d, want 1", len(args))
+	if len(args) != 2 {
+		t.Errorf("args length = %d, want 2", len(args))
 	}
 }
 
 func Test_ChunkSearchByRagID_QueryFormat(t *testing.T) {
-	// Verify the raw SQL query string used for vector search is well-formed.
-	// We test the expected SQL pattern matches what ChunkSearchByRagID uses.
 	expectedQuery := `SELECT id, document_id, rag_id, customer_id, chunk_index, text, section_title, token_count, tm_create,
                      embedding <=> $1::vector AS distance
               FROM rag_chunks
@@ -166,7 +164,6 @@ func Test_ChunkSearchByRagID_QueryFormat(t *testing.T) {
               ORDER BY embedding <=> $1::vector
               LIMIT $3`
 
-	// Verify the query contains the essential pgvector elements
 	if !containsAll(expectedQuery, []string{
 		"<=> $1::vector",
 		"AS distance",
@@ -180,12 +177,10 @@ func Test_ChunkSearchByRagID_QueryFormat(t *testing.T) {
 }
 
 func Test_ChunkInsert_SQL(t *testing.T) {
-	// Verify the generated SQL for chunk insert with embedding
 	embedding := []float32{0.1, 0.2, 0.3}
 	embStr := formatEmbedding(embedding)
 	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
-
-	fakeID := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10}
+	fakeID := uuid.Must(uuid.NewV4())
 
 	q := psql.Insert(tableRagChunks).
 		Columns(
@@ -210,7 +205,7 @@ func Test_ChunkInsert_SQL(t *testing.T) {
 		t.Errorf("SQL = %q, want %q", sqlStr, expectedSQL)
 	}
 
-	// args should contain: 4 UUIDs + chunk_index + text + section_title + embedding_string + token_count + tm_create = 10
+	// args: 4 UUIDs + chunk_index + text + section_title + embedding_string + token_count + tm_create = 10
 	if len(args) != 10 {
 		t.Errorf("args length = %d, want 10", len(args))
 	}
@@ -224,14 +219,7 @@ func Test_ChunkInsert_SQL(t *testing.T) {
 // containsAll checks if s contains all the given substrings.
 func containsAll(s string, substrings []string) bool {
 	for _, sub := range substrings {
-		found := false
-		for i := 0; i <= len(s)-len(sub); i++ {
-			if s[i:i+len(sub)] == sub {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !strings.Contains(s, sub) {
 			return false
 		}
 	}

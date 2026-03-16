@@ -32,22 +32,21 @@ func documentColumns() []string {
 }
 
 // scanDocument scans a single row into a Document struct.
-// UUID columns are scanned as []byte and converted via uuid.FromBytes.
-// Nullable columns (storage_file_id, source_url) use pointer types.
+// gofrs/uuid implements sql.Scanner, so PostgreSQL UUID columns scan directly.
+// Nullable columns (storage_file_id, source_url) use uuid.NullUUID and *string.
 func scanDocument(row *sql.Row) (*document.Document, error) {
 	var d document.Document
 
-	var idBytes, customerIDBytes, ragIDBytes []byte
-	var storageFileIDBytes *[]byte
+	var storageFileID uuid.NullUUID
 	var sourceURL *string
 
 	err := row.Scan(
-		&idBytes,
-		&customerIDBytes,
-		&ragIDBytes,
+		&d.ID,
+		&d.CustomerID,
+		&d.RagID,
 		&d.Name,
 		&d.DocType,
-		&storageFileIDBytes,
+		&storageFileID,
 		&sourceURL,
 		&d.Status,
 		&d.StatusMessage,
@@ -59,25 +58,8 @@ func scanDocument(row *sql.Row) (*document.Document, error) {
 		return nil, err
 	}
 
-	var err2 error
-	d.ID, err2 = uuid.FromBytes(idBytes)
-	if err2 != nil {
-		return nil, fmt.Errorf("could not parse document id: %w", err2)
-	}
-	d.CustomerID, err2 = uuid.FromBytes(customerIDBytes)
-	if err2 != nil {
-		return nil, fmt.Errorf("could not parse document customer_id: %w", err2)
-	}
-	d.RagID, err2 = uuid.FromBytes(ragIDBytes)
-	if err2 != nil {
-		return nil, fmt.Errorf("could not parse document rag_id: %w", err2)
-	}
-
-	if storageFileIDBytes != nil {
-		d.StorageFileID, err2 = uuid.FromBytes(*storageFileIDBytes)
-		if err2 != nil {
-			return nil, fmt.Errorf("could not parse document storage_file_id: %w", err2)
-		}
+	if storageFileID.Valid {
+		d.StorageFileID = storageFileID.UUID
 	}
 	if sourceURL != nil {
 		d.SourceURL = *sourceURL
@@ -93,17 +75,16 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 	for rows.Next() {
 		var d document.Document
 
-		var idBytes, customerIDBytes, ragIDBytes []byte
-		var storageFileIDBytes *[]byte
+		var storageFileID uuid.NullUUID
 		var sourceURL *string
 
 		err := rows.Scan(
-			&idBytes,
-			&customerIDBytes,
-			&ragIDBytes,
+			&d.ID,
+			&d.CustomerID,
+			&d.RagID,
 			&d.Name,
 			&d.DocType,
-			&storageFileIDBytes,
+			&storageFileID,
 			&sourceURL,
 			&d.Status,
 			&d.StatusMessage,
@@ -115,24 +96,8 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 			return nil, err
 		}
 
-		d.ID, err = uuid.FromBytes(idBytes)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse document id: %w", err)
-		}
-		d.CustomerID, err = uuid.FromBytes(customerIDBytes)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse document customer_id: %w", err)
-		}
-		d.RagID, err = uuid.FromBytes(ragIDBytes)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse document rag_id: %w", err)
-		}
-
-		if storageFileIDBytes != nil {
-			d.StorageFileID, err = uuid.FromBytes(*storageFileIDBytes)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse document storage_file_id: %w", err)
-			}
+		if storageFileID.Valid {
+			d.StorageFileID = storageFileID.UUID
 		}
 		if sourceURL != nil {
 			d.SourceURL = *sourceURL
@@ -159,7 +124,7 @@ func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) erro
 	if d.StorageFileID == uuid.Nil {
 		storageFileID = nil
 	} else {
-		storageFileID = d.StorageFileID.Bytes()
+		storageFileID = d.StorageFileID
 	}
 
 	q := psql.
@@ -178,9 +143,9 @@ func (h *handler) DocumentCreate(ctx context.Context, d *document.Document) erro
 			"tm_update",
 		).
 		Values(
-			d.ID.Bytes(),
-			d.CustomerID.Bytes(),
-			d.RagID.Bytes(),
+			d.ID,
+			d.CustomerID,
+			d.RagID,
 			d.Name,
 			d.DocType,
 			storageFileID,
@@ -209,7 +174,7 @@ func (h *handler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Docu
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -231,7 +196,7 @@ func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"rag_id": ragID.Bytes()}).
+		Where(sq.Eq{"rag_id": ragID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -258,7 +223,7 @@ func (h *handler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -283,7 +248,7 @@ func (h *handler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.
 // DocumentUpdate updates document fields by ID
 func (h *handler) DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[document.Field]any) error {
 	updateMap := map[string]any{
-		"tm_update": sq.Expr("NOW()"),
+		"tm_update": h.utilHandler.TimeNow(),
 	}
 	for k, v := range fields {
 		updateMap[string(k)] = v
@@ -292,7 +257,7 @@ func (h *handler) DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[d
 	q := psql.
 		Update(tableDocuments).
 		SetMap(updateMap).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -310,13 +275,15 @@ func (h *handler) DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[d
 
 // DocumentDelete soft-deletes a document by ID
 func (h *handler) DocumentDelete(ctx context.Context, id uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
 	q := psql.
 		Update(tableDocuments).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": now,
+			"tm_update": now,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -334,13 +301,15 @@ func (h *handler) DocumentDelete(ctx context.Context, id uuid.UUID) error {
 
 // DocumentDeleteByRagID soft-deletes all documents for a rag
 func (h *handler) DocumentDeleteByRagID(ctx context.Context, ragID uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
 	q := psql.
 		Update(tableDocuments).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": now,
+			"tm_update": now,
 		}).
-		Where(sq.Eq{"rag_id": ragID.Bytes()}).
+		Where(sq.Eq{"rag_id": ragID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()

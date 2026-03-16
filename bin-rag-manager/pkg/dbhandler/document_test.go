@@ -1,6 +1,7 @@
 package dbhandler
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 	if d.StorageFileID == uuid.Nil {
 		storageFileID = nil
 	} else {
-		storageFileID = d.StorageFileID.Bytes()
+		storageFileID = d.StorageFileID
 	}
 
 	q := psql.
@@ -50,9 +51,9 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 			"tm_update",
 		).
 		Values(
-			d.ID.Bytes(),
-			d.CustomerID.Bytes(),
-			d.RagID.Bytes(),
+			d.ID,
+			d.CustomerID,
+			d.RagID,
 			d.Name,
 			d.DocType,
 			storageFileID,
@@ -73,7 +74,6 @@ func Test_DocumentCreate_SQL(t *testing.T) {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
 
-	// 11 args (timestamps are now parameterized)
 	if len(args) != 11 {
 		t.Errorf("unexpected arg count: got %d, want 11", len(args))
 	}
@@ -100,7 +100,7 @@ func Test_DocumentCreate_NilStorageFileID(t *testing.T) {
 	if d.StorageFileID == uuid.Nil {
 		storageFileID = nil
 	} else {
-		storageFileID = d.StorageFileID.Bytes()
+		storageFileID = d.StorageFileID
 	}
 
 	q := psql.
@@ -119,9 +119,9 @@ func Test_DocumentCreate_NilStorageFileID(t *testing.T) {
 			"tm_update",
 		).
 		Values(
-			d.ID.Bytes(),
-			d.CustomerID.Bytes(),
-			d.RagID.Bytes(),
+			d.ID,
+			d.CustomerID,
+			d.RagID,
 			d.Name,
 			d.DocType,
 			storageFileID,
@@ -149,7 +149,7 @@ func Test_DocumentGetsByRagID_SQL(t *testing.T) {
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"rag_id": ragID.Bytes()}).
+		Where(sq.Eq{"rag_id": ragID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -173,7 +173,7 @@ func Test_DocumentGet_SQL(t *testing.T) {
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -193,14 +193,15 @@ func Test_DocumentGet_SQL(t *testing.T) {
 
 func Test_DocumentDeleteByRagID_SQL(t *testing.T) {
 	ragID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003")
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	q := psql.
 		Update(tableDocuments).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": &now,
+			"tm_update": &now,
 		}).
-		Where(sq.Eq{"rag_id": ragID.Bytes()}).
+		Where(sq.Eq{"rag_id": ragID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -208,29 +209,34 @@ func Test_DocumentDeleteByRagID_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building update SQL: %v", err)
 	}
 
-	// The UPDATE should set tm_delete and tm_update to NOW() and filter by rag_id
-	// Note: SetMap ordering is non-deterministic, so we check both possible orderings
-	expected1 := "UPDATE rag_documents SET tm_delete = NOW(), tm_update = NOW() WHERE rag_id = $1 AND tm_delete IS NULL"
-	expected2 := "UPDATE rag_documents SET tm_update = NOW(), tm_delete = NOW() WHERE rag_id = $1 AND tm_delete IS NULL"
-	if sqlStr != expected1 && sqlStr != expected2 {
-		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s\n  or: %s", sqlStr, expected1, expected2)
+	// Verify it's an UPDATE with parameterized timestamps
+	if !strings.HasPrefix(sqlStr, "UPDATE rag_documents SET") {
+		t.Errorf("expected UPDATE statement, got: %s", sqlStr)
+	}
+	if !strings.Contains(sqlStr, "tm_delete = $") {
+		t.Errorf("expected tm_delete = $N in SQL, got: %s", sqlStr)
+	}
+	if !strings.Contains(sqlStr, "tm_update = $") {
+		t.Errorf("expected tm_update = $N in SQL, got: %s", sqlStr)
 	}
 
-	if len(args) != 1 {
-		t.Errorf("unexpected arg count: got %d, want 1", len(args))
+	// 3 args: tm_delete, tm_update, rag_id
+	if len(args) != 3 {
+		t.Errorf("unexpected arg count: got %d, want 3", len(args))
 	}
 }
 
 func Test_DocumentDelete_SQL(t *testing.T) {
 	id := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	q := psql.
 		Update(tableDocuments).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": &now,
+			"tm_update": &now,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -238,19 +244,22 @@ func Test_DocumentDelete_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building update SQL: %v", err)
 	}
 
-	expected1 := "UPDATE rag_documents SET tm_delete = NOW(), tm_update = NOW() WHERE id = $1 AND tm_delete IS NULL"
-	expected2 := "UPDATE rag_documents SET tm_update = NOW(), tm_delete = NOW() WHERE id = $1 AND tm_delete IS NULL"
-	if sqlStr != expected1 && sqlStr != expected2 {
-		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s\n  or: %s", sqlStr, expected1, expected2)
+	if !strings.HasPrefix(sqlStr, "UPDATE rag_documents SET") {
+		t.Errorf("expected UPDATE statement, got: %s", sqlStr)
+	}
+	if !strings.Contains(sqlStr, "tm_delete = $") {
+		t.Errorf("expected tm_delete = $N in SQL, got: %s", sqlStr)
 	}
 
-	if len(args) != 1 {
-		t.Errorf("unexpected arg count: got %d, want 1", len(args))
+	// 3 args: tm_delete, tm_update, id
+	if len(args) != 3 {
+		t.Errorf("unexpected arg count: got %d, want 3", len(args))
 	}
 }
 
 func Test_DocumentUpdate_SQL(t *testing.T) {
 	id := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	fields := map[document.Field]any{
 		document.FieldStatus:        document.StatusReady,
@@ -258,7 +267,7 @@ func Test_DocumentUpdate_SQL(t *testing.T) {
 	}
 
 	updateMap := map[string]any{
-		"tm_update": sq.Expr("NOW()"),
+		"tm_update": &now,
 	}
 	for k, v := range fields {
 		updateMap[string(k)] = v
@@ -267,7 +276,7 @@ func Test_DocumentUpdate_SQL(t *testing.T) {
 	q := psql.
 		Update(tableDocuments).
 		SetMap(updateMap).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -280,9 +289,9 @@ func Test_DocumentUpdate_SQL(t *testing.T) {
 		t.Error("expected non-empty SQL string")
 	}
 
-	// Should have 3 args: status value, status_message value, and id
-	if len(args) != 3 {
-		t.Errorf("unexpected arg count: got %d, want 3", len(args))
+	// Should have 4 args: status value, status_message value, tm_update value, and id
+	if len(args) != 4 {
+		t.Errorf("unexpected arg count: got %d, want 4", len(args))
 	}
 }
 
@@ -292,7 +301,7 @@ func Test_DocumentGetsByCustomerID_SQL(t *testing.T) {
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()

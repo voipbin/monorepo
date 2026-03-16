@@ -26,7 +26,7 @@ def upgrade():
         id UUID PRIMARY KEY,
         customer_id UUID NOT NULL,
         name TEXT NOT NULL,
-        description TEXT DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
         tm_create TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         tm_update TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         tm_delete TIMESTAMP WITH TIME ZONE
@@ -47,7 +47,7 @@ def upgrade():
         storage_file_id UUID,
         source_url TEXT,
         status TEXT NOT NULL DEFAULT 'pending',
-        status_message TEXT,
+        status_message TEXT NOT NULL DEFAULT '',
         tm_create TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         tm_update TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         tm_delete TIMESTAMP WITH TIME ZONE
@@ -63,7 +63,7 @@ def upgrade():
         customer_id UUID NOT NULL,
         chunk_index INTEGER NOT NULL DEFAULT 0,
         text TEXT NOT NULL,
-        section_title TEXT DEFAULT '',
+        section_title TEXT NOT NULL DEFAULT '',
         embedding vector(1536),
         token_count INTEGER DEFAULT 0,
         tm_create TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

@@ -59,10 +59,10 @@ func (h *handler) ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []f
 			"tm_create",
 		).
 		Values(
-			c.ID.Bytes(),
-			c.DocumentID.Bytes(),
-			c.RagID.Bytes(),
-			c.CustomerID.Bytes(),
+			c.ID,
+			c.DocumentID,
+			c.RagID,
+			c.CustomerID,
 			c.ChunkIndex,
 			c.Text,
 			c.SectionTitle,
@@ -122,10 +122,10 @@ func (h *handler) ChunkCreateBatch(ctx context.Context, chunks []*chunk.Chunk, e
 				"tm_create",
 			).
 			Values(
-				c.ID.Bytes(),
-				c.DocumentID.Bytes(),
-				c.RagID.Bytes(),
-				c.CustomerID.Bytes(),
+				c.ID,
+				c.DocumentID,
+				c.RagID,
+				c.CustomerID,
 				c.ChunkIndex,
 				c.Text,
 				c.SectionTitle,
@@ -166,7 +166,7 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
               ORDER BY embedding <=> $1::vector
               LIMIT $3`
 
-	rows, err := h.db.QueryContext(ctx, query, embStr, ragID.Bytes(), topK)
+	rows, err := h.db.QueryContext(ctx, query, embStr, ragID, topK)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not execute chunk search query: %w", err)
 	}
@@ -177,14 +177,13 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
 
 	for rows.Next() {
 		var c chunk.Chunk
-		var idBytes, documentIDBytes, ragIDBytes, customerIDBytes []byte
 		var distance float64
 
 		err := rows.Scan(
-			&idBytes,
-			&documentIDBytes,
-			&ragIDBytes,
-			&customerIDBytes,
+			&c.ID,
+			&c.DocumentID,
+			&c.RagID,
+			&c.CustomerID,
 			&c.ChunkIndex,
 			&c.Text,
 			&c.SectionTitle,
@@ -194,23 +193,6 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
 		)
 		if err != nil {
 			return nil, nil, fmt.Errorf("could not scan chunk search row: %w", err)
-		}
-
-		c.ID, err = uuid.FromBytes(idBytes)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse chunk id: %w", err)
-		}
-		c.DocumentID, err = uuid.FromBytes(documentIDBytes)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse chunk document_id: %w", err)
-		}
-		c.RagID, err = uuid.FromBytes(ragIDBytes)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse chunk rag_id: %w", err)
-		}
-		c.CustomerID, err = uuid.FromBytes(customerIDBytes)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse chunk customer_id: %w", err)
 		}
 
 		chunks = append(chunks, &c)
@@ -227,7 +209,7 @@ func (h *handler) ChunkSearchByRagID(ctx context.Context, ragID uuid.UUID, query
 // ChunkDeleteByDocumentID hard-deletes all chunks for a document
 func (h *handler) ChunkDeleteByDocumentID(ctx context.Context, documentID uuid.UUID) error {
 	q := psql.Delete(tableRagChunks).
-		Where(sq.Eq{"document_id": documentID.Bytes()})
+		Where(sq.Eq{"document_id": documentID})
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
@@ -245,7 +227,7 @@ func (h *handler) ChunkDeleteByDocumentID(ctx context.Context, documentID uuid.U
 // ChunkDeleteByRagID hard-deletes all chunks for a rag
 func (h *handler) ChunkDeleteByRagID(ctx context.Context, ragID uuid.UUID) error {
 	q := psql.Delete(tableRagChunks).
-		Where(sq.Eq{"rag_id": ragID.Bytes()})
+		Where(sq.Eq{"rag_id": ragID})
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
@@ -262,9 +244,11 @@ func (h *handler) ChunkDeleteByRagID(ctx context.Context, ragID uuid.UUID) error
 
 // ChunkSoftDeleteByDocumentID soft-deletes all chunks for a document
 func (h *handler) ChunkSoftDeleteByDocumentID(ctx context.Context, documentID uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
 	q := psql.Update(tableRagChunks).
-		Set("tm_delete", sq.Expr("NOW()")).
-		Where(sq.Eq{"document_id": documentID.Bytes()}).
+		Set("tm_delete", now).
+		Where(sq.Eq{"document_id": documentID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -282,9 +266,11 @@ func (h *handler) ChunkSoftDeleteByDocumentID(ctx context.Context, documentID uu
 
 // ChunkSoftDeleteByRagID soft-deletes all chunks for a rag
 func (h *handler) ChunkSoftDeleteByRagID(ctx context.Context, ragID uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
 	q := psql.Update(tableRagChunks).
-		Set("tm_delete", sq.Expr("NOW()")).
-		Where(sq.Eq{"rag_id": ragID.Bytes()}).
+		Set("tm_delete", now).
+		Where(sq.Eq{"rag_id": ragID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()

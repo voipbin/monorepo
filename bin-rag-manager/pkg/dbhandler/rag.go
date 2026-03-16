@@ -14,13 +14,13 @@ import (
 const tableRagRags = "rag_rags"
 
 // ragScanRow scans a single row into a rag.Rag struct.
+// gofrs/uuid implements sql.Scanner, so PostgreSQL UUID columns scan directly.
 func ragScanRow(row *sql.Row) (*rag.Rag, error) {
 	var r rag.Rag
-	var idBytes, customerIDBytes []byte
 
 	err := row.Scan(
-		&idBytes,
-		&customerIDBytes,
+		&r.ID,
+		&r.CustomerID,
 		&r.Name,
 		&r.Description,
 		&r.TMCreate,
@@ -29,16 +29,6 @@ func ragScanRow(row *sql.Row) (*rag.Rag, error) {
 	)
 	if err != nil {
 		return nil, err
-	}
-
-	var err2 error
-	r.ID, err2 = uuid.FromBytes(idBytes)
-	if err2 != nil {
-		return nil, fmt.Errorf("could not parse rag id: %w", err2)
-	}
-	r.CustomerID, err2 = uuid.FromBytes(customerIDBytes)
-	if err2 != nil {
-		return nil, fmt.Errorf("could not parse rag customer_id: %w", err2)
 	}
 
 	return &r, nil
@@ -50,11 +40,10 @@ func ragScanRows(rows *sql.Rows) ([]*rag.Rag, error) {
 
 	for rows.Next() {
 		var r rag.Rag
-		var idBytes, customerIDBytes []byte
 
 		err := rows.Scan(
-			&idBytes,
-			&customerIDBytes,
+			&r.ID,
+			&r.CustomerID,
 			&r.Name,
 			&r.Description,
 			&r.TMCreate,
@@ -63,15 +52,6 @@ func ragScanRows(rows *sql.Rows) ([]*rag.Rag, error) {
 		)
 		if err != nil {
 			return nil, err
-		}
-
-		r.ID, err = uuid.FromBytes(idBytes)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse rag id: %w", err)
-		}
-		r.CustomerID, err = uuid.FromBytes(customerIDBytes)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse rag customer_id: %w", err)
 		}
 
 		res = append(res, &r)
@@ -114,8 +94,8 @@ func (h *handler) RagCreate(ctx context.Context, r *rag.Rag) error {
 			"tm_update",
 		).
 		Values(
-			r.ID.Bytes(),
-			r.CustomerID.Bytes(),
+			r.ID,
+			r.CustomerID,
 			r.Name,
 			r.Description,
 			r.TMCreate,
@@ -140,7 +120,7 @@ func (h *handler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
 	q := psql.
 		Select(ragColumns()...).
 		From(tableRagRags).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -163,7 +143,7 @@ func (h *handler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID)
 	q := psql.
 		Select(ragColumns()...).
 		From(tableRagRags).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -188,7 +168,7 @@ func (h *handler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID)
 // RagUpdate updates rag fields by ID
 func (h *handler) RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) error {
 	updateMap := map[string]any{
-		"tm_update": sq.Expr("NOW()"),
+		"tm_update": h.utilHandler.TimeNow(),
 	}
 	for k, v := range fields {
 		updateMap[string(k)] = v
@@ -197,7 +177,7 @@ func (h *handler) RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Fi
 	q := psql.
 		Update(tableRagRags).
 		SetMap(updateMap).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -215,13 +195,15 @@ func (h *handler) RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Fi
 
 // RagDelete soft-deletes a rag by ID
 func (h *handler) RagDelete(ctx context.Context, id uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
 	q := psql.
 		Update(tableRagRags).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": now,
+			"tm_update": now,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()

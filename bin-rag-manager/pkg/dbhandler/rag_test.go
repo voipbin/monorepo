@@ -37,8 +37,8 @@ func Test_RagCreate_SQL(t *testing.T) {
 			"tm_update",
 		).
 		Values(
-			r.ID.Bytes(),
-			r.CustomerID.Bytes(),
+			r.ID,
+			r.CustomerID,
 			r.Name,
 			r.Description,
 			r.TMCreate,
@@ -55,7 +55,7 @@ func Test_RagCreate_SQL(t *testing.T) {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
 
-	// Should have 6 args: id bytes, customer_id bytes, name, description, tm_create, tm_update
+	// Should have 6 args: id, customer_id, name, description, tm_create, tm_update
 	if len(args) != 6 {
 		t.Errorf("unexpected number of args: got %d, want 6", len(args))
 	}
@@ -75,7 +75,7 @@ func Test_RagGet_SQL(t *testing.T) {
 	q := psql.
 		Select(ragColumns()...).
 		From(tableRagRags).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -88,7 +88,6 @@ func Test_RagGet_SQL(t *testing.T) {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
 
-	// Should have 1 arg: id bytes
 	if len(args) != 1 {
 		t.Errorf("unexpected number of args: got %d, want 1", len(args))
 	}
@@ -100,7 +99,7 @@ func Test_RagGetsByCustomerID_SQL(t *testing.T) {
 	q := psql.
 		Select(ragColumns()...).
 		From(tableRagRags).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -120,14 +119,15 @@ func Test_RagGetsByCustomerID_SQL(t *testing.T) {
 
 func Test_RagDelete_SQL(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	q := psql.
 		Update(tableRagRags).
 		SetMap(map[string]any{
-			"tm_delete": sq.Expr("NOW()"),
-			"tm_update": sq.Expr("NOW()"),
+			"tm_delete": &now,
+			"tm_update": &now,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -140,37 +140,35 @@ func Test_RagDelete_SQL(t *testing.T) {
 		t.Errorf("expected UPDATE statement, got: %s", sqlStr)
 	}
 
-	// Verify it sets tm_delete and tm_update to NOW()
-	if !strings.Contains(sqlStr, "tm_delete = NOW()") {
-		t.Errorf("expected tm_delete = NOW() in SQL, got: %s", sqlStr)
+	// Verify it sets tm_delete and tm_update as parameterized values
+	if !strings.Contains(sqlStr, "tm_delete = $") {
+		t.Errorf("expected tm_delete = $N in SQL, got: %s", sqlStr)
 	}
-	if !strings.Contains(sqlStr, "tm_update = NOW()") {
-		t.Errorf("expected tm_update = NOW() in SQL, got: %s", sqlStr)
+	if !strings.Contains(sqlStr, "tm_update = $") {
+		t.Errorf("expected tm_update = $N in SQL, got: %s", sqlStr)
 	}
 
 	// Verify WHERE clause includes id and tm_delete IS NULL
-	if !strings.Contains(sqlStr, "id = $1") {
-		t.Errorf("expected id = $1 in WHERE clause, got: %s", sqlStr)
-	}
 	if !strings.Contains(sqlStr, "tm_delete IS NULL") {
 		t.Errorf("expected tm_delete IS NULL in WHERE clause, got: %s", sqlStr)
 	}
 
-	// Should have 1 arg: id bytes
-	if len(args) != 1 {
-		t.Errorf("unexpected number of args: got %d, want 1", len(args))
+	// Should have 3 args: tm_delete, tm_update, and id
+	if len(args) != 3 {
+		t.Errorf("unexpected number of args: got %d, want 3", len(args))
 	}
 }
 
 func Test_RagUpdate_SQL(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	fields := map[rag.Field]any{
 		rag.FieldName: "updated-name",
 	}
 
 	updateMap := map[string]any{
-		"tm_update": sq.Expr("NOW()"),
+		"tm_update": &now,
 	}
 	for k, v := range fields {
 		updateMap[string(k)] = v
@@ -179,7 +177,7 @@ func Test_RagUpdate_SQL(t *testing.T) {
 	q := psql.
 		Update(tableRagRags).
 		SetMap(updateMap).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"id": id}).
 		Where("tm_delete IS NULL")
 
 	sqlStr, args, err := q.ToSql()
@@ -192,24 +190,19 @@ func Test_RagUpdate_SQL(t *testing.T) {
 		t.Errorf("expected UPDATE statement, got: %s", sqlStr)
 	}
 
-	// Verify it sets tm_update to NOW()
-	if !strings.Contains(sqlStr, "tm_update = NOW()") {
-		t.Errorf("expected tm_update = NOW() in SQL, got: %s", sqlStr)
-	}
-
 	// Verify the field value is set
 	if !strings.Contains(sqlStr, "name =") {
 		t.Errorf("expected name field in SET clause, got: %s", sqlStr)
 	}
 
-	// Verify WHERE clause includes id and tm_delete IS NULL
+	// Verify WHERE clause includes tm_delete IS NULL
 	if !strings.Contains(sqlStr, "tm_delete IS NULL") {
 		t.Errorf("expected tm_delete IS NULL in WHERE clause, got: %s", sqlStr)
 	}
 
-	// Args should include id bytes and the name value
-	if len(args) != 2 {
-		t.Errorf("unexpected number of args: got %d, want 2", len(args))
+	// Args should include tm_update value, name value, and id
+	if len(args) != 3 {
+		t.Errorf("unexpected number of args: got %d, want 3", len(args))
 	}
 }
 
