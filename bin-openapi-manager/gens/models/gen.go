@@ -5512,8 +5512,10 @@ type RagManagerRag struct {
 // RagManagerRagDocument defines model for RagManagerRagDocument.
 type RagManagerRagDocument struct {
 	// CustomerId The customer ID that owns this document.
-	CustomerId *openapi_types.UUID           `json:"customer_id,omitempty"`
-	DocType    *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// DocType The document source type. Determines how the document content is obtained.
+	DocType *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
 
 	// Id The unique identifier of the document. Returned from the `POST /rag-documents` response.
 	Id *openapi_types.UUID `json:"id,omitempty"`
@@ -5525,8 +5527,10 @@ type RagManagerRagDocument struct {
 	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
 
 	// SourceUrl The source URL if doc_type is url.
-	SourceUrl *string                      `json:"source_url,omitempty"`
-	Status    *RagManagerRagDocumentStatus `json:"status,omitempty"`
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
 
 	// StatusMessage Additional details about the current status.
 	StatusMessage *string `json:"status_message,omitempty"`
@@ -5541,10 +5545,10 @@ type RagManagerRagDocument struct {
 	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
 
-// RagManagerRagDocumentDocType defines model for RagManagerRagDocumentDocType.
+// RagManagerRagDocumentDocType The document source type. Determines how the document content is obtained.
 type RagManagerRagDocumentDocType string
 
-// RagManagerRagDocumentStatus defines model for RagManagerRagDocumentStatus.
+// RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
 type RagManagerRagDocumentStatus string
 
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
@@ -7517,6 +7521,7 @@ type GetRagDocumentsParams struct {
 
 // PostRagDocumentsJSONBody defines parameters for PostRagDocuments.
 type PostRagDocumentsJSONBody struct {
+	// DocType The document source type. Determines how the document content is obtained.
 	DocType RagManagerRagDocumentDocType `json:"doc_type"`
 
 	// Name Human-readable name for the document.

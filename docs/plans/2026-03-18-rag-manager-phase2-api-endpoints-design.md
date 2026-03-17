@@ -171,7 +171,7 @@ Responses use `WebhookMessage` structs (not internal model structs).
   "customer_id": "7d4e8f2a-1b3c-4d5e-9f6a-8b7c6d5e4f3a",
   "rag_id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "FAQ Document",
-  "doc_type": "text",
+  "doc_type": "uploaded",
   "storage_file_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
   "source_url": "",
   "status": "ready",
