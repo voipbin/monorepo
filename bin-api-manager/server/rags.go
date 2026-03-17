@@ -174,6 +174,12 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 		fields[rmrag.FieldDescription] = *req.Description
 	}
 
+	if len(fields) == 0 {
+		log.Errorf("No fields to update.")
+		c.AbortWithStatus(400)
+		return
+	}
+
 	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), &a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)

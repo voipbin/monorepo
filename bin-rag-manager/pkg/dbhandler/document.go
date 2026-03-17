@@ -207,10 +207,12 @@ func (h *handler) DocumentList(ctx context.Context, size uint64, token string, f
 		OrderBy("tm_create DESC").
 		Limit(size)
 
+	hasDeletedFilter := false
 	for k, v := range filters {
 		key := string(k)
 		switch key {
 		case "deleted":
+			hasDeletedFilter = true
 			deleted, ok := v.(bool)
 			if ok && !deleted {
 				q = q.Where("tm_delete IS NULL")
@@ -220,6 +222,9 @@ func (h *handler) DocumentList(ctx context.Context, size uint64, token string, f
 		default:
 			q = q.Where(sq.Eq{key: v})
 		}
+	}
+	if !hasDeletedFilter {
+		q = q.Where("tm_delete IS NULL")
 	}
 
 	sqlStr, args, err := q.ToSql()
