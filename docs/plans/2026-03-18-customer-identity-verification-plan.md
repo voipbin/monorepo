@@ -79,7 +79,7 @@ git commit -m "NOJIRA-Customer-identity-verification
 
 **Step 1: Add field to Customer struct**
 
-In `bin-customer-manager/models/customer/customer.go`, add after the `Status` field (line ~41):
+In `bin-customer-manager/models/customer/customer.go`, add after the `Status` field (line 39), before `TermsAgreedVersion` (line 41):
 
 ```go
 IdentityVerificationStatus IdentityVerificationStatus `json:"identity_verification_status" db:"identity_verification_status"`
@@ -95,7 +95,7 @@ FieldIdentityVerificationStatus Field = "identity_verification_status"
 
 **Step 3: Add to WebhookMessage struct**
 
-In `bin-customer-manager/models/customer/webhook.go`, add the field to `WebhookMessage` struct after `Status`:
+In `bin-customer-manager/models/customer/webhook.go`, add the field to `WebhookMessage` struct after `Status` (line 31), before `TMDeletionScheduled` (line 32):
 
 ```go
 IdentityVerificationStatus IdentityVerificationStatus `json:"identity_verification_status"`
@@ -452,7 +452,7 @@ git commit -m "NOJIRA-Customer-identity-verification
 - Modify: `bin-api-manager/pkg/servicehandler/numbers.go`
 - Modify: `bin-api-manager/pkg/servicehandler/call.go`
 
-**HTTP response:** Verification failures should return **HTTP 403 Forbidden** to distinguish from authentication failures (401) and bad requests (400). Check how the service returns HTTP errors — look for existing 403 patterns or `NewError`/`NewHTTPError` helpers and follow the same pattern.
+**HTTP response:** Verification failures should ideally return **HTTP 403 Forbidden** to distinguish from authentication failures (401) and bad requests (400). However, the current server layer in `bin-api-manager/server/numbers.go` and `server/calls.go` maps ALL servicehandler errors to HTTP 400. To return 403, you must also update the server layer (`PostNumbers` at line 127-130 and `PostCalls` at line 66-70) to check the error message and return 403 for verification failures. Example pattern: `if strings.Contains(err.Error(), "identity verification required") { c.AbortWithStatus(403); return }`. Alternatively, keep 400 for now and add 403 support in a follow-up if needed.
 
 **Step 1: Add verification gate to NumberCreate**
 
@@ -468,7 +468,7 @@ In `bin-api-manager/pkg/servicehandler/numbers.go`, in the `NumberCreate` functi
 		}
 		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
-		if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
+		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for number purchase. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
 			return nil, fmt.Errorf("customer identity verification required for number purchase")
 		}
@@ -477,7 +477,7 @@ In `bin-api-manager/pkg/servicehandler/numbers.go`, in the `NumberCreate` functi
 
 This requires adding the import:
 ```go
-cucustomer "monorepo/bin-customer-manager/models/customer"
+cscustomer "monorepo/bin-customer-manager/models/customer"
 ```
 
 **Step 2: Add verification gate to CallCreate**
@@ -501,7 +501,7 @@ In `bin-api-manager/pkg/servicehandler/call.go`, in the `CallCreate` function, a
 		}
 		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
-		if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
+		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for PSTN calls. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
 			return nil, nil, fmt.Errorf("customer identity verification required for PSTN calls")
 		}
@@ -510,7 +510,7 @@ In `bin-api-manager/pkg/servicehandler/call.go`, in the `CallCreate` function, a
 
 This requires adding the import:
 ```go
-cucustomer "monorepo/bin-customer-manager/models/customer"
+cscustomer "monorepo/bin-customer-manager/models/customer"
 ```
 
 **Step 3: Run verification for bin-api-manager**
@@ -611,7 +611,7 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *
 		return true
 	}
 
-	if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
+	if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s, status: %s", customerID, cu.IdentityVerificationStatus)
 		return false
 	}
@@ -649,16 +649,42 @@ With:
 	}
 ```
 
-**Step 4: Update all other callers of ValidateCustomerNotFrozen**
+**Step 4: Update the other caller of ValidateCustomerNotFrozen in start.go**
 
-Search for all other callers of `ValidateCustomerNotFrozen` in bin-call-manager and update them to accept the new `(*cucustomer.Customer, bool)` return type. Callers that only need the bool can use `_, notFrozen := h.ValidateCustomerNotFrozen(...)`.
+The second caller is in `start.go:572` (`startCallTypeFlow`, for incoming calls). Since incoming calls do NOT need identity verification, discard the customer return value:
 
+Replace (line 572):
+```go
+	if !h.ValidateCustomerNotFrozen(ctx, customerID) {
+```
+
+With:
+```go
+	_, notFrozen := h.ValidateCustomerNotFrozen(ctx, customerID)
+	if !notFrozen {
+```
+
+Verify no other callers exist:
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
 grep -rn "ValidateCustomerNotFrozen" bin-call-manager/ --include="*.go" | grep -v "_test.go" | grep -v "mock_"
 ```
 
-Update each caller to use the new signature.
+**Step 4b: Update test mocked Customer objects**
+
+Tests in `start_test.go` (lines 256, 452, 646) mock `CustomerV1CustomerGet` returning `&cucustomer.Customer{Status: cucustomer.StatusActive}`. After this change, the mocked customer must also include `IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified`, otherwise `ValidateCustomerIdentityVerified` will reject outgoing PSTN calls in tests. Also check `outgoing_call_test.go` for similar mocked Customer objects.
+
+Example fix for each mocked customer:
+```go
+// Before
+mockReq.EXPECT().CustomerV1CustomerGet(ctx, ...).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil)
+
+// After
+mockReq.EXPECT().CustomerV1CustomerGet(ctx, ...).Return(&cucustomer.Customer{
+    Status:                     cucustomer.StatusActive,
+    IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+}, nil)
+```
 
 **Step 5: Run verification for bin-call-manager**
 
@@ -712,6 +738,8 @@ def downgrade():
 ```
 
 **IMPORTANT: Do NOT run `alembic upgrade`. Only create and commit the migration file.**
+
+**Deployment ordering:** The migration MUST run BEFORE the new code deploys. If code deploys first, the column won't exist and the service will fail. If the migration runs first without the code, new customers default to `none` but no gating logic exists yet — which is safe.
 
 **Step 3: Commit**
 
