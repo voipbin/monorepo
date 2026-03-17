@@ -905,7 +905,7 @@ type ServiceHandler interface {
 	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)
 
 	// rag handlers
-	RagQuery(ctx context.Context, a *amagent.Agent, queryText string, docTypes []string, topK int) (*rmquery.Response, error)
+	RagQuery(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error)
 
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
 }

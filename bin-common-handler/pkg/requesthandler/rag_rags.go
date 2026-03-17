@@ -4,25 +4,26 @@ import (
 	"context"
 	"encoding/json"
 
-	rmquery "monorepo/bin-rag-manager/models/query"
-	"monorepo/bin-common-handler/models/sock"
-
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+
+	"monorepo/bin-common-handler/models/sock"
+	rmquery "monorepo/bin-rag-manager/models/query"
 )
 
 // RagV1RagQuery sends a query request to the rag-manager.
-// It returns the query response with answer and sources.
-func (r *requestHandler) RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*rmquery.Response, error) {
-	uri := "/v1/rags/query"
+// It returns the query response with sources.
+func (r *requestHandler) RagV1RagQuery(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error) {
+	uri := "/v1/query"
 
 	req := struct {
-		Query    string   `json:"query"`
-		DocTypes []string `json:"doc_types,omitempty"`
-		TopK     int      `json:"top_k,omitempty"`
+		RagID uuid.UUID `json:"rag_id"`
+		Query string    `json:"query"`
+		TopK  int       `json:"top_k,omitempty"`
 	}{
-		Query:    query,
-		DocTypes: docTypes,
-		TopK:     topK,
+		RagID: ragID,
+		Query: queryText,
+		TopK:  topK,
 	}
 
 	m, err := json.Marshal(req)
@@ -30,7 +31,7 @@ func (r *requestHandler) RagV1RagQuery(ctx context.Context, query string, docTyp
 		return nil, errors.Wrapf(err, "could not marshal request")
 	}
 
-	tmp, err := r.sendRequestRag(ctx, uri, sock.RequestMethodPost, "rag/rags/query", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRag(ctx, uri, sock.RequestMethodPost, "rag/query", 30000, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

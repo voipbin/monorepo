@@ -138,31 +138,51 @@ func (h *handler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
 	return r, nil
 }
 
-// RagGetsByCustomerID retrieves all rags for a customer
-func (h *handler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error) {
+// RagList retrieves rags matching the given filters with cursor-based pagination.
+// Pagination uses tm_create as cursor (token). Filters are applied as WHERE clauses.
+// The "deleted" filter controls tm_delete: false = IS NULL, true = IS NOT NULL.
+func (h *handler) RagList(ctx context.Context, size uint64, token string, filters map[rag.Field]any) ([]*rag.Rag, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+	if size == 0 {
+		size = 100
+	}
+
 	q := psql.
 		Select(ragColumns()...).
 		From(tableRagRags).
-		Where(sq.Eq{"customer_id": customerID}).
-		Where("tm_delete IS NULL")
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create DESC").
+		Limit(size)
+
+	for k, v := range filters {
+		key := string(k)
+		switch key {
+		case "deleted":
+			deleted, ok := v.(bool)
+			if ok && !deleted {
+				q = q.Where("tm_delete IS NULL")
+			} else if ok && deleted {
+				q = q.Where("tm_delete IS NOT NULL")
+			}
+		default:
+			q = q.Where(sq.Eq{key: v})
+		}
+	}
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build rag gets query: %w", err)
+		return nil, fmt.Errorf("could not build rag list query: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not execute rag gets query: %w", err)
+		return nil, fmt.Errorf("could not execute rag list query: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
-	res, err := ragScanRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan rag rows: %w", err)
-	}
-
-	return res, nil
+	return ragScanRows(rows)
 }
 
 // RagUpdate updates rag fields by ID

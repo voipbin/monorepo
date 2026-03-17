@@ -3163,18 +3163,18 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any)
 }
 
 // RagQuery mocks base method.
-func (m *MockServiceHandler) RagQuery(ctx context.Context, a *agent.Agent, queryText string, docTypes []string, topK int) (*query.Response, error) {
+func (m *MockServiceHandler) RagQuery(ctx context.Context, a *agent.Agent, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagQuery", ctx, a, queryText, docTypes, topK)
+	ret := m.ctrl.Call(m, "RagQuery", ctx, a, ragID, queryText, topK)
 	ret0, _ := ret[0].(*query.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RagQuery indicates an expected call of RagQuery.
-func (mr *MockServiceHandlerMockRecorder) RagQuery(ctx, a, queryText, docTypes, topK any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) RagQuery(ctx, a, ragID, queryText, topK any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagQuery", reflect.TypeOf((*MockServiceHandler)(nil).RagQuery), ctx, a, queryText, docTypes, topK)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagQuery", reflect.TypeOf((*MockServiceHandler)(nil).RagQuery), ctx, a, ragID, queryText, topK)
 }
 
 // RecordingDelete mocks base method.

@@ -19,8 +19,8 @@ type Source struct {
 	RelevanceScore float64   `json:"relevance_score"`
 }
 
-// Response represents a RAG query response
+// Response represents a RAG query response — sources only.
+// Answer generation is handled by the caller (e.g., pipecat-manager).
 type Response struct {
-	Answer  string   `json:"answer"`
 	Sources []Source `json:"sources"`
 }

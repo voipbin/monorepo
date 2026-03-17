@@ -1,11 +1,11 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/gens/openapi_server"
-
+	"github.com/gofrs/uuid"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
 )
 
 func (h *server) PostRagsQuery(c *gin.Context) {
@@ -25,29 +25,23 @@ func (h *server) PostRagsQuery(c *gin.Context) {
 		"agent": a,
 	})
 
-	var req openapi_server.PostRagsQueryJSONBody
+	var req struct {
+		RagID uuid.UUID `json:"rag_id"`
+		Query string    `json:"query"`
+		TopK  *int      `json:"top_k,omitempty"`
+	}
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	// Convert doc types
-	var docTypes []string
-	if req.DocTypes != nil {
-		docTypes = make([]string, len(*req.DocTypes))
-		for i, dt := range *req.DocTypes {
-			docTypes[i] = string(dt)
-		}
-	}
-
-	// Convert top_k
 	topK := 0
 	if req.TopK != nil {
 		topK = *req.TopK
 	}
 
-	res, err := h.serviceHandler.RagQuery(c.Request.Context(), &a, req.Query, docTypes, topK)
+	res, err := h.serviceHandler.RagQuery(c.Request.Context(), &a, req.RagID, req.Query, topK)
 	if err != nil {
 		log.Errorf("Could not query RAG. err: %v", err)
 		c.AbortWithStatus(400)

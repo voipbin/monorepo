@@ -1311,7 +1311,7 @@ type RequestHandler interface {
 	TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) ([]byte, error)
 
 	// rag-manager query
-	RagV1RagQuery(ctx context.Context, queryText string, docTypes []string, topK int) (*rmquery.Response, error)
+	RagV1RagQuery(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error

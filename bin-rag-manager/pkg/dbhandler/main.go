@@ -24,15 +24,14 @@ type DBHandler interface {
 	// Rag operations
 	RagCreate(ctx context.Context, r *rag.Rag) error
 	RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error)
-	RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error)
+	RagList(ctx context.Context, size uint64, token string, filters map[rag.Field]any) ([]*rag.Rag, error)
 	RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) error
 	RagDelete(ctx context.Context, id uuid.UUID) error
 
 	// Document operations
 	DocumentCreate(ctx context.Context, d *document.Document) error
 	DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error)
-	DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error)
-	DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error)
+	DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error)
 	DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[document.Field]any) error
 	DocumentDelete(ctx context.Context, id uuid.UUID) error
 	DocumentDeleteByRagID(ctx context.Context, ragID uuid.UUID) error

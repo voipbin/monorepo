@@ -5009,18 +5009,18 @@ func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengine
 }
 
 // RagV1RagQuery mocks base method.
-func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, queryText string, docTypes []string, topK int) (*query.Response, error) {
+func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1RagQuery", ctx, queryText, docTypes, topK)
+	ret := m.ctrl.Call(m, "RagV1RagQuery", ctx, ragID, queryText, topK)
 	ret0, _ := ret[0].(*query.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RagV1RagQuery indicates an expected call of RagV1RagQuery.
-func (mr *MockRequestHandlerMockRecorder) RagV1RagQuery(ctx, queryText, docTypes, topK any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RagV1RagQuery(ctx, ragID, queryText, topK any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagQuery", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagQuery), ctx, queryText, docTypes, topK)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagQuery", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagQuery), ctx, ragID, queryText, topK)
 }
 
 // RegistrarV1ContactList mocks base method.

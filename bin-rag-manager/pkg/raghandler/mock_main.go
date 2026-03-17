@@ -45,18 +45,18 @@ func (m *MockRagHandler) EXPECT() *MockRagHandlerMockRecorder {
 }
 
 // DocumentCreate mocks base method.
-func (m *MockRagHandler) DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, fileIDs []uuid.UUID, urls []string) ([]*document.Document, error) {
+func (m *MockRagHandler) DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.Document, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DocumentCreate", ctx, customerID, ragID, fileIDs, urls)
-	ret0, _ := ret[0].([]*document.Document)
+	ret := m.ctrl.Call(m, "DocumentCreate", ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
+	ret0, _ := ret[0].(*document.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DocumentCreate indicates an expected call of DocumentCreate.
-func (mr *MockRagHandlerMockRecorder) DocumentCreate(ctx, customerID, ragID, fileIDs, urls any) *gomock.Call {
+func (mr *MockRagHandlerMockRecorder) DocumentCreate(ctx, customerID, ragID, name, docType, sourceURL, storageFileID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentCreate", reflect.TypeOf((*MockRagHandler)(nil).DocumentCreate), ctx, customerID, ragID, fileIDs, urls)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentCreate", reflect.TypeOf((*MockRagHandler)(nil).DocumentCreate), ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
 }
 
 // DocumentDelete mocks base method.
@@ -88,34 +88,19 @@ func (mr *MockRagHandlerMockRecorder) DocumentGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGet", reflect.TypeOf((*MockRagHandler)(nil).DocumentGet), ctx, id)
 }
 
-// DocumentGetsByCustomerID mocks base method.
-func (m *MockRagHandler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
+// DocumentList mocks base method.
+func (m *MockRagHandler) DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DocumentGetsByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "DocumentList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*document.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DocumentGetsByCustomerID indicates an expected call of DocumentGetsByCustomerID.
-func (mr *MockRagHandlerMockRecorder) DocumentGetsByCustomerID(ctx, customerID any) *gomock.Call {
+// DocumentList indicates an expected call of DocumentList.
+func (mr *MockRagHandlerMockRecorder) DocumentList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByCustomerID", reflect.TypeOf((*MockRagHandler)(nil).DocumentGetsByCustomerID), ctx, customerID)
-}
-
-// DocumentGetsByRagID mocks base method.
-func (m *MockRagHandler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DocumentGetsByRagID", ctx, ragID)
-	ret0, _ := ret[0].([]*document.Document)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DocumentGetsByRagID indicates an expected call of DocumentGetsByRagID.
-func (mr *MockRagHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockRagHandler)(nil).DocumentGetsByRagID), ctx, ragID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentList", reflect.TypeOf((*MockRagHandler)(nil).DocumentList), ctx, size, token, filters)
 }
 
 // QueryRag mocks base method.
@@ -134,18 +119,18 @@ func (mr *MockRagHandlerMockRecorder) QueryRag(ctx, ragID, queryText, topK any) 
 }
 
 // RagCreate mocks base method.
-func (m *MockRagHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, fileIDs []uuid.UUID, urls []string) (*rag.Rag, error) {
+func (m *MockRagHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rag.Rag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagCreate", ctx, customerID, name, description, fileIDs, urls)
+	ret := m.ctrl.Call(m, "RagCreate", ctx, customerID, name, description)
 	ret0, _ := ret[0].(*rag.Rag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RagCreate indicates an expected call of RagCreate.
-func (mr *MockRagHandlerMockRecorder) RagCreate(ctx, customerID, name, description, fileIDs, urls any) *gomock.Call {
+func (mr *MockRagHandlerMockRecorder) RagCreate(ctx, customerID, name, description any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockRagHandler)(nil).RagCreate), ctx, customerID, name, description, fileIDs, urls)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockRagHandler)(nil).RagCreate), ctx, customerID, name, description)
 }
 
 // RagDelete mocks base method.
@@ -177,17 +162,17 @@ func (mr *MockRagHandlerMockRecorder) RagGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGet", reflect.TypeOf((*MockRagHandler)(nil).RagGet), ctx, id)
 }
 
-// RagGetsByCustomerID mocks base method.
-func (m *MockRagHandler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error) {
+// RagList mocks base method.
+func (m *MockRagHandler) RagList(ctx context.Context, size uint64, token string, filters map[rag.Field]any) ([]*rag.Rag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagGetsByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "RagList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*rag.Rag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RagGetsByCustomerID indicates an expected call of RagGetsByCustomerID.
-func (mr *MockRagHandlerMockRecorder) RagGetsByCustomerID(ctx, customerID any) *gomock.Call {
+// RagList indicates an expected call of RagList.
+func (mr *MockRagHandlerMockRecorder) RagList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGetsByCustomerID", reflect.TypeOf((*MockRagHandler)(nil).RagGetsByCustomerID), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagList", reflect.TypeOf((*MockRagHandler)(nil).RagList), ctx, size, token, filters)
 }
