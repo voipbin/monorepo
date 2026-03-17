@@ -13,3 +13,4 @@ FROM public.ecr.aws/docker/library/alpine:latest
 
 WORKDIR /app/bin/
 COPY --from=build /app/bin /app/bin
+COPY --from=build /app/bin-rag-manager/migrations /app/bin/migrations
