@@ -31,6 +31,15 @@ func (h *listenHandler) processV1RagsPost(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 
+	if req.CustomerID == uuid.Nil {
+		log.Errorf("Customer ID is required.")
+		return simpleResponse(400), nil
+	}
+	if req.Name == "" {
+		log.Errorf("Name is required.")
+		return simpleResponse(400), nil
+	}
+
 	r, err := h.ragHandler.RagCreate(ctx, req.CustomerID, req.Name, req.Description)
 	if err != nil {
 		log.Errorf("Could not create rag. err: %v", err)

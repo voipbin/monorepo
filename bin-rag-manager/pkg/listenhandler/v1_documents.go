@@ -34,6 +34,19 @@ func (h *listenHandler) processV1DocumentsPost(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
+	if req.CustomerID == uuid.Nil {
+		log.Errorf("Customer ID is required.")
+		return simpleResponse(400), nil
+	}
+	if req.RagID == uuid.Nil {
+		log.Errorf("Rag ID is required.")
+		return simpleResponse(400), nil
+	}
+	if req.Name == "" {
+		log.Errorf("Name is required.")
+		return simpleResponse(400), nil
+	}
+
 	d, err := h.ragHandler.DocumentCreate(ctx, req.CustomerID, req.RagID, req.Name, req.DocType, req.SourceURL, req.StorageFileID)
 	if err != nil {
 		log.Errorf("Could not create document. err: %v", err)
