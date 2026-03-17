@@ -176,3 +176,18 @@ func (mr *MockRagHandlerMockRecorder) RagList(ctx, size, token, filters any) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagList", reflect.TypeOf((*MockRagHandler)(nil).RagList), ctx, size, token, filters)
 }
+
+// RagUpdate mocks base method.
+func (m *MockRagHandler) RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagUpdate indicates an expected call of RagUpdate.
+func (mr *MockRagHandlerMockRecorder) RagUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagUpdate", reflect.TypeOf((*MockRagHandler)(nil).RagUpdate), ctx, id, fields)
+}

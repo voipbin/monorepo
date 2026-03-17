@@ -19,6 +19,7 @@ type RagHandler interface {
 	RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rag.Rag, error)
 	RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error)
 	RagList(ctx context.Context, size uint64, token string, filters map[rag.Field]any) ([]*rag.Rag, error)
+	RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error)
 	RagDelete(ctx context.Context, id uuid.UUID) error
 
 	DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.Document, error)

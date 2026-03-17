@@ -111,6 +111,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1RagsIDDelete(ctx, m)
 		requestType = "/v1/rags/<rag-id>"
 
+	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1RagsIDPut(ctx, m)
+		requestType = "/v1/rags/<rag-id>"
+
 	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1RagsPost(ctx, m)
 		requestType = "/v1/rags"

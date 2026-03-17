@@ -81,6 +81,9 @@ func (m *mockRagHandlerForListen) RagGet(_ context.Context, _ uuid.UUID) (*rag.R
 func (m *mockRagHandlerForListen) RagList(_ context.Context, _ uint64, _ string, _ map[rag.Field]any) ([]*rag.Rag, error) {
 	return nil, fmt.Errorf("not implemented")
 }
+func (m *mockRagHandlerForListen) RagUpdate(_ context.Context, _ uuid.UUID, _ map[rag.Field]any) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 func (m *mockRagHandlerForListen) RagDelete(_ context.Context, _ uuid.UUID) error {
 	return fmt.Errorf("not implemented")
 }

@@ -61,7 +61,9 @@ import (
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
+	document "monorepo/bin-rag-manager/models/document"
 	query "monorepo/bin-rag-manager/models/query"
+	rag "monorepo/bin-rag-manager/models/rag"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	extensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
@@ -5008,6 +5010,124 @@ func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengine
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1CommandsSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1CommandsSend), ctx, rtpengineID, command)
 }
 
+// RagV1DocumentCreate mocks base method.
+func (m *MockRequestHandler) RagV1DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1DocumentCreate", ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
+	ret0, _ := ret[0].(*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1DocumentCreate indicates an expected call of RagV1DocumentCreate.
+func (mr *MockRequestHandlerMockRecorder) RagV1DocumentCreate(ctx, customerID, ragID, name, docType, sourceURL, storageFileID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentCreate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentCreate), ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
+}
+
+// RagV1DocumentDelete mocks base method.
+func (m *MockRequestHandler) RagV1DocumentDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1DocumentDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RagV1DocumentDelete indicates an expected call of RagV1DocumentDelete.
+func (mr *MockRequestHandlerMockRecorder) RagV1DocumentDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentDelete", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentDelete), ctx, id)
+}
+
+// RagV1DocumentGet mocks base method.
+func (m *MockRequestHandler) RagV1DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1DocumentGet", ctx, id)
+	ret0, _ := ret[0].(*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1DocumentGet indicates an expected call of RagV1DocumentGet.
+func (mr *MockRequestHandlerMockRecorder) RagV1DocumentGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentGet", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentGet), ctx, id)
+}
+
+// RagV1DocumentGets mocks base method.
+func (m *MockRequestHandler) RagV1DocumentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[document.Field]any) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1DocumentGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1DocumentGets indicates an expected call of RagV1DocumentGets.
+func (mr *MockRequestHandlerMockRecorder) RagV1DocumentGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentGets", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentGets), ctx, pageToken, pageSize, filters)
+}
+
+// RagV1RagCreate mocks base method.
+func (m *MockRequestHandler) RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagCreate", ctx, customerID, name, description)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagCreate indicates an expected call of RagV1RagCreate.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagCreate(ctx, customerID, name, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagCreate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagCreate), ctx, customerID, name, description)
+}
+
+// RagV1RagDelete mocks base method.
+func (m *MockRequestHandler) RagV1RagDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RagV1RagDelete indicates an expected call of RagV1RagDelete.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagDelete", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagDelete), ctx, id)
+}
+
+// RagV1RagGet mocks base method.
+func (m *MockRequestHandler) RagV1RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagGet", ctx, id)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagGet indicates an expected call of RagV1RagGet.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagGet", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagGet), ctx, id)
+}
+
+// RagV1RagGets mocks base method.
+func (m *MockRequestHandler) RagV1RagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rag.Field]any) ([]*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagGets indicates an expected call of RagV1RagGets.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagGets", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagGets), ctx, pageToken, pageSize, filters)
+}
+
 // RagV1RagQuery mocks base method.
 func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
 	m.ctrl.T.Helper()
@@ -5021,6 +5141,21 @@ func (m *MockRequestHandler) RagV1RagQuery(ctx context.Context, ragID uuid.UUID,
 func (mr *MockRequestHandlerMockRecorder) RagV1RagQuery(ctx, ragID, queryText, topK any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagQuery", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagQuery), ctx, ragID, queryText, topK)
+}
+
+// RagV1RagUpdate mocks base method.
+func (m *MockRequestHandler) RagV1RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagUpdate indicates an expected call of RagV1RagUpdate.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagUpdate), ctx, id, fields)
 }
 
 // RegistrarV1ContactList mocks base method.

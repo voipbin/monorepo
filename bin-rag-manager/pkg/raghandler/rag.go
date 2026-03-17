@@ -73,6 +73,28 @@ func (h *ragHandler) RagList(ctx context.Context, size uint64, token string, fil
 	return rags, nil
 }
 
+func (h *ragHandler) RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "RagUpdate",
+		"id":     id,
+		"fields": fields,
+	})
+
+	if err := h.dbHandler.RagUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update rag. err: %v", err)
+		return nil, fmt.Errorf("could not update rag: %w", err)
+	}
+
+	r, err := h.dbHandler.RagGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated rag. err: %v", err)
+		return nil, fmt.Errorf("could not get updated rag: %w", err)
+	}
+	log.WithField("rag", r).Debugf("Updated rag. rag_id: %s", r.ID)
+
+	return r, nil
+}
+
 func (h *ragHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "RagDelete",

@@ -73,12 +73,13 @@ import (
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 
+	rmrag "monorepo/bin-rag-manager/models/rag"
+	rmdocument "monorepo/bin-rag-manager/models/document"
+
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
-
-
 
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
@@ -905,6 +906,19 @@ type ServiceHandler interface {
 	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)
 
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
+
+	// RAG
+	RagCreate(ctx context.Context, a *amagent.Agent, name, description string) (*rmrag.WebhookMessage, error)
+	RagGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
+	RagGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmrag.WebhookMessage, error)
+	RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error)
+	RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
+
+	// RAG Documents
+	RagDocumentCreate(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, name string, docType rmdocument.DocType, sourceURL string, storageFileID uuid.UUID) (*rmdocument.WebhookMessage, error)
+	RagDocumentGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error)
+	RagDocumentGets(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, size uint64, token string) ([]*rmdocument.WebhookMessage, error)
+	RagDocumentDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error)
 }
 
 type serviceHandler struct {

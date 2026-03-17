@@ -110,6 +110,53 @@ func (h *listenHandler) processV1RagsIDGet(ctx context.Context, m *sock.Request)
 	return jsonResponse(200, r), nil
 }
 
+func (h *listenHandler) processV1RagsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1RagsIDPut",
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Could not parse rag ID from URI.")
+		return simpleResponse(400), nil
+	}
+
+	var req struct {
+		Name        *string `json:"name"`
+		Description *string `json:"description"`
+	}
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not unmarshal request. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	fields := make(map[rag.Field]any)
+	if req.Name != nil {
+		fields[rag.FieldName] = *req.Name
+	}
+	if req.Description != nil {
+		fields[rag.FieldDescription] = *req.Description
+	}
+
+	if len(fields) == 0 {
+		log.Errorf("No fields to update.")
+		return simpleResponse(400), nil
+	}
+
+	r, err := h.ragHandler.RagUpdate(ctx, id, fields)
+	if err != nil {
+		log.Errorf("Could not update rag. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	return jsonResponse(200, r), nil
+}
+
 func (h *listenHandler) processV1RagsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1RagsIDDelete",
