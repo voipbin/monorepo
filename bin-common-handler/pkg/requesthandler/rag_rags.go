@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	rmrag "monorepo/bin-rag-manager/pkg/raghandler"
+	rmquery "monorepo/bin-rag-manager/models/query"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
@@ -12,7 +12,7 @@ import (
 
 // RagV1RagQuery sends a query request to the rag-manager.
 // It returns the query response with answer and sources.
-func (r *requestHandler) RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*rmrag.QueryResponse, error) {
+func (r *requestHandler) RagV1RagQuery(ctx context.Context, query string, docTypes []string, topK int) (*rmquery.Response, error) {
 	uri := "/v1/rags/query"
 
 	req := struct {
@@ -35,7 +35,7 @@ func (r *requestHandler) RagV1RagQuery(ctx context.Context, query string, docTyp
 		return nil, err
 	}
 
-	var res rmrag.QueryResponse
+	var res rmquery.Response
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
