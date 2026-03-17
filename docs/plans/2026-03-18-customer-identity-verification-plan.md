@@ -611,7 +611,7 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *
 		return true
 	}
 
-	if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
+	if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
 		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s, status: %s", customerID, cu.IdentityVerificationStatus)
 		return false
 	}
@@ -672,7 +672,9 @@ grep -rn "ValidateCustomerNotFrozen" bin-call-manager/ --include="*.go" | grep -
 
 **Step 4b: Update test mocked Customer objects**
 
-Tests in `start_test.go` (lines 256, 452, 646) mock `CustomerV1CustomerGet` returning `&cucustomer.Customer{Status: cucustomer.StatusActive}`. After this change, the mocked customer must also include `IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified`, otherwise `ValidateCustomerIdentityVerified` will reject outgoing PSTN calls in tests. Also check `outgoing_call_test.go` for similar mocked Customer objects.
+Tests in `outgoing_call_test.go` (lines 176, 375) mock `CustomerV1CustomerGet` returning `&cucustomer.Customer{Status: cucustomer.StatusActive}`. After this change, the mocked customer must also include `IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified`, otherwise `ValidateCustomerIdentityVerified` will reject outgoing PSTN calls in tests.
+
+Note: `start_test.go` (lines 256, 452, 646) also mocks `CustomerV1CustomerGet`, but those tests cover incoming call flows that do NOT pass through `ValidateCustomerIdentityVerified`. Adding the field there is harmless but not required — the `ValidateCustomerNotFrozen` return signature change is handled by the compiler (Step 4 already updates the caller).
 
 Example fix for each mocked customer:
 ```go
@@ -762,22 +764,36 @@ git commit -m "NOJIRA-Customer-identity-verification
 
 **IMPORTANT:** Before modifying OpenAPI, read `bin-openapi-manager/CLAUDE.md` for AI-Native Specification Rules.
 
-**Step 1: Add identity_verification_status to CustomerManagerCustomer schema**
+**Step 1: Add a separate enum schema and reference it in CustomerManagerCustomer**
 
-In `bin-openapi-manager/openapi/openapi.yaml`, find the `CustomerManagerCustomer` schema (around line 3301) and add after the `status` field:
+In `bin-openapi-manager/openapi/openapi.yaml`, first add a new schema definition immediately before `CustomerManagerCustomer` (around line 3301), following the same pattern as `CustomerManagerCustomerStatus` (line 3289):
 
 ```yaml
-    identity_verification_status:
+    CustomerManagerCustomerIdentityVerificationStatus:
       type: string
+      description: Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls.
+      example: "none"
       enum:
         - none
         - pending
         - verified
         - rejected
-      description: >-
-        Customer's identity verification status. Determines access to PSTN
-        number purchases and outbound PSTN calls. Only 'verified' customers
-        can perform these operations.
+      x-enum-varnames:
+        - CustomerManagerCustomerIdentityVerificationStatusNone
+        - CustomerManagerCustomerIdentityVerificationStatusPending
+        - CustomerManagerCustomerIdentityVerificationStatusVerified
+        - CustomerManagerCustomerIdentityVerificationStatusRejected
+```
+
+Then, in the `CustomerManagerCustomer` properties, add after the `status` field (line 3354), before `tm_deletion_scheduled` (line 3357):
+
+```yaml
+        identity_verification_status:
+          $ref: '#/components/schemas/CustomerManagerCustomerIdentityVerificationStatus'
+          description: >-
+            Customer's identity verification status. Only 'verified' customers
+            can purchase PSTN numbers and make outbound PSTN calls.
+          example: "none"
 ```
 
 **Step 2: Regenerate OpenAPI types**
