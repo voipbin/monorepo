@@ -9640,6 +9640,7 @@
                   },
                   "source_url": {
                     "type": "string",
+                    "format": "uri",
                     "description": "The source URL if doc_type is url.",
                     "example": "https://example.com/docs/faq.html"
                   },
