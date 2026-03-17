@@ -2169,30 +2169,6 @@ func (e QueueManagerQueuecallStatus) Valid() bool {
 	}
 }
 
-// Defines values for RagManagerDocType.
-const (
-	RagManagerDocTypeDesign    RagManagerDocType = "design"
-	RagManagerDocTypeDevDoc    RagManagerDocType = "devdoc"
-	RagManagerDocTypeGuideline RagManagerDocType = "guideline"
-	RagManagerDocTypeOpenAPI   RagManagerDocType = "openapi"
-)
-
-// Valid indicates whether the value is a known member of the RagManagerDocType enum.
-func (e RagManagerDocType) Valid() bool {
-	switch e {
-	case RagManagerDocTypeDesign:
-		return true
-	case RagManagerDocTypeDevDoc:
-		return true
-	case RagManagerDocTypeGuideline:
-		return true
-	case RagManagerDocTypeOpenAPI:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for RegistrarManagerAuthType.
 const (
 	RegistrarManagerAuthTypeBasic RegistrarManagerAuthType = "basic"
@@ -5464,33 +5440,6 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
 type QueueManagerQueuecallStatus string
 
-// RagManagerDocType Type of documentation source
-type RagManagerDocType string
-
-// RagManagerQueryResponse Response from a RAG query
-type RagManagerQueryResponse struct {
-	// Answer Generated answer based on retrieved documentation
-	Answer *string `json:"answer,omitempty"`
-
-	// Sources List of source references used to generate the answer
-	Sources *[]RagManagerSource `json:"sources,omitempty"`
-}
-
-// RagManagerSource A source reference in the query response
-type RagManagerSource struct {
-	// DocType Type of documentation source
-	DocType *RagManagerDocType `json:"doc_type,omitempty"`
-
-	// RelevanceScore Relevance score of the source
-	RelevanceScore *float64 `json:"relevance_score,omitempty"`
-
-	// SectionTitle Title of the relevant section
-	SectionTitle *string `json:"section_title,omitempty"`
-
-	// SourceFile Path to the source file
-	SourceFile *string `json:"source_file,omitempty"`
-}
-
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
 
@@ -7447,18 +7396,6 @@ type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
 }
 
-// PostRagsQueryJSONBody defines parameters for PostRagsQuery.
-type PostRagsQueryJSONBody struct {
-	// DocTypes Optional list of document types to search. If empty, all types are searched.
-	DocTypes *[]RagManagerDocType `json:"doc_types,omitempty"`
-
-	// Query The natural language question to ask.
-	Query string `json:"query"`
-
-	// TopK Number of top relevant chunks to retrieve. Defaults to server configuration if not specified.
-	TopK *int `json:"top_k,omitempty"`
-}
-
 // GetRecordingsParams defines parameters for GetRecordings.
 type GetRecordingsParams struct {
 	// PageSize Number of results to return per page.
@@ -8300,9 +8237,6 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
-
-// PostRagsQueryJSONRequestBody defines body for PostRagsQuery for application/json ContentType.
-type PostRagsQueryJSONRequestBody PostRagsQueryJSONBody
 
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody

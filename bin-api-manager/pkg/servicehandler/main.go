@@ -78,7 +78,7 @@ import (
 	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
-	rmquery "monorepo/bin-rag-manager/models/query"
+
 
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
@@ -903,9 +903,6 @@ type ServiceHandler interface {
 	TimelineEventList(ctx context.Context, a *amagent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
 	TimelineSIPAnalysisGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*tmsipmessage.SIPAnalysisResponse, error)
 	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)
-
-	// rag handlers
-	RagQuery(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error)
 
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
 }

@@ -6319,61 +6319,6 @@ components:
           example: "2026-01-17T18:45:00.000000Z"
 
 
-#########################################
-# RAG Manager
-#########################################
-    RagManagerDocType:
-      type: string
-      description: Type of documentation source
-      enum:
-        - devdoc
-        - openapi
-        - design
-        - guideline
-      x-enum-varnames:
-        - RagManagerDocTypeDevDoc
-        - RagManagerDocTypeOpenAPI
-        - RagManagerDocTypeDesign
-        - RagManagerDocTypeGuideline
-      example: "openapi"
-
-    RagManagerSource:
-      type: object
-      description: A source reference in the query response
-      properties:
-        source_file:
-          type: string
-          description: Path to the source file
-          example: "bin-openapi-manager/openapi/openapi.yaml"
-        section_title:
-          type: string
-          description: Title of the relevant section
-          example: "API Authentication"
-        doc_type:
-          $ref: '#/components/schemas/RagManagerDocType'
-          description: "The type of documentation source."
-          example: "openapi"
-        relevance_score:
-          type: number
-          format: double
-          description: Relevance score of the source
-          example: 0.95
-
-    RagManagerQueryResponse:
-      type: object
-      description: Response from a RAG query
-      properties:
-        answer:
-          type: string
-          description: Generated answer based on retrieved documentation
-          example: "To authenticate, use the POST /auth/login endpoint with your credentials."
-        sources:
-          type: array
-          description: List of source references used to generate the answer
-          items:
-            $ref: '#/components/schemas/RagManagerSource'
-
-
     RequestBodyAuthSignupPOST:
       type: object
       required:
@@ -6944,9 +6889,6 @@ paths:
 
   /aggregated-events:
     $ref: './paths/timelines/aggregated_events.yaml'
-
-  /rags/query:
-    $ref: './paths/rags/query.yaml'
 
   /ws:
     $ref: './paths/ws/main.yaml'

@@ -608,14 +608,12 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// rag routes
-	regV1Rags    = regexp.MustCompile(`^/v1/rags$`)
-	regV1RagsGet = regexp.MustCompile(`^/v1/rags\?`)
-	regV1RagsID  = regexp.MustCompile(`^/v1/rags/` + regUUID + `$`)
+	regV1Rags   = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
+	regV1RagsID = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
 
 	// document routes
-	regV1Documents    = regexp.MustCompile(`^/v1/documents$`)
-	regV1DocumentsGet = regexp.MustCompile(`^/v1/documents\?`)
-	regV1DocumentsID  = regexp.MustCompile(`^/v1/documents/` + regUUID + `$`)
+	regV1Documents   = regexp.MustCompile(`^/v1/documents(\?.*)?$`)
+	regV1DocumentsID = regexp.MustCompile(`^/v1/documents/` + regUUID + `(\?.*)?$`)
 
 	// query route
 	regV1Query = regexp.MustCompile(`^/v1/query$`)
@@ -640,15 +638,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 
 	switch {
-	// rag routes
-	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1RagsPost(ctx, m)
-		requestType = "/v1/rags"
-
-	case regV1RagsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1RagsGet(ctx, m)
-		requestType = "/v1/rags"
-
+	// rag routes — ID routes before collection routes
 	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1RagsIDGet(ctx, m)
 		requestType = "/v1/rags/<rag-id>"
@@ -657,15 +647,15 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1RagsIDDelete(ctx, m)
 		requestType = "/v1/rags/<rag-id>"
 
-	// document routes
-	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1DocumentsPost(ctx, m)
-		requestType = "/v1/documents"
+	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1RagsPost(ctx, m)
+		requestType = "/v1/rags"
 
-	case regV1DocumentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1DocumentsGet(ctx, m)
-		requestType = "/v1/documents"
+	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1RagsGet(ctx, m)
+		requestType = "/v1/rags"
 
+	// document routes — ID routes before collection routes
 	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1DocumentsIDGet(ctx, m)
 		requestType = "/v1/documents/<document-id>"
@@ -673,6 +663,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1DocumentsIDDelete(ctx, m)
 		requestType = "/v1/documents/<document-id>"
+
+	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1DocumentsPost(ctx, m)
+		requestType = "/v1/documents"
+
+	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1DocumentsGet(ctx, m)
+		requestType = "/v1/documents"
 
 	// query route
 	case regV1Query.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
@@ -801,69 +799,7 @@ git commit -m "NOJIRA-Rag-manager-phase2-api-endpoints
 
 ---
 
-### Task 6: Update bin-api-manager caller
-
-**Files:**
-- Modify: `bin-api-manager/pkg/servicehandler/rag.go`
-- Modify: `bin-api-manager/pkg/servicehandler/main.go:908`
-
-**Step 1: Update ServiceHandler interface**
-
-In `main.go` line 908, change:
-```go
-RagQuery(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error)
-```
-
-Add `"github.com/gofrs/uuid"` to imports if not already present (it should be).
-
-**Step 2: Update RagQuery implementation**
-
-In `rag.go`, update to pass ragID:
-
-```go
-func (h *serviceHandler) RagQuery(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, query string, topK int) (*rmquery.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":   "RagQuery",
-		"rag_id": ragID,
-		"query":  query,
-	})
-
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	res, err := h.reqHandler.RagV1RagQuery(ctx, ragID, query, topK)
-	if err != nil {
-		log.Errorf("Could not query RAG. err: %v", err)
-		return nil, err
-	}
-	log.WithField("response", res).Debug("RAG query completed.")
-
-	return res, nil
-}
-```
-
-Remove `docTypes` parameter — it's no longer used.
-
-**Step 3: Run verification for bin-api-manager**
-
-```bash
-cd bin-api-manager && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
-```
-
-**Step 4: Commit**
-
-```
-git add bin-api-manager/
-git commit -m "NOJIRA-Rag-manager-phase2-api-endpoints
-
-- bin-api-manager: Update RagQuery to accept ragID, remove docTypes"
-```
-
----
-
-### Task 7: Full verification and final commit
+### Task 6: Full verification and final commit
 
 **Step 1: Run full verification for bin-rag-manager**
 
@@ -877,20 +813,14 @@ cd bin-rag-manager && go mod tidy && go mod vendor && go generate ./... && go te
 cd bin-common-handler && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-**Step 3: Run full verification for bin-api-manager**
-
-```bash
-cd bin-api-manager && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
-```
-
-**Step 4: Check for conflicts with main**
+**Step 3: Check for conflicts with main**
 
 ```bash
 git fetch origin main
 git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"
 ```
 
-**Step 5: Push and create PR**
+**Step 4: Push and create PR**
 
 ```bash
 git push -u origin NOJIRA-Rag-manager-phase2-api-endpoints

@@ -13865,61 +13865,6 @@
         }
       }
     },
-    "/rags/query": {
-      "post": {
-        "summary": "Query RAG documentation system",
-        "description": "Submit a natural language query to the RAG documentation system and receive an answer grounded in the indexed documentation sources.",
-        "tags": [
-          "RAG"
-        ],
-        "requestBody": {
-          "description": "Query parameters for the RAG system.",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "query"
-                ],
-                "properties": {
-                  "query": {
-                    "type": "string",
-                    "description": "The natural language question to ask."
-                  },
-                  "doc_types": {
-                    "type": "array",
-                    "description": "Optional list of document types to search. If empty, all types are searched.",
-                    "items": {
-                      "$ref": "#/components/schemas/RagManagerDocType"
-                    }
-                  },
-                  "top_k": {
-                    "type": "integer",
-                    "description": "Number of top relevant chunks to retrieve. Defaults to server configuration if not specified."
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful query response with answer and sources.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RagManagerQueryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request."
-          }
-        }
-      }
-    },
     "/ws": {
       "get": {
         "summary": "Create a new websocket connection.",
@@ -21115,68 +21060,6 @@
             "x-go-type": "string",
             "description": "Timestamp when deleted",
             "example": "2026-01-17T18:45:00.000000Z"
-          }
-        }
-      },
-      "RagManagerDocType": {
-        "type": "string",
-        "description": "Type of documentation source",
-        "enum": [
-          "devdoc",
-          "openapi",
-          "design",
-          "guideline"
-        ],
-        "x-enum-varnames": [
-          "RagManagerDocTypeDevDoc",
-          "RagManagerDocTypeOpenAPI",
-          "RagManagerDocTypeDesign",
-          "RagManagerDocTypeGuideline"
-        ],
-        "example": "openapi"
-      },
-      "RagManagerSource": {
-        "type": "object",
-        "description": "A source reference in the query response",
-        "properties": {
-          "source_file": {
-            "type": "string",
-            "description": "Path to the source file",
-            "example": "bin-openapi-manager/openapi/openapi.yaml"
-          },
-          "section_title": {
-            "type": "string",
-            "description": "Title of the relevant section",
-            "example": "API Authentication"
-          },
-          "doc_type": {
-            "$ref": "#/components/schemas/RagManagerDocType",
-            "description": "The type of documentation source.",
-            "example": "openapi"
-          },
-          "relevance_score": {
-            "type": "number",
-            "format": "double",
-            "description": "Relevance score of the source",
-            "example": 0.95
-          }
-        }
-      },
-      "RagManagerQueryResponse": {
-        "type": "object",
-        "description": "Response from a RAG query",
-        "properties": {
-          "answer": {
-            "type": "string",
-            "description": "Generated answer based on retrieved documentation",
-            "example": "To authenticate, use the POST /auth/login endpoint with your credentials."
-          },
-          "sources": {
-            "type": "array",
-            "description": "List of source references used to generate the answer",
-            "items": {
-              "$ref": "#/components/schemas/RagManagerSource"
-            }
           }
         }
       },

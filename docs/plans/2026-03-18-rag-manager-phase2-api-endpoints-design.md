@@ -61,7 +61,7 @@ List endpoints use:
 - Pagination from query string (`page_size`, `page_token`)
 - Filters from request body (JSON map parsed by `utilhandler.ParseFiltersFromRequestBody`)
 - Type-safe conversion via `utilhandler.ConvertFilters` with `FieldStruct` definitions
-- Database application via `commondatabasehandler.ApplyFields`
+- Database application via local PostgreSQL filter loop in dbhandler (not `commondatabasehandler.ApplyFields` which is MySQL-specific)
 
 ## Changes Required
 
@@ -99,17 +99,16 @@ List endpoints use:
 - `rag_rags.go` — Update `RagV1RagQuery`: add `ragID` param, change URI to `/v1/query`, remove `docTypes` param
 - `main.go` — Update `RequestHandler` interface signature
 
-### bin-api-manager
-
-**pkg/servicehandler/**
-- `rag.go` — Update `RagQuery` signature to include `ragID`
-- `main.go` — Update `ServiceHandler` interface signature
-
 ## Implementation Order
 
 1. Models: Add FieldStruct filters, remove Answer from query.Response
 2. DBHandler: Update list methods to use filters + pagination
 3. RagHandler: Implement all business logic methods
 4. ListenHandler: Add routes and handler methods
-5. bin-common-handler + bin-api-manager: Update caller signatures
-6. Verification: Full workflow on all three services
+5. bin-common-handler: Update RagV1RagQuery caller signature
+6. Verification: Full workflow on all services
+
+## Notes
+
+- bin-api-manager does NOT expose RAG endpoints externally. RAG is an internal service consumed by other managers (e.g., pipecat-manager) via RabbitMQ RPC through bin-common-handler's requesthandler.
+- The OpenAPI spec does not include RAG endpoints — they are internal-only.
