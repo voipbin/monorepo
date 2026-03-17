@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	rmrag "monorepo/bin-rag-manager/pkg/raghandler"
+	rmquery "monorepo/bin-rag-manager/models/query"
 
 	"github.com/sirupsen/logrus"
 )
 
 // RagQuery queries the RAG documentation system.
-func (h *serviceHandler) RagQuery(ctx context.Context, a *amagent.Agent, query string, docTypes []string, topK int) (*rmrag.QueryResponse, error) {
+func (h *serviceHandler) RagQuery(ctx context.Context, a *amagent.Agent, query string, docTypes []string, topK int) (*rmquery.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "RagQuery",
 		"query": query,
