@@ -35,7 +35,7 @@ IdentityVerificationStatus IdentityVerificationStatus `db:"identity_verification
 FieldIdentityVerificationStatus Field = "identity_verification_status"
 ```
 
-**WebhookMessage** — add `IdentityVerificationStatus` field and include in `ConvertWebhookMessage()`.
+**WebhookMessage** — add `IdentityVerificationStatus` field and include in `ConvertWebhookMessage()`. This is intentionally exposed to external clients so customers can see their own verification status and know they need to verify.
 
 ### 2. Database Migration
 
@@ -43,13 +43,21 @@ In `bin-dbscheme-manager`, new Alembic migration:
 
 ```sql
 -- upgrade
-ALTER TABLE customer_customer
-    ADD COLUMN identity_verification_status VARCHAR(16) NOT NULL DEFAULT 'none';
+ALTER TABLE customer_customers
+    ADD COLUMN identity_verification_status VARCHAR(32) NOT NULL DEFAULT 'none';
+
+-- Set all existing active customers to 'verified' (grandfathered in).
+-- New customers created after this migration will default to 'none'.
+UPDATE customer_customers
+    SET identity_verification_status = 'verified'
+    WHERE status = 'active';
 
 -- downgrade
-ALTER TABLE customer_customer
+ALTER TABLE customer_customers
     DROP COLUMN identity_verification_status;
 ```
+
+**Migration strategy for existing customers:** All existing active customers are set to `verified` during migration so they are not disrupted. New customers created after deployment will default to `none` and must complete verification before buying numbers or making PSTN calls.
 
 ### 3. Gating Logic
 
@@ -57,8 +65,10 @@ Two enforcement points to cover both API-initiated and flow/action-initiated PST
 
 #### bin-api-manager (`pkg/servicehandler/`)
 
-- **NumberCreate**: Before the billing RPC call, fetch the customer and check `IdentityVerificationStatus == verified`. Skip check if number type is `Virtual`.
-- **CallCreate**: Before the RPC call, fetch the customer and check `IdentityVerificationStatus == verified` when any destination is `TypeTel`. No check for SIP/agent/extension/conference destinations.
+- **NumberCreate**: After the permission check and before the `NumberV1NumberCreate` RPC call, fetch the customer and check `IdentityVerificationStatus == verified`. Skip check if number type is `Virtual`.
+- **CallCreate**: After the permission check and before flow creation, fetch the customer and check `IdentityVerificationStatus == verified` when any destination is `TypeTel`. No check for SIP/agent/extension/conference destinations.
+
+Error responses should return HTTP 403 Forbidden status to distinguish from authentication failures (401) and bad requests (400).
 
 Error messages:
 - `"customer identity verification required for number purchase"`
@@ -66,10 +76,12 @@ Error messages:
 
 #### bin-call-manager (`pkg/callhandler/validate.go`)
 
-In the existing validation chain, right after the frozen status check:
+Refactor `ValidateCustomerNotFrozen` to return the fetched `*customer.Customer` object. Then pass it to a new `ValidateCustomerIdentityVerified` function that checks the verification status without making a second RPC call.
+
 - If `direction == DirectionOutgoing` and `destination.Type == TypeTel` and customer's `IdentityVerificationStatus != verified`, reject the call.
-- The customer object is already fetched for the frozen check — no extra RPC call needed.
+- Known internal customer IDs (`IDCallManager`, `IDAIManager`, `IDSystem`, `IDBasicRoute`) bypass the verification check — these are used by internal services for system operations.
 - Inbound calls are not checked.
+- Groupcall PSTN destinations are covered because groupcalls ultimately call `CreateCallOutgoing` for each resolved address, which includes the verification check.
 
 ### 4. Control CLI
 
@@ -156,6 +168,6 @@ Fired when `IdentityVerificationStatus` changes via any path (control CLI, futur
 
 ## Trade-offs
 
-- **Dual enforcement (API + call-manager)**: Slightly redundant for API-initiated calls, but necessary because flows/actions bypass the API layer. The cost is one extra field check on an already-fetched object.
+- **Dual enforcement (API + call-manager)**: Slightly redundant for API-initiated calls, but necessary because flows/actions bypass the API layer. In call-manager, `ValidateCustomerNotFrozen` is refactored to return the customer object, so the verification check reuses it — no extra RPC call.
 - **No dedicated verification service**: Keeping verification logic in customer-manager for now. Can extract to a dedicated service later if the verification workflow grows complex.
 - **No audit trail**: Verification status changes are tracked via events but not stored in a dedicated history table. Sufficient for now; can add history table when provider integration comes.

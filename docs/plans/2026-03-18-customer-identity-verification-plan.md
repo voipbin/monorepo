@@ -51,7 +51,14 @@ func (s IdentityVerificationStatus) IsValid() bool {
 }
 ```
 
-**Step 2: Commit**
+**Step 2: Run verification**
+
+```bash
+cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification/bin-customer-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+**Step 3: Commit**
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
@@ -445,6 +452,8 @@ git commit -m "NOJIRA-Customer-identity-verification
 - Modify: `bin-api-manager/pkg/servicehandler/numbers.go`
 - Modify: `bin-api-manager/pkg/servicehandler/call.go`
 
+**HTTP response:** Verification failures should return **HTTP 403 Forbidden** to distinguish from authentication failures (401) and bad requests (400). Check how the service returns HTTP errors — look for existing 403 patterns or `NewError`/`NewHTTPError` helpers and follow the same pattern.
+
 **Step 1: Add verification gate to NumberCreate**
 
 In `bin-api-manager/pkg/servicehandler/numbers.go`, in the `NumberCreate` function, after the permission check (line 107) and before the `h.reqHandler.NumberV1NumberCreate` call (line 110), add:
@@ -524,24 +533,62 @@ git commit -m "NOJIRA-Customer-identity-verification
 
 ---
 
-### Task 8: Add gating in bin-call-manager validate.go
+### Task 8: Refactor validate.go and add identity verification gating in bin-call-manager
 
 **Files:**
 - Modify: `bin-call-manager/pkg/callhandler/validate.go`
+- Modify: `bin-call-manager/pkg/callhandler/outgoing_call.go`
 
-**Step 1: Add ValidateCustomerIdentityVerified function**
+**Key design decision:** `ValidateCustomerNotFrozen` already fetches the customer via RPC. Instead of making a second RPC call for verification, refactor `ValidateCustomerNotFrozen` to return the customer object, then check the verification status on the same object.
 
-In `bin-call-manager/pkg/callhandler/validate.go`, add after the `ValidateCustomerNotFrozen` function (after line 40):
+**Step 1: Refactor ValidateCustomerNotFrozen to return the customer**
+
+In `bin-call-manager/pkg/callhandler/validate.go`, change `ValidateCustomerNotFrozen` to return `(*cucustomer.Customer, bool)`:
+
+```go
+// ValidateCustomerNotFrozen returns the customer and true if the given customer is not frozen.
+// Returns nil and false if the customer is frozen. Returns nil and true (fail-open) if
+// customer-manager is unavailable.
+func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID uuid.UUID) (*cucustomer.Customer, bool) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ValidateCustomerNotFrozen",
+		"customer_id": customerID,
+	})
+
+	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if err != nil {
+		// Fail open: if customer-manager is unavailable, allow the call rather than
+		// rejecting ALL calls. Billing-manager provides a second enforcement layer.
+		log.Errorf("Could not get customer info, failing open. err: %v", err)
+		return nil, true
+	}
+	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+
+	if cu.Status == cucustomer.StatusFrozen {
+		log.Infof("Customer account is frozen. Rejecting call.")
+		return cu, false
+	}
+
+	return cu, true
+}
+```
+
+**Step 2: Add ValidateCustomerIdentityVerified function**
+
+Add after `ValidateCustomerNotFrozen`:
 
 ```go
 // ValidateCustomerIdentityVerified returns true if the given customer has verified identity.
 // Only checks for outgoing PSTN (TypeTel) calls. Inbound and non-PSTN calls skip this check.
-func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, customerID uuid.UUID, direction call.Direction, destination commonaddress.Address) bool {
+// Known internal customer IDs bypass the check.
+// Accepts a pre-fetched customer to avoid redundant RPC calls. If cu is nil (fail-open
+// from frozen check), returns true.
+func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *cucustomer.Customer, customerID uuid.UUID, direction call.Direction, destination commonaddress.Address) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ValidateCustomerIdentityVerified",
 		"customer_id": customerID,
 		"direction":   direction,
-		"destination":  destination,
+		"destination": destination,
 	})
 
 	// only check outgoing PSTN calls
@@ -549,14 +596,20 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cust
 		return true
 	}
 
-	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
-	if err != nil {
-		// Fail open: if customer-manager is unavailable, allow the call rather than
-		// rejecting ALL calls. Billing-manager provides a second enforcement layer.
-		log.Errorf("Could not get customer info for identity verification check, failing open. err: %v", err)
+	// bypass for known internal/system customer IDs
+	if customerID == cucustomer.IDCallManager ||
+		customerID == cucustomer.IDAIManager ||
+		customerID == cucustomer.IDSystem ||
+		customerID == cucustomer.IDBasicRoute {
+		log.Debugf("Internal customer ID, bypassing identity verification. customer_id: %s", customerID)
 		return true
 	}
-	log.WithField("customer", cu).Debugf("Retrieved customer info for identity verification. customer_id: %s", cu.ID)
+
+	// if customer was not fetched (fail-open from frozen check), allow
+	if cu == nil {
+		log.Debugf("Customer not available (fail-open), bypassing identity verification.")
+		return true
+	}
 
 	if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
 		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s, status: %s", customerID, cu.IdentityVerificationStatus)
@@ -567,35 +620,66 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cust
 }
 ```
 
-**Step 2: Call the new validator in CreateCallOutgoing**
+**Step 3: Update CreateCallOutgoing to use refactored validators**
 
-In `bin-call-manager/pkg/callhandler/outgoing_call.go`, after the `ValidateCustomerNotFrozen` check (line 136), add:
+In `bin-call-manager/pkg/callhandler/outgoing_call.go`, replace the existing frozen check (lines 132-136):
 
 ```go
+	// validate customer is not frozen
+	if !h.ValidateCustomerNotFrozen(ctx, customerID) {
+		log.Infof("Customer account is frozen. Rejecting outgoing call. customer_id: %s", customerID)
+		return nil, fmt.Errorf("customer account is frozen")
+	}
+```
+
+With:
+
+```go
+	// validate customer is not frozen (also fetches customer for subsequent checks)
+	cu, notFrozen := h.ValidateCustomerNotFrozen(ctx, customerID)
+	if !notFrozen {
+		log.Infof("Customer account is frozen. Rejecting outgoing call. customer_id: %s", customerID)
+		return nil, fmt.Errorf("customer account is frozen")
+	}
+
 	// validate customer identity verification for outgoing PSTN calls
-	if !h.ValidateCustomerIdentityVerified(ctx, customerID, call.DirectionOutgoing, destination) {
+	if !h.ValidateCustomerIdentityVerified(ctx, cu, customerID, call.DirectionOutgoing, destination) {
 		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s", customerID)
 		return nil, fmt.Errorf("customer identity verification required for PSTN calls")
 	}
 ```
 
-**Step 3: Run verification for bin-call-manager**
+**Step 4: Update all other callers of ValidateCustomerNotFrozen**
+
+Search for all other callers of `ValidateCustomerNotFrozen` in bin-call-manager and update them to accept the new `(*cucustomer.Customer, bool)` return type. Callers that only need the bool can use `_, notFrozen := h.ValidateCustomerNotFrozen(...)`.
+
+```bash
+cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
+grep -rn "ValidateCustomerNotFrozen" bin-call-manager/ --include="*.go" | grep -v "_test.go" | grep -v "mock_"
+```
+
+Update each caller to use the new signature.
+
+**Step 5: Run verification for bin-call-manager**
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification/bin-call-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-**Step 4: Commit**
+**Step 6: Commit**
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
 git add bin-call-manager/
 git commit -m "NOJIRA-Customer-identity-verification
 
-- bin-call-manager: Add identity verification check in validate.go for outgoing PSTN calls
-- bin-call-manager: Integrate verification check in CreateCallOutgoing flow"
+- bin-call-manager: Refactor ValidateCustomerNotFrozen to return customer object (avoids redundant RPC)
+- bin-call-manager: Add ValidateCustomerIdentityVerified with internal customer ID bypass
+- bin-call-manager: Integrate identity verification check in CreateCallOutgoing flow"
 ```
+
+**Note:** Groupcall PSTN destinations are automatically covered because groupcalls ultimately call `CreateCallOutgoing` for each resolved address, which includes this verification check.
 
 ---
 
@@ -617,7 +701,10 @@ Fill in the `upgrade()` and `downgrade()` functions:
 
 ```python
 def upgrade():
-    op.execute("""ALTER TABLE customer_customers ADD COLUMN identity_verification_status VARCHAR(16) NOT NULL DEFAULT 'none';""")
+    op.execute("""ALTER TABLE customer_customers ADD COLUMN identity_verification_status VARCHAR(32) NOT NULL DEFAULT 'none';""")
+    # Grandfather all existing active customers to 'verified' so they are not disrupted.
+    # New customers created after this migration will default to 'none'.
+    op.execute("""UPDATE customer_customers SET identity_verification_status = 'verified' WHERE status = 'active';""")
 
 
 def downgrade():
@@ -633,7 +720,8 @@ cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
 git add bin-dbscheme-manager/
 git commit -m "NOJIRA-Customer-identity-verification
 
-- bin-dbscheme-manager: Add migration for identity_verification_status column on customer_customers"
+- bin-dbscheme-manager: Add migration for identity_verification_status column on customer_customers
+- bin-dbscheme-manager: Grandfather existing active customers to verified status"
 ```
 
 ---
