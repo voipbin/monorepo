@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS rag_chunks (
     chunk_index INTEGER NOT NULL DEFAULT 0,
     text TEXT NOT NULL,
     section_title TEXT NOT NULL DEFAULT '',
-    embedding vector(1536),
+    embedding vector(768),
     token_count INTEGER DEFAULT 0,
     tm_create TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     tm_delete TIMESTAMP WITH TIME ZONE

@@ -32,28 +32,7 @@ func (m *mockEmbedder) EmbedText(ctx context.Context, text string) ([]float32, e
 
 func TestEmbedder_Interface(t *testing.T) {
 	var _ Embedder = &mockEmbedder{}
-	var _ Embedder = &openaiEmbedder{}
-}
-
-func TestNewOpenAIEmbedder(t *testing.T) {
-	embedder := NewOpenAIEmbedder("test-api-key", "text-embedding-ada-002")
-	if embedder == nil {
-		t.Error("expected non-nil embedder")
-	}
-}
-
-func TestOpenAIEmbedder_EmbedTexts_EmptyInput(t *testing.T) {
-	// Create a custom embedder for testing
-	e := &openaiEmbedder{}
-
-	ctx := context.Background()
-	result, err := e.EmbedTexts(ctx, []string{})
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
-	if result != nil {
-		t.Error("expected nil result for empty input")
-	}
+	var _ Embedder = &googleEmbedder{}
 }
 
 func TestMockEmbedder_EmbedTexts(t *testing.T) {

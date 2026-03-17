@@ -118,64 +118,6 @@ func (mr *MockRagHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockRagHandler)(nil).DocumentGetsByRagID), ctx, ragID)
 }
 
-// IndexFull mocks base method.
-func (m *MockRagHandler) IndexFull(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IndexFull", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// IndexFull indicates an expected call of IndexFull.
-func (mr *MockRagHandlerMockRecorder) IndexFull(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IndexFull", reflect.TypeOf((*MockRagHandler)(nil).IndexFull), ctx)
-}
-
-// IndexIncremental mocks base method.
-func (m *MockRagHandler) IndexIncremental(ctx context.Context, files []string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IndexIncremental", ctx, files)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// IndexIncremental indicates an expected call of IndexIncremental.
-func (mr *MockRagHandlerMockRecorder) IndexIncremental(ctx, files any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IndexIncremental", reflect.TypeOf((*MockRagHandler)(nil).IndexIncremental), ctx, files)
-}
-
-// IndexStatus mocks base method.
-func (m *MockRagHandler) IndexStatus(ctx context.Context) (*IndexStatusResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IndexStatus", ctx)
-	ret0, _ := ret[0].(*IndexStatusResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IndexStatus indicates an expected call of IndexStatus.
-func (mr *MockRagHandlerMockRecorder) IndexStatus(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IndexStatus", reflect.TypeOf((*MockRagHandler)(nil).IndexStatus), ctx)
-}
-
-// Query mocks base method.
-func (m *MockRagHandler) Query(ctx context.Context, req *QueryRequest) (*QueryResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Query", ctx, req)
-	ret0, _ := ret[0].(*QueryResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Query indicates an expected call of Query.
-func (mr *MockRagHandlerMockRecorder) Query(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRagHandler)(nil).Query), ctx, req)
-}
-
 // QueryRag mocks base method.
 func (m *MockRagHandler) QueryRag(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*query.Response, error) {
 	m.ctrl.T.Helper()

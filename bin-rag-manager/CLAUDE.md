@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-rag-manager is a Go microservice that provides Retrieval-Augmented Generation (RAG) for VoIPBin documentation. It indexes documentation sources (RST dev docs, OpenAPI specs, design docs, CLAUDE.md files), embeds them using OpenAI, stores embeddings in memory, and answers natural language questions grounded in the documentation.
+bin-rag-manager is a Go microservice that provides a multi-tenant knowledge base with Retrieval-Augmented Generation (RAG) for VoIPBin. It indexes documentation sources and customer-uploaded documents, embeds them using Google Gemini, stores embeddings in PostgreSQL with pgvector, and retrieves relevant chunks for queries. Answer generation is handled by ai-manager, not this service.
 
 ## Build and Test Commands
 
@@ -36,39 +36,34 @@ go generate ./...
 2. **pkg/listenhandler/** - RabbitMQ RPC request handler with regex-based URI routing
 3. **pkg/raghandler/** - Core business logic orchestrating the RAG pipeline
 4. **pkg/chunker/** - Document parsers for RST, Markdown, and OpenAPI YAML
-5. **pkg/embedder/** - OpenAI embedding client
-6. **pkg/store/** - In-memory vector store with file persistence
-7. **pkg/retriever/** - Query embedding and cosine similarity search
-8. **pkg/generator/** - Prompt building and OpenAI chat completion
+5. **pkg/embedder/** - Google Gemini embedding client (text-embedding-004, 768 dimensions)
+6. **pkg/dbhandler/** - PostgreSQL database operations (rags, documents, chunks with pgvector)
 
 ### Request Flow
 
 ```
 RabbitMQ Request -> listenhandler (regex routing) -> raghandler
                                                        |
-                                                       +-> retriever -> embedder (OpenAI)
-                                                       |             -> store (in-memory)
-                                                       +-> generator -> OpenAI Chat API
+                                                       +-> embedder (Google Gemini)
+                                                       +-> dbhandler -> PostgreSQL (pgvector)
 ```
 
 ### API Endpoints (via RabbitMQ RPC)
 
-- `POST /v1/rags/query` - Query the RAG system
-- `POST /v1/rags/index` - Trigger full re-indexing
-- `POST /v1/rags/index/incremental` - Re-index specific files
-- `GET /v1/rags/index/status` - Get indexing status
+Multi-tenant CRUD operations for RAG configurations, documents, and queries (endpoints TBD in Phase 2).
 
 ### Configuration
 
-Environment variables:
-- `RABBITMQ_ADDRESS` - RabbitMQ connection
-- `OPENAI_API_KEY` - OpenAI API key
-- `OPENAI_EMBEDDING_MODEL` - Embedding model (default: text-embedding-3-small)
-- `RAG_LLM_MODEL` - LLM for answers (default: gpt-4o)
+Environment variables (sourced from `bin-manager-secrets` k8s secret via `secretKeyRef`):
+- `RABBITMQ_ADDRESS` - RabbitMQ connection (secret key: `RABBITMQ_ADDRESS`)
+- `GCP_PROJECT_ID` - GCP project ID for Vertex AI (secret key: `GCP_PROJECT_ID`)
+- `GCP_LOCATION` - GCP region for Vertex AI (secret key: `GCP_LOCATION`)
+- `POSTGRESQL_DSN` - PostgreSQL connection string (secret key: `DATABASE_DSN_POSTGRES`)
+
+Hardcoded in deployment.yml:
+- `GOOGLE_EMBEDDING_MODEL` - Embedding model (default: text-embedding-004)
 - `RAG_TOP_K` - Chunks to retrieve (default: 5)
-- `RAG_CHUNK_MAX_TOKENS` - Max chunk size (default: 800)
-- `GCS_BUCKET` - GCS bucket for persistence
-- `GCS_EMBEDDINGS_PATH` - Path for embeddings file
-- `RAG_DOCS_BASE_PATH` - Base path to document sources
 - `PROMETHEUS_ENDPOINT` - Metrics endpoint (default: /metrics)
 - `PROMETHEUS_LISTEN_ADDRESS` - Metrics address (default: :2112)
+
+Authentication uses GKE Workload Identity (Application Default Credentials) — no API keys required.
