@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -27,14 +26,6 @@ type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 	ragHandler  raghandler.RagHandler
 }
-
-// regexp patterns for routing
-var (
-	regV1RagQuery          = regexp.MustCompile(`^/v1/rags/query$`)
-	regV1RagIndex          = regexp.MustCompile(`^/v1/rags/index$`)
-	regV1RagIndexIncr      = regexp.MustCompile(`^/v1/rags/index/incremental$`)
-	regV1RagIndexStatus    = regexp.MustCompile(`^/v1/rags/index/status$`)
-)
 
 var promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
@@ -86,31 +77,8 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	start := time.Now()
 	var requestType string
 	var response *sock.Response
-	var err error
-
-	ctx := context.Background()
 
 	switch {
-	// POST /v1/rags/query
-	case regV1RagQuery.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1RagQueryPost(ctx, m)
-		requestType = "/v1/rags/query"
-
-	// POST /v1/rags/index
-	case regV1RagIndex.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1RagIndexPost(ctx, m)
-		requestType = "/v1/rags/index"
-
-	// POST /v1/rags/index/incremental
-	case regV1RagIndexIncr.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1RagIndexIncrementalPost(ctx, m)
-		requestType = "/v1/rags/index/incremental"
-
-	// GET /v1/rags/index/status
-	case regV1RagIndexStatus.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1RagIndexStatusGet(ctx, m)
-		requestType = "/v1/rags/index/status"
-
 	default:
 		log.Errorf("Could not find the handler. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(404)
@@ -120,13 +88,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
-	if err != nil {
-		log.Errorf("Could not process the request correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
-		response = simpleResponse(400)
-		err = nil
-	}
-
-	return response, err
+	return response, nil
 }
 
 func simpleResponse(statusCode int) *sock.Response {

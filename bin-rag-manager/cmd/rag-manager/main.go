@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,18 +14,20 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	joonix "github.com/joonix/log"
+	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-rag-manager/internal/config"
+	"monorepo/bin-rag-manager/pkg/dbhandler"
 	"monorepo/bin-rag-manager/pkg/embedder"
-	"monorepo/bin-rag-manager/pkg/generator"
 	"monorepo/bin-rag-manager/pkg/listenhandler"
 	"monorepo/bin-rag-manager/pkg/raghandler"
-	"monorepo/bin-rag-manager/pkg/retriever"
-	"monorepo/bin-rag-manager/pkg/store"
 )
 
 // channels
@@ -33,7 +37,7 @@ var chDone = make(chan bool, 1)
 var rootCmd = &cobra.Command{
 	Use:   "rag-manager",
 	Short: "RAG Manager Service",
-	Long:  `RAG Manager is a microservice that provides Retrieval-Augmented Generation for VoIPBin documentation.`,
+	Long:  `RAG Manager is a microservice that provides multi-tenant RAG knowledge base for VoIPBin.`,
 	RunE:  run,
 }
 
@@ -42,14 +46,11 @@ func init() {
 	rootCmd.Flags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
 	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on")
 	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server")
-	rootCmd.Flags().String("openai_api_key", "", "OpenAI API key")
-	rootCmd.Flags().String("openai_embedding_model", "text-embedding-3-small", "OpenAI embedding model")
-	rootCmd.Flags().String("rag_llm_model", "gpt-4o", "LLM model for answer generation")
+	rootCmd.Flags().String("gcp_project_id", "", "GCP project ID for Vertex AI")
+	rootCmd.Flags().String("gcp_location", "", "GCP region for Vertex AI")
+	rootCmd.Flags().String("google_embedding_model", "text-embedding-004", "Google embedding model")
 	rootCmd.Flags().Int("rag_top_k", 5, "Default number of chunks to retrieve")
-	rootCmd.Flags().Int("rag_chunk_max_tokens", 800, "Maximum tokens per chunk")
-	rootCmd.Flags().String("gcs_bucket", "", "GCS bucket for embeddings storage")
-	rootCmd.Flags().String("gcs_embeddings_path", "rag/embeddings.gob", "GCS path for embeddings file")
-	rootCmd.Flags().String("rag_docs_base_path", "", "Base path to document sources")
+	rootCmd.Flags().String("postgresql_dsn", "", "PostgreSQL connection string")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
@@ -80,6 +81,11 @@ func run(cmd *cobra.Command, args []string) error {
 	// Initialize Prometheus
 	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
 
+	// Run database migrations before starting services
+	if err := runMigrations(cfg); err != nil {
+		return fmt.Errorf("could not run migrations: %w", err)
+	}
+
 	if err := runService(cfg); err != nil {
 		log.Errorf("Run func has finished. err: %v", err)
 		return err
@@ -95,6 +101,41 @@ func signalHandler() {
 	chDone <- true
 }
 
+// runMigrations applies pending database migrations at startup
+func runMigrations(cfg config.Config) error {
+	log := logrus.WithField("func", "runMigrations")
+
+	if cfg.PostgreSQLDSN == "" {
+		log.Warn("PostgreSQL DSN not configured, skipping migrations")
+		return nil
+	}
+
+	const migrationsPath = "./migrations"
+	sourceURL := fmt.Sprintf("file://%s", migrationsPath)
+
+	log.WithFields(logrus.Fields{
+		"source": sourceURL,
+	}).Info("Running database migrations...")
+
+	m, err := migrate.New(sourceURL, cfg.PostgreSQLDSN)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrate: %w", err)
+	}
+	defer func() { _, _ = m.Close() }()
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("migration failed: %w", err)
+	}
+
+	version, dirty, _ := m.Version()
+	log.WithFields(logrus.Fields{
+		"version": version,
+		"dirty":   dirty,
+	}).Info("Database migrations completed")
+
+	return nil
+}
+
 // runService initializes and starts the RAG service
 func runService(cfg config.Config) error {
 	log := logrus.WithField("func", "runService")
@@ -103,30 +144,28 @@ func runService(cfg config.Config) error {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
-	// Initialize vector store
-	vectorStore := store.NewMemoryStore()
+	// PostgreSQL connection
+	db, err := sql.Open("postgres", cfg.PostgreSQLDSN)
+	if err != nil {
+		return fmt.Errorf("could not connect to PostgreSQL: %w", err)
+	}
+	defer func() { _ = db.Close() }()
 
-	// Load existing embeddings from disk if available
-	if cfg.GCSEmbeddingsPath != "" {
-		if err := vectorStore.Load(cfg.GCSEmbeddingsPath); err != nil {
-			log.Warnf("Could not load embeddings from disk: %v", err)
-		} else {
-			stats := vectorStore.Stats()
-			log.Infof("Loaded %d chunks from disk", stats.ChunkCount)
-		}
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("could not ping PostgreSQL: %w", err)
+	}
+	log.Info("Connected to PostgreSQL")
+
+	dbH := dbhandler.NewHandler(db)
+
+	// Initialize Google Gemini embedder
+	emb, err := embedder.NewGoogleEmbedder(context.Background(), cfg.GoogleCloudProject, cfg.GoogleCloudLocation, cfg.GoogleEmbeddingModel)
+	if err != nil {
+		return fmt.Errorf("could not create embedder: %w", err)
 	}
 
-	// Initialize OpenAI embedder
-	emb := embedder.NewOpenAIEmbedder(cfg.OpenAIAPIKey, cfg.OpenAIEmbeddingModel)
-
-	// Initialize generator
-	gen := generator.NewGenerator(cfg.OpenAIAPIKey, cfg.RAGLLMModel)
-
-	// Initialize retriever
-	ret := retriever.NewRetriever(emb, vectorStore)
-
 	// Initialize rag handler
-	ragH := raghandler.NewRagHandler(ret, gen, emb, vectorStore, cfg.RAGDocsBasePath, cfg.GCSEmbeddingsPath, cfg.RAGTopK)
+	ragH := raghandler.NewRagHandler(emb, dbH)
 
 	// Run listen handler
 	if err := runListen(sockHandler, ragH); err != nil {
