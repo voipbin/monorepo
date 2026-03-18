@@ -246,6 +246,21 @@ func (mr *MockCustomerHandlerMockRecorder) UpdateBillingAccountID(ctx, id, billi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBillingAccountID", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateBillingAccountID), ctx, id, billingAccountID)
 }
 
+// UpdateIdentityVerificationStatus mocks base method.
+func (m *MockCustomerHandler) UpdateIdentityVerificationStatus(ctx context.Context, id uuid.UUID, status customer.IdentityVerificationStatus) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateIdentityVerificationStatus", ctx, id, status)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateIdentityVerificationStatus indicates an expected call of UpdateIdentityVerificationStatus.
+func (mr *MockCustomerHandlerMockRecorder) UpdateIdentityVerificationStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIdentityVerificationStatus", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateIdentityVerificationStatus), ctx, id, status)
+}
+
 // UpdateMetadata mocks base method.
 func (m *MockCustomerHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

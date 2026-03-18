@@ -19,6 +19,8 @@ create table customer_customers(
 
   status varchar(16) not null default 'active',
 
+  identity_verification_status varchar(32) not null default 'none',
+
   terms_agreed_version varchar(64) not null default '',
   terms_agreed_ip varchar(45) not null default '',
 

@@ -13,6 +13,8 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -53,6 +55,28 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowI
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, nil, fmt.Errorf("user has no permission")
+	}
+
+	// check identity verification for PSTN outbound calls
+	hasTelDestination := false
+	for _, d := range destinations {
+		if d.Type == commonaddress.TypeTel {
+			hasTelDestination = true
+			break
+		}
+	}
+	if hasTelDestination {
+		cu, err := h.customerGet(ctx, a.CustomerID)
+		if err != nil {
+			log.Errorf("Could not get customer info for verification check. err: %v", err)
+			return nil, nil, fmt.Errorf("could not verify customer identity status")
+		}
+		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
+
+		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
+			log.Infof("Customer identity verification required for PSTN calls. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
+			return nil, nil, fmt.Errorf("customer identity verification required for PSTN calls")
+		}
 	}
 
 	targetFlowID := flowID

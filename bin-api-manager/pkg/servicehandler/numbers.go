@@ -7,6 +7,7 @@ import (
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -104,6 +105,21 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// check identity verification for non-virtual number purchases
+	if numType != nmnumber.TypeVirtual {
+		cu, err := h.customerGet(ctx, a.CustomerID)
+		if err != nil {
+			log.Errorf("Could not get customer info for verification check. err: %v", err)
+			return nil, fmt.Errorf("could not verify customer identity status")
+		}
+		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
+
+		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
+			log.Infof("Customer identity verification required for number purchase. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
+			return nil, fmt.Errorf("customer identity verification required for number purchase")
+		}
 	}
 
 	// create numbers

@@ -6,7 +6,8 @@ const (
 	EventTypeCustomerUpdated string = "customer_updated" // the customer's info has updated
 	EventTypeCustomerDeleted   string = "customer_deleted"   // the customer has deleted
 	EventTypeCustomerFrozen    string = "customer_frozen"    // the customer has been frozen
-	EventTypeCustomerRecovered string = "customer_recovered" // the customer has been recovered
+	EventTypeCustomerRecovered                   string = "customer_recovered"                    // the customer has been recovered
+	EventTypeCustomerIdentityVerificationUpdated string = "customer_identity_verification_updated" // the customer's identity verification has updated
 )
 
 // CustomerCreatedEvent wraps the Customer with headless flag for the customer_created event.

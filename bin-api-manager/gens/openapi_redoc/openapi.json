@@ -17926,6 +17926,23 @@
           "CustomerManagerCustomerStatusDeleted"
         ]
       },
+      "CustomerManagerCustomerIdentityVerificationStatus": {
+        "type": "string",
+        "description": "Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls.",
+        "example": "none",
+        "enum": [
+          "none",
+          "pending",
+          "verified",
+          "rejected"
+        ],
+        "x-enum-varnames": [
+          "CustomerManagerCustomerIdentityVerificationStatusNone",
+          "CustomerManagerCustomerIdentityVerificationStatusPending",
+          "CustomerManagerCustomerIdentityVerificationStatusVerified",
+          "CustomerManagerCustomerIdentityVerificationStatusRejected"
+        ]
+      },
       "CustomerManagerCustomer": {
         "type": "object",
         "properties": {
@@ -17993,6 +18010,11 @@
             "$ref": "#/components/schemas/CustomerManagerCustomerStatus",
             "description": "Account lifecycle status.",
             "example": "active"
+          },
+          "identity_verification_status": {
+            "$ref": "#/components/schemas/CustomerManagerCustomerIdentityVerificationStatus",
+            "description": "Customer's identity verification status. Only 'verified' customers can purchase PSTN numbers and make outbound PSTN calls.",
+            "example": "none"
           },
           "tm_deletion_scheduled": {
             "type": "string",

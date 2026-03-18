@@ -25,6 +25,7 @@ Customer
         },
         "email_verified": <boolean>,
         "status": "<string>",
+        "identity_verification_status": "<string>",
         "tm_deletion_scheduled": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -45,6 +46,13 @@ Customer
   - ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for this customer's calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is ``false``. Updatable by CustomerAdmin via ``PUT https://api.voipbin.net/v1.0/customer/metadata``.
 
 * ``email_verified`` (Boolean): Whether the customer's email address has been verified. ``true`` if verified, ``false`` otherwise.
+* ``identity_verification_status`` (enum string): The customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls. One of:
+
+  - ``none``: Not yet verified. Default for new customers.
+  - ``pending``: Verification in progress.
+  - ``verified``: Identity verified. Customer can purchase PSTN numbers and make outbound PSTN calls.
+  - ``rejected``: Verification failed.
+
 * ``status`` (enum string): The current account status. One of:
 
   - ``initial``: Account created, pending email verification.
@@ -61,6 +69,8 @@ Customer
 .. note:: **AI Implementation Hint**
 
    The ``status`` field determines what operations are allowed on the account. Only ``active`` accounts can create resources and make calls. A ``frozen`` account has deletion scheduled but can be recovered by cancelling unregistration before the grace period expires. A ``deleted`` account cannot be recovered -- all PII has been anonymized and all resources cascade-deleted. The ``tm_deletion_scheduled`` field is only set when ``status`` is ``frozen``.
+
+   The ``identity_verification_status`` field gates PSTN operations. Only customers with ``verified`` status can purchase non-virtual phone numbers or make outbound PSTN calls. New customers default to ``none`` and must complete identity verification before using PSTN services. Existing customers at the time of this feature launch were grandfathered to ``verified``.
 
 Example
 +++++++
@@ -82,6 +92,7 @@ Example
         },
         "email_verified": true,
         "status": "active",
+        "identity_verification_status": "verified",
         "tm_deletion_scheduled": null,
         "tm_create": "2024-01-15T10:30:00Z",
         "tm_update": "2024-06-20T14:22:35Z",

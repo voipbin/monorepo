@@ -523,6 +523,14 @@ const (
 	ConversationManagerMessageStatusSent     ConversationManagerMessageStatus = "sent"
 )
 
+// Defines values for CustomerManagerCustomerIdentityVerificationStatus.
+const (
+	CustomerManagerCustomerIdentityVerificationStatusNone     CustomerManagerCustomerIdentityVerificationStatus = "none"
+	CustomerManagerCustomerIdentityVerificationStatusPending  CustomerManagerCustomerIdentityVerificationStatus = "pending"
+	CustomerManagerCustomerIdentityVerificationStatusRejected CustomerManagerCustomerIdentityVerificationStatus = "rejected"
+	CustomerManagerCustomerIdentityVerificationStatusVerified CustomerManagerCustomerIdentityVerificationStatus = "verified"
+)
+
 // Defines values for CustomerManagerCustomerStatus.
 const (
 	CustomerManagerCustomerStatusActive  CustomerManagerCustomerStatus = "active"
@@ -2463,6 +2471,9 @@ type CustomerManagerCustomer struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
+	// IdentityVerificationStatus Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls.
+	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
+
 	// Metadata Configuration flags for a customer account. Controls platform behavior
 	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
@@ -2517,6 +2528,9 @@ type CustomerManagerCustomerAdmin struct {
 	// Id The unique identifier of the customer.
 	Id *string `json:"id,omitempty"`
 
+	// IdentityVerificationStatus Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls.
+	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
+
 	// Metadata Configuration flags for a customer account. Controls platform behavior
 	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
@@ -2556,6 +2570,9 @@ type CustomerManagerCustomerAdmin struct {
 	// WebhookUri URI where webhook events are delivered.
 	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
+
+// CustomerManagerCustomerIdentityVerificationStatus Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls.
+type CustomerManagerCustomerIdentityVerificationStatus string
 
 // CustomerManagerCustomerStatus Account lifecycle status.
 type CustomerManagerCustomerStatus string

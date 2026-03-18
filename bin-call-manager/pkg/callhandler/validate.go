@@ -15,8 +15,10 @@ import (
 	"monorepo/bin-call-manager/models/call"
 )
 
-// ValidateCustomerNotFrozen returns true if the given customer is not frozen
-func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID uuid.UUID) bool {
+// ValidateCustomerNotFrozen returns the customer and true if the given customer is not frozen.
+// Returns nil and false if the customer is frozen. Returns nil and true (fail-open) if
+// customer-manager is unavailable.
+func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID uuid.UUID) (*cucustomer.Customer, bool) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ValidateCustomerNotFrozen",
 		"customer_id": customerID,
@@ -27,12 +29,53 @@ func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID 
 		// Fail open: if customer-manager is unavailable, allow the call rather than
 		// rejecting ALL calls. Billing-manager provides a second enforcement layer.
 		log.Errorf("Could not get customer info, failing open. err: %v", err)
-		return true
+		return nil, true
 	}
 	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
 	if cu.Status == cucustomer.StatusFrozen {
 		log.Infof("Customer account is frozen. Rejecting call.")
+		return cu, false
+	}
+
+	return cu, true
+}
+
+// ValidateCustomerIdentityVerified returns true if the given customer has verified identity.
+// Only checks for outgoing PSTN (TypeTel) calls. Inbound and non-PSTN calls skip this check.
+// Known internal customer IDs bypass the check.
+// Accepts a pre-fetched customer to avoid redundant RPC calls. If cu is nil (fail-open
+// from frozen check), returns true.
+func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *cucustomer.Customer, customerID uuid.UUID, direction call.Direction, destination commonaddress.Address) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ValidateCustomerIdentityVerified",
+		"customer_id": customerID,
+		"direction":   direction,
+		"destination": destination,
+	})
+
+	// only check outgoing PSTN calls
+	if direction != call.DirectionOutgoing || destination.Type != commonaddress.TypeTel {
+		return true
+	}
+
+	// bypass for known internal/system customer IDs
+	if customerID == cucustomer.IDCallManager ||
+		customerID == cucustomer.IDAIManager ||
+		customerID == cucustomer.IDSystem ||
+		customerID == cucustomer.IDBasicRoute {
+		log.Debugf("Internal customer ID, bypassing identity verification. customer_id: %s", customerID)
+		return true
+	}
+
+	// if customer was not fetched (fail-open from frozen check), allow
+	if cu == nil {
+		log.Debugf("Customer not available (fail-open), bypassing identity verification.")
+		return true
+	}
+
+	if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
+		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s, status: %s", customerID, cu.IdentityVerificationStatus)
 		return false
 	}
 

@@ -8,6 +8,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	nmnumber "monorepo/bin-number-manager/models/number"
@@ -283,6 +285,14 @@ func Test_NumberCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 			ctx := context.Background()
+
+			// mock customer get for identity verification check (non-virtual numbers)
+			if tt.numType != nmnumber.TypeVirtual {
+				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(&cscustomer.Customer{
+					ID:                         tt.agent.CustomerID,
+					IdentityVerificationStatus: cscustomer.IdentityVerificationStatusVerified,
+				}, nil)
+			}
 
 			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.numType, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
 			res, err := h.NumberCreate(ctx, tt.agent, tt.num, tt.numType, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
