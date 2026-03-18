@@ -181,6 +181,8 @@ git commit -m "NOJIRA-Customer-identity-verification
 - Modify: `bin-customer-manager/pkg/customerhandler/main.go` (interface)
 - Create: `bin-customer-manager/pkg/customerhandler/identity_verification.go` (implementation)
 
+**Note:** No listenhandler RPC route is needed. The CLI tool (Task 5) accesses `customerHandler` directly. No downstream services import `CustomerHandler` — they use RPC via `requesthandler`. Mock regeneration (`go generate`) is limited to bin-customer-manager only.
+
 **Step 1: Add method to CustomerHandler interface**
 
 In `bin-customer-manager/pkg/customerhandler/main.go`, add to the `CustomerHandler` interface (after `UpdateMetadata`):

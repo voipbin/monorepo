@@ -96,9 +96,11 @@ customer-control customer set-identity-verification --id <uuid> --status <none|p
 Behavior:
 - Validates `--status` is one of the four valid values
 - Fetches customer to confirm existence
-- Updates `IdentityVerificationStatus` via `customerhandler.Update()` with `FieldIdentityVerificationStatus`
+- Updates `IdentityVerificationStatus` via `customerhandler.UpdateIdentityVerificationStatus()`, which validates the status, checks idempotency, updates the DB, and publishes a `customer_identity_verification_updated` event
 - Prints updated customer as JSON to stdout
 - Follows existing patterns (same as `freeze`/`recover` commands)
+
+**No listenhandler RPC route is required.** The CLI tool accesses `customerHandler` directly (same process, direct DB/cache access). Future provider webhook handlers will also live within `bin-customer-manager` and can call `customerHandler` directly.
 
 ### 5. Identity Verification Provider Interface
 
