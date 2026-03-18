@@ -103,7 +103,7 @@ IdentityVerificationStatus IdentityVerificationStatus `json:"identity_verificati
 
 **Step 4: Add to ConvertWebhookMessage()**
 
-In the `ConvertWebhookMessage()` method, add the mapping after `Status: h.Status,`:
+In the `ConvertWebhookMessage()` method, insert on a new line between `Status: h.Status,` (line 60) and `TMDeletionScheduled: h.TMDeletionScheduled,` (line 61), matching the struct field ordering from Step 3:
 
 ```go
 IdentityVerificationStatus: h.IdentityVerificationStatus,
