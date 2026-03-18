@@ -30,15 +30,9 @@ spec:
                   name: bin-manager-secrets
                   key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: bin-manager-secrets
-                  key: PROMETHEUS_ENDPOINT
+              value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
-              valueFrom:
-                secretKeyRef:
-                  name: bin-manager-secrets
-                  key: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:

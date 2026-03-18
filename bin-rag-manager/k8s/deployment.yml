@@ -44,15 +44,9 @@ spec:
             - name: RAG_TOP_K
               value: "5"
             - name: PROMETHEUS_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: bin-manager-secrets
-                  key: PROMETHEUS_ENDPOINT
+              value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
-              valueFrom:
-                secretKeyRef:
-                  name: bin-manager-secrets
-                  key: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
             - name: POSTGRESQL_DSN
               valueFrom:
                 secretKeyRef:
