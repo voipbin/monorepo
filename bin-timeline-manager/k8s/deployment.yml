@@ -33,7 +33,10 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
             - name: CLICKHOUSE_DATABASE
               value: "default"
             - name: PROMETHEUS_ENDPOINT

@@ -76,7 +76,10 @@ spec:
             - name: STT_PROVIDER_PRIORITY
               value: "GCP,AWS"
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           resources:
             requests:
               cpu: "6m"

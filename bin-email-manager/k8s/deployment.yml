@@ -72,7 +72,10 @@ spec:
                   name: bin-manager-secrets
                   key: MAILGUN_API_KEY
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics
               protocol: "TCP"

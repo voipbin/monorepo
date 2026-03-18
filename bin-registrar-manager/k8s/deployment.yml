@@ -69,7 +69,10 @@ spec:
                   name: bin-manager-secrets
                   key: DOMAIN_NAME_TRUNK
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics
               protocol: "TCP"

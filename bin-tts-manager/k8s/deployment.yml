@@ -82,7 +82,10 @@ spec:
                   name: bin-manager-secrets
                   key: ELEVENLABS_API_KEY
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
