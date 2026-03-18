@@ -38,25 +38,46 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: DATABASE_DSN
-              value: ${DATABASE_DSN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_PASSWORD
             - name: REDIS_DATABASE
               value: "1"
             - name: AWS_ACCESS_KEY
-              value: ${AWS_ACCESS_KEY}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: AWS_ACCESS_KEY
             - name: AWS_SECRET_KEY
-              value: ${AWS_SECRET_KEY}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: AWS_SECRET_KEY
             - name: ELEVENLABS_API_KEY
-              value: ${ELEVENLABS_API_KEY}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: ELEVENLABS_API_KEY
             - name: CLICKHOUSE_ADDRESS
               value: "clickhouse.infrastructure.svc.cluster.local:9000"
           volumeMounts:
