@@ -38,7 +38,10 @@ spec:
                   name: bin-manager-secrets
                   key: CLICKHOUSE_ADDRESS
             - name: CLICKHOUSE_DATABASE
-              value: "default"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_DATABASE
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
