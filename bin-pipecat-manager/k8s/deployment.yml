@@ -57,7 +57,10 @@ spec:
                   name: bin-manager-secrets
                   key: REDIS_PASSWORD
             - name: REDIS_DATABASE
-              value: "1"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_DATABASE
 
             - name: CARTESIA_API_KEY
               valueFrom:
