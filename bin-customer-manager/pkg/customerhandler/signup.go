@@ -84,8 +84,9 @@ func (h *customerHandler) Signup(
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
 
-		EmailVerified: false,
-		Status:        customer.StatusInitial,
+		EmailVerified:              false,
+		Status:                     customer.StatusInitial,
+		IdentityVerificationStatus: customer.IdentityVerificationStatusNone,
 
 		TermsAgreedVersion: time.Now().UTC().Format(time.RFC3339),
 		TermsAgreedIP:      clientIP,

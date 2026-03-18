@@ -38,6 +38,8 @@ type Customer struct {
 
 	Status Status `json:"status" db:"status"`
 
+	IdentityVerificationStatus IdentityVerificationStatus `json:"identity_verification_status" db:"identity_verification_status"`
+
 	TermsAgreedVersion string `json:"terms_agreed_version,omitempty" db:"terms_agreed_version"`
 	TermsAgreedIP      string `json:"terms_agreed_ip,omitempty" db:"terms_agreed_ip"`
 

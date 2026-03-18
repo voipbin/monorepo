@@ -28,8 +28,9 @@ type WebhookMessage struct {
 
 	EmailVerified bool `json:"email_verified"`
 
-	Status              Status     `json:"status"`
-	TMDeletionScheduled *time.Time `json:"tm_deletion_scheduled"`
+	Status                     Status                     `json:"status"`
+	IdentityVerificationStatus IdentityVerificationStatus `json:"identity_verification_status"`
+	TMDeletionScheduled        *time.Time                 `json:"tm_deletion_scheduled"`
 
 	TMCreate *time.Time `json:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update"` // Updated timestamp.
@@ -57,8 +58,9 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 
 		EmailVerified: h.EmailVerified,
 
-		Status:              h.Status,
-		TMDeletionScheduled: h.TMDeletionScheduled,
+		Status:                     h.Status,
+		IdentityVerificationStatus: h.IdentityVerificationStatus,
+		TMDeletionScheduled:        h.TMDeletionScheduled,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
