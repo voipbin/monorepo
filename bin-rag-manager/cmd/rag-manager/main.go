@@ -90,7 +90,7 @@ func run(cmd *cobra.Command, args []string) error {
 		log.Errorf("Run func has finished. err: %v", err)
 		return err
 	}
-	<-chDone
+
 	return nil
 }
 
@@ -171,6 +171,9 @@ func runService(cfg config.Config) error {
 	if err := runListen(sockHandler, ragH); err != nil {
 		return err
 	}
+
+	// Block until shutdown signal — keeps DB connection alive for request handlers
+	<-chDone
 
 	return nil
 }
