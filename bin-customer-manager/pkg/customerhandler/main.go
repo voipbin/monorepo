@@ -52,6 +52,7 @@ type CustomerHandler interface {
 	Recover(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 	UpdateMetadata(ctx context.Context, id uuid.UUID, metadata customer.Metadata) (*customer.Customer, error)
+	UpdateIdentityVerificationStatus(ctx context.Context, id uuid.UUID, status customer.IdentityVerificationStatus) (*customer.Customer, error)
 
 	Signup(
 		ctx context.Context,
