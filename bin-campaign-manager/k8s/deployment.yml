@@ -28,7 +28,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: bin-manager-secrets
-                  key: DATABASE_DSN
+                  key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS

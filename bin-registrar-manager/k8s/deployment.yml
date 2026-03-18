@@ -28,7 +28,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: bin-manager-secrets
-                  key: DATABASE_DSN
+                  key: DATABASE_DSN_BIN
             - name: DATABASE_DSN_ASTERISK
               valueFrom:
                 secretKeyRef:
