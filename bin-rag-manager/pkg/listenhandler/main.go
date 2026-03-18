@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -15,6 +16,26 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	PageSize  = "page_size"
+	PageToken = "page_token"
+)
+
+var (
+	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+	// rag routes
+	regV1Rags   = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
+	regV1RagsID = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
+
+	// document routes
+	regV1Documents   = regexp.MustCompile(`^/v1/documents(\?.*)?$`)
+	regV1DocumentsID = regexp.MustCompile(`^/v1/documents/` + regUUID + `(\?.*)?$`)
+
+	// query route
+	regV1Query = regexp.MustCompile(`^/v1/query$`)
 )
 
 // ListenHandler interface for rag-manager listen handler
@@ -74,15 +95,65 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	})
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
+	ctx := context.Background()
 	start := time.Now()
 	var requestType string
 	var response *sock.Response
+	var err error
 
 	switch {
+	// rag routes — ID routes before collection routes
+	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1RagsIDGet(ctx, m)
+		requestType = "/v1/rags/<rag-id>"
+
+	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1RagsIDDelete(ctx, m)
+		requestType = "/v1/rags/<rag-id>"
+
+	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1RagsIDPut(ctx, m)
+		requestType = "/v1/rags/<rag-id>"
+
+	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1RagsPost(ctx, m)
+		requestType = "/v1/rags"
+
+	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1RagsGet(ctx, m)
+		requestType = "/v1/rags"
+
+	// document routes — ID routes before collection routes
+	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1DocumentsIDGet(ctx, m)
+		requestType = "/v1/documents/<document-id>"
+
+	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1DocumentsIDDelete(ctx, m)
+		requestType = "/v1/documents/<document-id>"
+
+	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1DocumentsPost(ctx, m)
+		requestType = "/v1/documents"
+
+	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1DocumentsGet(ctx, m)
+		requestType = "/v1/documents"
+
+	// query route
+	case regV1Query.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1QueryPost(ctx, m)
+		requestType = "/v1/query"
+
 	default:
 		log.Errorf("Could not find the handler. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(404)
 		requestType = "notfound"
+	}
+
+	if err != nil {
+		log.Errorf("Could not process request. err: %v", err)
+		response = simpleResponse(500)
 	}
 
 	elapsed := time.Since(start)

@@ -49,7 +49,8 @@ import (
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
-	query "monorepo/bin-rag-manager/models/query"
+	document "monorepo/bin-rag-manager/models/document"
+	rag "monorepo/bin-rag-manager/models/rag"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
@@ -3162,19 +3163,139 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallList), ctx, a, size, token)
 }
 
-// RagQuery mocks base method.
-func (m *MockServiceHandler) RagQuery(ctx context.Context, a *agent.Agent, queryText string, docTypes []string, topK int) (*query.Response, error) {
+// RagCreate mocks base method.
+func (m *MockServiceHandler) RagCreate(ctx context.Context, a *agent.Agent, name, description string) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagQuery", ctx, a, queryText, docTypes, topK)
-	ret0, _ := ret[0].(*query.Response)
+	ret := m.ctrl.Call(m, "RagCreate", ctx, a, name, description)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RagQuery indicates an expected call of RagQuery.
-func (mr *MockServiceHandlerMockRecorder) RagQuery(ctx, a, queryText, docTypes, topK any) *gomock.Call {
+// RagCreate indicates an expected call of RagCreate.
+func (mr *MockServiceHandlerMockRecorder) RagCreate(ctx, a, name, description any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagQuery", reflect.TypeOf((*MockServiceHandler)(nil).RagQuery), ctx, a, queryText, docTypes, topK)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockServiceHandler)(nil).RagCreate), ctx, a, name, description)
+}
+
+// RagDelete mocks base method.
+func (m *MockServiceHandler) RagDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDelete", ctx, a, id)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagDelete indicates an expected call of RagDelete.
+func (mr *MockServiceHandlerMockRecorder) RagDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDelete", reflect.TypeOf((*MockServiceHandler)(nil).RagDelete), ctx, a, id)
+}
+
+// RagDocumentCreate mocks base method.
+func (m *MockServiceHandler) RagDocumentCreate(ctx context.Context, a *agent.Agent, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDocumentCreate", ctx, a, ragID, name, docType, sourceURL, storageFileID)
+	ret0, _ := ret[0].(*document.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagDocumentCreate indicates an expected call of RagDocumentCreate.
+func (mr *MockServiceHandlerMockRecorder) RagDocumentCreate(ctx, a, ragID, name, docType, sourceURL, storageFileID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentCreate", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentCreate), ctx, a, ragID, name, docType, sourceURL, storageFileID)
+}
+
+// RagDocumentDelete mocks base method.
+func (m *MockServiceHandler) RagDocumentDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*document.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDocumentDelete", ctx, a, id)
+	ret0, _ := ret[0].(*document.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagDocumentDelete indicates an expected call of RagDocumentDelete.
+func (mr *MockServiceHandlerMockRecorder) RagDocumentDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentDelete", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentDelete), ctx, a, id)
+}
+
+// RagDocumentGet mocks base method.
+func (m *MockServiceHandler) RagDocumentGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*document.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDocumentGet", ctx, a, id)
+	ret0, _ := ret[0].(*document.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagDocumentGet indicates an expected call of RagDocumentGet.
+func (mr *MockServiceHandlerMockRecorder) RagDocumentGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentGet", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentGet), ctx, a, id)
+}
+
+// RagDocumentGets mocks base method.
+func (m *MockServiceHandler) RagDocumentGets(ctx context.Context, a *agent.Agent, ragID uuid.UUID, size uint64, token string) ([]*document.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagDocumentGets", ctx, a, ragID, size, token)
+	ret0, _ := ret[0].([]*document.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagDocumentGets indicates an expected call of RagDocumentGets.
+func (mr *MockServiceHandlerMockRecorder) RagDocumentGets(ctx, a, ragID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentGets", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentGets), ctx, a, ragID, size, token)
+}
+
+// RagGet mocks base method.
+func (m *MockServiceHandler) RagGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagGet", ctx, a, id)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagGet indicates an expected call of RagGet.
+func (mr *MockServiceHandlerMockRecorder) RagGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGet", reflect.TypeOf((*MockServiceHandler)(nil).RagGet), ctx, a, id)
+}
+
+// RagGets mocks base method.
+func (m *MockServiceHandler) RagGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagGets indicates an expected call of RagGets.
+func (mr *MockServiceHandlerMockRecorder) RagGets(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGets", reflect.TypeOf((*MockServiceHandler)(nil).RagGets), ctx, a, size, token)
+}
+
+// RagUpdate mocks base method.
+func (m *MockServiceHandler) RagUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, fields map[rag.Field]any) (*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagUpdate", ctx, a, id, fields)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagUpdate indicates an expected call of RagUpdate.
+func (mr *MockServiceHandlerMockRecorder) RagUpdate(ctx, a, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagUpdate", reflect.TypeOf((*MockServiceHandler)(nil).RagUpdate), ctx, a, id, fields)
 }
 
 // RecordingDelete mocks base method.

@@ -4,30 +4,160 @@ import (
 	"context"
 	"fmt"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
-	rmquery "monorepo/bin-rag-manager/models/query"
-
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	rmrag "monorepo/bin-rag-manager/models/rag"
 )
 
-// RagQuery queries the RAG documentation system.
-func (h *serviceHandler) RagQuery(ctx context.Context, a *amagent.Agent, query string, docTypes []string, topK int) (*rmquery.Response, error) {
+// ragGet is the private helper — fetches rag without permission check.
+func (h *serviceHandler) ragGet(ctx context.Context, id uuid.UUID) (*rmrag.Rag, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "RagQuery",
-		"query": query,
+		"func":   "ragGet",
+		"rag_id": id,
 	})
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The user has no permission for this agent.")
+	res, err := h.reqHandler.RagV1RagGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the rag info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("rag", res).Debug("Received result.")
+
+	return res, nil
+}
+
+func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, description string) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagCreate",
+		"customer_id": a.CustomerID,
+		"name":        name,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	res, err := h.reqHandler.RagV1RagQuery(ctx, query, docTypes, topK)
+	log.Debug("Creating a new rag.")
+	tmp, err := h.reqHandler.RagV1RagCreate(ctx, a.CustomerID, name, description)
 	if err != nil {
-		log.Errorf("Could not query RAG. err: %v", err)
+		log.Errorf("Could not create a new rag. err: %v", err)
 		return nil, err
 	}
-	log.WithField("response", res).Debug("RAG query completed.")
 
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) RagGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagGet",
+		"customer_id": a.CustomerID,
+		"rag_id":      id,
+	})
+	log.Debug("Getting a rag.")
+
+	tmp, err := h.ragGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get rag info. err: %v", err)
+		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) RagGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagGets",
+		"customer_id": a.CustomerID,
+		"size":        size,
+		"token":       token,
+	})
+	log.Debug("Getting rags.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	filters := map[rmrag.Field]any{
+		rmrag.FieldCustomerID: a.CustomerID,
+	}
+	rags, err := h.reqHandler.RagV1RagGets(ctx, token, size, filters)
+	if err != nil {
+		log.Errorf("Could not get rags info. err: %v", err)
+		return nil, fmt.Errorf("could not find rags info. err: %v", err)
+	}
+
+	res := []*rmrag.WebhookMessage{}
+	for _, r := range rags {
+		tmp := r.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+func (h *serviceHandler) RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagUpdate",
+		"customer_id": a.CustomerID,
+		"rag_id":      id,
+	})
+	log.Debug("Updating a rag.")
+
+	tmp, err := h.ragGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get rag info. err: %v", err)
+		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	updated, err := h.reqHandler.RagV1RagUpdate(ctx, id, fields)
+	if err != nil {
+		log.Errorf("Could not update rag. err: %v", err)
+		return nil, err
+	}
+
+	res := updated.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagDelete",
+		"customer_id": a.CustomerID,
+		"rag_id":      id,
+	})
+	log.Debug("Deleting a rag.")
+
+	tmp, err := h.ragGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get rag info. err: %v", err)
+		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	if err := h.reqHandler.RagV1RagDelete(ctx, id); err != nil {
+		log.Errorf("Could not delete rag. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }

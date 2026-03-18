@@ -96,7 +96,9 @@ import (
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	tmtts "monorepo/bin-tts-manager/models/tts"
 
+	rmdocument "monorepo/bin-rag-manager/models/document"
 	rmquery "monorepo/bin-rag-manager/models/query"
+	rmrag "monorepo/bin-rag-manager/models/rag"
 
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
@@ -1311,7 +1313,20 @@ type RequestHandler interface {
 	TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) ([]byte, error)
 
 	// rag-manager query
-	RagV1RagQuery(ctx context.Context, queryText string, docTypes []string, topK int) (*rmquery.Response, error)
+	RagV1RagQuery(ctx context.Context, ragID uuid.UUID, queryText string, topK int) (*rmquery.Response, error)
+
+	// rag-manager rags
+	RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rmrag.Rag, error)
+	RagV1RagGet(ctx context.Context, id uuid.UUID) (*rmrag.Rag, error)
+	RagV1RagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmrag.Field]any) ([]*rmrag.Rag, error)
+	RagV1RagUpdate(ctx context.Context, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.Rag, error)
+	RagV1RagDelete(ctx context.Context, id uuid.UUID) error
+
+	// rag-manager documents
+	RagV1DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, name string, docType rmdocument.DocType, sourceURL string, storageFileID uuid.UUID) (*rmdocument.Document, error)
+	RagV1DocumentGet(ctx context.Context, id uuid.UUID) (*rmdocument.Document, error)
+	RagV1DocumentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmdocument.Field]any) ([]*rmdocument.Document, error)
+	RagV1DocumentDelete(ctx context.Context, id uuid.UUID) error
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error

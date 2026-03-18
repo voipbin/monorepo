@@ -1,0 +1,77 @@
+get:
+  summary: Get rag details
+  description: Retrieves detailed information about a specific RAG knowledge base.
+  tags:
+    - RAG
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the rag. Returned from the `POST /rags` response."
+  responses:
+    '200':
+      description: Rag details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'
+
+put:
+  summary: Update a rag
+  description: Updates the name and/or description of an existing RAG knowledge base.
+  tags:
+    - RAG
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the rag. Returned from the `POST /rags` response."
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Updated name for the rag."
+              example: "Updated Support KB"
+            description:
+              type: string
+              description: "Updated description."
+              example: "Updated knowledge base description"
+  responses:
+    '200':
+      description: Updated rag.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'
+
+delete:
+  summary: Delete a rag
+  description: Deletes a RAG knowledge base and all associated documents and chunks.
+  tags:
+    - RAG
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the rag. Returned from the `POST /rags` response."
+  responses:
+    '200':
+      description: Rag deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'

@@ -191,58 +191,54 @@ func (h *handler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Docu
 	return d, nil
 }
 
-// DocumentGetsByRagID retrieves all documents for a rag
-func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
+// DocumentList retrieves documents matching the given filters with cursor-based pagination.
+func (h *handler) DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+	if size == 0 {
+		size = 100
+	}
+
 	q := psql.
 		Select(documentColumns()...).
 		From(tableDocuments).
-		Where(sq.Eq{"rag_id": ragID}).
-		Where("tm_delete IS NULL")
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create DESC").
+		Limit(size)
+
+	hasDeletedFilter := false
+	for k, v := range filters {
+		key := string(k)
+		switch key {
+		case "deleted":
+			hasDeletedFilter = true
+			deleted, ok := v.(bool)
+			if ok && !deleted {
+				q = q.Where("tm_delete IS NULL")
+			} else if ok && deleted {
+				q = q.Where("tm_delete IS NOT NULL")
+			}
+		default:
+			q = q.Where(sq.Eq{key: v})
+		}
+	}
+	if !hasDeletedFilter {
+		q = q.Where("tm_delete IS NULL")
+	}
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build document gets by rag_id query: %w", err)
+		return nil, fmt.Errorf("could not build document list query: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not execute document gets by rag_id query: %w", err)
+		return nil, fmt.Errorf("could not execute document list query: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
-	res, err := scanDocumentRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan document rows: %w", err)
-	}
-
-	return res, nil
-}
-
-// DocumentGetsByCustomerID retrieves all documents for a customer
-func (h *handler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
-	q := psql.
-		Select(documentColumns()...).
-		From(tableDocuments).
-		Where(sq.Eq{"customer_id": customerID}).
-		Where("tm_delete IS NULL")
-
-	sqlStr, args, err := q.ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("could not build document gets by customer_id query: %w", err)
-	}
-
-	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
-	if err != nil {
-		return nil, fmt.Errorf("could not execute document gets by customer_id query: %w", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	res, err := scanDocumentRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan document rows: %w", err)
-	}
-
-	return res, nil
+	return scanDocumentRows(rows)
 }
 
 // DocumentUpdate updates document fields by ID

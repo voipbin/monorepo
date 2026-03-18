@@ -2169,24 +2169,48 @@ func (e QueueManagerQueuecallStatus) Valid() bool {
 	}
 }
 
-// Defines values for RagManagerDocType.
+// Defines values for RagManagerRagDocumentDocType.
 const (
-	RagManagerDocTypeDesign    RagManagerDocType = "design"
-	RagManagerDocTypeDevDoc    RagManagerDocType = "devdoc"
-	RagManagerDocTypeGuideline RagManagerDocType = "guideline"
-	RagManagerDocTypeOpenAPI   RagManagerDocType = "openapi"
+	RagManagerRagDocumentDocTypeGenerated RagManagerRagDocumentDocType = "generated"
+	RagManagerRagDocumentDocTypePlatform  RagManagerRagDocumentDocType = "platform"
+	RagManagerRagDocumentDocTypeUploaded  RagManagerRagDocumentDocType = "uploaded"
+	RagManagerRagDocumentDocTypeUrl       RagManagerRagDocumentDocType = "url"
 )
 
-// Valid indicates whether the value is a known member of the RagManagerDocType enum.
-func (e RagManagerDocType) Valid() bool {
+// Valid indicates whether the value is a known member of the RagManagerRagDocumentDocType enum.
+func (e RagManagerRagDocumentDocType) Valid() bool {
 	switch e {
-	case RagManagerDocTypeDesign:
+	case RagManagerRagDocumentDocTypeGenerated:
 		return true
-	case RagManagerDocTypeDevDoc:
+	case RagManagerRagDocumentDocTypePlatform:
 		return true
-	case RagManagerDocTypeGuideline:
+	case RagManagerRagDocumentDocTypeUploaded:
 		return true
-	case RagManagerDocTypeOpenAPI:
+	case RagManagerRagDocumentDocTypeUrl:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RagManagerRagDocumentStatus.
+const (
+	RagManagerRagDocumentStatusError      RagManagerRagDocumentStatus = "error"
+	RagManagerRagDocumentStatusPending    RagManagerRagDocumentStatus = "pending"
+	RagManagerRagDocumentStatusProcessing RagManagerRagDocumentStatus = "processing"
+	RagManagerRagDocumentStatusReady      RagManagerRagDocumentStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the RagManagerRagDocumentStatus enum.
+func (e RagManagerRagDocumentStatus) Valid() bool {
+	switch e {
+	case RagManagerRagDocumentStatusError:
+		return true
+	case RagManagerRagDocumentStatusPending:
+		return true
+	case RagManagerRagDocumentStatusProcessing:
+		return true
+	case RagManagerRagDocumentStatusReady:
 		return true
 	default:
 		return false
@@ -5464,32 +5488,68 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
 type QueueManagerQueuecallStatus string
 
-// RagManagerDocType Type of documentation source
-type RagManagerDocType string
+// RagManagerRag defines model for RagManagerRag.
+type RagManagerRag struct {
+	// CustomerId The customer ID that owns this rag.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
-// RagManagerQueryResponse Response from a RAG query
-type RagManagerQueryResponse struct {
-	// Answer Generated answer based on retrieved documentation
-	Answer *string `json:"answer,omitempty"`
+	// Description Description of what this rag contains.
+	Description *string `json:"description,omitempty"`
 
-	// Sources List of source references used to generate the answer
-	Sources *[]RagManagerSource `json:"sources,omitempty"`
+	// Id The unique identifier of the rag. Returned from the `POST /rags` response.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Name Human-readable name for the rag.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the rag was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when the rag was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
 
-// RagManagerSource A source reference in the query response
-type RagManagerSource struct {
-	// DocType Type of documentation source
-	DocType *RagManagerDocType `json:"doc_type,omitempty"`
+// RagManagerRagDocument defines model for RagManagerRagDocument.
+type RagManagerRagDocument struct {
+	// CustomerId The customer ID that owns this document.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
-	// RelevanceScore Relevance score of the source
-	RelevanceScore *float64 `json:"relevance_score,omitempty"`
+	// DocType The document source type. Determines how the document content is obtained.
+	DocType *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
 
-	// SectionTitle Title of the relevant section
-	SectionTitle *string `json:"section_title,omitempty"`
+	// Id The unique identifier of the document. Returned from the `POST /rag-documents` response.
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
-	// SourceFile Path to the source file
-	SourceFile *string `json:"source_file,omitempty"`
+	// Name Human-readable name for the document.
+	Name *string `json:"name,omitempty"`
+
+	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
+	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
+
+	// SourceUrl The source URL if doc_type is url.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
+	// StatusMessage Additional details about the current status.
+	StatusMessage *string `json:"status_message,omitempty"`
+
+	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+
+	// TmCreate Timestamp when the document was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when the document was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
+
+// RagManagerRagDocumentDocType The document source type. Determines how the document content is obtained.
+type RagManagerRagDocumentDocType string
+
+// RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
+type RagManagerRagDocumentStatus string
 
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
@@ -7447,16 +7507,61 @@ type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
 }
 
-// PostRagsQueryJSONBody defines parameters for PostRagsQuery.
-type PostRagsQueryJSONBody struct {
-	// DocTypes Optional list of document types to search. If empty, all types are searched.
-	DocTypes *[]RagManagerDocType `json:"doc_types,omitempty"`
+// GetRagDocumentsParams defines parameters for GetRagDocuments.
+type GetRagDocumentsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// Query The natural language question to ask.
-	Query string `json:"query"`
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
-	// TopK Number of top relevant chunks to retrieve. Defaults to server configuration if not specified.
-	TopK *int `json:"top_k,omitempty"`
+	// RagId Filter documents by rag ID. Returned from the `POST /rags` response.
+	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
+}
+
+// PostRagDocumentsJSONBody defines parameters for PostRagDocuments.
+type PostRagDocumentsJSONBody struct {
+	// DocType The document source type. Determines how the document content is obtained.
+	DocType RagManagerRagDocumentDocType `json:"doc_type"`
+
+	// Name Human-readable name for the document.
+	Name string `json:"name"`
+
+	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
+	RagId openapi_types.UUID `json:"rag_id"`
+
+	// SourceUrl The source URL if doc_type is url.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+}
+
+// GetRagsParams defines parameters for GetRags.
+type GetRagsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostRagsJSONBody defines parameters for PostRags.
+type PostRagsJSONBody struct {
+	// Description Description of what this rag contains.
+	Description *string `json:"description,omitempty"`
+
+	// Name Human-readable name for the rag.
+	Name string `json:"name"`
+}
+
+// PutRagsIdJSONBody defines parameters for PutRagsId.
+type PutRagsIdJSONBody struct {
+	// Description Updated description.
+	Description *string `json:"description,omitempty"`
+
+	// Name Updated name for the rag.
+	Name *string `json:"name,omitempty"`
 }
 
 // GetRecordingsParams defines parameters for GetRecordings.
@@ -8301,8 +8406,14 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
 
-// PostRagsQueryJSONRequestBody defines body for PostRagsQuery for application/json ContentType.
-type PostRagsQueryJSONRequestBody PostRagsQueryJSONBody
+// PostRagDocumentsJSONRequestBody defines body for PostRagDocuments for application/json ContentType.
+type PostRagDocumentsJSONRequestBody PostRagDocumentsJSONBody
+
+// PostRagsJSONRequestBody defines body for PostRags for application/json ContentType.
+type PostRagsJSONRequestBody PostRagsJSONBody
+
+// PutRagsIdJSONRequestBody defines body for PutRagsId for application/json ContentType.
+type PutRagsIdJSONRequestBody PutRagsIdJSONBody
 
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody

@@ -738,12 +738,20 @@ const (
 	QueueManagerQueuecallStatusWaiting    QueueManagerQueuecallStatus = "waiting"
 )
 
-// Defines values for RagManagerDocType.
+// Defines values for RagManagerRagDocumentDocType.
 const (
-	RagManagerDocTypeDesign    RagManagerDocType = "design"
-	RagManagerDocTypeDevDoc    RagManagerDocType = "devdoc"
-	RagManagerDocTypeGuideline RagManagerDocType = "guideline"
-	RagManagerDocTypeOpenAPI   RagManagerDocType = "openapi"
+	RagManagerRagDocumentDocTypeGenerated RagManagerRagDocumentDocType = "generated"
+	RagManagerRagDocumentDocTypePlatform  RagManagerRagDocumentDocType = "platform"
+	RagManagerRagDocumentDocTypeUploaded  RagManagerRagDocumentDocType = "uploaded"
+	RagManagerRagDocumentDocTypeUrl       RagManagerRagDocumentDocType = "url"
+)
+
+// Defines values for RagManagerRagDocumentStatus.
+const (
+	RagManagerRagDocumentStatusError      RagManagerRagDocumentStatus = "error"
+	RagManagerRagDocumentStatusPending    RagManagerRagDocumentStatus = "pending"
+	RagManagerRagDocumentStatusProcessing RagManagerRagDocumentStatus = "processing"
+	RagManagerRagDocumentStatusReady      RagManagerRagDocumentStatus = "ready"
 )
 
 // Defines values for RegistrarManagerAuthType.
@@ -3495,32 +3503,68 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
 type QueueManagerQueuecallStatus string
 
-// RagManagerDocType Type of documentation source
-type RagManagerDocType string
+// RagManagerRag defines model for RagManagerRag.
+type RagManagerRag struct {
+	// CustomerId The customer ID that owns this rag.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
-// RagManagerQueryResponse Response from a RAG query
-type RagManagerQueryResponse struct {
-	// Answer Generated answer based on retrieved documentation
-	Answer *string `json:"answer,omitempty"`
+	// Description Description of what this rag contains.
+	Description *string `json:"description,omitempty"`
 
-	// Sources List of source references used to generate the answer
-	Sources *[]RagManagerSource `json:"sources,omitempty"`
+	// Id The unique identifier of the rag. Returned from the `POST /rags` response.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Name Human-readable name for the rag.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the rag was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when the rag was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
 
-// RagManagerSource A source reference in the query response
-type RagManagerSource struct {
-	// DocType Type of documentation source
-	DocType *RagManagerDocType `json:"doc_type,omitempty"`
+// RagManagerRagDocument defines model for RagManagerRagDocument.
+type RagManagerRagDocument struct {
+	// CustomerId The customer ID that owns this document.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
-	// RelevanceScore Relevance score of the source
-	RelevanceScore *float64 `json:"relevance_score,omitempty"`
+	// DocType The document source type. Determines how the document content is obtained.
+	DocType *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
 
-	// SectionTitle Title of the relevant section
-	SectionTitle *string `json:"section_title,omitempty"`
+	// Id The unique identifier of the document. Returned from the `POST /rag-documents` response.
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
-	// SourceFile Path to the source file
-	SourceFile *string `json:"source_file,omitempty"`
+	// Name Human-readable name for the document.
+	Name *string `json:"name,omitempty"`
+
+	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
+	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
+
+	// SourceUrl The source URL if doc_type is url.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
+	// StatusMessage Additional details about the current status.
+	StatusMessage *string `json:"status_message,omitempty"`
+
+	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+
+	// TmCreate Timestamp when the document was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when the document was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
+
+// RagManagerRagDocumentDocType The document source type. Determines how the document content is obtained.
+type RagManagerRagDocumentDocType string
+
+// RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
+type RagManagerRagDocumentStatus string
 
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
@@ -5478,16 +5522,61 @@ type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
 }
 
-// PostRagsQueryJSONBody defines parameters for PostRagsQuery.
-type PostRagsQueryJSONBody struct {
-	// DocTypes Optional list of document types to search. If empty, all types are searched.
-	DocTypes *[]RagManagerDocType `json:"doc_types,omitempty"`
+// GetRagDocumentsParams defines parameters for GetRagDocuments.
+type GetRagDocumentsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// Query The natural language question to ask.
-	Query string `json:"query"`
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
-	// TopK Number of top relevant chunks to retrieve. Defaults to server configuration if not specified.
-	TopK *int `json:"top_k,omitempty"`
+	// RagId Filter documents by rag ID. Returned from the `POST /rags` response.
+	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
+}
+
+// PostRagDocumentsJSONBody defines parameters for PostRagDocuments.
+type PostRagDocumentsJSONBody struct {
+	// DocType The document source type. Determines how the document content is obtained.
+	DocType RagManagerRagDocumentDocType `json:"doc_type"`
+
+	// Name Human-readable name for the document.
+	Name string `json:"name"`
+
+	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
+	RagId openapi_types.UUID `json:"rag_id"`
+
+	// SourceUrl The source URL if doc_type is url.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+}
+
+// GetRagsParams defines parameters for GetRags.
+type GetRagsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostRagsJSONBody defines parameters for PostRags.
+type PostRagsJSONBody struct {
+	// Description Description of what this rag contains.
+	Description *string `json:"description,omitempty"`
+
+	// Name Human-readable name for the rag.
+	Name string `json:"name"`
+}
+
+// PutRagsIdJSONBody defines parameters for PutRagsId.
+type PutRagsIdJSONBody struct {
+	// Description Updated description.
+	Description *string `json:"description,omitempty"`
+
+	// Name Updated name for the rag.
+	Name *string `json:"name,omitempty"`
 }
 
 // GetRecordingsParams defines parameters for GetRecordings.
@@ -6332,8 +6421,14 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
 
-// PostRagsQueryJSONRequestBody defines body for PostRagsQuery for application/json ContentType.
-type PostRagsQueryJSONRequestBody PostRagsQueryJSONBody
+// PostRagDocumentsJSONRequestBody defines body for PostRagDocuments for application/json ContentType.
+type PostRagDocumentsJSONRequestBody PostRagDocumentsJSONBody
+
+// PostRagsJSONRequestBody defines body for PostRags for application/json ContentType.
+type PostRagsJSONRequestBody PostRagsJSONBody
+
+// PutRagsIdJSONRequestBody defines body for PutRagsId for application/json ContentType.
+type PutRagsIdJSONRequestBody PutRagsIdJSONBody
 
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody
@@ -7039,9 +7134,33 @@ type ServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(c *gin.Context, id string)
-	// Query RAG documentation system
-	// (POST /rags/query)
-	PostRagsQuery(c *gin.Context)
+	// Get a list of rag documents
+	// (GET /rag-documents)
+	GetRagDocuments(c *gin.Context, params GetRagDocumentsParams)
+	// Create a new rag document
+	// (POST /rag-documents)
+	PostRagDocuments(c *gin.Context)
+	// Delete a rag document
+	// (DELETE /rag-documents/{id})
+	DeleteRagDocumentsId(c *gin.Context, id openapi_types.UUID)
+	// Get rag document details
+	// (GET /rag-documents/{id})
+	GetRagDocumentsId(c *gin.Context, id openapi_types.UUID)
+	// Get a list of rags
+	// (GET /rags)
+	GetRags(c *gin.Context, params GetRagsParams)
+	// Create a new rag
+	// (POST /rags)
+	PostRags(c *gin.Context)
+	// Delete a rag
+	// (DELETE /rags/{id})
+	DeleteRagsId(c *gin.Context, id openapi_types.UUID)
+	// Get rag details
+	// (GET /rags/{id})
+	GetRagsId(c *gin.Context, id openapi_types.UUID)
+	// Update a rag
+	// (PUT /rags/{id})
+	PutRagsId(c *gin.Context, id openapi_types.UUID)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(c *gin.Context, id string)
@@ -12375,8 +12494,37 @@ func (siw *ServerInterfaceWrapper) PutQueuesIdTagIds(c *gin.Context) {
 	siw.Handler.PutQueuesIdTagIds(c, id)
 }
 
-// PostRagsQuery operation middleware
-func (siw *ServerInterfaceWrapper) PostRagsQuery(c *gin.Context) {
+// GetRagDocuments operation middleware
+func (siw *ServerInterfaceWrapper) GetRagDocuments(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRagDocumentsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "rag_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "rag_id", c.Request.URL.Query(), &params.RagId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rag_id: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -12385,7 +12533,187 @@ func (siw *ServerInterfaceWrapper) PostRagsQuery(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.PostRagsQuery(c)
+	siw.Handler.GetRagDocuments(c, params)
+}
+
+// PostRagDocuments operation middleware
+func (siw *ServerInterfaceWrapper) PostRagDocuments(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostRagDocuments(c)
+}
+
+// DeleteRagDocumentsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteRagDocumentsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteRagDocumentsId(c, id)
+}
+
+// GetRagDocumentsId operation middleware
+func (siw *ServerInterfaceWrapper) GetRagDocumentsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRagDocumentsId(c, id)
+}
+
+// GetRags operation middleware
+func (siw *ServerInterfaceWrapper) GetRags(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRagsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRags(c, params)
+}
+
+// PostRags operation middleware
+func (siw *ServerInterfaceWrapper) PostRags(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostRags(c)
+}
+
+// DeleteRagsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteRagsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteRagsId(c, id)
+}
+
+// GetRagsId operation middleware
+func (siw *ServerInterfaceWrapper) GetRagsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRagsId(c, id)
+}
+
+// PutRagsId operation middleware
+func (siw *ServerInterfaceWrapper) PutRagsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutRagsId(c, id)
 }
 
 // GetRecordingfilesId operation middleware
@@ -15196,7 +15524,15 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/queues/:id", wrapper.PutQueuesId)
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
-	router.POST(options.BaseURL+"/rags/query", wrapper.PostRagsQuery)
+	router.GET(options.BaseURL+"/rag-documents", wrapper.GetRagDocuments)
+	router.POST(options.BaseURL+"/rag-documents", wrapper.PostRagDocuments)
+	router.DELETE(options.BaseURL+"/rag-documents/:id", wrapper.DeleteRagDocumentsId)
+	router.GET(options.BaseURL+"/rag-documents/:id", wrapper.GetRagDocumentsId)
+	router.GET(options.BaseURL+"/rags", wrapper.GetRags)
+	router.POST(options.BaseURL+"/rags", wrapper.PostRags)
+	router.DELETE(options.BaseURL+"/rags/:id", wrapper.DeleteRagsId)
+	router.GET(options.BaseURL+"/rags/:id", wrapper.GetRagsId)
+	router.PUT(options.BaseURL+"/rags/:id", wrapper.PutRagsId)
 	router.GET(options.BaseURL+"/recordingfiles/:id", wrapper.GetRecordingfilesId)
 	router.GET(options.BaseURL+"/recordings", wrapper.GetRecordings)
 	router.DELETE(options.BaseURL+"/recordings/:id", wrapper.DeleteRecordingsId)
@@ -19150,29 +19486,166 @@ func (response PutQueuesIdTagIds200JSONResponse) VisitPutQueuesIdTagIdsResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRagsQueryRequestObject struct {
-	Body *PostRagsQueryJSONRequestBody
+type GetRagDocumentsRequestObject struct {
+	Params GetRagDocumentsParams
 }
 
-type PostRagsQueryResponseObject interface {
-	VisitPostRagsQueryResponse(w http.ResponseWriter) error
+type GetRagDocumentsResponseObject interface {
+	VisitGetRagDocumentsResponse(w http.ResponseWriter) error
 }
 
-type PostRagsQuery200JSONResponse RagManagerQueryResponse
+type GetRagDocuments200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]RagManagerRagDocument `json:"result,omitempty"`
+}
 
-func (response PostRagsQuery200JSONResponse) VisitPostRagsQueryResponse(w http.ResponseWriter) error {
+func (response GetRagDocuments200JSONResponse) VisitGetRagDocumentsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRagsQuery400Response struct {
+type PostRagDocumentsRequestObject struct {
+	Body *PostRagDocumentsJSONRequestBody
 }
 
-func (response PostRagsQuery400Response) VisitPostRagsQueryResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
+type PostRagDocumentsResponseObject interface {
+	VisitPostRagDocumentsResponse(w http.ResponseWriter) error
+}
+
+type PostRagDocuments200JSONResponse RagManagerRagDocument
+
+func (response PostRagDocuments200JSONResponse) VisitPostRagDocumentsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRagDocumentsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteRagDocumentsIdResponseObject interface {
+	VisitDeleteRagDocumentsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteRagDocumentsId200JSONResponse RagManagerRagDocument
+
+func (response DeleteRagDocumentsId200JSONResponse) VisitDeleteRagDocumentsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRagDocumentsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetRagDocumentsIdResponseObject interface {
+	VisitGetRagDocumentsIdResponse(w http.ResponseWriter) error
+}
+
+type GetRagDocumentsId200JSONResponse RagManagerRagDocument
+
+func (response GetRagDocumentsId200JSONResponse) VisitGetRagDocumentsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRagsRequestObject struct {
+	Params GetRagsParams
+}
+
+type GetRagsResponseObject interface {
+	VisitGetRagsResponse(w http.ResponseWriter) error
+}
+
+type GetRags200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string          `json:"next_page_token,omitempty"`
+	Result        *[]RagManagerRag `json:"result,omitempty"`
+}
+
+func (response GetRags200JSONResponse) VisitGetRagsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRagsRequestObject struct {
+	Body *PostRagsJSONRequestBody
+}
+
+type PostRagsResponseObject interface {
+	VisitPostRagsResponse(w http.ResponseWriter) error
+}
+
+type PostRags200JSONResponse RagManagerRag
+
+func (response PostRags200JSONResponse) VisitPostRagsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRagsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteRagsIdResponseObject interface {
+	VisitDeleteRagsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteRagsId200JSONResponse RagManagerRag
+
+func (response DeleteRagsId200JSONResponse) VisitDeleteRagsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRagsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetRagsIdResponseObject interface {
+	VisitGetRagsIdResponse(w http.ResponseWriter) error
+}
+
+type GetRagsId200JSONResponse RagManagerRag
+
+func (response GetRagsId200JSONResponse) VisitGetRagsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutRagsIdRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PutRagsIdJSONRequestBody
+}
+
+type PutRagsIdResponseObject interface {
+	VisitPutRagsIdResponse(w http.ResponseWriter) error
+}
+
+type PutRagsId200JSONResponse RagManagerRag
+
+func (response PutRagsId200JSONResponse) VisitPutRagsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetRecordingfilesIdRequestObject struct {
@@ -21901,9 +22374,33 @@ type StrictServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(ctx context.Context, request PutQueuesIdTagIdsRequestObject) (PutQueuesIdTagIdsResponseObject, error)
-	// Query RAG documentation system
-	// (POST /rags/query)
-	PostRagsQuery(ctx context.Context, request PostRagsQueryRequestObject) (PostRagsQueryResponseObject, error)
+	// Get a list of rag documents
+	// (GET /rag-documents)
+	GetRagDocuments(ctx context.Context, request GetRagDocumentsRequestObject) (GetRagDocumentsResponseObject, error)
+	// Create a new rag document
+	// (POST /rag-documents)
+	PostRagDocuments(ctx context.Context, request PostRagDocumentsRequestObject) (PostRagDocumentsResponseObject, error)
+	// Delete a rag document
+	// (DELETE /rag-documents/{id})
+	DeleteRagDocumentsId(ctx context.Context, request DeleteRagDocumentsIdRequestObject) (DeleteRagDocumentsIdResponseObject, error)
+	// Get rag document details
+	// (GET /rag-documents/{id})
+	GetRagDocumentsId(ctx context.Context, request GetRagDocumentsIdRequestObject) (GetRagDocumentsIdResponseObject, error)
+	// Get a list of rags
+	// (GET /rags)
+	GetRags(ctx context.Context, request GetRagsRequestObject) (GetRagsResponseObject, error)
+	// Create a new rag
+	// (POST /rags)
+	PostRags(ctx context.Context, request PostRagsRequestObject) (PostRagsResponseObject, error)
+	// Delete a rag
+	// (DELETE /rags/{id})
+	DeleteRagsId(ctx context.Context, request DeleteRagsIdRequestObject) (DeleteRagsIdResponseObject, error)
+	// Get rag details
+	// (GET /rags/{id})
+	GetRagsId(ctx context.Context, request GetRagsIdRequestObject) (GetRagsIdResponseObject, error)
+	// Update a rag
+	// (PUT /rags/{id})
+	PutRagsId(ctx context.Context, request PutRagsIdRequestObject) (PutRagsIdResponseObject, error)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(ctx context.Context, request GetRecordingfilesIdRequestObject) (GetRecordingfilesIdResponseObject, error)
@@ -28306,11 +28803,38 @@ func (sh *strictHandler) PutQueuesIdTagIds(ctx *gin.Context, id string) {
 	}
 }
 
-// PostRagsQuery operation middleware
-func (sh *strictHandler) PostRagsQuery(ctx *gin.Context) {
-	var request PostRagsQueryRequestObject
+// GetRagDocuments operation middleware
+func (sh *strictHandler) GetRagDocuments(ctx *gin.Context, params GetRagDocumentsParams) {
+	var request GetRagDocumentsRequestObject
 
-	var body PostRagsQueryJSONRequestBody
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRagDocuments(ctx, request.(GetRagDocumentsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRagDocuments")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetRagDocumentsResponseObject); ok {
+		if err := validResponse.VisitGetRagDocumentsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostRagDocuments operation middleware
+func (sh *strictHandler) PostRagDocuments(ctx *gin.Context) {
+	var request PostRagDocumentsRequestObject
+
+	var body PostRagDocumentsJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -28319,10 +28843,10 @@ func (sh *strictHandler) PostRagsQuery(ctx *gin.Context) {
 	request.Body = &body
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostRagsQuery(ctx, request.(PostRagsQueryRequestObject))
+		return sh.ssi.PostRagDocuments(ctx, request.(PostRagDocumentsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostRagsQuery")
+		handler = middleware(handler, "PostRagDocuments")
 	}
 
 	response, err := handler(ctx, request)
@@ -28330,8 +28854,211 @@ func (sh *strictHandler) PostRagsQuery(ctx *gin.Context) {
 	if err != nil {
 		ctx.Error(err)
 		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostRagsQueryResponseObject); ok {
-		if err := validResponse.VisitPostRagsQueryResponse(ctx.Writer); err != nil {
+	} else if validResponse, ok := response.(PostRagDocumentsResponseObject); ok {
+		if err := validResponse.VisitPostRagDocumentsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteRagDocumentsId operation middleware
+func (sh *strictHandler) DeleteRagDocumentsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteRagDocumentsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteRagDocumentsId(ctx, request.(DeleteRagDocumentsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteRagDocumentsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteRagDocumentsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteRagDocumentsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRagDocumentsId operation middleware
+func (sh *strictHandler) GetRagDocumentsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetRagDocumentsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRagDocumentsId(ctx, request.(GetRagDocumentsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRagDocumentsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetRagDocumentsIdResponseObject); ok {
+		if err := validResponse.VisitGetRagDocumentsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRags operation middleware
+func (sh *strictHandler) GetRags(ctx *gin.Context, params GetRagsParams) {
+	var request GetRagsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRags(ctx, request.(GetRagsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRags")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetRagsResponseObject); ok {
+		if err := validResponse.VisitGetRagsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostRags operation middleware
+func (sh *strictHandler) PostRags(ctx *gin.Context) {
+	var request PostRagsRequestObject
+
+	var body PostRagsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostRags(ctx, request.(PostRagsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostRags")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostRagsResponseObject); ok {
+		if err := validResponse.VisitPostRagsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteRagsId operation middleware
+func (sh *strictHandler) DeleteRagsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteRagsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteRagsId(ctx, request.(DeleteRagsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteRagsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteRagsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteRagsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRagsId operation middleware
+func (sh *strictHandler) GetRagsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetRagsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRagsId(ctx, request.(GetRagsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRagsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetRagsIdResponseObject); ok {
+		if err := validResponse.VisitGetRagsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutRagsId operation middleware
+func (sh *strictHandler) PutRagsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutRagsIdRequestObject
+
+	request.Id = id
+
+	var body PutRagsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutRagsId(ctx, request.(PutRagsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutRagsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutRagsIdResponseObject); ok {
+		if err := validResponse.VisitPutRagsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

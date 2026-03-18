@@ -3,7 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	rmrag "monorepo/bin-rag-manager/models/rag"
+	rmdocument "monorepo/bin-rag-manager/models/document"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -11,9 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) PostRags(c *gin.Context) {
+func (h *server) PostRagDocuments(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostRags",
+		"func":            "PostRagDocuments",
 		"request_address": c.ClientIP(),
 	})
 
@@ -28,19 +28,38 @@ func (h *server) PostRags(c *gin.Context) {
 		"agent": a,
 	})
 
-	var req openapi_server.PostRagsJSONBody
+	var req openapi_server.PostRagDocumentsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	description := ""
-	if req.Description != nil {
-		description = *req.Description
+	ragID, err := uuid.FromString(req.RagId.String())
+	if err != nil {
+		log.Errorf("Invalid rag_id format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
-	res, err := h.serviceHandler.RagCreate(c.Request.Context(), &a, req.Name, description)
+	docType := rmdocument.DocType(string(req.DocType))
+
+	sourceURL := ""
+	if req.SourceUrl != nil {
+		sourceURL = *req.SourceUrl
+	}
+
+	storageFileID := uuid.Nil
+	if req.StorageFileId != nil {
+		storageFileID, err = uuid.FromString(req.StorageFileId.String())
+		if err != nil {
+			log.Errorf("Invalid storage_file_id format. err: %v", err)
+			c.AbortWithStatus(400)
+			return
+		}
+	}
+
+	res, err := h.serviceHandler.RagDocumentCreate(c.Request.Context(), &a, ragID, req.Name, docType, sourceURL, storageFileID)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -50,9 +69,9 @@ func (h *server) PostRags(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
+func (h *server) GetRagDocuments(c *gin.Context, params openapi_server.GetRagDocumentsParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetRags",
+		"func":            "GetRagDocuments",
 		"request_address": c.ClientIP(),
 	})
 
@@ -81,7 +100,18 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.RagGets(c.Request.Context(), &a, pageSize, pageToken)
+	ragID := uuid.Nil
+	if params.RagId != nil {
+		var err error
+		ragID, err = uuid.FromString(params.RagId.String())
+		if err != nil {
+			log.Errorf("Invalid rag_id format. err: %v", err)
+			c.AbortWithStatus(400)
+			return
+		}
+	}
+
+	tmps, err := h.serviceHandler.RagDocumentGets(c.Request.Context(), &a, ragID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get data list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -99,9 +129,9 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 	c.JSON(200, res)
 }
 
-func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
+func (h *server) GetRagDocumentsId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetRagsId",
+		"func":            "GetRagDocumentsId",
 		"request_address": c.ClientIP(),
 		"target_id":       id,
 	})
@@ -124,7 +154,7 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	res, err := h.serviceHandler.RagGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RagDocumentGet(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not get data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -134,9 +164,9 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
+func (h *server) DeleteRagDocumentsId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutRagsId",
+		"func":            "DeleteRagDocumentsId",
 		"request_address": c.ClientIP(),
 		"target_id":       id,
 	})
@@ -159,63 +189,7 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	var req openapi_server.PutRagsIdJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	fields := map[rmrag.Field]any{}
-	if req.Name != nil {
-		fields[rmrag.FieldName] = *req.Name
-	}
-	if req.Description != nil {
-		fields[rmrag.FieldDescription] = *req.Description
-	}
-
-	if len(fields) == 0 {
-		log.Errorf("No fields to update.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), &a, target, fields)
-	if err != nil {
-		log.Errorf("Could not update data. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteRagsId",
-		"request_address": c.ClientIP(),
-		"target_id":       id,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	target, err := uuid.FromString(id.String())
-	if err != nil {
-		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.RagDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RagDocumentDelete(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not delete data. err: %v", err)
 		c.AbortWithStatus(400)

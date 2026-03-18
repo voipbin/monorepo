@@ -201,34 +201,19 @@ func (mr *MockDBHandlerMockRecorder) DocumentGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGet", reflect.TypeOf((*MockDBHandler)(nil).DocumentGet), ctx, id)
 }
 
-// DocumentGetsByCustomerID mocks base method.
-func (m *MockDBHandler) DocumentGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*document.Document, error) {
+// DocumentList mocks base method.
+func (m *MockDBHandler) DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DocumentGetsByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "DocumentList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*document.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DocumentGetsByCustomerID indicates an expected call of DocumentGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) DocumentGetsByCustomerID(ctx, customerID any) *gomock.Call {
+// DocumentList indicates an expected call of DocumentList.
+func (mr *MockDBHandlerMockRecorder) DocumentList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByCustomerID), ctx, customerID)
-}
-
-// DocumentGetsByRagID mocks base method.
-func (m *MockDBHandler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DocumentGetsByRagID", ctx, ragID)
-	ret0, _ := ret[0].([]*document.Document)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DocumentGetsByRagID indicates an expected call of DocumentGetsByRagID.
-func (mr *MockDBHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByRagID), ctx, ragID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentList", reflect.TypeOf((*MockDBHandler)(nil).DocumentList), ctx, size, token, filters)
 }
 
 // DocumentUpdate mocks base method.
@@ -288,19 +273,19 @@ func (mr *MockDBHandlerMockRecorder) RagGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGet", reflect.TypeOf((*MockDBHandler)(nil).RagGet), ctx, id)
 }
 
-// RagGetsByCustomerID mocks base method.
-func (m *MockDBHandler) RagGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*rag.Rag, error) {
+// RagList mocks base method.
+func (m *MockDBHandler) RagList(ctx context.Context, size uint64, token string, filters map[rag.Field]any) ([]*rag.Rag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagGetsByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "RagList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*rag.Rag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RagGetsByCustomerID indicates an expected call of RagGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) RagGetsByCustomerID(ctx, customerID any) *gomock.Call {
+// RagList indicates an expected call of RagList.
+func (mr *MockDBHandlerMockRecorder) RagList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).RagGetsByCustomerID), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagList", reflect.TypeOf((*MockDBHandler)(nil).RagList), ctx, size, token, filters)
 }
 
 // RagUpdate mocks base method.

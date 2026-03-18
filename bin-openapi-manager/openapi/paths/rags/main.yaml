@@ -1,0 +1,52 @@
+get:
+  summary: Get a list of rags
+  description: Retrieves a paginated list of RAG knowledge bases for the authenticated customer.
+  tags:
+    - RAG
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of rags.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RagManagerRag'
+
+post:
+  summary: Create a new rag
+  description: Creates a new RAG knowledge base.
+  tags:
+    - RAG
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: "Human-readable name for the rag."
+              example: "Customer Support KB"
+            description:
+              type: string
+              description: "Description of what this rag contains."
+              example: "Knowledge base for customer support conversations"
+  responses:
+    '200':
+      description: Successfully created rag.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'
