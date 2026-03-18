@@ -33,25 +33,46 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: DATABASE_DSN
-              value: ${DATABASE_DSN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_PASSWORD
             - name: REDIS_DATABASE
               value: "1"
             - name: HOMER_API_ADDRESS
-              value: ${HOMER_API_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: HOMER_API_ADDRESS
             - name: HOMER_AUTH_TOKEN
-              value: ${HOMER_AUTH_TOKEN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: HOMER_AUTH_TOKEN
             - name: HOMER_WHITELIST
-              value: ${HOMER_WHITELIST}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: HOMER_WHITELIST
             - name: PROJECT_BASE_DOMAIN
               value: "voipbin.net"
             - name: PROJECT_BUCKET_NAME

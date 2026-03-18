@@ -25,21 +25,36 @@ spec:
             - './ai-manager'
           env:
             - name: DATABASE_DSN
-              value: ${DATABASE_DSN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_PASSWORD
             - name: REDIS_DATABASE
               value: "1"
             - name: ENGINE_KEY_CHATGPT
-              value: "${AUTHTOKEN_OPENAI}"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: OPENAI_API_KEY
             - name: CLICKHOUSE_ADDRESS
               value: "clickhouse.infrastructure.svc.cluster.local:9000"
           ports:
