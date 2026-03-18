@@ -66,6 +66,7 @@ func initCommand() *cobra.Command {
 	cmdCustomer.AddCommand(cmdDelete())
 	cmdCustomer.AddCommand(cmdFreeze())
 	cmdCustomer.AddCommand(cmdRecover())
+	cmdCustomer.AddCommand(cmdSetIdentityVerification())
 
 	cmdAccesskey := &cobra.Command{Use: "accesskey", Short: "Accesskey operation"}
 	cmdAccesskey.AddCommand(cmdAccesskeyCreate())
@@ -372,6 +373,49 @@ func runRecover(cmd *cobra.Command, args []string) error {
 	res, err := handler.Recover(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to recover customer")
+	}
+
+	return printJSON(res)
+}
+
+func cmdSetIdentityVerification() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-identity-verification",
+		Short: "Set customer identity verification status",
+		RunE:  runSetIdentityVerification,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Customer ID (required)")
+	flags.String("status", "", "Verification status: none, pending, verified, rejected (required)")
+
+	return cmd
+}
+
+func runSetIdentityVerification(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	statusStr, err := resolveString("status", "Status")
+	if err != nil {
+		return errors.Wrap(err, "invalid status")
+	}
+
+	status := customer.IdentityVerificationStatus(statusStr)
+	if !status.IsValid() {
+		return fmt.Errorf("invalid status '%s': must be one of none, pending, verified, rejected", statusStr)
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateIdentityVerificationStatus(context.Background(), targetID, status)
+	if err != nil {
+		return errors.Wrap(err, "failed to update identity verification status")
 	}
 
 	return printJSON(res)
