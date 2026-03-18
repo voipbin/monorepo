@@ -109,21 +109,38 @@ In the `ConvertWebhookMessage()` method, add the mapping after `Status: h.Status
 IdentityVerificationStatus: h.IdentityVerificationStatus,
 ```
 
-**Step 5: Run verification for bin-customer-manager**
+**Step 5: Set default value in customer creation paths**
+
+`commondatabasehandler.PrepareFields` uses the struct's Go zero value for unset fields, which is `""` for strings. This bypasses the DB `DEFAULT 'none'`. You must explicitly initialize the field in both creation paths:
+
+In `bin-customer-manager/pkg/customerhandler/db.go`, in the `Create()` function (line 71-86), add to the `Customer` struct literal after `Status: customer.StatusActive,` (line 85):
+
+```go
+IdentityVerificationStatus: customer.IdentityVerificationStatusNone,
+```
+
+In `bin-customer-manager/pkg/customerhandler/signup.go`, in the `Signup()` function (line 74-92), add to the `Customer` struct literal after `Status: customer.StatusInitial,` (line 88):
+
+```go
+IdentityVerificationStatus: customer.IdentityVerificationStatusNone,
+```
+
+**Step 6: Run verification for bin-customer-manager**
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification/bin-customer-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-**Step 6: Commit**
+**Step 7: Commit**
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Customer-identity-verification
 git add bin-customer-manager/
 git commit -m "NOJIRA-Customer-identity-verification
 
-- bin-customer-manager: Add IdentityVerificationStatus field to Customer struct, Field type, and WebhookMessage"
+- bin-customer-manager: Add IdentityVerificationStatus field to Customer struct, Field type, and WebhookMessage
+- bin-customer-manager: Set default IdentityVerificationStatusNone in Create and Signup paths"
 ```
 
 ---

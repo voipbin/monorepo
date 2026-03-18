@@ -37,6 +37,8 @@ FieldIdentityVerificationStatus Field = "identity_verification_status"
 
 **WebhookMessage** — add `IdentityVerificationStatus` field and include in `ConvertWebhookMessage()`. This is intentionally exposed to external clients so customers can see their own verification status and know they need to verify.
 
+**Customer creation paths** — both `Create()` (admin) and `Signup()` (self-service) must explicitly set `IdentityVerificationStatus: IdentityVerificationStatusNone` in the struct literal. `commondatabasehandler.PrepareFields` uses Go's zero value (`""`) for unset string fields, which bypasses the DB `DEFAULT 'none'`.
+
 ### 2. Database Migration
 
 In `bin-dbscheme-manager`, new Alembic migration:
