@@ -79,7 +79,10 @@ spec:
             - name: PROJECT_BASE_DOMAIN
               value: "voipbin.net"
             - name: PROJECT_BUCKET_NAME
-              value: "voipbin-voip-media-bucket-europe-west4"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: GCP_BUCKET_NAME_MEDIA
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:
