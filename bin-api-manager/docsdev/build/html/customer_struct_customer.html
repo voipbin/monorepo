@@ -203,6 +203,7 @@
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;identity_verification_status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -226,6 +227,14 @@
 </ul>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">email_verified</span></code> (Boolean): Whether the customer’s email address has been verified. <code class="docutils literal notranslate"><span class="pre">true</span></code> if verified, <code class="docutils literal notranslate"><span class="pre">false</span></code> otherwise.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> (enum string): The customer’s identity verification status. Determines access to PSTN number purchases and outbound PSTN calls. One of:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">none</span></code>: Not yet verified. Default for new customers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pending</span></code>: Verification in progress.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verified</span></code>: Identity verified. Customer can purchase PSTN numbers and make outbound PSTN calls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rejected</span></code>: Verification failed.</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The current account status. One of:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">initial</span></code>: Account created, pending email verification.</p></li>
@@ -244,6 +253,7 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field determines what operations are allowed on the account. Only <code class="docutils literal notranslate"><span class="pre">active</span></code> accounts can create resources and make calls. A <code class="docutils literal notranslate"><span class="pre">frozen</span></code> account has deletion scheduled but can be recovered by cancelling unregistration before the grace period expires. A <code class="docutils literal notranslate"><span class="pre">deleted</span></code> account cannot be recovered – all PII has been anonymized and all resources cascade-deleted. The <code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> field is only set when <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">frozen</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> field gates PSTN operations. Only customers with <code class="docutils literal notranslate"><span class="pre">verified</span></code> status can purchase non-virtual phone numbers or make outbound PSTN calls. New customers default to <code class="docutils literal notranslate"><span class="pre">none</span></code> and must complete identity verification before using PSTN services. Existing customers at the time of this feature launch were grandfathered to <code class="docutils literal notranslate"><span class="pre">verified</span></code>.</p>
 </div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
@@ -262,6 +272,7 @@
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;identity_verification_status&quot;</span><span class="p">:</span> <span class="s2">&quot;verified&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-06-20T14:22:35Z&quot;</span><span class="p">,</span>
