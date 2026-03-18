@@ -38,9 +38,15 @@ spec:
                   name: bin-manager-secrets
                   key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
-              value: "/metrics"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_ENDPOINT
             - name: PROMETHEUS_LISTEN_ADDRESS
-              value: ":2112"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_LISTEN_ADDRESS
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
@@ -72,9 +78,15 @@ spec:
                   name: bin-manager-secrets
                   key: AWS_SECRET_KEY
             - name: STREAMING_LISTEN_PORT
-              value: "8080"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: STREAMING_LISTEN_PORT
             - name: STT_PROVIDER_PRIORITY
-              value: "GCP,AWS"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: STT_PROVIDER_PRIORITY
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

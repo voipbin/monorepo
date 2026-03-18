@@ -38,9 +38,15 @@ spec:
                   name: bin-manager-secrets
                   key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
-              value: "/metrics"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_ENDPOINT
             - name: PROMETHEUS_LISTEN_ADDRESS
-              value: ":2112"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_LISTEN_ADDRESS
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
@@ -77,7 +83,10 @@ spec:
                   name: bin-manager-secrets
                   key: HOMER_WHITELIST
             - name: PROJECT_BASE_DOMAIN
-              value: "voipbin.net"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROJECT_BASE_DOMAIN
             - name: PROJECT_BUCKET_NAME
               valueFrom:
                 secretKeyRef:

@@ -27,9 +27,15 @@ spec:
             - './sentinel-manager'
           env:
             - name: PROMETHEUS_ENDPOINT
-              value: "/metrics"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_ENDPOINT
             - name: PROMETHEUS_LISTEN_ADDRESS
-              value: ":2112"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PROMETHEUS_LISTEN_ADDRESS
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
