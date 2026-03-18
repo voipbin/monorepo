@@ -37,29 +37,59 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: DATABASE_DSN
-              value: ${DATABASE_DSN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_PASSWORD
             - name: REDIS_DATABASE
-              value: "1"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_DATABASE
             - name: SSL_PRIVKEY_BASE64
-              value: ${SSL_PRIVKEY_API_BASE64}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: SSL_PRIVKEY_API_BASE64
             - name: SSL_CERT_BASE64
-              value: ${SSL_CERT_API_BASE64}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: SSL_CERT_API_BASE64
             - name: GCP_PROJECT_ID
-              value: ${GCP_PROJECT_ID}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: GCP_PROJECT_ID
             - name: GCP_BUCKET_NAME
-              value: ${GCP_BUCKET_NAME_TMP}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: GCP_BUCKET_NAME_TMP
             - name: JWT_KEY
-              value: ${JWT_KEY}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: JWT_KEY
           readinessProbe:
             httpGet:
               path: /ping

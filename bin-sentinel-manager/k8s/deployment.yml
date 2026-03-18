@@ -31,9 +31,15 @@ spec:
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics
               protocol: "TCP"

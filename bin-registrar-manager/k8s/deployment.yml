@@ -25,27 +25,54 @@ spec:
             - './registrar-manager'
           env:
             - name: DATABASE_DSN_BIN
-              value: ${DATABASE_DSN}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN_BIN
             - name: DATABASE_DSN_ASTERISK
-              value: ${DATABASE_DSN_ASTERISK}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DATABASE_DSN_ASTERISK
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
             - name: RABBITMQ_ADDRESS
-              value: ${RABBITMQ_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
-              value: ${REDIS_ADDRESS}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
-              value: ${REDIS_PASSWORD}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_PASSWORD
             - name: REDIS_DATABASE
-              value: "1"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: REDIS_DATABASE
             - name: DOMAIN_NAME_EXTENSION
-              value: ${DOMAIN_NAME_EXTENSION}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DOMAIN_NAME_EXTENSION
             - name: DOMAIN_NAME_TRUNK
-              value: ${DOMAIN_NAME_TRUNK}
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: DOMAIN_NAME_TRUNK
             - name: CLICKHOUSE_ADDRESS
-              value: "clickhouse.infrastructure.svc.cluster.local:9000"
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics
               protocol: "TCP"
