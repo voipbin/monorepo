@@ -90,7 +90,7 @@ func Test_billingPaddlePOST_ServiceHandlerError(t *testing.T) {
 			reqQuery: "/v1.0/billing/paddle",
 			reqBody:  []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 
-			expectCode: http.StatusInternalServerError,
+			expectCode: http.StatusBadRequest,
 		},
 	}
 

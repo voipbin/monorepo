@@ -190,6 +190,21 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).GetByCustomerID), ctx, customerID)
 }
 
+// GetByPaddleSubscriptionID mocks base method.
+func (m *MockAccountHandler) GetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByPaddleSubscriptionID", ctx, paddleSubscriptionID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByPaddleSubscriptionID indicates an expected call of GetByPaddleSubscriptionID.
+func (mr *MockAccountHandlerMockRecorder) GetByPaddleSubscriptionID(ctx, paddleSubscriptionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPaddleSubscriptionID", reflect.TypeOf((*MockAccountHandler)(nil).GetByPaddleSubscriptionID), ctx, paddleSubscriptionID)
+}
+
 // IsValidBalance mocks base method.
 func (m *MockAccountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()

@@ -35,6 +35,8 @@ type AccountHandler interface {
 	UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error)
 
+	GetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error)
+
 	// Paddle webhook handlers
 	PaddleCreditTopUp(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error
 	PaddleSubscriptionCreate(ctx context.Context, customerID uuid.UUID, planType account.PlanType, paddleSubID string, paddleCustID string, eventID string) error

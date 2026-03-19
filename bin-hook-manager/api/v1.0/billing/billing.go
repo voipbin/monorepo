@@ -22,7 +22,7 @@ func billingPaddlePOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.Billing(ctx, c.Request); err != nil {
 		log.Errorf("Could not handle the billing webhook. err: %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 

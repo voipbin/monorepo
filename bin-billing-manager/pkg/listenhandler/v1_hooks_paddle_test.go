@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	hmhook "monorepo/bin-hook-manager/models/hook"
@@ -104,8 +105,8 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
-			name:   "transaction.refunded",
-			paddle: `{"event_id":"evt_refund_001","event_type":"transaction.refunded","data":{"id":"txn_003","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"5.00"}}}}`,
+			name:   "transaction.refunded - with adjustments",
+			paddle: `{"event_id":"evt_refund_001","event_type":"transaction.refunded","data":{"id":"txn_003","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"5.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().PaddleRefund(
 					gomock.Any(),
@@ -115,6 +116,33 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 				).Return(nil)
 			},
 			expectRes: simpleResponse(200),
+		},
+		{
+			name:   "transaction.refunded - fallback to paddle_subscription_id lookup",
+			paddle: `{"event_id":"evt_refund_002","event_type":"transaction.refunded","data":{"id":"txn_004","subscription_id":"sub_fallback_001","adjustments":[{"totals":{"total":"3.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
+			setup: func(m *accounthandler.MockAccountHandler) {
+				m.EXPECT().GetByPaddleSubscriptionID(
+					gomock.Any(),
+					"sub_fallback_001",
+				).Return(&account.Account{
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000001"),
+					},
+				}, nil)
+				m.EXPECT().PaddleRefund(
+					gomock.Any(),
+					uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000001"),
+					int64(3000000),
+					"evt_refund_002",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
+			name:      "transaction.refunded - no adjustments returns 400",
+			paddle:    `{"event_id":"evt_refund_003","event_type":"transaction.refunded","data":{"id":"txn_005","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"5.00"}}}}`,
+			setup:     func(m *accounthandler.MockAccountHandler) {},
+			expectRes: simpleResponse(400),
 		},
 		{
 			name:      "transaction.payment_failed - logged at error, return 200",
@@ -190,6 +218,8 @@ func Test_parsePaddleAmountToMicros(t *testing.T) {
 		{"no decimal", "5", 5000000, false},
 		{"single fractional digit", "3.5", 3500000, false},
 		{"trailing dot", "7.", 7000000, false},
+		{"negative amount", "-5.00", -5000000, false},
+		{"more than 2 decimal places", "10.123", 0, true},
 		{"invalid", "abc", 0, true},
 	}
 

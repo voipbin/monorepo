@@ -16,6 +16,7 @@ type Config struct {
 	RabbitMQAddress         string
 	SSLPrivkeyBase64        string
 	SSLCertBase64           string
+	PaddleWebhookSecretKey  string
 }
 
 var (
@@ -42,14 +43,16 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "RabbitMQ server address")
 	f.String("ssl_privkey_base64", "", "Base64-encoded SSL private key")
 	f.String("ssl_cert_base64", "", "Base64-encoded SSL certificate")
+	f.String("paddle_webhook_secret_key", "", "Paddle webhook signature verification secret")
 
 	bindings := map[string]string{
-		"database_dsn":              "DATABASE_DSN",
-		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
-		"rabbitmq_address":          "RABBITMQ_ADDRESS",
-		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
-		"ssl_cert_base64":           "SSL_CERT_BASE64",
+		"database_dsn":               "DATABASE_DSN",
+		"prometheus_endpoint":        "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address":  "PROMETHEUS_LISTEN_ADDRESS",
+		"rabbitmq_address":           "RABBITMQ_ADDRESS",
+		"ssl_privkey_base64":         "SSL_PRIVKEY_BASE64",
+		"ssl_cert_base64":            "SSL_CERT_BASE64",
+		"paddle_webhook_secret_key":  "PADDLE_WEBHOOK_SECRET_KEY",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -76,6 +79,7 @@ func LoadGlobalConfig() {
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
 			SSLPrivkeyBase64:        viper.GetString("ssl_privkey_base64"),
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
+			PaddleWebhookSecretKey:  viper.GetString("paddle_webhook_secret_key"),
 		}
 	})
 }
@@ -92,6 +96,7 @@ func InitConfig(cmd *cobra.Command) {
 		_ = viper.BindPFlag("rabbitmq_address", cmd.Flags().Lookup("rabbitmq_address"))
 		_ = viper.BindPFlag("ssl_privkey_base64", cmd.Flags().Lookup("ssl_privkey_base64"))
 		_ = viper.BindPFlag("ssl_cert_base64", cmd.Flags().Lookup("ssl_cert_base64"))
+		_ = viper.BindPFlag("paddle_webhook_secret_key", cmd.Flags().Lookup("paddle_webhook_secret_key"))
 
 		cfg = &Config{
 			DatabaseDSN:             viper.GetString("database_dsn"),
@@ -100,6 +105,7 @@ func InitConfig(cmd *cobra.Command) {
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
 			SSLPrivkeyBase64:        viper.GetString("ssl_privkey_base64"),
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
+			PaddleWebhookSecretKey:  viper.GetString("paddle_webhook_secret_key"),
 		}
 	})
 }

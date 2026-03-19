@@ -18,12 +18,14 @@ type ServiceHandler interface {
 }
 
 type serviceHandler struct {
-	reqHandler requesthandler.RequestHandler
+	reqHandler           requesthandler.RequestHandler
+	paddleWebhookSecret string
 }
 
 // NewServiceHandler return ServiceHandler interface
-func NewServiceHandler(reqHandler requesthandler.RequestHandler) ServiceHandler {
+func NewServiceHandler(reqHandler requesthandler.RequestHandler, paddleWebhookSecret string) ServiceHandler {
 	return &serviceHandler{
-		reqHandler: reqHandler,
+		reqHandler:           reqHandler,
+		paddleWebhookSecret: paddleWebhookSecret,
 	}
 }

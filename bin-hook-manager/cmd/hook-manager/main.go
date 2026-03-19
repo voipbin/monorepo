@@ -60,6 +60,7 @@ func init() {
 	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
 	rootCmd.Flags().String("ssl_privkey_base64", "", "Base64-encoded private key")
 	rootCmd.Flags().String("ssl_cert_base64", "", "Base64-encoded cert")
+	rootCmd.Flags().String("paddle_webhook_secret_key", "", "Paddle webhook signature verification secret")
 
 	// Initialize configuration
 	config.InitConfig(rootCmd)
@@ -109,7 +110,7 @@ func runService(cmd *cobra.Command, args []string) {
 
 	// create servicehandler
 	requestHandler := requesthandler.NewRequestHandler(sock, serviceName)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, cfg.PaddleWebhookSecretKey)
 
 	app := gin.Default()
 	// CORS setting

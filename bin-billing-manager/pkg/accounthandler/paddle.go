@@ -12,6 +12,11 @@ import (
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
+// GetByPaddleSubscriptionID returns the account matching the given Paddle subscription ID.
+func (h *accountHandler) GetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error) {
+	return h.db.AccountGetByPaddleSubscriptionID(ctx, paddleSubscriptionID)
+}
+
 // checkPaddleIdempotency checks if a billing record with the given event ID already exists.
 // Uses a single DB query on the idempotency_key column.
 func (h *accountHandler) checkPaddleIdempotency(ctx context.Context, eventID string) (bool, error) {
@@ -242,10 +247,8 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 
 // PaddleRefund subtracts credit from a Paddle refund.
 // Uses AccountPaddleSubtractCredit for atomic balance subtract+billing in one transaction.
-//
-// NOTE: Uses details.totals.total from the Paddle event. Verify against Paddle v2 docs
-// whether this represents the refund amount or the original transaction total — for partial
-// refunds the correct field may differ. Must be verified before production deployment.
+// The caller (listenhandler) parses the refund amount from the adjustments array,
+// which correctly handles both full and partial refunds.
 func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "PaddleRefund",

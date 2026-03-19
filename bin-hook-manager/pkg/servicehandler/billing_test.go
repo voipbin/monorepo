@@ -3,6 +3,9 @@ package servicehandler
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"testing"
@@ -24,7 +27,7 @@ func Test_Billing(t *testing.T) {
 		expectReq *hmhook.Hook
 	}{
 		{
-			name: "paddle webhook",
+			name: "paddle webhook - no signature verification (empty secret)",
 
 			host: "hook.voipbin.net",
 			path: "/v1.0/billing/paddle",
@@ -44,7 +47,8 @@ func Test_Billing(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
-				reqHandler: mockReq,
+				reqHandler:           mockReq,
+				paddleWebhookSecret: "",
 			}
 
 			ctx := context.Background()
@@ -94,7 +98,8 @@ func Test_Billing_Error(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
-				reqHandler: mockReq,
+				reqHandler:           mockReq,
+				paddleWebhookSecret: "",
 			}
 
 			ctx := context.Background()
@@ -109,4 +114,117 @@ func Test_Billing_Error(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_Billing_SignatureVerification(t *testing.T) {
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+	secret := "pdl_ntfset_01j84jzd84gxsnq96m5csmjpap_TGTCkDNPO1LkmLdBhTCEDijp3OuGWbGn"
+
+	tests := []struct {
+		name        string
+		secret      string
+		signature   string
+		expectError bool
+	}{
+		{
+			name:        "missing signature header",
+			secret:      secret,
+			signature:   "",
+			expectError: true,
+		},
+		{
+			name:        "invalid signature format",
+			secret:      secret,
+			signature:   "invalid-format",
+			expectError: true,
+		},
+		{
+			name:        "wrong hash",
+			secret:      secret,
+			signature:   "ts=1234567890;h1=0000000000000000000000000000000000000000000000000000000000000000",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := serviceHandler{
+				reqHandler:           mockReq,
+				paddleWebhookSecret: tt.secret,
+			}
+
+			ctx := context.Background()
+
+			r, _ := http.NewRequest("POST", "http://hook.voipbin.net/v1.0/billing/paddle", bytes.NewReader(body))
+			r.Host = "hook.voipbin.net"
+			if tt.signature != "" {
+				r.Header.Set("Paddle-Signature", tt.signature)
+			}
+
+			err := h.Billing(ctx, r)
+			if (err != nil) != tt.expectError {
+				t.Errorf("Billing() error = %v, expectError %v", err, tt.expectError)
+			}
+		})
+	}
+}
+
+func Test_verifyPaddleSignature(t *testing.T) {
+	secret := "test-secret"
+	body := []byte(`{"test":"data"}`)
+
+	// Generate a valid signature for testing
+	mac := hmacSHA256(secret, "1234567890", body)
+
+	tests := []struct {
+		name      string
+		signature string
+		expectErr bool
+	}{
+		{
+			name:      "valid signature",
+			signature: "ts=1234567890;h1=" + mac,
+			expectErr: false,
+		},
+		{
+			name:      "invalid hash",
+			signature: "ts=1234567890;h1=deadbeef",
+			expectErr: true,
+		},
+		{
+			name:      "missing ts",
+			signature: "h1=" + mac,
+			expectErr: true,
+		},
+		{
+			name:      "missing h1",
+			signature: "ts=1234567890",
+			expectErr: true,
+		},
+		{
+			name:      "empty string",
+			signature: "",
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := verifyPaddleSignature(secret, tt.signature, body)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("verifyPaddleSignature() error = %v, expectErr %v", err, tt.expectErr)
+			}
+		})
+	}
+}
+
+// hmacSHA256 helper for test — computes HMAC-SHA256 of "ts:body"
+func hmacSHA256(secret, ts string, body []byte) string {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(ts + ":" + string(body)))
+	return hex.EncodeToString(mac.Sum(nil))
 }

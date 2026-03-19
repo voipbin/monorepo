@@ -155,9 +155,11 @@ func Test_PaddleSubscriptionCreate(t *testing.T) {
 		paddleCustID string
 		eventID      string
 
-		responseIdempotencyErr error
-		responseCustomer       *cmcustomer.Customer
-		responseAccount        *account.Account
+		responseIdempotencyErr   error
+		responseCustomer         *cmcustomer.Customer
+		responseCustomerErr      error
+		responseAccount          *account.Account
+		responseAccountUpdateErr error
 
 		expectErr bool
 	}{
@@ -183,6 +185,54 @@ func Test_PaddleSubscriptionCreate(t *testing.T) {
 
 			expectErr: false,
 		},
+		{
+			name:         "idempotent - already processed",
+			customerID:   uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000001"),
+			planType:     account.PlanTypeBasic,
+			paddleSubID:  "sub_abc123",
+			paddleCustID: "ctm_def456",
+			eventID:      "evt_sub_create_dup",
+
+			responseIdempotencyErr: nil, // record found → already processed
+
+			expectErr: false,
+		},
+		{
+			name:         "customer not found",
+			customerID:   uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000099"),
+			planType:     account.PlanTypeBasic,
+			paddleSubID:  "sub_abc123",
+			paddleCustID: "ctm_def456",
+			eventID:      "evt_sub_create_no_cust",
+
+			responseIdempotencyErr: dbhandler.ErrNotFound,
+			responseCustomerErr:    fmt.Errorf("customer not found"),
+
+			expectErr: true,
+		},
+		{
+			name:         "account update paddle IDs fails",
+			customerID:   uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000001"),
+			planType:     account.PlanTypeBasic,
+			paddleSubID:  "sub_abc123",
+			paddleCustID: "ctm_def456",
+			eventID:      "evt_sub_create_update_fail",
+
+			responseIdempotencyErr: dbhandler.ErrNotFound,
+			responseCustomer: &cmcustomer.Customer{
+				ID:               uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000001"),
+				BillingAccountID: uuid.FromStringOrNil("b0000002-0000-0000-0000-000000000001"),
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000002-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000001"),
+				},
+			},
+			responseAccountUpdateErr: fmt.Errorf("db update error"),
+
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -206,24 +256,30 @@ func Test_PaddleSubscriptionCreate(t *testing.T) {
 			mockDB.EXPECT().BillingGetByIdempotencyKey(ctx, idempotencyKey).Return(&billing.Billing{}, tt.responseIdempotencyErr)
 
 			if tt.responseIdempotencyErr == dbhandler.ErrNotFound {
-				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
-				mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
+				if tt.responseCustomerErr != nil {
+					mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(nil, tt.responseCustomerErr)
+				} else {
+					mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+					mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
 
-				// Store paddle IDs
-				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
-					account.FieldPaddleSubscriptionID: tt.paddleSubID,
-					account.FieldPaddleCustomerID:     tt.paddleCustID,
-				}).Return(nil)
+					// Store paddle IDs
+					mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+						account.FieldPaddleSubscriptionID: tt.paddleSubID,
+						account.FieldPaddleCustomerID:     tt.paddleCustID,
+					}).Return(tt.responseAccountUpdateErr)
 
-				// UpdatePlanType chain
-				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
-					account.FieldPlanType: tt.planType,
-				}).Return(nil)
-				mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
+					if tt.responseAccountUpdateErr == nil {
+						// UpdatePlanType chain
+						mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+							account.FieldPlanType: tt.planType,
+						}).Return(nil)
+						mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
 
-				// Token top-up
-				tokenAllowance := account.PlanTokenMap[tt.planType]
-				mockDB.EXPECT().AccountPaddleTopUpTokens(ctx, tt.responseAccount.ID, tt.responseAccount.CustomerID, tokenAllowance, string(tt.planType), billing.TransactionTypeTopUp, idempotencyKey).Return(nil)
+						// Token top-up
+						tokenAllowance := account.PlanTokenMap[tt.planType]
+						mockDB.EXPECT().AccountPaddleTopUpTokens(ctx, tt.responseAccount.ID, tt.responseAccount.CustomerID, tokenAllowance, string(tt.planType), billing.TransactionTypeTopUp, idempotencyKey).Return(nil)
+					}
+				}
 			}
 
 			err := h.PaddleSubscriptionCreate(ctx, tt.customerID, tt.planType, tt.paddleSubID, tt.paddleCustID, tt.eventID)
@@ -343,6 +399,15 @@ func Test_PaddleSubscriptionCancel(t *testing.T) {
 				},
 				PlanType: account.PlanTypeBasic,
 			},
+
+			expectErr: false,
+		},
+		{
+			name:        "idempotent - already processed",
+			paddleSubID: "sub_cancel_002",
+			eventID:     "evt_sub_cancel_dup",
+
+			responseIdempotencyErr: nil, // record found → already processed
 
 			expectErr: false,
 		},

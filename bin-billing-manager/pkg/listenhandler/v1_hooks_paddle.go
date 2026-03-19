@@ -29,6 +29,13 @@ type paddleCustomData struct {
 	PlanType   string `json:"plan_type"`
 }
 
+// paddleAdjustment represents a single refund/chargeback adjustment on a transaction.
+type paddleAdjustment struct {
+	Totals struct {
+		Total string `json:"total"`
+	} `json:"totals"`
+}
+
 // paddleTransactionData is the minimal transaction payload.
 type paddleTransactionData struct {
 	ID             string            `json:"id"`
@@ -39,6 +46,9 @@ type paddleTransactionData struct {
 			Total string `json:"total"`
 		} `json:"totals"`
 	} `json:"details"`
+	// Adjustments contains refund/chargeback entries. Present in transaction.refunded events.
+	// Each entry's totals.total is the refund amount for that adjustment.
+	Adjustments []paddleAdjustment `json:"adjustments"`
 }
 
 // paddleSubscriptionData is the minimal subscription payload.
@@ -67,8 +77,10 @@ func parsePaddleAmountToMicros(amountStr string) (int64, error) {
 
 	var cents int64
 	if len(parts) == 2 {
-		// Pad or truncate fractional part to exactly 2 digits
 		frac := parts[1]
+		if len(frac) > 2 {
+			return 0, fmt.Errorf("amount %q has more than 2 decimal places; Paddle amounts must be in dollars.cents format", amountStr)
+		}
 		if len(frac) == 0 {
 			cents = 0
 		} else if len(frac) == 1 {
@@ -229,6 +241,10 @@ func (h *listenHandler) handlePaddleSubscriptionCreated(ctx context.Context, eve
 }
 
 // handlePaddleSubscriptionUpdated handles subscription.updated events (plan change).
+//
+// ASSUMPTION: The frontend updates custom_data.plan_type on the Paddle subscription
+// whenever the customer changes plans. Paddle echoes this back in the webhook.
+// If custom_data.plan_type is missing or empty, the event is silently skipped (returns 200).
 func (h *listenHandler) handlePaddleSubscriptionUpdated(ctx context.Context, event *paddleEvent) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "handlePaddleSubscriptionUpdated",
@@ -280,6 +296,8 @@ func (h *listenHandler) handlePaddleSubscriptionCanceled(ctx context.Context, ev
 }
 
 // handlePaddleTransactionRefunded handles transaction.refunded events.
+// Uses the adjustments array to determine the actual refund amount (sum of all adjustments).
+// Falls back to paddle_subscription_id lookup when custom_data is missing (S2).
 func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, event *paddleEvent) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "handlePaddleTransactionRefunded",
@@ -292,24 +310,42 @@ func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, eve
 		return simpleResponse(400), nil
 	}
 
-	if txn.CustomData == nil || txn.CustomData.CustomerID == "" {
-		log.Infof("Missing customer_id in custom_data, skipping. event_id: %s", event.EventID)
+	// Parse refund amount from adjustments array (I1 fix).
+	// Each adjustment entry represents a refund; sum them for the total refund amount.
+	if len(txn.Adjustments) == 0 {
+		log.Errorf("No adjustments found in transaction.refunded event. event_id: %s", event.EventID)
+		return simpleResponse(400), nil
+	}
+
+	var totalRefundMicros int64
+	for _, adj := range txn.Adjustments {
+		micros, err := parsePaddleAmountToMicros(adj.Totals.Total)
+		if err != nil {
+			log.Errorf("Could not parse adjustment amount: %v", err)
+			return simpleResponse(400), nil
+		}
+		totalRefundMicros += micros
+	}
+
+	// Resolve customer ID: prefer custom_data, fall back to paddle_subscription_id lookup (S2 fix).
+	customerID := uuid.Nil
+	if txn.CustomData != nil && txn.CustomData.CustomerID != "" {
+		customerID = uuid.FromStringOrNil(txn.CustomData.CustomerID)
+	} else if txn.SubscriptionID != nil && *txn.SubscriptionID != "" {
+		acc, err := h.accountHandler.GetByPaddleSubscriptionID(ctx, *txn.SubscriptionID)
+		if err != nil {
+			log.Errorf("Could not look up account by paddle_subscription_id for refund: %v", err)
+			return simpleResponse(500), nil
+		}
+		customerID = acc.CustomerID
+	}
+
+	if customerID == uuid.Nil {
+		log.Infof("Could not resolve customer for refund, skipping. event_id: %s", event.EventID)
 		return simpleResponse(200), nil
 	}
 
-	customerID := uuid.FromStringOrNil(txn.CustomData.CustomerID)
-	if customerID == uuid.Nil {
-		log.Errorf("Invalid customer_id in custom_data: %s", txn.CustomData.CustomerID)
-		return simpleResponse(400), nil
-	}
-
-	amountMicros, err := parsePaddleAmountToMicros(txn.Details.Totals.Total)
-	if err != nil {
-		log.Errorf("Could not parse refund amount: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	if err := h.accountHandler.PaddleRefund(ctx, customerID, amountMicros, event.EventID); err != nil {
+	if err := h.accountHandler.PaddleRefund(ctx, customerID, totalRefundMicros, event.EventID); err != nil {
 		log.Errorf("Could not process refund: %v", err)
 		return simpleResponse(500), nil
 	}

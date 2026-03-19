@@ -52,6 +52,8 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 	}
 	defer func() { _ = tx.Rollback() }()
 
+	// Raw SQL with FOR UPDATE: squirrel does not support SELECT...FOR UPDATE locking.
+	// The pessimistic lock prevents concurrent balance modifications on the same account.
 	var currentToken, currentCredit int64
 	row := tx.QueryRowContext(ctx,
 		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
@@ -66,6 +68,7 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 	now := h.utilHandler.TimeNow()
 	newBalance := currentCredit + amountMicros
 
+	// Raw SQL UPDATE within the same TX that holds the FOR UPDATE lock.
 	_, err = tx.ExecContext(ctx,
 		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
@@ -120,6 +123,8 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 	}
 	defer func() { _ = tx.Rollback() }()
 
+	// Raw SQL with FOR UPDATE: squirrel does not support SELECT...FOR UPDATE locking.
+	// The pessimistic lock prevents concurrent balance modifications on the same account.
 	var currentToken, currentCredit int64
 	row := tx.QueryRowContext(ctx,
 		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
@@ -134,6 +139,7 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 	now := h.utilHandler.TimeNow()
 	newBalance := currentCredit - amountMicros
 
+	// Raw SQL UPDATE within the same TX that holds the FOR UPDATE lock.
 	_, err = tx.ExecContext(ctx,
 		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
@@ -188,6 +194,8 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 	}
 	defer func() { _ = tx.Rollback() }()
 
+	// Raw SQL with FOR UPDATE: squirrel does not support SELECT...FOR UPDATE locking.
+	// The pessimistic lock prevents concurrent balance modifications on the same account.
 	var currentToken, currentCredit int64
 	row := tx.QueryRowContext(ctx,
 		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
@@ -202,6 +210,8 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 	now := h.utilHandler.TimeNow()
 	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 
+	// Raw SQL UPDATE within the same TX that holds the FOR UPDATE lock.
+	// Multi-column update with computed nextMonth value makes this simpler as raw SQL.
 	_, err = tx.ExecContext(ctx,
 		`UPDATE billing_accounts SET
 			balance_token = ?,
