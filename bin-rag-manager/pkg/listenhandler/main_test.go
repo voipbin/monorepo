@@ -72,7 +72,7 @@ func (m *mockSockHandler) QueueSubscribe(name string, topic string) error {
 // mockRagHandlerForListen for testing
 type mockRagHandlerForListen struct{}
 
-func (m *mockRagHandlerForListen) RagCreate(_ context.Context, _ uuid.UUID, _, _ string) (*rag.Rag, error) {
+func (m *mockRagHandlerForListen) RagCreate(_ context.Context, _ uuid.UUID, _, _ string, _ []uuid.UUID, _ []string) (*rag.Rag, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 func (m *mockRagHandlerForListen) RagGet(_ context.Context, _ uuid.UUID) (*rag.Rag, error) {
@@ -87,7 +87,7 @@ func (m *mockRagHandlerForListen) RagUpdate(_ context.Context, _ uuid.UUID, _ ma
 func (m *mockRagHandlerForListen) RagDelete(_ context.Context, _ uuid.UUID) error {
 	return fmt.Errorf("not implemented")
 }
-func (m *mockRagHandlerForListen) DocumentCreate(_ context.Context, _, _ uuid.UUID, _ string, _ document.DocType, _ string, _ uuid.UUID) (*document.Document, error) {
+func (m *mockRagHandlerForListen) RagAddSources(_ context.Context, _ uuid.UUID, _ []uuid.UUID, _ []string) (*rag.Rag, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 func (m *mockRagHandlerForListen) DocumentGet(_ context.Context, _ uuid.UUID) (*document.Document, error) {
@@ -96,12 +96,11 @@ func (m *mockRagHandlerForListen) DocumentGet(_ context.Context, _ uuid.UUID) (*
 func (m *mockRagHandlerForListen) DocumentList(_ context.Context, _ uint64, _ string, _ map[document.Field]any) ([]*document.Document, error) {
 	return nil, fmt.Errorf("not implemented")
 }
-func (m *mockRagHandlerForListen) DocumentDelete(_ context.Context, _ uuid.UUID) error {
-	return fmt.Errorf("not implemented")
-}
 func (m *mockRagHandlerForListen) QueryRag(_ context.Context, _ uuid.UUID, _ string, _ int) (*query.Response, error) {
 	return nil, fmt.Errorf("not implemented")
 }
+func (m *mockRagHandlerForListen) DocumentIngestPendingAll(_ context.Context) {}
+func (m *mockRagHandlerForListen) RunIngestionTicker(_ context.Context, _ time.Duration) {}
 
 func TestListenHandler_Interface(t *testing.T) {
 	var _ ListenHandler = &listenHandler{}

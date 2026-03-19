@@ -21,26 +21,34 @@ func (h *listenHandler) processV1RagsPost(ctx context.Context, m *sock.Request) 
 		"func": "processV1RagsPost",
 	})
 
-	var req struct {
-		CustomerID  uuid.UUID `json:"customer_id"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
+	var reqData struct {
+		CustomerID     uuid.UUID   `json:"customer_id"`
+		Name           string      `json:"name"`
+		Description    string      `json:"description"`
+		StorageFileIDs []uuid.UUID `json:"storage_file_ids"`
+		SourceURLs     []string    `json:"source_urls"`
 	}
-	if err := json.Unmarshal(m.Data, &req); err != nil {
+	if err := json.Unmarshal(m.Data, &reqData); err != nil {
 		log.Errorf("Could not unmarshal request. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	if req.CustomerID == uuid.Nil {
+	if reqData.CustomerID == uuid.Nil {
 		log.Errorf("Customer ID is required.")
 		return simpleResponse(400), nil
 	}
-	if req.Name == "" {
+
+	if reqData.Name == "" {
 		log.Errorf("Name is required.")
 		return simpleResponse(400), nil
 	}
 
-	r, err := h.ragHandler.RagCreate(ctx, req.CustomerID, req.Name, req.Description)
+	if len(reqData.StorageFileIDs) == 0 && len(reqData.SourceURLs) == 0 {
+		log.Errorf("At least one storage_file_ids or source_urls is required.")
+		return simpleResponse(400), nil
+	}
+
+	r, err := h.ragHandler.RagCreate(ctx, reqData.CustomerID, reqData.Name, reqData.Description, reqData.StorageFileIDs, reqData.SourceURLs)
 	if err != nil {
 		log.Errorf("Could not create rag. err: %v", err)
 		return simpleResponse(500), nil
@@ -179,4 +187,44 @@ func (h *listenHandler) processV1RagsIDDelete(ctx context.Context, m *sock.Reque
 	}
 
 	return simpleResponse(200), nil
+}
+
+func (h *listenHandler) processV1RagsIDSourcesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1RagsIDSourcesPost",
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	ragID := uuid.FromStringOrNil(uriItems[3])
+	if ragID == uuid.Nil {
+		log.Errorf("Could not parse rag ID from URI.")
+		return simpleResponse(400), nil
+	}
+
+	var reqData struct {
+		StorageFileIDs []uuid.UUID `json:"storage_file_ids"`
+		SourceURLs     []string    `json:"source_urls"`
+	}
+
+	if err := json.Unmarshal(m.Data, &reqData); err != nil {
+		log.Errorf("Could not unmarshal request. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	if len(reqData.StorageFileIDs) == 0 && len(reqData.SourceURLs) == 0 {
+		log.Errorf("At least one storage_file_ids or source_urls is required.")
+		return simpleResponse(400), nil
+	}
+
+	r, err := h.ragHandler.RagAddSources(ctx, ragID, reqData.StorageFileIDs, reqData.SourceURLs)
+	if err != nil {
+		log.Errorf("Could not add sources. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	return jsonResponse(200, r), nil
 }

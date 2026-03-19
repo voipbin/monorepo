@@ -87,6 +87,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.5.3 // indirect
 	cloud.google.com/go/monitoring v1.24.3 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.55.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.55.0 // indirect
@@ -101,6 +102,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -119,8 +121,7 @@ require (
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/sagikazarmark/locafero v0.11.0 // indirect
-	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
+	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
@@ -128,7 +129,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.39.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0 // indirect
 	go.opentelemetry.io/otel v1.40.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
@@ -149,4 +150,31 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	google.golang.org/grpc v1.79.2 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
+	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
+	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
+	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
+	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect
+	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
+	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
+	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
+	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
+	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
+	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
+	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
+	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
+	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
+	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
+	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
+	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
+	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
+	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
+	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
+	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
+	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )

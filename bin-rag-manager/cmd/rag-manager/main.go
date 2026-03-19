@@ -10,8 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"cloud.google.com/go/storage"
+
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -24,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-rag-manager/internal/config"
+	"monorepo/bin-rag-manager/pkg/bucketreader"
 	"monorepo/bin-rag-manager/pkg/dbhandler"
 	"monorepo/bin-rag-manager/pkg/embedder"
 	"monorepo/bin-rag-manager/pkg/listenhandler"
@@ -141,6 +145,8 @@ func runMigrations(cfg config.Config) error {
 func runService(cfg config.Config) error {
 	log := logrus.WithField("func", "runService")
 
+	ctx := context.Background()
+
 	// RabbitMQ connection
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
@@ -157,16 +163,34 @@ func runService(cfg config.Config) error {
 	}
 	log.Info("Connected to PostgreSQL")
 
+	// Request handler
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, commonoutline.ServiceNameRagManager)
+
+	// GCS client
+	gcsClient, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("could not create GCS client: %w", err)
+	}
+
+	// Bucket reader
+	br := bucketreader.NewBucketReader(gcsClient)
+
 	dbH := dbhandler.NewHandler(db)
 
 	// Initialize Google Gemini embedder
-	emb, err := embedder.NewGoogleEmbedder(context.Background(), cfg.GoogleCloudProject, cfg.GoogleCloudLocation, cfg.GoogleEmbeddingModel)
+	emb, err := embedder.NewGoogleEmbedder(ctx, cfg.GoogleCloudProject, cfg.GoogleCloudLocation, cfg.GoogleEmbeddingModel)
 	if err != nil {
 		return fmt.Errorf("could not create embedder: %w", err)
 	}
 
 	// Initialize rag handler
-	ragH := raghandler.NewRagHandler(emb, dbH)
+	ragH := raghandler.NewRagHandler(emb, dbH, reqHandler, br, cfg.GCPBucketNameMedia)
+
+	// Startup sweep: re-process pending documents
+	ragH.DocumentIngestPendingAll(ctx)
+
+	// Start periodic ticker
+	go ragH.RunIngestionTicker(ctx, 5*time.Minute)
 
 	// Run listen handler
 	if err := runListen(sockHandler, ragH); err != nil {
