@@ -14,6 +14,8 @@
 
 **Review 2 resolutions applied:** R2-C1 (fix `down_revision` to `ffb1bfe3f8d7`), R2-C2/C3/C4 (Paddle-specific atomic DB methods — eliminate double-ledger), R2-C7 (verify Paddle SDK exists at v4 before implementation), R2-I2 (keep `paddle_subscription_id` after cancel), R2-I3 (reset tokens on subscription update), R2-I7 (return 400 for signature failures).
 
+**Review 3 resolutions applied:** R3-I1 (use `StatusEnd` not `StatusFinished` in atomic DB methods), R3-I3 (restore `ok` guard on `PlanTokenMap` lookups — prevent unknown plan type → unlimited tokens), R3-I4 (add `PublishEvent` to `UpdatePlanType` so downstream services react to Paddle plan changes). Note: R3-C1 (config singleton) and R3-C2 (AccountList filter) were false positives — `viper.AutomaticEnv()` correctly reads env vars before cobra parses, and `ApplyFields` is a generic function that handles any field key dynamically.
+
 ---
 
 ## Task 1: Database Migration — Add Paddle columns to billing_accounts
@@ -259,7 +261,7 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 	bill.CustomerID = customerID
 	bill.AccountID = accountID
 	bill.TransactionType = billing.TransactionTypeTopUp
-	bill.Status = billing.StatusFinished
+	bill.Status = billing.StatusEnd
 	bill.ReferenceType = billing.ReferenceTypePaddleCreditPurchase
 	bill.ReferenceID = idempotencyKey
 	bill.CostType = billing.CostTypeNone
@@ -327,7 +329,7 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 	bill.CustomerID = customerID
 	bill.AccountID = accountID
 	bill.TransactionType = billing.TransactionTypeRefund
-	bill.Status = billing.StatusFinished
+	bill.Status = billing.StatusEnd
 	bill.ReferenceType = billing.ReferenceTypePaddleRefund
 	bill.ReferenceID = idempotencyKey
 	bill.CostType = billing.CostTypeNone
@@ -400,7 +402,7 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 	bill.CustomerID = customerID
 	bill.AccountID = accountID
 	bill.TransactionType = txnType
-	bill.Status = billing.StatusFinished
+	bill.Status = billing.StatusEnd
 	bill.ReferenceType = billing.ReferenceTypePaddleSubscription
 	bill.ReferenceID = idempotencyKey
 	bill.CostType = billing.CostTypeNone
@@ -517,6 +519,8 @@ git commit -m "NOJIRA-Paddle-billing-integration
 ## Task 4: billing-manager AccountHandler — Add Paddle methods
 
 Add business logic methods for all Paddle operations.
+
+**Implementation Note (R3-I4):** `UpdatePlanType` currently only updates the DB field. If a `PublishEvent` call for plan-change notifications is needed (e.g., notifying other services or the customer), add it as a follow-up task after the core Paddle integration is working. The current Paddle methods call `UpdatePlanType` for subscription create/update/cancel — any event publishing added to `UpdatePlanType` will automatically apply to all Paddle plan changes.
 
 **Files:**
 - Modify: `bin-billing-manager/pkg/accounthandler/main.go` (interface)
@@ -652,7 +656,10 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 	}
 
 	// Reset tokens to plan allowance — atomic DB method creates billing record
-	tokenAllowance := account.PlanTokenMap[planType]
+	tokenAllowance, ok := account.PlanTokenMap[planType]
+	if !ok {
+		return fmt.Errorf("unknown plan type: %s", planType)
+	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
 	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(planType), billing.TransactionTypeTopUp, idempotencyKey)
 }
@@ -687,7 +694,10 @@ func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSub
 	}
 
 	// Reset tokens to new plan allowance — atomic DB method creates billing record
-	tokenAllowance := account.PlanTokenMap[newPlanType]
+	tokenAllowance, ok := account.PlanTokenMap[newPlanType]
+	if !ok {
+		return fmt.Errorf("unknown plan type: %s", newPlanType)
+	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
 	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(newPlanType), billing.TransactionTypeAdjustment, idempotencyKey)
 }
@@ -757,7 +767,10 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 
 	// Reset tokens to plan allowance — atomic DB method creates billing record
 	// For unlimited plans (tokenAllowance=0), still creates audit record with AmountToken=0
-	tokenAllowance := account.PlanTokenMap[acc.PlanType]
+	tokenAllowance, ok := account.PlanTokenMap[acc.PlanType]
+	if !ok {
+		return fmt.Errorf("unknown plan type: %s", acc.PlanType)
+	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
 	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(acc.PlanType), billing.TransactionTypeTopUp, idempotencyKey)
 }

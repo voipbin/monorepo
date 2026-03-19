@@ -369,3 +369,18 @@ If hook-manager deploys before billing-manager: Paddle webhooks fail → 500 →
 - **Integration tests**: Use Paddle sandbox to send simulated webhooks. Verify billing records and balance changes.
 - **Paddle webhook simulator**: Paddle dashboard has a webhook simulator for testing individual event types.
 - **Idempotency tests**: Send the same event_id twice, verify only one billing record is created.
+
+## Design Review Resolutions
+
+**Review 2 (R2):**
+- R2-C2/C3/C4: Double-ledger fix — created Paddle-specific atomic DB methods (`AccountPaddleAddCredit`, `AccountPaddleSubtractCredit`, `AccountPaddleTopUpTokens`) that combine balance/token change + billing record in a single TX
+- R2-I2: Keep `paddle_subscription_id` after cancel for post-cancel event correlation (refunds)
+- R2-I3: Reset tokens on subscription update (upgrade/downgrade)
+- R2-I7: Return 400 (not 500) for webhook signature verification failures
+
+**Review 3 (R3):**
+- R3-I1: Changed `billing.StatusFinished` → `billing.StatusEnd` for consistency with existing codebase
+- R3-I3: Restored `ok` guard on `PlanTokenMap` lookups to reject unknown plan types instead of silently granting unlimited tokens
+- R3-I4: `UpdatePlanType` event publishing noted as follow-up task
+- R3-C1 (config singleton): FALSE POSITIVE — `viper.AutomaticEnv()` correctly reads env vars even when called in `init()` before cobra parses flags
+- R3-C2 (AccountList filter): FALSE POSITIVE — `ApplyFields` is a generic function that handles any field key dynamically
