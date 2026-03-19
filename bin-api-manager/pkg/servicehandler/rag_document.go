@@ -28,48 +28,6 @@ func (h *serviceHandler) ragDocumentGet(ctx context.Context, id uuid.UUID) (*rmd
 	return res, nil
 }
 
-func (h *serviceHandler) RagDocumentCreate(
-	ctx context.Context,
-	a *amagent.Agent,
-	ragID uuid.UUID,
-	name string,
-	docType rmdocument.DocType,
-	sourceURL string,
-	storageFileID uuid.UUID,
-) (*rmdocument.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "RagDocumentCreate",
-		"customer_id": a.CustomerID,
-		"rag_id":      ragID,
-		"name":        name,
-	})
-
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	// verify rag exists and belongs to this customer
-	r, err := h.ragGet(ctx, ragID)
-	if err != nil {
-		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
-	}
-
-	if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	log.Debug("Creating a new rag document.")
-	tmp, err := h.reqHandler.RagV1DocumentCreate(ctx, a.CustomerID, ragID, name, docType, sourceURL, storageFileID)
-	if err != nil {
-		log.Errorf("Could not create a new rag document. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
 func (h *serviceHandler) RagDocumentGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagDocumentGet",
@@ -129,32 +87,5 @@ func (h *serviceHandler) RagDocumentGets(ctx context.Context, a *amagent.Agent, 
 		res = append(res, tmp)
 	}
 
-	return res, nil
-}
-
-func (h *serviceHandler) RagDocumentDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "RagDocumentDelete",
-		"customer_id": a.CustomerID,
-		"document_id": id,
-	})
-	log.Debug("Deleting a rag document.")
-
-	tmp, err := h.ragDocumentGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get rag document info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag document info. err: %v", err)
-	}
-
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	if err := h.reqHandler.RagV1DocumentDelete(ctx, id); err != nil {
-		log.Errorf("Could not delete rag document. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }

@@ -40,7 +40,25 @@ func (h *server) PostRags(c *gin.Context) {
 		description = *req.Description
 	}
 
-	res, err := h.serviceHandler.RagCreate(c.Request.Context(), &a, req.Name, description)
+	storageFileIDs := []uuid.UUID{}
+	if req.StorageFileIds != nil {
+		for _, id := range *req.StorageFileIds {
+			uid, err := uuid.FromString(id.String())
+			if err != nil {
+				log.Errorf("Invalid storage_file_id format. err: %v", err)
+				c.AbortWithStatus(400)
+				return
+			}
+			storageFileIDs = append(storageFileIDs, uid)
+		}
+	}
+
+	sourceURLs := []string{}
+	if req.SourceUrls != nil {
+		sourceURLs = *req.SourceUrls
+	}
+
+	res, err := h.serviceHandler.RagCreate(c.Request.Context(), &a, req.Name, description, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -183,6 +201,66 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), &a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostRagsIdSources",
+		"request_address": c.ClientIP(),
+		"target_id":       id,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PostRagsIdSourcesJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	storageFileIDs := []uuid.UUID{}
+	if req.StorageFileIds != nil {
+		for _, fid := range *req.StorageFileIds {
+			uid, err := uuid.FromString(fid.String())
+			if err != nil {
+				log.Errorf("Invalid storage_file_id format. err: %v", err)
+				c.AbortWithStatus(400)
+				return
+			}
+			storageFileIDs = append(storageFileIDs, uid)
+		}
+	}
+
+	sourceURLs := []string{}
+	if req.SourceUrls != nil {
+		sourceURLs = *req.SourceUrls
+	}
+
+	res, err := h.serviceHandler.RagAddSources(c.Request.Context(), &a, target, storageFileIDs, sourceURLs)
+	if err != nil {
+		log.Errorf("Could not add sources. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

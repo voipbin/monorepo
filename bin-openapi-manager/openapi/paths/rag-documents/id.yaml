@@ -18,24 +18,3 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/RagManagerRagDocument'
-
-delete:
-  summary: Delete a rag document
-  description: Deletes a document from a RAG knowledge base and all associated chunks.
-  tags:
-    - RAG
-  parameters:
-    - name: id
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: "The unique identifier of the document. Returned from the `POST /rag-documents` response."
-  responses:
-    '200':
-      description: Rag document deleted.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RagManagerRagDocument'

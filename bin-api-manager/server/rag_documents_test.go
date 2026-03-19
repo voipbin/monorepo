@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,93 +15,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 )
-
-func Test_PostRagDocuments(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		agent amagent.Agent
-
-		reqQuery string
-		reqBody  []byte
-
-		responseDoc *rmdocument.WebhookMessage
-
-		expectedRagID         uuid.UUID
-		expectedName          string
-		expectedDocType       rmdocument.DocType
-		expectedSourceURL     string
-		expectedStorageFileID uuid.UUID
-		expectedRes           string
-	}{
-		{
-			name: "url doc type",
-			agent: amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				},
-			},
-
-			reqQuery: "/rag-documents",
-			reqBody:  []byte(`{"rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","name":"test doc","doc_type":"url","source_url":"https://example.com/doc.html"}`),
-
-			responseDoc: &rmdocument.WebhookMessage{
-				ID:         uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				RagID:      uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-			},
-
-			expectedRagID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-			expectedName:          "test doc",
-			expectedDocType:       rmdocument.DocTypeURL,
-			expectedSourceURL:     "https://example.com/doc.html",
-			expectedStorageFileID: uuid.Nil,
-			expectedRes:           `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","storage_file_id":"00000000-0000-0000-0000-000000000000"}`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().RagDocumentCreate(
-				req.Context(),
-				&tt.agent,
-				tt.expectedRagID,
-				tt.expectedName,
-				tt.expectedDocType,
-				tt.expectedSourceURL,
-				tt.expectedStorageFileID,
-			).Return(tt.responseDoc, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-			if w.Body.String() != tt.expectedRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
-			}
-		})
-	}
-}
 
 func Test_GetRagDocuments(t *testing.T) {
 
@@ -271,70 +183,3 @@ func Test_GetRagDocumentsId(t *testing.T) {
 	}
 }
 
-func Test_DeleteRagDocumentsId(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		agent amagent.Agent
-
-		reqQuery string
-
-		responseDoc *rmdocument.WebhookMessage
-
-		expectDocID uuid.UUID
-		expectRes   string
-	}{
-		{
-			name: "normal",
-			agent: amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				},
-			},
-
-			reqQuery: "/rag-documents/ab6f6c84-b9c2-4350-9978-4336b677603c",
-
-			responseDoc: &rmdocument.WebhookMessage{
-				ID:         uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				RagID:      uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-			},
-
-			expectDocID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
-			expectRes:   `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","storage_file_id":"00000000-0000-0000-0000-000000000000"}`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().RagDocumentDelete(req.Context(), &tt.agent, tt.expectDocID).Return(tt.responseDoc, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-			if w.Body.String() != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
-			}
-		})
-	}
-}

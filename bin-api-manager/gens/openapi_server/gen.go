@@ -3534,6 +3534,12 @@ type RagManagerRag struct {
 	// Name Human-readable name for the rag.
 	Name *string `json:"name,omitempty"`
 
+	// Sources List of document sources in this rag with their ingestion status.
+	Sources *[]RagManagerRagSource `json:"sources,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
 	// TmCreate Timestamp when the rag was created.
 	TmCreate *time.Time `json:"tm_create,omitempty"`
 
@@ -3582,6 +3588,21 @@ type RagManagerRagDocumentDocType string
 
 // RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
 type RagManagerRagDocumentStatus string
+
+// RagManagerRagSource A source document in a RAG knowledge base.
+type RagManagerRagSource struct {
+	// SourceUrl The URL if the source is a web document.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
+	// StatusMessage Additional details about the current ingestion status.
+	StatusMessage *string `json:"status_message,omitempty"`
+
+	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+}
 
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
@@ -5551,24 +5572,6 @@ type GetRagDocumentsParams struct {
 	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
 }
 
-// PostRagDocumentsJSONBody defines parameters for PostRagDocuments.
-type PostRagDocumentsJSONBody struct {
-	// DocType The document source type. Determines how the document content is obtained.
-	DocType RagManagerRagDocumentDocType `json:"doc_type"`
-
-	// Name Human-readable name for the document.
-	Name string `json:"name"`
-
-	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
-	RagId openapi_types.UUID `json:"rag_id"`
-
-	// SourceUrl The source URL if doc_type is url.
-	SourceUrl *string `json:"source_url,omitempty"`
-
-	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
-	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
-}
-
 // GetRagsParams defines parameters for GetRags.
 type GetRagsParams struct {
 	// PageSize Number of results to return per page.
@@ -5585,6 +5588,12 @@ type PostRagsJSONBody struct {
 
 	// Name Human-readable name for the rag.
 	Name string `json:"name"`
+
+	// SourceUrls List of URLs to fetch and ingest as documents.
+	SourceUrls *[]string `json:"source_urls,omitempty"`
+
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
 // PutRagsIdJSONBody defines parameters for PutRagsId.
@@ -5594,6 +5603,15 @@ type PutRagsIdJSONBody struct {
 
 	// Name Updated name for the rag.
 	Name *string `json:"name,omitempty"`
+}
+
+// PostRagsIdSourcesJSONBody defines parameters for PostRagsIdSources.
+type PostRagsIdSourcesJSONBody struct {
+	// SourceUrls List of URLs to fetch and ingest as documents.
+	SourceUrls *[]string `json:"source_urls,omitempty"`
+
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
 // GetRecordingsParams defines parameters for GetRecordings.
@@ -6438,14 +6456,14 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
 
-// PostRagDocumentsJSONRequestBody defines body for PostRagDocuments for application/json ContentType.
-type PostRagDocumentsJSONRequestBody PostRagDocumentsJSONBody
-
 // PostRagsJSONRequestBody defines body for PostRags for application/json ContentType.
 type PostRagsJSONRequestBody PostRagsJSONBody
 
 // PutRagsIdJSONRequestBody defines body for PutRagsId for application/json ContentType.
 type PutRagsIdJSONRequestBody PutRagsIdJSONBody
+
+// PostRagsIdSourcesJSONRequestBody defines body for PostRagsIdSources for application/json ContentType.
+type PostRagsIdSourcesJSONRequestBody PostRagsIdSourcesJSONBody
 
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody
@@ -7154,12 +7172,6 @@ type ServerInterface interface {
 	// Get a list of rag documents
 	// (GET /rag-documents)
 	GetRagDocuments(c *gin.Context, params GetRagDocumentsParams)
-	// Create a new rag document
-	// (POST /rag-documents)
-	PostRagDocuments(c *gin.Context)
-	// Delete a rag document
-	// (DELETE /rag-documents/{id})
-	DeleteRagDocumentsId(c *gin.Context, id openapi_types.UUID)
 	// Get rag document details
 	// (GET /rag-documents/{id})
 	GetRagDocumentsId(c *gin.Context, id openapi_types.UUID)
@@ -7178,6 +7190,9 @@ type ServerInterface interface {
 	// Update a rag
 	// (PUT /rags/{id})
 	PutRagsId(c *gin.Context, id openapi_types.UUID)
+	// Add sources to a rag
+	// (POST /rags/{id}/sources)
+	PostRagsIdSources(c *gin.Context, id openapi_types.UUID)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(c *gin.Context, id string)
@@ -12553,43 +12568,6 @@ func (siw *ServerInterfaceWrapper) GetRagDocuments(c *gin.Context) {
 	siw.Handler.GetRagDocuments(c, params)
 }
 
-// PostRagDocuments operation middleware
-func (siw *ServerInterfaceWrapper) PostRagDocuments(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostRagDocuments(c)
-}
-
-// DeleteRagDocumentsId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteRagDocumentsId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteRagDocumentsId(c, id)
-}
-
 // GetRagDocumentsId operation middleware
 func (siw *ServerInterfaceWrapper) GetRagDocumentsId(c *gin.Context) {
 
@@ -12731,6 +12709,30 @@ func (siw *ServerInterfaceWrapper) PutRagsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutRagsId(c, id)
+}
+
+// PostRagsIdSources operation middleware
+func (siw *ServerInterfaceWrapper) PostRagsIdSources(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostRagsIdSources(c, id)
 }
 
 // GetRecordingfilesId operation middleware
@@ -15542,14 +15544,13 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
 	router.GET(options.BaseURL+"/rag-documents", wrapper.GetRagDocuments)
-	router.POST(options.BaseURL+"/rag-documents", wrapper.PostRagDocuments)
-	router.DELETE(options.BaseURL+"/rag-documents/:id", wrapper.DeleteRagDocumentsId)
 	router.GET(options.BaseURL+"/rag-documents/:id", wrapper.GetRagDocumentsId)
 	router.GET(options.BaseURL+"/rags", wrapper.GetRags)
 	router.POST(options.BaseURL+"/rags", wrapper.PostRags)
 	router.DELETE(options.BaseURL+"/rags/:id", wrapper.DeleteRagsId)
 	router.GET(options.BaseURL+"/rags/:id", wrapper.GetRagsId)
 	router.PUT(options.BaseURL+"/rags/:id", wrapper.PutRagsId)
+	router.POST(options.BaseURL+"/rags/:id/sources", wrapper.PostRagsIdSources)
 	router.GET(options.BaseURL+"/recordingfiles/:id", wrapper.GetRecordingfilesId)
 	router.GET(options.BaseURL+"/recordings", wrapper.GetRecordings)
 	router.DELETE(options.BaseURL+"/recordings/:id", wrapper.DeleteRecordingsId)
@@ -19524,40 +19525,6 @@ func (response GetRagDocuments200JSONResponse) VisitGetRagDocumentsResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRagDocumentsRequestObject struct {
-	Body *PostRagDocumentsJSONRequestBody
-}
-
-type PostRagDocumentsResponseObject interface {
-	VisitPostRagDocumentsResponse(w http.ResponseWriter) error
-}
-
-type PostRagDocuments200JSONResponse RagManagerRagDocument
-
-func (response PostRagDocuments200JSONResponse) VisitPostRagDocumentsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteRagDocumentsIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type DeleteRagDocumentsIdResponseObject interface {
-	VisitDeleteRagDocumentsIdResponse(w http.ResponseWriter) error
-}
-
-type DeleteRagDocumentsId200JSONResponse RagManagerRagDocument
-
-func (response DeleteRagDocumentsId200JSONResponse) VisitDeleteRagDocumentsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type GetRagDocumentsIdRequestObject struct {
 	Id openapi_types.UUID `json:"id"`
 }
@@ -19659,6 +19626,24 @@ type PutRagsIdResponseObject interface {
 type PutRagsId200JSONResponse RagManagerRag
 
 func (response PutRagsId200JSONResponse) VisitPutRagsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRagsIdSourcesRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostRagsIdSourcesJSONRequestBody
+}
+
+type PostRagsIdSourcesResponseObject interface {
+	VisitPostRagsIdSourcesResponse(w http.ResponseWriter) error
+}
+
+type PostRagsIdSources200JSONResponse RagManagerRag
+
+func (response PostRagsIdSources200JSONResponse) VisitPostRagsIdSourcesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -22394,12 +22379,6 @@ type StrictServerInterface interface {
 	// Get a list of rag documents
 	// (GET /rag-documents)
 	GetRagDocuments(ctx context.Context, request GetRagDocumentsRequestObject) (GetRagDocumentsResponseObject, error)
-	// Create a new rag document
-	// (POST /rag-documents)
-	PostRagDocuments(ctx context.Context, request PostRagDocumentsRequestObject) (PostRagDocumentsResponseObject, error)
-	// Delete a rag document
-	// (DELETE /rag-documents/{id})
-	DeleteRagDocumentsId(ctx context.Context, request DeleteRagDocumentsIdRequestObject) (DeleteRagDocumentsIdResponseObject, error)
 	// Get rag document details
 	// (GET /rag-documents/{id})
 	GetRagDocumentsId(ctx context.Context, request GetRagDocumentsIdRequestObject) (GetRagDocumentsIdResponseObject, error)
@@ -22418,6 +22397,9 @@ type StrictServerInterface interface {
 	// Update a rag
 	// (PUT /rags/{id})
 	PutRagsId(ctx context.Context, request PutRagsIdRequestObject) (PutRagsIdResponseObject, error)
+	// Add sources to a rag
+	// (POST /rags/{id}/sources)
+	PostRagsIdSources(ctx context.Context, request PostRagsIdSourcesRequestObject) (PostRagsIdSourcesResponseObject, error)
 	// Download the recording file
 	// (GET /recordingfiles/{id})
 	GetRecordingfilesId(ctx context.Context, request GetRecordingfilesIdRequestObject) (GetRecordingfilesIdResponseObject, error)
@@ -28847,66 +28829,6 @@ func (sh *strictHandler) GetRagDocuments(ctx *gin.Context, params GetRagDocument
 	}
 }
 
-// PostRagDocuments operation middleware
-func (sh *strictHandler) PostRagDocuments(ctx *gin.Context) {
-	var request PostRagDocumentsRequestObject
-
-	var body PostRagDocumentsJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostRagDocuments(ctx, request.(PostRagDocumentsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostRagDocuments")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostRagDocumentsResponseObject); ok {
-		if err := validResponse.VisitPostRagDocumentsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteRagDocumentsId operation middleware
-func (sh *strictHandler) DeleteRagDocumentsId(ctx *gin.Context, id openapi_types.UUID) {
-	var request DeleteRagDocumentsIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteRagDocumentsId(ctx, request.(DeleteRagDocumentsIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteRagDocumentsId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteRagDocumentsIdResponseObject); ok {
-		if err := validResponse.VisitDeleteRagDocumentsIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // GetRagDocumentsId operation middleware
 func (sh *strictHandler) GetRagDocumentsId(ctx *gin.Context, id openapi_types.UUID) {
 	var request GetRagDocumentsIdRequestObject
@@ -29076,6 +28998,41 @@ func (sh *strictHandler) PutRagsId(ctx *gin.Context, id openapi_types.UUID) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutRagsIdResponseObject); ok {
 		if err := validResponse.VisitPutRagsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostRagsIdSources operation middleware
+func (sh *strictHandler) PostRagsIdSources(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostRagsIdSourcesRequestObject
+
+	request.Id = id
+
+	var body PostRagsIdSourcesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostRagsIdSources(ctx, request.(PostRagsIdSourcesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostRagsIdSources")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostRagsIdSourcesResponseObject); ok {
+		if err := validResponse.VisitPostRagsIdSourcesResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

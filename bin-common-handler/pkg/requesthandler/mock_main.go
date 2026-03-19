@@ -5010,35 +5010,6 @@ func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengine
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1CommandsSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1CommandsSend), ctx, rtpengineID, command)
 }
 
-// RagV1DocumentCreate mocks base method.
-func (m *MockRequestHandler) RagV1DocumentCreate(ctx context.Context, customerID, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.Document, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1DocumentCreate", ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
-	ret0, _ := ret[0].(*document.Document)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RagV1DocumentCreate indicates an expected call of RagV1DocumentCreate.
-func (mr *MockRequestHandlerMockRecorder) RagV1DocumentCreate(ctx, customerID, ragID, name, docType, sourceURL, storageFileID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentCreate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentCreate), ctx, customerID, ragID, name, docType, sourceURL, storageFileID)
-}
-
-// RagV1DocumentDelete mocks base method.
-func (m *MockRequestHandler) RagV1DocumentDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1DocumentDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RagV1DocumentDelete indicates an expected call of RagV1DocumentDelete.
-func (mr *MockRequestHandlerMockRecorder) RagV1DocumentDelete(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentDelete", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentDelete), ctx, id)
-}
-
 // RagV1DocumentGet mocks base method.
 func (m *MockRequestHandler) RagV1DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
 	m.ctrl.T.Helper()
@@ -5069,19 +5040,34 @@ func (mr *MockRequestHandlerMockRecorder) RagV1DocumentGets(ctx, pageToken, page
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentGets", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentGets), ctx, pageToken, pageSize, filters)
 }
 
-// RagV1RagCreate mocks base method.
-func (m *MockRequestHandler) RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rag.Rag, error) {
+// RagV1RagAddSources mocks base method.
+func (m *MockRequestHandler) RagV1RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1RagCreate", ctx, customerID, name, description)
+	ret := m.ctrl.Call(m, "RagV1RagAddSources", ctx, ragID, storageFileIDs, sourceURLs)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagAddSources indicates an expected call of RagV1RagAddSources.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagAddSources(ctx, ragID, storageFileIDs, sourceURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagAddSources", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagAddSources), ctx, ragID, storageFileIDs, sourceURLs)
+}
+
+// RagV1RagCreate mocks base method.
+func (m *MockRequestHandler) RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagCreate", ctx, customerID, name, description, storageFileIDs, sourceURLs)
 	ret0, _ := ret[0].(*rag.Rag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RagV1RagCreate indicates an expected call of RagV1RagCreate.
-func (mr *MockRequestHandlerMockRecorder) RagV1RagCreate(ctx, customerID, name, description any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RagV1RagCreate(ctx, customerID, name, description, storageFileIDs, sourceURLs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagCreate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagCreate), ctx, customerID, name, description)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagCreate", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagCreate), ctx, customerID, name, description, storageFileIDs, sourceURLs)
 }
 
 // RagV1RagDelete mocks base method.
