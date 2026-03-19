@@ -74,7 +74,6 @@ import (
 	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	rmrag "monorepo/bin-rag-manager/models/rag"
-	rmdocument "monorepo/bin-rag-manager/models/document"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -914,10 +913,6 @@ type ServiceHandler interface {
 	RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error)
 	RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
 	RagAddSources(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error)
-
-	// RAG Documents (read-only)
-	RagDocumentGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error)
-	RagDocumentGets(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, size uint64, token string) ([]*rmdocument.WebhookMessage, error)
 }
 
 type serviceHandler struct {

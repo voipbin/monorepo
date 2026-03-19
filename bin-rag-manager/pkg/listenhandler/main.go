@@ -31,10 +31,6 @@ var (
 	regV1RagsID        = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
 	regV1RagsIDSources = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources(\?.*)?$`)
 
-	// document routes
-	regV1Documents   = regexp.MustCompile(`^/v1/documents(\?.*)?$`)
-	regV1DocumentsID = regexp.MustCompile(`^/v1/documents/` + regUUID + `(\?.*)?$`)
-
 	// query route
 	regV1Query = regexp.MustCompile(`^/v1/query$`)
 )
@@ -128,15 +124,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Rags.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1RagsGet(ctx, m)
 		requestType = "/v1/rags"
-
-	// document routes — read-only (POST and DELETE removed)
-	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1DocumentsIDGet(ctx, m)
-		requestType = "/v1/documents/<document-id>"
-
-	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
-		response, err = h.processV1DocumentsGet(ctx, m)
-		requestType = "/v1/documents"
 
 	// query route
 	case regV1Query.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

@@ -61,7 +61,6 @@ import (
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
-	document "monorepo/bin-rag-manager/models/document"
 	query "monorepo/bin-rag-manager/models/query"
 	rag "monorepo/bin-rag-manager/models/rag"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
@@ -5022,36 +5021,6 @@ func (m *MockRequestHandler) RTPEngineV1CommandsSend(ctx context.Context, rtpeng
 func (mr *MockRequestHandlerMockRecorder) RTPEngineV1CommandsSend(ctx, rtpengineID, command any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RTPEngineV1CommandsSend", reflect.TypeOf((*MockRequestHandler)(nil).RTPEngineV1CommandsSend), ctx, rtpengineID, command)
-}
-
-// RagV1DocumentGet mocks base method.
-func (m *MockRequestHandler) RagV1DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1DocumentGet", ctx, id)
-	ret0, _ := ret[0].(*document.Document)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RagV1DocumentGet indicates an expected call of RagV1DocumentGet.
-func (mr *MockRequestHandlerMockRecorder) RagV1DocumentGet(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentGet", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentGet), ctx, id)
-}
-
-// RagV1DocumentGets mocks base method.
-func (m *MockRequestHandler) RagV1DocumentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[document.Field]any) ([]*document.Document, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagV1DocumentGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]*document.Document)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RagV1DocumentGets indicates an expected call of RagV1DocumentGets.
-func (mr *MockRequestHandlerMockRecorder) RagV1DocumentGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1DocumentGets", reflect.TypeOf((*MockRequestHandler)(nil).RagV1DocumentGets), ctx, pageToken, pageSize, filters)
 }
 
 // RagV1RagAddSources mocks base method.

@@ -2193,30 +2193,6 @@ func (e QueueManagerQueuecallStatus) Valid() bool {
 	}
 }
 
-// Defines values for RagManagerRagDocumentDocType.
-const (
-	RagManagerRagDocumentDocTypeGenerated RagManagerRagDocumentDocType = "generated"
-	RagManagerRagDocumentDocTypePlatform  RagManagerRagDocumentDocType = "platform"
-	RagManagerRagDocumentDocTypeUploaded  RagManagerRagDocumentDocType = "uploaded"
-	RagManagerRagDocumentDocTypeUrl       RagManagerRagDocumentDocType = "url"
-)
-
-// Valid indicates whether the value is a known member of the RagManagerRagDocumentDocType enum.
-func (e RagManagerRagDocumentDocType) Valid() bool {
-	switch e {
-	case RagManagerRagDocumentDocTypeGenerated:
-		return true
-	case RagManagerRagDocumentDocTypePlatform:
-		return true
-	case RagManagerRagDocumentDocTypeUploaded:
-		return true
-	case RagManagerRagDocumentDocTypeUrl:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for RagManagerRagDocumentStatus.
 const (
 	RagManagerRagDocumentStatusError      RagManagerRagDocumentStatus = "error"
@@ -5548,45 +5524,6 @@ type RagManagerRag struct {
 	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
 
-// RagManagerRagDocument defines model for RagManagerRagDocument.
-type RagManagerRagDocument struct {
-	// CustomerId The customer ID that owns this document.
-	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
-
-	// DocType The document source type. Determines how the document content is obtained.
-	DocType *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
-
-	// Id The unique identifier of the document. Returned from the `POST /rag-documents` response.
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// Name Human-readable name for the document.
-	Name *string `json:"name,omitempty"`
-
-	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
-	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
-
-	// SourceUrl The source URL if doc_type is url.
-	SourceUrl *string `json:"source_url,omitempty"`
-
-	// Status The document processing status. Indicates the current stage of document ingestion.
-	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
-
-	// StatusMessage Additional details about the current status.
-	StatusMessage *string `json:"status_message,omitempty"`
-
-	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
-	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
-
-	// TmCreate Timestamp when the document was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// TmUpdate Timestamp when the document was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
-}
-
-// RagManagerRagDocumentDocType The document source type. Determines how the document content is obtained.
-type RagManagerRagDocumentDocType string
-
 // RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
 type RagManagerRagDocumentStatus string
 
@@ -7559,18 +7496,6 @@ type PutQueuesIdRoutingMethodJSONBody struct {
 // PutQueuesIdTagIdsJSONBody defines parameters for PutQueuesIdTagIds.
 type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
-}
-
-// GetRagDocumentsParams defines parameters for GetRagDocuments.
-type GetRagDocumentsParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-
-	// RagId Filter documents by rag ID. Returned from the `POST /rags` response.
-	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
 }
 
 // GetRagsParams defines parameters for GetRags.

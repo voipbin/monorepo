@@ -96,7 +96,6 @@ import (
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	tmtts "monorepo/bin-tts-manager/models/tts"
 
-	rmdocument "monorepo/bin-rag-manager/models/document"
 	rmquery "monorepo/bin-rag-manager/models/query"
 	rmrag "monorepo/bin-rag-manager/models/rag"
 
@@ -1325,10 +1324,6 @@ type RequestHandler interface {
 	RagV1RagUpdate(ctx context.Context, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.Rag, error)
 	RagV1RagDelete(ctx context.Context, id uuid.UUID) error
 	RagV1RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.Rag, error)
-
-	// rag-manager documents
-	RagV1DocumentGet(ctx context.Context, id uuid.UUID) (*rmdocument.Document, error)
-	RagV1DocumentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmdocument.Field]any) ([]*rmdocument.Document, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
