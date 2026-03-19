@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"context"
-	"io"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -26,17 +25,9 @@ func conversationPOST(c *gin.Context) {
 		},
 	)
 
-	data, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Errorf("Could not read the data. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if errHandler := serviceHandler.Conversation(ctx, c.Request.Host+c.Request.URL.Path, data); errHandler != nil {
-		log.Errorf("Could not handle the message correctly. err: %v", errHandler)
+	if err := serviceHandler.Conversation(ctx, c.Request); err != nil {
+		log.Errorf("Could not handle the message correctly. err: %v", err)
 		c.AbortWithStatus(500)
 		return
 	}

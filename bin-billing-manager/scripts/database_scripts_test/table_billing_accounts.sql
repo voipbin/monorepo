@@ -15,6 +15,9 @@ create table billing_accounts(
   payment_type      varchar(255),
   payment_method    varchar(255),
 
+  paddle_subscription_id varchar(255),
+  paddle_customer_id     varchar(255),
+
   tm_last_topup datetime(6),
   tm_next_topup datetime(6),
 
@@ -27,4 +30,6 @@ create table billing_accounts(
 );
 
 create index idx_billing_accounts_customer_id on billing_accounts(customer_id);
+create index idx_billing_accounts_paddle_subscription_id on billing_accounts(paddle_subscription_id);
+create index idx_billing_accounts_paddle_customer_id on billing_accounts(paddle_customer_id);
 create index idx_billing_accounts_create on billing_accounts(tm_create);

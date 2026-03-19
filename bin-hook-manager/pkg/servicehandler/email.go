@@ -2,20 +2,27 @@ package servicehandler
 
 import (
 	"context"
-	hmhook "monorepo/bin-hook-manager/models/hook"
+	"fmt"
+	"io"
+	"net/http"
 
-	"github.com/pkg/errors"
+	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
 // Email handles email receive
-func (h *serviceHandler) Email(ctx context.Context, uri string, m []byte) error {
+func (h *serviceHandler) Email(ctx context.Context, r *http.Request) error {
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("could not read request body: %w", err)
+	}
+
 	req := &hmhook.Hook{
-		ReceviedURI:  uri,
-		ReceivedData: m,
+		ReceviedURI:  r.Host + r.URL.Path,
+		ReceivedData: data,
 	}
 
 	if errHook := h.reqHandler.EmailV1Hooks(ctx, req); errHook != nil {
-		return errors.Wrapf(errHook, "could not send the hook")
+		return fmt.Errorf("could not send the hook: %w", errHook)
 	}
 
 	return nil

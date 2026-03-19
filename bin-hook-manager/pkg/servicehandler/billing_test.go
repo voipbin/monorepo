@@ -13,7 +13,7 @@ import (
 	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
-func Test_Conversation(t *testing.T) {
+func Test_Billing(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -24,27 +24,15 @@ func Test_Conversation(t *testing.T) {
 		expectReq *hmhook.Hook
 	}{
 		{
-			name: "normal",
+			name: "paddle webhook",
 
 			host: "hook.voipbin.net",
-			path: "/v1.0/conversation",
-			body: []byte(`{"key1":"val1"}`),
+			path: "/v1.0/billing/paddle",
+			body: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
-				ReceivedData: []byte(`{"key1":"val1"}`),
-			},
-		},
-		{
-			name: "conversation with path",
-
-			host: "hook.voipbin.net",
-			path: "/v1.0/conversation/customers/id/line",
-			body: []byte(`{"test":"data"}`),
-
-			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/conversation/customers/id/line",
-				ReceivedData: []byte(`{"test":"data"}`),
+				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
+				ReceivedData: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 			},
 		},
 	}
@@ -64,16 +52,16 @@ func Test_Conversation(t *testing.T) {
 			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
 			r.Host = tt.host
 
-			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(nil)
+			mockReq.EXPECT().BillingV1PaddleHook(ctx, tt.expectReq).Return(nil)
 
-			if err := h.Conversation(ctx, r); err != nil {
+			if err := h.Billing(ctx, r); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_Conversation_Error(t *testing.T) {
+func Test_Billing_Error(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -88,14 +76,14 @@ func Test_Conversation_Error(t *testing.T) {
 			name: "request handler error",
 
 			host: "hook.voipbin.net",
-			path: "/v1.0/conversation",
-			body: []byte(`{"key1":"val1"}`),
+			path: "/v1.0/billing/paddle",
+			body: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
-				ReceivedData: []byte(`{"key1":"val1"}`),
+				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
+				ReceivedData: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 			},
-			expectError: fmt.Errorf("request handler error"),
+			expectError: fmt.Errorf("billing hook error"),
 		},
 	}
 
@@ -114,9 +102,9 @@ func Test_Conversation_Error(t *testing.T) {
 			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
 			r.Host = tt.host
 
-			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(tt.expectError)
+			mockReq.EXPECT().BillingV1PaddleHook(ctx, tt.expectReq).Return(tt.expectError)
 
-			if err := h.Conversation(ctx, r); err == nil {
+			if err := h.Billing(ctx, r); err == nil {
 				t.Error("Expected error, got nil")
 			}
 		})

@@ -2,6 +2,8 @@ package servicehandler
 
 import (
 	"context"
+	"net/http"
+	"strings"
 	"testing"
 
 	gomock "go.uber.org/mock/gomock"
@@ -23,26 +25,34 @@ func TestMockServiceHandler(t *testing.T) {
 		t.Error("EXPECT() returned nil")
 	}
 
-	// Test mock Conversation method
 	ctx := context.Background()
-	uri := "test.uri"
-	data := []byte("test data")
 
-	mockSvc.EXPECT().Conversation(ctx, uri, data).Return(nil)
-	if err := mockSvc.Conversation(ctx, uri, data); err != nil {
+	// Test mock Conversation method
+	r1, _ := http.NewRequest("POST", "http://test.uri/conversation", strings.NewReader("test data"))
+	mockSvc.EXPECT().Conversation(ctx, r1).Return(nil)
+	if err := mockSvc.Conversation(ctx, r1); err != nil {
 		t.Errorf("Mock Conversation failed: %v", err)
 	}
 
 	// Test mock Email method
-	mockSvc.EXPECT().Email(ctx, uri, data).Return(nil)
-	if err := mockSvc.Email(ctx, uri, data); err != nil {
+	r2, _ := http.NewRequest("POST", "http://test.uri/emails", strings.NewReader("test data"))
+	mockSvc.EXPECT().Email(ctx, r2).Return(nil)
+	if err := mockSvc.Email(ctx, r2); err != nil {
 		t.Errorf("Mock Email failed: %v", err)
 	}
 
 	// Test mock Message method
-	mockSvc.EXPECT().Message(ctx, uri, data).Return(nil)
-	if err := mockSvc.Message(ctx, uri, data); err != nil {
+	r3, _ := http.NewRequest("POST", "http://test.uri/messages", strings.NewReader("test data"))
+	mockSvc.EXPECT().Message(ctx, r3).Return(nil)
+	if err := mockSvc.Message(ctx, r3); err != nil {
 		t.Errorf("Mock Message failed: %v", err)
+	}
+
+	// Test mock Billing method
+	r4, _ := http.NewRequest("POST", "http://test.uri/billing/paddle", strings.NewReader("test data"))
+	mockSvc.EXPECT().Billing(ctx, r4).Return(nil)
+	if err := mockSvc.Billing(ctx, r4); err != nil {
+		t.Errorf("Mock Billing failed: %v", err)
 	}
 }
 
@@ -52,19 +62,23 @@ func TestMockServiceHandlerRecorder(t *testing.T) {
 
 	mockSvc := NewMockServiceHandler(mc)
 	ctx := context.Background()
-	uri := "test.uri"
-	data := []byte("test data")
-
-	// Test recorder methods by chaining
-	recorder := mockSvc.EXPECT()
 
 	// Set expectations using recorder methods
-	recorder.Conversation(ctx, uri, data).Return(nil)
-	recorder.Email(ctx, uri, data).Return(nil)
-	recorder.Message(ctx, uri, data).Return(nil)
+	recorder := mockSvc.EXPECT()
+
+	r1, _ := http.NewRequest("POST", "http://test.uri/conversation", strings.NewReader("data"))
+	r2, _ := http.NewRequest("POST", "http://test.uri/emails", strings.NewReader("data"))
+	r3, _ := http.NewRequest("POST", "http://test.uri/messages", strings.NewReader("data"))
+	r4, _ := http.NewRequest("POST", "http://test.uri/billing/paddle", strings.NewReader("data"))
+
+	recorder.Conversation(ctx, r1).Return(nil)
+	recorder.Email(ctx, r2).Return(nil)
+	recorder.Message(ctx, r3).Return(nil)
+	recorder.Billing(ctx, r4).Return(nil)
 
 	// Execute the mocked calls
-	_ = mockSvc.Conversation(ctx, uri, data)
-	_ = mockSvc.Email(ctx, uri, data)
-	_ = mockSvc.Message(ctx, uri, data)
+	_ = mockSvc.Conversation(ctx, r1)
+	_ = mockSvc.Email(ctx, r2)
+	_ = mockSvc.Message(ctx, r3)
+	_ = mockSvc.Billing(ctx, r4)
 }

@@ -4,15 +4,17 @@ package servicehandler
 
 import (
 	"context"
+	"net/http"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
-	Email(ctx context.Context, uri string, m []byte) error
-	Message(ctx context.Context, uri string, m []byte) error
-	Conversation(ctx context.Context, uri string, m []byte) error
+	Email(ctx context.Context, r *http.Request) error
+	Message(ctx context.Context, r *http.Request) error
+	Conversation(ctx context.Context, r *http.Request) error
+	Billing(ctx context.Context, r *http.Request) error
 }
 
 type serviceHandler struct {

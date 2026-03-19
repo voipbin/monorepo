@@ -35,6 +35,14 @@ type AccountHandler interface {
 	UpdatePlanType(ctx context.Context, id uuid.UUID, planType account.PlanType) (*account.Account, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status account.Status) (*account.Account, error)
 
+	// Paddle webhook handlers
+	PaddleCreditTopUp(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error
+	PaddleSubscriptionCreate(ctx context.Context, customerID uuid.UUID, planType account.PlanType, paddleSubID string, paddleCustID string, eventID string) error
+	PaddleSubscriptionUpdate(ctx context.Context, paddleSubID string, newPlanType account.PlanType, eventID string) error
+	PaddleSubscriptionCancel(ctx context.Context, paddleSubID string, eventID string) error
+	PaddleSubscriptionRenew(ctx context.Context, paddleSubID string, eventID string) error
+	PaddleRefund(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error
+
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
 	IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)

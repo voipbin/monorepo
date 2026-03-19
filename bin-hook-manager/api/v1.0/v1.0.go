@@ -3,6 +3,7 @@ package apiv1
 import (
 	"github.com/gin-gonic/gin"
 
+	"monorepo/bin-hook-manager/api/v1.0/billing"
 	"monorepo/bin-hook-manager/api/v1.0/conversation"
 	"monorepo/bin-hook-manager/api/v1.0/emails"
 	"monorepo/bin-hook-manager/api/v1.0/messages"
@@ -12,6 +13,7 @@ import (
 func ApplyRoutes(r *gin.RouterGroup) {
 	v1 := r.Group("/v1.0")
 
+	billing.ApplyRoutes(v1)
 	emails.ApplyRoutes(v1)
 	messages.ApplyRoutes(v1)
 	conversation.ApplyRoutes(v1)

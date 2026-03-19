@@ -429,6 +429,9 @@ type RequestHandler interface {
 	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)
 	BillingV1BillingGet(ctx context.Context, billingID uuid.UUID) (*bmbilling.Billing, error)
 
+	// billing-manager hooks
+	BillingV1PaddleHook(ctx context.Context, hm *hmhook.Hook) error
+
 	// call-manager event
 	CallPublishEvent(ctx context.Context, eventType string, publisher string, dataType string, data []byte) error
 

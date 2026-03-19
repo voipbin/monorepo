@@ -2,7 +2,6 @@ package messages
 
 import (
 	"context"
-	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,17 +24,9 @@ func messagesPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	data, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Errorf("Could not read the data. err: %v", err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if errHandler := serviceHandler.Message(ctx, c.Request.Host+c.Request.URL.Path, data); errHandler != nil {
-		log.Errorf("Could not handle the message correctly. err: %v", errHandler)
+	if err := serviceHandler.Message(ctx, c.Request); err != nil {
+		log.Errorf("Could not handle the message correctly. err: %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

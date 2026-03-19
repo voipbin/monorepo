@@ -1,4 +1,4 @@
-package emails
+package billing
 
 import (
 	"context"
@@ -11,22 +11,17 @@ import (
 	"monorepo/bin-hook-manager/pkg/servicehandler"
 )
 
-// emailsPOST handles POST /emails request.
-// @Summary deleiver the message to the email-manager
-// @Description deleiver the message to the email-manager
-// @Produce  json
-// @Success 200
-// @Router /v1.0/emails [post]
-func emailsPOST(c *gin.Context) {
+// billingPaddlePOST handles POST /billing/paddle request.
+func billingPaddlePOST(c *gin.Context) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "emailsPOST",
+		"func":            "billingPaddlePOST",
 		"request_address": c.ClientIP,
 	})
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.Email(ctx, c.Request); err != nil {
-		log.Errorf("Could not handle the message correctly. err: %v", err)
+	if err := serviceHandler.Billing(ctx, c.Request); err != nil {
+		log.Errorf("Could not handle the billing webhook. err: %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -102,7 +104,9 @@ func runSendEmail(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	if err := handler.Email(context.Background(), uri, data); err != nil {
+	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req.Host = uri
+	if err := handler.Email(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send email webhook")
 	}
 
@@ -147,7 +151,9 @@ func runSendMessage(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	if err := handler.Message(context.Background(), uri, data); err != nil {
+	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req.Host = uri
+	if err := handler.Message(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send message webhook")
 	}
 
@@ -192,7 +198,9 @@ func runSendConversation(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	if err := handler.Conversation(context.Background(), uri, data); err != nil {
+	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req.Host = uri
+	if err := handler.Conversation(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send conversation webhook")
 	}
 
