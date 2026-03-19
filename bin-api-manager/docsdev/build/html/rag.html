@@ -199,14 +199,14 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
 <li><p><strong>Cost:</strong> Free for CRUD operations. Chargeable for document processing (parsing, chunking, and embedding consume credits).</p></li>
-<li><p><strong>Async:</strong> Yes. Document processing runs asynchronously after creation. Check status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rag-documents/{id}</span></code>.</p></li>
+<li><p><strong>Async:</strong> Yes. Document processing runs asynchronously after sources are added. Check RAG status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}</span></code> or individual document status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rag-documents/{id}</span></code>.</p></li>
 </ul>
 </div>
 <p>A <strong>RAG</strong> (Retrieval-Augmented Generation) is a knowledge base that lets your AI agents answer questions using your own content. Instead of relying solely on the LLM’s training data, the AI retrieves relevant passages from your uploaded documents and URLs at query time, grounding its responses in your authoritative content.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code>, add documents to it via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code>, then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
+<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> with <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> to provide initial documents. You can add more sources later via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>. Then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
 </div>
 </section>
 <section id="how-it-works">
@@ -294,7 +294,7 @@
 <span class="o">|</span>                     <span class="n">Document</span> <span class="n">Status</span> <span class="n">Lifecycle</span>                         <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">Created</span> <span class="n">via</span> <span class="n">POST</span>
+<span class="n">Source</span> <span class="n">added</span> <span class="n">via</span> <span class="n">POST</span> <span class="o">/</span><span class="n">rags</span> <span class="ow">or</span> <span class="n">POST</span> <span class="o">/</span><span class="n">rags</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">sources</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+-----------+</span>       <span class="o">+--------------+</span>       <span class="o">+-----------+</span>
@@ -311,7 +311,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>After creating a document via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code> to check the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Do not assume the document is ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
+<p>After adding sources via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> to check the RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field, or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code> for individual document status. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
 </div>
 </section>
 </section>
@@ -341,6 +341,8 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">object</span><span class="o">&gt;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
@@ -351,13 +353,28 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this RAG. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customer</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the knowledge base (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Product</span> <span class="pre">Documentation</span> <span class="pre">KB&quot;</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (String, Optional): A description of the RAG’s purpose or the type of content it contains (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Contains</span> <span class="pre">all</span> <span class="pre">customer-facing</span> <span class="pre">product</span> <span class="pre">documentation</span> <span class="pre">and</span> <span class="pre">FAQs&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (String enum): The aggregate processing status derived from all source documents. One of:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pending</span></code> — No documents have been processed yet (or no documents exist).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processing</span></code> — At least one document is still being processed (pending or in-progress).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ready</span></code> — At least one document processed successfully. Individual source errors are visible in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> list.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code> — All documents failed processing. Check individual <code class="docutils literal notranslate"><span class="pre">sources</span></code> for details.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sources</span></code> (Array of <a class="reference internal" href="rag_struct_rag.html#rag-struct-rag-source"><span class="std std-ref">Source</span></a>): List of document sources with their individual ingestion status. Each source corresponds to a file or URL provided when creating or adding sources to the RAG.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the RAG was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the RAG was last updated.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">description</span></code> fields are for organizational purposes only — they do not affect how the RAG retrieves or ranks content. Use descriptive names to help identify knowledge bases when you have multiple RAGs (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Support</span> <span class="pre">KB</span> <span class="pre">-</span> <span class="pre">English&quot;</span></code> vs <code class="docutils literal notranslate"><span class="pre">&quot;Support</span> <span class="pre">KB</span> <span class="pre">-</span> <span class="pre">Korean&quot;</span></code>).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field is computed from the individual document statuses:</p>
+<ul class="simple">
+<li><p>If <strong>any</strong> document is <code class="docutils literal notranslate"><span class="pre">pending</span></code> or <code class="docutils literal notranslate"><span class="pre">processing</span></code>, the RAG status is <code class="docutils literal notranslate"><span class="pre">processing</span></code>.</p></li>
+<li><p>If <strong>all</strong> documents are terminal (<code class="docutils literal notranslate"><span class="pre">ready</span></code> or <code class="docutils literal notranslate"><span class="pre">error</span></code>) and at least one is <code class="docutils literal notranslate"><span class="pre">ready</span></code>, the RAG status is <code class="docutils literal notranslate"><span class="pre">ready</span></code>.</p></li>
+<li><p>Only when <strong>all</strong> documents have <code class="docutils literal notranslate"><span class="pre">error</span></code> status does the RAG show <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+</ul>
+<p>Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> to check ingestion progress. When <code class="docutils literal notranslate"><span class="pre">status</span></code> becomes <code class="docutils literal notranslate"><span class="pre">ready</span></code>, the RAG can be queried.</p>
 </div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
@@ -366,12 +383,43 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
     <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base containing product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="source">
+<span id="rag-struct-rag-source"></span><h3>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h3>
+<p>Each source represents a document that was provided to the RAG for ingestion.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/files</span></code>. Present only for uploaded file sources.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source_url</span></code> (String URI, Optional): The URL if the source is a web document. Present only for URL sources.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (String enum): The processing status of this individual source. One of: <code class="docutils literal notranslate"><span class="pre">pending</span></code>, <code class="docutils literal notranslate"><span class="pre">processing</span></code>, <code class="docutils literal notranslate"><span class="pre">ready</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status_message</span></code> (String): Details about the current status. Contains error details when <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+</ul>
 </section>
 </section>
 <section id="document">
@@ -394,7 +442,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The document’s unique identifier. Returned when creating a document via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code> or when listing documents via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The document’s unique identifier. Created automatically when sources are added via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> (at creation time) or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>. Listed via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this document. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customer</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">rag_id</span></code> (UUID, Required): The RAG knowledge base this document belongs to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the document (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Product</span> <span class="pre">API</span> <span class="pre">Reference</span> <span class="pre">v2.1&quot;</span></code>).</p></li>
@@ -433,7 +481,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Documents are immutable after creation — there is no <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/rag-documents/{id}</span></code> endpoint. If the source content changes (e.g., a web page is updated), delete the old document via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rag-documents/{id}</span></code> and create a new one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code>. This ensures the vector database stays consistent with the source content.</p>
+<p>Documents are immutable after creation — there is no update or delete endpoint for individual documents. If the source content changes (e.g., a web page is updated), delete the entire RAG via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rags/{id}</span></code> and recreate it with the updated sources via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code>. This ensures the vector database stays consistent with the source content. Documents are managed as part of their parent RAG, not independently.</p>
 </div>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
@@ -484,14 +532,16 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>A RAG knowledge base is most useful when connected to an AI agent. After completing this tutorial, reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code> (set the <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field). The AI agent will then query this knowledge base during conversations.</p>
 </div>
-<section id="step-1-create-a-rag">
-<h3>Step 1: Create a RAG<a class="headerlink" href="#step-1-create-a-rag" title="Link to this heading"></a></h3>
-<p>Create a new RAG knowledge base to hold your documents.</p>
+<section id="step-1-create-a-rag-with-sources">
+<h3>Step 1: Create a RAG with Sources<a class="headerlink" href="#step-1-create-a-rag-with-sources" title="Link to this heading"></a></h3>
+<p>Create a new RAG knowledge base with initial document sources. You can provide uploaded files via <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or web URLs via <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> at creation time.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;name&quot;: &quot;Product Documentation KB&quot;,
-        &quot;description&quot;: &quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;
+        &quot;description&quot;: &quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;,
+        &quot;storage_file_ids&quot;: [&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;],
+        &quot;source_urls&quot;: [&quot;https://docs.example.com/faq&quot;]
     }&#39;
 </pre></div>
 </div>
@@ -501,103 +551,114 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
     <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;processing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="step-2-add-a-url-document">
-<h3>Step 2: Add a URL Document<a class="headerlink" href="#step-2-add-a-url-document" title="Link to this heading"></a></h3>
-<p>Add a web page to the RAG. The system will fetch the URL, parse the content, and create searchable chunks.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rag-documents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;rag_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-        &quot;name&quot;: &quot;Product FAQ Page&quot;,
-        &quot;doc_type&quot;: &quot;url&quot;,
-        &quot;source_url&quot;: &quot;https://docs.example.com/faq&quot;
-    }&#39;
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">document_id</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>                              <span class="o">//</span> <span class="n">Processing</span> <span class="n">has</span> <span class="ow">not</span> <span class="n">started</span> <span class="n">yet</span>
-    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="step-3-add-an-uploaded-document">
-<h3>Step 3: Add an Uploaded Document<a class="headerlink" href="#step-3-add-an-uploaded-document" title="Link to this heading"></a></h3>
-<p>Add a file that you previously uploaded to VoIPBIN storage. Upload the file first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>, then reference its <code class="docutils literal notranslate"><span class="pre">id</span></code> as <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rag-documents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;rag_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-        &quot;name&quot;: &quot;Product Manual v2.1 (PDF)&quot;,
-        &quot;doc_type&quot;: &quot;uploaded&quot;,
-        &quot;storage_file_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;
-    }&#39;
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">uploaded_document_id</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Manual v2.1 (PDF)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;uploaded&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:15:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:15:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-<section id="step-4-check-document-status">
-<h3>Step 4: Check Document Status<a class="headerlink" href="#step-4-check-document-status" title="Link to this heading"></a></h3>
-<p>Documents are processed asynchronously. Poll the document endpoint to check processing progress.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
-</pre></div>
-</div>
-<p>Response (processing complete):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>                                <span class="o">//</span> <span class="n">Processing</span> <span class="n">complete</span>
-    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:12:30.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> are included in RAG query results. Documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">error</span></code> should be investigated and re-created.</p>
+<p>You can also create a RAG without sources (omit <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">source_urls</span></code>) and add them later via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>. This is useful when you want to set up the RAG first and add documents incrementally.</p>
 </div>
 </section>
-<section id="step-5-list-documents-by-rag">
-<h3>Step 5: List Documents by RAG<a class="headerlink" href="#step-5-list-documents-by-rag" title="Link to this heading"></a></h3>
-<p>List all documents belonging to a specific RAG by filtering on <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>.</p>
+<section id="step-2-add-more-sources-to-an-existing-rag">
+<h3>Step 2: Add More Sources to an Existing RAG<a class="headerlink" href="#step-2-add-more-sources-to-an-existing-rag" title="Link to this heading"></a></h3>
+<p>Add additional document sources to an existing RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source_urls&quot;: [&quot;https://docs.example.com/getting-started&quot;]
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;processing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/getting-started&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:30:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-check-rag-status">
+<h3>Step 3: Check RAG Status<a class="headerlink" href="#step-3-check-rag-status" title="Link to this heading"></a></h3>
+<p>The RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field reflects the aggregate processing state of all its sources. Poll the RAG endpoint to check progress.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response (all sources processed):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/getting-started&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;28 chunks created&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:35:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. When the RAG <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">ready</span></code>, at least one source has been successfully processed and the RAG can be used for queries. Check individual source <code class="docutils literal notranslate"><span class="pre">status</span></code> fields for per-document details.</p>
+</div>
+</section>
+<section id="step-4-check-individual-document-status">
+<h3>Step 4: Check Individual Document Status<a class="headerlink" href="#step-4-check-individual-document-status" title="Link to this heading"></a></h3>
+<p>You can also check the status of individual documents via the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents</span></code> endpoint.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rag-documents?rag_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
@@ -636,8 +697,8 @@
 </pre></div>
 </div>
 </section>
-<section id="step-6-update-rag">
-<h3>Step 6: Update RAG<a class="headerlink" href="#step-6-update-rag" title="Link to this heading"></a></h3>
+<section id="step-5-update-rag">
+<h3>Step 5: Update RAG<a class="headerlink" href="#step-5-update-rag" title="Link to this heading"></a></h3>
 <p>Update the RAG’s name or description.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -659,36 +720,8 @@
 </pre></div>
 </div>
 </section>
-<section id="step-7-delete-a-document">
-<h3>Step 7: Delete a Document<a class="headerlink" href="#step-7-delete-a-document" title="Link to this heading"></a></h3>
-<p>Delete a single document from the RAG. This removes the document and all its chunks from the vector database.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:12:30.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>Deleting a document does not affect the RAG itself or other documents in the RAG. The deleted document’s chunks are removed from the vector database, so subsequent RAG queries will no longer return results from that document. The storage file (if <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">uploaded</span></code>) is NOT deleted — manage storage files separately via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/storage-files/{id}</span></code>.</p>
-</div>
-</section>
-<section id="step-8-delete-a-rag">
-<h3>Step 8: Delete a RAG<a class="headerlink" href="#step-8-delete-a-rag" title="Link to this heading"></a></h3>
+<section id="step-6-delete-a-rag">
+<h3>Step 6: Delete a RAG<a class="headerlink" href="#step-6-delete-a-rag" title="Link to this heading"></a></h3>
 <p>Delete a RAG and all its documents. This is a cascade delete — all documents belonging to the RAG are deleted along with their vector database chunks.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
@@ -720,10 +753,10 @@
 </ul>
 <p><strong>Document Management:</strong></p>
 <ul class="simple">
-<li><p>Check document <code class="docutils literal notranslate"><span class="pre">status</span></code> before relying on a RAG for AI conversations. Documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">pending</span></code> or <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">processing</span></code> are not yet available for queries.</p></li>
-<li><p>When source content changes, delete the old document and create a new one. Documents are immutable — there is no update endpoint.</p></li>
-<li><p>For <code class="docutils literal notranslate"><span class="pre">url</span></code> documents, ensure the URL is publicly accessible. Private URLs behind authentication will fail during the fetch step.</p></li>
-<li><p>For <code class="docutils literal notranslate"><span class="pre">uploaded</span></code> documents, upload the file to storage first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>, verify the upload succeeded, then create the document.</p></li>
+<li><p>Check the RAG <code class="docutils literal notranslate"><span class="pre">status</span></code> before relying on it for AI conversations. A RAG with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">processing</span></code> still has documents being ingested.</p></li>
+<li><p>When source content changes, delete the RAG and recreate it with the updated sources. Documents are immutable — there is no individual document update or delete endpoint.</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">url</span></code> sources, ensure the URL is publicly accessible. Private URLs behind authentication will fail during the fetch step.</p></li>
+<li><p>For uploaded file sources, upload the file to storage first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>, verify the upload succeeded, then provide the <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> when creating or adding sources to a RAG.</p></li>
 </ul>
 <p><strong>Performance:</strong></p>
 <ul class="simple">
@@ -736,7 +769,7 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Missing required field (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>, or <code class="docutils literal notranslate"><span class="pre">doc_type</span></code>).</p></li>
+<li><p><strong>Cause:</strong> Missing required field (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code> when creating a RAG).</p></li>
 <li><p><strong>Fix:</strong> Include all required fields in the request body. Verify field names match the API schema exactly.</p></li>
 </ul>
 </dd>
@@ -744,16 +777,8 @@
 </li>
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">uploaded</span></code> but <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> is missing or set to the zero UUID.</p></li>
-<li><p><strong>Fix:</strong> Upload a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code> first, then set <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> to the returned <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">url</span></code> but <code class="docutils literal notranslate"><span class="pre">source_url</span></code> is missing or not a valid URL.</p></li>
-<li><p><strong>Fix:</strong> Provide a fully qualified URL starting with <code class="docutils literal notranslate"><span class="pre">http://</span></code> or <code class="docutils literal notranslate"><span class="pre">https://</span></code>.</p></li>
+<li><p><strong>Cause:</strong> Neither <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> nor <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> provided when adding sources.</p></li>
+<li><p><strong>Fix:</strong> Provide at least one <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> UUID or one <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> URL.</p></li>
 </ul>
 </dd>
 </dl>
@@ -767,25 +792,17 @@
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>404 Not Found:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> specified when creating a document does not exist.</p></li>
-<li><p><strong>Fix:</strong> Create the RAG first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code>, then use the returned <code class="docutils literal notranslate"><span class="pre">id</span></code> as <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>.</p></li>
+<dt><strong>RAG stuck in ``processing``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> One or more source documents are still being processed, or a source is temporarily unavailable.</p></li>
+<li><p><strong>Fix:</strong> Check individual source statuses in the RAG response or via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents</span></code>. If a source has <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">error</span></code>, check its <code class="docutils literal notranslate"><span class="pre">status_message</span></code> for details.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>Document stuck in ``pending`` or ``processing``:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Processing pipeline delay or the document source is temporarily unavailable.</p></li>
-<li><p><strong>Fix:</strong> Wait and retry <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code>. If the status does not change after several minutes, delete and re-create the document.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><strong>Document status is ``error``:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The system failed to fetch, parse, or process the document content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.</p></li>
-<li><p><strong>Fix:</strong> Check the <code class="docutils literal notranslate"><span class="pre">status_message</span></code> field for details. Fix the underlying issue (e.g., make the URL accessible, use a supported format) and create a new document.</p></li>
+<dt><strong>Source status is ``error``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The system failed to fetch, parse, or process the source content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.</p></li>
+<li><p><strong>Fix:</strong> Check the <code class="docutils literal notranslate"><span class="pre">status_message</span></code> field for details. Fix the underlying issue (e.g., make the URL accessible, use a supported format) and recreate the RAG with the corrected sources.</p></li>
 </ul>
 </dd>
 </dl>
@@ -825,6 +842,7 @@
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#source">Source</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#document">Document</a><ul>
@@ -835,14 +853,12 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li><a class="reference internal" href="#step-1-create-a-rag">Step 1: Create a RAG</a></li>
-<li><a class="reference internal" href="#step-2-add-a-url-document">Step 2: Add a URL Document</a></li>
-<li><a class="reference internal" href="#step-3-add-an-uploaded-document">Step 3: Add an Uploaded Document</a></li>
-<li><a class="reference internal" href="#step-4-check-document-status">Step 4: Check Document Status</a></li>
-<li><a class="reference internal" href="#step-5-list-documents-by-rag">Step 5: List Documents by RAG</a></li>
-<li><a class="reference internal" href="#step-6-update-rag">Step 6: Update RAG</a></li>
-<li><a class="reference internal" href="#step-7-delete-a-document">Step 7: Delete a Document</a></li>
-<li><a class="reference internal" href="#step-8-delete-a-rag">Step 8: Delete a RAG</a></li>
+<li><a class="reference internal" href="#step-1-create-a-rag-with-sources">Step 1: Create a RAG with Sources</a></li>
+<li><a class="reference internal" href="#step-2-add-more-sources-to-an-existing-rag">Step 2: Add More Sources to an Existing RAG</a></li>
+<li><a class="reference internal" href="#step-3-check-rag-status">Step 3: Check RAG Status</a></li>
+<li><a class="reference internal" href="#step-4-check-individual-document-status">Step 4: Check Individual Document Status</a></li>
+<li><a class="reference internal" href="#step-5-update-rag">Step 5: Update RAG</a></li>
+<li><a class="reference internal" href="#step-6-delete-a-rag">Step 6: Delete a RAG</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>

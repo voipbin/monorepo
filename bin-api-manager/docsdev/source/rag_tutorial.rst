@@ -15,10 +15,10 @@ Before creating a RAG, you need:
 
    A RAG knowledge base is most useful when connected to an AI agent. After completing this tutorial, reference the RAG's ``id`` in an AI configuration via ``POST /ais`` or ``PUT /ais/{id}`` (set the ``rag_id`` field). The AI agent will then query this knowledge base during conversations.
 
-Step 1: Create a RAG
----------------------
+Step 1: Create a RAG with Sources
+-----------------------------------
 
-Create a new RAG knowledge base to hold your documents.
+Create a new RAG knowledge base with initial document sources. You can provide uploaded files via ``storage_file_ids`` and/or web URLs via ``source_urls`` at creation time.
 
 .. code::
 
@@ -26,7 +26,9 @@ Create a new RAG knowledge base to hold your documents.
         --header 'Content-Type: application/json' \
         --data-raw '{
             "name": "Product Documentation KB",
-            "description": "Knowledge base for product manuals, API docs, and FAQ articles"
+            "description": "Knowledge base for product manuals, API docs, and FAQ articles",
+            "storage_file_ids": ["d4e5f6a7-b8c9-0123-defa-456789012345"],
+            "source_urls": ["https://docs.example.com/faq"]
         }'
 
 Response:
@@ -38,24 +40,38 @@ Response:
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "Product Documentation KB",
         "description": "Knowledge base for product manuals, API docs, and FAQ articles",
+        "status": "processing",
+        "sources": [
+            {
+                "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+                "status": "pending",
+                "status_message": ""
+            },
+            {
+                "source_url": "https://docs.example.com/faq",
+                "status": "pending",
+                "status_message": ""
+            }
+        ],
         "tm_create": "2026-03-15 09:00:00.000000",
         "tm_update": "2026-03-15 09:00:00.000000"
     }
 
-Step 2: Add a URL Document
----------------------------
+.. note:: **AI Implementation Hint**
 
-Add a web page to the RAG. The system will fetch the URL, parse the content, and create searchable chunks.
+   You can also create a RAG without sources (omit ``storage_file_ids`` and ``source_urls``) and add them later via ``POST /rags/{id}/sources``. This is useful when you want to set up the RAG first and add documents incrementally.
+
+Step 2: Add More Sources to an Existing RAG
+----------------------------------------------
+
+Add additional document sources to an existing RAG via ``POST /rags/{id}/sources``.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/rag-documents?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "name": "Product FAQ Page",
-            "doc_type": "url",
-            "source_url": "https://docs.example.com/faq"
+            "source_urls": ["https://docs.example.com/getting-started"]
         }'
 
 Response:
@@ -63,88 +79,80 @@ Response:
 .. code::
 
     {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",   // Save this as document_id
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "Product FAQ Page",
-        "doc_type": "url",
-        "storage_file_id": "00000000-0000-0000-0000-000000000000",
-        "source_url": "https://docs.example.com/faq",
-        "status": "pending",                              // Processing has not started yet
-        "status_message": "",
-        "tm_create": "2026-03-15 09:10:00.000000",
-        "tm_update": "2026-03-15 09:10:00.000000"
+        "name": "Product Documentation KB",
+        "description": "Knowledge base for product manuals, API docs, and FAQ articles",
+        "status": "processing",
+        "sources": [
+            {
+                "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+                "status": "ready",
+                "status_message": "42 chunks created"
+            },
+            {
+                "source_url": "https://docs.example.com/faq",
+                "status": "ready",
+                "status_message": "15 chunks created"
+            },
+            {
+                "source_url": "https://docs.example.com/getting-started",
+                "status": "pending",
+                "status_message": ""
+            }
+        ],
+        "tm_create": "2026-03-15 09:00:00.000000",
+        "tm_update": "2026-03-15 09:30:00.000000"
     }
 
-Step 3: Add an Uploaded Document
----------------------------------
+Step 3: Check RAG Status
+--------------------------
 
-Add a file that you previously uploaded to VoIPBIN storage. Upload the file first via ``POST /storage-files``, then reference its ``id`` as ``storage_file_id``.
+The RAG's ``status`` field reflects the aggregate processing state of all its sources. Poll the RAG endpoint to check progress.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/rag-documents?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "name": "Product Manual v2.1 (PDF)",
-            "doc_type": "uploaded",
-            "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345"
-        }'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
 
-Response:
+Response (all sources processed):
 
 .. code::
 
     {
-        "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",   // Save this as uploaded_document_id
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "Product Manual v2.1 (PDF)",
-        "doc_type": "uploaded",
-        "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
-        "source_url": "",
-        "status": "pending",
-        "status_message": "",
-        "tm_create": "2026-03-15 09:15:00.000000",
-        "tm_update": "2026-03-15 09:15:00.000000"
-    }
-
-Step 4: Check Document Status
-------------------------------
-
-Documents are processed asynchronously. Poll the document endpoint to check processing progress.
-
-.. code::
-
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=<YOUR_AUTH_TOKEN>'
-
-Response (processing complete):
-
-.. code::
-
-    {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "Product FAQ Page",
-        "doc_type": "url",
-        "storage_file_id": "00000000-0000-0000-0000-000000000000",
-        "source_url": "https://docs.example.com/faq",
-        "status": "ready",                                // Processing complete
-        "status_message": "",
-        "tm_create": "2026-03-15 09:10:00.000000",
-        "tm_update": "2026-03-15 09:12:30.000000"
+        "name": "Product Documentation KB",
+        "description": "Knowledge base for product manuals, API docs, and FAQ articles",
+        "status": "ready",
+        "sources": [
+            {
+                "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+                "status": "ready",
+                "status_message": "42 chunks created"
+            },
+            {
+                "source_url": "https://docs.example.com/faq",
+                "status": "ready",
+                "status_message": "15 chunks created"
+            },
+            {
+                "source_url": "https://docs.example.com/getting-started",
+                "status": "ready",
+                "status_message": "28 chunks created"
+            }
+        ],
+        "tm_create": "2026-03-15 09:00:00.000000",
+        "tm_update": "2026-03-15 09:35:00.000000"
     }
 
 .. note:: **AI Implementation Hint**
 
-   Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. Only documents with ``status: ready`` are included in RAG query results. Documents with ``status: error`` should be investigated and re-created.
+   Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. When the RAG ``status`` is ``ready``, at least one source has been successfully processed and the RAG can be used for queries. Check individual source ``status`` fields for per-document details.
 
-Step 5: List Documents by RAG
--------------------------------
+Step 4: Check Individual Document Status
+-------------------------------------------
 
-List all documents belonging to a specific RAG by filtering on ``rag_id``.
+You can also check the status of individual documents via the ``GET /rag-documents`` endpoint.
 
 .. code::
 
@@ -186,7 +194,7 @@ Response:
         "next_page_token": ""
     }
 
-Step 6: Update RAG
+Step 5: Update RAG
 --------------------
 
 Update the RAG's name or description.
@@ -213,38 +221,7 @@ Response:
         "tm_update": "2026-03-15 10:00:00.000000"
     }
 
-Step 7: Delete a Document
---------------------------
-
-Delete a single document from the RAG. This removes the document and all its chunks from the vector database.
-
-.. code::
-
-    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=<YOUR_AUTH_TOKEN>'
-
-Response:
-
-.. code::
-
-    {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "Product FAQ Page",
-        "doc_type": "url",
-        "storage_file_id": "00000000-0000-0000-0000-000000000000",
-        "source_url": "https://docs.example.com/faq",
-        "status": "ready",
-        "status_message": "",
-        "tm_create": "2026-03-15 09:10:00.000000",
-        "tm_update": "2026-03-15 09:12:30.000000"
-    }
-
-.. note:: **AI Implementation Hint**
-
-   Deleting a document does not affect the RAG itself or other documents in the RAG. The deleted document's chunks are removed from the vector database, so subsequent RAG queries will no longer return results from that document. The storage file (if ``doc_type`` is ``uploaded``) is NOT deleted — manage storage files separately via ``DELETE /storage-files/{id}``.
-
-Step 8: Delete a RAG
+Step 6: Delete a RAG
 ----------------------
 
 Delete a RAG and all its documents. This is a cascade delete — all documents belonging to the RAG are deleted along with their vector database chunks.
@@ -281,10 +258,10 @@ Best Practices
 
 **Document Management:**
 
-- Check document ``status`` before relying on a RAG for AI conversations. Documents with ``status: pending`` or ``status: processing`` are not yet available for queries.
-- When source content changes, delete the old document and create a new one. Documents are immutable — there is no update endpoint.
-- For ``url`` documents, ensure the URL is publicly accessible. Private URLs behind authentication will fail during the fetch step.
-- For ``uploaded`` documents, upload the file to storage first via ``POST /storage-files``, verify the upload succeeded, then create the document.
+- Check the RAG ``status`` before relying on it for AI conversations. A RAG with ``status: processing`` still has documents being ingested.
+- When source content changes, delete the RAG and recreate it with the updated sources. Documents are immutable — there is no individual document update or delete endpoint.
+- For ``url`` sources, ensure the URL is publicly accessible. Private URLs behind authentication will fail during the fetch step.
+- For uploaded file sources, upload the file to storage first via ``POST /storage-files``, verify the upload succeeded, then provide the ``storage_file_id`` when creating or adding sources to a RAG.
 
 **Performance:**
 
@@ -295,29 +272,21 @@ Troubleshooting
 ---------------
 
 * **400 Bad Request:**
-    * **Cause:** Missing required field (e.g., ``name``, ``rag_id``, or ``doc_type``).
+    * **Cause:** Missing required field (e.g., ``name`` when creating a RAG).
     * **Fix:** Include all required fields in the request body. Verify field names match the API schema exactly.
 
 * **400 Bad Request:**
-    * **Cause:** ``doc_type`` is ``uploaded`` but ``storage_file_id`` is missing or set to the zero UUID.
-    * **Fix:** Upload a file via ``POST /storage-files`` first, then set ``storage_file_id`` to the returned ``id``.
-
-* **400 Bad Request:**
-    * **Cause:** ``doc_type`` is ``url`` but ``source_url`` is missing or not a valid URL.
-    * **Fix:** Provide a fully qualified URL starting with ``http://`` or ``https://``.
+    * **Cause:** Neither ``storage_file_ids`` nor ``source_urls`` provided when adding sources.
+    * **Fix:** Provide at least one ``storage_file_ids`` UUID or one ``source_urls`` URL.
 
 * **404 Not Found:**
     * **Cause:** The RAG or document UUID does not exist or belongs to a different customer.
     * **Fix:** Verify the UUID was obtained from a recent ``GET /rags`` or ``GET /rag-documents`` call.
 
-* **404 Not Found:**
-    * **Cause:** The ``rag_id`` specified when creating a document does not exist.
-    * **Fix:** Create the RAG first via ``POST /rags``, then use the returned ``id`` as ``rag_id``.
+* **RAG stuck in ``processing``:**
+    * **Cause:** One or more source documents are still being processed, or a source is temporarily unavailable.
+    * **Fix:** Check individual source statuses in the RAG response or via ``GET /rag-documents``. If a source has ``status: error``, check its ``status_message`` for details.
 
-* **Document stuck in ``pending`` or ``processing``:**
-    * **Cause:** Processing pipeline delay or the document source is temporarily unavailable.
-    * **Fix:** Wait and retry ``GET /rag-documents/{id}``. If the status does not change after several minutes, delete and re-create the document.
-
-* **Document status is ``error``:**
-    * **Cause:** The system failed to fetch, parse, or process the document content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.
-    * **Fix:** Check the ``status_message`` field for details. Fix the underlying issue (e.g., make the URL accessible, use a supported format) and create a new document.
+* **Source status is ``error``:**
+    * **Cause:** The system failed to fetch, parse, or process the source content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.
+    * **Fix:** Check the ``status_message`` field for details. Fix the underlying issue (e.g., make the URL accessible, use a supported format) and recreate the RAG with the corrected sources.

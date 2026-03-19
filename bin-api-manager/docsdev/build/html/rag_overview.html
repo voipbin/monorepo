@@ -193,14 +193,14 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
 <li><p><strong>Cost:</strong> Free for CRUD operations. Chargeable for document processing (parsing, chunking, and embedding consume credits).</p></li>
-<li><p><strong>Async:</strong> Yes. Document processing runs asynchronously after creation. Check status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rag-documents/{id}</span></code>.</p></li>
+<li><p><strong>Async:</strong> Yes. Document processing runs asynchronously after sources are added. Check RAG status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}</span></code> or individual document status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rag-documents/{id}</span></code>.</p></li>
 </ul>
 </div>
 <p>A <strong>RAG</strong> (Retrieval-Augmented Generation) is a knowledge base that lets your AI agents answer questions using your own content. Instead of relying solely on the LLM’s training data, the AI retrieves relevant passages from your uploaded documents and URLs at query time, grounding its responses in your authoritative content.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code>, add documents to it via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code>, then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
+<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> with <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> to provide initial documents. You can add more sources later via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>. Then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
 </div>
 </section>
 <section id="how-it-works">
@@ -288,7 +288,7 @@
 <span class="o">|</span>                     <span class="n">Document</span> <span class="n">Status</span> <span class="n">Lifecycle</span>                         <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">Created</span> <span class="n">via</span> <span class="n">POST</span>
+<span class="n">Source</span> <span class="n">added</span> <span class="n">via</span> <span class="n">POST</span> <span class="o">/</span><span class="n">rags</span> <span class="ow">or</span> <span class="n">POST</span> <span class="o">/</span><span class="n">rags</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">sources</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+-----------+</span>       <span class="o">+--------------+</span>       <span class="o">+-----------+</span>
@@ -305,7 +305,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>After creating a document via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rag-documents</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code> to check the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Do not assume the document is ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
+<p>After adding sources via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> to check the RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field, or poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code> for individual document status. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
 </div>
 </section>
 </section>
