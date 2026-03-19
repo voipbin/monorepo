@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Tutorial &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="team.html">Team</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tutorial</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/rag_tutorial.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="tutorial">
+<span id="rag-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before creating a RAG, you need:</p>
+<ul class="simple">
+<li><p>A valid authentication token (String). Obtain via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an accesskey from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
+<li><p>(Optional) A storage file ID (UUID) if you plan to upload documents. Upload files first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A RAG knowledge base is most useful when connected to an AI agent. After completing this tutorial, reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code> (set the <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field). The AI agent will then query this knowledge base during conversations.</p>
+</div>
+<section id="step-1-create-a-rag">
+<h3>Step 1: Create a RAG<a class="headerlink" href="#step-1-create-a-rag" title="Link to this heading"></a></h3>
+<p>Create a new RAG knowledge base to hold your documents.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Product Documentation KB&quot;,
+        &quot;description&quot;: &quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">rag_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-add-a-url-document">
+<h3>Step 2: Add a URL Document<a class="headerlink" href="#step-2-add-a-url-document" title="Link to this heading"></a></h3>
+<p>Add a web page to the RAG. The system will fetch the URL, parse the content, and create searchable chunks.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rag-documents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;rag_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;name&quot;: &quot;Product FAQ Page&quot;,
+        &quot;doc_type&quot;: &quot;url&quot;,
+        &quot;source_url&quot;: &quot;https://docs.example.com/faq&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">document_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>                              <span class="o">//</span> <span class="n">Processing</span> <span class="n">has</span> <span class="ow">not</span> <span class="n">started</span> <span class="n">yet</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-add-an-uploaded-document">
+<h3>Step 3: Add an Uploaded Document<a class="headerlink" href="#step-3-add-an-uploaded-document" title="Link to this heading"></a></h3>
+<p>Add a file that you previously uploaded to VoIPBIN storage. Upload the file first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>, then reference its <code class="docutils literal notranslate"><span class="pre">id</span></code> as <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rag-documents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;rag_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;name&quot;: &quot;Product Manual v2.1 (PDF)&quot;,
+        &quot;doc_type&quot;: &quot;uploaded&quot;,
+        &quot;storage_file_id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">uploaded_document_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Manual v2.1 (PDF)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;uploaded&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:15:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:15:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-check-document-status">
+<h3>Step 4: Check Document Status<a class="headerlink" href="#step-4-check-document-status" title="Link to this heading"></a></h3>
+<p>Documents are processed asynchronously. Poll the document endpoint to check processing progress.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response (processing complete):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>                                <span class="o">//</span> <span class="n">Processing</span> <span class="n">complete</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:12:30.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> are included in RAG query results. Documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">error</span></code> should be investigated and re-created.</p>
+</div>
+</section>
+<section id="step-5-list-documents-by-rag">
+<h3>Step 5: List Documents by RAG<a class="headerlink" href="#step-5-list-documents-by-rag" title="Link to this heading"></a></h3>
+<p>List all documents belonging to a specific RAG by filtering on <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rag-documents?rag_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:12:30.000000&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-345678901234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Manual v2.1 (PDF)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;uploaded&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:15:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:17:45.000000&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-update-rag">
+<h3>Step 6: Update RAG<a class="headerlink" href="#step-6-update-rag" title="Link to this heading"></a></h3>
+<p>Update the RAG’s name or description.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Product Documentation KB (v2)&quot;,
+        &quot;description&quot;: &quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB (v2)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 10:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-7-delete-a-document">
+<h3>Step 7: Delete a Document<a class="headerlink" href="#step-7-delete-a-document" title="Link to this heading"></a></h3>
+<p>Delete a single document from the RAG. This removes the document and all its chunks from the vector database.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rag-documents/b2c3d4e5-f6a7-8901-bcde-f23456789012?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rag_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product FAQ Page&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;doc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:10:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:12:30.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting a document does not affect the RAG itself or other documents in the RAG. The deleted document’s chunks are removed from the vector database, so subsequent RAG queries will no longer return results from that document. The storage file (if <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">uploaded</span></code>) is NOT deleted — manage storage files separately via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/storage-files/{id}</span></code>.</p>
+</div>
+</section>
+<section id="step-8-delete-a-rag">
+<h3>Step 8: Delete a RAG<a class="headerlink" href="#step-8-delete-a-rag" title="Link to this heading"></a></h3>
+<p>Delete a RAG and all its documents. This is a cascade delete — all documents belonging to the RAG are deleted along with their vector database chunks.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB (v2)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 10:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting a RAG performs a cascade delete — all documents in the RAG are automatically deleted, and their chunks are removed from the vector database. If any AI configuration references this RAG (via <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>), the AI will no longer have access to this knowledge base. Update or remove the <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> from affected AI configurations via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code> to avoid runtime errors.</p>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>Knowledge Base Design:</strong></p>
+<ul class="simple">
+<li><p>Create separate RAGs for distinct knowledge domains (e.g., one for product docs, another for internal policies). This keeps retrieval focused and relevant.</p></li>
+<li><p>Use descriptive <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">description</span></code> fields to make RAGs easy to identify when managing multiple knowledge bases.</p></li>
+<li><p>Keep documents focused on a single topic when possible. A 5-page FAQ document retrieves more precisely than a 500-page monolithic manual.</p></li>
+</ul>
+<p><strong>Document Management:</strong></p>
+<ul class="simple">
+<li><p>Check document <code class="docutils literal notranslate"><span class="pre">status</span></code> before relying on a RAG for AI conversations. Documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">pending</span></code> or <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">processing</span></code> are not yet available for queries.</p></li>
+<li><p>When source content changes, delete the old document and create a new one. Documents are immutable — there is no update endpoint.</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">url</span></code> documents, ensure the URL is publicly accessible. Private URLs behind authentication will fail during the fetch step.</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">uploaded</span></code> documents, upload the file to storage first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code>, verify the upload succeeded, then create the document.</p></li>
+</ul>
+<p><strong>Performance:</strong></p>
+<ul class="simple">
+<li><p>Smaller, well-structured documents produce better retrieval results than large unstructured documents.</p></li>
+<li><p>Add multiple targeted documents rather than one massive document covering everything.</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Missing required field (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>, or <code class="docutils literal notranslate"><span class="pre">doc_type</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Include all required fields in the request body. Verify field names match the API schema exactly.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">uploaded</span></code> but <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> is missing or set to the zero UUID.</p></li>
+<li><p><strong>Fix:</strong> Upload a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage-files</span></code> first, then set <code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> to the returned <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">doc_type</span></code> is <code class="docutils literal notranslate"><span class="pre">url</span></code> but <code class="docutils literal notranslate"><span class="pre">source_url</span></code> is missing or not a valid URL.</p></li>
+<li><p><strong>Fix:</strong> Provide a fully qualified URL starting with <code class="docutils literal notranslate"><span class="pre">http://</span></code> or <code class="docutils literal notranslate"><span class="pre">https://</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The RAG or document UUID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents</span></code> call.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> specified when creating a document does not exist.</p></li>
+<li><p><strong>Fix:</strong> Create the RAG first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code>, then use the returned <code class="docutils literal notranslate"><span class="pre">id</span></code> as <code class="docutils literal notranslate"><span class="pre">rag_id</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Document stuck in ``pending`` or ``processing``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Processing pipeline delay or the document source is temporarily unavailable.</p></li>
+<li><p><strong>Fix:</strong> Wait and retry <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rag-documents/{id}</span></code>. If the status does not change after several minutes, delete and re-create the document.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Document status is ``error``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The system failed to fetch, parse, or process the document content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.</p></li>
+<li><p><strong>Fix:</strong> Check the <code class="docutils literal notranslate"><span class="pre">status_message</span></code> field for details. Fix the underlying issue (e.g., make the URL accessible, use a supported format) and create a new document.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#step-1-create-a-rag">Step 1: Create a RAG</a></li>
+<li><a class="reference internal" href="#step-2-add-a-url-document">Step 2: Add a URL Document</a></li>
+<li><a class="reference internal" href="#step-3-add-an-uploaded-document">Step 3: Add an Uploaded Document</a></li>
+<li><a class="reference internal" href="#step-4-check-document-status">Step 4: Check Document Status</a></li>
+<li><a class="reference internal" href="#step-5-list-documents-by-rag">Step 5: List Documents by RAG</a></li>
+<li><a class="reference internal" href="#step-6-update-rag">Step 6: Update RAG</a></li>
+<li><a class="reference internal" href="#step-7-delete-a-document">Step 7: Delete a Document</a></li>
+<li><a class="reference internal" href="#step-8-delete-a-rag">Step 8: Delete a RAG</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 7.2.6
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
