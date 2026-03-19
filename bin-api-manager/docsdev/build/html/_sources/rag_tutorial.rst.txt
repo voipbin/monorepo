@@ -149,52 +149,7 @@ Response (all sources processed):
 
    Poll with a reasonable interval (e.g., every 5 seconds). Processing time depends on document size: a short FAQ page may complete in seconds, while a large PDF manual may take several minutes. When the RAG ``status`` is ``ready``, at least one source has been successfully processed and the RAG can be used for queries. Check individual source ``status`` fields for per-document details.
 
-Step 4: Check Individual Document Status
--------------------------------------------
-
-You can also check the status of individual documents via the ``GET /rag-documents`` endpoint.
-
-.. code::
-
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/rag-documents?rag_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890&token=<YOUR_AUTH_TOKEN>'
-
-Response:
-
-.. code::
-
-    {
-        "result": [
-            {
-                "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                "name": "Product FAQ Page",
-                "doc_type": "url",
-                "storage_file_id": "00000000-0000-0000-0000-000000000000",
-                "source_url": "https://docs.example.com/faq",
-                "status": "ready",
-                "status_message": "",
-                "tm_create": "2026-03-15 09:10:00.000000",
-                "tm_update": "2026-03-15 09:12:30.000000"
-            },
-            {
-                "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
-                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                "name": "Product Manual v2.1 (PDF)",
-                "doc_type": "uploaded",
-                "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
-                "source_url": "",
-                "status": "ready",
-                "status_message": "",
-                "tm_create": "2026-03-15 09:15:00.000000",
-                "tm_update": "2026-03-15 09:17:45.000000"
-            }
-        ],
-        "next_page_token": ""
-    }
-
-Step 5: Update RAG
+Step 4: Update RAG
 --------------------
 
 Update the RAG's name or description.
@@ -221,7 +176,7 @@ Response:
         "tm_update": "2026-03-15 10:00:00.000000"
     }
 
-Step 6: Delete a RAG
+Step 5: Delete a RAG
 ----------------------
 
 Delete a RAG and all its documents. This is a cascade delete — all documents belonging to the RAG are deleted along with their vector database chunks.
@@ -281,11 +236,11 @@ Troubleshooting
 
 * **404 Not Found:**
     * **Cause:** The RAG or document UUID does not exist or belongs to a different customer.
-    * **Fix:** Verify the UUID was obtained from a recent ``GET /rags`` or ``GET /rag-documents`` call.
+    * **Fix:** Verify the UUID was obtained from a recent ``GET /rags`` call.
 
 * **RAG stuck in ``processing``:**
     * **Cause:** One or more source documents are still being processed, or a source is temporarily unavailable.
-    * **Fix:** Check individual source statuses in the RAG response or via ``GET /rag-documents``. If a source has ``status: error``, check its ``status_message`` for details.
+    * **Fix:** Check individual source statuses in the ``sources`` array of the ``GET /rags/{id}`` response. If a source has ``status: error``, check its ``status_message`` for details.
 
 * **Source status is ``error``:**
     * **Cause:** The system failed to fetch, parse, or process the source content. Common reasons include unreachable URLs, unsupported file formats, or empty documents.

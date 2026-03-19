@@ -9,5 +9,4 @@ Build a knowledge base from documents and URLs to power AI-assisted conversation
 
 .. include:: rag_overview.rst
 .. include:: rag_struct_rag.rst
-.. include:: rag_struct_document.rst
 .. include:: rag_tutorial.rst

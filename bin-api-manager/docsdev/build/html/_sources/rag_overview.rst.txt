@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free for CRUD operations. Chargeable for document processing (parsing, chunking, and embedding consume credits).
-   * **Async:** Yes. Document processing runs asynchronously after sources are added. Check RAG status via ``GET https://api.voipbin.net/v1.0/rags/{id}`` or individual document status via ``GET https://api.voipbin.net/v1.0/rag-documents/{id}``.
+   * **Async:** Yes. Document processing runs asynchronously after sources are added. Check the ``sources`` array in the RAG response for per-document status.
 
 A **RAG** (Retrieval-Augmented Generation) is a knowledge base that lets your AI agents answer questions using your own content. Instead of relying solely on the LLM's training data, the AI retrieves relevant passages from your uploaded documents and URLs at query time, grounding its responses in your authoritative content.
 
@@ -118,7 +118,7 @@ Documents progress through a status lifecycle during processing:
 
 .. note:: **AI Implementation Hint**
 
-   After adding sources via ``POST /rags`` or ``POST /rags/{id}/sources``, poll ``GET /rags/{id}`` to check the RAG's ``status`` field, or poll ``GET /rag-documents/{id}`` for individual document status. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
+   After adding sources via ``POST /rags`` or ``POST /rags/{id}/sources``, poll ``GET /rags/{id}`` to check the RAG's ``status`` field. Each entry in the ``sources`` array shows per-document ``status`` and ``status_message``. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
 
 Use Cases
 =========

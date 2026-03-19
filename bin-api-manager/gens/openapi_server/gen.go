@@ -746,14 +746,6 @@ const (
 	QueueManagerQueuecallStatusWaiting    QueueManagerQueuecallStatus = "waiting"
 )
 
-// Defines values for RagManagerRagDocumentDocType.
-const (
-	RagManagerRagDocumentDocTypeGenerated RagManagerRagDocumentDocType = "generated"
-	RagManagerRagDocumentDocTypePlatform  RagManagerRagDocumentDocType = "platform"
-	RagManagerRagDocumentDocTypeUploaded  RagManagerRagDocumentDocType = "uploaded"
-	RagManagerRagDocumentDocTypeUrl       RagManagerRagDocumentDocType = "url"
-)
-
 // Defines values for RagManagerRagDocumentStatus.
 const (
 	RagManagerRagDocumentStatusError      RagManagerRagDocumentStatus = "error"
@@ -3547,45 +3539,6 @@ type RagManagerRag struct {
 	TmUpdate *time.Time `json:"tm_update,omitempty"`
 }
 
-// RagManagerRagDocument defines model for RagManagerRagDocument.
-type RagManagerRagDocument struct {
-	// CustomerId The customer ID that owns this document.
-	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
-
-	// DocType The document source type. Determines how the document content is obtained.
-	DocType *RagManagerRagDocumentDocType `json:"doc_type,omitempty"`
-
-	// Id The unique identifier of the document. Returned from the `POST /rag-documents` response.
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// Name Human-readable name for the document.
-	Name *string `json:"name,omitempty"`
-
-	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
-	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
-
-	// SourceUrl The source URL if doc_type is url.
-	SourceUrl *string `json:"source_url,omitempty"`
-
-	// Status The document processing status. Indicates the current stage of document ingestion.
-	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
-
-	// StatusMessage Additional details about the current status.
-	StatusMessage *string `json:"status_message,omitempty"`
-
-	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
-	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
-
-	// TmCreate Timestamp when the document was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// TmUpdate Timestamp when the document was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
-}
-
-// RagManagerRagDocumentDocType The document source type. Determines how the document content is obtained.
-type RagManagerRagDocumentDocType string
-
 // RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
 type RagManagerRagDocumentStatus string
 
@@ -5560,18 +5513,6 @@ type PutQueuesIdTagIdsJSONBody struct {
 	TagIds []string `json:"tag_ids"`
 }
 
-// GetRagDocumentsParams defines parameters for GetRagDocuments.
-type GetRagDocumentsParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-
-	// RagId Filter documents by rag ID. Returned from the `POST /rags` response.
-	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
-}
-
 // GetRagsParams defines parameters for GetRags.
 type GetRagsParams struct {
 	// PageSize Number of results to return per page.
@@ -7169,12 +7110,6 @@ type ServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(c *gin.Context, id string)
-	// Get a list of rag documents
-	// (GET /rag-documents)
-	GetRagDocuments(c *gin.Context, params GetRagDocumentsParams)
-	// Get rag document details
-	// (GET /rag-documents/{id})
-	GetRagDocumentsId(c *gin.Context, id openapi_types.UUID)
 	// Get a list of rags
 	// (GET /rags)
 	GetRags(c *gin.Context, params GetRagsParams)
@@ -12526,72 +12461,6 @@ func (siw *ServerInterfaceWrapper) PutQueuesIdTagIds(c *gin.Context) {
 	siw.Handler.PutQueuesIdTagIds(c, id)
 }
 
-// GetRagDocuments operation middleware
-func (siw *ServerInterfaceWrapper) GetRagDocuments(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetRagDocumentsParams
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "rag_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "rag_id", c.Request.URL.Query(), &params.RagId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rag_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetRagDocuments(c, params)
-}
-
-// GetRagDocumentsId operation middleware
-func (siw *ServerInterfaceWrapper) GetRagDocumentsId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetRagDocumentsId(c, id)
-}
-
 // GetRags operation middleware
 func (siw *ServerInterfaceWrapper) GetRags(c *gin.Context) {
 
@@ -15543,8 +15412,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/queues/:id", wrapper.PutQueuesId)
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
-	router.GET(options.BaseURL+"/rag-documents", wrapper.GetRagDocuments)
-	router.GET(options.BaseURL+"/rag-documents/:id", wrapper.GetRagDocumentsId)
 	router.GET(options.BaseURL+"/rags", wrapper.GetRags)
 	router.POST(options.BaseURL+"/rags", wrapper.PostRags)
 	router.DELETE(options.BaseURL+"/rags/:id", wrapper.DeleteRagsId)
@@ -19504,44 +19371,6 @@ func (response PutQueuesIdTagIds200JSONResponse) VisitPutQueuesIdTagIdsResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRagDocumentsRequestObject struct {
-	Params GetRagDocumentsParams
-}
-
-type GetRagDocumentsResponseObject interface {
-	VisitGetRagDocumentsResponse(w http.ResponseWriter) error
-}
-
-type GetRagDocuments200JSONResponse struct {
-	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
-	NextPageToken *string                  `json:"next_page_token,omitempty"`
-	Result        *[]RagManagerRagDocument `json:"result,omitempty"`
-}
-
-func (response GetRagDocuments200JSONResponse) VisitGetRagDocumentsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetRagDocumentsIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type GetRagDocumentsIdResponseObject interface {
-	VisitGetRagDocumentsIdResponse(w http.ResponseWriter) error
-}
-
-type GetRagDocumentsId200JSONResponse RagManagerRagDocument
-
-func (response GetRagDocumentsId200JSONResponse) VisitGetRagDocumentsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type GetRagsRequestObject struct {
 	Params GetRagsParams
 }
@@ -22376,12 +22205,6 @@ type StrictServerInterface interface {
 	// Update the queue's tag IDs
 	// (PUT /queues/{id}/tag_ids)
 	PutQueuesIdTagIds(ctx context.Context, request PutQueuesIdTagIdsRequestObject) (PutQueuesIdTagIdsResponseObject, error)
-	// Get a list of rag documents
-	// (GET /rag-documents)
-	GetRagDocuments(ctx context.Context, request GetRagDocumentsRequestObject) (GetRagDocumentsResponseObject, error)
-	// Get rag document details
-	// (GET /rag-documents/{id})
-	GetRagDocumentsId(ctx context.Context, request GetRagDocumentsIdRequestObject) (GetRagDocumentsIdResponseObject, error)
 	// Get a list of rags
 	// (GET /rags)
 	GetRags(ctx context.Context, request GetRagsRequestObject) (GetRagsResponseObject, error)
@@ -28795,60 +28618,6 @@ func (sh *strictHandler) PutQueuesIdTagIds(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutQueuesIdTagIdsResponseObject); ok {
 		if err := validResponse.VisitPutQueuesIdTagIdsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetRagDocuments operation middleware
-func (sh *strictHandler) GetRagDocuments(ctx *gin.Context, params GetRagDocumentsParams) {
-	var request GetRagDocumentsRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetRagDocuments(ctx, request.(GetRagDocumentsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetRagDocuments")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetRagDocumentsResponseObject); ok {
-		if err := validResponse.VisitGetRagDocumentsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetRagDocumentsId operation middleware
-func (sh *strictHandler) GetRagDocumentsId(ctx *gin.Context, id openapi_types.UUID) {
-	var request GetRagDocumentsIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetRagDocumentsId(ctx, request.(GetRagDocumentsIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetRagDocumentsId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetRagDocumentsIdResponseObject); ok {
-		if err := validResponse.VisitGetRagDocumentsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
