@@ -35,12 +35,17 @@ type RagHandler interface {
 	RunIngestionTicker(ctx context.Context, interval time.Duration)
 }
 
+// maxConcurrentIngestions limits how many documents can be ingested simultaneously
+// to avoid overwhelming the embedding API, file descriptors, and memory.
+const maxConcurrentIngestions = 5
+
 type ragHandler struct {
 	embedder     embedder.Embedder
 	dbHandler    dbhandler.DBHandler
 	reqHandler   requesthandler.RequestHandler
 	bucketReader bucketreader.BucketReader
 	bucketName   string
+	ingestSem    chan struct{} // semaphore to limit concurrent ingestion goroutines
 }
 
 // NewRagHandler creates a new RagHandler
@@ -57,5 +62,6 @@ func NewRagHandler(
 		reqHandler:   reqH,
 		bucketReader: br,
 		bucketName:   bucketName,
+		ingestSem:    make(chan struct{}, maxConcurrentIngestions),
 	}
 }

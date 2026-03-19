@@ -202,37 +202,36 @@ func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, 
 }
 
 // computeRagStatus derives RAG status from its documents.
+// Priority: processing > error-only > ready.
+// If any doc is pending/processing, the RAG is "processing".
+// If all docs are terminal (ready or error) and at least one is ready, the RAG is "ready"
+// (individual source errors are visible in the sources list).
+// If all docs are error, the RAG is "error".
 func computeRagStatus(docs []*document.Document) document.Status {
 	if len(docs) == 0 {
 		return document.StatusPending
 	}
 
-	hasPending := false
-	hasProcessing := false
+	hasReady := false
 	hasError := false
-	allReady := true
+	hasInProgress := false
 
 	for _, d := range docs {
 		switch d.Status {
-		case document.StatusPending:
-			hasPending = true
-			allReady = false
-		case document.StatusProcessing:
-			hasProcessing = true
-			allReady = false
+		case document.StatusPending, document.StatusProcessing:
+			hasInProgress = true
+		case document.StatusReady:
+			hasReady = true
 		case document.StatusError:
 			hasError = true
-			allReady = false
-		case document.StatusReady:
-			// no-op
 		}
 	}
 
-	if allReady {
-		return document.StatusReady
-	}
-	if hasPending || hasProcessing {
+	if hasInProgress {
 		return document.StatusProcessing
+	}
+	if hasReady {
+		return document.StatusReady
 	}
 	if hasError {
 		return document.StatusError

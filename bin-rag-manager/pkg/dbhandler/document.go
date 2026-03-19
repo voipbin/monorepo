@@ -431,11 +431,14 @@ func (h *handler) DocumentGetPending(ctx context.Context) ([]*document.Document,
 }
 
 // DocumentResetStaleToPending resets documents stuck in processing back to pending status.
+// Only resets documents with retry_count < 3 (still have retries left).
+// Documents with retry_count >= 3 are set to error status instead.
 func (h *handler) DocumentResetStaleToPending(ctx context.Context, threshold time.Duration) error {
 	now := h.utilHandler.TimeNow()
 	cutoff := now.Add(-threshold)
 
-	q := psql.
+	// Reset retryable documents to pending
+	qRetryable := psql.
 		Update(tableDocuments).
 		SetMap(map[string]any{
 			"status":    document.StatusPending,
@@ -443,16 +446,38 @@ func (h *handler) DocumentResetStaleToPending(ctx context.Context, threshold tim
 		}).
 		Where(sq.Eq{"status": document.StatusProcessing}).
 		Where(sq.Lt{"tm_processing": cutoff}).
+		Where(sq.Lt{"retry_count": 3}).
 		Where("tm_delete IS NULL")
 
-	sqlStr, args, err := q.ToSql()
+	sqlStr, args, err := qRetryable.ToSql()
 	if err != nil {
 		return fmt.Errorf("could not build reset query: %w", err)
 	}
 
-	_, err = h.db.ExecContext(ctx, sqlStr, args...)
-	if err != nil {
+	if _, err = h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("could not reset stale documents: %w", err)
+	}
+
+	// Set exhausted-retry documents to error
+	qExhausted := psql.
+		Update(tableDocuments).
+		SetMap(map[string]any{
+			"status":         document.StatusError,
+			"status_message": "max retries exceeded (stale processing)",
+			"tm_update":      now,
+		}).
+		Where(sq.Eq{"status": document.StatusProcessing}).
+		Where(sq.Lt{"tm_processing": cutoff}).
+		Where(sq.GtOrEq{"retry_count": 3}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err = qExhausted.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build exhausted reset query: %w", err)
+	}
+
+	if _, err = h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("could not set exhausted documents to error: %w", err)
 	}
 
 	return nil

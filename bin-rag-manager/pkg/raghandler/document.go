@@ -23,6 +23,7 @@ const (
 	maxRetryCount     = 3
 	maxTokensPerChunk = 512
 	heartbeatInterval = 10 // Update heartbeat every 10 chunks
+	urlDownloadTimeout = 5 * time.Minute
 )
 
 func (h *ragHandler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error) {
@@ -105,11 +106,17 @@ func (h *ragHandler) documentCreateInternal(ctx context.Context, customerID, rag
 
 // documentIngest is the core async ingestion pipeline.
 // It runs in a goroutine with context.Background().
+// Acquires the ingestion semaphore to limit concurrent processing.
 func (h *ragHandler) documentIngest(doc *document.Document) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "documentIngest",
 		"document_id": doc.ID,
 	})
+
+	// Acquire semaphore slot to limit concurrent ingestion
+	h.ingestSem <- struct{}{}
+	defer func() { <-h.ingestSem }()
+
 	ctx := context.Background()
 
 	// Step 1: Atomic claim
@@ -250,12 +257,25 @@ func (h *ragHandler) documentDownloadGCS(ctx context.Context, storageFileID uuid
 
 // documentDownloadURL downloads a URL to a temp file with size limit enforcement.
 func (h *ragHandler) documentDownloadURL(ctx context.Context, sourceURL string) (string, string, string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sourceURL, nil)
+	// Validate URL scheme to prevent SSRF (e.g., file://, ftp://)
+	parsedSourceURL, err := url.Parse(sourceURL)
+	if err != nil {
+		return "", "", "", fmt.Errorf("invalid URL: %w", err)
+	}
+	if parsedSourceURL.Scheme != "http" && parsedSourceURL.Scheme != "https" {
+		return "", "", "", fmt.Errorf("unsupported URL scheme %q: only http and https are allowed", parsedSourceURL.Scheme)
+	}
+
+	dlCtx, cancel := context.WithTimeout(ctx, urlDownloadTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(dlCtx, http.MethodGet, sourceURL, nil)
 	if err != nil {
 		return "", "", "", fmt.Errorf("could not create request: %w", err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	httpClient := &http.Client{Timeout: urlDownloadTimeout}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", "", "", fmt.Errorf("could not fetch URL: %w", err)
 	}
