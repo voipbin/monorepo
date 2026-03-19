@@ -15,6 +15,7 @@ import (
 	document "monorepo/bin-rag-manager/models/document"
 	rag "monorepo/bin-rag-manager/models/rag"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -144,6 +145,21 @@ func (mr *MockDBHandlerMockRecorder) ChunkSoftDeleteByRagID(ctx, ragID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChunkSoftDeleteByRagID", reflect.TypeOf((*MockDBHandler)(nil).ChunkSoftDeleteByRagID), ctx, ragID)
 }
 
+// DocumentClaimForProcessing mocks base method.
+func (m *MockDBHandler) DocumentClaimForProcessing(ctx context.Context, id uuid.UUID) (*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentClaimForProcessing", ctx, id)
+	ret0, _ := ret[0].(*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentClaimForProcessing indicates an expected call of DocumentClaimForProcessing.
+func (mr *MockDBHandlerMockRecorder) DocumentClaimForProcessing(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentClaimForProcessing", reflect.TypeOf((*MockDBHandler)(nil).DocumentClaimForProcessing), ctx, id)
+}
+
 // DocumentCreate mocks base method.
 func (m *MockDBHandler) DocumentCreate(ctx context.Context, d *document.Document) error {
 	m.ctrl.T.Helper()
@@ -201,6 +217,66 @@ func (mr *MockDBHandlerMockRecorder) DocumentGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGet", reflect.TypeOf((*MockDBHandler)(nil).DocumentGet), ctx, id)
 }
 
+// DocumentGetPending mocks base method.
+func (m *MockDBHandler) DocumentGetPending(ctx context.Context) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetPending", ctx)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetPending indicates an expected call of DocumentGetPending.
+func (mr *MockDBHandlerMockRecorder) DocumentGetPending(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetPending", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetPending), ctx)
+}
+
+// DocumentGetStale mocks base method.
+func (m *MockDBHandler) DocumentGetStale(ctx context.Context, threshold time.Duration) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetStale", ctx, threshold)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetStale indicates an expected call of DocumentGetStale.
+func (mr *MockDBHandlerMockRecorder) DocumentGetStale(ctx, threshold any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetStale", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetStale), ctx, threshold)
+}
+
+// DocumentGetsByRagID mocks base method.
+func (m *MockDBHandler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetsByRagID", ctx, ragID)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetsByRagID indicates an expected call of DocumentGetsByRagID.
+func (mr *MockDBHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByRagID), ctx, ragID)
+}
+
+// DocumentGetsByRagIDs mocks base method.
+func (m *MockDBHandler) DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) (map[uuid.UUID][]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetsByRagIDs", ctx, ragIDs)
+	ret0, _ := ret[0].(map[uuid.UUID][]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetsByRagIDs indicates an expected call of DocumentGetsByRagIDs.
+func (mr *MockDBHandlerMockRecorder) DocumentGetsByRagIDs(ctx, ragIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagIDs", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByRagIDs), ctx, ragIDs)
+}
+
 // DocumentList mocks base method.
 func (m *MockDBHandler) DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error) {
 	m.ctrl.T.Helper()
@@ -216,6 +292,20 @@ func (mr *MockDBHandlerMockRecorder) DocumentList(ctx, size, token, filters any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentList", reflect.TypeOf((*MockDBHandler)(nil).DocumentList), ctx, size, token, filters)
 }
 
+// DocumentResetStaleToPending mocks base method.
+func (m *MockDBHandler) DocumentResetStaleToPending(ctx context.Context, threshold time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentResetStaleToPending", ctx, threshold)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DocumentResetStaleToPending indicates an expected call of DocumentResetStaleToPending.
+func (mr *MockDBHandlerMockRecorder) DocumentResetStaleToPending(ctx, threshold any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentResetStaleToPending", reflect.TypeOf((*MockDBHandler)(nil).DocumentResetStaleToPending), ctx, threshold)
+}
+
 // DocumentUpdate mocks base method.
 func (m *MockDBHandler) DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[document.Field]any) error {
 	m.ctrl.T.Helper()
@@ -228,6 +318,20 @@ func (m *MockDBHandler) DocumentUpdate(ctx context.Context, id uuid.UUID, fields
 func (mr *MockDBHandlerMockRecorder) DocumentUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentUpdate", reflect.TypeOf((*MockDBHandler)(nil).DocumentUpdate), ctx, id, fields)
+}
+
+// DocumentUpdateHeartbeat mocks base method.
+func (m *MockDBHandler) DocumentUpdateHeartbeat(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentUpdateHeartbeat", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DocumentUpdateHeartbeat indicates an expected call of DocumentUpdateHeartbeat.
+func (mr *MockDBHandlerMockRecorder) DocumentUpdateHeartbeat(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentUpdateHeartbeat", reflect.TypeOf((*MockDBHandler)(nil).DocumentUpdateHeartbeat), ctx, id)
 }
 
 // RagCreate mocks base method.

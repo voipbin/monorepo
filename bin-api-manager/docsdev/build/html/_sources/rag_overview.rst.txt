@@ -7,13 +7,13 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free for CRUD operations. Chargeable for document processing (parsing, chunking, and embedding consume credits).
-   * **Async:** Yes. Document processing runs asynchronously after creation. Check status via ``GET https://api.voipbin.net/v1.0/rag-documents/{id}``.
+   * **Async:** Yes. Document processing runs asynchronously after sources are added. Check RAG status via ``GET https://api.voipbin.net/v1.0/rags/{id}`` or individual document status via ``GET https://api.voipbin.net/v1.0/rag-documents/{id}``.
 
 A **RAG** (Retrieval-Augmented Generation) is a knowledge base that lets your AI agents answer questions using your own content. Instead of relying solely on the LLM's training data, the AI retrieves relevant passages from your uploaded documents and URLs at query time, grounding its responses in your authoritative content.
 
 .. note:: **AI Implementation Hint**
 
-   A RAG is a configuration resource, not a runtime entity. You create a RAG via ``POST /rags``, add documents to it via ``POST /rag-documents``, then reference the RAG's ``id`` in an AI configuration (``rag_id`` field on ``POST /ais`` or ``PUT /ais/{id}``). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.
+   A RAG is a configuration resource, not a runtime entity. You create a RAG via ``POST /rags`` with ``storage_file_ids`` and/or ``source_urls`` to provide initial documents. You can add more sources later via ``POST /rags/{id}/sources``. Then reference the RAG's ``id`` in an AI configuration (``rag_id`` field on ``POST /ais`` or ``PUT /ais/{id}``). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.
 
 How it works
 ============
@@ -103,7 +103,7 @@ Documents progress through a status lifecycle during processing:
     |                     Document Status Lifecycle                         |
     +-----------------------------------------------------------------------+
 
-    Created via POST
+    Source added via POST /rags or POST /rags/{id}/sources
          |
          v
     +-----------+       +--------------+       +-----------+
@@ -118,7 +118,7 @@ Documents progress through a status lifecycle during processing:
 
 .. note:: **AI Implementation Hint**
 
-   After creating a document via ``POST /rag-documents``, poll ``GET /rag-documents/{id}`` to check the ``status`` field. Do not assume the document is ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
+   After adding sources via ``POST /rags`` or ``POST /rags/{id}/sources``, poll ``GET /rags/{id}`` to check the RAG's ``status`` field, or poll ``GET /rag-documents/{id}`` for individual document status. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
 
 Use Cases
 =========

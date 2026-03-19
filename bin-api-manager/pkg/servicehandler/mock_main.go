@@ -3163,19 +3163,34 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallList), ctx, a, size, token)
 }
 
-// RagCreate mocks base method.
-func (m *MockServiceHandler) RagCreate(ctx context.Context, a *agent.Agent, name, description string) (*rag.WebhookMessage, error) {
+// RagAddSources mocks base method.
+func (m *MockServiceHandler) RagAddSources(ctx context.Context, a *agent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagCreate", ctx, a, name, description)
+	ret := m.ctrl.Call(m, "RagAddSources", ctx, a, ragID, storageFileIDs, sourceURLs)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagAddSources indicates an expected call of RagAddSources.
+func (mr *MockServiceHandlerMockRecorder) RagAddSources(ctx, a, ragID, storageFileIDs, sourceURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagAddSources", reflect.TypeOf((*MockServiceHandler)(nil).RagAddSources), ctx, a, ragID, storageFileIDs, sourceURLs)
+}
+
+// RagCreate mocks base method.
+func (m *MockServiceHandler) RagCreate(ctx context.Context, a *agent.Agent, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagCreate", ctx, a, name, description, storageFileIDs, sourceURLs)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RagCreate indicates an expected call of RagCreate.
-func (mr *MockServiceHandlerMockRecorder) RagCreate(ctx, a, name, description any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) RagCreate(ctx, a, name, description, storageFileIDs, sourceURLs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockServiceHandler)(nil).RagCreate), ctx, a, name, description)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagCreate", reflect.TypeOf((*MockServiceHandler)(nil).RagCreate), ctx, a, name, description, storageFileIDs, sourceURLs)
 }
 
 // RagDelete mocks base method.
@@ -3191,36 +3206,6 @@ func (m *MockServiceHandler) RagDelete(ctx context.Context, a *agent.Agent, id u
 func (mr *MockServiceHandlerMockRecorder) RagDelete(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDelete", reflect.TypeOf((*MockServiceHandler)(nil).RagDelete), ctx, a, id)
-}
-
-// RagDocumentCreate mocks base method.
-func (m *MockServiceHandler) RagDocumentCreate(ctx context.Context, a *agent.Agent, ragID uuid.UUID, name string, docType document.DocType, sourceURL string, storageFileID uuid.UUID) (*document.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagDocumentCreate", ctx, a, ragID, name, docType, sourceURL, storageFileID)
-	ret0, _ := ret[0].(*document.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RagDocumentCreate indicates an expected call of RagDocumentCreate.
-func (mr *MockServiceHandlerMockRecorder) RagDocumentCreate(ctx, a, ragID, name, docType, sourceURL, storageFileID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentCreate", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentCreate), ctx, a, ragID, name, docType, sourceURL, storageFileID)
-}
-
-// RagDocumentDelete mocks base method.
-func (m *MockServiceHandler) RagDocumentDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*document.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RagDocumentDelete", ctx, a, id)
-	ret0, _ := ret[0].(*document.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RagDocumentDelete indicates an expected call of RagDocumentDelete.
-func (mr *MockServiceHandlerMockRecorder) RagDocumentDelete(ctx, a, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagDocumentDelete", reflect.TypeOf((*MockServiceHandler)(nil).RagDocumentDelete), ctx, a, id)
 }
 
 // RagDocumentGet mocks base method.

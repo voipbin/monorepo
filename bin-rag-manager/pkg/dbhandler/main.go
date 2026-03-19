@@ -5,6 +5,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -35,6 +36,13 @@ type DBHandler interface {
 	DocumentUpdate(ctx context.Context, id uuid.UUID, fields map[document.Field]any) error
 	DocumentDelete(ctx context.Context, id uuid.UUID) error
 	DocumentDeleteByRagID(ctx context.Context, ragID uuid.UUID) error
+	DocumentClaimForProcessing(ctx context.Context, id uuid.UUID) (*document.Document, error)
+	DocumentUpdateHeartbeat(ctx context.Context, id uuid.UUID) error
+	DocumentGetStale(ctx context.Context, threshold time.Duration) ([]*document.Document, error)
+	DocumentGetPending(ctx context.Context) ([]*document.Document, error)
+	DocumentResetStaleToPending(ctx context.Context, threshold time.Duration) error
+	DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error)
+	DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) (map[uuid.UUID][]*document.Document, error)
 
 	// Chunk operations
 	ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []float32) error

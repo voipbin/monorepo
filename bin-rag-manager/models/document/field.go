@@ -16,4 +16,6 @@ const (
 	FieldTMCreate      Field = "tm_create"
 	FieldTMUpdate      Field = "tm_update"
 	FieldTMDelete      Field = "tm_delete"
+	FieldRetryCount    Field = "retry_count"
+	FieldTMProcessing  Field = "tm_processing"
 )

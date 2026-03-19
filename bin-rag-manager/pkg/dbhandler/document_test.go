@@ -157,7 +157,7 @@ func Test_DocumentGetsByRagID_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building select SQL: %v", err)
 	}
 
-	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete FROM rag_documents WHERE rag_id = $1 AND tm_delete IS NULL"
+	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete, retry_count, tm_processing FROM rag_documents WHERE rag_id = $1 AND tm_delete IS NULL"
 	if sqlStr != expectedSQL {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
@@ -181,7 +181,7 @@ func Test_DocumentGet_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building select SQL: %v", err)
 	}
 
-	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete FROM rag_documents WHERE id = $1 AND tm_delete IS NULL"
+	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete, retry_count, tm_processing FROM rag_documents WHERE id = $1 AND tm_delete IS NULL"
 	if sqlStr != expectedSQL {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}
@@ -309,7 +309,7 @@ func Test_DocumentGetsByCustomerID_SQL(t *testing.T) {
 		t.Fatalf("unexpected error building select SQL: %v", err)
 	}
 
-	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete FROM rag_documents WHERE customer_id = $1 AND tm_delete IS NULL"
+	expectedSQL := "SELECT id, customer_id, rag_id, name, doc_type, storage_file_id, source_url, status, status_message, tm_create, tm_update, tm_delete, retry_count, tm_processing FROM rag_documents WHERE customer_id = $1 AND tm_delete IS NULL"
 	if sqlStr != expectedSQL {
 		t.Errorf("unexpected SQL.\ngot:  %s\nwant: %s", sqlStr, expectedSQL)
 	}

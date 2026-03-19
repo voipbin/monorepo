@@ -908,17 +908,16 @@ type ServiceHandler interface {
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
 
 	// RAG
-	RagCreate(ctx context.Context, a *amagent.Agent, name, description string) (*rmrag.WebhookMessage, error)
+	RagCreate(ctx context.Context, a *amagent.Agent, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error)
 	RagGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
 	RagGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmrag.WebhookMessage, error)
 	RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error)
 	RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
+	RagAddSources(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error)
 
-	// RAG Documents
-	RagDocumentCreate(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, name string, docType rmdocument.DocType, sourceURL string, storageFileID uuid.UUID) (*rmdocument.WebhookMessage, error)
+	// RAG Documents (read-only)
 	RagDocumentGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error)
 	RagDocumentGets(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, size uint64, token string) ([]*rmdocument.WebhookMessage, error)
-	RagDocumentDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdocument.WebhookMessage, error)
 }
 
 type serviceHandler struct {
