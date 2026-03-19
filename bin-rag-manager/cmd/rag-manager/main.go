@@ -50,6 +50,7 @@ func init() {
 	rootCmd.Flags().String("gcp_location", "", "GCP region for Vertex AI")
 	rootCmd.Flags().String("google_embedding_model", "text-embedding-004", "Google embedding model")
 	rootCmd.Flags().Int("rag_top_k", 5, "Default number of chunks to retrieve")
+	rootCmd.Flags().String("gcp_bucket_name_media", "", "GCS bucket name for media files")
 	rootCmd.Flags().String("postgresql_dsn", "", "PostgreSQL connection string")
 
 	// Initialize logging
