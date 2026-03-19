@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -28,6 +30,8 @@ func documentColumns() []string {
 		"tm_create",
 		"tm_update",
 		"tm_delete",
+		"retry_count",
+		"tm_processing",
 	}
 }
 
@@ -53,6 +57,8 @@ func scanDocument(row *sql.Row) (*document.Document, error) {
 		&d.TMCreate,
 		&d.TMUpdate,
 		&d.TMDelete,
+		&d.RetryCount,
+		&d.TMProcessing,
 	)
 	if err != nil {
 		return nil, err
@@ -91,6 +97,8 @@ func scanDocumentRows(rows *sql.Rows) ([]*document.Document, error) {
 			&d.TMCreate,
 			&d.TMUpdate,
 			&d.TMDelete,
+			&d.RetryCount,
+			&d.TMProcessing,
 		)
 		if err != nil {
 			return nil, err
@@ -319,4 +327,191 @@ func (h *handler) DocumentDeleteByRagID(ctx context.Context, ragID uuid.UUID) er
 	}
 
 	return nil
+}
+
+// DocumentClaimForProcessing atomically sets a pending document to processing status.
+// It increments retry_count and sets tm_processing for heartbeat tracking.
+// Returns the updated document or an error if the document is not in pending status.
+func (h *handler) DocumentClaimForProcessing(ctx context.Context, id uuid.UUID) (*document.Document, error) {
+	now := h.utilHandler.TimeNow()
+
+	q := psql.
+		Update(tableDocuments).
+		SetMap(map[string]any{
+			"status":        document.StatusProcessing,
+			"tm_processing": now,
+			"tm_update":     now,
+			"retry_count":   sq.Expr("retry_count + 1"),
+		}).
+		Where(sq.Eq{"id": id, "status": document.StatusPending}).
+		Where("tm_delete IS NULL").
+		Suffix("RETURNING " + strings.Join(documentColumns(), ", "))
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build claim query: %w", err)
+	}
+
+	row := h.db.QueryRowContext(ctx, sqlStr, args...)
+	return scanDocument(row)
+}
+
+// DocumentUpdateHeartbeat updates the tm_processing timestamp for a document.
+// Used by workers to signal they are still actively processing.
+func (h *handler) DocumentUpdateHeartbeat(ctx context.Context, id uuid.UUID) error {
+	now := h.utilHandler.TimeNow()
+
+	q := psql.
+		Update(tableDocuments).
+		SetMap(map[string]any{
+			"tm_processing": now,
+		}).
+		Where(sq.Eq{"id": id}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build heartbeat query: %w", err)
+	}
+
+	_, err = h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("could not update heartbeat: %w", err)
+	}
+
+	return nil
+}
+
+// DocumentGetStale retrieves documents stuck in processing state beyond the given threshold.
+func (h *handler) DocumentGetStale(ctx context.Context, threshold time.Duration) ([]*document.Document, error) {
+	cutoff := h.utilHandler.TimeNow().Add(-threshold)
+
+	q := psql.
+		Select(documentColumns()...).
+		From(tableDocuments).
+		Where(sq.Eq{"status": document.StatusProcessing}).
+		Where(sq.Lt{"tm_processing": cutoff}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build stale query: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query stale documents: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	return scanDocumentRows(rows)
+}
+
+// DocumentGetPending retrieves documents in pending status with retry_count below the limit.
+func (h *handler) DocumentGetPending(ctx context.Context) ([]*document.Document, error) {
+	q := psql.
+		Select(documentColumns()...).
+		From(tableDocuments).
+		Where(sq.Eq{"status": document.StatusPending}).
+		Where(sq.Lt{"retry_count": 3}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build pending query: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query pending documents: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	return scanDocumentRows(rows)
+}
+
+// DocumentResetStaleToPending resets documents stuck in processing back to pending status.
+func (h *handler) DocumentResetStaleToPending(ctx context.Context, threshold time.Duration) error {
+	now := h.utilHandler.TimeNow()
+	cutoff := now.Add(-threshold)
+
+	q := psql.
+		Update(tableDocuments).
+		SetMap(map[string]any{
+			"status":    document.StatusPending,
+			"tm_update": now,
+		}).
+		Where(sq.Eq{"status": document.StatusProcessing}).
+		Where(sq.Lt{"tm_processing": cutoff}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build reset query: %w", err)
+	}
+
+	_, err = h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("could not reset stale documents: %w", err)
+	}
+
+	return nil
+}
+
+// DocumentGetsByRagID retrieves all non-deleted documents for a given rag ID.
+func (h *handler) DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error) {
+	q := psql.
+		Select(documentColumns()...).
+		From(tableDocuments).
+		Where(sq.Eq{"rag_id": ragID}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query documents: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	return scanDocumentRows(rows)
+}
+
+// DocumentGetsByRagIDs retrieves all non-deleted documents for multiple rag IDs,
+// grouped by rag ID in the returned map.
+func (h *handler) DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) (map[uuid.UUID][]*document.Document, error) {
+	if len(ragIDs) == 0 {
+		return map[uuid.UUID][]*document.Document{}, nil
+	}
+
+	q := psql.
+		Select(documentColumns()...).
+		From(tableDocuments).
+		Where(sq.Eq{"rag_id": ragIDs}).
+		Where("tm_delete IS NULL")
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build batch query: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query documents by rag IDs: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	docs, err := scanDocumentRows(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	res := map[uuid.UUID][]*document.Document{}
+	for _, d := range docs {
+		res[d.RagID] = append(res[d.RagID], d)
+	}
+	return res, nil
 }
