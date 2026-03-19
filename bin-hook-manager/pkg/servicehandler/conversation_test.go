@@ -1,8 +1,10 @@
 package servicehandler
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	gomock "go.uber.org/mock/gomock"
@@ -15,16 +17,18 @@ func Test_Conversation(t *testing.T) {
 	tests := []struct {
 		name string
 
-		uri     string
-		message []byte
+		host string
+		path string
+		body []byte
 
 		expectReq *hmhook.Hook
 	}{
 		{
 			name: "normal",
 
-			uri:     "hook.voipbin.net/v1.0/conversation",
-			message: []byte(`{"key1":"val1"}`),
+			host: "hook.voipbin.net",
+			path: "/v1.0/conversation",
+			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
@@ -34,8 +38,9 @@ func Test_Conversation(t *testing.T) {
 		{
 			name: "conversation with path",
 
-			uri:     "hook.voipbin.net/v1.0/conversation/customers/id/line",
-			message: []byte(`{"test":"data"}`),
+			host: "hook.voipbin.net",
+			path: "/v1.0/conversation/customers/id/line",
+			body: []byte(`{"test":"data"}`),
 
 			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/conversation/customers/id/line",
@@ -56,9 +61,12 @@ func Test_Conversation(t *testing.T) {
 
 			ctx := context.Background()
 
+			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
+			r.Host = tt.host
+
 			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(nil)
 
-			if err := h.Conversation(ctx, tt.uri, tt.message); err != nil {
+			if err := h.Conversation(ctx, r); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -69,8 +77,9 @@ func Test_Conversation_Error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		uri     string
-		message []byte
+		host string
+		path string
+		body []byte
 
 		expectReq   *hmhook.Hook
 		expectError error
@@ -78,8 +87,9 @@ func Test_Conversation_Error(t *testing.T) {
 		{
 			name: "request handler error",
 
-			uri:     "hook.voipbin.net/v1.0/conversation",
-			message: []byte(`{"key1":"val1"}`),
+			host: "hook.voipbin.net",
+			path: "/v1.0/conversation",
+			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/conversation",
@@ -101,9 +111,12 @@ func Test_Conversation_Error(t *testing.T) {
 
 			ctx := context.Background()
 
+			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
+			r.Host = tt.host
+
 			mockReq.EXPECT().ConversationV1Hook(ctx, tt.expectReq).Return(tt.expectError)
 
-			if err := h.Conversation(ctx, tt.uri, tt.message); err == nil {
+			if err := h.Conversation(ctx, r); err == nil {
 				t.Error("Expected error, got nil")
 			}
 		})

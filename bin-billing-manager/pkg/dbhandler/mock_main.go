@@ -116,6 +116,21 @@ func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockDBHandler)(nil).AccountGet), ctx, id)
 }
 
+// AccountGetByPaddleSubscriptionID mocks base method.
+func (m *MockDBHandler) AccountGetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountGetByPaddleSubscriptionID", ctx, paddleSubscriptionID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountGetByPaddleSubscriptionID indicates an expected call of AccountGetByPaddleSubscriptionID.
+func (mr *MockDBHandlerMockRecorder) AccountGetByPaddleSubscriptionID(ctx, paddleSubscriptionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGetByPaddleSubscriptionID", reflect.TypeOf((*MockDBHandler)(nil).AccountGetByPaddleSubscriptionID), ctx, paddleSubscriptionID)
+}
+
 // AccountList mocks base method.
 func (m *MockDBHandler) AccountList(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -144,6 +159,48 @@ func (m *MockDBHandler) AccountListByCustomerID(ctx context.Context, customerID 
 func (mr *MockDBHandlerMockRecorder) AccountListByCustomerID(ctx, customerID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountListByCustomerID), ctx, customerID, size, token)
+}
+
+// AccountPaddleAddCredit mocks base method.
+func (m *MockDBHandler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID, idempotencyKey uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountPaddleAddCredit", ctx, accountID, amountMicros, customerID, idempotencyKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountPaddleAddCredit indicates an expected call of AccountPaddleAddCredit.
+func (mr *MockDBHandlerMockRecorder) AccountPaddleAddCredit(ctx, accountID, amountMicros, customerID, idempotencyKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountPaddleAddCredit", reflect.TypeOf((*MockDBHandler)(nil).AccountPaddleAddCredit), ctx, accountID, amountMicros, customerID, idempotencyKey)
+}
+
+// AccountPaddleSubtractCredit mocks base method.
+func (m *MockDBHandler) AccountPaddleSubtractCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID, idempotencyKey uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountPaddleSubtractCredit", ctx, accountID, amountMicros, customerID, idempotencyKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountPaddleSubtractCredit indicates an expected call of AccountPaddleSubtractCredit.
+func (mr *MockDBHandlerMockRecorder) AccountPaddleSubtractCredit(ctx, accountID, amountMicros, customerID, idempotencyKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountPaddleSubtractCredit", reflect.TypeOf((*MockDBHandler)(nil).AccountPaddleSubtractCredit), ctx, accountID, amountMicros, customerID, idempotencyKey)
+}
+
+// AccountPaddleTopUpTokens mocks base method.
+func (m *MockDBHandler) AccountPaddleTopUpTokens(ctx context.Context, accountID, customerID uuid.UUID, tokenAmount int64, planType string, txnType billing.TransactionType, idempotencyKey uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountPaddleTopUpTokens", ctx, accountID, customerID, tokenAmount, planType, txnType, idempotencyKey)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountPaddleTopUpTokens indicates an expected call of AccountPaddleTopUpTokens.
+func (mr *MockDBHandlerMockRecorder) AccountPaddleTopUpTokens(ctx, accountID, customerID, tokenAmount, planType, txnType, idempotencyKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountPaddleTopUpTokens", reflect.TypeOf((*MockDBHandler)(nil).AccountPaddleTopUpTokens), ctx, accountID, customerID, tokenAmount, planType, txnType, idempotencyKey)
 }
 
 // AccountSetStatus mocks base method.
@@ -300,6 +357,21 @@ func (m *MockDBHandler) BillingGet(ctx context.Context, id uuid.UUID) (*billing.
 func (mr *MockDBHandlerMockRecorder) BillingGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGet", reflect.TypeOf((*MockDBHandler)(nil).BillingGet), ctx, id)
+}
+
+// BillingGetByIdempotencyKey mocks base method.
+func (m *MockDBHandler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey uuid.UUID) (*billing.Billing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingGetByIdempotencyKey", ctx, idempotencyKey)
+	ret0, _ := ret[0].(*billing.Billing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingGetByIdempotencyKey indicates an expected call of BillingGetByIdempotencyKey.
+func (mr *MockDBHandlerMockRecorder) BillingGetByIdempotencyKey(ctx, idempotencyKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGetByIdempotencyKey", reflect.TypeOf((*MockDBHandler)(nil).BillingGetByIdempotencyKey), ctx, idempotencyKey)
 }
 
 // BillingGetByReferenceID mocks base method.

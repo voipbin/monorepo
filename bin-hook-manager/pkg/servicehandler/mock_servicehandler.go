@@ -11,6 +11,7 @@ package servicehandler
 
 import (
 	context "context"
+	http "net/http"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,44 +41,58 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
 }
 
+// Billing mocks base method.
+func (m *MockServiceHandler) Billing(ctx context.Context, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Billing", ctx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Billing indicates an expected call of Billing.
+func (mr *MockServiceHandlerMockRecorder) Billing(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Billing", reflect.TypeOf((*MockServiceHandler)(nil).Billing), ctx, r)
+}
+
 // Conversation mocks base method.
-func (m_2 *MockServiceHandler) Conversation(ctx context.Context, uri string, m []byte) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Conversation", ctx, uri, m)
+func (m *MockServiceHandler) Conversation(ctx context.Context, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Conversation", ctx, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Conversation indicates an expected call of Conversation.
-func (mr *MockServiceHandlerMockRecorder) Conversation(ctx, uri, m any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) Conversation(ctx, r any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conversation", reflect.TypeOf((*MockServiceHandler)(nil).Conversation), ctx, uri, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conversation", reflect.TypeOf((*MockServiceHandler)(nil).Conversation), ctx, r)
 }
 
 // Email mocks base method.
-func (m_2 *MockServiceHandler) Email(ctx context.Context, uri string, m []byte) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Email", ctx, uri, m)
+func (m *MockServiceHandler) Email(ctx context.Context, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Email", ctx, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Email indicates an expected call of Email.
-func (mr *MockServiceHandlerMockRecorder) Email(ctx, uri, m any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) Email(ctx, r any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Email", reflect.TypeOf((*MockServiceHandler)(nil).Email), ctx, uri, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Email", reflect.TypeOf((*MockServiceHandler)(nil).Email), ctx, r)
 }
 
 // Message mocks base method.
-func (m_2 *MockServiceHandler) Message(ctx context.Context, uri string, m []byte) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Message", ctx, uri, m)
+func (m *MockServiceHandler) Message(ctx context.Context, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Message", ctx, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Message indicates an expected call of Message.
-func (mr *MockServiceHandlerMockRecorder) Message(ctx, uri, m any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) Message(ctx, r any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Message", reflect.TypeOf((*MockServiceHandler)(nil).Message), ctx, uri, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Message", reflect.TypeOf((*MockServiceHandler)(nil).Message), ctx, r)
 }

@@ -1466,6 +1466,20 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1BillingList(ctx, pageToken, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingList", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingList), ctx, pageToken, pageSize, filters)
 }
 
+// BillingV1PaddleHook mocks base method.
+func (m *MockRequestHandler) BillingV1PaddleHook(ctx context.Context, hm *hook.Hook) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1PaddleHook", ctx, hm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BillingV1PaddleHook indicates an expected call of BillingV1PaddleHook.
+func (mr *MockRequestHandlerMockRecorder) BillingV1PaddleHook(ctx, hm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1PaddleHook", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1PaddleHook), ctx, hm)
+}
+
 // CallPublishEvent mocks base method.
 func (m *MockRequestHandler) CallPublishEvent(ctx context.Context, eventType, publisher, dataType string, data []byte) error {
 	m.ctrl.T.Helper()

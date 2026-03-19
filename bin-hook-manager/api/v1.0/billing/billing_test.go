@@ -1,4 +1,4 @@
-package messages
+package billing
 
 import (
 	"bytes"
@@ -19,8 +19,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func Test_MessagesPOST(t *testing.T) {
-
+func Test_billingPaddlePOST(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -32,8 +31,8 @@ func Test_MessagesPOST(t *testing.T) {
 		{
 			name: "normal",
 
-			reqQuery: "/v1.0/messages/telnyx",
-			reqBody:  []byte(`{"key1":"val1"}`),
+			reqQuery: "/v1.0/billing/paddle",
+			reqBody:  []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 
 			expectRes: ``,
 		},
@@ -57,7 +56,7 @@ func Test_MessagesPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), gomock.Any()).Return(nil)
+			mockSvc.EXPECT().Billing(gomock.Any(), gomock.Any()).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -71,24 +70,32 @@ func Test_MessagesPOST(t *testing.T) {
 	}
 }
 
-func Test_MessagesPOST_Error(t *testing.T) {
-
+func Test_billingPaddlePOST_ServiceHandlerError(t *testing.T) {
 	tests := []struct {
 		name string
 
-		reqQuery string
-		reqBody  []byte
+		reqQuery  string
+		reqBody   []byte
+		returnErr error
 
-		expectRes  string
 		expectCode int
 	}{
 		{
-			name: "service handler error",
+			name: "validation error returns 400",
 
-			reqQuery: "/v1.0/messages/telnyx",
-			reqBody:  []byte(`{"key1":"val1"}`),
+			reqQuery:  "/v1.0/billing/paddle",
+			reqBody:   []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			returnErr: &servicehandler.ValidationError{Err: fmt.Errorf("signature mismatch")},
 
-			expectRes:  ``,
+			expectCode: http.StatusBadRequest,
+		},
+		{
+			name: "transient RPC error returns 500",
+
+			reqQuery:  "/v1.0/billing/paddle",
+			reqBody:   []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			returnErr: fmt.Errorf("could not send the hook: connection refused"),
+
 			expectCode: http.StatusInternalServerError,
 		},
 	}
@@ -111,15 +118,11 @@ func Test_MessagesPOST_Error(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), gomock.Any()).Return(fmt.Errorf("service handler error"))
+			mockSvc.EXPECT().Billing(gomock.Any(), gomock.Any()).Return(tt.returnErr)
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {
 				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectCode, w.Code)
-			}
-
-			if w.Body.String() != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}

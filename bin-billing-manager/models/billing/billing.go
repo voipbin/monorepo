@@ -79,6 +79,10 @@ const (
 	ReferenceTypeTokenAdjustment   ReferenceType = "token_adjustment"
 	ReferenceTypeSpeaking          ReferenceType = "speaking"
 	ReferenceTypeRecording         ReferenceType = "recording"
+
+	ReferenceTypePaddleCreditPurchase ReferenceType = "paddle_credit_purchase"
+	ReferenceTypePaddleSubscription   ReferenceType = "paddle_subscription"
+	ReferenceTypePaddleRefund         ReferenceType = "paddle_refund"
 )
 
 // Status define

@@ -35,6 +35,16 @@ type DBHandler interface {
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 	AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error
 
+	// Paddle query methods
+	AccountGetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error)
+	BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey uuid.UUID) (*billing.Billing, error)
+
+	// Paddle atomic transaction methods — each atomically performs the balance/token change
+	// AND creates a billing record in a single SQL transaction (no double-ledger).
+	AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error
+	AccountPaddleSubtractCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error
+	AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string, txnType billing.TransactionType, idempotencyKey uuid.UUID) error
+
 	BillingCreate(ctx context.Context, c *billing.Billing) error
 	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)

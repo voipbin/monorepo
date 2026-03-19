@@ -26,7 +26,7 @@ func TestNewServiceHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewServiceHandler(tt.reqHandler)
+			h := NewServiceHandler(tt.reqHandler, "")
 			if h == nil {
 				t.Error("NewServiceHandler returned nil")
 			}

@@ -23,6 +23,9 @@ type Account struct {
 	PaymentType   PaymentType   `json:"payment_type" db:"payment_type"`
 	PaymentMethod PaymentMethod `json:"payment_method" db:"payment_method"`
 
+	PaddleSubscriptionID string `json:"paddle_subscription_id" db:"paddle_subscription_id"`
+	PaddleCustomerID     string `json:"paddle_customer_id" db:"paddle_customer_id"`
+
 	TmLastTopUp *time.Time `json:"tm_last_topup" db:"tm_last_topup"`
 	TmNextTopUp *time.Time `json:"tm_next_topup" db:"tm_next_topup"`
 

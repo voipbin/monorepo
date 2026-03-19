@@ -190,6 +190,21 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).GetByCustomerID), ctx, customerID)
 }
 
+// GetByPaddleSubscriptionID mocks base method.
+func (m *MockAccountHandler) GetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByPaddleSubscriptionID", ctx, paddleSubscriptionID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByPaddleSubscriptionID indicates an expected call of GetByPaddleSubscriptionID.
+func (mr *MockAccountHandlerMockRecorder) GetByPaddleSubscriptionID(ctx, paddleSubscriptionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPaddleSubscriptionID", reflect.TypeOf((*MockAccountHandler)(nil).GetByPaddleSubscriptionID), ctx, paddleSubscriptionID)
+}
+
 // IsValidBalance mocks base method.
 func (m *MockAccountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -263,6 +278,90 @@ func (m *MockAccountHandler) List(ctx context.Context, size uint64, token string
 func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, size, token, filters)
+}
+
+// PaddleCreditTopUp mocks base method.
+func (m *MockAccountHandler) PaddleCreditTopUp(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleCreditTopUp", ctx, customerID, amountCreditMicros, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleCreditTopUp indicates an expected call of PaddleCreditTopUp.
+func (mr *MockAccountHandlerMockRecorder) PaddleCreditTopUp(ctx, customerID, amountCreditMicros, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleCreditTopUp", reflect.TypeOf((*MockAccountHandler)(nil).PaddleCreditTopUp), ctx, customerID, amountCreditMicros, eventID)
+}
+
+// PaddleRefund mocks base method.
+func (m *MockAccountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleRefund", ctx, customerID, amountCreditMicros, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleRefund indicates an expected call of PaddleRefund.
+func (mr *MockAccountHandlerMockRecorder) PaddleRefund(ctx, customerID, amountCreditMicros, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleRefund", reflect.TypeOf((*MockAccountHandler)(nil).PaddleRefund), ctx, customerID, amountCreditMicros, eventID)
+}
+
+// PaddleSubscriptionCancel mocks base method.
+func (m *MockAccountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSubID, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleSubscriptionCancel", ctx, paddleSubID, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleSubscriptionCancel indicates an expected call of PaddleSubscriptionCancel.
+func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionCancel(ctx, paddleSubID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionCancel", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionCancel), ctx, paddleSubID, eventID)
+}
+
+// PaddleSubscriptionCreate mocks base method.
+func (m *MockAccountHandler) PaddleSubscriptionCreate(ctx context.Context, customerID uuid.UUID, planType account.PlanType, paddleSubID, paddleCustID, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleSubscriptionCreate", ctx, customerID, planType, paddleSubID, paddleCustID, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleSubscriptionCreate indicates an expected call of PaddleSubscriptionCreate.
+func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionCreate(ctx, customerID, planType, paddleSubID, paddleCustID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionCreate", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionCreate), ctx, customerID, planType, paddleSubID, paddleCustID, eventID)
+}
+
+// PaddleSubscriptionRenew mocks base method.
+func (m *MockAccountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubID, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleSubscriptionRenew", ctx, paddleSubID, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleSubscriptionRenew indicates an expected call of PaddleSubscriptionRenew.
+func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionRenew(ctx, paddleSubID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionRenew", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionRenew), ctx, paddleSubID, eventID)
+}
+
+// PaddleSubscriptionUpdate mocks base method.
+func (m *MockAccountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSubID string, newPlanType account.PlanType, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleSubscriptionUpdate", ctx, paddleSubID, newPlanType, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleSubscriptionUpdate indicates an expected call of PaddleSubscriptionUpdate.
+func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionUpdate(ctx, paddleSubID, newPlanType, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionUpdate", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionUpdate), ctx, paddleSubID, newPlanType, eventID)
 }
 
 // SetStatus mocks base method.

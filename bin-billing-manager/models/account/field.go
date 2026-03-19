@@ -21,6 +21,9 @@ const (
 	FieldPaymentType   Field = "payment_type"
 	FieldPaymentMethod Field = "payment_method"
 
+	FieldPaddleSubscriptionID Field = "paddle_subscription_id"
+	FieldPaddleCustomerID     Field = "paddle_customer_id"
+
 	FieldTmLastTopUp Field = "tm_last_topup"
 	FieldTmNextTopUp Field = "tm_next_topup"
 

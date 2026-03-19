@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -56,16 +55,10 @@ func Test_conversationPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create body
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wong match. expect: ok, got: %v", err)
-			}
-
-			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(tt.req))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Conversation(gomock.Any(), tt.target, body).Return(nil)
+			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -77,30 +70,6 @@ func Test_conversationPOST(t *testing.T) {
 			}
 
 		})
-	}
-}
-
-func Test_conversationPOST_ReadBodyError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	w := httptest.NewRecorder()
-	_, r := gin.CreateTestContext(w)
-
-	r.Use(func(c *gin.Context) {
-		c.Set(common.OBJServiceHandler, mockSvc)
-	})
-	setupServer(r)
-
-	// Create request with error body reader
-	req, _ := http.NewRequest("POST", "/v1.0/conversation/test", &errorReader{})
-	req.Header.Set("Content-Type", "application/json")
-
-	r.ServeHTTP(w, req)
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
 	}
 }
 
@@ -138,15 +107,10 @@ func Test_conversationPOST_ServiceHandlerError(t *testing.T) {
 			})
 			setupServer(r)
 
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(tt.req))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any(), body).Return(fmt.Errorf("service handler error"))
+			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return(fmt.Errorf("service handler error"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {
@@ -154,15 +118,4 @@ func Test_conversationPOST_ServiceHandlerError(t *testing.T) {
 			}
 		})
 	}
-}
-
-// errorReader is a test helper that always returns an error on Read
-type errorReader struct{}
-
-func (e *errorReader) Read(p []byte) (n int, err error) {
-	return 0, fmt.Errorf("read error")
-}
-
-func (e *errorReader) Close() error {
-	return nil
 }
