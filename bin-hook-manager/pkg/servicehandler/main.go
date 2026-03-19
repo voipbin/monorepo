@@ -25,7 +25,7 @@ type serviceHandler struct {
 // NewServiceHandler return ServiceHandler interface
 func NewServiceHandler(reqHandler requesthandler.RequestHandler, paddleWebhookSecret string) ServiceHandler {
 	return &serviceHandler{
-		reqHandler:           reqHandler,
+		reqHandler:          reqHandler,
 		paddleWebhookSecret: paddleWebhookSecret,
 	}
 }

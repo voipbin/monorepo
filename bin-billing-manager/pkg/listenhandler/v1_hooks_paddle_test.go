@@ -139,6 +139,19 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			name:   "transaction.refunded - negative adjustment amounts normalized to positive",
+			paddle: `{"event_id":"evt_refund_neg_001","event_type":"transaction.refunded","data":{"id":"txn_neg","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"-5.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
+			setup: func(m *accounthandler.MockAccountHandler) {
+				m.EXPECT().PaddleRefund(
+					gomock.Any(),
+					uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000001"),
+					int64(5000000),
+					"evt_refund_neg_001",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
 			name:      "transaction.refunded - no adjustments returns 400",
 			paddle:    `{"event_id":"evt_refund_003","event_type":"transaction.refunded","data":{"id":"txn_005","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"5.00"}}}}`,
 			setup:     func(m *accounthandler.MockAccountHandler) {},
@@ -219,6 +232,8 @@ func Test_parsePaddleAmountToMicros(t *testing.T) {
 		{"single fractional digit", "3.5", 3500000, false},
 		{"trailing dot", "7.", 7000000, false},
 		{"negative amount", "-5.00", -5000000, false},
+		{"negative with cents", "-5.50", -5500000, false},
+		{"negative zero cents", "-0.50", -500000, false},
 		{"more than 2 decimal places", "10.123", 0, true},
 		{"invalid", "abc", 0, true},
 	}

@@ -8,7 +8,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strconv"
 	"testing"
+	"time"
 
 	gomock "go.uber.org/mock/gomock"
 
@@ -47,7 +49,7 @@ func Test_Billing(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
-				reqHandler:           mockReq,
+				reqHandler:          mockReq,
 				paddleWebhookSecret: "",
 			}
 
@@ -98,7 +100,7 @@ func Test_Billing_Error(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
-				reqHandler:           mockReq,
+				reqHandler:          mockReq,
 				paddleWebhookSecret: "",
 			}
 
@@ -120,12 +122,25 @@ func Test_Billing_SignatureVerification(t *testing.T) {
 	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
 	secret := "pdl_ntfset_01j84jzd84gxsnq96m5csmjpap_TGTCkDNPO1LkmLdBhTCEDijp3OuGWbGn"
 
+	// Generate a valid signature with a fresh timestamp
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	validMAC := hmacSHA256(secret, freshTS, body)
+	validSignature := "ts=" + freshTS + ";h1=" + validMAC
+
 	tests := []struct {
 		name        string
 		secret      string
 		signature   string
+		expectCall  bool // whether reqHandler.BillingV1PaddleHook should be called
 		expectError bool
 	}{
+		{
+			name:        "valid signature - passes through",
+			secret:      secret,
+			signature:   validSignature,
+			expectCall:  true,
+			expectError: false,
+		},
 		{
 			name:        "missing signature header",
 			secret:      secret,
@@ -141,7 +156,13 @@ func Test_Billing_SignatureVerification(t *testing.T) {
 		{
 			name:        "wrong hash",
 			secret:      secret,
-			signature:   "ts=1234567890;h1=0000000000000000000000000000000000000000000000000000000000000000",
+			signature:   "ts=" + freshTS + ";h1=0000000000000000000000000000000000000000000000000000000000000000",
+			expectError: true,
+		},
+		{
+			name:        "stale timestamp",
+			secret:      secret,
+			signature:   "ts=1234567890;h1=" + hmacSHA256(secret, "1234567890", body),
 			expectError: true,
 		},
 	}
@@ -153,8 +174,12 @@ func Test_Billing_SignatureVerification(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
-				reqHandler:           mockReq,
+				reqHandler:          mockReq,
 				paddleWebhookSecret: tt.secret,
+			}
+
+			if tt.expectCall {
+				mockReq.EXPECT().BillingV1PaddleHook(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
 			ctx := context.Background()
@@ -177,8 +202,9 @@ func Test_verifyPaddleSignature(t *testing.T) {
 	secret := "test-secret"
 	body := []byte(`{"test":"data"}`)
 
-	// Generate a valid signature for testing
-	mac := hmacSHA256(secret, "1234567890", body)
+	// Generate a valid signature with a fresh timestamp
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	validMAC := hmacSHA256(secret, freshTS, body)
 
 	tests := []struct {
 		name      string
@@ -187,27 +213,42 @@ func Test_verifyPaddleSignature(t *testing.T) {
 	}{
 		{
 			name:      "valid signature",
-			signature: "ts=1234567890;h1=" + mac,
+			signature: "ts=" + freshTS + ";h1=" + validMAC,
 			expectErr: false,
 		},
 		{
 			name:      "invalid hash",
-			signature: "ts=1234567890;h1=deadbeef",
+			signature: "ts=" + freshTS + ";h1=deadbeef",
 			expectErr: true,
 		},
 		{
 			name:      "missing ts",
-			signature: "h1=" + mac,
+			signature: "h1=" + validMAC,
 			expectErr: true,
 		},
 		{
 			name:      "missing h1",
-			signature: "ts=1234567890",
+			signature: "ts=" + freshTS,
 			expectErr: true,
 		},
 		{
 			name:      "empty string",
 			signature: "",
+			expectErr: true,
+		},
+		{
+			name:      "stale timestamp rejected",
+			signature: "ts=1234567890;h1=" + hmacSHA256(secret, "1234567890", body),
+			expectErr: true,
+		},
+		{
+			name:      "non-numeric timestamp",
+			signature: "ts=abc;h1=" + validMAC,
+			expectErr: true,
+		},
+		{
+			name:      "future timestamp rejected",
+			signature: "ts=" + strconv.FormatInt(time.Now().Unix()+600, 10) + ";h1=" + hmacSHA256(secret, strconv.FormatInt(time.Now().Unix()+600, 10), body),
 			expectErr: true,
 		},
 	}

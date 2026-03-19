@@ -95,7 +95,7 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 
 	// Store paddle IDs FIRST — ensures subsequent renewal/cancel events
 	// can find this account by paddle_subscription_id even if later steps fail.
-	// On Paddle retry, these will be overwritten with the same values (safe). (R4-I1 fix)
+	// On Paddle retry, these will be overwritten with the same values (safe).
 	//
 	// NOTE: Steps 1-3 (store IDs → update plan → top-up tokens) are not wrapped
 	// in a single DB transaction. If step 2 succeeds but step 3 fails, the account
@@ -125,7 +125,7 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 }
 
 // PaddleSubscriptionUpdate changes the plan type when a subscription is upgraded/downgraded.
-// Resets tokens to the new plan's allowance (R2-I3 fix).
+// Resets tokens to the new plan's allowance.
 func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSubID string, newPlanType account.PlanType, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionUpdate",
@@ -163,7 +163,7 @@ func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSub
 }
 
 // PaddleSubscriptionCancel downgrades the account to Free plan immediately.
-// Keeps paddle_subscription_id for post-cancel event correlation (R2-I2 fix).
+// Keeps paddle_subscription_id for post-cancel event correlation.
 func (h *accountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSubID string, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionCancel",
@@ -229,7 +229,7 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 
 	// Guard: skip renewal for cancelled subscriptions (plan downgraded to Free).
 	// After PaddleSubscriptionCancel, paddle_subscription_id is kept for event correlation
-	// but PlanType is reset to Free. A post-cancel renewal should not grant free-tier tokens. (R4-I2 fix)
+	// but PlanType is reset to Free. A post-cancel renewal should not grant free-tier tokens.
 	if acc.PlanType == account.PlanTypeFree {
 		log.Infof("Skipping renewal for free-plan account (likely post-cancellation). account_id: %s, paddle_subscription_id: %s", acc.ID, paddleSubID)
 		return nil

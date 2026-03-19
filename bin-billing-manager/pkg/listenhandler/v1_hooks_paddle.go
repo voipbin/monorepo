@@ -98,7 +98,17 @@ func parsePaddleAmountToMicros(amountStr string) (int64, error) {
 		}
 	}
 
-	return dollars*1_000_000 + cents*10_000, nil
+	// For negative amounts (e.g. "-5.50"), cents must be subtracted since dollars already carries the sign.
+	// "-5" parses to -5 but "50" parses to +50, so -5*1M + 50*10K = -4.5M (wrong). Correct: -5.5M.
+	negative := dollars < 0 || (dollars == 0 && strings.HasPrefix(amountStr, "-"))
+	if dollars < 0 {
+		dollars = -dollars
+	}
+	micros := dollars*1_000_000 + cents*10_000
+	if negative {
+		return -micros, nil
+	}
+	return micros, nil
 }
 
 // processV1HooksPaddlePost handles POST /v1/hooks/paddle
@@ -297,7 +307,7 @@ func (h *listenHandler) handlePaddleSubscriptionCanceled(ctx context.Context, ev
 
 // handlePaddleTransactionRefunded handles transaction.refunded events.
 // Uses the adjustments array to determine the actual refund amount (sum of all adjustments).
-// Falls back to paddle_subscription_id lookup when custom_data is missing (S2).
+// Falls back to paddle_subscription_id lookup when custom_data is missing.
 func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, event *paddleEvent) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "handlePaddleTransactionRefunded",
@@ -310,7 +320,7 @@ func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, eve
 		return simpleResponse(400), nil
 	}
 
-	// Parse refund amount from adjustments array (I1 fix).
+	// Parse refund amount from adjustments array.
 	// Each adjustment entry represents a refund; sum them for the total refund amount.
 	if len(txn.Adjustments) == 0 {
 		log.Errorf("No adjustments found in transaction.refunded event. event_id: %s", event.EventID)
@@ -327,7 +337,13 @@ func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, eve
 		totalRefundMicros += micros
 	}
 
-	// Resolve customer ID: prefer custom_data, fall back to paddle_subscription_id lookup (S2 fix).
+	// Paddle may send negative adjustment amounts (money returned to customer).
+	// PaddleRefund expects a positive amount, so take the absolute value.
+	if totalRefundMicros < 0 {
+		totalRefundMicros = -totalRefundMicros
+	}
+
+	// Resolve customer ID: prefer custom_data, fall back to paddle_subscription_id lookup.
 	customerID := uuid.Nil
 	if txn.CustomData != nil && txn.CustomData.CustomerID != "" {
 		customerID = uuid.FromStringOrNil(txn.CustomData.CustomerID)

@@ -71,31 +71,42 @@ func Test_billingPaddlePOST(t *testing.T) {
 }
 
 func Test_billingPaddlePOST_ServiceHandlerError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	tests := []struct {
 		name string
 
-		reqQuery string
-		reqBody  []byte
+		reqQuery  string
+		reqBody   []byte
+		returnErr error
 
 		expectCode int
 	}{
 		{
-			name: "service handler error",
+			name: "validation error returns 400",
 
-			reqQuery: "/v1.0/billing/paddle",
-			reqBody:  []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			reqQuery:  "/v1.0/billing/paddle",
+			reqBody:   []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			returnErr: &servicehandler.ValidationError{Err: fmt.Errorf("signature mismatch")},
 
 			expectCode: http.StatusBadRequest,
+		},
+		{
+			name: "transient RPC error returns 500",
+
+			reqQuery:  "/v1.0/billing/paddle",
+			reqBody:   []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			returnErr: fmt.Errorf("could not send the hook: connection refused"),
+
+			expectCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
@@ -107,7 +118,7 @@ func Test_billingPaddlePOST_ServiceHandlerError(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Billing(gomock.Any(), gomock.Any()).Return(fmt.Errorf("billing handler error"))
+			mockSvc.EXPECT().Billing(gomock.Any(), gomock.Any()).Return(tt.returnErr)
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {
