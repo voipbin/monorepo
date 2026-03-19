@@ -38,6 +38,7 @@ Welcome to VoIPBIN's documentation!
    queue
    recording
    transcribe
+   speaking
    mediastream
 
 .. toctree::
