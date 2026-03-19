@@ -640,4 +640,5 @@ Related Documentation
 - :ref:`Call Overview <call-overview>` - Transcribing calls
 - :ref:`Conference Overview <conference-overview>` - Transcribing conferences
 - :ref:`Recording Overview <recording-overview>` - Recording and transcribing together
+- :ref:`Speaking Overview <speaking-overview>` - Text-to-speech (the speak counterpart to transcription)
 - :ref:`Flow Actions <flow-struct-action-transribe_start>` - Transcribe flow actions
