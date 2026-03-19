@@ -28,7 +28,7 @@ Attach a TTS session to a live call. The session starts in ``initiating`` status
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<your-token>' \
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<YOUR_AUTH_TOKEN>' \
    --header 'Content-Type: application/json' \
    --data-raw '{
        "reference_type": "call",
@@ -56,7 +56,7 @@ Poll until the session becomes ``active``:
 
 .. code::
 
-   $ curl --location --request GET 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<your-token>'
+   $ curl --location --request GET 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
 
    {
        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -74,7 +74,7 @@ Once the session is ``active``, send text to be synthesized and played into the 
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=<your-token>' \
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=<YOUR_AUTH_TOKEN>' \
    --header 'Content-Type: application/json' \
    --data-raw '{
        "text": "Hello! This is your AI agent speaking. How can I help you today?"
@@ -145,7 +145,7 @@ Use the ``voice_id`` field to choose a specific voice from the provider's voice 
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<your-token>' \
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<YOUR_AUTH_TOKEN>' \
    --header 'Content-Type: application/json' \
    --data-raw '{
        "reference_type": "call",
@@ -210,7 +210,7 @@ Clear queued text and stop the currently playing audio.
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=<your-token>'
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=<YOUR_AUTH_TOKEN>'
 
    {
        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -229,7 +229,7 @@ Attach TTS to a conference so all participants hear the synthesized speech.
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<your-token>' \
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=<YOUR_AUTH_TOKEN>' \
    --header 'Content-Type: application/json' \
    --data-raw '{
        "reference_type": "confbridge",
@@ -265,7 +265,7 @@ When finished, stop the session first, then delete it.
 
 .. code::
 
-   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=<your-token>'
+   $ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=<YOUR_AUTH_TOKEN>'
 
    {
        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -277,7 +277,7 @@ When finished, stop the session first, then delete it.
 
 .. code::
 
-   $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<your-token>'
+   $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
 
 Always stop a session before deleting it. If the call is hung up, the speaking session is automatically stopped, but you should still delete it to clean up resources.
 

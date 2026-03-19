@@ -210,9 +210,9 @@
 <h2>How Speaking Works<a class="headerlink" href="#how-speaking-works" title="Link to this heading"></a></h2>
 <p>The Speaking API synthesizes text-to-speech in real-time and delivers it to the specified audio target—either a call or a conference bridge.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
-<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|&lt;-</span><span class="n">audio</span><span class="o">--|</span>     <span class="n">TTS</span>       <span class="o">|&lt;-</span><span class="n">text</span><span class="o">--|</span>  <span class="n">Your</span> <span class="n">App</span>   <span class="o">|</span>
-<span class="o">+--------+</span>        <span class="o">|</span>    <span class="n">Engine</span>      <span class="o">|</span>        <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span>   <span class="o">|</span>
-            <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
+<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|&lt;-</span><span class="n">audio</span><span class="o">-|</span>  <span class="n">TTS</span> <span class="n">Engine</span>    <span class="o">|&lt;-</span><span class="n">text</span><span class="o">--|</span>  <span class="n">Your</span> <span class="n">App</span>   <span class="o">|</span>
+<span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span>   <span class="o">|</span>
+                         <span class="o">|</span>                  <span class="o">+-------------+</span>
 <span class="o">+------------+</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Conference</span> <span class="o">|&lt;--</span><span class="n">audio</span><span class="o">---+</span>
 <span class="o">+------------+</span>

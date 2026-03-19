@@ -216,9 +216,9 @@
 <h3>How Speaking Works<a class="headerlink" href="#how-speaking-works" title="Link to this heading"></a></h3>
 <p>The Speaking API synthesizes text-to-speech in real-time and delivers it to the specified audio target—either a call or a conference bridge.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
-<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|&lt;-</span><span class="n">audio</span><span class="o">--|</span>     <span class="n">TTS</span>       <span class="o">|&lt;-</span><span class="n">text</span><span class="o">--|</span>  <span class="n">Your</span> <span class="n">App</span>   <span class="o">|</span>
-<span class="o">+--------+</span>        <span class="o">|</span>    <span class="n">Engine</span>      <span class="o">|</span>        <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span>   <span class="o">|</span>
-            <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
+<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|&lt;-</span><span class="n">audio</span><span class="o">-|</span>  <span class="n">TTS</span> <span class="n">Engine</span>    <span class="o">|&lt;-</span><span class="n">text</span><span class="o">--|</span>  <span class="n">Your</span> <span class="n">App</span>   <span class="o">|</span>
+<span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span>   <span class="o">|</span>
+                         <span class="o">|</span>                  <span class="o">+-------------+</span>
 <span class="o">+------------+</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Conference</span> <span class="o">|&lt;--</span><span class="n">audio</span><span class="o">---+</span>
 <span class="o">+------------+</span>
@@ -554,7 +554,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="create-a-speaking-session">
 <h3>Create a Speaking Session<a class="headerlink" href="#create-a-speaking-session" title="Link to this heading"></a></h3>
 <p>Attach a TTS session to a live call. The session starts in <code class="docutils literal notranslate"><span class="pre">initiating</span></code> status while the provider connection is established.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;reference_type&quot;: &quot;call&quot;,
@@ -580,7 +580,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 </pre></div>
 </div>
 <p>Poll until the session becomes <code class="docutils literal notranslate"><span class="pre">active</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
@@ -594,7 +594,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="send-text-to-speak">
 <h3>Send Text to Speak<a class="headerlink" href="#send-text-to-speak" title="Link to this heading"></a></h3>
 <p>Once the session is <code class="docutils literal notranslate"><span class="pre">active</span></code>, send text to be synthesized and played into the call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=&lt;your-token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;text&quot;: &quot;Hello! This is your AI agent speaking. How can I help you today?&quot;
@@ -650,7 +650,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="select-a-voice">
 <h3>Select a Voice<a class="headerlink" href="#select-a-voice" title="Link to this heading"></a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">voice_id</span></code> field to choose a specific voice from the provider’s voice library.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;reference_type&quot;: &quot;call&quot;,
@@ -700,7 +700,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="flush-the-speech-queue">
 <h3>Flush the Speech Queue<a class="headerlink" href="#flush-the-speech-queue" title="Link to this heading"></a></h3>
 <p>Clear queued text and stop the currently playing audio.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=&lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
@@ -715,7 +715,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="attach-speaking-to-a-conference">
 <h3>Attach Speaking to a Conference<a class="headerlink" href="#attach-speaking-to-a-conference" title="Link to this heading"></a></h3>
 <p>Attach TTS to a conference so all participants hear the synthesized speech.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;reference_type&quot;: &quot;confbridge&quot;,
@@ -746,7 +746,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 <h3>Stop and Delete a Speaking Session<a class="headerlink" href="#stop-and-delete-a-speaking-session" title="Link to this heading"></a></h3>
 <p>When finished, stop the session first, then delete it.</p>
 <p><strong>Stop the session:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=&lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
@@ -756,7 +756,7 @@ ensure at least one participant has joined before attaching TTS.</p>
 </pre></div>
 </div>
 <p><strong>Delete the session:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Always stop a session before deleting it. If the call is hung up, the speaking session is automatically stopped, but you should still delete it to clean up resources.</p>

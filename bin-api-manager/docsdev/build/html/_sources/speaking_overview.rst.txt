@@ -28,9 +28,9 @@ The Speaking API synthesizes text-to-speech in real-time and delivers it to the 
 ::
 
    +--------+        +----------------+        +-------------+
-   |  Call  |<-audio--|     TTS       |<-text--|  Your App   |
-   +--------+        |    Engine      |        | POST /say   |
-               +----------------+        +-------------+
+   |  Call  |<-audio-|  TTS Engine    |<-text--|  Your App   |
+   +--------+        +----------------+        | POST /say   |
+                            |                  +-------------+
    +------------+           |
    | Conference |<--audio---+
    +------------+
