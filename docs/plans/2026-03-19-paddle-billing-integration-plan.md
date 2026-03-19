@@ -10,7 +10,9 @@
 
 **Design doc:** `docs/plans/2026-03-19-paddle-billing-integration-design.md`
 
-**Review resolutions applied:** C1 (use `GetByCustomerID` RPC chain), C2/C3 (add `BillingGetByIdempotencyKey`), C4 (explicit `main.go` update), C5 (use cobra `PersistentFlags`), C6 (use `bin-manager-secrets`), C7 (parse decimal amounts), C8 (immediate downgrade), I1 (explicit `CostTypeNone`), I4 (use `AccountTopUpTokens`), I5 (fixed route), I8 (audit record for unlimited), I9 (use `ApplyFields` pattern), I10 (30-service verification), I12 (log+200 for missing custom_data).
+**Review 1 resolutions applied:** C1 (use `GetByCustomerID` RPC chain), C2/C3 (add `BillingGetByIdempotencyKey`), C4 (explicit `main.go` update), C5 (use cobra `PersistentFlags`), C6 (use `bin-manager-secrets`), C7 (parse decimal amounts), C8 (immediate downgrade), I1 (explicit `CostTypeNone`), I4 (use `AccountTopUpTokens`), I5 (fixed route), I8 (audit record for unlimited), I9 (use `ApplyFields` pattern), I10 (30-service verification), I12 (log+200 for missing custom_data).
+
+**Review 2 resolutions applied:** R2-C1 (fix `down_revision` to `ffb1bfe3f8d7`), R2-C2/C3/C4 (Paddle-specific atomic DB methods — eliminate double-ledger), R2-C7 (verify Paddle SDK exists at v4 before implementation), R2-I2 (keep `paddle_subscription_id` after cancel), R2-I3 (reset tokens on subscription update), R2-I7 (return 400 for signature failures).
 
 ---
 
@@ -23,7 +25,7 @@ Add `paddle_subscription_id` and `paddle_customer_id` columns with indexes.
 
 **Step 1: Create the migration file**
 
-> **NOTE:** The `revision` and `down_revision` values below are placeholders. Before committing, verify the actual current head revision by inspecting the latest migration file in `bin-dbscheme-manager/bin-manager/main/versions/`. Set `down_revision` to the actual latest revision ID.
+> **NOTE:** The `revision` value below is a placeholder. Generate the actual revision ID during implementation. The `down_revision` is `ffb1bfe3f8d7` (verified as current migration head from `customer_customers_add_identity_verification_status.py`).
 
 ```python
 """billing_accounts_add_column_paddle_subscription_id_paddle_customer_id
@@ -38,7 +40,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'g1a2b3c4d5e6'
-down_revision = 'f1a2b3c4d5e6'
+down_revision = 'ffb1bfe3f8d7'
 branch_labels = None
 depends_on = None
 
@@ -147,7 +149,7 @@ git commit -m "NOJIRA-Paddle-billing-integration
 
 ## Task 3: billing-manager DBHandler — Add Paddle DB methods
 
-Add `AccountGetByPaddleSubscriptionID` and `BillingGetByIdempotencyKey` to DBHandler.
+Add query methods and atomic Paddle-specific transaction methods to DBHandler. The atomic methods eliminate double-ledger by combining balance/token changes with billing record creation in a single SQL transaction (R2-C2/C3/C4 fix).
 
 **Files:**
 - Modify: `bin-billing-manager/pkg/dbhandler/main.go` (interface)
@@ -159,11 +161,18 @@ Add `AccountGetByPaddleSubscriptionID` and `BillingGetByIdempotencyKey` to DBHan
 In `bin-billing-manager/pkg/dbhandler/main.go`, add to the `DBHandler` interface:
 
 ```go
+// Paddle query methods
 AccountGetByPaddleSubscriptionID(ctx context.Context, paddleSubscriptionID string) (*account.Account, error)
 BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey uuid.UUID) (*billing.Billing, error)
+
+// Paddle atomic transaction methods — each atomically performs the balance/token change
+// AND creates a billing record in a single SQL transaction (no double-ledger).
+AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error
+AccountPaddleSubtractCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error
+AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string, txnType billing.TransactionType, idempotencyKey uuid.UUID) error
 ```
 
-**Step 2: Write AccountGetByPaddleSubscriptionID**
+**Step 2: Write AccountGetByPaddleSubscriptionID and atomic Paddle methods**
 
 Create `bin-billing-manager/pkg/dbhandler/account_paddle.go`:
 
@@ -172,14 +181,19 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
 )
 
 // AccountGetByPaddleSubscriptionID returns the account matching the given Paddle subscription ID.
@@ -207,6 +221,216 @@ func (h *handler) AccountGetByPaddleSubscriptionID(ctx context.Context, paddleSu
 
 	log.WithField("account", accounts[0]).Debugf("Retrieved account by paddle_subscription_id. account_id: %s", accounts[0].ID)
 	return accounts[0], nil
+}
+
+// AccountPaddleAddCredit atomically adds credit balance and creates a Paddle billing record.
+// Follows the same TX pattern as accountAdjustCreditWithLedger but with Paddle-specific
+// reference type and idempotency key. One Paddle event → one billing record (no double-ledger).
+func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("AccountPaddleAddCredit: could not read account. err: %v", err)
+	}
+
+	now := h.utilHandler.TimeNow()
+	newBalance := currentCredit + amountMicros
+
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
+		newBalance, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not update balance. err: %v", err)
+	}
+
+	bill := &billing.Billing{}
+	bill.ID = h.utilHandler.UUIDCreate()
+	bill.CustomerID = customerID
+	bill.AccountID = accountID
+	bill.TransactionType = billing.TransactionTypeTopUp
+	bill.Status = billing.StatusFinished
+	bill.ReferenceType = billing.ReferenceTypePaddleCreditPurchase
+	bill.ReferenceID = idempotencyKey
+	bill.CostType = billing.CostTypeNone
+	bill.AmountCredit = amountMicros
+	bill.AmountToken = 0
+	bill.BalanceCreditSnapshot = newBalance
+	bill.BalanceTokenSnapshot = currentToken
+	bill.IdempotencyKey = idempotencyKey
+	bill.TMBillingStart = now
+	bill.TMBillingEnd = now
+	bill.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(bill)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not prepare billing fields. err: %v", err)
+	}
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not build insert query. err: %v", err)
+	}
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AccountPaddleAddCredit: could not commit. err: %v", err)
+	}
+
+	_ = h.accountUpdateToCache(ctx, accountID)
+	return nil
+}
+
+// AccountPaddleSubtractCredit atomically subtracts credit balance and creates a Paddle refund billing record.
+// Allows balance to go negative (caller should check and freeze if needed).
+func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not read account. err: %v", err)
+	}
+
+	now := h.utilHandler.TimeNow()
+	newBalance := currentCredit - amountMicros
+
+	_, err = tx.ExecContext(ctx,
+		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
+		newBalance, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not update balance. err: %v", err)
+	}
+
+	bill := &billing.Billing{}
+	bill.ID = h.utilHandler.UUIDCreate()
+	bill.CustomerID = customerID
+	bill.AccountID = accountID
+	bill.TransactionType = billing.TransactionTypeRefund
+	bill.Status = billing.StatusFinished
+	bill.ReferenceType = billing.ReferenceTypePaddleRefund
+	bill.ReferenceID = idempotencyKey
+	bill.CostType = billing.CostTypeNone
+	bill.AmountCredit = -amountMicros
+	bill.AmountToken = 0
+	bill.BalanceCreditSnapshot = newBalance
+	bill.BalanceTokenSnapshot = currentToken
+	bill.IdempotencyKey = idempotencyKey
+	bill.TMBillingStart = now
+	bill.TMBillingEnd = now
+	bill.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(bill)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not prepare billing fields. err: %v", err)
+	}
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not build insert query. err: %v", err)
+	}
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not commit. err: %v", err)
+	}
+
+	_ = h.accountUpdateToCache(ctx, accountID)
+	return nil
+}
+
+// AccountPaddleTopUpTokens atomically resets tokens and creates a Paddle subscription billing record.
+// txnType should be TransactionTypeTopUp for new subs/renewals or TransactionTypeAdjustment for plan changes.
+func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string, txnType billing.TransactionType, idempotencyKey uuid.UUID) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not begin transaction. err: %v", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var currentToken, currentCredit int64
+	row := tx.QueryRowContext(ctx,
+		"SELECT balance_token, balance_credit FROM billing_accounts WHERE id = ? FOR UPDATE",
+		accountID.Bytes())
+	if err := row.Scan(&currentToken, &currentCredit); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not read account. err: %v", err)
+	}
+
+	now := h.utilHandler.TimeNow()
+	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+
+	_, err = tx.ExecContext(ctx,
+		`UPDATE billing_accounts SET
+			balance_token = ?,
+			tm_last_topup = ?,
+			tm_next_topup = ?,
+			tm_update = ?
+		WHERE id = ?`,
+		tokenAmount, now, nextMonth, now, accountID.Bytes())
+	if err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not update account. err: %v", err)
+	}
+
+	bill := &billing.Billing{}
+	bill.ID = h.utilHandler.UUIDCreate()
+	bill.CustomerID = customerID
+	bill.AccountID = accountID
+	bill.TransactionType = txnType
+	bill.Status = billing.StatusFinished
+	bill.ReferenceType = billing.ReferenceTypePaddleSubscription
+	bill.ReferenceID = idempotencyKey
+	bill.CostType = billing.CostTypeNone
+	bill.AmountCredit = 0
+	bill.AmountToken = tokenAmount
+	bill.BalanceCreditSnapshot = currentCredit
+	bill.BalanceTokenSnapshot = tokenAmount
+	bill.IdempotencyKey = idempotencyKey
+	bill.TMBillingStart = now
+	bill.TMBillingEnd = now
+	bill.TMCreate = now
+
+	fields, err := commondatabasehandler.PrepareFields(bill)
+	if err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not prepare billing fields. err: %v", err)
+	}
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not build insert query. err: %v", err)
+	}
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not insert billing record. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not commit. err: %v", err)
+	}
+
+	_ = h.accountUpdateToCache(ctx, accountID)
+	return nil
 }
 ```
 
@@ -237,8 +461,7 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 		"idempotency_key": idempotencyKey,
 	})
 
-	var res billing.Billing
-	cols := commondatabasehandler.GetDBFields(&res)
+	cols := commondatabasehandler.GetDBFields(billing.Billing{})
 
 	query, args, err := sq.Select(cols...).
 		From(billingsTable).
@@ -250,7 +473,7 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 		return nil, fmt.Errorf("could not build query: %w", err)
 	}
 
-	rows, err := h.db.QueryContext(ctx, query, args...)
+	rows, err := h.db.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not execute query: %w", err)
 	}
@@ -260,6 +483,7 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 		return nil, ErrNotFound
 	}
 
+	var res billing.Billing
 	if err := commondatabasehandler.ScanRow(rows, &res); err != nil {
 		log.Errorf("Could not scan row: %v", err)
 		return nil, fmt.Errorf("could not scan row: %w", err)
@@ -321,8 +545,10 @@ Create `bin-billing-manager/pkg/accounthandler/paddle.go`. Key patterns to follo
 
 - **Customer lookup** uses existing `h.GetByCustomerID(ctx, customerID)` which goes through customer-manager RPC (C1 fix)
 - **Idempotency** uses single `h.db.BillingGetByIdempotencyKey(ctx, key)` query (C2/C3 fix)
-- **Subscription token allocation** uses `h.db.AccountTopUpTokens()` (resets tokens, not additive) (I4 fix)
-- **CostType** always set to `billing.CostTypeNone` explicitly (I1 fix)
+- **Atomic DB methods** — each Paddle handler calls exactly ONE atomic DB method (no separate billing record creation). One event → one billing record (R2-C2/C3/C4 fix)
+- **Subscription token allocation** uses `h.db.AccountPaddleTopUpTokens()` (resets tokens, not additive)
+- **Subscription update resets tokens** to new plan allowance (R2-I3 fix)
+- **Cancel keeps paddle_subscription_id** for post-cancel event correlation (R2-I2 fix)
 - **Unlimited plan renewals** still create a billing record with `AmountToken: 0` for audit trail (I8 fix)
 
 ```go
@@ -338,8 +564,6 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
-
-	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 // checkPaddleIdempotency checks if a billing record with the given event ID already exists.
@@ -356,41 +580,8 @@ func (h *accountHandler) checkPaddleIdempotency(ctx context.Context, eventID str
 	return false, fmt.Errorf("could not check idempotency: %w", err)
 }
 
-// createPaddleBillingRecord creates an immutable billing record for a Paddle event.
-func (h *accountHandler) createPaddleBillingRecord(ctx context.Context, acc *account.Account, txnType billing.TransactionType, refType billing.ReferenceType, amountCredit int64, amountToken int64, eventID string) error {
-	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-
-	// Get latest account state for snapshot
-	updatedAcc, err := h.db.AccountGet(ctx, acc.ID)
-	if err != nil {
-		return fmt.Errorf("could not get updated account for snapshot: %w", err)
-	}
-
-	bill := &billing.Billing{
-		Identity: commonidentity.Identity{
-			ID:         h.utilHandler.UUIDCreate(),
-			CustomerID: acc.CustomerID,
-		},
-		AccountID:             acc.ID,
-		TransactionType:       txnType,
-		Status:                billing.StatusFinished,
-		ReferenceType:         refType,
-		ReferenceID:           idempotencyKey,
-		CostType:              billing.CostTypeNone,
-		AmountCredit:          amountCredit,
-		AmountToken:           amountToken,
-		BalanceCreditSnapshot: updatedAcc.BalanceCredit,
-		BalanceTokenSnapshot:  updatedAcc.BalanceToken,
-		IdempotencyKey:        idempotencyKey,
-	}
-
-	if err := h.db.BillingCreate(ctx, bill); err != nil {
-		return fmt.Errorf("could not create billing record: %w", err)
-	}
-	return nil
-}
-
 // PaddleCreditTopUp adds credit balance from a Paddle credit purchase.
+// Uses AccountPaddleAddCredit for atomic balance+billing in one transaction (no double-ledger).
 func (h *accountHandler) PaddleCreditTopUp(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "PaddleCreditTopUp",
@@ -416,14 +607,12 @@ func (h *accountHandler) PaddleCreditTopUp(ctx context.Context, customerID uuid.
 	}
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
 
-	if err := h.db.AccountAddBalance(ctx, acc.ID, amountCreditMicros); err != nil {
-		return fmt.Errorf("could not add balance: %w", err)
-	}
-
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeTopUp, billing.ReferenceTypePaddleCreditPurchase, amountCreditMicros, 0, eventID)
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	return h.db.AccountPaddleAddCredit(ctx, acc.ID, amountCreditMicros, acc.CustomerID, idempotencyKey)
 }
 
 // PaddleSubscriptionCreate sets up a new subscription on the billing account.
+// Uses AccountPaddleTopUpTokens for atomic token reset+billing in one transaction.
 func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerID uuid.UUID, planType account.PlanType, paddleSubID string, paddleCustID string, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionCreate",
@@ -462,18 +651,14 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 		return fmt.Errorf("could not update paddle IDs: %w", err)
 	}
 
-	// Reset tokens to plan allowance (not additive — uses AccountTopUpTokens)
-	tokenAllowance, ok := account.PlanTokenMap[planType]
-	if ok && tokenAllowance > 0 {
-		if err := h.db.AccountTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(planType)); err != nil {
-			return fmt.Errorf("could not top up tokens: %w", err)
-		}
-	}
-
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeTopUp, billing.ReferenceTypePaddleSubscription, 0, tokenAllowance, eventID)
+	// Reset tokens to plan allowance — atomic DB method creates billing record
+	tokenAllowance := account.PlanTokenMap[planType]
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(planType), billing.TransactionTypeTopUp, idempotencyKey)
 }
 
 // PaddleSubscriptionUpdate changes the plan type when a subscription is upgraded/downgraded.
+// Resets tokens to the new plan's allowance (R2-I3 fix).
 func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSubID string, newPlanType account.PlanType, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionUpdate",
@@ -501,10 +686,14 @@ func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSub
 		return fmt.Errorf("could not update plan type: %w", err)
 	}
 
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeAdjustment, billing.ReferenceTypePaddleSubscription, 0, 0, eventID)
+	// Reset tokens to new plan allowance — atomic DB method creates billing record
+	tokenAllowance := account.PlanTokenMap[newPlanType]
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(newPlanType), billing.TransactionTypeAdjustment, idempotencyKey)
 }
 
 // PaddleSubscriptionCancel downgrades the account to Free plan immediately.
+// Keeps paddle_subscription_id for post-cancel event correlation (R2-I2 fix).
 // Paddle fires subscription.canceled at end of billing period when user chose end-of-period cancellation.
 func (h *accountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSubID string, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -533,18 +722,17 @@ func (h *accountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSub
 		return fmt.Errorf("could not update plan type: %w", err)
 	}
 
-	// Clear paddle subscription ID
-	fields := map[account.Field]any{
-		account.FieldPaddleSubscriptionID: "",
-	}
-	if err := h.db.AccountUpdate(ctx, acc.ID, fields); err != nil {
-		return fmt.Errorf("could not clear paddle subscription ID: %w", err)
-	}
+	// NOTE: Do NOT clear paddle_subscription_id — Paddle may still send
+	// follow-up events (e.g., transaction.refunded) that need subscription lookup.
 
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeAdjustment, billing.ReferenceTypePaddleSubscription, 0, 0, eventID)
+	// Reset tokens to free plan allowance — atomic DB method creates billing record
+	tokenAllowance := account.PlanTokenMap[account.PlanTypeFree]
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(account.PlanTypeFree), billing.TransactionTypeAdjustment, idempotencyKey)
 }
 
 // PaddleSubscriptionRenew replenishes tokens for a subscription renewal.
+// Uses AccountPaddleTopUpTokens for atomic token reset+billing in one transaction.
 func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubID string, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionRenew",
@@ -567,18 +755,15 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 	}
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
 
-	tokenAllowance, ok := account.PlanTokenMap[acc.PlanType]
-	if ok && tokenAllowance > 0 {
-		if err := h.db.AccountTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(acc.PlanType)); err != nil {
-			return fmt.Errorf("could not top up tokens: %w", err)
-		}
-	}
-
-	// Always create billing record for audit trail (even for unlimited plans with 0 tokens)
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeTopUp, billing.ReferenceTypePaddleSubscription, 0, tokenAllowance, eventID)
+	// Reset tokens to plan allowance — atomic DB method creates billing record
+	// For unlimited plans (tokenAllowance=0), still creates audit record with AmountToken=0
+	tokenAllowance := account.PlanTokenMap[acc.PlanType]
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(acc.PlanType), billing.TransactionTypeTopUp, idempotencyKey)
 }
 
 // PaddleRefund subtracts credit from a Paddle refund.
+// Uses AccountPaddleSubtractCredit for atomic balance subtract+billing in one transaction.
 func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "PaddleRefund",
@@ -602,8 +787,8 @@ func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID,
 	}
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
 
-	// Subtract balance (allow negative)
-	if err := h.db.AccountSubtractBalance(ctx, acc.ID, amountCreditMicros); err != nil {
+	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
+	if err := h.db.AccountPaddleSubtractCredit(ctx, acc.ID, amountCreditMicros, acc.CustomerID, idempotencyKey); err != nil {
 		return fmt.Errorf("could not subtract balance: %w", err)
 	}
 
@@ -619,8 +804,7 @@ func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID,
 		}
 	}
 
-	// Negative delta for refund
-	return h.createPaddleBillingRecord(ctx, acc, billing.TransactionTypeRefund, billing.ReferenceTypePaddleRefund, -amountCreditMicros, 0, eventID)
+	return nil
 }
 ```
 
@@ -628,8 +812,11 @@ func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID,
 
 Create `bin-billing-manager/pkg/accounthandler/paddle_test.go` with table-driven tests for each method. Use gomock for `dbhandler.MockDBHandler` and `requesthandler.MockRequestHandler`. Key mock expectations:
 
-- `PaddleCreditTopUp`: mock `BillingGetByIdempotencyKey` (returns `ErrNotFound`), mock `reqHandler.CustomerV1CustomerGet` + `db.AccountGet` (via `GetByCustomerID`), mock `AccountAddBalance`, mock `AccountGet` (snapshot), mock `BillingCreate`
-- `PaddleSubscriptionCreate`: similar, plus `AccountUpdate` (paddle IDs) and `AccountTopUpTokens`
+- `PaddleCreditTopUp`: mock `BillingGetByIdempotencyKey` (returns `ErrNotFound`), mock `reqHandler.CustomerV1CustomerGet` + `db.AccountGet` (via `GetByCustomerID`), mock `AccountPaddleAddCredit`
+- `PaddleSubscriptionCreate`: similar, plus `AccountUpdate` (paddle IDs) and `AccountPaddleTopUpTokens`
+- `PaddleSubscriptionUpdate`: mock `AccountGetByPaddleSubscriptionID`, `UpdatePlanType` (via `AccountUpdate`), `AccountPaddleTopUpTokens` (verifies tokens are reset to new plan allowance)
+- `PaddleSubscriptionCancel`: mock `AccountGetByPaddleSubscriptionID`, `UpdatePlanType`, `AccountPaddleTopUpTokens` — verify `paddle_subscription_id` is NOT cleared
+- `PaddleRefund`: mock `GetByCustomerID`, `AccountPaddleSubtractCredit`, `AccountGet` (for freeze check)
 - Idempotency: test where `BillingGetByIdempotencyKey` returns a record — method should return nil without side effects
 
 **Step 4: Run verification**
@@ -913,12 +1100,19 @@ git commit -m "NOJIRA-Paddle-billing-integration
 - Modify: `bin-hook-manager/go.mod` (add Paddle SDK)
 - Modify: `bin-hook-manager/k8s/deployment.yml` (add env var)
 
-**Step 1: Add Paddle SDK dependency**
+**Step 1: Verify and add Paddle SDK dependency (R2-C7 fix)**
+
+First verify the SDK exists at v4 and has `WebhookVerifier`:
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Paddle-billing-integration/bin-hook-manager
 go get github.com/PaddleHQ/paddle-go-sdk/v4
+# If v4 doesn't exist, try v3: go get github.com/PaddleHQ/paddle-go-sdk/v3
+# Verify the type exists:
+grep -r "WebhookVerifier" vendor/github.com/PaddleHQ/ || echo "Type not found — check SDK docs"
 ```
+
+> **NOTE:** If the SDK version or type names differ, adjust all references in `servicehandler/billing.go` and `servicehandler/main.go` accordingly.
 
 **Step 2: Add config for Paddle webhook secret (C5 fix)**
 
@@ -996,9 +1190,9 @@ serviceHandler := servicehandler.NewServiceHandler(requestHandler, cfg.PaddleWeb
 
 **Step 5: Write billing service handler**
 
-Create `bin-hook-manager/pkg/servicehandler/billing.go` — reads body, restores for verification, sends RPC. On signature failure, return error (Gin handler converts to 400 status for signature failures).
+Create `bin-hook-manager/pkg/servicehandler/billing.go` — reads body, restores for verification, sends RPC. On signature failure, return error (Gin handler converts to 400).
 
-**Step 6: Create billing API route (I5 fix — fixed route, not wildcard)**
+**Step 6: Create billing API route (I5 fix — fixed route, not wildcard; R2-I7 fix — return 400)**
 
 Create `bin-hook-manager/api/v1.0/billing/main.go`:
 
@@ -1010,6 +1204,23 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
     g := r.Group("/billing")
     g.POST("/paddle", billingPaddlePOST)  // Fixed route, not /:target
+}
+```
+
+Create `bin-hook-manager/api/v1.0/billing/billing.go`:
+
+```go
+func billingPaddlePOST(c *gin.Context) {
+    ctx := context.Background()
+    serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+    if err := serviceHandler.Billing(ctx, c.Request); err != nil {
+        // Return 400 for all billing webhook errors (R2-I7 fix).
+        // Paddle treats 4xx as permanent failure → stops retries.
+        // 5xx would cause infinite retry storm for permanent errors like bad signatures.
+        c.AbortWithStatus(http.StatusBadRequest)
+        return
+    }
+    c.AbortWithStatus(200)
 }
 ```
 

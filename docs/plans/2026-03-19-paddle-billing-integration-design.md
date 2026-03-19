@@ -95,12 +95,12 @@ Paddle may retry webhooks. Use Paddle's `event_id` as the idempotency key:
 
 | Paddle Event | Condition | billing-manager Action |
 |---|---|---|
-| `transaction.completed` | No `subscription_id` | Credit top-up: `AddBalance()` + billing record (type=`top_up`, ref=`paddle_credit_purchase`) |
-| `transaction.completed` | Has `subscription_id` | Subscription renewal: replenish tokens per plan via `AddBalance()` for tokens |
-| `subscription.created` | — | Set `PlanType`, store `paddle_subscription_id`/`paddle_customer_id`, allocate initial tokens |
-| `subscription.updated` | — | Update `PlanType`, adjust token allocation and resource limits |
-| `subscription.canceled` | — | Downgrade to `PlanTypeFree` immediately (Paddle sends `subscription.canceled` at end of billing period when `effective_from=next_billing_period`) |
-| `transaction.refunded` | — | Subtract refunded amount from `BalanceCredit` + billing record (type=`refund`, ref=`paddle_refund`) |
+| `transaction.completed` | No `subscription_id` | Credit top-up: `AccountPaddleAddCredit()` atomically adds balance + creates billing record (type=`top_up`, ref=`paddle_credit_purchase`) |
+| `transaction.completed` | Has `subscription_id` | Subscription renewal: `AccountPaddleTopUpTokens()` atomically resets tokens + creates billing record |
+| `subscription.created` | — | Set `PlanType`, store `paddle_subscription_id`/`paddle_customer_id`, `AccountPaddleTopUpTokens()` for initial tokens |
+| `subscription.updated` | — | Update `PlanType`, `AccountPaddleTopUpTokens()` to reset tokens to new plan allowance |
+| `subscription.canceled` | — | Downgrade to `PlanTypeFree`, `AccountPaddleTopUpTokens()` to reset tokens to free allowance. Keep `paddle_subscription_id` for post-cancel event correlation |
+| `transaction.refunded` | — | `AccountPaddleSubtractCredit()` atomically subtracts balance + creates billing record (type=`refund`, ref=`paddle_refund`) |
 | `transaction.payment_failed` | — | Log warning at Error level; no account changes (Paddle handles customer emails) |
 | Unknown event type | — | Log at Debug level, return 200 (prevent infinite retries) |
 
@@ -119,9 +119,9 @@ No hardcoded plan-to-Paddle-product mapping in Go code — driven entirely by pr
 |---|---|
 | Customer subscribes | `subscription.created` → set plan, allocate tokens, store paddle IDs |
 | Monthly renewal | `transaction.completed` (with subscription_id) → replenish tokens |
-| Upgrade (Basic→Pro) | `subscription.updated` → update plan type, adjust tokens/limits |
-| Downgrade (Pro→Basic) | `subscription.updated` → update plan type, adjust tokens/limits |
-| Cancellation | `subscription.canceled` → downgrade to Free immediately (Paddle fires this event at end of billing period when customer chose end-of-period cancellation) |
+| Upgrade (Basic→Pro) | `subscription.updated` → update plan type, reset tokens to new plan allowance |
+| Downgrade (Pro→Basic) | `subscription.updated` → update plan type, reset tokens to new plan allowance |
+| Cancellation | `subscription.canceled` → downgrade to Free, reset tokens to free allowance. Keep `paddle_subscription_id` for post-cancel event correlation |
 
 ## Changes by Service
 
@@ -143,11 +143,13 @@ type ServiceHandler interface {
 **Gin handlers simplify** — no more `io.ReadAll()` at HTTP layer:
 
 ```go
-func billingPOST(c *gin.Context) {
+func billingPaddlePOST(c *gin.Context) {
     ctx := context.Background()
     serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
     if err := serviceHandler.Billing(ctx, c.Request); err != nil {
-        c.AbortWithStatus(http.StatusInternalServerError)
+        // Return 400 for all billing webhook errors (signature failures, parse errors).
+        // Paddle treats 4xx as permanent → stops retries. 5xx would cause retry storms.
+        c.AbortWithStatus(http.StatusBadRequest)
         return
     }
     c.AbortWithStatus(200)
@@ -250,17 +252,28 @@ case regV1HooksPaddle.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
    - Credit purchase → `accountHandler.PaddleCreditTopUp(ctx, customerID, amountMicros, eventID)`
    - Subscription created → `accountHandler.PaddleSubscriptionCreate(ctx, customerID, planType, paddleSubID, paddleCustID, eventID)`
    - Subscription updated → `accountHandler.PaddleSubscriptionUpdate(ctx, paddleSubID, newPlanType, eventID)`
-   - Subscription canceled → `accountHandler.PaddleSubscriptionCancel(ctx, paddleSubID, effectiveFrom, eventID)`
+   - Subscription canceled → `accountHandler.PaddleSubscriptionCancel(ctx, paddleSubID, eventID)`
    - Subscription renewal → `accountHandler.PaddleSubscriptionRenew(ctx, paddleSubID, eventID)`
    - Refund → `accountHandler.PaddleRefund(ctx, customerID, amountMicros, eventID)`
 7. Return 200 on success
 
+**Atomic DB approach (eliminates double-ledger):**
+
+Existing functions like `AccountAddBalance` and `AccountTopUpTokens` already create their own internal billing records within the same SQL transaction. Calling them and then creating a second Paddle-specific billing record would produce duplicate ledger entries.
+
+Solution: New Paddle-specific DBHandler methods that follow the same atomic transaction pattern but with Paddle-specific reference types and idempotency keys:
+- `AccountPaddleAddCredit(ctx, accountID, amountMicros, customerID, idempotencyKey)` — atomic balance add + billing record with `ReferenceTypePaddleCreditPurchase`
+- `AccountPaddleSubtractCredit(ctx, accountID, amountMicros, customerID, idempotencyKey)` — atomic balance subtract + billing record with `ReferenceTypePaddleRefund`
+- `AccountPaddleTopUpTokens(ctx, accountID, customerID, tokenAmount, planType, txnType, idempotencyKey)` — atomic token reset + billing record with `ReferenceTypePaddleSubscription`
+
+Each accountHandler method calls exactly ONE of these atomic DB methods (no separate `createPaddleBillingRecord`). One Paddle event → one billing record.
+
 **New accountHandler methods:**
 
 Each method:
+- Checks idempotency via `BillingGetByIdempotencyKey`
 - Validates the billing account exists
-- Performs the account operation (balance add/subtract, plan change)
-- Creates an immutable billing record for audit trail
+- Calls a single atomic DB method that does balance/token change + billing record in one transaction
 - Uses the Paddle `event_id` as `IdempotencyKey`
 
 **New files:**
@@ -273,8 +286,8 @@ Each method:
 **Edited files:**
 - `pkg/listenhandler/main.go` — add regex + switch case
 - `pkg/accounthandler/main.go` — add Paddle methods to interface
-- `pkg/dbhandler/main.go` — add `AccountGetByPaddleSubscriptionID` and `BillingGetByIdempotencyKey` to interface
-- `pkg/dbhandler/account_paddle.go` — new: `AccountGetByPaddleSubscriptionID` implementation
+- `pkg/dbhandler/main.go` — add `AccountGetByPaddleSubscriptionID`, `BillingGetByIdempotencyKey`, `AccountPaddleAddCredit`, `AccountPaddleSubtractCredit`, `AccountPaddleTopUpTokens` to interface
+- `pkg/dbhandler/account_paddle.go` — new: `AccountGetByPaddleSubscriptionID`, `AccountPaddleAddCredit`, `AccountPaddleSubtractCredit`, `AccountPaddleTopUpTokens`
 - `pkg/dbhandler/billing_paddle.go` — new: `BillingGetByIdempotencyKey` implementation
 - `models/billing/billing.go` — add new ReferenceType constants
 - `models/account/account.go` — add `PaddleSubscriptionID`, `PaddleCustomerID` fields
