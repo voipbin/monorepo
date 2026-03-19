@@ -16,11 +16,15 @@
 
 **Review 3 resolutions applied:** R3-I1 (use `StatusEnd` not `StatusFinished` in atomic DB methods), R3-I3 (restore `ok` guard on `PlanTokenMap` lookups — prevent unknown plan type → unlimited tokens), R3-I4 (add `PublishEvent` to `UpdatePlanType` so downstream services react to Paddle plan changes). Note: R3-C1 (config singleton) and R3-C2 (AccountList filter) were false positives — `viper.AutomaticEnv()` correctly reads env vars before cobra parses, and `ApplyFields` is a generic function that handles any field key dynamically.
 
+**Review 4 resolutions applied:** R4-C1 (use `defer func() { _ = rows.Close() }()` for golangci-lint), R4-C2 (explicit `PaddleWebhookSecretKey` in both `LoadGlobalConfig` and `InitConfig`), R4-C3 (migration must run before billing-manager deploy — deployment dependency note), R4-I1 (reorder PaddleSubscriptionCreate: store paddle IDs first so renewal lookups survive partial failure), R4-I2 (skip renewal for free-plan accounts to prevent post-cancel token grants), R4-I4 (remove `tm_delete IS NULL` from idempotency query — find records regardless of soft-delete state), R4-I6 (remove stale `models/request/v1_hooks.go` from design doc file list). Note: R4-I3 (CustomerID via embedded Identity) and R4-I5 (AccountList pagination for lookup) were verified correct. R4-S3 (PaddleRefund TOCTOU freeze race) accepted as known limitation.
+
 ---
 
 ## Task 1: Database Migration — Add Paddle columns to billing_accounts
 
 Add `paddle_subscription_id` and `paddle_customer_id` columns with indexes.
+
+**CRITICAL (R4-C3):** This migration MUST be applied before deploying bin-billing-manager with the new Account struct fields (Task 2). The `GetDBFields(account.Account{})` reflects all `db:` tagged fields — if the columns don't exist yet, all account queries will fail with scan errors.
 
 **Files:**
 - Create: `bin-dbscheme-manager/bin-manager/main/versions/g1a2b3c4d5e6_billing_accounts_add_column_paddle_subscription_id_paddle_customer_id.py`
@@ -468,7 +472,6 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 	query, args, err := sq.Select(cols...).
 		From(billingsTable).
 		Where(sq.Eq{"idempotency_key": idempotencyKey.Bytes()}).
-		Where(sq.Expr("tm_delete IS NULL")).
 		Limit(1).
 		ToSql()
 	if err != nil {
@@ -479,7 +482,7 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 	if err != nil {
 		return nil, fmt.Errorf("could not execute query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return nil, ErrNotFound
@@ -495,7 +498,7 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 }
 ```
 
-> **NOTE:** Check `billingsTable` constant name — look at existing `billing.go` in dbhandler for the correct table name constant. The soft-delete pattern for billings uses `WHERE tm_delete IS NULL` (confirmed from existing `billing.go:154`).
+> **NOTE:** Check `billingsTable` constant name — look at existing `billing.go` in dbhandler for the correct table name constant. No soft-delete filter is applied here — idempotency must find records regardless of their delete state (R4-I4 fix). This matches `billingGetFromDB` which also omits `tm_delete IS NULL`.
 
 **Step 4: Run verification**
 
@@ -641,18 +644,20 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 	}
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
 
-	// Update plan type
-	if _, err := h.UpdatePlanType(ctx, acc.ID, planType); err != nil {
-		return fmt.Errorf("could not update plan type: %w", err)
-	}
-
-	// Store paddle IDs
+	// Store paddle IDs FIRST — ensures subsequent renewal/cancel events
+	// can find this account by paddle_subscription_id even if later steps fail.
+	// On Paddle retry, these will be overwritten with the same values (safe). (R4-I1 fix)
 	fields := map[account.Field]any{
 		account.FieldPaddleSubscriptionID: paddleSubID,
 		account.FieldPaddleCustomerID:     paddleCustID,
 	}
 	if err := h.db.AccountUpdate(ctx, acc.ID, fields); err != nil {
 		return fmt.Errorf("could not update paddle IDs: %w", err)
+	}
+
+	// Update plan type
+	if _, err := h.UpdatePlanType(ctx, acc.ID, planType); err != nil {
+		return fmt.Errorf("could not update plan type: %w", err)
 	}
 
 	// Reset tokens to plan allowance — atomic DB method creates billing record
@@ -764,6 +769,14 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 		return fmt.Errorf("could not get account by paddle subscription ID: %w", err)
 	}
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
+
+	// Guard: skip renewal for cancelled subscriptions (plan downgraded to Free).
+	// After PaddleSubscriptionCancel, paddle_subscription_id is kept for event correlation
+	// but PlanType is reset to Free. A post-cancel renewal should not grant free-tier tokens. (R4-I2 fix)
+	if acc.PlanType == account.PlanTypeFree {
+		log.Infof("Skipping renewal for free-plan account (likely post-cancellation). account_id: %s, paddle_subscription_id: %s", acc.ID, paddleSubID)
+		return nil
+	}
 
 	// Reset tokens to plan allowance — atomic DB method creates billing record
 	// For unlimited plans (tokenAllowance=0), still creates audit record with AmountToken=0
@@ -1155,7 +1168,11 @@ Also add to the legacy `InitConfig` function:
 ```go
 _ = viper.BindPFlag("paddle_webhook_secret_key", cmd.Flags().Lookup("paddle_webhook_secret_key"))
 ```
-And add the field to the `cfg` struct in `InitConfig`.
+And add this line to `InitConfig`'s `cfg = &Config{...}` struct literal:
+```go
+PaddleWebhookSecretKey: viper.GetString("paddle_webhook_secret_key"),
+```
+**CRITICAL (R4-C2):** Both `LoadGlobalConfig` AND `InitConfig` must populate this field. Missing it in either path will silently leave the webhook secret empty, disabling signature verification in production.
 
 > **NOTE:** `main.go` uses `rootCmd.Flags()` for flag definitions and `InitConfig` for viper binding. Add the flag in `init()`:
 ```go

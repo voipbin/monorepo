@@ -279,7 +279,6 @@ Each method:
 **New files:**
 - `pkg/listenhandler/v1_hooks_paddle.go`
 - `pkg/listenhandler/v1_hooks_paddle_test.go`
-- `pkg/listenhandler/models/request/v1_hooks.go`
 - `pkg/accounthandler/paddle.go`
 - `pkg/accounthandler/paddle_test.go`
 
@@ -384,3 +383,13 @@ If hook-manager deploys before billing-manager: Paddle webhooks fail → 500 →
 - R3-I4: `UpdatePlanType` event publishing noted as follow-up task
 - R3-C1 (config singleton): FALSE POSITIVE — `viper.AutomaticEnv()` correctly reads env vars even when called in `init()` before cobra parses flags
 - R3-C2 (AccountList filter): FALSE POSITIVE — `ApplyFields` is a generic function that handles any field key dynamically
+
+**Review 4 (R4):**
+- R4-C1: Use `defer func() { _ = rows.Close() }()` pattern for golangci-lint compliance
+- R4-C2: Explicit `PaddleWebhookSecretKey` population in both `LoadGlobalConfig` and `InitConfig` config paths
+- R4-C3: Migration must run before bin-billing-manager deploy (GetDBFields reflects new columns)
+- R4-I1: Reorder PaddleSubscriptionCreate — store paddle IDs first so renewal lookups survive partial failure
+- R4-I2: Skip renewal for free-plan accounts to prevent post-cancellation token grants
+- R4-I4: Remove `tm_delete IS NULL` from idempotency query — find records regardless of soft-delete state
+- R4-I6: Removed stale `models/request/v1_hooks.go` from file list (hmhook.Hook imported directly)
+- R4-S3 (PaddleRefund TOCTOU freeze race): Accepted as known limitation — freeze is belt-and-suspenders
