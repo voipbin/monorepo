@@ -1,0 +1,41 @@
+post:
+  summary: Add sources to a rag
+  description: Adds additional document sources to an existing RAG knowledge base. Documents are ingested asynchronously.
+  tags:
+    - RAG
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the rag. Returned from the `POST /rags` response."
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            storage_file_ids:
+              type: array
+              items:
+                type: string
+                format: uuid
+              description: "List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response."
+              example: ["b2c3d4e5-f6a7-8901-bcde-f12345678901"]
+            source_urls:
+              type: array
+              items:
+                type: string
+                format: uri
+              description: "List of URLs to fetch and ingest as documents."
+              example: ["https://example.com/docs/faq.html"]
+  responses:
+    '200':
+      description: Successfully added sources.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'

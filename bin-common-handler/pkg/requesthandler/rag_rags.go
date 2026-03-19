@@ -48,25 +48,55 @@ func (r *requestHandler) RagV1RagQuery(ctx context.Context, ragID uuid.UUID, que
 }
 
 // RagV1RagCreate sends a request to rag-manager to create a new rag.
-func (r *requestHandler) RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rmrag.Rag, error) {
+func (r *requestHandler) RagV1RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.Rag, error) {
 	uri := "/v1/rags"
 
-	reqData := struct {
-		CustomerID  uuid.UUID `json:"customer_id"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
+	m, err := json.Marshal(struct {
+		CustomerID     uuid.UUID   `json:"customer_id"`
+		Name           string      `json:"name"`
+		Description    string      `json:"description"`
+		StorageFileIDs []uuid.UUID `json:"storage_file_ids"`
+		SourceURLs     []string    `json:"source_urls"`
 	}{
-		CustomerID:  customerID,
-		Name:        name,
-		Description: description,
-	}
-
-	m, err := json.Marshal(reqData)
+		CustomerID:     customerID,
+		Name:           name,
+		Description:    description,
+		StorageFileIDs: storageFileIDs,
+		SourceURLs:     sourceURLs,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	tmp, err := r.sendRequestRag(ctx, uri, sock.RequestMethodPost, "rag/rags", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmrag.Rag
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// RagV1RagAddSources sends a request to rag-manager to add sources to an existing rag.
+func (r *requestHandler) RagV1RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.Rag, error) {
+	uri := fmt.Sprintf("/v1/rags/%s/sources", ragID)
+
+	m, err := json.Marshal(struct {
+		StorageFileIDs []uuid.UUID `json:"storage_file_ids"`
+		SourceURLs     []string    `json:"source_urls"`
+	}{
+		StorageFileIDs: storageFileIDs,
+		SourceURLs:     sourceURLs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestRag(ctx, uri, sock.RequestMethodPost, "rag/rags.sources", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

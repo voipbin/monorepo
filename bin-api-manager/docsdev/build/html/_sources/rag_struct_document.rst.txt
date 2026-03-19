@@ -24,7 +24,7 @@ Document
         "tm_update": "<string>"
     }
 
-* ``id`` (UUID): The document's unique identifier. Returned when creating a document via ``POST /rag-documents`` or when listing documents via ``GET /rag-documents``.
+* ``id`` (UUID): The document's unique identifier. Created automatically when sources are added via ``POST /rags`` (at creation time) or ``POST /rags/{id}/sources``. Listed via ``GET /rag-documents``.
 * ``customer_id`` (UUID): The customer that owns this document. Obtained from the ``id`` field of ``GET /customer``.
 * ``rag_id`` (UUID, Required): The RAG knowledge base this document belongs to. Obtained from the ``id`` field of ``POST /rags`` or ``GET /rags``.
 * ``name`` (String, Required): A human-readable name for the document (e.g., ``"Product API Reference v2.1"``).
@@ -58,7 +58,7 @@ Document
 
 .. note:: **AI Implementation Hint**
 
-   Documents are immutable after creation — there is no ``PUT /rag-documents/{id}`` endpoint. If the source content changes (e.g., a web page is updated), delete the old document via ``DELETE /rag-documents/{id}`` and create a new one via ``POST /rag-documents``. This ensures the vector database stays consistent with the source content.
+   Documents are immutable after creation — there is no update or delete endpoint for individual documents. If the source content changes (e.g., a web page is updated), delete the entire RAG via ``DELETE /rags/{id}`` and recreate it with the updated sources via ``POST /rags``. This ensures the vector database stays consistent with the source content. Documents are managed as part of their parent RAG, not independently.
 
 Example
 +++++++

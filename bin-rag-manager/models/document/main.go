@@ -40,4 +40,6 @@ type Document struct {
 	TMCreate      *time.Time `json:"tm_create,omitempty" db:"tm_create"`
 	TMUpdate      *time.Time `json:"tm_update,omitempty" db:"tm_update"`
 	TMDelete      *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
+	RetryCount    int        `json:"retry_count,omitempty" db:"retry_count"`
+	TMProcessing  *time.Time `json:"tm_processing,omitempty" db:"tm_processing"`
 }

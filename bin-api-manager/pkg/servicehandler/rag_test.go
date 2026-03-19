@@ -70,6 +70,8 @@ func Test_RagCreate(t *testing.T) {
 				tt.agent.CustomerID,
 				tt.ragName,
 				tt.description,
+				[]uuid.UUID{},
+				[]string{},
 			).Return(tt.response, nil)
 
 			res, err := h.RagCreate(
@@ -77,6 +79,8 @@ func Test_RagCreate(t *testing.T) {
 				tt.agent,
 				tt.ragName,
 				tt.description,
+				[]uuid.UUID{},
+				[]string{},
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

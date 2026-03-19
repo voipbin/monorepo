@@ -27,6 +27,9 @@ type Config struct {
 	// RAG
 	RAGTopK int
 
+	// GCS
+	GCPBucketNameMedia string
+
 	// PostgreSQL
 	PostgreSQLDSN string
 }
@@ -48,6 +51,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("gcp_location", "", "GCP region for Vertex AI")
 	f.String("google_embedding_model", "text-embedding-004", "Google embedding model")
 	f.Int("rag_top_k", 5, "Number of chunks to retrieve")
+	f.String("gcp_bucket_name_media", "", "GCS bucket name for media files")
 	f.String("postgresql_dsn", "", "PostgreSQL connection string")
 
 	bindings := map[string]string{
@@ -58,6 +62,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"gcp_location":              "GCP_LOCATION",
 		"google_embedding_model":    "GOOGLE_EMBEDDING_MODEL",
 		"rag_top_k":                 "RAG_TOP_K",
+		"gcp_bucket_name_media":     "GCP_BUCKET_NAME_MEDIA",
 		"postgresql_dsn":            "POSTGRESQL_DSN",
 	}
 
@@ -85,6 +90,7 @@ func LoadGlobalConfig() {
 			GoogleCloudLocation:     viper.GetString("gcp_location"),
 			GoogleEmbeddingModel:    viper.GetString("google_embedding_model"),
 			RAGTopK:                 viper.GetInt("rag_top_k"),
+			GCPBucketNameMedia:      viper.GetString("gcp_bucket_name_media"),
 			PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
 		}
 	})
@@ -117,6 +123,9 @@ func InitConfig(cmd *cobra.Command) error {
 	if err = viper.BindPFlag("rag_top_k", cmd.Flags().Lookup("rag_top_k")); err != nil {
 		return errors.Wrapf(err, "error binding rag_top_k flag")
 	}
+	if err = viper.BindPFlag("gcp_bucket_name_media", cmd.Flags().Lookup("gcp_bucket_name_media")); err != nil {
+		return errors.Wrapf(err, "error binding gcp_bucket_name_media flag")
+	}
 	if err = viper.BindPFlag("postgresql_dsn", cmd.Flags().Lookup("postgresql_dsn")); err != nil {
 		return errors.Wrapf(err, "error binding postgresql_dsn flag")
 	}
@@ -129,6 +138,7 @@ func InitConfig(cmd *cobra.Command) error {
 		GoogleCloudLocation:     viper.GetString("gcp_location"),
 		GoogleEmbeddingModel:    viper.GetString("google_embedding_model"),
 		RAGTopK:                 viper.GetInt("rag_top_k"),
+		GCPBucketNameMedia:      viper.GetString("gcp_bucket_name_media"),
 		PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
 	}
 

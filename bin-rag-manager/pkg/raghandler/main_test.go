@@ -9,7 +9,7 @@ func TestRagHandler_Interface(t *testing.T) {
 }
 
 func TestNewRagHandler(t *testing.T) {
-	h := NewRagHandler(nil, nil)
+	h := NewRagHandler(nil, nil, nil, nil, "")
 	if h == nil {
 		t.Error("expected non-nil handler")
 	}

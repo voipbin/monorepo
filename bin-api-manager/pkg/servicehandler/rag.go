@@ -28,7 +28,7 @@ func (h *serviceHandler) ragGet(ctx context.Context, id uuid.UUID) (*rmrag.Rag, 
 	return res, nil
 }
 
-func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, description string) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagCreate",
 		"customer_id": a.CustomerID,
@@ -40,7 +40,7 @@ func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, 
 	}
 
 	log.Debug("Creating a new rag.")
-	tmp, err := h.reqHandler.RagV1RagCreate(ctx, a.CustomerID, name, description)
+	tmp, err := h.reqHandler.RagV1RagCreate(ctx, a.CustomerID, name, description, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not create a new rag. err: %v", err)
 		return nil, err
@@ -159,5 +159,34 @@ func (h *serviceHandler) RagDelete(ctx context.Context, a *amagent.Agent, id uui
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) RagAddSources(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagAddSources",
+		"customer_id": a.CustomerID,
+		"rag_id":      ragID,
+	})
+	log.Debug("Adding sources to rag.")
+
+	// Verify RAG exists and belongs to this customer
+	tmp, err := h.ragGet(ctx, ragID)
+	if err != nil {
+		log.Errorf("Could not get rag info. err: %v", err)
+		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	r, err := h.reqHandler.RagV1RagAddSources(ctx, ragID, storageFileIDs, sourceURLs)
+	if err != nil {
+		log.Errorf("Could not add sources. err: %v", err)
+		return nil, err
+	}
+
+	res := r.ConvertWebhookMessage()
 	return res, nil
 }

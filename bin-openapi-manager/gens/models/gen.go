@@ -5535,6 +5535,12 @@ type RagManagerRag struct {
 	// Name Human-readable name for the rag.
 	Name *string `json:"name,omitempty"`
 
+	// Sources List of document sources in this rag with their ingestion status.
+	Sources *[]RagManagerRagSource `json:"sources,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
 	// TmCreate Timestamp when the rag was created.
 	TmCreate *time.Time `json:"tm_create,omitempty"`
 
@@ -5583,6 +5589,21 @@ type RagManagerRagDocumentDocType string
 
 // RagManagerRagDocumentStatus The document processing status. Indicates the current stage of document ingestion.
 type RagManagerRagDocumentStatus string
+
+// RagManagerRagSource A source document in a RAG knowledge base.
+type RagManagerRagSource struct {
+	// SourceUrl The URL if the source is a web document.
+	SourceUrl *string `json:"source_url,omitempty"`
+
+	// Status The document processing status. Indicates the current stage of document ingestion.
+	Status *RagManagerRagDocumentStatus `json:"status,omitempty"`
+
+	// StatusMessage Additional details about the current ingestion status.
+	StatusMessage *string `json:"status_message,omitempty"`
+
+	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /files` response.
+	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
+}
 
 // RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
 type RegistrarManagerAuthType string
@@ -7552,24 +7573,6 @@ type GetRagDocumentsParams struct {
 	RagId *openapi_types.UUID `form:"rag_id,omitempty" json:"rag_id,omitempty"`
 }
 
-// PostRagDocumentsJSONBody defines parameters for PostRagDocuments.
-type PostRagDocumentsJSONBody struct {
-	// DocType The document source type. Determines how the document content is obtained.
-	DocType RagManagerRagDocumentDocType `json:"doc_type"`
-
-	// Name Human-readable name for the document.
-	Name string `json:"name"`
-
-	// RagId The rag this document belongs to. Returned from the `POST /rags` response.
-	RagId openapi_types.UUID `json:"rag_id"`
-
-	// SourceUrl The source URL if doc_type is url.
-	SourceUrl *string `json:"source_url,omitempty"`
-
-	// StorageFileId The storage file ID if doc_type is uploaded. Returned from the `POST /files` response.
-	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
-}
-
 // GetRagsParams defines parameters for GetRags.
 type GetRagsParams struct {
 	// PageSize Number of results to return per page.
@@ -7586,6 +7589,12 @@ type PostRagsJSONBody struct {
 
 	// Name Human-readable name for the rag.
 	Name string `json:"name"`
+
+	// SourceUrls List of URLs to fetch and ingest as documents.
+	SourceUrls *[]string `json:"source_urls,omitempty"`
+
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
 // PutRagsIdJSONBody defines parameters for PutRagsId.
@@ -7595,6 +7604,15 @@ type PutRagsIdJSONBody struct {
 
 	// Name Updated name for the rag.
 	Name *string `json:"name,omitempty"`
+}
+
+// PostRagsIdSourcesJSONBody defines parameters for PostRagsIdSources.
+type PostRagsIdSourcesJSONBody struct {
+	// SourceUrls List of URLs to fetch and ingest as documents.
+	SourceUrls *[]string `json:"source_urls,omitempty"`
+
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
 // GetRecordingsParams defines parameters for GetRecordings.
@@ -8439,14 +8457,14 @@ type PutQueuesIdRoutingMethodJSONRequestBody PutQueuesIdRoutingMethodJSONBody
 // PutQueuesIdTagIdsJSONRequestBody defines body for PutQueuesIdTagIds for application/json ContentType.
 type PutQueuesIdTagIdsJSONRequestBody PutQueuesIdTagIdsJSONBody
 
-// PostRagDocumentsJSONRequestBody defines body for PostRagDocuments for application/json ContentType.
-type PostRagDocumentsJSONRequestBody PostRagDocumentsJSONBody
-
 // PostRagsJSONRequestBody defines body for PostRags for application/json ContentType.
 type PostRagsJSONRequestBody PostRagsJSONBody
 
 // PutRagsIdJSONRequestBody defines body for PutRagsId for application/json ContentType.
 type PutRagsIdJSONRequestBody PutRagsIdJSONBody
+
+// PostRagsIdSourcesJSONRequestBody defines body for PostRagsIdSources for application/json ContentType.
+type PostRagsIdSourcesJSONRequestBody PostRagsIdSourcesJSONBody
 
 // PostRoutesJSONRequestBody defines body for PostRoutes for application/json ContentType.
 type PostRoutesJSONRequestBody PostRoutesJSONBody

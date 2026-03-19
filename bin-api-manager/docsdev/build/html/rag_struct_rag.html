@@ -194,6 +194,8 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">object</span><span class="o">&gt;</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
@@ -204,13 +206,28 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this RAG. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customer</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the knowledge base (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Product</span> <span class="pre">Documentation</span> <span class="pre">KB&quot;</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (String, Optional): A description of the RAG’s purpose or the type of content it contains (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Contains</span> <span class="pre">all</span> <span class="pre">customer-facing</span> <span class="pre">product</span> <span class="pre">documentation</span> <span class="pre">and</span> <span class="pre">FAQs&quot;</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (String enum): The aggregate processing status derived from all source documents. One of:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pending</span></code> — No documents have been processed yet (or no documents exist).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processing</span></code> — At least one document is still being processed (pending or in-progress).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ready</span></code> — At least one document processed successfully. Individual source errors are visible in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> list.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code> — All documents failed processing. Check individual <code class="docutils literal notranslate"><span class="pre">sources</span></code> for details.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sources</span></code> (Array of <a class="reference internal" href="#rag-struct-rag-source"><span class="std std-ref">Source</span></a>): List of document sources with their individual ingestion status. Each source corresponds to a file or URL provided when creating or adding sources to the RAG.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the RAG was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the RAG was last updated.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">description</span></code> fields are for organizational purposes only — they do not affect how the RAG retrieves or ranks content. Use descriptive names to help identify knowledge bases when you have multiple RAGs (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Support</span> <span class="pre">KB</span> <span class="pre">-</span> <span class="pre">English&quot;</span></code> vs <code class="docutils literal notranslate"><span class="pre">&quot;Support</span> <span class="pre">KB</span> <span class="pre">-</span> <span class="pre">Korean&quot;</span></code>).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field is computed from the individual document statuses:</p>
+<ul class="simple">
+<li><p>If <strong>any</strong> document is <code class="docutils literal notranslate"><span class="pre">pending</span></code> or <code class="docutils literal notranslate"><span class="pre">processing</span></code>, the RAG status is <code class="docutils literal notranslate"><span class="pre">processing</span></code>.</p></li>
+<li><p>If <strong>all</strong> documents are terminal (<code class="docutils literal notranslate"><span class="pre">ready</span></code> or <code class="docutils literal notranslate"><span class="pre">error</span></code>) and at least one is <code class="docutils literal notranslate"><span class="pre">ready</span></code>, the RAG status is <code class="docutils literal notranslate"><span class="pre">ready</span></code>.</p></li>
+<li><p>Only when <strong>all</strong> documents have <code class="docutils literal notranslate"><span class="pre">error</span></code> status does the RAG show <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+</ul>
+<p>Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> to check ingestion progress. When <code class="docutils literal notranslate"><span class="pre">status</span></code> becomes <code class="docutils literal notranslate"><span class="pre">ready</span></code>, the RAG can be queried.</p>
 </div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
@@ -219,12 +236,43 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
     <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base containing product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="source">
+<span id="rag-struct-rag-source"></span><h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
+<p>Each source represents a document that was provided to the RAG for ingestion.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/files</span></code>. Present only for uploaded file sources.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source_url</span></code> (String URI, Optional): The URL if the source is a web document. Present only for URL sources.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (String enum): The processing status of this individual source. One of: <code class="docutils literal notranslate"><span class="pre">pending</span></code>, <code class="docutils literal notranslate"><span class="pre">processing</span></code>, <code class="docutils literal notranslate"><span class="pre">ready</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status_message</span></code> (String): Details about the current status. Contains error details when <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
+</ul>
 </section>
 </section>
 
@@ -241,6 +289,7 @@
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#source">Source</a></li>
 </ul>
 </li>
 </ul>

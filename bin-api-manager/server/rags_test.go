@@ -80,6 +80,8 @@ func Test_PostRags(t *testing.T) {
 				&tt.agent,
 				tt.expectedName,
 				tt.expectedDescription,
+				[]uuid.UUID{},
+				[]string{},
 			).Return(tt.responseRag, nil)
 
 			r.ServeHTTP(w, req)

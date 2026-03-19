@@ -27,8 +27,9 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// rag routes
-	regV1Rags   = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
-	regV1RagsID = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
+	regV1Rags          = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
+	regV1RagsID        = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
+	regV1RagsIDSources = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources(\?.*)?$`)
 
 	// document routes
 	regV1Documents   = regexp.MustCompile(`^/v1/documents(\?.*)?$`)
@@ -102,6 +103,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 
 	switch {
+	// rag routes — sources route MUST come before regV1RagsID (more specific route first)
+	case regV1RagsIDSources.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1RagsIDSourcesPost(ctx, m)
+		requestType = "/v1/rags/<rag-id>/sources"
+
 	// rag routes — ID routes before collection routes
 	case regV1RagsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1RagsIDGet(ctx, m)
@@ -123,18 +129,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1RagsGet(ctx, m)
 		requestType = "/v1/rags"
 
-	// document routes — ID routes before collection routes
+	// document routes — read-only (POST and DELETE removed)
 	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1DocumentsIDGet(ctx, m)
 		requestType = "/v1/documents/<document-id>"
-
-	case regV1DocumentsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1DocumentsIDDelete(ctx, m)
-		requestType = "/v1/documents/<document-id>"
-
-	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1DocumentsPost(ctx, m)
-		requestType = "/v1/documents"
 
 	case regV1Documents.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1DocumentsGet(ctx, m)

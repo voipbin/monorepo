@@ -7,10 +7,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/models/rag"
 )
 
-func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string) (*rag.Rag, error) {
+func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagCreate",
 		"customer_id": customerID,
@@ -36,7 +37,11 @@ func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, 
 	}
 	log.WithField("rag", r).Debugf("Created rag. rag_id: %s", r.ID)
 
-	return r, nil
+	// Create documents for each source and trigger ingestion
+	h.createDocumentsForSources(ctx, customerID, id, storageFileIDs, sourceURLs)
+
+	// Return enriched Rag with Status/Sources populated
+	return h.RagGet(ctx, id)
 }
 
 func (h *ragHandler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
@@ -51,6 +56,16 @@ func (h *ragHandler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error)
 		return nil, fmt.Errorf("could not get rag: %w", err)
 	}
 	log.WithField("rag", r).Debugf("Retrieved rag. rag_id: %s", r.ID)
+
+	docs, err := h.dbHandler.DocumentGetsByRagID(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get documents for rag. err: %v", err)
+		return nil, fmt.Errorf("could not get documents for rag: %w", err)
+	}
+	log.Debugf("Retrieved %d documents for rag. rag_id: %s", len(docs), id)
+
+	r.Status = computeRagStatus(docs)
+	r.Sources = buildSources(docs)
 
 	return r, nil
 }
@@ -69,6 +84,27 @@ func (h *ragHandler) RagList(ctx context.Context, size uint64, token string, fil
 		return nil, fmt.Errorf("could not list rags: %w", err)
 	}
 	log.Debugf("Listed rags. count: %d", len(rags))
+
+	if len(rags) == 0 {
+		return rags, nil
+	}
+
+	ragIDs := make([]uuid.UUID, len(rags))
+	for i, r := range rags {
+		ragIDs[i] = r.ID
+	}
+
+	docsMap, err := h.dbHandler.DocumentGetsByRagIDs(ctx, ragIDs)
+	if err != nil {
+		log.Errorf("Could not batch fetch documents for rags. err: %v", err)
+		return rags, nil
+	}
+
+	for _, r := range rags {
+		docs := docsMap[r.ID]
+		r.Status = computeRagStatus(docs)
+		r.Sources = buildSources(docs)
+	}
 
 	return rags, nil
 }
@@ -119,4 +155,106 @@ func (h *ragHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
 	log.Debugf("Deleted rag. rag_id: %s", id)
 
 	return nil
+}
+
+func (h *ragHandler) RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "RagAddSources",
+		"rag_id": ragID,
+	})
+
+	r, err := h.dbHandler.RagGet(ctx, ragID)
+	if err != nil {
+		log.Errorf("Could not get rag. err: %v", err)
+		return nil, fmt.Errorf("could not get rag: %w", err)
+	}
+	log.WithField("rag", r).Debugf("Retrieved rag for adding sources. rag_id: %s", r.ID)
+
+	h.createDocumentsForSources(ctx, r.CustomerID, r.ID, storageFileIDs, sourceURLs)
+
+	return h.RagGet(ctx, ragID)
+}
+
+// createDocumentsForSources creates documents for each file ID and URL, then triggers ingestion.
+// Uses request ctx for DB writes; ingestion goroutines use context.Background().
+func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "createDocumentsForSources",
+		"rag_id": ragID,
+	})
+	for _, fileID := range storageFileIDs {
+		doc, err := h.documentCreateInternal(ctx, customerID, ragID, fileID, "")
+		if err != nil {
+			log.Errorf("Could not create document for file_id %s: %v", fileID, err)
+			continue
+		}
+		go h.documentIngest(doc)
+	}
+
+	for _, u := range sourceURLs {
+		doc, err := h.documentCreateInternal(ctx, customerID, ragID, uuid.Nil, u)
+		if err != nil {
+			log.Errorf("Could not create document for url %s: %v", u, err)
+			continue
+		}
+		go h.documentIngest(doc)
+	}
+}
+
+// computeRagStatus derives RAG status from its documents.
+// Priority: processing > error-only > ready.
+// If any doc is pending/processing, the RAG is "processing".
+// If all docs are terminal (ready or error) and at least one is ready, the RAG is "ready"
+// (individual source errors are visible in the sources list).
+// If all docs are error, the RAG is "error".
+func computeRagStatus(docs []*document.Document) document.Status {
+	if len(docs) == 0 {
+		return document.StatusPending
+	}
+
+	hasReady := false
+	hasError := false
+	hasInProgress := false
+
+	for _, d := range docs {
+		switch d.Status {
+		case document.StatusPending, document.StatusProcessing:
+			hasInProgress = true
+		case document.StatusReady:
+			hasReady = true
+		case document.StatusError:
+			hasError = true
+		}
+	}
+
+	if hasInProgress {
+		return document.StatusProcessing
+	}
+	if hasReady {
+		return document.StatusReady
+	}
+	if hasError {
+		return document.StatusError
+	}
+	return document.StatusPending
+}
+
+// buildSources converts documents to Source structs for the RAG response.
+func buildSources(docs []*document.Document) []rag.Source {
+	sources := make([]rag.Source, 0, len(docs))
+	for _, d := range docs {
+		s := rag.Source{
+			Status:        d.Status,
+			StatusMessage: d.StatusMessage,
+		}
+		if d.StorageFileID != uuid.Nil {
+			fileID := d.StorageFileID
+			s.StorageFileID = &fileID
+		}
+		if d.SourceURL != "" {
+			s.SourceURL = d.SourceURL
+		}
+		sources = append(sources, s)
+	}
+	return sources
 }

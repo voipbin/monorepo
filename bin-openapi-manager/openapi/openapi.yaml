@@ -5187,6 +5187,13 @@ components:
           format: date-time
           description: "Timestamp when the rag was last updated."
           example: "2026-03-18T10:30:00Z"
+        status:
+          $ref: '#/components/schemas/RagManagerRagDocumentStatus'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/RagManagerRagSource'
+          description: "List of document sources in this rag with their ingestion status."
 
     RagManagerRagDocument:
       type: object
@@ -5278,6 +5285,27 @@ components:
         - "Document processing is complete. Chunks are available for queries."
         - "Document processing failed. See `status_message` for details."
       example: "ready"
+
+    RagManagerRagSource:
+      type: object
+      description: "A source document in a RAG knowledge base."
+      properties:
+        storage_file_id:
+          type: string
+          format: uuid
+          description: "The storage file ID if the source is an uploaded file. Returned from the `POST /files` response."
+          example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+        source_url:
+          type: string
+          format: uri
+          description: "The URL if the source is a web document."
+          example: "https://example.com/docs/faq.html"
+        status:
+          $ref: '#/components/schemas/RagManagerRagDocumentStatus'
+        status_message:
+          type: string
+          description: "Additional details about the current ingestion status."
+          example: "Document parsed and 42 chunks created"
 
 
 #########################################
@@ -6885,6 +6913,8 @@ paths:
   /rag-documents:
     $ref: './paths/rag-documents/main.yaml'
 
+  /rags/{id}/sources:
+    $ref: './paths/rags/id_sources.yaml'
   /rags/{id}:
     $ref: './paths/rags/id.yaml'
   /rags:
