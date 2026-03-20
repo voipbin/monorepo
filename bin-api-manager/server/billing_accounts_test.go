@@ -280,7 +280,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 
 			expectBillingAccountID: uuid.FromStringOrNil("605eae78-11eb-11ee-b8d3-6fd8da9d9879"),
 			expectBalance:          20000000,
-			expectRes:              `{"id":"605eae78-11eb-11ee-b8d3-6fd8da9d9879","customer_id":"00000000-0000-0000-0000-000000000000","status":"","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:              `{"id":"605eae78-11eb-11ee-b8d3-6fd8da9d9879","customer_id":"00000000-0000-0000-0000-000000000000","status":"","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","paddle_subscription_id":"","paddle_customer_id":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -354,7 +354,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 
 			expectBillingAccountID: uuid.FromStringOrNil("e4e38ff6-11eb-11ee-879b-cb22a78168e4"),
 			expectBalance:          20000000,
-			expectRes:              `{"id":"e4e38ff6-11eb-11ee-879b-cb22a78168e4","customer_id":"00000000-0000-0000-0000-000000000000","status":"","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:              `{"id":"e4e38ff6-11eb-11ee-879b-cb22a78168e4","customer_id":"00000000-0000-0000-0000-000000000000","status":"","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","paddle_subscription_id":"","paddle_customer_id":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
