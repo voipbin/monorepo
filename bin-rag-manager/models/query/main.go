@@ -17,6 +17,7 @@ type Source struct {
 	DocumentName   string    `json:"document_name"`
 	SectionTitle   string    `json:"section_title"`
 	RelevanceScore float64   `json:"relevance_score"`
+	Text           string    `json:"text"`
 }
 
 // Response represents a RAG query response — sources only.
