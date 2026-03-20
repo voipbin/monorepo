@@ -5232,7 +5232,7 @@ components:
         storage_file_id:
           type: string
           format: uuid
-          description: "The storage file ID if the source is an uploaded file. Returned from the `POST /files` response."
+          description: "The storage file ID if the source is an uploaded file. Returned from the `POST /storage_files` response."
           example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
         source_url:
           type: string
@@ -5596,7 +5596,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "The unique identifier of the file. Returned from the `POST /files` or `GET /files` response."
+          description: "The unique identifier of the file. Returned from the `POST /storage_files` or `GET /storage_files` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
@@ -5870,7 +5870,7 @@ components:
           format: uuid
           example: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
         file_id:
-          description: "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response."
+          description: "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /storage_files` response."
           type: string
           format: uuid
           x-go-type: string
@@ -6768,10 +6768,6 @@ paths:
   /extensions:
     $ref: './paths/extensions/main.yaml'
 
-  /files/{id}:
-    $ref: './paths/files/id.yaml'
-  /files:
-    $ref: './paths/files/main.yaml'
 
   /flows/{id}:
     $ref: './paths/flows/id.yaml'

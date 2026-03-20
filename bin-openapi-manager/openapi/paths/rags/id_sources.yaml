@@ -23,7 +23,7 @@ post:
               items:
                 type: string
                 format: uuid
-              description: "List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response."
+              description: "List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response."
               example: ["b2c3d4e5-f6a7-8901-bcde-f12345678901"]
             source_urls:
               type: array

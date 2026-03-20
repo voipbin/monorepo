@@ -6768,157 +6768,6 @@
         }
       }
     },
-    "/files/{id}": {
-      "get": {
-        "summary": "Returns detail file info",
-        "description": "Retrieves detailed information about a file by its ID.",
-        "tags": [
-          "File"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The ID of the file."
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorageManagerFile"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete a file",
-        "description": "Deletes a file identified by its ID.",
-        "tags": [
-          "File"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The ID of the file."
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorageManagerFile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/files": {
-      "get": {
-        "summary": "Gets a list of files",
-        "description": "Retrieves a paginated list of files.",
-        "tags": [
-          "File"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/PageSize"
-          },
-          {
-            "$ref": "#/components/parameters/PageToken"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of files.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/CommonPagination"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "result": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/StorageManagerFile"
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Upload file",
-        "description": "Upload file.",
-        "tags": [
-          "File"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "The file to be uploaded."
-                  },
-                  "type": {
-                    "type": "string",
-                    "description": "The type/category of the file. Must be 'rag' for this endpoint.",
-                    "enum": [
-                      "rag"
-                    ],
-                    "example": "rag"
-                  }
-                },
-                "required": [
-                  "file",
-                  "type"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorageManagerFile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/flows/{id}": {
       "get": {
         "summary": "Retrieve flow details",
@@ -9564,7 +9413,7 @@
                       "type": "string",
                       "format": "uuid"
                     },
-                    "description": "List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.",
+                    "description": "List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.",
                     "example": [
                       "b2c3d4e5-f6a7-8901-bcde-f12345678901"
                     ]
@@ -9791,7 +9640,7 @@
                       "type": "string",
                       "format": "uuid"
                     },
-                    "description": "List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.",
+                    "description": "List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.",
                     "example": [
                       "b2c3d4e5-f6a7-8901-bcde-f12345678901"
                     ]
@@ -20116,7 +19965,7 @@
           "storage_file_id": {
             "type": "string",
             "format": "uuid",
-            "description": "The storage file ID if the source is an uploaded file. Returned from the `POST /files` response.",
+            "description": "The storage file ID if the source is an uploaded file. Returned from the `POST /storage_files` response.",
             "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
           },
           "source_url": {
@@ -20551,7 +20400,7 @@
             "type": "string",
             "format": "uuid",
             "x-go-type": "string",
-            "description": "The unique identifier of the file. Returned from the `POST /files` or `GET /files` response.",
+            "description": "The unique identifier of the file. Returned from the `POST /storage_files` or `GET /storage_files` response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "customer_id": {
@@ -20879,7 +20728,7 @@
             "example": "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"
           },
           "file_id": {
-            "description": "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response.",
+            "description": "The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /storage_files` response.",
             "type": "string",
             "format": "uuid",
             "x-go-type": "string",
