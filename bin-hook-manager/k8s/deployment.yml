@@ -63,6 +63,11 @@ spec:
                 secretKeyRef:
                   name: bin-manager-secrets
                   key: SSL_CERT_HOOK_BASE64
+            - name: PADDLE_WEBHOOK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PADDLE_WEBHOOK_SECRET_KEY
           ports:
             - name: metrics
               protocol: "TCP"
