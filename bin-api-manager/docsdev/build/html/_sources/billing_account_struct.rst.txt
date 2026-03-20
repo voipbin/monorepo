@@ -20,6 +20,8 @@ Billing account
         "balance_token": 650,
         "payment_type": "",
         "payment_method": "",
+        "paddle_subscription_id": "sub_01h8bxq9f3e4t5a6g7h8j9k0",
+        "paddle_customer_id": "ctm_01h8bxq9f3e4t5a6g7h8j9k0",
         "tm_last_topup": "2024-01-01T00:00:00Z",
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2013-06-17 00:00:00.000000",
@@ -36,6 +38,8 @@ Billing account
 * ``balance_token`` (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.
 * ``payment_type`` (String): Payment type. Reserved for future use.
 * ``payment_method`` (String): Payment method. Reserved for future use.
+* ``paddle_subscription_id`` (String): The Paddle subscription identifier. Populated automatically when a Paddle subscription is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle subscription).
+* ``paddle_customer_id`` (String): The Paddle customer identifier. Populated automatically when a Paddle customer record is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle customer).
 * ``tm_last_topup`` (string, ISO 8601): Timestamp of the last token top-up.
 * ``tm_next_topup`` (string, ISO 8601): Timestamp of the next scheduled token top-up.
 * ``tm_create`` (string, ISO 8601): Timestamp when the billing account was created.
