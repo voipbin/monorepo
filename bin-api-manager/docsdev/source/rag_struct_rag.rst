@@ -59,11 +59,15 @@ Example
         "status": "ready",
         "sources": [
             {
+                "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567891",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "storage_file_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
                 "status": "ready",
                 "status_message": "42 chunks created"
             },
             {
+                "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567892",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "source_url": "https://docs.example.com/faq",
                 "status": "ready",
                 "status_message": "15 chunks created"
@@ -83,12 +87,16 @@ Each source represents a document that was provided to the RAG for ingestion.
 .. code::
 
     {
+        "id": "<string>",
+        "customer_id": "<string>",
         "storage_file_id": "<string>",
         "source_url": "<string>",
         "status": "<string>",
         "status_message": "<string>"
     }
 
+* ``id`` (UUID): The unique identifier of this source (document). Use this ID with ``DELETE /rags/{rag-id}/sources/{source-id}`` to remove the source from the RAG.
+* ``customer_id`` (UUID): The customer that owns this source. Obtained from the ``id`` field of ``GET /customer``.
 * ``storage_file_id`` (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the ``id`` field of ``POST /storage_files``. Present only for uploaded file sources.
 * ``source_url`` (String URI, Optional): The URL if the source is a web document. Present only for URL sources.
 * ``status`` (String enum): The processing status of this individual source. One of: ``pending``, ``processing``, ``ready``, ``error``.
