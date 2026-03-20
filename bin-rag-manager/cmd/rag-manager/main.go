@@ -83,6 +83,11 @@ func run(cmd *cobra.Command, args []string) error {
 
 	cfg := *config.Get()
 
+	// Validate required configuration
+	if err := cfg.Validate(); err != nil {
+		return fmt.Errorf("invalid configuration: %w", err)
+	}
+
 	// Initialize Prometheus
 	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
 

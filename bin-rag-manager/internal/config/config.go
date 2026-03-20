@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -94,6 +95,23 @@ func LoadGlobalConfig() {
 			PostgreSQLDSN:           viper.GetString("postgresql_dsn"),
 		}
 	})
+}
+
+// Validate checks that all required configuration fields are set.
+func (c *Config) Validate() error {
+	if c.RabbitMQAddress == "" {
+		return fmt.Errorf("RABBITMQ_ADDRESS is required")
+	}
+	if c.GoogleCloudProject == "" {
+		return fmt.Errorf("GCP_PROJECT_ID is required")
+	}
+	if c.GoogleCloudRegion == "" {
+		return fmt.Errorf("GCP_REGION is required")
+	}
+	if c.PostgreSQLDSN == "" {
+		return fmt.Errorf("POSTGRESQL_DSN is required")
+	}
+	return nil
 }
 
 // InitConfig initializes the configuration with Cobra command (for daemon)
