@@ -40,8 +40,10 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 		expectRes *sock.Response
 	}{
 		{
+			// Paddle v2 sends amounts as integer strings in lowest denomination (cents).
+			// "1000" = $10.00 → 1000 × 10,000 = 10,000,000 micros
 			name:   "transaction.completed - one-time credit purchase",
-			paddle: `{"event_id":"evt_credit_001","event_type":"transaction.completed","data":{"id":"txn_001","subscription_id":null,"custom_data":{"customer_id":"a0000001-0000-0000-0000-000000000001"},"details":{"totals":{"total":"10.00"}}}}`,
+			paddle: `{"event_id":"evt_credit_001","event_type":"transaction.completed","data":{"id":"txn_001","subscription_id":null,"custom_data":{"customer_id":"a0000001-0000-0000-0000-000000000001"},"details":{"totals":{"total":"1000"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().PaddleCreditTopUp(
 					gomock.Any(),
@@ -53,8 +55,9 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			// "2999" = $29.99 → 2999 × 10,000 = 29,990,000 micros
 			name:   "transaction.completed - subscription renewal",
-			paddle: `{"event_id":"evt_renew_001","event_type":"transaction.completed","data":{"id":"txn_002","subscription_id":"sub_001","custom_data":{"customer_id":"a0000002-0000-0000-0000-000000000001"},"details":{"totals":{"total":"29.99"}}}}`,
+			paddle: `{"event_id":"evt_renew_001","event_type":"transaction.completed","data":{"id":"txn_002","subscription_id":"sub_001","custom_data":{"customer_id":"a0000002-0000-0000-0000-000000000001"},"details":{"totals":{"total":"2999"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().PaddleSubscriptionRenew(
 					gomock.Any(),
@@ -105,8 +108,9 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			// "500" = $5.00 → 500 × 10,000 = 5,000,000 micros
 			name:   "transaction.refunded - with adjustments",
-			paddle: `{"event_id":"evt_refund_001","event_type":"transaction.refunded","data":{"id":"txn_003","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"5.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
+			paddle: `{"event_id":"evt_refund_001","event_type":"transaction.refunded","data":{"id":"txn_003","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"500"}}],"details":{"totals":{"total":"1000"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().PaddleRefund(
 					gomock.Any(),
@@ -118,8 +122,9 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			// "300" = $3.00 → 300 × 10,000 = 3,000,000 micros
 			name:   "transaction.refunded - fallback to paddle_subscription_id lookup",
-			paddle: `{"event_id":"evt_refund_002","event_type":"transaction.refunded","data":{"id":"txn_004","subscription_id":"sub_fallback_001","adjustments":[{"totals":{"total":"3.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
+			paddle: `{"event_id":"evt_refund_002","event_type":"transaction.refunded","data":{"id":"txn_004","subscription_id":"sub_fallback_001","adjustments":[{"totals":{"total":"300"}}],"details":{"totals":{"total":"1000"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().GetByPaddleSubscriptionID(
 					gomock.Any(),
@@ -139,8 +144,9 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			// "-500" = -$5.00 → -500 × 10,000 = -5,000,000 micros → abs = 5,000,000
 			name:   "transaction.refunded - negative adjustment amounts normalized to positive",
-			paddle: `{"event_id":"evt_refund_neg_001","event_type":"transaction.refunded","data":{"id":"txn_neg","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"-5.00"}}],"details":{"totals":{"total":"10.00"}}}}`,
+			paddle: `{"event_id":"evt_refund_neg_001","event_type":"transaction.refunded","data":{"id":"txn_neg","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"-500"}}],"details":{"totals":{"total":"1000"}}}}`,
 			setup: func(m *accounthandler.MockAccountHandler) {
 				m.EXPECT().PaddleRefund(
 					gomock.Any(),
@@ -153,7 +159,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 		},
 		{
 			name:      "transaction.refunded - no adjustments returns 400",
-			paddle:    `{"event_id":"evt_refund_003","event_type":"transaction.refunded","data":{"id":"txn_005","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"5.00"}}}}`,
+			paddle:    `{"event_id":"evt_refund_003","event_type":"transaction.refunded","data":{"id":"txn_005","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"500"}}}}`,
 			setup:     func(m *accounthandler.MockAccountHandler) {},
 			expectRes: simpleResponse(400),
 		},
@@ -171,7 +177,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 		},
 		{
 			name:      "missing custom_data - return 200",
-			paddle:    `{"event_id":"evt_no_custom_001","event_type":"transaction.completed","data":{"id":"txn_no_custom","subscription_id":null,"details":{"totals":{"total":"10.00"}}}}`,
+			paddle:    `{"event_id":"evt_no_custom_001","event_type":"transaction.completed","data":{"id":"txn_no_custom","subscription_id":null,"details":{"totals":{"total":"1000"}}}}`,
 			setup:     func(m *accounthandler.MockAccountHandler) {},
 			expectRes: simpleResponse(200),
 		},
@@ -216,37 +222,39 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 	}
 }
 
-func Test_parsePaddleAmountToMicros(t *testing.T) {
+func Test_parsePaddleCentsToMicros(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     string
 		expected  int64
 		expectErr bool
 	}{
-		{"ten dollars", "10.00", 10000000, false},
-		{"fifty cents", "0.50", 500000, false},
-		{"one dollar", "1.00", 1000000, false},
-		{"large amount", "999.99", 999990000, false},
-		{"zero", "0.00", 0, false},
-		{"no decimal", "5", 5000000, false},
-		{"single fractional digit", "3.5", 3500000, false},
-		{"trailing dot", "7.", 7000000, false},
-		{"negative amount", "-5.00", -5000000, false},
-		{"negative with cents", "-5.50", -5500000, false},
-		{"negative zero cents", "-0.50", -500000, false},
-		{"more than 2 decimal places", "10.123", 0, true},
+		// Paddle v2 sends amounts as integer strings in lowest denomination (cents for USD).
+		// Conversion: micros = cents × 10,000
+		{"ten dollars (1000 cents)", "1000", 10000000, false},
+		{"fifty cents", "50", 500000, false},
+		{"one dollar", "100", 1000000, false},
+		{"large amount ($999.99)", "99999", 999990000, false},
+		{"zero", "0", 0, false},
+		{"five dollars", "500", 5000000, false},
+		{"one cent", "1", 10000, false},
+		{"negative five dollars", "-500", -5000000, false},
+		{"negative five fifty", "-550", -5500000, false},
+		{"negative fifty cents", "-50", -500000, false},
 		{"invalid", "abc", 0, true},
+		{"decimal string rejected", "10.00", 0, true},
+		{"empty string", "", 0, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := parsePaddleAmountToMicros(tt.input)
+			result, err := parsePaddleCentsToMicros(tt.input)
 			if (err != nil) != tt.expectErr {
-				t.Errorf("parsePaddleAmountToMicros(%q) error = %v, expectErr = %v", tt.input, err, tt.expectErr)
+				t.Errorf("parsePaddleCentsToMicros(%q) error = %v, expectErr = %v", tt.input, err, tt.expectErr)
 				return
 			}
 			if result != tt.expected {
-				t.Errorf("parsePaddleAmountToMicros(%q) = %d, expected %d", tt.input, result, tt.expected)
+				t.Errorf("parsePaddleCentsToMicros(%q) = %d, expected %d", tt.input, result, tt.expected)
 			}
 		})
 	}
