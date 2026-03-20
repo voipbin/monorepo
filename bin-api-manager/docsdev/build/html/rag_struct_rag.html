@@ -240,11 +240,15 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
     <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
             <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
             <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
             <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567892&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
             <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
             <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
             <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
@@ -261,6 +265,8 @@
 <span id="rag-struct-rag-source"></span><h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
 <p>Each source represents a document that was provided to the RAG for ingestion.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -269,6 +275,8 @@
 </pre></div>
 </div>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The unique identifier of this source (document). Use this ID with <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rags/{rag-id}/sources/{source-id}</span></code> to remove the source from the RAG.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this source. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customer</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">storage_file_id</span></code> (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code>. Present only for uploaded file sources.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source_url</span></code> (String URI, Optional): The URL if the source is a web document. Present only for URL sources.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (String enum): The processing status of this individual source. One of: <code class="docutils literal notranslate"><span class="pre">pending</span></code>, <code class="docutils literal notranslate"><span class="pre">processing</span></code>, <code class="docutils literal notranslate"><span class="pre">ready</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
