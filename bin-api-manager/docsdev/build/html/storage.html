@@ -200,7 +200,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
 <li><p><strong>Cost:</strong> Chargeable (per GB stored; default quota is 10 GB per customer)</p></li>
-<li><p><strong>Async:</strong> No. File uploads and downloads are synchronous. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/files</span></code> returns immediately with the file metadata. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> returns file details including a time-limited <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>.</p></li>
+<li><p><strong>Async:</strong> No. File uploads and downloads are synchronous. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> returns immediately with the file metadata. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> returns file details including a time-limited <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.</p>
@@ -256,10 +256,10 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, fetch fresh file details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> to get a new download URL. Do not cache or persist download URLs for long-term use.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, fetch fresh file details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> to get a new download URL. Do not cache or persist download URLs for long-term use.</p>
 </div>
 <p><strong>Upload a File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/files?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: multipart/form-data&#39; \
     --form &#39;file=@/path/to/file.pdf&#39; \
     --form &#39;name=document.pdf&#39;
@@ -277,15 +277,15 @@
 </pre></div>
 </div>
 <p><strong>List All Files</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/files?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p><strong>Get File Details</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p><strong>Delete a File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 </section>
@@ -421,15 +421,15 @@
    +--------------------------------------------+
 
 2. Access recording
-   GET /files?type=recording
+   GET /storage_files?type=recording
    -&gt; List of recording files
 
 3. Download recording
-   GET /files/{id}
+   GET /storage_files/{id}
    -&gt; download_url in response
 
 4. Clean up old recordings
-   DELETE /files/{id}
+   DELETE /storage_files/{id}
    -&gt; Free storage space
 </pre></div>
 </div>
@@ -443,14 +443,14 @@
    +--------------------------------------------+
 
 2. Identify large/old files
-   GET /files?sort=size&amp;order=desc
+   GET /storage_files?sort=size&amp;order=desc
    -&gt; Find largest files
 
-   GET /files?sort=tm_create&amp;order=asc
+   GET /storage_files?sort=tm_create&amp;order=asc
    -&gt; Find oldest files
 
 3. Delete unnecessary files
-   DELETE /files/{id}
+   DELETE /storage_files/{id}
    (repeat for multiple files)
 
 4. Verify freed space
@@ -642,7 +642,7 @@ be in use</p></td>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The file’s unique identifier. Returned when uploading a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/files</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The file’s unique identifier. Returned when uploading a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this file. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent who uploaded or owns this file. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Empty string if no specific owner.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this file is associated with. See <a class="reference internal" href="storage_struct_file.html#storage-struct-file-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
@@ -651,7 +651,7 @@ be in use</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the file’s purpose or content. May be empty.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (String): The original filename of the uploaded file (e.g., <code class="docutils literal notranslate"><span class="pre">screenshot.png</span></code>, <code class="docutils literal notranslate"><span class="pre">call_recording.wav</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">filesize</span></code> (Integer): The file size in bytes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">uri_download</span></code> (String): A time-limited signed URL for downloading the file. Check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using. Fetch fresh details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> if expired.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uri_download</span></code> (String): A time-limited signed URL for downloading the file. Check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using. Fetch fresh details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> if expired.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> (string, ISO 8601): Expiration time of the <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>. After this time, the URL is no longer valid.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the file was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any file property. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if never updated after creation.</p></li>
@@ -660,7 +660,7 @@ be in use</p></td>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the file has not been deleted. The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> is a time-limited signed URL; always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using it. If expired, call <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/files/{id}</span></code> to obtain a fresh URL.</p>
+<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the file has not been deleted. The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> is a time-limited signed URL; always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using it. If expired, call <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> to obtain a fresh URL.</p>
 </div>
 <section id="id3">
 <h4>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>

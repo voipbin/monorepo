@@ -89,7 +89,7 @@ Each source represents a document that was provided to the RAG for ingestion.
         "status_message": "<string>"
     }
 
-* ``storage_file_id`` (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the ``id`` field of ``POST /files``. Present only for uploaded file sources.
+* ``storage_file_id`` (UUID, Optional): The storage file ID if the source is an uploaded file. Obtained from the ``id`` field of ``POST /storage_files``. Present only for uploaded file sources.
 * ``source_url`` (String URI, Optional): The URL if the source is a web document. Present only for URL sources.
 * ``status`` (String enum): The processing status of this individual source. One of: ``pending``, ``processing``, ``ready``, ``error``.
 * ``status_message`` (String): Details about the current status. Contains error details when ``status`` is ``error``.

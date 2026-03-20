@@ -936,11 +936,6 @@ const (
 	Message GetConversationsJSONBodyType = "message"
 )
 
-// Defines values for PostFilesMultipartBodyType.
-const (
-	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
-)
-
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -1004,7 +999,7 @@ const (
 
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
-	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
+	Rag PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
@@ -3559,7 +3554,7 @@ type RagManagerRagSource struct {
 	// StatusMessage Additional details about the current ingestion status.
 	StatusMessage *string `json:"status_message,omitempty"`
 
-	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /files` response.
+	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /storage_files` response.
 	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
 }
 
@@ -3809,7 +3804,7 @@ type StorageManagerFile struct {
 	// Filesize The size of the file in bytes.
 	Filesize *int64 `json:"filesize,omitempty"`
 
-	// Id The unique identifier of the file. Returned from the `POST /files` or `GET /files` response.
+	// Id The unique identifier of the file. Returned from the `POST /storage_files` or `GET /storage_files` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the file.
@@ -3884,7 +3879,7 @@ type TalkManagerMedia struct {
 	// AgentId The unique identifier of the agent. Valid only if the type is `agent`. Returned from the `GET /agents` response.
 	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
 
-	// FileId The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response.
+	// FileId The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /storage_files` response.
 	FileId *string `json:"file_id,omitempty"`
 
 	// LinkUrl The URL of the linked resource. Valid only if the type is `link`.
@@ -5122,27 +5117,6 @@ type PutExtensionsIdJSONBody struct {
 	Password         string `json:"password"`
 }
 
-// GetFilesParams defines parameters for GetFiles.
-type GetFilesParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostFilesMultipartBody defines parameters for PostFiles.
-type PostFilesMultipartBody struct {
-	// File The file to be uploaded.
-	File openapi_types.File `json:"file"`
-
-	// Type The type/category of the file. Must be 'rag' for this endpoint.
-	Type PostFilesMultipartBodyType `json:"type"`
-}
-
-// PostFilesMultipartBodyType defines parameters for PostFiles.
-type PostFilesMultipartBodyType string
-
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
 	// PageSize Number of results to return per page.
@@ -5539,7 +5513,7 @@ type PostRagsJSONBody struct {
 	// SourceUrls List of URLs to fetch and ingest as documents.
 	SourceUrls *[]string `json:"source_urls,omitempty"`
 
-	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.
 	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
@@ -5557,7 +5531,7 @@ type PostRagsIdSourcesJSONBody struct {
 	// SourceUrls List of URLs to fetch and ingest as documents.
 	SourceUrls *[]string `json:"source_urls,omitempty"`
 
-	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.
 	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
@@ -6331,9 +6305,6 @@ type PostExtensionsJSONRequestBody PostExtensionsJSONBody
 // PutExtensionsIdJSONRequestBody defines body for PutExtensionsId for application/json ContentType.
 type PutExtensionsIdJSONRequestBody PutExtensionsIdJSONBody
 
-// PostFilesMultipartRequestBody defines body for PostFiles for multipart/form-data ContentType.
-type PostFilesMultipartRequestBody PostFilesMultipartBody
-
 // PostFlowsJSONRequestBody defines body for PostFlows for application/json ContentType.
 type PostFlowsJSONRequestBody PostFlowsJSONBody
 
@@ -6933,18 +6904,6 @@ type ServerInterface interface {
 	// Update an extension
 	// (PUT /extensions/{id})
 	PutExtensionsId(c *gin.Context, id string)
-	// Gets a list of files
-	// (GET /files)
-	GetFiles(c *gin.Context, params GetFilesParams)
-	// Upload file
-	// (POST /files)
-	PostFiles(c *gin.Context)
-	// Delete a file
-	// (DELETE /files/{id})
-	DeleteFilesId(c *gin.Context, id string)
-	// Returns detail file info
-	// (GET /files/{id})
-	GetFilesId(c *gin.Context, id string)
 	// Retrieve a list of flows
 	// (GET /flows)
 	GetFlows(c *gin.Context, params GetFlowsParams)
@@ -10988,101 +10947,6 @@ func (siw *ServerInterfaceWrapper) PutExtensionsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutExtensionsId(c, id)
-}
-
-// GetFiles operation middleware
-func (siw *ServerInterfaceWrapper) GetFiles(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetFilesParams
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetFiles(c, params)
-}
-
-// PostFiles operation middleware
-func (siw *ServerInterfaceWrapper) PostFiles(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostFiles(c)
-}
-
-// DeleteFilesId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteFilesId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteFilesId(c, id)
-}
-
-// GetFilesId operation middleware
-func (siw *ServerInterfaceWrapper) GetFilesId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetFilesId(c, id)
 }
 
 // GetFlows operation middleware
@@ -15393,10 +15257,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/extensions/:id", wrapper.DeleteExtensionsId)
 	router.GET(options.BaseURL+"/extensions/:id", wrapper.GetExtensionsId)
 	router.PUT(options.BaseURL+"/extensions/:id", wrapper.PutExtensionsId)
-	router.GET(options.BaseURL+"/files", wrapper.GetFiles)
-	router.POST(options.BaseURL+"/files", wrapper.PostFiles)
-	router.DELETE(options.BaseURL+"/files/:id", wrapper.DeleteFilesId)
-	router.GET(options.BaseURL+"/files/:id", wrapper.GetFilesId)
 	router.GET(options.BaseURL+"/flows", wrapper.GetFlows)
 	router.POST(options.BaseURL+"/flows", wrapper.PostFlows)
 	router.DELETE(options.BaseURL+"/flows/:id", wrapper.DeleteFlowsId)
@@ -18295,78 +18155,6 @@ type PutExtensionsIdResponseObject interface {
 type PutExtensionsId200JSONResponse RegistrarManagerExtension
 
 func (response PutExtensionsId200JSONResponse) VisitPutExtensionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetFilesRequestObject struct {
-	Params GetFilesParams
-}
-
-type GetFilesResponseObject interface {
-	VisitGetFilesResponse(w http.ResponseWriter) error
-}
-
-type GetFiles200JSONResponse struct {
-	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
-	NextPageToken *string               `json:"next_page_token,omitempty"`
-	Result        *[]StorageManagerFile `json:"result,omitempty"`
-}
-
-func (response GetFiles200JSONResponse) VisitGetFilesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostFilesRequestObject struct {
-	Body *multipart.Reader
-}
-
-type PostFilesResponseObject interface {
-	VisitPostFilesResponse(w http.ResponseWriter) error
-}
-
-type PostFiles200JSONResponse StorageManagerFile
-
-func (response PostFiles200JSONResponse) VisitPostFilesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteFilesIdRequestObject struct {
-	Id string `json:"id"`
-}
-
-type DeleteFilesIdResponseObject interface {
-	VisitDeleteFilesIdResponse(w http.ResponseWriter) error
-}
-
-type DeleteFilesId200JSONResponse StorageManagerFile
-
-func (response DeleteFilesId200JSONResponse) VisitDeleteFilesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetFilesIdRequestObject struct {
-	Id string `json:"id"`
-}
-
-type GetFilesIdResponseObject interface {
-	VisitGetFilesIdResponse(w http.ResponseWriter) error
-}
-
-type GetFilesId200JSONResponse StorageManagerFile
-
-func (response GetFilesId200JSONResponse) VisitGetFilesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -22083,18 +21871,6 @@ type StrictServerInterface interface {
 	// Update an extension
 	// (PUT /extensions/{id})
 	PutExtensionsId(ctx context.Context, request PutExtensionsIdRequestObject) (PutExtensionsIdResponseObject, error)
-	// Gets a list of files
-	// (GET /files)
-	GetFiles(ctx context.Context, request GetFilesRequestObject) (GetFilesResponseObject, error)
-	// Upload file
-	// (POST /files)
-	PostFiles(ctx context.Context, request PostFilesRequestObject) (PostFilesResponseObject, error)
-	// Delete a file
-	// (DELETE /files/{id})
-	DeleteFilesId(ctx context.Context, request DeleteFilesIdRequestObject) (DeleteFilesIdResponseObject, error)
-	// Returns detail file info
-	// (GET /files/{id})
-	GetFilesId(ctx context.Context, request GetFilesIdRequestObject) (GetFilesIdResponseObject, error)
 	// Retrieve a list of flows
 	// (GET /flows)
 	GetFlows(ctx context.Context, request GetFlowsRequestObject) (GetFlowsResponseObject, error)
@@ -26863,119 +26639,6 @@ func (sh *strictHandler) PutExtensionsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutExtensionsIdResponseObject); ok {
 		if err := validResponse.VisitPutExtensionsIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetFiles operation middleware
-func (sh *strictHandler) GetFiles(ctx *gin.Context, params GetFilesParams) {
-	var request GetFilesRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetFiles(ctx, request.(GetFilesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetFiles")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetFilesResponseObject); ok {
-		if err := validResponse.VisitGetFilesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostFiles operation middleware
-func (sh *strictHandler) PostFiles(ctx *gin.Context) {
-	var request PostFilesRequestObject
-
-	if reader, err := ctx.Request.MultipartReader(); err == nil {
-		request.Body = reader
-	} else {
-		ctx.Error(err)
-		return
-	}
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostFiles(ctx, request.(PostFilesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostFiles")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostFilesResponseObject); ok {
-		if err := validResponse.VisitPostFilesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteFilesId operation middleware
-func (sh *strictHandler) DeleteFilesId(ctx *gin.Context, id string) {
-	var request DeleteFilesIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteFilesId(ctx, request.(DeleteFilesIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteFilesId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteFilesIdResponseObject); ok {
-		if err := validResponse.VisitDeleteFilesIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetFilesId operation middleware
-func (sh *strictHandler) GetFilesId(ctx *gin.Context, id string) {
-	var request GetFilesIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetFilesId(ctx, request.(GetFilesIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetFilesId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetFilesIdResponseObject); ok {
-		if err := validResponse.VisitGetFilesIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -2763,21 +2763,6 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
-// Defines values for PostFilesMultipartBodyType.
-const (
-	PostFilesMultipartBodyTypeRag PostFilesMultipartBodyType = "rag"
-)
-
-// Valid indicates whether the value is a known member of the PostFilesMultipartBodyType enum.
-func (e PostFilesMultipartBodyType) Valid() bool {
-	switch e {
-	case PostFilesMultipartBodyTypeRag:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
 const (
 	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
@@ -2963,13 +2948,13 @@ func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
 
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
-	PostStorageFilesMultipartBodyTypeRag PostStorageFilesMultipartBodyType = "rag"
+	Rag PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Valid indicates whether the value is a known member of the PostStorageFilesMultipartBodyType enum.
 func (e PostStorageFilesMultipartBodyType) Valid() bool {
 	switch e {
-	case PostStorageFilesMultipartBodyTypeRag:
+	case Rag:
 		return true
 	default:
 		return false
@@ -5544,7 +5529,7 @@ type RagManagerRagSource struct {
 	// StatusMessage Additional details about the current ingestion status.
 	StatusMessage *string `json:"status_message,omitempty"`
 
-	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /files` response.
+	// StorageFileId The storage file ID if the source is an uploaded file. Returned from the `POST /storage_files` response.
 	StorageFileId *openapi_types.UUID `json:"storage_file_id,omitempty"`
 }
 
@@ -5794,7 +5779,7 @@ type StorageManagerFile struct {
 	// Filesize The size of the file in bytes.
 	Filesize *int64 `json:"filesize,omitempty"`
 
-	// Id The unique identifier of the file. Returned from the `POST /files` or `GET /files` response.
+	// Id The unique identifier of the file. Returned from the `POST /storage_files` or `GET /storage_files` response.
 	Id *string `json:"id,omitempty"`
 
 	// Name The name of the file.
@@ -5869,7 +5854,7 @@ type TalkManagerMedia struct {
 	// AgentId The unique identifier of the agent. Valid only if the type is `agent`. Returned from the `GET /agents` response.
 	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
 
-	// FileId The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /files` response.
+	// FileId The unique identifier of the file. Valid only if the type is `file`. Returned from the `GET /storage_files` response.
 	FileId *string `json:"file_id,omitempty"`
 
 	// LinkUrl The URL of the linked resource. Valid only if the type is `link`.
@@ -7107,27 +7092,6 @@ type PutExtensionsIdJSONBody struct {
 	Password         string `json:"password"`
 }
 
-// GetFilesParams defines parameters for GetFiles.
-type GetFilesParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostFilesMultipartBody defines parameters for PostFiles.
-type PostFilesMultipartBody struct {
-	// File The file to be uploaded.
-	File openapi_types.File `json:"file"`
-
-	// Type The type/category of the file. Must be 'rag' for this endpoint.
-	Type PostFilesMultipartBodyType `json:"type"`
-}
-
-// PostFilesMultipartBodyType defines parameters for PostFiles.
-type PostFilesMultipartBodyType string
-
 // GetFlowsParams defines parameters for GetFlows.
 type GetFlowsParams struct {
 	// PageSize Number of results to return per page.
@@ -7524,7 +7488,7 @@ type PostRagsJSONBody struct {
 	// SourceUrls List of URLs to fetch and ingest as documents.
 	SourceUrls *[]string `json:"source_urls,omitempty"`
 
-	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.
 	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
@@ -7542,7 +7506,7 @@ type PostRagsIdSourcesJSONBody struct {
 	// SourceUrls List of URLs to fetch and ingest as documents.
 	SourceUrls *[]string `json:"source_urls,omitempty"`
 
-	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /files` response.
+	// StorageFileIds List of storage file IDs to ingest. Obtained from the `id` field of `POST /storage_files` response.
 	StorageFileIds *[]openapi_types.UUID `json:"storage_file_ids,omitempty"`
 }
 
@@ -8315,9 +8279,6 @@ type PostExtensionsJSONRequestBody PostExtensionsJSONBody
 
 // PutExtensionsIdJSONRequestBody defines body for PutExtensionsId for application/json ContentType.
 type PutExtensionsIdJSONRequestBody PutExtensionsIdJSONBody
-
-// PostFilesMultipartRequestBody defines body for PostFiles for multipart/form-data ContentType.
-type PostFilesMultipartRequestBody PostFilesMultipartBody
 
 // PostFlowsJSONRequestBody defines body for PostFlows for application/json ContentType.
 type PostFlowsJSONRequestBody PostFlowsJSONBody

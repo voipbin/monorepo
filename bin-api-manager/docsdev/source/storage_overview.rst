@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Chargeable (per GB stored; default quota is 10 GB per customer)
-   * **Async:** No. File uploads and downloads are synchronous. ``POST /files`` returns immediately with the file metadata. ``GET /files/{id}`` returns file details including a time-limited ``uri_download``.
+   * **Async:** No. File uploads and downloads are synchronous. ``POST /storage_files`` returns immediately with the file metadata. ``GET /storage_files/{id}`` returns file details including a time-limited ``uri_download``.
 
 VoIPBIN's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
 
@@ -67,13 +67,13 @@ Core file management operations.
 
 .. note:: **AI Implementation Hint**
 
-   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, fetch fresh file details via ``GET /files/{id}`` to get a new download URL. Do not cache or persist download URLs for long-term use.
+   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, fetch fresh file details via ``GET /storage_files/{id}`` to get a new download URL. Do not cache or persist download URLs for long-term use.
 
 **Upload a File**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/files?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/storage_files?token=<token>' \
         --header 'Content-Type: multipart/form-data' \
         --form 'file=@/path/to/file.pdf' \
         --form 'name=document.pdf'
@@ -95,19 +95,19 @@ Core file management operations.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/files?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_files?token=<token>'
 
 **Get File Details**
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/files/<file-id>?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_files/<file-id>?token=<token>'
 
 **Delete a File**
 
 .. code::
 
-    $ curl -X DELETE 'https://api.voipbin.net/v1.0/files/<file-id>?token=<token>'
+    $ curl -X DELETE 'https://api.voipbin.net/v1.0/storage_files/<file-id>?token=<token>'
 
 
 Storage Account Management
@@ -245,15 +245,15 @@ Store and access call recordings.
        +--------------------------------------------+
 
     2. Access recording
-       GET /files?type=recording
+       GET /storage_files?type=recording
        -> List of recording files
 
     3. Download recording
-       GET /files/{id}
+       GET /storage_files/{id}
        -> download_url in response
 
     4. Clean up old recordings
-       DELETE /files/{id}
+       DELETE /storage_files/{id}
        -> Free storage space
 
 **Scenario 2: Storage Cleanup**
@@ -270,14 +270,14 @@ Free up space when approaching quota.
        +--------------------------------------------+
 
     2. Identify large/old files
-       GET /files?sort=size&order=desc
+       GET /storage_files?sort=size&order=desc
        -> Find largest files
 
-       GET /files?sort=tm_create&order=asc
+       GET /storage_files?sort=tm_create&order=asc
        -> Find oldest files
 
     3. Delete unnecessary files
-       DELETE /files/{id}
+       DELETE /storage_files/{id}
        (repeat for multiple files)
 
     4. Verify freed space

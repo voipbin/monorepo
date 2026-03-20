@@ -27,7 +27,7 @@ File
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-* ``id`` (UUID): The file's unique identifier. Returned when uploading a file via ``POST /files`` or listing via ``GET /files``.
+* ``id`` (UUID): The file's unique identifier. Returned when uploading a file via ``POST /storage_files`` or listing via ``GET /storage_files``.
 * ``customer_id`` (UUID): The customer who owns this file. Obtained from ``GET /customers``.
 * ``owner_id`` (UUID): The agent who uploaded or owns this file. Obtained from ``GET /agents``. Empty string if no specific owner.
 * ``reference_type`` (enum string): The type of resource this file is associated with. See :ref:`Reference Type <storage-struct-file-reference-type>`.
@@ -36,7 +36,7 @@ File
 * ``detail`` (String): A longer description of the file's purpose or content. May be empty.
 * ``filename`` (String): The original filename of the uploaded file (e.g., ``screenshot.png``, ``call_recording.wav``).
 * ``filesize`` (Integer): The file size in bytes.
-* ``uri_download`` (String): A time-limited signed URL for downloading the file. Check ``tm_download_expire`` before using. Fetch fresh details via ``GET /files/{id}`` if expired.
+* ``uri_download`` (String): A time-limited signed URL for downloading the file. Check ``tm_download_expire`` before using. Fetch fresh details via ``GET /storage_files/{id}`` if expired.
 * ``tm_download_expire`` (string, ISO 8601): Expiration time of the ``uri_download``. After this time, the URL is no longer valid.
 * ``tm_create`` (string, ISO 8601): Timestamp when the file was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any file property. Set to ``9999-01-01 00:00:00.000000`` if never updated after creation.
@@ -44,7 +44,7 @@ File
 
 .. note:: **AI Implementation Hint**
 
-   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the file has not been deleted. The ``uri_download`` is a time-limited signed URL; always check ``tm_download_expire`` before using it. If expired, call ``GET /files/{id}`` to obtain a fresh URL.
+   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the file has not been deleted. The ``uri_download`` is a time-limited signed URL; always check ``tm_download_expire`` before using it. If expired, call ``GET /storage_files/{id}`` to obtain a fresh URL.
 
 Example
 +++++++

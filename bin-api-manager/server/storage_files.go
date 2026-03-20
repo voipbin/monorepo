@@ -11,6 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	constMaxFileSize = int64(30 << 20) // Max upload file size. 30 MB.
+)
+
 func (h *server) PostStorageFiles(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostStorageFiles",
@@ -162,7 +166,7 @@ func (h *server) DeleteStorageFilesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentFileDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.StorageFileDelete(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
 		c.AbortWithStatus(400)
