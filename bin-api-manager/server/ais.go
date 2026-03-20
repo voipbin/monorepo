@@ -44,8 +44,10 @@ func (h *server) PostAis(c *gin.Context) {
 		}
 	}
 
-	// TODO: Parse rag_id from request body once OpenAPI schema is updated
-	ragID := uuid.Nil
+	var ragID uuid.UUID
+	if req.RagId != nil {
+		ragID = uuid.FromStringOrNil(req.RagId.String())
+	}
 
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
@@ -229,8 +231,10 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		}
 	}
 
-	// TODO: Parse rag_id from request body once OpenAPI schema is updated
-	ragID := uuid.Nil
+	var ragID uuid.UUID
+	if req.RagId != nil {
+		ragID = uuid.FromStringOrNil(req.RagId.String())
+	}
 
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
