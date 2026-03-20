@@ -154,6 +154,9 @@ func (h *ragHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
 	}
 	log.Debugf("Deleted rag. rag_id: %s", id)
 
+	// Background hard-delete of chunks to reclaim storage
+	go h.chunkHardDeleteByRagID(id)
+
 	return nil
 }
 
@@ -207,7 +210,42 @@ func (h *ragHandler) RagRemoveSource(ctx context.Context, ragID, sourceID uuid.U
 	}
 	log.Debugf("Deleted source. source_id: %s", sourceID)
 
+	// Background hard-delete of chunks to reclaim storage
+	go h.chunkHardDeleteByDocumentID(sourceID)
+
 	return h.RagGet(ctx, ragID)
+}
+
+// chunkHardDeleteByDocumentID hard-deletes all chunks for a document in the background.
+// Uses context.Background() because the request context may be cancelled after the response is sent.
+// If the hard-delete fails, chunks remain soft-deleted (invisible to search) — safe degradation.
+func (h *ragHandler) chunkHardDeleteByDocumentID(documentID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chunkHardDeleteByDocumentID",
+		"document_id": documentID,
+	})
+
+	if err := h.dbHandler.ChunkDeleteByDocumentID(context.Background(), documentID); err != nil {
+		log.Errorf("Could not hard delete chunks for document. err: %v", err)
+		return
+	}
+	log.Debugf("Hard deleted chunks for document. document_id: %s", documentID)
+}
+
+// chunkHardDeleteByRagID hard-deletes all chunks for a rag in the background.
+// Uses context.Background() because the request context may be cancelled after the response is sent.
+// If the hard-delete fails, chunks remain soft-deleted (invisible to search) — safe degradation.
+func (h *ragHandler) chunkHardDeleteByRagID(ragID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "chunkHardDeleteByRagID",
+		"rag_id": ragID,
+	})
+
+	if err := h.dbHandler.ChunkDeleteByRagID(context.Background(), ragID); err != nil {
+		log.Errorf("Could not hard delete chunks for rag. err: %v", err)
+		return
+	}
+	log.Debugf("Hard deleted chunks for rag. rag_id: %s", ragID)
 }
 
 // createDocumentsForSources creates documents for each file ID and URL, then triggers ingestion.
