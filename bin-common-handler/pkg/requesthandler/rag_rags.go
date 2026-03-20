@@ -170,6 +170,23 @@ func (r *requestHandler) RagV1RagUpdate(ctx context.Context, id uuid.UUID, field
 	return &res, nil
 }
 
+// RagV1RagRemoveSource sends a request to rag-manager to remove a source from a rag.
+func (r *requestHandler) RagV1RagRemoveSource(ctx context.Context, ragID, sourceID uuid.UUID) (*rmrag.Rag, error) {
+	uri := fmt.Sprintf("/v1/rags/%s/sources/%s", ragID, sourceID)
+
+	tmp, err := r.sendRequestRag(ctx, uri, sock.RequestMethodDelete, "rag/rags.sources", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmrag.Rag
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // RagV1RagDelete sends a request to rag-manager to delete a rag.
 func (r *requestHandler) RagV1RagDelete(ctx context.Context, id uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/rags/%s", id)

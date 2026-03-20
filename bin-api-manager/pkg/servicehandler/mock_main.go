@@ -3237,6 +3237,21 @@ func (mr *MockServiceHandlerMockRecorder) RagGets(ctx, a, size, token any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagGets", reflect.TypeOf((*MockServiceHandler)(nil).RagGets), ctx, a, size, token)
 }
 
+// RagRemoveSource mocks base method.
+func (m *MockServiceHandler) RagRemoveSource(ctx context.Context, a *agent.Agent, ragID, sourceID uuid.UUID) (*rag.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagRemoveSource", ctx, a, ragID, sourceID)
+	ret0, _ := ret[0].(*rag.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagRemoveSource indicates an expected call of RagRemoveSource.
+func (mr *MockServiceHandlerMockRecorder) RagRemoveSource(ctx, a, ragID, sourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagRemoveSource", reflect.TypeOf((*MockServiceHandler)(nil).RagRemoveSource), ctx, a, ragID, sourceID)
+}
+
 // RagUpdate mocks base method.
 func (m *MockServiceHandler) RagUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, fields map[rag.Field]any) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()

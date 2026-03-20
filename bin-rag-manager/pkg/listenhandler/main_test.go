@@ -90,6 +90,9 @@ func (m *mockRagHandlerForListen) RagDelete(_ context.Context, _ uuid.UUID) erro
 func (m *mockRagHandlerForListen) RagAddSources(_ context.Context, _ uuid.UUID, _ []uuid.UUID, _ []string) (*rag.Rag, error) {
 	return nil, fmt.Errorf("not implemented")
 }
+func (m *mockRagHandlerForListen) RagRemoveSource(_ context.Context, _, _ uuid.UUID) (*rag.Rag, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 func (m *mockRagHandlerForListen) DocumentGet(_ context.Context, _ uuid.UUID) (*document.Document, error) {
 	return nil, fmt.Errorf("not implemented")
 }

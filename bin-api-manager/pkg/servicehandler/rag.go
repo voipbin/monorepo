@@ -190,3 +190,33 @@ func (h *serviceHandler) RagAddSources(ctx context.Context, a *amagent.Agent, ra
 	res := r.ConvertWebhookMessage()
 	return res, nil
 }
+
+func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *amagent.Agent, ragID, sourceID uuid.UUID) (*rmrag.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RagRemoveSource",
+		"customer_id": a.CustomerID,
+		"rag_id":      ragID,
+		"source_id":   sourceID,
+	})
+	log.Debug("Removing source from rag.")
+
+	// Verify RAG exists and belongs to this customer
+	tmp, err := h.ragGet(ctx, ragID)
+	if err != nil {
+		log.Errorf("Could not get rag info. err: %v", err)
+		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	r, err := h.reqHandler.RagV1RagRemoveSource(ctx, ragID, sourceID)
+	if err != nil {
+		log.Errorf("Could not remove source. err: %v", err)
+		return nil, err
+	}
+
+	res := r.ConvertWebhookMessage()
+	return res, nil
+}

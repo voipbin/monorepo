@@ -913,6 +913,7 @@ type ServiceHandler interface {
 	RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error)
 	RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error)
 	RagAddSources(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error)
+	RagRemoveSource(ctx context.Context, a *amagent.Agent, ragID, sourceID uuid.UUID) (*rmrag.WebhookMessage, error)
 }
 
 type serviceHandler struct {

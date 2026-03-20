@@ -175,6 +175,41 @@ func (h *ragHandler) RagAddSources(ctx context.Context, ragID uuid.UUID, storage
 	return h.RagGet(ctx, ragID)
 }
 
+func (h *ragHandler) RagRemoveSource(ctx context.Context, ragID, sourceID uuid.UUID) (*rag.Rag, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "RagRemoveSource",
+		"rag_id":    ragID,
+		"source_id": sourceID,
+	})
+
+	// Verify document exists and belongs to this RAG
+	doc, err := h.dbHandler.DocumentGet(ctx, sourceID)
+	if err != nil {
+		log.Errorf("Could not get document. err: %v", err)
+		return nil, fmt.Errorf("could not get source: %w", err)
+	}
+	log.WithField("document", doc).Debugf("Retrieved document. document_id: %s", doc.ID)
+
+	if doc.RagID != ragID {
+		log.Errorf("Document does not belong to this rag. doc.rag_id: %s, rag_id: %s", doc.RagID, ragID)
+		return nil, fmt.Errorf("source does not belong to this rag")
+	}
+
+	// Cascade: soft-delete chunks, then delete document
+	if err := h.dbHandler.ChunkSoftDeleteByDocumentID(ctx, sourceID); err != nil {
+		log.Errorf("Could not soft delete chunks. err: %v", err)
+		return nil, fmt.Errorf("could not delete source chunks: %w", err)
+	}
+
+	if err := h.dbHandler.DocumentDelete(ctx, sourceID); err != nil {
+		log.Errorf("Could not delete document. err: %v", err)
+		return nil, fmt.Errorf("could not delete source: %w", err)
+	}
+	log.Debugf("Deleted source. source_id: %s", sourceID)
+
+	return h.RagGet(ctx, ragID)
+}
+
 // createDocumentsForSources creates documents for each file ID and URL, then triggers ingestion.
 // Uses request ctx for DB writes; ingestion goroutines use context.Background().
 func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) {
@@ -247,6 +282,8 @@ func buildSources(docs []*document.Document) []rag.Source {
 			Status:        d.Status,
 			StatusMessage: d.StatusMessage,
 		}
+		s.ID = d.ID
+		s.CustomerID = d.CustomerID
 		if d.StorageFileID != uuid.Nil {
 			fileID := d.StorageFileID
 			s.StorageFileID = &fileID

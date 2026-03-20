@@ -9489,6 +9489,49 @@
         }
       }
     },
+    "/rags/{id}/sources/{source_id}": {
+      "delete": {
+        "summary": "Remove a source from a rag",
+        "description": "Removes a single source (document) and its chunks from a RAG knowledge base. Returns the updated RAG with refreshed sources list.",
+        "tags": [
+          "RAG"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The unique identifier of the rag. Returned from the `POST /rags` response."
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The unique identifier of the source to remove. Returned from the `id` field of the `sources[]` array in `GET /rags/{id}` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully removed source. Returns the updated RAG.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RagManagerRag"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rags/{id}/sources": {
       "post": {
         "summary": "Add sources to a rag",
@@ -20058,6 +20101,18 @@
         "type": "object",
         "description": "A source document in a RAG knowledge base.",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the source (document). Use this ID with `DELETE /rags/{rag-id}/sources/{source-id}` to remove the source.",
+            "example": "c3d4e5f6-a7b8-9012-cdef-123456789012"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The customer ID that owns this source. Returned from the `GET /customer` response.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
           "storage_file_id": {
             "type": "string",
             "format": "uuid",

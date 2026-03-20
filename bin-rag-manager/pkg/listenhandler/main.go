@@ -29,7 +29,8 @@ var (
 	// rag routes
 	regV1Rags          = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
 	regV1RagsID        = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
-	regV1RagsIDSources = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources(\?.*)?$`)
+	regV1RagsIDSources   = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources(\?.*)?$`)
+	regV1RagsIDSourcesID = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources/` + regUUID + `(\?.*)?$`)
 
 	// query route
 	regV1Query = regexp.MustCompile(`^/v1/query$`)
@@ -99,7 +100,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var err error
 
 	switch {
-	// rag routes — sources route MUST come before regV1RagsID (more specific route first)
+	// rag routes — sources routes MUST come before regV1RagsID (more specific route first)
+	case regV1RagsIDSourcesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1RagsIDSourcesIDDelete(ctx, m)
+		requestType = "/v1/rags/<rag-id>/sources/<source-id>"
+
 	case regV1RagsIDSources.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1RagsIDSourcesPost(ctx, m)
 		requestType = "/v1/rags/<rag-id>/sources"

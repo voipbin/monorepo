@@ -5529,6 +5529,12 @@ type RagManagerRagDocumentStatus string
 
 // RagManagerRagSource A source document in a RAG knowledge base.
 type RagManagerRagSource struct {
+	// CustomerId The customer ID that owns this source. Returned from the `GET /customer` response.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id The unique identifier of the source (document). Use this ID with `DELETE /rags/{rag-id}/sources/{source-id}` to remove the source.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
 	// SourceUrl The URL if the source is a web document.
 	SourceUrl *string `json:"source_url,omitempty"`
 
