@@ -1,7 +1,7 @@
 """ai_ais add column rag_id
 
 Revision ID: 1f362e55653b
-Revises: g1a2b3c4d5e6
+Revises: h2b3c4d5e6f7
 Create Date: 2026-03-20 21:50:45.393338
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '1f362e55653b'
-down_revision = 'g1a2b3c4d5e6'
+down_revision = 'h2b3c4d5e6f7'
 branch_labels = None
 depends_on = None
 
