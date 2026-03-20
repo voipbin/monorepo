@@ -540,3 +540,41 @@ func (h *handler) DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) 
 	}
 	return res, nil
 }
+
+// DocumentGetsByRagIDAndSources returns active documents in a RAG that match any of the given sources.
+// Used for duplicate detection before adding new sources.
+func (h *handler) DocumentGetsByRagIDAndSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) ([]*document.Document, error) {
+	if len(storageFileIDs) == 0 && len(sourceURLs) == 0 {
+		return []*document.Document{}, nil
+	}
+
+	// Build OR conditions for each source type
+	var orConditions []sq.Sqlizer
+
+	if len(storageFileIDs) > 0 {
+		orConditions = append(orConditions, sq.Eq{"storage_file_id": storageFileIDs})
+	}
+	if len(sourceURLs) > 0 {
+		orConditions = append(orConditions, sq.Eq{"source_url": sourceURLs})
+	}
+
+	q := psql.
+		Select(documentColumns()...).
+		From(tableDocuments).
+		Where(sq.Eq{"rag_id": ragID}).
+		Where("tm_delete IS NULL").
+		Where(sq.Or(orConditions))
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build duplicate check query: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query duplicate sources: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	return scanDocumentRows(rows)
+}

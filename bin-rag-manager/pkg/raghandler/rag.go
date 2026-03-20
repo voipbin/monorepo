@@ -3,6 +3,7 @@ package raghandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -38,7 +39,13 @@ func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, 
 	log.WithField("rag", r).Debugf("Created rag. rag_id: %s", r.ID)
 
 	// Create documents for each source and trigger ingestion
-	h.createDocumentsForSources(ctx, customerID, id, storageFileIDs, sourceURLs)
+	if err := h.createDocumentsForSources(ctx, customerID, id, storageFileIDs, sourceURLs); err != nil {
+		// Rollback: delete the just-created RAG since sources failed
+		if delErr := h.dbHandler.RagDelete(ctx, id); delErr != nil {
+			log.Errorf("Could not rollback rag creation. err: %v", delErr)
+		}
+		return nil, err
+	}
 
 	// Return enriched Rag with Status/Sources populated
 	return h.RagGet(ctx, id)
@@ -173,7 +180,9 @@ func (h *ragHandler) RagAddSources(ctx context.Context, ragID uuid.UUID, storage
 	}
 	log.WithField("rag", r).Debugf("Retrieved rag for adding sources. rag_id: %s", r.ID)
 
-	h.createDocumentsForSources(ctx, r.CustomerID, r.ID, storageFileIDs, sourceURLs)
+	if err := h.createDocumentsForSources(ctx, r.CustomerID, r.ID, storageFileIDs, sourceURLs); err != nil {
+		return nil, err
+	}
 
 	return h.RagGet(ctx, ragID)
 }
@@ -249,12 +258,51 @@ func (h *ragHandler) chunkHardDeleteByRagID(ragID uuid.UUID) {
 }
 
 // createDocumentsForSources creates documents for each file ID and URL, then triggers ingestion.
+// Returns an error if duplicate sources are detected (within the request or already in the RAG).
 // Uses request ctx for DB writes; ingestion goroutines use context.Background().
-func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) {
+func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "createDocumentsForSources",
 		"rag_id": ragID,
 	})
+
+	// Intra-request duplicate check for storage file IDs
+	seenFileIDs := make(map[uuid.UUID]bool, len(storageFileIDs))
+	for _, fileID := range storageFileIDs {
+		if seenFileIDs[fileID] {
+			return fmt.Errorf("duplicate source(s) in request: storage_file_id %s", fileID)
+		}
+		seenFileIDs[fileID] = true
+	}
+
+	// Intra-request duplicate check for source URLs
+	seenURLs := make(map[string]bool, len(sourceURLs))
+	for _, u := range sourceURLs {
+		if seenURLs[u] {
+			return fmt.Errorf("duplicate source(s) in request: source_url %s", u)
+		}
+		seenURLs[u] = true
+	}
+
+	// DB-level duplicate check against existing active documents in this RAG
+	existingDocs, err := h.dbHandler.DocumentGetsByRagIDAndSources(ctx, ragID, storageFileIDs, sourceURLs)
+	if err != nil {
+		log.Errorf("Could not check for duplicate sources. err: %v", err)
+		return fmt.Errorf("could not check for duplicate sources: %w", err)
+	}
+	if len(existingDocs) > 0 {
+		dupNames := make([]string, 0, len(existingDocs))
+		for _, d := range existingDocs {
+			if d.StorageFileID != uuid.Nil {
+				dupNames = append(dupNames, "storage_file_id "+d.StorageFileID.String())
+			} else if d.SourceURL != "" {
+				dupNames = append(dupNames, "source_url "+d.SourceURL)
+			}
+		}
+		return fmt.Errorf("source(s) already exist in this rag: %s", strings.Join(dupNames, ", "))
+	}
+
+	// Create documents and trigger ingestion
 	for _, fileID := range storageFileIDs {
 		doc, err := h.documentCreateInternal(ctx, customerID, ragID, fileID, "")
 		if err != nil {
@@ -272,6 +320,8 @@ func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, 
 		}
 		go h.documentIngest(doc)
 	}
+
+	return nil
 }
 
 // computeRagStatus derives RAG status from its documents.

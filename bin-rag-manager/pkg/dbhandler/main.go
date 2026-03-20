@@ -43,6 +43,7 @@ type DBHandler interface {
 	DocumentResetStaleToPending(ctx context.Context, threshold time.Duration) error
 	DocumentGetsByRagID(ctx context.Context, ragID uuid.UUID) ([]*document.Document, error)
 	DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) (map[uuid.UUID][]*document.Document, error)
+	DocumentGetsByRagIDAndSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) ([]*document.Document, error)
 
 	// Chunk operations
 	ChunkCreate(ctx context.Context, c *chunk.Chunk, embedding []float32) error
