@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -49,8 +51,9 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameSendMessage:       h.toolHandleMessageSend,
 		message.FunctionCallNameSetVariables:      h.toolHandleSetVariables,
 		message.FunctionCallNameStopFlow:          h.toolHandleStop,
-		message.FunctionCallNameStopMedia:         h.toolHandleMediaStop,
-		message.FunctionCallNameStopService:       h.toolHandleServiceStop,
+		message.FunctionCallNameStopMedia:           h.toolHandleMediaStop,
+		message.FunctionCallNameStopService:         h.toolHandleServiceStop,
+		message.FunctionCallNameSearchKnowledge:     h.toolHandleSearchKnowledge,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -401,5 +404,60 @@ func (h *aicallHandler) toolHandleGetAIcallMessages(ctx context.Context, c *aica
 	log.Debugf("Got aicall messages successfully. aicall_id: %s", c.ID)
 	fillSuccess(res, "messages", tmp.ID.String(), string(tmpMessage))
 
+	return res
+}
+
+func (h *aicallHandler) toolHandleSearchKnowledge(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleSearchKnowledge",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool search_knowledge.")
+
+	res := newToolResult(tc.ID)
+
+	var args struct {
+		Query string `json:"query"`
+	}
+	if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	tmpAI, err := h.aiHandler.Get(ctx, c.AssistanceID)
+	if err != nil {
+		log.Errorf("Could not get AI. err: %v", err)
+		fillFailed(res, fmt.Errorf("could not retrieve AI configuration"))
+		return res
+	}
+	log.WithField("ai", tmpAI).Debugf("Retrieved AI info. ai_id: %s", tmpAI.ID)
+
+	if tmpAI.RagID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("no knowledge base is configured for this assistant"))
+		return res
+	}
+
+	ragRes, err := h.reqHandler.RagV1RagQuery(ctx, tmpAI.RagID, args.Query, 5)
+	if err != nil {
+		log.Errorf("RAG query failed. err: %v", err)
+		fillFailed(res, fmt.Errorf("knowledge base search failed"))
+		return res
+	}
+	log.Debugf("RAG query completed. rag_id: %s, source_count: %d", tmpAI.RagID, len(ragRes.Sources))
+
+	if len(ragRes.Sources) == 0 {
+		fillSuccess(res, "rag", tmpAI.RagID.String(), "No relevant information found in the knowledge base.")
+		return res
+	}
+
+	var sb strings.Builder
+	for i, s := range ragRes.Sources {
+		fmt.Fprintf(&sb, "[Source %d: \"%s\" > \"%s\" (relevance: %.2f)]\n",
+			i+1, s.DocumentName, s.SectionTitle, s.RelevanceScore)
+		sb.WriteString(s.Text)
+		sb.WriteString("\n\n")
+	}
+
+	fillSuccess(res, "rag", tmpAI.RagID.String(), sb.String())
 	return res
 }

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/models/identity"
 )
@@ -50,6 +52,7 @@ type AI struct {
 	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
 	Parameter   map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
+	RagID       uuid.UUID      `json:"rag_id,omitempty" db:"rag_id,uuid"`
 
 	InitPrompt string `json:"init_prompt,omitempty" db:"init_prompt"`
 

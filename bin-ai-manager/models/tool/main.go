@@ -15,6 +15,7 @@ const (
 	ToolNameStopFlow          ToolName = "stop_flow"
 	ToolNameStopMedia         ToolName = "stop_media"
 	ToolNameStopService       ToolName = "stop_service"
+	ToolNameSearchKnowledge   ToolName = "search_knowledge"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -28,6 +29,7 @@ var AllToolNames = []ToolName{
 	ToolNameStopFlow,
 	ToolNameStopMedia,
 	ToolNameStopService,
+	ToolNameSearchKnowledge,
 }
 
 // Tool defines a tool with its schema for LLM function calling

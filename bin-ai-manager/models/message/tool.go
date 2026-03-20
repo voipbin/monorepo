@@ -36,4 +36,5 @@ const (
 	FunctionCallNameStopMedia         FunctionCallName = "stop_media"
 	FunctionCallNameStopFlow          FunctionCallName = "stop_flow"
 	FunctionCallNameStopService       FunctionCallName = "stop_service"
+	FunctionCallNameSearchKnowledge   FunctionCallName = "search_knowledge"
 )

@@ -20,6 +20,7 @@ func (h *aiHandler) dbCreate(
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
 	ttsVoiceID string,
@@ -41,6 +42,7 @@ func (h *aiHandler) dbCreate(
 		EngineModel: engineModel,
 		Parameter:   parameter,
 		EngineKey:   engineKey,
+		RagID:       ragID,
 
 		InitPrompt: initPrompt,
 
@@ -112,6 +114,7 @@ func (h *aiHandler) dbUpdate(
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
 	ttsVoice string,
@@ -126,6 +129,7 @@ func (h *aiHandler) dbUpdate(
 		ai.FieldEngineModel: engineModel,
 		ai.FieldParameter:   parameter,
 		ai.FieldEngineKey:   engineKey,
+		ai.FieldRagID:       ragID,
 		ai.FieldInitPrompt:  initPrompt,
 		ai.FieldTTSType:     ttsType,
 		ai.FieldTTSVoiceID:  ttsVoice,

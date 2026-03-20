@@ -225,6 +225,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
+		uuid.Nil, // ragID - not supported via CLI yet
 		initPrompt,
 		ttsType,
 		ttsVoiceID,
@@ -344,6 +345,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
+		uuid.Nil, // ragID - not supported via CLI yet
 		initPrompt,
 		ttsType,
 		ttsVoiceID,

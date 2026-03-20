@@ -105,7 +105,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil, nil, false)
+			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, nil, nil, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -366,6 +366,7 @@ func Test_Update(t *testing.T) {
 				tt.engineModel,
 				tt.parameter,
 				tt.engineKey,
+				uuid.Nil,
 				tt.initPrompt,
 				tt.ttsType,
 				tt.ttsVoiceID,

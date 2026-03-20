@@ -441,4 +441,43 @@ run_llm: Set true to respond based on retrieved messages, false for silent retri
 			"required": []string{"aicall_id"},
 		},
 	},
+	{
+		Name: tool.ToolNameSearchKnowledge,
+		Description: `Searches the configured knowledge base for information relevant to the user's question.
+
+WHEN TO USE:
+- User asks a question that might be answered by company documentation, FAQs, or product guides
+- User needs specific information about products, services, policies, or procedures
+- User references something that would be in uploaded documents
+- You need factual information to answer accurately rather than relying on general knowledge
+
+WHEN NOT TO USE:
+- General conversation or greetings
+- Questions you can confidently answer from the conversation context
+- User explicitly asks you NOT to look things up
+- The question is about the current call or conversation state (use get_variables instead)
+
+EXAMPLES:
+- User: "What are your pricing plans?" -> search_knowledge(query="pricing plans and tiers")
+- User: "How do I reset my password?" -> search_knowledge(query="password reset procedure")
+- User: "What's your return policy?" -> search_knowledge(query="return and refund policy")
+- User: "Tell me about the enterprise plan features" -> search_knowledge(query="enterprise plan features and capabilities")
+
+run_llm: Always set true — you should respond to the user based on the search results.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Always set true to respond based on search results.",
+					"default":     true,
+				},
+				"query": map[string]any{
+					"type":        "string",
+					"description": "The search query to find relevant information in the knowledge base. Rephrase the user's question as a clear search query for better results.",
+				},
+			},
+			"required": []string{"query"},
+		},
+	},
 }
