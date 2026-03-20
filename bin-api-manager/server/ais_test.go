@@ -70,7 +70,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with tool_names",
@@ -101,7 +101,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with all tools enabled",
@@ -132,7 +132,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameAll},
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -165,6 +165,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
+				uuid.Nil, // ragID - TODO: update when OpenAPI schema adds rag_id
 				tt.expectedInitPrompt,
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
@@ -220,7 +221,7 @@ func Test_GetAis(t *testing.T) {
 			},
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -255,7 +256,7 @@ func Test_GetAis(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -323,7 +324,7 @@ func Test_GetAisId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
-			expectRes:  `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:  `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -391,7 +392,7 @@ func Test_DeleteAisId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
-			expectRes:  `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:  `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -483,7 +484,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with tool_names",
@@ -515,7 +516,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -549,6 +550,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.epxectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
+				uuid.Nil, // ragID - TODO: update when OpenAPI schema adds rag_id
 				tt.expectedInitPrompt,
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,

@@ -40,6 +40,7 @@ func (h *serviceHandler) AICreate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
 	ttsVoiceID string,
@@ -54,6 +55,7 @@ func (h *serviceHandler) AICreate(
 		"engine_model": engineModel,
 		"parameter":    parameter,
 		"engine_key":   engineKey,
+		"rag_id":       ragID,
 		"init_prompt":  initPrompt,
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
@@ -66,6 +68,21 @@ func (h *serviceHandler) AICreate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// validate RAG ownership if ragID is provided
+	if ragID != uuid.Nil {
+		rag, err := h.reqHandler.RagV1RagGet(ctx, ragID)
+		if err != nil {
+			log.Errorf("Could not get RAG. err: %v", err)
+			return nil, fmt.Errorf("could not validate knowledge base")
+		}
+		log.WithField("rag", rag).Debugf("Retrieved RAG info. rag_id: %s", rag.ID)
+
+		if rag.CustomerID != a.CustomerID {
+			log.Infof("RAG customer_id mismatch. rag_customer_id: %s, agent_customer_id: %s", rag.CustomerID, a.CustomerID)
+			return nil, fmt.Errorf("knowledge base does not belong to this customer")
+		}
+	}
+
 	tmp, err := h.reqHandler.AIV1AICreate(
 		ctx,
 		a.CustomerID,
@@ -74,6 +91,7 @@ func (h *serviceHandler) AICreate(
 		engineModel,
 		parameter,
 		engineKey,
+		ragID,
 		initPrompt,
 		ttsType,
 		ttsVoiceID,
@@ -229,6 +247,7 @@ func (h *serviceHandler) AIUpdate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
 	ttsVoiceID string,
@@ -244,6 +263,7 @@ func (h *serviceHandler) AIUpdate(
 		"engine_model": engineModel,
 		"parameter":    parameter,
 		"engine_key":   engineKey,
+		"rag_id":       ragID,
 		"init_prompt":  initPrompt,
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
@@ -263,6 +283,21 @@ func (h *serviceHandler) AIUpdate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// validate RAG ownership if ragID is provided
+	if ragID != uuid.Nil {
+		rag, err := h.reqHandler.RagV1RagGet(ctx, ragID)
+		if err != nil {
+			log.Errorf("Could not get RAG. err: %v", err)
+			return nil, fmt.Errorf("could not validate knowledge base")
+		}
+		log.WithField("rag", rag).Debugf("Retrieved RAG info. rag_id: %s", rag.ID)
+
+		if rag.CustomerID != a.CustomerID {
+			log.Infof("RAG customer_id mismatch. rag_customer_id: %s, agent_customer_id: %s", rag.CustomerID, a.CustomerID)
+			return nil, fmt.Errorf("knowledge base does not belong to this customer")
+		}
+	}
+
 	tmp, err := h.reqHandler.AIV1AIUpdate(
 		ctx,
 		id,
@@ -271,6 +306,7 @@ func (h *serviceHandler) AIUpdate(
 		engineModel,
 		parameter,
 		engineKey,
+		ragID,
 		initPrompt,
 		ttsType,
 		ttsVoiceID,

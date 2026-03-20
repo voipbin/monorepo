@@ -94,6 +94,7 @@ func Test_AICreate(t *testing.T) {
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,
+				uuid.Nil, // ragID
 				tt.initPrompt,
 				tt.ttsType,
 				tt.ttsVoiceID,
@@ -109,6 +110,7 @@ func Test_AICreate(t *testing.T) {
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,
+				uuid.Nil, // ragID
 				tt.initPrompt,
 				tt.ttsType,
 				tt.ttsVoiceID,

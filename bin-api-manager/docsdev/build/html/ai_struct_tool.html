@@ -251,6 +251,9 @@
 <tr class="row-even"><td><p>get_aicall_messages</p></td>
 <td><p>Get message history from an AI call</p></td>
 </tr>
+<tr class="row-odd"><td><p>search_knowledge</p></td>
+<td><p>Search the configured knowledge base (RAG)</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -619,6 +622,61 @@
 </pre></div>
 </div>
 </section>
+<section id="search-knowledge">
+<span id="ai-struct-tool-search-knowledge"></span><h2>search_knowledge<a class="headerlink" href="#search-knowledge" title="Link to this heading"></a></h2>
+<p>Searches the configured knowledge base (RAG) for information relevant to the user’s question or topic. Returns matching content from uploaded documents.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">search_knowledge</span></code> tool requires a knowledge base (RAG) to be configured on the AI via the <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field. If no <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> is set (or it is <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>), this tool will not be available to the AI during the call. Create a knowledge base via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> and assign its <code class="docutils literal notranslate"><span class="pre">id</span></code> to the AI’s <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field. The tool returns up to 5 matching sources with relevance scores.</p>
+</div>
+<p><strong>When to use:</strong></p>
+<ul class="simple">
+<li><p>Caller asks a question that may be answered by company documentation or uploaded files</p></li>
+<li><p>Caller needs product specifications, policy details, or reference information</p></li>
+<li><p>AI needs to look up facts before answering: “What is our return policy?”, “How do I configure X?”</p></li>
+<li><p>Caller asks about topics covered by the knowledge base</p></li>
+</ul>
+<p><strong>When NOT to use:</strong></p>
+<ul class="simple">
+<li><p>Caller asks general conversational questions unrelated to the knowledge base</p></li>
+<li><p>Information is already in the conversation context</p></li>
+<li><p>No knowledge base is configured (tool will not be available)</p></li>
+</ul>
+<p><strong>Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The search query to find relevant information in the knowledge base&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to respond using retrieved knowledge.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Response format:</strong></p>
+<p>The tool returns matching document sections with metadata:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Source</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Product Guide&quot;</span> <span class="o">&gt;</span> <span class="s2">&quot;Return Policy&quot;</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.92</span><span class="p">)]</span>
+<span class="n">Items</span> <span class="n">may</span> <span class="n">be</span> <span class="n">returned</span> <span class="n">within</span> <span class="mi">30</span> <span class="n">days</span> <span class="n">of</span> <span class="n">purchase</span><span class="o">...</span>
+
+<span class="p">[</span><span class="n">Source</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;FAQ&quot;</span> <span class="o">&gt;</span> <span class="s2">&quot;Refunds&quot;</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">)]</span>
+<span class="n">Refunds</span> <span class="n">are</span> <span class="n">processed</span> <span class="n">within</span> <span class="mi">5</span><span class="o">-</span><span class="mi">7</span> <span class="n">business</span> <span class="n">days</span><span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>Examples:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;What&#39;s your return policy?&quot;</span>        <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;return policy&quot;</span><span class="p">)</span>
+<span class="s2">&quot;How do I set up the widget?&quot;</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;widget setup instructions&quot;</span><span class="p">)</span>
+<span class="s2">&quot;What are the pricing tiers?&quot;</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;pricing tiers plans&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="run-llm-parameter">
 <h2>run_llm Parameter<a class="headerlink" href="#run-llm-parameter" title="Link to this heading"></a></h2>
 <p>Most tools include a <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> parameter that controls whether the AI should generate a response after the tool executes.</p>
@@ -728,6 +786,7 @@
 <li><a class="reference internal" href="#set-variables">set_variables</a></li>
 <li><a class="reference internal" href="#get-variables">get_variables</a></li>
 <li><a class="reference internal" href="#get-aicall-messages">get_aicall_messages</a></li>
+<li><a class="reference internal" href="#search-knowledge">search_knowledge</a></li>
 <li><a class="reference internal" href="#run-llm-parameter">run_llm Parameter</a></li>
 <li><a class="reference internal" href="#tool-execution-flow">Tool Execution Flow</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>

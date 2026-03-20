@@ -18,6 +18,7 @@ AI
         "engine_model": "<string>",
         "parameter": "<object>",
         "engine_key": "<string>",
+        "rag_id": "<string>",
         "init_prompt": "<string>",
         "tts_type": "<string>",
         "tts_voice_id": "<string>",
@@ -42,6 +43,7 @@ AI
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
+* ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
 * ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
@@ -74,6 +76,7 @@ Example
         "engine_model": "openai.gpt-4o",
         "parameter": {},
         "engine_key": "sk-...",
+        "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "init_prompt": "You are a friendly sales assistant. Help customers find the right products.",
         "tts_type": "elevenlabs",
         "tts_voice_id": "EXAVITQu4vr4xnSDxMaL",

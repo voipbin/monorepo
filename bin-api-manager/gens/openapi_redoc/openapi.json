@@ -1568,6 +1568,11 @@
                     "type": "string",
                     "description": "API key or credential for the AI engine."
                   },
+                  "rag_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response."
+                  },
                   "init_prompt": {
                     "type": "string"
                   },
@@ -1697,6 +1702,11 @@
                   "engine_key": {
                     "type": "string",
                     "description": "API key or credential for the AI engine."
+                  },
+                  "rag_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response."
                   },
                   "init_prompt": {
                     "type": "string"
@@ -15946,6 +15956,13 @@
             "type": "string",
             "description": "API key or authentication key for the AI engine. Write-only; not returned in responses.",
             "example": "sk-...redacted..."
+          },
+          "rag_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. When set, the AI assistant can search this knowledge base during voice calls.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
           },
           "init_prompt": {
             "type": "string",

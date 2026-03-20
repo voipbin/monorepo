@@ -47,6 +47,7 @@ stop_flow                 Terminate the entire flow (hard stop)
 set_variables             Save data to flow context
 get_variables             Retrieve data from flow context
 get_aicall_messages       Get message history from an AI call
+search_knowledge          Search the configured knowledge base (RAG)
 ========================= =================================================
 
 .. _ai-struct-tool-connect_call:
@@ -466,6 +467,70 @@ Retrieves message history from a specific AI call session.
         },
         "required": ["aicall_id"]
     }
+
+.. _ai-struct-tool-search_knowledge:
+
+search_knowledge
+----------------
+
+Searches the configured knowledge base (RAG) for information relevant to the user's question or topic. Returns matching content from uploaded documents.
+
+.. note:: **AI Implementation Hint**
+
+   The ``search_knowledge`` tool requires a knowledge base (RAG) to be configured on the AI via the ``rag_id`` field. If no ``rag_id`` is set (or it is ``00000000-0000-0000-0000-000000000000``), this tool will not be available to the AI during the call. Create a knowledge base via ``POST /rags`` and assign its ``id`` to the AI's ``rag_id`` field. The tool returns up to 5 matching sources with relevance scores.
+
+**When to use:**
+
+* Caller asks a question that may be answered by company documentation or uploaded files
+* Caller needs product specifications, policy details, or reference information
+* AI needs to look up facts before answering: "What is our return policy?", "How do I configure X?"
+* Caller asks about topics covered by the knowledge base
+
+**When NOT to use:**
+
+* Caller asks general conversational questions unrelated to the knowledge base
+* Information is already in the conversation context
+* No knowledge base is configured (tool will not be available)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The search query to find relevant information in the knowledge base"
+            },
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to respond using retrieved knowledge.",
+                "default": true
+            }
+        },
+        "required": ["query"]
+    }
+
+**Response format:**
+
+The tool returns matching document sections with metadata:
+
+::
+
+    [Source 1: "Product Guide" > "Return Policy" (relevance: 0.92)]
+    Items may be returned within 30 days of purchase...
+
+    [Source 2: "FAQ" > "Refunds" (relevance: 0.85)]
+    Refunds are processed within 5-7 business days...
+
+**Examples:**
+
+::
+
+    "What's your return policy?"        -> search_knowledge(query="return policy")
+    "How do I set up the widget?"       -> search_knowledge(query="widget setup instructions")
+    "What are the pricing tiers?"       -> search_knowledge(query="pricing tiers plans")
 
 
 run_llm Parameter

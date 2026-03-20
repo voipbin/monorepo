@@ -46,6 +46,10 @@ post:
             engine_key:
               type: string
               description: API key or credential for the AI engine.
+            rag_id:
+              type: string
+              format: uuid
+              description: "The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response."
             init_prompt:
               type: string
             tts_type:

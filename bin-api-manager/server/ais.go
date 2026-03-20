@@ -44,6 +44,9 @@ func (h *server) PostAis(c *gin.Context) {
 		}
 	}
 
+	// TODO: Parse rag_id from request body once OpenAPI schema is updated
+	ragID := uuid.Nil
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		&a,
@@ -52,6 +55,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,
+		ragID,
 		req.InitPrompt,
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
@@ -225,6 +229,9 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		}
 	}
 
+	// TODO: Parse rag_id from request body once OpenAPI schema is updated
+	ragID := uuid.Nil
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		&a,
@@ -234,6 +241,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,
+		ragID,
 		req.InitPrompt,
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
