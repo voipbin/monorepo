@@ -1324,6 +1324,7 @@ type RequestHandler interface {
 	RagV1RagUpdate(ctx context.Context, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.Rag, error)
 	RagV1RagDelete(ctx context.Context, id uuid.UUID) error
 	RagV1RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.Rag, error)
+	RagV1RagRemoveSource(ctx context.Context, ragID, sourceID uuid.UUID) (*rmrag.Rag, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error

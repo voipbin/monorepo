@@ -25,6 +25,7 @@ type RagHandler interface {
 	RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error)
 	RagDelete(ctx context.Context, id uuid.UUID) error
 	RagAddSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error)
+	RagRemoveSource(ctx context.Context, ragID, sourceID uuid.UUID) (*rag.Rag, error)
 
 	DocumentGet(ctx context.Context, id uuid.UUID) (*document.Document, error)
 	DocumentList(ctx context.Context, size uint64, token string, filters map[document.Field]any) ([]*document.Document, error)

@@ -1,0 +1,27 @@
+delete:
+  summary: Remove a source from a rag
+  description: Removes a single source (document) and its chunks from a RAG knowledge base. Returns the updated RAG with refreshed sources list.
+  tags:
+    - RAG
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the rag. Returned from the `POST /rags` response."
+    - name: source_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the source to remove. Returned from the `id` field of the `sources[]` array in `GET /rags/{id}` response."
+  responses:
+    '200':
+      description: Successfully removed source. Returns the updated RAG.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RagManagerRag'

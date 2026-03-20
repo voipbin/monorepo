@@ -228,3 +228,36 @@ func (h *listenHandler) processV1RagsIDSourcesPost(ctx context.Context, m *sock.
 
 	return jsonResponse(200, r), nil
 }
+
+func (h *listenHandler) processV1RagsIDSourcesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1RagsIDSourcesIDDelete",
+	})
+
+	// URI: /v1/rags/{rag-id}/sources/{source-id}
+	// Split: ["", "v1", "rags", "{rag-id}", "sources", "{source-id}"]
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		return simpleResponse(400), nil
+	}
+
+	ragID := uuid.FromStringOrNil(uriItems[3])
+	if ragID == uuid.Nil {
+		log.Errorf("Could not parse rag ID from URI.")
+		return simpleResponse(400), nil
+	}
+
+	sourceID := uuid.FromStringOrNil(uriItems[5])
+	if sourceID == uuid.Nil {
+		log.Errorf("Could not parse source ID from URI.")
+		return simpleResponse(400), nil
+	}
+
+	r, err := h.ragHandler.RagRemoveSource(ctx, ragID, sourceID)
+	if err != nil {
+		log.Errorf("Could not remove source. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	return jsonResponse(200, r), nil
+}

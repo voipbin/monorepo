@@ -268,6 +268,49 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
+func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UUID, sourceId openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "DeleteRagsIdSourcesSourceId",
+		"request_address": c.ClientIP(),
+		"rag_id":          id,
+		"source_id":       sourceId,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	ragID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid rag ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	sourceID, err := uuid.FromString(sourceId.String())
+	if err != nil {
+		log.Errorf("Invalid source ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.RagRemoveSource(c.Request.Context(), &a, ragID, sourceID)
+	if err != nil {
+		log.Errorf("Could not remove source. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteRagsId",

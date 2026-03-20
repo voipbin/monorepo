@@ -5112,6 +5112,21 @@ func (mr *MockRequestHandlerMockRecorder) RagV1RagQuery(ctx, ragID, queryText, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagQuery", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagQuery), ctx, ragID, queryText, topK)
 }
 
+// RagV1RagRemoveSource mocks base method.
+func (m *MockRequestHandler) RagV1RagRemoveSource(ctx context.Context, ragID, sourceID uuid.UUID) (*rag.Rag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RagV1RagRemoveSource", ctx, ragID, sourceID)
+	ret0, _ := ret[0].(*rag.Rag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RagV1RagRemoveSource indicates an expected call of RagV1RagRemoveSource.
+func (mr *MockRequestHandlerMockRecorder) RagV1RagRemoveSource(ctx, ragID, sourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RagV1RagRemoveSource", reflect.TypeOf((*MockRequestHandler)(nil).RagV1RagRemoveSource), ctx, ragID, sourceID)
+}
+
 // RagV1RagUpdate mocks base method.
 func (m *MockRequestHandler) RagV1RagUpdate(ctx context.Context, id uuid.UUID, fields map[rag.Field]any) (*rag.Rag, error) {
 	m.ctrl.T.Helper()

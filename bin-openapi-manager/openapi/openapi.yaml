@@ -5219,6 +5219,16 @@ components:
       type: object
       description: "A source document in a RAG knowledge base."
       properties:
+        id:
+          type: string
+          format: uuid
+          description: "The unique identifier of the source (document). Use this ID with `DELETE /rags/{rag-id}/sources/{source-id}` to remove the source."
+          example: "c3d4e5f6-a7b8-9012-cdef-123456789012"
+        customer_id:
+          type: string
+          format: uuid
+          description: "The customer ID that owns this source. Returned from the `GET /customer` response."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         storage_file_id:
           type: string
           format: uuid
@@ -6837,6 +6847,8 @@ paths:
   /queues:
     $ref: './paths/queues/main.yaml'
 
+  /rags/{id}/sources/{source_id}:
+    $ref: './paths/rags/id_sources_id.yaml'
   /rags/{id}/sources:
     $ref: './paths/rags/id_sources.yaml'
   /rags/{id}:

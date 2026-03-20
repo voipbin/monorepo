@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	rmdocument "monorepo/bin-rag-manager/models/document"
 )
 
@@ -25,6 +26,8 @@ type Rag struct {
 
 // Source represents a single source (document) in the RAG response.
 type Source struct {
+	commonidentity.Identity `json:",inline"`
+
 	StorageFileID *uuid.UUID        `json:"storage_file_id,omitempty"`
 	SourceURL     string            `json:"source_url,omitempty"`
 	Status        rmdocument.Status `json:"status,omitempty"`
