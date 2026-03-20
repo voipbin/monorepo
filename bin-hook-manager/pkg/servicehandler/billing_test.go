@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -19,25 +20,37 @@ import (
 )
 
 func Test_Billing(t *testing.T) {
+	secret := "pdl_ntfset_test_secret"
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+
+	// Generate a valid signature with a fresh timestamp
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	validMAC := hmacSHA256(secret, freshTS, body)
+	validSignature := "ts=" + freshTS + ";h1=" + validMAC
+
 	tests := []struct {
 		name string
 
-		host string
-		path string
-		body []byte
+		host      string
+		path      string
+		body      []byte
+		secret    string
+		signature string
 
 		expectReq *hmhook.Hook
 	}{
 		{
-			name: "paddle webhook - no signature verification (empty secret)",
+			name: "paddle webhook - valid secret and signature",
 
-			host: "hook.voipbin.net",
-			path: "/v1.0/billing/paddle",
-			body: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			host:      "hook.voipbin.net",
+			path:      "/v1.0/billing/paddle",
+			body:      body,
+			secret:    secret,
+			signature: validSignature,
 
 			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
-				ReceivedData: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+				ReceivedData: body,
 			},
 		},
 	}
@@ -50,13 +63,16 @@ func Test_Billing(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
 				reqHandler:          mockReq,
-				paddleWebhookSecret: "",
+				paddleWebhookSecret: tt.secret,
 			}
 
 			ctx := context.Background()
 
 			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
 			r.Host = tt.host
+			if tt.signature != "" {
+				r.Header.Set("Paddle-Signature", tt.signature)
+			}
 
 			mockReq.EXPECT().BillingV1PaddleHook(ctx, tt.expectReq).Return(nil)
 
@@ -68,12 +84,22 @@ func Test_Billing(t *testing.T) {
 }
 
 func Test_Billing_Error(t *testing.T) {
+	secret := "pdl_ntfset_test_secret"
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+
+	// Generate a valid signature with a fresh timestamp
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	validMAC := hmacSHA256(secret, freshTS, body)
+	validSignature := "ts=" + freshTS + ";h1=" + validMAC
+
 	tests := []struct {
 		name string
 
-		host string
-		path string
-		body []byte
+		host      string
+		path      string
+		body      []byte
+		secret    string
+		signature string
 
 		expectReq   *hmhook.Hook
 		expectError error
@@ -81,13 +107,15 @@ func Test_Billing_Error(t *testing.T) {
 		{
 			name: "request handler error",
 
-			host: "hook.voipbin.net",
-			path: "/v1.0/billing/paddle",
-			body: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+			host:      "hook.voipbin.net",
+			path:      "/v1.0/billing/paddle",
+			body:      body,
+			secret:    secret,
+			signature: validSignature,
 
 			expectReq: &hmhook.Hook{
 				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
-				ReceivedData: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
+				ReceivedData: body,
 			},
 			expectError: fmt.Errorf("billing hook error"),
 		},
@@ -101,13 +129,16 @@ func Test_Billing_Error(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := serviceHandler{
 				reqHandler:          mockReq,
-				paddleWebhookSecret: "",
+				paddleWebhookSecret: tt.secret,
 			}
 
 			ctx := context.Background()
 
 			r, _ := http.NewRequest("POST", "http://"+tt.host+tt.path, bytes.NewReader(tt.body))
 			r.Host = tt.host
+			if tt.signature != "" {
+				r.Header.Set("Paddle-Signature", tt.signature)
+			}
 
 			mockReq.EXPECT().BillingV1PaddleHook(ctx, tt.expectReq).Return(tt.expectError)
 
@@ -115,6 +146,34 @@ func Test_Billing_Error(t *testing.T) {
 				t.Error("Expected error, got nil")
 			}
 		})
+	}
+}
+
+func Test_Billing_EmptySecretRejected(t *testing.T) {
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := serviceHandler{
+		reqHandler:          mockReq,
+		paddleWebhookSecret: "", // empty secret
+	}
+
+	ctx := context.Background()
+	r, _ := http.NewRequest("POST", "http://hook.voipbin.net/v1.0/billing/paddle", bytes.NewReader(body))
+	r.Host = "hook.voipbin.net"
+
+	err := h.Billing(ctx, r)
+	if err == nil {
+		t.Fatal("Expected error when paddleWebhookSecret is empty, got nil")
+	}
+
+	// Verify it's a ValidationError (should return 400, not 500)
+	var valErr *ValidationError
+	if !errors.As(err, &valErr) {
+		t.Errorf("Expected *ValidationError, got %T: %v", err, err)
 	}
 }
 
