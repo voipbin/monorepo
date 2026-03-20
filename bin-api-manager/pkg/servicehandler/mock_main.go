@@ -788,10 +788,10 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, coun
 }
 
 // BillingAccountAddBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountAddBalanceForce", ctx, a, billingAccountID, balance)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -818,10 +818,10 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, a, billingAccou
 }
 
 // BillingAccountSubtractBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSubtractBalanceForce", ctx, a, billingAccountID, balance)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
