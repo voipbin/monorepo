@@ -10,8 +10,9 @@ BLOB/TEXT columns cannot have a UNIQUE index without a prefix length, and prefix
 UNIQUE indexes do not enforce full-value uniqueness. VARBINARY(16) stores the same binary
 UUID data but supports full UNIQUE indexes.
 
-MySQL allows multiple NULL values in a UNIQUE index, so existing rows with
-NULL idempotency_key (pre-Paddle billing records) are unaffected.
+Pre-Paddle billing records store zero-value UUIDs (16 zero bytes) rather than NULL.
+These are converted to NULL before creating the index, since MySQL allows multiple
+NULL values in a UNIQUE index but not multiple identical non-NULL values.
 
 Revision ID: h2b3c4d5e6f7
 Revises: g1a2b3c4d5e6
@@ -51,6 +52,15 @@ def upgrade():
     op.execute("""
         ALTER TABLE billing_billings
         MODIFY COLUMN idempotency_key VARBINARY(16) NULL
+    """)
+
+    # Pre-Paddle billing records have zero-value UUIDs (Go's uuid.UUID zero value:
+    # 16 zero bytes) instead of NULL. Convert them to NULL so the UNIQUE index
+    # allows multiple old records (MySQL permits multiple NULLs in UNIQUE indexes).
+    op.execute("""
+        UPDATE billing_billings
+        SET idempotency_key = NULL
+        WHERE idempotency_key = X'00000000000000000000000000000000'
     """)
 
     # Create UNIQUE index. MySQL allows multiple NULLs in a UNIQUE index,
