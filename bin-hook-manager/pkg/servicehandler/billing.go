@@ -84,15 +84,17 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 		return &ValidationError{fmt.Errorf("request body exceeds maximum size of %d bytes", maxWebhookBodySize)}
 	}
 
-	// Verify Paddle webhook signature if secret is configured
-	if h.paddleWebhookSecret != "" {
-		sig := r.Header.Get("Paddle-Signature")
-		if sig == "" {
-			return &ValidationError{fmt.Errorf("missing Paddle-Signature header")}
-		}
-		if err := verifyPaddleSignature(h.paddleWebhookSecret, sig, data); err != nil {
-			return &ValidationError{fmt.Errorf("webhook signature verification failed: %w", err)}
-		}
+	// Verify Paddle webhook signature — fail-closed when secret is not configured.
+	// Without a valid secret, any HTTP client could submit fake billing events.
+	if h.paddleWebhookSecret == "" {
+		return &ValidationError{fmt.Errorf("paddle webhook secret not configured; rejecting request")}
+	}
+	sig := r.Header.Get("Paddle-Signature")
+	if sig == "" {
+		return &ValidationError{fmt.Errorf("missing Paddle-Signature header")}
+	}
+	if err := verifyPaddleSignature(h.paddleWebhookSecret, sig, data); err != nil {
+		return &ValidationError{fmt.Errorf("webhook signature verification failed: %w", err)}
 	}
 
 	req := &hmhook.Hook{

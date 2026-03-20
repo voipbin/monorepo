@@ -293,7 +293,7 @@ Each method:
 - `models/account/field.go` — add new Field constants
 
 **Paddle amount format:**
-Paddle Billing v2 sends transaction totals as decimal strings in the base currency unit (e.g., `"10.00"` for ten US dollars). Convert to micros by parsing as float64 and multiplying by 1,000,000. Always validate currency is USD before processing.
+Paddle Billing v2 sends all monetary amounts as strings representing integers in the lowest currency denomination (cents for USD). For example, `"1000"` means $10.00. Convert to internal micros via: `micros = cents × 10,000` (since 1 USD = 1,000,000 micros and 1 USD = 100 cents). Uses `strconv.ParseInt` — no floating-point arithmetic in the billing path.
 
 ### bin-dbscheme-manager
 

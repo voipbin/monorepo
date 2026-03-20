@@ -103,6 +103,11 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 		return fmt.Errorf("AccountPaddleAddCredit: could not build insert query. err: %v", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		if isDuplicateKeyError(err) {
+			// Concurrent duplicate webhook — the other transaction already created the billing record.
+			// Rollback the balance change (deferred Rollback handles this) and return success.
+			return nil
+		}
 		return fmt.Errorf("AccountPaddleAddCredit: could not insert billing record. err: %v", err)
 	}
 
@@ -174,6 +179,11 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 		return fmt.Errorf("AccountPaddleSubtractCredit: could not build insert query. err: %v", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		if isDuplicateKeyError(err) {
+			// Concurrent duplicate webhook — the other transaction already created the billing record.
+			// Rollback the balance change (deferred Rollback handles this) and return success.
+			return nil
+		}
 		return fmt.Errorf("AccountPaddleSubtractCredit: could not insert billing record. err: %v", err)
 	}
 
@@ -251,6 +261,11 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 		return fmt.Errorf("AccountPaddleTopUpTokens: could not build insert query. err: %v", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		if isDuplicateKeyError(err) {
+			// Concurrent duplicate webhook — the other transaction already created the billing record.
+			// Rollback the balance change (deferred Rollback handles this) and return success.
+			return nil
+		}
 		return fmt.Errorf("AccountPaddleTopUpTokens: could not insert billing record. err: %v", err)
 	}
 
