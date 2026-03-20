@@ -262,6 +262,21 @@ func (mr *MockDBHandlerMockRecorder) DocumentGetsByRagID(ctx, ragID any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagID", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByRagID), ctx, ragID)
 }
 
+// DocumentGetsByRagIDAndSources mocks base method.
+func (m *MockDBHandler) DocumentGetsByRagIDAndSources(ctx context.Context, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) ([]*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DocumentGetsByRagIDAndSources", ctx, ragID, storageFileIDs, sourceURLs)
+	ret0, _ := ret[0].([]*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DocumentGetsByRagIDAndSources indicates an expected call of DocumentGetsByRagIDAndSources.
+func (mr *MockDBHandlerMockRecorder) DocumentGetsByRagIDAndSources(ctx, ragID, storageFileIDs, sourceURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DocumentGetsByRagIDAndSources", reflect.TypeOf((*MockDBHandler)(nil).DocumentGetsByRagIDAndSources), ctx, ragID, storageFileIDs, sourceURLs)
+}
+
 // DocumentGetsByRagIDs mocks base method.
 func (m *MockDBHandler) DocumentGetsByRagIDs(ctx context.Context, ragIDs []uuid.UUID) (map[uuid.UUID][]*document.Document, error) {
 	m.ctrl.T.Helper()
