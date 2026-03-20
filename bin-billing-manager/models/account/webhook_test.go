@@ -30,11 +30,13 @@ func TestAccount_ConvertWebhookMessage(t *testing.T) {
 				PlanType:      PlanTypeFree,
 				BalanceCredit: 9999000,
 				BalanceToken:  50,
-				PaymentType:   PaymentTypePrepaid,
-				PaymentMethod: PaymentMethodCreditCard,
-				TMCreate:      &tmCreate,
-				TMUpdate:      &tmUpdate,
-				TMDelete:      nil,
+				PaymentType:          PaymentTypePrepaid,
+				PaymentMethod:        PaymentMethodCreditCard,
+				PaddleSubscriptionID: "sub_01h8bxq9f3e4t5a6g7h8j9k0",
+				PaddleCustomerID:     "ctm_01h8bxq9f3e4t5a6g7h8j9k0",
+				TMCreate:             &tmCreate,
+				TMUpdate:             &tmUpdate,
+				TMDelete:             nil,
 			},
 		},
 		{
@@ -91,6 +93,14 @@ func TestAccount_ConvertWebhookMessage(t *testing.T) {
 			if result.PaymentMethod != tt.account.PaymentMethod {
 				t.Errorf("PaymentMethod = %s, expected %s", result.PaymentMethod, tt.account.PaymentMethod)
 			}
+
+			if result.PaddleSubscriptionID != tt.account.PaddleSubscriptionID {
+				t.Errorf("PaddleSubscriptionID = %s, expected %s", result.PaddleSubscriptionID, tt.account.PaddleSubscriptionID)
+			}
+
+			if result.PaddleCustomerID != tt.account.PaddleCustomerID {
+				t.Errorf("PaddleCustomerID = %s, expected %s", result.PaddleCustomerID, tt.account.PaddleCustomerID)
+			}
 		})
 	}
 }
@@ -116,11 +126,13 @@ func TestAccount_CreateWebhookEvent(t *testing.T) {
 				PlanType:      PlanTypeFree,
 				BalanceCredit: 9999000,
 				BalanceToken:  50,
-				PaymentType:   PaymentTypePrepaid,
-				PaymentMethod: PaymentMethodCreditCard,
-				TMCreate:      &tmCreate,
-				TMUpdate:      &tmUpdate,
-				TMDelete:      nil,
+				PaymentType:          PaymentTypePrepaid,
+				PaymentMethod:        PaymentMethodCreditCard,
+				PaddleSubscriptionID: "sub_01h8bxq9f3e4t5a6g7h8j9k0",
+				PaddleCustomerID:     "ctm_01h8bxq9f3e4t5a6g7h8j9k0",
+				TMCreate:             &tmCreate,
+				TMUpdate:             &tmUpdate,
+				TMDelete:             nil,
 			},
 			wantErr: false,
 		},

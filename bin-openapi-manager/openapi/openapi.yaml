@@ -441,6 +441,14 @@ components:
           description: The method of payment used for the account.
           example: "credit card"
           $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+        paddle_subscription_id:
+          type: string
+          description: "The Paddle subscription identifier for this billing account. Populated automatically when a Paddle subscription is created via Paddle webhook processing. Read-only — not settable via API. Present only when the account has an active Paddle subscription."
+          example: "sub_01h8bxq9f3e4t5a6g7h8j9k0"
+        paddle_customer_id:
+          type: string
+          description: "The Paddle customer identifier for this billing account. Populated automatically when a Paddle customer record is created via Paddle webhook processing. Read-only — not settable via API. Present only when the account has a linked Paddle customer."
+          example: "ctm_01h8bxq9f3e4t5a6g7h8j9k0"
         tm_last_topup:
           type: string
           format: date-time
