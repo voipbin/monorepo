@@ -22,6 +22,9 @@ type WebhookMessage struct {
 	PaymentType   PaymentType   `json:"payment_type"`
 	PaymentMethod PaymentMethod `json:"payment_method"`
 
+	PaddleSubscriptionID string `json:"paddle_subscription_id,omitempty"`
+	PaddleCustomerID     string `json:"paddle_customer_id,omitempty"`
+
 	TmLastTopUp *time.Time `json:"tm_last_topup"`
 	TmNextTopUp *time.Time `json:"tm_next_topup"`
 
@@ -46,6 +49,9 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		PaymentType:   h.PaymentType,
 		PaymentMethod: h.PaymentMethod,
+
+		PaddleSubscriptionID: h.PaddleSubscriptionID,
+		PaddleCustomerID:     h.PaddleCustomerID,
 
 		TmLastTopUp: h.TmLastTopUp,
 		TmNextTopUp: h.TmNextTopUp,

@@ -3377,6 +3377,12 @@ type BillingManagerAccount struct {
 	// Name The display name of the billing account.
 	Name *string `json:"name,omitempty"`
 
+	// PaddleCustomerId The Paddle customer identifier for this billing account. Populated automatically when a Paddle customer record is created via Paddle webhook processing. Read-only — not settable via API. Present only when the account has a linked Paddle customer.
+	PaddleCustomerId *string `json:"paddle_customer_id,omitempty"`
+
+	// PaddleSubscriptionId The Paddle subscription identifier for this billing account. Populated automatically when a Paddle subscription is created via Paddle webhook processing. Read-only — not settable via API. Present only when the account has an active Paddle subscription.
+	PaddleSubscriptionId *string `json:"paddle_subscription_id,omitempty"`
+
 	// PaymentMethod The method of payment used for the account.
 	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
 

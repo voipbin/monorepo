@@ -1170,6 +1170,8 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
     <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
     <span class="s2">&quot;payment_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;payment_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;paddle_subscription_id&quot;</span><span class="p">:</span> <span class="s2">&quot;sub_01h8bxq9f3e4t5a6g7h8j9k0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;paddle_customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ctm_01h8bxq9f3e4t5a6g7h8j9k0&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2013-06-17 00:00:00.000000&quot;</span><span class="p">,</span>
@@ -1188,6 +1190,8 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <li><p><code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">payment_type</span></code> (String): Payment type. Reserved for future use.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">payment_method</span></code> (String): Payment method. Reserved for future use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">paddle_subscription_id</span></code> (String): The Paddle subscription identifier. Populated automatically when a Paddle subscription is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle subscription).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">paddle_customer_id</span></code> (String): The Paddle customer identifier. Populated automatically when a Paddle customer record is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle customer).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_last_topup</span></code> (string, ISO 8601): Timestamp of the last token top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_next_topup</span></code> (string, ISO 8601): Timestamp of the next scheduled token top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the billing account was created.</p></li>
