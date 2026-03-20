@@ -146,6 +146,7 @@ func TestAllToolNames(t *testing.T) {
 		tool.ToolNameStopFlow,
 		tool.ToolNameStopMedia,
 		tool.ToolNameStopService,
+		tool.ToolNameSearchKnowledge,
 	}
 
 	if len(tool.AllToolNames) != len(expectedNames) {

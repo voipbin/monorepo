@@ -162,6 +162,17 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 
 		tools := h.toolHandler.GetByNames(ai.ToolNames)
 
+		// filter out search_knowledge if no RAG is configured
+		if ai.RagID == uuid.Nil {
+			filtered := make([]aitool.Tool, 0, len(tools))
+			for _, t := range tools {
+				if t.Name != aitool.ToolNameSearchKnowledge {
+					filtered = append(filtered, t)
+				}
+			}
+			tools = filtered
+		}
+
 		transitions := m.Transitions
 		if transitions == nil {
 			transitions = []amteam.Transition{}

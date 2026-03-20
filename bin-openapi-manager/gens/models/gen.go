@@ -3011,6 +3011,9 @@ type AIManagerAI struct {
 	// Parameter Custom key-value configuration data specific to the AI engine type.
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
+	// RagId The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. When set, the AI assistant can search this knowledge base during voice calls.
+	RagId *string `json:"rag_id,omitempty"`
+
 	// SmartTurnEnabled Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.
 	SmartTurnEnabled *bool `json:"smart_turn_enabled,omitempty"`
 
@@ -6393,6 +6396,9 @@ type PostAisJSONBody struct {
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
 
+	// RagId The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response.
+	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
+
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
@@ -6423,6 +6429,9 @@ type PutAisIdJSONBody struct {
 
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
+
+	// RagId The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response.
+	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-ai-manager/models/tool"
@@ -19,6 +21,7 @@ type WebhookMessage struct {
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
+	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
@@ -48,6 +51,7 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineModel: h.EngineModel,
 		Parameter:   h.Parameter,
 		EngineKey:   h.EngineKey,
+		RagID:       h.RagID,
 
 		InitPrompt: h.InitPrompt,
 

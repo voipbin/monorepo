@@ -51,6 +51,7 @@ func (h *ragHandler) QueryRag(ctx context.Context, ragID uuid.UUID, queryText st
 			DocumentName:   docName,
 			SectionTitle:   c.SectionTitle,
 			RelevanceScore: scores[i],
+			Text:           c.Text,
 		}
 	}
 

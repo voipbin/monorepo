@@ -18,6 +18,7 @@ type V1DataAIsPost struct {
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
+	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 
@@ -42,6 +43,7 @@ type V1DataAIsIDPut struct {
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
+	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 

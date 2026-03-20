@@ -11,6 +11,7 @@ create table ai_ais(
   engine_model  varchar(255),
   parameter     json,
   engine_key    varchar(255),
+  rag_id        binary(16),
 
   init_prompt   text,           -- initial prompt
 
