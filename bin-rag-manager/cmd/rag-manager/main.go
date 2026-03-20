@@ -51,7 +51,7 @@ func init() {
 	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on")
 	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server")
 	rootCmd.Flags().String("gcp_project_id", "", "GCP project ID for Vertex AI")
-	rootCmd.Flags().String("gcp_location", "", "GCP region for Vertex AI")
+	rootCmd.Flags().String("gcp_region", "", "GCP region for Vertex AI")
 	rootCmd.Flags().String("google_embedding_model", "text-embedding-004", "Google embedding model")
 	rootCmd.Flags().Int("rag_top_k", 5, "Default number of chunks to retrieve")
 	rootCmd.Flags().String("gcp_bucket_name_media", "", "GCS bucket name for media files")
@@ -178,7 +178,7 @@ func runService(cfg config.Config) error {
 	dbH := dbhandler.NewHandler(db)
 
 	// Initialize Google Gemini embedder
-	emb, err := embedder.NewGoogleEmbedder(ctx, cfg.GoogleCloudProject, cfg.GoogleCloudLocation, cfg.GoogleEmbeddingModel)
+	emb, err := embedder.NewGoogleEmbedder(ctx, cfg.GoogleCloudProject, cfg.GoogleCloudRegion, cfg.GoogleEmbeddingModel)
 	if err != nil {
 		return fmt.Errorf("could not create embedder: %w", err)
 	}

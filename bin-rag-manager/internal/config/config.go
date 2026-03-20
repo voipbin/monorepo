@@ -21,7 +21,7 @@ type Config struct {
 
 	// Google Cloud / Vertex AI
 	GoogleCloudProject   string
-	GoogleCloudLocation  string
+	GoogleCloudRegion    string
 	GoogleEmbeddingModel string
 
 	// RAG
@@ -48,7 +48,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
 	f.String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "RabbitMQ server address")
 	f.String("gcp_project_id", "", "GCP project ID for Vertex AI")
-	f.String("gcp_location", "", "GCP region for Vertex AI")
+	f.String("gcp_region", "", "GCP region for Vertex AI")
 	f.String("google_embedding_model", "text-embedding-004", "Google embedding model")
 	f.Int("rag_top_k", 5, "Number of chunks to retrieve")
 	f.String("gcp_bucket_name_media", "", "GCS bucket name for media files")
@@ -59,7 +59,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
 		"gcp_project_id":            "GCP_PROJECT_ID",
-		"gcp_location":              "GCP_LOCATION",
+		"gcp_region":                "GCP_REGION",
 		"google_embedding_model":    "GOOGLE_EMBEDDING_MODEL",
 		"rag_top_k":                 "RAG_TOP_K",
 		"gcp_bucket_name_media":     "GCP_BUCKET_NAME_MEDIA",
@@ -87,7 +87,7 @@ func LoadGlobalConfig() {
 			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
 			GoogleCloudProject:      viper.GetString("gcp_project_id"),
-			GoogleCloudLocation:     viper.GetString("gcp_location"),
+			GoogleCloudRegion:       viper.GetString("gcp_region"),
 			GoogleEmbeddingModel:    viper.GetString("google_embedding_model"),
 			RAGTopK:                 viper.GetInt("rag_top_k"),
 			GCPBucketNameMedia:      viper.GetString("gcp_bucket_name_media"),
@@ -114,8 +114,8 @@ func InitConfig(cmd *cobra.Command) error {
 	if err = viper.BindPFlag("gcp_project_id", cmd.Flags().Lookup("gcp_project_id")); err != nil {
 		return errors.Wrapf(err, "error binding gcp_project_id flag")
 	}
-	if err = viper.BindPFlag("gcp_location", cmd.Flags().Lookup("gcp_location")); err != nil {
-		return errors.Wrapf(err, "error binding gcp_location flag")
+	if err = viper.BindPFlag("gcp_region", cmd.Flags().Lookup("gcp_region")); err != nil {
+		return errors.Wrapf(err, "error binding gcp_region flag")
 	}
 	if err = viper.BindPFlag("google_embedding_model", cmd.Flags().Lookup("google_embedding_model")); err != nil {
 		return errors.Wrapf(err, "error binding google_embedding_model flag")
@@ -135,7 +135,7 @@ func InitConfig(cmd *cobra.Command) error {
 		PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
 		RabbitMQAddress:         viper.GetString("rabbitmq_address"),
 		GoogleCloudProject:      viper.GetString("gcp_project_id"),
-		GoogleCloudLocation:     viper.GetString("gcp_location"),
+		GoogleCloudRegion:       viper.GetString("gcp_region"),
 		GoogleEmbeddingModel:    viper.GetString("google_embedding_model"),
 		RAGTopK:                 viper.GetInt("rag_top_k"),
 		GCPBucketNameMedia:      viper.GetString("gcp_bucket_name_media"),

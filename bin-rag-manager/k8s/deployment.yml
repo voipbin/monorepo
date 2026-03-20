@@ -34,11 +34,11 @@ spec:
                 secretKeyRef:
                   name: bin-manager-secrets
                   key: GCP_PROJECT_ID
-            - name: GCP_LOCATION
+            - name: GCP_REGION
               valueFrom:
                 secretKeyRef:
                   name: bin-manager-secrets
-                  key: GCP_LOCATION
+                  key: GCP_REGION
             - name: GOOGLE_EMBEDDING_MODEL
               value: "text-embedding-004"
             - name: RAG_TOP_K

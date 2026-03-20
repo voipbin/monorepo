@@ -57,7 +57,7 @@ Multi-tenant CRUD operations for RAG configurations, documents, and queries (end
 Environment variables (sourced from `bin-manager-secrets` k8s secret via `secretKeyRef`):
 - `RABBITMQ_ADDRESS` - RabbitMQ connection (secret key: `RABBITMQ_ADDRESS`)
 - `GCP_PROJECT_ID` - GCP project ID for Vertex AI (secret key: `GCP_PROJECT_ID`)
-- `GCP_LOCATION` - GCP region for Vertex AI (secret key: `GCP_LOCATION`)
+- `GCP_REGION` - GCP region for Vertex AI (secret key: `GCP_REGION`)
 - `POSTGRESQL_DSN` - PostgreSQL connection string (secret key: `DATABASE_DSN_POSTGRES`)
 
 Hardcoded in deployment.yml:
