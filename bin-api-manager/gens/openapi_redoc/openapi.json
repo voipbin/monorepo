@@ -1595,7 +1595,7 @@
                   "tool_names": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/AIManagerToolName"
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools."
                   }
@@ -1730,7 +1730,7 @@
                   "tool_names": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/AIManagerToolName"
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools."
                   }
@@ -16005,9 +16005,9 @@
           "tool_names": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/AIManagerToolName"
             },
-            "description": "List of tool names enabled for this AI. Use [\"all\"] to enable all available tools.",
+            "description": "List of tool names enabled for this AI. Use `[\"all\"]` to enable all available tools. See the Tool Functions documentation for detailed descriptions of each tool.",
             "example": [
               "all"
             ]
@@ -16319,6 +16319,37 @@
           "AIManagerAISTTTypeCartesia",
           "AIManagerAISTTTypeDeepgram",
           "AIManagerAISTTTypeElevenLabs"
+        ]
+      },
+      "AIManagerToolName": {
+        "type": "string",
+        "description": "Name of an AI tool function. Use `all` to enable every available tool.",
+        "example": "connect_call",
+        "enum": [
+          "all",
+          "connect_call",
+          "get_aicall_messages",
+          "get_variables",
+          "search_knowledge",
+          "send_email",
+          "send_message",
+          "set_variables",
+          "stop_flow",
+          "stop_media",
+          "stop_service"
+        ],
+        "x-enum-varnames": [
+          "AIManagerToolNameAll",
+          "AIManagerToolNameConnectCall",
+          "AIManagerToolNameGetAicallMessages",
+          "AIManagerToolNameGetVariables",
+          "AIManagerToolNameSearchKnowledge",
+          "AIManagerToolNameSendEmail",
+          "AIManagerToolNameSendMessage",
+          "AIManagerToolNameSetVariables",
+          "AIManagerToolNameStopFlow",
+          "AIManagerToolNameStopMedia",
+          "AIManagerToolNameStopService"
         ]
       },
       "AIManagerAIcall": {

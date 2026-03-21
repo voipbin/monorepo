@@ -357,6 +357,51 @@ func (e AIManagerSummaryStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerToolName.
+const (
+	AIManagerToolNameAll               AIManagerToolName = "all"
+	AIManagerToolNameConnectCall       AIManagerToolName = "connect_call"
+	AIManagerToolNameGetAicallMessages AIManagerToolName = "get_aicall_messages"
+	AIManagerToolNameGetVariables      AIManagerToolName = "get_variables"
+	AIManagerToolNameSearchKnowledge   AIManagerToolName = "search_knowledge"
+	AIManagerToolNameSendEmail         AIManagerToolName = "send_email"
+	AIManagerToolNameSendMessage       AIManagerToolName = "send_message"
+	AIManagerToolNameSetVariables      AIManagerToolName = "set_variables"
+	AIManagerToolNameStopFlow          AIManagerToolName = "stop_flow"
+	AIManagerToolNameStopMedia         AIManagerToolName = "stop_media"
+	AIManagerToolNameStopService       AIManagerToolName = "stop_service"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerToolName enum.
+func (e AIManagerToolName) Valid() bool {
+	switch e {
+	case AIManagerToolNameAll:
+		return true
+	case AIManagerToolNameConnectCall:
+		return true
+	case AIManagerToolNameGetAicallMessages:
+		return true
+	case AIManagerToolNameGetVariables:
+		return true
+	case AIManagerToolNameSearchKnowledge:
+		return true
+	case AIManagerToolNameSendEmail:
+		return true
+	case AIManagerToolNameSendMessage:
+		return true
+	case AIManagerToolNameSetVariables:
+		return true
+	case AIManagerToolNameStopFlow:
+		return true
+	case AIManagerToolNameStopMedia:
+		return true
+	case AIManagerToolNameStopService:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AgentManagerAgentPermission.
 const (
 	AgentManagerPermissionAll               AgentManagerAgentPermission = 65535
@@ -3029,8 +3074,8 @@ type AIManagerAI struct {
 	// TmUpdate Timestamp when the AI was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use ["all"] to enable all available tools.
-	ToolNames *[]string `json:"tool_names,omitempty"`
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all available tools. See the Tool Functions documentation for detailed descriptions of each tool.
+	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech provider type.
 	TtsType *AIManagerAITTSType `json:"tts_type,omitempty"`
@@ -3290,6 +3335,9 @@ type AIManagerTeamTransition struct {
 	// NextMemberId The member ID to transition to. Must reference an existing member in the team.
 	NextMemberId string `json:"next_member_id"`
 }
+
+// AIManagerToolName Name of an AI tool function. Use `all` to enable every available tool.
+type AIManagerToolName string
 
 // AIManagerVADConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 type AIManagerVADConfig struct {
@@ -6403,7 +6451,7 @@ type PostAisJSONBody struct {
 	SttType string `json:"stt_type"`
 
 	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools.
-	ToolNames *[]string `json:"tool_names,omitempty"`
+	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
 	TtsType string `json:"tts_type"`
@@ -6437,7 +6485,7 @@ type PutAisIdJSONBody struct {
 	SttType string `json:"stt_type"`
 
 	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools.
-	ToolNames *[]string `json:"tool_names,omitempty"`
+	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
 	TtsType string `json:"tts_type"`

@@ -67,7 +67,7 @@ post:
             tool_names:
               type: array
               items:
-                type: string
+                $ref: '#/components/schemas/AIManagerToolName'
               description: List of tool names to enable for this AI. Use ["all"] to enable all available tools.
           required:
             - name

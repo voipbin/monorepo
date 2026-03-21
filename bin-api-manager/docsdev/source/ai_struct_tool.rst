@@ -35,20 +35,25 @@ Overview
 Available Tools
 ---------------
 
-========================= =================================================
-Tool Name                 Description
-========================= =================================================
-connect_call              Transfer or connect to another endpoint
-send_email                Send an email message
-send_message              Send an SMS text message
-stop_media                Stop currently playing media
-stop_service              End the AI conversation (soft stop)
-stop_flow                 Terminate the entire flow (hard stop)
-set_variables             Save data to flow context
-get_variables             Retrieve data from flow context
-get_aicall_messages       Get message history from an AI call
-search_knowledge          Search the configured knowledge base (RAG)
-========================= =================================================
+.. note:: **AI Implementation Hint**
+
+   The ``tool_names`` field accepts an enum of valid tool names defined in the OpenAPI spec (``AIManagerToolName``).
+   Use ``["all"]`` to enable every tool, or specify individual names: ``["connect_call", "search_knowledge", "stop_service"]``.
+
+========================= ================================================= ===============
+Tool Name                 Description                                       run_llm Default
+========================= ================================================= ===============
+connect_call              Transfer or connect to another endpoint            ``false``
+send_email                Send an email message                              ``false``
+send_message              Send an SMS text message                           ``false``
+stop_media                Stop currently playing media                       ``false``
+stop_service              End the AI conversation (soft stop)                ``false``
+stop_flow                 Terminate the entire flow (hard stop)              ``false``
+set_variables             Save data to flow context                          ``false``
+get_variables             Retrieve data from flow context                    ``false``
+get_aicall_messages       Get message history from an AI call                ``false``
+search_knowledge          Search the configured knowledge base (RAG)         ``true``
+========================= ================================================= ===============
 
 .. _ai-struct-tool-connect_call:
 
@@ -536,19 +541,47 @@ The tool returns matching document sections with metadata:
 run_llm Parameter
 -----------------
 
-Most tools include a ``run_llm`` parameter that controls whether the AI should generate a response after the tool executes.
+The ``run_llm`` parameter controls whether the LLM generates a spoken response after a tool executes.
+Each tool has a server-side default (shown in the table below). The LLM can override this per-call
+by passing ``"run_llm": true`` or ``"run_llm": false`` in the tool arguments. This default is **not
+client-configurable** — it is set by the platform based on each tool's intended behavior.
 
 ::
 
     +-------------------+--------------------------------------------------+
-    | run_llm = true    | AI speaks after tool execution                   |
-    |                   | Example: "I've sent that to your email"          |
+    | run_llm = true    | Tool result is fed back to the LLM.              |
+    |                   | LLM generates a spoken response based on it.     |
+    |                   | Example: "Based on our policy, returns are..."   |
     +-------------------+--------------------------------------------------+
-    | run_llm = false   | Tool executes silently                           |
-    |                   | Useful for chaining multiple tools               |
+    | run_llm = false   | Tool executes silently.                          |
+    |                   | LLM does NOT speak after execution.              |
+    |                   | Useful for background actions or chaining tools. |
     +-------------------+--------------------------------------------------+
 
-**Default:** Most tools default to ``run_llm = false`` for silent execution.
+**Per-tool defaults:**
+
+========================= ============= =====================================================
+Tool Name                 run_llm       Why
+========================= ============= =====================================================
+``connect_call``          ``false``     Silent transfer — caller hears ringing, not LLM narration.
+``send_email``            ``false``     Background action — email sent without verbal confirmation.
+``send_message``          ``false``     Background action — SMS sent without verbal confirmation.
+``stop_media``            ``false``     Infrastructure action — stops playback silently.
+``stop_service``          ``false``     Ends AI session — no response needed after termination.
+``stop_flow``             ``false``     Ends entire flow — no response possible after termination.
+``set_variables``         ``false``     Internal data storage — no verbal confirmation needed.
+``get_variables``         ``false``     Internal data retrieval — data used by next tool, not spoken.
+``get_aicall_messages``   ``false``     Internal data retrieval — messages used by next tool, not spoken.
+``search_knowledge``      ``true``      **Must speak** — caller asked a question, LLM must answer using the retrieved knowledge.
+========================= ============= =====================================================
+
+.. note:: **AI Implementation Hint**
+
+   ``search_knowledge`` is the only tool that defaults to ``run_llm = true`` because its entire purpose
+   is to retrieve information that the LLM should speak aloud. If ``run_llm`` were ``false``, the knowledge
+   base results would be silently discarded and the caller would never hear an answer.
+   For all other tools, the LLM can still choose to set ``"run_llm": true`` per-call if verbal confirmation
+   is appropriate (e.g., ``"I've sent that to your email"``).
 
 
 Tool Execution Flow
