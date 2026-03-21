@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -124,6 +125,17 @@ func run() error {
 	if err := toolHandler.FetchTools(context.Background()); err != nil {
 		log.Warnf("Could not fetch tools from ai-manager: %v. Continuing with empty tool set.", err)
 	}
+
+	// Periodically refresh tools to pick up changes after rolling deployments.
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := toolHandler.FetchTools(context.Background()); err != nil {
+				log.Warnf("Could not refresh tools from ai-manager: %v. Keeping current cache.", err)
+			}
+		}
+	}()
 
 	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenIP)
 	httpHandler := httphandler.NewHttpHandler(requestHandler, pipecatcallHandler)
