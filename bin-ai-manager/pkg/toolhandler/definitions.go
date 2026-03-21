@@ -442,7 +442,8 @@ run_llm: Set true to respond based on retrieved messages, false for silent retri
 		},
 	},
 	{
-		Name: tool.ToolNameSearchKnowledge,
+		Name:   tool.ToolNameSearchKnowledge,
+		RunLLM: true,
 		Description: `Searches the configured knowledge base for information relevant to the user's question.
 
 WHEN TO USE:

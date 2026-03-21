@@ -55,17 +55,31 @@ def get_tool_names(tools_data: List[Dict[str, Any]]) -> List[str]:
     return [tool.get("name", "") for tool in tools_data if tool.get("name")]
 
 
-def tool_register(llm_service, pipecatcall_id: str, tool_names: List[str]):
+def _build_run_llm_defaults(tools_data: List[Dict[str, Any]]) -> Dict[str, bool]:
+    """Build per-tool run_llm defaults from tool metadata."""
+    defaults = {}
+    if tools_data:
+        for tool in tools_data:
+            name = tool.get("name", "")
+            if name:
+                defaults[name] = tool.get("run_llm", False)
+    return defaults
+
+
+def tool_register(llm_service, pipecatcall_id: str, tool_names: List[str], tools_data: List[Dict[str, Any]] = None):
     """Register tool functions with the LLM service."""
-    def create_wrapper(tool_name, pipecatcall_id):
+    run_llm_defaults = _build_run_llm_defaults(tools_data)
+
+    def create_wrapper(tool_name, pipecatcall_id, default_run_llm):
         async def wrapper(params: FunctionCallParams):
-            return await tool_execute(tool_name, params, pipecatcall_id)
+            return await tool_execute(tool_name, params, pipecatcall_id, default_run_llm=default_run_llm)
         return wrapper
 
     for tool_name in tool_names:
-        wrapper = create_wrapper(tool_name, pipecatcall_id)
+        default_run_llm = run_llm_defaults.get(tool_name, False)
+        wrapper = create_wrapper(tool_name, pipecatcall_id, default_run_llm)
         llm_service.register_function(tool_name, wrapper)
-    logger.info(f"Registered {len(tool_names)} tools for pipecatcall {pipecatcall_id}")
+    logger.info(f"Registered {len(tool_names)} tools for pipecatcall {pipecatcall_id}. run_llm_defaults: {run_llm_defaults}")
 
 
 def tool_unregister(llm_service, tool_names: List[str]):
@@ -79,13 +93,13 @@ def tool_unregister(llm_service, tool_names: List[str]):
             logger.warning(f"Error while unregistering tool '{tool_name}': {e}")
 
 
-async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str):
+async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_id: str, default_run_llm: bool = False):
     """Generic executor for tool calls (connect, message_send, etc)."""
-    
+
     args = params.arguments if isinstance(params.arguments, dict) else {}
     logger.info(f"[{tool_name}] Executing. Args: {json.dumps(args, ensure_ascii=False)}")
 
-    should_run_llm = args.pop("run_llm", False)
+    should_run_llm = args.pop("run_llm", default_run_llm)
 
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
     http_body = {
