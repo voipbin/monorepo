@@ -155,6 +155,29 @@ git pull
 cp contrib/ast-db-manage/config/versions/* /path/to/bin-dbscheme-manager/asterisk_config/config/versions/
 ```
 
+## CRITICAL: Never Manually Create Migration Files
+
+**NEVER manually create Alembic migration files or use placeholder revision IDs.**
+
+Always use `alembic revision` to generate migration files — it creates unique revision IDs automatically and correctly chains the `down_revision` to the current head.
+
+```bash
+# ✅ CORRECT — always use alembic revision to generate the file
+cd bin-manager
+alembic -c alembic.ini revision -m "ai_aicalls add column current_member_id"
+# Then edit the generated file to add SQL in upgrade()/downgrade()
+
+# ❌ WRONG — never create migration files manually with made-up revision IDs
+# Manually creating a file with revision = 'a1b2c3d4e5f6' WILL collide with existing migrations
+```
+
+**Why:** Revision IDs must be globally unique across all migration files. Manually chosen IDs (like `a1b2c3d4e5f6`) often collide with existing migrations, causing Alembic to fail with "Multiple head revisions" or "Revision is present more than once" errors. The `alembic revision` command is the only safe way to generate these IDs.
+
+**After generating the file:**
+1. Open the generated file in `main/versions/` (or `config/versions/`)
+2. Add your SQL to the `upgrade()` and `downgrade()` functions
+3. Verify with `alembic -c alembic.ini heads` — should show exactly one head
+
 ## Important Notes
 
 - Always work within the appropriate subdirectory (`bin-manager/` or `asterisk_config/`) when running Alembic commands

@@ -317,6 +317,7 @@ Quick references:
 - 🚫 Run `alembic upgrade` (applies migrations to database)
 - 🚫 Run `alembic downgrade` (rolls back database changes)
 - 🚫 Execute any SQL that modifies database schema
+- 🚫 Manually create migration files with hand-picked revision IDs — always use `alembic revision` to generate them (see `bin-dbscheme-manager/CLAUDE.md` for details)
 
 **Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
