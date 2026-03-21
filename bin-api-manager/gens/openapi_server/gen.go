@@ -4439,8 +4439,8 @@ type PostAisJSONBody struct {
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
 
-	// RagId The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response.
-	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
+	// RagId The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear.
+	RagId *string `json:"rag_id,omitempty"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
@@ -4473,8 +4473,8 @@ type PutAisIdJSONBody struct {
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
 
-	// RagId The knowledge base ID for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response.
-	RagId *openapi_types.UUID `json:"rag_id,omitempty"`
+	// RagId The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear.
+	RagId *string `json:"rag_id,omitempty"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
