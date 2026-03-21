@@ -542,19 +542,18 @@ run_llm Parameter
 -----------------
 
 The ``run_llm`` parameter controls whether the LLM generates a spoken response after a tool executes.
-Each tool has a server-side default (shown in the table below). The LLM can override this per-call
-by passing ``"run_llm": true`` or ``"run_llm": false`` in the tool arguments. This default is **not
-client-configurable** — it is set by the platform based on each tool's intended behavior.
+Each tool has a platform-set default (shown in the table below). This value is **not client-configurable**
+— it is defined by the platform based on each tool's intended behavior.
 
 ::
 
     +-------------------+--------------------------------------------------+
     | run_llm = true    | Tool result is fed back to the LLM.              |
-    |                   | LLM generates a spoken response based on it.     |
+    |                   | LLM generates a response based on the result.    |
     |                   | Example: "Based on our policy, returns are..."   |
     +-------------------+--------------------------------------------------+
     | run_llm = false   | Tool executes silently.                          |
-    |                   | LLM does NOT speak after execution.              |
+    |                   | LLM does NOT generate a response after execution.|
     |                   | Useful for background actions or chaining tools. |
     +-------------------+--------------------------------------------------+
 
@@ -578,10 +577,8 @@ Tool Name                 run_llm       Why
 .. note:: **AI Implementation Hint**
 
    ``search_knowledge`` is the only tool that defaults to ``run_llm = true`` because its entire purpose
-   is to retrieve information that the LLM should speak aloud. If ``run_llm`` were ``false``, the knowledge
-   base results would be silently discarded and the caller would never hear an answer.
-   For all other tools, the LLM can still choose to set ``"run_llm": true`` per-call if verbal confirmation
-   is appropriate (e.g., ``"I've sent that to your email"``).
+   is to retrieve information that the LLM should use to answer the caller. If ``run_llm`` were ``false``,
+   the knowledge base results would be silently discarded and the caller would never hear an answer.
 
 
 Tool Execution Flow
@@ -659,12 +656,12 @@ When a user says "send me that information," the AI should ask:
 
 This ensures the correct tool (send_email vs send_message) is used.
 
-**4. Use run_llm appropriately**
+**4. Understand run_llm behavior**
+
+The ``run_llm`` default for each tool is set by the platform and cannot be changed by clients.
+It determines whether the LLM generates a response after tool execution:
 
 ::
 
-    // Silent operations (chaining tools)
-    "run_llm": false
-
-    // User-facing confirmations
-    "run_llm": true  -> "I've connected you to the sales department"
+    run_llm = false  -> Tool executes silently (most tools)
+    run_llm = true   -> LLM generates a response based on the result (search_knowledge)
