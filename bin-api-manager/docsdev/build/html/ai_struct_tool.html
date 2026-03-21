@@ -697,16 +697,15 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <section id="run-llm-parameter">
 <h2>run_llm Parameter<a class="headerlink" href="#run-llm-parameter" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> parameter controls whether the LLM generates a spoken response after a tool executes.
-Each tool has a server-side default (shown in the table below). The LLM can override this per-call
-by passing <code class="docutils literal notranslate"><span class="pre">&quot;run_llm&quot;:</span> <span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;run_llm&quot;:</span> <span class="pre">false</span></code> in the tool arguments. This default is <strong>not
-client-configurable</strong> — it is set by the platform based on each tool’s intended behavior.</p>
+Each tool has a platform-set default (shown in the table below). This value is <strong>not client-configurable</strong>
+— it is defined by the platform based on each tool’s intended behavior.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">run_llm</span> <span class="o">=</span> <span class="n">true</span>    <span class="o">|</span> <span class="n">Tool</span> <span class="n">result</span> <span class="ow">is</span> <span class="n">fed</span> <span class="n">back</span> <span class="n">to</span> <span class="n">the</span> <span class="n">LLM</span><span class="o">.</span>              <span class="o">|</span>
-<span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">generates</span> <span class="n">a</span> <span class="n">spoken</span> <span class="n">response</span> <span class="n">based</span> <span class="n">on</span> <span class="n">it</span><span class="o">.</span>     <span class="o">|</span>
+<span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">generates</span> <span class="n">a</span> <span class="n">response</span> <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">result</span><span class="o">.</span>    <span class="o">|</span>
 <span class="o">|</span>                   <span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="s2">&quot;Based on our policy, returns are...&quot;</span>   <span class="o">|</span>
 <span class="o">+-------------------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">run_llm</span> <span class="o">=</span> <span class="n">false</span>   <span class="o">|</span> <span class="n">Tool</span> <span class="n">executes</span> <span class="n">silently</span><span class="o">.</span>                          <span class="o">|</span>
-<span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">does</span> <span class="n">NOT</span> <span class="n">speak</span> <span class="n">after</span> <span class="n">execution</span><span class="o">.</span>              <span class="o">|</span>
+<span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">does</span> <span class="n">NOT</span> <span class="n">generate</span> <span class="n">a</span> <span class="n">response</span> <span class="n">after</span> <span class="n">execution</span><span class="o">.|</span>
 <span class="o">|</span>                   <span class="o">|</span> <span class="n">Useful</span> <span class="k">for</span> <span class="n">background</span> <span class="n">actions</span> <span class="ow">or</span> <span class="n">chaining</span> <span class="n">tools</span><span class="o">.</span> <span class="o">|</span>
 <span class="o">+-------------------+--------------------------------------------------+</span>
 </pre></div>
@@ -766,10 +765,8 @@ client-configurable</strong> — it is set by the platform based on each tool’
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">search_knowledge</span></code> is the only tool that defaults to <code class="docutils literal notranslate"><span class="pre">run_llm</span> <span class="pre">=</span> <span class="pre">true</span></code> because its entire purpose
-is to retrieve information that the LLM should speak aloud. If <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> were <code class="docutils literal notranslate"><span class="pre">false</span></code>, the knowledge
-base results would be silently discarded and the caller would never hear an answer.
-For all other tools, the LLM can still choose to set <code class="docutils literal notranslate"><span class="pre">&quot;run_llm&quot;:</span> <span class="pre">true</span></code> per-call if verbal confirmation
-is appropriate (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;I've</span> <span class="pre">sent</span> <span class="pre">that</span> <span class="pre">to</span> <span class="pre">your</span> <span class="pre">email&quot;</span></code>).</p>
+is to retrieve information that the LLM should use to answer the caller. If <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> were <code class="docutils literal notranslate"><span class="pre">false</span></code>,
+the knowledge base results would be silently discarded and the caller would never hear an answer.</p>
 </div>
 </section>
 <section id="tool-execution-flow">
@@ -836,12 +833,11 @@ is appropriate (e.g., <code class="docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <p>This ensures the correct tool (send_email vs send_message) is used.</p>
-<p><strong>4. Use run_llm appropriately</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Silent</span> <span class="n">operations</span> <span class="p">(</span><span class="n">chaining</span> <span class="n">tools</span><span class="p">)</span>
-<span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="n">false</span>
-
-<span class="o">//</span> <span class="n">User</span><span class="o">-</span><span class="n">facing</span> <span class="n">confirmations</span>
-<span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="n">true</span>  <span class="o">-&gt;</span> <span class="s2">&quot;I&#39;ve connected you to the sales department&quot;</span>
+<p><strong>4. Understand run_llm behavior</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> default for each tool is set by the platform and cannot be changed by clients.
+It determines whether the LLM generates a response after tool execution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run_llm</span> <span class="o">=</span> <span class="n">false</span>  <span class="o">-&gt;</span> <span class="n">Tool</span> <span class="n">executes</span> <span class="n">silently</span> <span class="p">(</span><span class="n">most</span> <span class="n">tools</span><span class="p">)</span>
+<span class="n">run_llm</span> <span class="o">=</span> <span class="n">true</span>   <span class="o">-&gt;</span> <span class="n">LLM</span> <span class="n">generates</span> <span class="n">a</span> <span class="n">response</span> <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">result</span> <span class="p">(</span><span class="n">search_knowledge</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
