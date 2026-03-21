@@ -79,6 +79,28 @@ func TestConvertWebhookMessage(t *testing.T) {
 			},
 		},
 		{
+			name: "converts_aicall_with_current_member_id",
+			aicall: &AIcall{
+				Identity: identity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				CurrentMemberID: uuid.Must(uuid.NewV4()),
+				Status:          StatusProgressing,
+			},
+			checkFunc: func(t *testing.T, wh *WebhookMessage, ac *AIcall) {
+				if wh.CurrentMemberID != ac.CurrentMemberID {
+					t.Errorf("Wrong CurrentMemberID. expect: %s, got: %s", ac.CurrentMemberID, wh.CurrentMemberID)
+				}
+				if wh.ID != ac.ID {
+					t.Errorf("Wrong ID. expect: %s, got: %s", ac.ID, wh.ID)
+				}
+				if wh.Status != ac.Status {
+					t.Errorf("Wrong Status. expect: %s, got: %s", ac.Status, wh.Status)
+				}
+			},
+		},
+		{
 			name: "converts_aicall_with_empty_fields",
 			aicall: &AIcall{
 				Identity: identity.Identity{
@@ -89,6 +111,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 			checkFunc: func(t *testing.T, wh *WebhookMessage, ac *AIcall) {
 				if wh.ID != ac.ID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", ac.ID, wh.ID)
+				}
+				if wh.CurrentMemberID != uuid.Nil {
+					t.Errorf("Wrong CurrentMemberID. expect: %s, got: %s", uuid.Nil, wh.CurrentMemberID)
 				}
 			},
 		},
