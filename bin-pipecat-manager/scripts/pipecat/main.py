@@ -32,6 +32,7 @@ class Tool(BaseModel):
     name: str
     description: str
     parameters: Optional[dict] = None
+    run_llm: Optional[bool] = False
 
     class Config:
         extra = "ignore"
