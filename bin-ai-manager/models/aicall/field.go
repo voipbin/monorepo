@@ -25,7 +25,8 @@ const (
 	FieldReferenceID   Field = "reference_id"
 
 	FieldConfbridgeID  Field = "confbridge_id"
-	FieldPipecatcallID Field = "pipecatcall_id"
+	FieldPipecatcallID   Field = "pipecatcall_id"
+	FieldCurrentMemberID Field = "current_member_id"
 
 	FieldStatus Field = "status"
 

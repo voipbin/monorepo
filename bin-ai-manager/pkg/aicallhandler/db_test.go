@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -24,17 +25,18 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai             *ai.AI
-		assistanceType aicall.AssistanceType
-		assistanceID   uuid.UUID
-		activeflowID   uuid.UUID
-		referenceType  aicall.ReferenceType
-		referenceID    uuid.UUID
-		confbridgeID   uuid.UUID
-		pipecatcallID  uuid.UUID
-		gender         aicall.Gender
-		language       string
-		parameter      map[string]any
+		ai              *ai.AI
+		assistanceType  aicall.AssistanceType
+		assistanceID    uuid.UUID
+		activeflowID    uuid.UUID
+		referenceType   aicall.ReferenceType
+		referenceID     uuid.UUID
+		confbridgeID    uuid.UUID
+		pipecatcallID   uuid.UUID
+		currentMemberID uuid.UUID
+		gender          aicall.Gender
+		language        string
+		parameter       map[string]any
 
 		responseUUIDID uuid.UUID
 		responseAIcall *aicall.AIcall
@@ -153,6 +155,60 @@ func Test_Create(t *testing.T) {
 				Status:         aicall.StatusInitiating,
 			},
 		},
+		{
+			name: "with current member id",
+
+			ai: &ai.AI{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("c1d2e3f4-a5b6-11ed-c1d2-e3f4a5b6c7d8"),
+					CustomerID: uuid.FromStringOrNil("d2e3f4a5-b6c7-11ed-d2e3-f4a5b6c7d8e9"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "voice-id-456",
+				STTType:     ai.STTTypeDeepgram,
+			},
+			assistanceType:  aicall.AssistanceTypeTeam,
+			assistanceID:    uuid.FromStringOrNil("c1d2e3f4-a5b6-11ed-c1d2-e3f4a5b6c7d8"),
+			activeflowID:    uuid.FromStringOrNil("e3f4a5b6-c7d8-11ed-e3f4-a5b6c7d8e9f0"),
+			referenceType:   aicall.ReferenceTypeCall,
+			referenceID:     uuid.FromStringOrNil("f4a5b6c7-d8e9-11ed-f4a5-b6c7d8e9f0a1"),
+			confbridgeID:    uuid.FromStringOrNil("a5b6c7d8-e9f0-11ed-a5b6-c7d8e9f0a1b2"),
+			pipecatcallID:   uuid.FromStringOrNil("b6c7d8e9-f0a1-11ed-b6c7-d8e9f0a1b2c3"),
+			currentMemberID: uuid.FromStringOrNil("c7d8e9f0-a1b2-11ed-c7d8-e9f0a1b2c3d4"),
+			gender:          aicall.GenderFemale,
+			language:        "ko-KR",
+			parameter:       nil,
+
+			responseUUIDID: uuid.FromStringOrNil("d8e9f0a1-b2c3-11ed-d8e9-f0a1b2c3d4e5"),
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("d8e9f0a1-b2c3-11ed-d8e9-f0a1b2c3d4e5"),
+				},
+			},
+
+			expectAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("d8e9f0a1-b2c3-11ed-d8e9-f0a1b2c3d4e5"),
+					CustomerID: uuid.FromStringOrNil("d2e3f4a5-b6c7-11ed-d2e3-f4a5b6c7d8e9"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("c1d2e3f4-a5b6-11ed-c1d2-e3f4a5b6c7d8"),
+				AIEngineModel:   ai.EngineModelOpenaiGPT5,
+				AITTSType:       ai.TTSTypeElevenLabs,
+				AITTSVoiceID:    "voice-id-456",
+				AISTTType:       ai.STTTypeDeepgram,
+				ActiveflowID:    uuid.FromStringOrNil("e3f4a5b6-c7d8-11ed-e3f4-a5b6c7d8e9f0"),
+				ReferenceType:   aicall.ReferenceTypeCall,
+				ReferenceID:     uuid.FromStringOrNil("f4a5b6c7-d8e9-11ed-f4a5-b6c7d8e9f0a1"),
+				ConfbridgeID:    uuid.FromStringOrNil("a5b6c7d8-e9f0-11ed-a5b6-c7d8e9f0a1b2"),
+				PipecatcallID:   uuid.FromStringOrNil("b6c7d8e9-f0a1-11ed-b6c7-d8e9f0a1b2c3"),
+				CurrentMemberID: uuid.FromStringOrNil("c7d8e9f0-a1b2-11ed-c7d8-e9f0a1b2c3d4"),
+				Gender:          aicall.GenderFemale,
+				Language:        "ko-KR",
+				Status:          aicall.StatusInitiating,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -180,7 +236,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language, tt.parameter)
+			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.currentMemberID, tt.gender, tt.language, tt.parameter)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -421,6 +477,119 @@ func Test_List(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseAIcalls) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAIcalls, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateCurrentMemberID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id              uuid.UUID
+		currentMemberID uuid.UUID
+
+		responseUpdateErr error
+		responseAIcall    *aicall.AIcall
+		responseGetErr    error
+
+		expectFields map[aicall.Field]any
+		expectRes    *aicall.AIcall
+		expectErr    bool
+	}{
+		{
+			name: "normal",
+
+			id:              uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+			currentMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+
+			responseUpdateErr: nil,
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+				},
+				CurrentMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+			},
+			responseGetErr: nil,
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldCurrentMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+			},
+			expectRes: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11ed-a1b2-c3d4e5f6a7b8"),
+				},
+				CurrentMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11ed-b2c3-d4e5f6a7b8c9"),
+			},
+			expectErr: false,
+		},
+		{
+			name: "update error",
+
+			id:              uuid.FromStringOrNil("c3d4e5f6-a7b8-11ed-c3d4-e5f6a7b8c9d0"),
+			currentMemberID: uuid.FromStringOrNil("d4e5f6a7-b8c9-11ed-d4e5-f6a7b8c9d0e1"),
+
+			responseUpdateErr: fmt.Errorf("update failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldCurrentMemberID: uuid.FromStringOrNil("d4e5f6a7-b8c9-11ed-d4e5-f6a7b8c9d0e1"),
+			},
+			expectErr: true,
+		},
+		{
+			name: "get error after update",
+
+			id:              uuid.FromStringOrNil("e5f6a7b8-c9d0-11ed-e5f6-a7b8c9d0e1f2"),
+			currentMemberID: uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
+
+			responseUpdateErr: nil,
+			responseAIcall:    nil,
+			responseGetErr:    fmt.Errorf("get failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldCurrentMemberID: uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &aicallHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.id, tt.expectFields).Return(tt.responseUpdateErr)
+			if tt.responseUpdateErr == nil {
+				mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, tt.responseGetErr)
+			}
+
+			res, err := h.UpdateCurrentMemberID(ctx, tt.id, tt.currentMemberID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

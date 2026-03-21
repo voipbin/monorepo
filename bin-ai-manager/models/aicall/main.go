@@ -30,7 +30,8 @@ type AIcall struct {
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
 
 	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`
-	PipecatcallID uuid.UUID `json:"pipecatcall_id,omitempty" db:"pipecatcall_id,uuid"`
+	PipecatcallID   uuid.UUID `json:"pipecatcall_id,omitempty" db:"pipecatcall_id,uuid"`
+	CurrentMemberID uuid.UUID `json:"current_member_id,omitempty" db:"current_member_id,uuid"`
 
 	Status Status `json:"status,omitempty" db:"status"`
 

@@ -1123,6 +1123,9 @@ type AIManagerAIcall struct {
 	// ConfbridgeId The unique identifier of the conference bridge. Returned from the `GET /conferences` response.
 	ConfbridgeId *string `json:"confbridge_id,omitempty"`
 
+	// CurrentMemberId The unique identifier of the currently active team member. Only set when assistance_type is 'team'. Updated when the AI agent transitions to a different team member.
+	CurrentMemberId *string `json:"current_member_id,omitempty"`
+
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 

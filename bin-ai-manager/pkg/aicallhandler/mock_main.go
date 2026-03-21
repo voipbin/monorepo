@@ -272,3 +272,18 @@ func (mr *MockAIcallHandlerMockRecorder) ToolHandle(ctx, id, toolID, toolType, f
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToolHandle", reflect.TypeOf((*MockAIcallHandler)(nil).ToolHandle), ctx, id, toolID, toolType, function)
 }
+
+// UpdateCurrentMemberID mocks base method.
+func (m *MockAIcallHandler) UpdateCurrentMemberID(ctx context.Context, id, currentMemberID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCurrentMemberID", ctx, id, currentMemberID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCurrentMemberID indicates an expected call of UpdateCurrentMemberID.
+func (mr *MockAIcallHandlerMockRecorder) UpdateCurrentMemberID(ctx, id, currentMemberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrentMemberID", reflect.TypeOf((*MockAIcallHandler)(nil).UpdateCurrentMemberID), ctx, id, currentMemberID)
+}

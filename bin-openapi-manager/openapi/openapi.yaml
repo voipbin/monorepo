@@ -2211,6 +2211,12 @@ components:
           x-go-type: string
           description: "The unique identifier of the conference bridge. Returned from the `GET /conferences` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
+        current_member_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the currently active team member. Only set when assistance_type is 'team'. Updated when the AI agent transitions to a different team member."
+          example: "550e8400-e29b-41d4-a716-446655440000"
         status:
           $ref: '#/components/schemas/AIManagerAIcallStatus'
           description: Status of the AI call.

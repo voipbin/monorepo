@@ -32,6 +32,8 @@ type WebhookMessage struct {
 
 	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"`
 
+	CurrentMemberID uuid.UUID `json:"current_member_id,omitempty"`
+
 	Status Status `json:"status,omitempty"`
 
 	Gender   Gender `json:"gender,omitempty"`
@@ -65,6 +67,8 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceID:   h.ReferenceID,
 
 		ConfbridgeID: h.ConfbridgeID,
+
+		CurrentMemberID: h.CurrentMemberID,
 
 		Status: h.Status,
 
