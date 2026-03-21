@@ -46,7 +46,7 @@ func (h *server) PostAis(c *gin.Context) {
 
 	var ragID uuid.UUID
 	if req.RagId != nil {
-		ragID = uuid.FromStringOrNil(req.RagId.String())
+		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
 	res, err := h.serviceHandler.AICreate(
@@ -233,7 +233,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 
 	var ragID uuid.UUID
 	if req.RagId != nil {
-		ragID = uuid.FromStringOrNil(req.RagId.String())
+		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
 	res, err := h.serviceHandler.AIUpdate(
