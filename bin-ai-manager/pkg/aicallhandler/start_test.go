@@ -231,7 +231,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil)
+			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -326,7 +326,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language, nil)
+			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -504,7 +504,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil)
+			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -893,17 +893,18 @@ func Test_startAIcall(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai             *ai.AI
-		assistanceType aicall.AssistanceType
-		assistanceID   uuid.UUID
-		activeflowID   uuid.UUID
-		referenceType  aicall.ReferenceType
-		referenceID    uuid.UUID
-		confbridgeID   uuid.UUID
-		gender         aicall.Gender
-		language       string
-		isTask         bool
-		teamParameter  map[string]any
+		ai              *ai.AI
+		assistanceType  aicall.AssistanceType
+		assistanceID    uuid.UUID
+		activeflowID    uuid.UUID
+		referenceType   aicall.ReferenceType
+		referenceID     uuid.UUID
+		confbridgeID    uuid.UUID
+		gender          aicall.Gender
+		language        string
+		isTask          bool
+		teamParameter   map[string]any
+		currentMemberID uuid.UUID
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -1137,7 +1138,7 @@ func Test_startAIcall(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter)
+			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1542,9 +1543,10 @@ func Test_resolveAI(t *testing.T) {
 		errAI        error
 		errTeam      error
 
-		expectAI            *ai.AI
-		expectTeamParameter map[string]any
-		expectErr           bool
+		expectAI              *ai.AI
+		expectTeamParameter   map[string]any
+		expectCurrentMemberID uuid.UUID
+		expectErr             bool
 	}{
 		{
 			name: "AssistanceTypeAI returns ai and nil team parameter",
@@ -1567,8 +1569,9 @@ func Test_resolveAI(t *testing.T) {
 				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 				Parameter:   map[string]any{"key": "value"},
 			},
-			expectTeamParameter: nil,
-			expectErr:           false,
+			expectTeamParameter:   nil,
+			expectCurrentMemberID: uuid.Nil,
+			expectErr:             false,
 		},
 		{
 			name: "AssistanceTypeTeam with parameter returns ai and team parameter",
@@ -1602,8 +1605,9 @@ func Test_resolveAI(t *testing.T) {
 				},
 				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
 			},
-			expectTeamParameter: map[string]any{"team_key": "team_value"},
-			expectErr:           false,
+			expectTeamParameter:   map[string]any{"team_key": "team_value"},
+			expectCurrentMemberID: uuid.FromStringOrNil("f3c4d5e6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+			expectErr:             false,
 		},
 		{
 			name: "AssistanceTypeTeam start member not found returns error",
@@ -1694,8 +1698,9 @@ func Test_resolveAI(t *testing.T) {
 				},
 				EngineModel: ai.EngineModelOpenaiGPT5,
 			},
-			expectTeamParameter: nil,
-			expectErr:           false,
+			expectTeamParameter:   nil,
+			expectCurrentMemberID: uuid.FromStringOrNil("a4b5c6d7-e8f9-11f0-b4c5-d6e7f8a9b0c1"),
+			expectErr:             false,
 		},
 		{
 			name: "unsupported assistance type returns error",
@@ -1740,7 +1745,7 @@ func Test_resolveAI(t *testing.T) {
 				}
 			}
 
-			resAI, resTeamParam, err := h.resolveAI(ctx, tt.assistanceType, tt.assistanceID)
+			resAI, resTeamParam, resCurrentMemberID, err := h.resolveAI(ctx, tt.assistanceType, tt.assistanceID)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
@@ -1759,6 +1764,10 @@ func Test_resolveAI(t *testing.T) {
 
 			if !reflect.DeepEqual(resTeamParam, tt.expectTeamParameter) {
 				t.Errorf("expected team parameter: %v, got: %v", tt.expectTeamParameter, resTeamParam)
+			}
+
+			if resCurrentMemberID != tt.expectCurrentMemberID {
+				t.Errorf("expected current member ID: %v, got: %v", tt.expectCurrentMemberID, resCurrentMemberID)
 			}
 		})
 	}

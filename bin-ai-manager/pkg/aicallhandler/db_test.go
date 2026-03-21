@@ -24,17 +24,18 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai             *ai.AI
-		assistanceType aicall.AssistanceType
-		assistanceID   uuid.UUID
-		activeflowID   uuid.UUID
-		referenceType  aicall.ReferenceType
-		referenceID    uuid.UUID
-		confbridgeID   uuid.UUID
-		pipecatcallID  uuid.UUID
-		gender         aicall.Gender
-		language       string
-		parameter      map[string]any
+		ai              *ai.AI
+		assistanceType  aicall.AssistanceType
+		assistanceID    uuid.UUID
+		activeflowID    uuid.UUID
+		referenceType   aicall.ReferenceType
+		referenceID     uuid.UUID
+		confbridgeID    uuid.UUID
+		pipecatcallID   uuid.UUID
+		currentMemberID uuid.UUID
+		gender          aicall.Gender
+		language        string
+		parameter       map[string]any
 
 		responseUUIDID uuid.UUID
 		responseAIcall *aicall.AIcall
@@ -180,7 +181,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language, tt.parameter)
+			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.currentMemberID, tt.gender, tt.language, tt.parameter)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

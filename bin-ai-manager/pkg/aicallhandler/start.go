@@ -19,19 +19,19 @@ import (
 // For AssistanceTypeAI, it fetches the AI directly.
 // For AssistanceTypeTeam, it fetches the team, finds the start member, and fetches that member's AI config.
 // Returns the AI config, the team parameter (nil for non-team types), and any error.
-func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID uuid.UUID) (*ai.AI, map[string]any, error) {
+func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID uuid.UUID) (*ai.AI, map[string]any, uuid.UUID, error) {
 	switch assistanceType {
 	case aicall.AssistanceTypeAI:
 		c, err := h.aiHandler.Get(ctx, assistanceID)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "could not get ai info. ai_id: %s", assistanceID)
+			return nil, nil, uuid.Nil, errors.Wrapf(err, "could not get ai info. ai_id: %s", assistanceID)
 		}
-		return c, nil, nil
+		return c, nil, uuid.Nil, nil
 
 	case aicall.AssistanceTypeTeam:
 		t, err := h.teamHandler.Get(ctx, assistanceID)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "could not get team info. team_id: %s", assistanceID)
+			return nil, nil, uuid.Nil, errors.Wrapf(err, "could not get team info. team_id: %s", assistanceID)
 		}
 
 		// find the start member
@@ -39,15 +39,15 @@ func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.Ass
 			if m.ID == t.StartMemberID {
 				c, errAI := h.aiHandler.Get(ctx, m.AIID)
 				if errAI != nil {
-					return nil, nil, errors.Wrapf(errAI, "could not get ai info for team start member. ai_id: %s", m.AIID)
+					return nil, nil, uuid.Nil, errors.Wrapf(errAI, "could not get ai info for team start member. ai_id: %s", m.AIID)
 				}
-				return c, t.Parameter, nil
+				return c, t.Parameter, m.ID, nil
 			}
 		}
-		return nil, nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", assistanceID, t.StartMemberID)
+		return nil, nil, uuid.Nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", assistanceID, t.StartMemberID)
 
 	default:
-		return nil, nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
+		return nil, nil, uuid.Nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
 	}
 }
 
@@ -63,20 +63,20 @@ func (h *aicallHandler) Start(
 ) (*aicall.AIcall, error) {
 
 	// resolve AI config based on assistance type
-	c, teamParameter, err := h.resolveAI(ctx, assistanceType, assistanceID)
+	c, teamParameter, currentMemberID, err := h.resolveAI(ctx, assistanceType, assistanceID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
 	switch referenceType {
 	case aicall.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, language, teamParameter)
+		return h.startReferenceTypeCall(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, language, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeConversation:
-		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, language, teamParameter)
+		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, language, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeNone:
-		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, gender, language, teamParameter)
+		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, gender, language, teamParameter, currentMemberID)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -94,6 +94,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	gender aicall.Gender,
 	language string,
 	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeCall",
@@ -109,7 +110,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start ai call
-	res, err := h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, false, teamParameter)
+	res, err := h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
@@ -136,6 +137,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	gender aicall.Gender,
 	language string,
 	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeConversation",
@@ -159,7 +161,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Debugf("Could not get the aicall by reference id. Start a new aicall. reference_id: %s. err: %v", referenceID, err)
-		res, err = h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language, false, teamParameter)
+		res, err = h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language, false, teamParameter, currentMemberID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -203,6 +205,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	gender aicall.Gender,
 	language string,
 	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "startReferenceTypeNone",
@@ -210,7 +213,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	})
 
 	// start ai call
-	tmp, err := h.startAIcall(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language, false, teamParameter)
+	tmp, err := h.startAIcall(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
@@ -437,6 +440,7 @@ func (h *aicallHandler) startAIcall(
 	language string,
 	isTask bool,
 	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startAIcall",
@@ -459,7 +463,7 @@ func (h *aicallHandler) startAIcall(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, gender, language, parameter)
+	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, currentMemberID, gender, language, parameter)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -491,12 +495,12 @@ func (h *aicallHandler) StartTask(ctx context.Context, assistanceType aicall.Ass
 	log.Debugf("Starting a new aicall task")
 
 	// resolve AI config based on assistance type
-	c, teamParameter, err := h.resolveAI(ctx, assistanceType, assistanceID)
+	c, teamParameter, currentMemberID, err := h.resolveAI(ctx, assistanceType, assistanceID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
-	res, err := h.startAIcall(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true, teamParameter)
+	res, err := h.startAIcall(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start AIcall")
 	}

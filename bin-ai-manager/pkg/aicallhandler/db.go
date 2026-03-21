@@ -25,6 +25,7 @@ func (h *aicallHandler) Create(
 	referenceID uuid.UUID,
 	confbridgeID uuid.UUID,
 	pipecatcallID uuid.UUID,
+	currentMemberID uuid.UUID,
 	gender aicall.Gender,
 	language string,
 	parameter map[string]any,
@@ -57,8 +58,9 @@ func (h *aicallHandler) Create(
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		ConfbridgeID:  confbridgeID,
-		PipecatcallID: pipecatcallID,
+		ConfbridgeID:    confbridgeID,
+		PipecatcallID:   pipecatcallID,
+		CurrentMemberID: currentMemberID,
 
 		Gender:   gender,
 		Language: language,
@@ -161,6 +163,23 @@ func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, p
 	}
 	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", id)
+	}
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	return res, nil
+}
+
+// UpdateCurrentMemberID updates the current member id for the aicall
+func (h *aicallHandler) UpdateCurrentMemberID(ctx context.Context, id uuid.UUID, currentMemberID uuid.UUID) (*aicall.AIcall, error) {
+	fields := map[aicall.Field]any{
+		aicall.FieldCurrentMemberID: currentMemberID,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the current member id for aicall. aicall_id: %s", id)
 	}
 
 	res, err := h.db.AIcallGet(ctx, id)

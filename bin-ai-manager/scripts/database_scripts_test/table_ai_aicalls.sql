@@ -17,8 +17,9 @@ create table ai_aicalls(
   reference_type    varchar(255),
   reference_id      binary(16),
 
-  confbridge_id     binary(16),
-  pipecatcall_id    binary(16),
+  confbridge_id       binary(16),
+  pipecatcall_id      binary(16),
+  current_member_id   binary(16),
 
   status  varchar(255),   -- status
 

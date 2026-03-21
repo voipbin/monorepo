@@ -424,7 +424,7 @@ func (h *aicallHandler) toolHandleSearchKnowledge(ctx context.Context, c *aicall
 		return res
 	}
 
-	tmpAI, _, err := h.resolveAI(ctx, c.AssistanceType, c.AssistanceID)
+	tmpAI, _, _, err := h.resolveAI(ctx, c.AssistanceType, c.AssistanceID)
 	if err != nil {
 		log.Errorf("Could not resolve AI. err: %v", err)
 		fillFailed(res, fmt.Errorf("could not retrieve AI configuration"))
