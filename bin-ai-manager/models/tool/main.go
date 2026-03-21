@@ -32,9 +32,13 @@ var AllToolNames = []ToolName{
 	ToolNameSearchKnowledge,
 }
 
-// Tool defines a tool with its schema for LLM function calling
+// Tool defines a tool with its schema for LLM function calling.
+// RunLLM is a metadata default that tells the Python Pipecat runner whether
+// to feed the tool result back into the LLM for response generation.
+// The LLM can still override this per-call via a "run_llm" argument.
 type Tool struct {
 	Name        ToolName       `json:"name"`
 	Description string         `json:"description"`
 	Parameters  map[string]any `json:"parameters"`
+	RunLLM      bool           `json:"run_llm"`
 }

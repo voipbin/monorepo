@@ -256,7 +256,7 @@ async def init_single_ai_pipeline(
 
     try:
         # Register tools (after task_manager.add so cleanup-on-failure can unregister)
-        tool_register(llm_service, id, tool_names)
+        tool_register(llm_service, id, tool_names, tools_data=tools_data)
 
         async def handle_disconnect_or_error(name, transport, error=None):
             logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
