@@ -13,6 +13,8 @@ import (
 	"time"
 
 	hmhook "monorepo/bin-hook-manager/models/hook"
+
+	"github.com/sirupsen/logrus"
 )
 
 // paddleSignatureMaxAge is the maximum allowed age (in seconds) for a Paddle webhook signature.
@@ -94,6 +96,10 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 		return &ValidationError{fmt.Errorf("missing Paddle-Signature header")}
 	}
 	if err := verifyPaddleSignature(h.paddleWebhookSecret, sig, data); err != nil {
+		log := logrus.WithFields(logrus.Fields{
+			"func": "Billing",
+		})
+		log.Errorf("Paddle webhook signature verification failed. signature: %s, body: %s, err: %v", sig, string(data), err)
 		return &ValidationError{fmt.Errorf("webhook signature verification failed: %w", err)}
 	}
 
