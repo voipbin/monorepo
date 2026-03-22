@@ -311,6 +311,10 @@ Service exposes metrics on configured endpoint (default `:2112/metrics`):
 - `billing_manager_receive_request_process_time` - Histogram of RPC request processing time (labels: type, method)
 - `billing_manager_receive_subscribe_event_process_time` - Histogram of event processing time (labels: publisher, type)
 
+## Paddle Webhook Logging
+
+Paddle webhook handlers follow the **External Event & Webhook Processing Logs** convention defined in [coding-conventions.md §5.5](../docs/coding-conventions.md). All Paddle event handlers in `listenhandler/` and `accounthandler/` log at Info level for event receipt, processing start, and success completion with key Paddle identifiers (`event_id`, `transaction_id`, `subscription_id`, `customer_id`, `plan_type`, `amount_micros`, `token_allowance`).
+
 ## Database Schema
 
 While not explicitly in code, the service expects these tables:

@@ -473,6 +473,16 @@ log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch
 - Include the key identifier in the message for quick scanning
 - Add logs after EVERY successful data retrieval, not just errors
 
+### External Event & Webhook Processing Logs
+
+**CRITICAL: When processing external events (webhooks, payment callbacks, third-party events), use Info-level logs at key lifecycle points — not Debug.**
+
+External events are asynchronous, hard to replay, and often involve money or state changes. Debug logs are filtered in production, making webhook issues invisible.
+
+**Required log points:** event receipt, processing start, processing success, skip/no-op (all Info). Failures use Error. Data retrieval uses Debug (per §5.3 above).
+
+**See [coding-conventions.md §5.5](docs/coding-conventions.md) for the full specification, patterns, and examples.**
+
 ### WebhookMessage Pattern for External API Responses (MANDATORY)
 
 **CRITICAL: All external-facing API responses MUST use the `WebhookMessage` pattern. Never return raw internal model structs directly to external clients.**

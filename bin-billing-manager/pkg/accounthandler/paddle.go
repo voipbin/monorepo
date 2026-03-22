@@ -64,7 +64,11 @@ func (h *accountHandler) PaddleCreditTopUp(ctx context.Context, customerID uuid.
 	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
 
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-	return h.db.AccountPaddleAddCredit(ctx, acc.ID, amountCreditMicros, acc.CustomerID, idempotencyKey)
+	if err := h.db.AccountPaddleAddCredit(ctx, acc.ID, amountCreditMicros, acc.CustomerID, idempotencyKey); err != nil {
+		return err
+	}
+	log.Infof("Credit top-up applied. account_id: %s, amount_micros: %d", acc.ID, amountCreditMicros)
+	return nil
 }
 
 // PaddleSubscriptionCreate sets up a new subscription on the billing account.
@@ -121,7 +125,11 @@ func (h *accountHandler) PaddleSubscriptionCreate(ctx context.Context, customerI
 		return fmt.Errorf("unknown plan type: %s", planType)
 	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(planType), billing.TransactionTypeTopUp, idempotencyKey)
+	if err := h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(planType), billing.TransactionTypeTopUp, idempotencyKey); err != nil {
+		return err
+	}
+	log.Infof("Subscription created. account_id: %s, plan_type: %s, token_allowance: %d, paddle_subscription_id: %s", acc.ID, planType, tokenAllowance, paddleSubID)
+	return nil
 }
 
 // PaddleSubscriptionUpdate changes the plan type when a subscription is upgraded/downgraded.
@@ -159,7 +167,11 @@ func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSub
 		return fmt.Errorf("unknown plan type: %s", newPlanType)
 	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(newPlanType), billing.TransactionTypeAdjustment, idempotencyKey)
+	if err := h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(newPlanType), billing.TransactionTypeAdjustment, idempotencyKey); err != nil {
+		return err
+	}
+	log.Infof("Subscription updated. account_id: %s, new_plan_type: %s, token_allowance: %d, paddle_subscription_id: %s", acc.ID, newPlanType, tokenAllowance, paddleSubID)
+	return nil
 }
 
 // PaddleSubscriptionCancel downgrades the account to Free plan immediately.
@@ -200,7 +212,11 @@ func (h *accountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSub
 		return fmt.Errorf("unknown plan type: %s", account.PlanTypeFree)
 	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(account.PlanTypeFree), billing.TransactionTypeAdjustment, idempotencyKey)
+	if err := h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(account.PlanTypeFree), billing.TransactionTypeAdjustment, idempotencyKey); err != nil {
+		return err
+	}
+	log.Infof("Subscription canceled. account_id: %s, downgraded_to: free, token_allowance: %d, paddle_subscription_id: %s", acc.ID, tokenAllowance, paddleSubID)
+	return nil
 }
 
 // PaddleSubscriptionRenew replenishes tokens for a subscription renewal.
@@ -242,7 +258,11 @@ func (h *accountHandler) PaddleSubscriptionRenew(ctx context.Context, paddleSubI
 		return fmt.Errorf("unknown plan type: %s", acc.PlanType)
 	}
 	idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, eventID)
-	return h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(acc.PlanType), billing.TransactionTypeTopUp, idempotencyKey)
+	if err := h.db.AccountPaddleTopUpTokens(ctx, acc.ID, acc.CustomerID, tokenAllowance, string(acc.PlanType), billing.TransactionTypeTopUp, idempotencyKey); err != nil {
+		return err
+	}
+	log.Infof("Subscription renewed. account_id: %s, plan_type: %s, token_allowance: %d, paddle_subscription_id: %s", acc.ID, acc.PlanType, tokenAllowance, paddleSubID)
+	return nil
 }
 
 // PaddleRefund subtracts credit from a Paddle refund.

@@ -99,7 +99,7 @@ func (h *listenHandler) processV1HooksPaddlePost(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	log.WithField("event_type", event.EventType).Debugf("Received Paddle event. event_id: %s", event.EventID)
+	log.Infof("Received Paddle event. event_type: %s, event_id: %s", event.EventType, event.EventID)
 
 	switch event.EventType {
 	case "transaction.completed":
@@ -143,17 +143,18 @@ func (h *listenHandler) handlePaddleTransactionCompleted(ctx context.Context, ev
 
 	// Subscription renewal: has subscription_id
 	if txn.SubscriptionID != nil && *txn.SubscriptionID != "" {
-		log.Debugf("Transaction is subscription renewal. subscription_id: %s", *txn.SubscriptionID)
+		log.Infof("Processing subscription renewal. transaction_id: %s, subscription_id: %s", txn.ID, *txn.SubscriptionID)
 		if err := h.accountHandler.PaddleSubscriptionRenew(ctx, *txn.SubscriptionID, event.EventID); err != nil {
 			log.Errorf("Could not process subscription renewal: %v", err)
 			return simpleResponse(500), nil
 		}
+		log.Infof("Subscription renewal completed. transaction_id: %s, subscription_id: %s", txn.ID, *txn.SubscriptionID)
 		return simpleResponse(200), nil
 	}
 
 	// One-time credit purchase: needs custom_data with customer_id
 	if txn.CustomData == nil || txn.CustomData.CustomerID == "" {
-		log.Infof("Missing customer_id in custom_data, skipping. event_id: %s", event.EventID)
+		log.Infof("Missing customer_id in custom_data, skipping. transaction_id: %s", txn.ID)
 		return simpleResponse(200), nil
 	}
 
@@ -169,10 +170,12 @@ func (h *listenHandler) handlePaddleTransactionCompleted(ctx context.Context, ev
 		return simpleResponse(400), nil
 	}
 
+	log.Infof("Processing credit top-up. transaction_id: %s, customer_id: %s, amount_cents: %s, amount_micros: %d", txn.ID, txn.CustomData.CustomerID, txn.Details.Totals.Total, amountMicros)
 	if err := h.accountHandler.PaddleCreditTopUp(ctx, customerID, amountMicros, event.EventID); err != nil {
 		log.Errorf("Could not process credit top-up: %v", err)
 		return simpleResponse(500), nil
 	}
+	log.Infof("Credit top-up completed. transaction_id: %s, customer_id: %s, amount_micros: %d", txn.ID, txn.CustomData.CustomerID, amountMicros)
 	return simpleResponse(200), nil
 }
 
@@ -190,7 +193,7 @@ func (h *listenHandler) handlePaddleSubscriptionCreated(ctx context.Context, eve
 	}
 
 	if sub.CustomData == nil || sub.CustomData.CustomerID == "" {
-		log.Infof("Missing customer_id in custom_data, skipping. event_id: %s", event.EventID)
+		log.Infof("Missing customer_id in custom_data, skipping. subscription_id: %s", sub.ID)
 		return simpleResponse(200), nil
 	}
 
@@ -206,10 +209,12 @@ func (h *listenHandler) handlePaddleSubscriptionCreated(ctx context.Context, eve
 		return simpleResponse(400), nil
 	}
 
+	log.Infof("Processing subscription create. subscription_id: %s, customer_id: %s, plan_type: %s, paddle_customer_id: %s", sub.ID, sub.CustomData.CustomerID, planType, sub.CustomerID)
 	if err := h.accountHandler.PaddleSubscriptionCreate(ctx, customerID, planType, sub.ID, sub.CustomerID, event.EventID); err != nil {
 		log.Errorf("Could not process subscription create: %v", err)
 		return simpleResponse(500), nil
 	}
+	log.Infof("Subscription create completed. subscription_id: %s, customer_id: %s, plan_type: %s", sub.ID, sub.CustomData.CustomerID, planType)
 	return simpleResponse(200), nil
 }
 
@@ -231,7 +236,7 @@ func (h *listenHandler) handlePaddleSubscriptionUpdated(ctx context.Context, eve
 	}
 
 	if sub.CustomData == nil || sub.CustomData.PlanType == "" {
-		log.Infof("Missing plan_type in custom_data, skipping. event_id: %s", event.EventID)
+		log.Infof("Missing plan_type in custom_data, skipping. subscription_id: %s", sub.ID)
 		return simpleResponse(200), nil
 	}
 
@@ -241,10 +246,12 @@ func (h *listenHandler) handlePaddleSubscriptionUpdated(ctx context.Context, eve
 		return simpleResponse(400), nil
 	}
 
+	log.Infof("Processing subscription update. subscription_id: %s, new_plan_type: %s", sub.ID, newPlanType)
 	if err := h.accountHandler.PaddleSubscriptionUpdate(ctx, sub.ID, newPlanType, event.EventID); err != nil {
 		log.Errorf("Could not process subscription update: %v", err)
 		return simpleResponse(500), nil
 	}
+	log.Infof("Subscription update completed. subscription_id: %s, new_plan_type: %s", sub.ID, newPlanType)
 	return simpleResponse(200), nil
 }
 
@@ -261,10 +268,12 @@ func (h *listenHandler) handlePaddleSubscriptionCanceled(ctx context.Context, ev
 		return simpleResponse(400), nil
 	}
 
+	log.Infof("Processing subscription cancel. subscription_id: %s", sub.ID)
 	if err := h.accountHandler.PaddleSubscriptionCancel(ctx, sub.ID, event.EventID); err != nil {
 		log.Errorf("Could not process subscription cancel: %v", err)
 		return simpleResponse(500), nil
 	}
+	log.Infof("Subscription cancel completed. subscription_id: %s", sub.ID)
 	return simpleResponse(200), nil
 }
 
@@ -320,13 +329,15 @@ func (h *listenHandler) handlePaddleTransactionRefunded(ctx context.Context, eve
 	}
 
 	if customerID == uuid.Nil {
-		log.Infof("Could not resolve customer for refund, skipping. event_id: %s", event.EventID)
+		log.Infof("Could not resolve customer for refund, skipping. transaction_id: %s", txn.ID)
 		return simpleResponse(200), nil
 	}
 
+	log.Infof("Processing refund. transaction_id: %s, customer_id: %s, refund_micros: %d, adjustments: %d", txn.ID, customerID, totalRefundMicros, len(txn.Adjustments))
 	if err := h.accountHandler.PaddleRefund(ctx, customerID, totalRefundMicros, event.EventID); err != nil {
 		log.Errorf("Could not process refund: %v", err)
 		return simpleResponse(500), nil
 	}
+	log.Infof("Refund completed. transaction_id: %s, customer_id: %s, refund_micros: %d", txn.ID, customerID, totalRefundMicros)
 	return simpleResponse(200), nil
 }
