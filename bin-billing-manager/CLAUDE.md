@@ -311,6 +311,55 @@ Service exposes metrics on configured endpoint (default `:2112/metrics`):
 - `billing_manager_receive_request_process_time` - Histogram of RPC request processing time (labels: type, method)
 - `billing_manager_receive_subscribe_event_process_time` - Histogram of event processing time (labels: publisher, type)
 
+## Paddle Webhook Logging Policy
+
+All Paddle webhook handlers follow a consistent logging pattern for traceability and debugging.
+
+### Log Levels
+
+| Level | When to Use | Examples |
+|-------|-------------|---------|
+| **Info** | Every event receipt, every processing start, every successful completion | "Received Paddle event", "Subscription created", "Credit top-up applied" |
+| **Error** | Processing failures, invalid data, system errors | "Could not process subscription renewal", "Invalid customer_id" |
+| **Debug** | Retrieved data objects, idempotency skip, internal state | "Retrieved account info", "Event already processed, skipping" |
+
+### Required Log Points (Paddle Handlers)
+
+Every Paddle webhook handler MUST log at these points:
+
+1. **Event receipt** (Info): Log `event_type` and `event_id` when a Paddle event arrives
+2. **Processing start** (Info): Log the operation being performed with key identifiers (transaction_id, subscription_id, customer_id, amounts)
+3. **Processing success** (Info): Log completion with business-relevant outcome (account_id, plan_type, token_allowance, amount_micros)
+4. **Processing failure** (Error): Log the error with context about what was being attempted
+5. **Data retrieval** (Debug): Log retrieved objects (accounts, billings) with their key identifiers
+6. **Skip/no-op** (Info): Log why an event was skipped (missing custom_data, idempotency duplicate, free-plan renewal)
+
+### Key Identifiers to Include
+
+Always include these identifiers when available:
+- `event_id` — Paddle event identifier for tracing webhook delivery
+- `transaction_id` / `subscription_id` — Paddle resource identifiers
+- `customer_id` — VoIPBin customer UUID
+- `account_id` — VoIPBin billing account UUID
+- `plan_type` — Plan being set/changed
+- `amount_micros` / `token_allowance` — Financial amounts or token counts
+
+### Example Pattern
+
+```go
+// Info: processing start with business context
+log.Infof("Processing subscription create. subscription_id: %s, customer_id: %s, plan_type: %s", sub.ID, customerID, planType)
+
+// Debug: data retrieval
+log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
+
+// Info: success with outcome
+log.Infof("Subscription created. account_id: %s, plan_type: %s, token_allowance: %d", acc.ID, planType, tokenAllowance)
+
+// Error: failure with context
+log.Errorf("Could not process subscription create: %v", err)
+```
+
 ## Database Schema
 
 While not explicitly in code, the service expects these tables:
