@@ -467,7 +467,59 @@ log.Errorf("failed to get flow %v", err)
 log.Errorf("GetFlow failed: %v", err)
 ```
 
-### 5.5 Import Pattern
+### 5.5 External Event & Webhook Processing Logs
+
+**MANDATORY:** When processing external events (webhooks, payment events, third-party callbacks, inter-service events), log at these points using **Info** level — not Debug.
+
+External events are asynchronous, hard to replay, and involve money or state changes. Debug-level logs are filtered out in production, making webhook issues invisible until they escalate.
+
+**Required log points:**
+
+| Point | Level | What to Include |
+|-------|-------|-----------------|
+| Event receipt | Info | Event type, event ID |
+| Processing start | Info | Operation name, key resource IDs (transaction_id, subscription_id, customer_id), amounts |
+| Processing success | Info | Outcome details (account_id, plan_type, token_allowance, amount applied) |
+| Processing failure | Error | Error with context about what was being attempted |
+| Skip / no-op | Info | Why the event was skipped (missing data, idempotency duplicate, precondition not met) |
+| Data retrieval | Debug | Retrieved objects with key identifiers (existing convention §5.3) |
+
+**Pattern:**
+
+```go
+// Info: event receipt (listenhandler / webhook routing layer)
+log.Infof("Received payment event. event_type: %s, event_id: %s", event.Type, event.ID)
+
+// Info: processing start with business context
+log.Infof("Processing subscription create. subscription_id: %s, customer_id: %s, plan_type: %s", subID, customerID, planType)
+
+// Debug: data retrieval (per §5.3)
+log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
+
+// Info: success with outcome
+log.Infof("Subscription created. account_id: %s, plan_type: %s, token_allowance: %d", acc.ID, planType, tokens)
+
+// Info: skip with reason
+log.Infof("Missing customer_id in custom_data, skipping. subscription_id: %s", subID)
+
+// Error: failure with context
+log.Errorf("Could not process subscription create: %v", err)
+```
+
+**Why Info, not Debug:**
+- Debug logs are typically filtered in production
+- External events involve money, state changes, or third-party interactions
+- When a payment issue is reported, Info-level logs are the first diagnostic tool
+- The volume is low (webhook events are infrequent compared to internal operations)
+
+**Key identifiers to include** (when available):
+- External event IDs (event_id, transaction_id, subscription_id)
+- Internal resource IDs (customer_id, account_id)
+- Business values (amounts, plan types, token counts)
+
+**Applies to:** All webhook handlers (hook-manager, billing-manager), event subscribers (subscribehandler), and any handler processing external callbacks.
+
+### 5.6 Import Pattern
 
 Always import logrus directly without alias:
 
