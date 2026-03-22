@@ -19,7 +19,7 @@ import (
 
 // AccountHandler is interface for account handle
 type AccountHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string) (*account.Account, error)
+	Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error)

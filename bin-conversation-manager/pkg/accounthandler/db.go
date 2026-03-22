@@ -14,7 +14,7 @@ import (
 
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
-func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string) (*account.Account, error) {
+func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
@@ -37,8 +37,9 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 		Name:   name,
 		Detail: detail,
 
-		Secret: secret,
-		Token:  token,
+		Secret:        secret,
+		Token:         token,
+		MessageFlowID: messageFlowID,
 	}
 
 	// setup the account

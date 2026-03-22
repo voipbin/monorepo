@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -15,6 +17,8 @@ type WebhookMessage struct {
 
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
+
+	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
 
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
@@ -30,6 +34,8 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		Name:   h.Name,
 		Detail: h.Detail,
+
+		MessageFlowID: h.MessageFlowID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

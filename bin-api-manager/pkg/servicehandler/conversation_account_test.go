@@ -171,11 +171,12 @@ func Test_ConversationAccountCreate(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		accountType cvaccount.Type
-		accountName string
-		detail      string
-		secret      string
-		token       string
+		accountType    cvaccount.Type
+		accountName    string
+		detail         string
+		secret         string
+		token          string
+		messageFlowID  uuid.UUID
 
 		response  *cvaccount.Account
 		expectRes *cvaccount.WebhookMessage
@@ -190,11 +191,12 @@ func Test_ConversationAccountCreate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			accountType: cvaccount.TypeLine,
-			accountName: "test name",
-			detail:      "test detail",
-			secret:      "test secret",
-			token:       "test token",
+			accountType:    cvaccount.TypeLine,
+			accountName:    "test name",
+			detail:         "test detail",
+			secret:         "test secret",
+			token:          "test token",
+			messageFlowID:  uuid.Nil,
 
 			response: &cvaccount.Account{
 				Identity: commonidentity.Identity{
@@ -226,8 +228,8 @@ func Test_ConversationAccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
-			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
+			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID).Return(tt.response, nil)
+			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

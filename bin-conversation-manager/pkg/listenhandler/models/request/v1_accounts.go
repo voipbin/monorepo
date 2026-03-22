@@ -14,8 +14,9 @@ type V1DataAccountsPost struct {
 	Type       account.Type `json:"type"`
 	Name       string       `json:"name"`
 	Detail     string       `json:"detail"`
-	Secret     string       `json:"secret"`
-	Token      string       `json:"token"`
+	Secret         string       `json:"secret"`
+	Token          string       `json:"token"`
+	MessageFlowID  uuid.UUID    `json:"message_flow_id"`
 }
 
 // V1DataAccountsIDPut is

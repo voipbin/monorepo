@@ -81,6 +81,11 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 		return
 	}
 
+	messageFlowID := uuid.Nil
+	if req.MessageFlowId != nil {
+		messageFlowID = uuid.FromStringOrNil(*req.MessageFlowId)
+	}
+
 	res, err := h.serviceHandler.ConversationAccountCreate(
 		c.Request.Context(),
 		&a,
@@ -89,6 +94,7 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 		req.Detail,
 		req.Secret,
 		req.Token,
+		messageFlowID,
 	)
 	if err != nil {
 		log.Errorf("Could not create a conversation account. err: %v", err)

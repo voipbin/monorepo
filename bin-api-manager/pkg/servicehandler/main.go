@@ -441,6 +441,7 @@ type ServiceHandler interface {
 		detail string,
 		secret string,
 		token string,
+		messageFlowID uuid.UUID,
 	) (*cvaccount.WebhookMessage, error)
 	ConversationAccountUpdate(ctx context.Context, a *amagent.Agent, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.WebhookMessage, error)
 	ConversationAccountDelete(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*cvaccount.WebhookMessage, error)

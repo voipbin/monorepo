@@ -110,6 +110,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 	detail string,
 	secret string,
 	token string,
+	messageFlowID uuid.UUID,
 ) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountCreate",
@@ -123,7 +124,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ConversationV1AccountCreate(ctx, a.CustomerID, accountType, name, detail, secret, token)
+	tmp, err := h.reqHandler.ConversationV1AccountCreate(ctx, a.CustomerID, accountType, name, detail, secret, token, messageFlowID)
 	if err != nil {
 		log.Errorf("Could not create a new conversation account. err: %v", err)
 		return nil, errors.Wrap(err, "could not create a new conversation account")

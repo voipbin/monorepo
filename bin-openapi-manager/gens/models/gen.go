@@ -4284,6 +4284,9 @@ type ConversationManagerAccount struct {
 	// Id The unique identifier of the conversation account.
 	Id *string `json:"id,omitempty"`
 
+	// MessageFlowId The flow ID to execute when a message is received on this account. Returned from the `GET /flows` response.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
+
 	// Name Name of the account.
 	Name *string `json:"name,omitempty"`
 
@@ -6955,10 +6958,11 @@ type GetConversationAccountsParams struct {
 
 // PostConversationAccountsJSONBody defines parameters for PostConversationAccounts.
 type PostConversationAccountsJSONBody struct {
-	Detail string `json:"detail"`
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
-	Token  string `json:"token"`
+	Detail        string  `json:"detail"`
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
+	Name          string  `json:"name"`
+	Secret        string  `json:"secret"`
+	Token         string  `json:"token"`
 
 	// Type Type of the account.
 	Type ConversationManagerAccountType `json:"type"`
@@ -6966,10 +6970,11 @@ type PostConversationAccountsJSONBody struct {
 
 // PutConversationAccountsIdJSONBody defines parameters for PutConversationAccountsId.
 type PutConversationAccountsIdJSONBody struct {
-	Detail *string `json:"detail,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Secret *string `json:"secret,omitempty"`
-	Token  *string `json:"token,omitempty"`
+	Detail        *string `json:"detail,omitempty"`
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	Secret        *string `json:"secret,omitempty"`
+	Token         *string `json:"token,omitempty"`
 }
 
 // GetConversationsJSONBody defines parameters for GetConversations.

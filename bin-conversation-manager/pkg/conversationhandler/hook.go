@@ -68,10 +68,29 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 		"account_id": ac.ID,
 	})
 
-	// parse a messages
-	if errHook := h.lineHandler.Hook(ctx, ac, data); errHook != nil {
-		log.Errorf("Could not parse the message. err: %v", errHook)
-		return errHook
+	// parse messages and get results back
+	results, err := h.lineHandler.Hook(ctx, ac, data)
+	if err != nil {
+		log.Errorf("Could not parse the message. err: %v", err)
+		return err
+	}
+
+	// check if account has a message flow
+	if ac.MessageFlowID == uuid.Nil {
+		return nil
+	}
+	log.Debugf("The account has message flow id. account_id: %s, message_flow_id: %s", ac.ID, ac.MessageFlowID)
+
+	for _, r := range results {
+		if r.Conversation == nil || r.Message == nil {
+			continue
+		}
+
+		af, err := h.MessageExecuteActiveflow(ctx, r.Conversation, r.Message, ac.MessageFlowID)
+		if err != nil {
+			return errors.Wrapf(err, "Could not execute the activeflow. account_id: %s", ac.ID)
+		}
+		log.WithField("activeflow", af).Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 	}
 
 	return nil
