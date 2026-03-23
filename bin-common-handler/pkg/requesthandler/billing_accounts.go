@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -29,6 +30,28 @@ func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid
 	}
 
 	return &res, nil
+}
+
+// BillingV1AccountGets returns a list of billing accounts.
+func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal filters. err: %w", err)
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []bmaccount.Account
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // BillingV1AccountUpdateBasicInfo updates a billing account's basic info.
