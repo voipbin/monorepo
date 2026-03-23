@@ -179,7 +179,7 @@ func Test_Billing_EmptySecretRejected(t *testing.T) {
 
 func Test_Billing_SignatureVerification(t *testing.T) {
 	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
-	secret := "pdl_ntfset_01j84jzd84gxsnq96m5csmjpap_TGTCkDNPO1LkmLdBhTCEDijp3OuGWbGn"
+	secret := "pdl_ntfset_test_secret"
 
 	// Generate a valid signature with a fresh timestamp
 	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
