@@ -7360,6 +7360,9 @@ type ServerInterface interface {
 	// Get file details
 	// (GET /service_agents/files/{id})
 	GetServiceAgentsFilesId(c *gin.Context, id string)
+	// Download the service agent file
+	// (GET /service_agents/files/{id}/file)
+	GetServiceAgentsFilesIdFile(c *gin.Context, id string)
 	// Get authenticated agent's details
 	// (GET /service_agents/me)
 	GetServiceAgentsMe(c *gin.Context)
@@ -7477,6 +7480,9 @@ type ServerInterface interface {
 	// Get file details by ID
 	// (GET /storage_files/{id})
 	GetStorageFilesId(c *gin.Context, id string)
+	// Download the storage file
+	// (GET /storage_files/{id}/file)
+	GetStorageFilesIdFile(c *gin.Context, id string)
 	// List tags
 	// (GET /tags)
 	GetTags(c *gin.Context, params GetTagsParams)
@@ -13763,6 +13769,30 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsFilesId(c *gin.Context) {
 	siw.Handler.GetServiceAgentsFilesId(c, id)
 }
 
+// GetServiceAgentsFilesIdFile operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsFilesIdFile(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsFilesIdFile(c, id)
+}
+
 // GetServiceAgentsMe operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsMe(c *gin.Context) {
 
@@ -14659,6 +14689,30 @@ func (siw *ServerInterfaceWrapper) GetStorageFilesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetStorageFilesId(c, id)
+}
+
+// GetStorageFilesIdFile operation middleware
+func (siw *ServerInterfaceWrapper) GetStorageFilesIdFile(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetStorageFilesIdFile(c, id)
 }
 
 // GetTags operation middleware
@@ -15586,6 +15640,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/files", wrapper.PostServiceAgentsFiles)
 	router.DELETE(options.BaseURL+"/service_agents/files/:id", wrapper.DeleteServiceAgentsFilesId)
 	router.GET(options.BaseURL+"/service_agents/files/:id", wrapper.GetServiceAgentsFilesId)
+	router.GET(options.BaseURL+"/service_agents/files/:id/file", wrapper.GetServiceAgentsFilesIdFile)
 	router.GET(options.BaseURL+"/service_agents/me", wrapper.GetServiceAgentsMe)
 	router.PUT(options.BaseURL+"/service_agents/me", wrapper.PutServiceAgentsMe)
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
@@ -15625,6 +15680,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/storage_files", wrapper.PostStorageFiles)
 	router.DELETE(options.BaseURL+"/storage_files/:id", wrapper.DeleteStorageFilesId)
 	router.GET(options.BaseURL+"/storage_files/:id", wrapper.GetStorageFilesId)
+	router.GET(options.BaseURL+"/storage_files/:id/file", wrapper.GetStorageFilesIdFile)
 	router.GET(options.BaseURL+"/tags", wrapper.GetTags)
 	router.POST(options.BaseURL+"/tags", wrapper.PostTags)
 	router.DELETE(options.BaseURL+"/tags/:id", wrapper.DeleteTagsId)
@@ -20383,6 +20439,31 @@ func (response GetServiceAgentsFilesId200JSONResponse) VisitGetServiceAgentsFile
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsFilesIdFileRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetServiceAgentsFilesIdFileResponseObject interface {
+	VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsFilesIdFile307JSONResponse string
+
+func (response GetServiceAgentsFilesIdFile307JSONResponse) VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(307)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsFilesIdFile400Response struct {
+}
+
+func (response GetServiceAgentsFilesIdFile400Response) VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type GetServiceAgentsMeRequestObject struct {
 }
 
@@ -21149,6 +21230,31 @@ func (response GetStorageFilesId200JSONResponse) VisitGetStorageFilesIdResponse(
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFileRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetStorageFilesIdFileResponseObject interface {
+	VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error
+}
+
+type GetStorageFilesIdFile307JSONResponse string
+
+func (response GetStorageFilesIdFile307JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(307)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFile400Response struct {
+}
+
+func (response GetStorageFilesIdFile400Response) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type GetTagsRequestObject struct {
@@ -22487,6 +22593,9 @@ type StrictServerInterface interface {
 	// Get file details
 	// (GET /service_agents/files/{id})
 	GetServiceAgentsFilesId(ctx context.Context, request GetServiceAgentsFilesIdRequestObject) (GetServiceAgentsFilesIdResponseObject, error)
+	// Download the service agent file
+	// (GET /service_agents/files/{id}/file)
+	GetServiceAgentsFilesIdFile(ctx context.Context, request GetServiceAgentsFilesIdFileRequestObject) (GetServiceAgentsFilesIdFileResponseObject, error)
 	// Get authenticated agent's details
 	// (GET /service_agents/me)
 	GetServiceAgentsMe(ctx context.Context, request GetServiceAgentsMeRequestObject) (GetServiceAgentsMeResponseObject, error)
@@ -22604,6 +22713,9 @@ type StrictServerInterface interface {
 	// Get file details by ID
 	// (GET /storage_files/{id})
 	GetStorageFilesId(ctx context.Context, request GetStorageFilesIdRequestObject) (GetStorageFilesIdResponseObject, error)
+	// Download the storage file
+	// (GET /storage_files/{id}/file)
+	GetStorageFilesIdFile(ctx context.Context, request GetStorageFilesIdFileRequestObject) (GetStorageFilesIdFileResponseObject, error)
 	// List tags
 	// (GET /tags)
 	GetTags(ctx context.Context, request GetTagsRequestObject) (GetTagsResponseObject, error)
@@ -30103,6 +30215,33 @@ func (sh *strictHandler) GetServiceAgentsFilesId(ctx *gin.Context, id string) {
 	}
 }
 
+// GetServiceAgentsFilesIdFile operation middleware
+func (sh *strictHandler) GetServiceAgentsFilesIdFile(ctx *gin.Context, id string) {
+	var request GetServiceAgentsFilesIdFileRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsFilesIdFile(ctx, request.(GetServiceAgentsFilesIdFileRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsFilesIdFile")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsFilesIdFileResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsFilesIdFileResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetServiceAgentsMe operation middleware
 func (sh *strictHandler) GetServiceAgentsMe(ctx *gin.Context) {
 	var request GetServiceAgentsMeRequestObject
@@ -31229,6 +31368,33 @@ func (sh *strictHandler) GetStorageFilesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetStorageFilesIdResponseObject); ok {
 		if err := validResponse.VisitGetStorageFilesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetStorageFilesIdFile operation middleware
+func (sh *strictHandler) GetStorageFilesIdFile(ctx *gin.Context, id string) {
+	var request GetStorageFilesIdFileRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetStorageFilesIdFile(ctx, request.(GetStorageFilesIdFileRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetStorageFilesIdFile")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetStorageFilesIdFileResponseObject); ok {
+		if err := validResponse.VisitGetStorageFilesIdFileResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
