@@ -80,39 +80,6 @@ This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requir
 
    Regular customer users should use ``GET /v1.0/billing_account`` (singular, no ID) to retrieve their own billing account. The plural ``/billing_accounts`` endpoint is restricted to project super admins.
 
-Add Balance (Project Admin Only)
-----------------------------------
-
-Only project super admins can add balance to accounts. This operation uses the admin-only ``/billing_accounts/{id}`` endpoint (plural, with explicit account ID).
-
-**Add Balance:**
-
-.. code::
-
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/billing_accounts/<billing-account-id>/balance?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "amount": 100.00
-        }'
-
-    {
-        "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
-        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "name": "Primary Account",
-        "detail": "Main billing account",
-        "plan_type": "free",
-        "balance_credit": 169772630,
-        "balance_token": 70,
-        "payment_type": "",
-        "payment_method": "",
-        "tm_last_topup": "2024-01-01T00:00:00Z",
-        "tm_next_topup": "2024-02-01T00:00:00Z",
-        "tm_create": "2024-01-01T00:00:00Z",
-        "tm_update": "2024-01-15T10:30:00Z"
-    }
-
-**Important:** This operation requires project super admin permissions. Regular customer users will receive a permission error. The ``/billing_accounts/{id}`` endpoints are not available to normal customer users.
-
 Understanding Service Rates
 ----------------------------
 

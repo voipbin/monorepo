@@ -8,6 +8,7 @@ import (
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -280,6 +281,357 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfGet(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer       *cscustomer.Customer
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+			},
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			expectRes: &bmaccount.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountSelfGet(ctx, tt.agent)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfGet_NoBillingAccount(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer *cscustomer.Customer
+	}{
+		{
+			name: "no billing account",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.Nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			_, err := h.BillingAccountSelfGet(ctx, tt.agent)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfUpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent  *amagent.Agent
+		baName string
+		detail string
+
+		responseCustomer       *cscustomer.Customer
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			baName: "test name",
+			detail: "test detail",
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+			},
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			expectRes: &bmaccount.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.responseCustomer.BillingAccountID, tt.baName, tt.detail).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountSelfUpdateBasicInfo(ctx, tt.agent, tt.baName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfUpdatePaymentInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent         *amagent.Agent
+		paymentType   bmaccount.PaymentType
+		paymentMethod bmaccount.PaymentMethod
+
+		responseCustomer       *cscustomer.Customer
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			paymentType:   bmaccount.PaymentTypePrepaid,
+			paymentMethod: bmaccount.PaymentMethodCreditCard,
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+			},
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			expectRes: &bmaccount.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.responseCustomer.BillingAccountID, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountSelfUpdatePaymentInfo(ctx, tt.agent, tt.paymentType, tt.paymentMethod)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountList(t *testing.T) {
+
+	type test struct {
+		name string
+
+		agent         *amagent.Agent
+		size          uint64
+		token         string
+		filters       map[string]string
+		expectFilters map[bmaccount.Field]any
+
+		responseBillingAccounts []bmaccount.Account
+		expectRes               []*bmaccount.Account
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			},
+
+			10,
+			"2020-09-20T03:23:20.995000Z",
+			map[string]string{
+				"deleted": "false",
+			},
+			map[bmaccount.Field]any{
+				bmaccount.FieldDeleted: false,
+			},
+
+			[]bmaccount.Account{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+				},
+			},
+			[]*bmaccount.Account{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAccounts, nil)
+
+			res, err := h.BillingAccountList(ctx, tt.agent, tt.size, tt.token, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

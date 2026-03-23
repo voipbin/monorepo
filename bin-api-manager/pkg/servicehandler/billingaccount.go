@@ -112,6 +112,7 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 
 // BillingAccountAddBalanceForce sends a request to billing-manager
 // to add the given billing account's balance.
+// NOTE: This is an internal admin-only operation. Do NOT document in user-facing RST docs.
 func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountAddBalanceForce",
@@ -137,6 +138,7 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *a
 
 // BillingAccountSubtractBalanceForce sends a request to billing-manager
 // to subtract the given billing account's balance.
+// NOTE: This is an internal admin-only operation. Do NOT document in user-facing RST docs.
 func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountSubtractBalanceForce",

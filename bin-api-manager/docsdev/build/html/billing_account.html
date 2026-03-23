@@ -542,16 +542,6 @@ v                   v     v                   v
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
-<p><strong>Add Balance (Project Admin Only)</strong></p>
-<p>This operation uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoint, which requires project super admin permissions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance_add_force?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;balance&quot;: 100.00
-    }&#39;
-</pre></div>
-</div>
-<p>Note: Balance addition is restricted to project super admins. The <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoints require explicit account ID and elevated permissions. Regular customer users should use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> (singular, no ID) to check their balance.</p>
 </section>
 <section id="balance-lifecycle">
 <h3>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h3>
@@ -774,35 +764,6 @@ v                   v     v                   v
 <p><strong>AI Implementation Hint</strong></p>
 <p>Regular customer users should use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> (singular, no ID) to retrieve their own billing account. The plural <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> endpoint is restricted to project super admins.</p>
 </div>
-</section>
-<section id="add-balance-project-admin-only">
-<h3>Add Balance (Project Admin Only)<a class="headerlink" href="#add-balance-project-admin-only" title="Link to this heading"></a></h3>
-<p>Only project super admins can add balance to accounts. This operation uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoint (plural, with explicit account ID).</p>
-<p><strong>Add Balance:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;/balance?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;amount&quot;: 100.00
-    }&#39;
-
-{
-    &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;Primary Account&quot;,
-    &quot;detail&quot;: &quot;Main billing account&quot;,
-    &quot;plan_type&quot;: &quot;free&quot;,
-    &quot;balance_credit&quot;: 169772630,
-    &quot;balance_token&quot;: 70,
-    &quot;payment_type&quot;: &quot;&quot;,
-    &quot;payment_method&quot;: &quot;&quot;,
-    &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-    &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;
-}
-</pre></div>
-</div>
-<p><strong>Important:</strong> This operation requires project super admin permissions. Regular customer users will receive a permission error. The <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoints are not available to normal customer users.</p>
 </section>
 <section id="understanding-service-rates">
 <h3>Understanding Service Rates<a class="headerlink" href="#understanding-service-rates" title="Link to this heading"></a></h3>
@@ -1306,7 +1267,6 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li><a class="reference internal" href="#check-account-balance">Check Account Balance</a></li>
-<li><a class="reference internal" href="#add-balance-project-admin-only">Add Balance (Project Admin Only)</a></li>
 <li><a class="reference internal" href="#understanding-service-rates">Understanding Service Rates</a></li>
 <li><a class="reference internal" href="#check-balance-before-call">Check Balance Before Call</a></li>
 <li><a class="reference internal" href="#monitor-balance-with-webhooks">Monitor Balance with Webhooks</a></li>

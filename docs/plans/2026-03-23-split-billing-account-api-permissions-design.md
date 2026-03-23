@@ -72,7 +72,7 @@ Error cases:
 
 ## Response Model Changes
 
-The singular `/billing_account` endpoints (customer-facing) return `WebhookMessage` — stripped of internal fields like Paddle IDs. These use the existing `BillingManagerAccount` OpenAPI schema.
+The singular `/billing_account` endpoints (customer-facing) return `WebhookMessage` — which includes Paddle IDs (intentionally exposed for customer reference). These use the existing `BillingManagerAccount` OpenAPI schema.
 
 The plural `/billing_accounts` endpoints (project-admin-only) return the raw internal `Account` model — exposing all fields including `status` and Paddle IDs, since admins need full visibility. This means the existing `BillingAccountGet`, `BillingAccountUpdateBasicInfo`, and `BillingAccountUpdatePaymentInfo` methods must be changed to return `*bmaccount.Account` instead of `*bmaccount.WebhookMessage` (remove `.ConvertWebhookMessage()` calls).
 

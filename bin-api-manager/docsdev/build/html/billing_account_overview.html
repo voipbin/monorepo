@@ -536,16 +536,6 @@ v                   v     v                   v
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
-<p><strong>Add Balance (Project Admin Only)</strong></p>
-<p>This operation uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoint, which requires project super admin permissions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance_add_force?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;balance&quot;: 100.00
-    }&#39;
-</pre></div>
-</div>
-<p>Note: Balance addition is restricted to project super admins. The <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoints require explicit account ID and elevated permissions. Regular customer users should use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> (singular, no ID) to check their balance.</p>
 </section>
 <section id="balance-lifecycle">
 <h2>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h2>
