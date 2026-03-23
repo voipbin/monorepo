@@ -175,3 +175,22 @@ func (r *requestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UU
 
 	return &res, nil
 }
+
+// StorageV1FileDownloadURIRefresh sends a request to storage-manager
+// to refresh the download URI for the given file.
+// it returns fresh download URI if it succeeds.
+func (r *requestHandler) StorageV1FileDownloadURIRefresh(ctx context.Context, fileID uuid.UUID) (string, error) {
+	uri := fmt.Sprintf("/v1/files/%s/download_uri_refresh", fileID)
+
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files/<file-id>/download_uri_refresh", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return "", err
+	}
+
+	var res string
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return "", errParse
+	}
+
+	return res, nil
+}
