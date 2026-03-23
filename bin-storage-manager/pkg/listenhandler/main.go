@@ -44,9 +44,9 @@ var (
 	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// files
-	regV1FilesGet = regexp.MustCompile(`/v1/files\?`)
-	regV1Files    = regexp.MustCompile("/v1/files$")
-	regV1FilesID                     = regexp.MustCompile("/v1/files/" + regUUID + "$")
+	regV1FilesGet                  = regexp.MustCompile(`/v1/files\?`)
+	regV1Files                     = regexp.MustCompile("/v1/files$")
+	regV1FilesID                   = regexp.MustCompile("/v1/files/" + regUUID + "$")
 	regV1FilesIDDownloadURIRefresh = regexp.MustCompile("/v1/files/" + regUUID + "/download_uri_refresh$")
 
 	// compress

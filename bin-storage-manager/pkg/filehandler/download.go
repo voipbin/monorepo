@@ -25,7 +25,7 @@ func (h *fileHandler) DownloadURIRefresh(ctx context.Context, id uuid.UUID) (str
 	}
 	log.WithField("file", f).Debugf("Retrieved file info. file_id: %s", f.ID)
 
-	expireDuration := 7 * 24 * time.Hour
+	expireDuration := downloadURLExpiration
 	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeNowAdd(expireDuration)
 

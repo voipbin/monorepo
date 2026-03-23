@@ -7,15 +7,24 @@ get:
     - name: id
       in: path
       required: true
-      description: The file's ID.
+      description: The file's ID. Obtained from the `id` field of `GET /service_agents/files`.
       schema:
         type: string
+        format: uuid
   responses:
     '307':
-      description: The service agent file download URL.
+      description: Redirect to the service agent file download URL.
       content:
         application/json:
           schema:
             type: string
     '400':
       description: Bad request. Could not find agent information or file.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Could not get service agent file."

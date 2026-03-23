@@ -7362,7 +7362,7 @@ type ServerInterface interface {
 	GetServiceAgentsFilesId(c *gin.Context, id string)
 	// Download the service agent file
 	// (GET /service_agents/files/{id}/file)
-	GetServiceAgentsFilesIdFile(c *gin.Context, id string)
+	GetServiceAgentsFilesIdFile(c *gin.Context, id openapi_types.UUID)
 	// Get authenticated agent's details
 	// (GET /service_agents/me)
 	GetServiceAgentsMe(c *gin.Context)
@@ -7482,7 +7482,7 @@ type ServerInterface interface {
 	GetStorageFilesId(c *gin.Context, id string)
 	// Download the storage file
 	// (GET /storage_files/{id}/file)
-	GetStorageFilesIdFile(c *gin.Context, id string)
+	GetStorageFilesIdFile(c *gin.Context, id openapi_types.UUID)
 	// List tags
 	// (GET /tags)
 	GetTags(c *gin.Context, params GetTagsParams)
@@ -13775,7 +13775,7 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsFilesIdFile(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id openapi_types.UUID
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
@@ -14697,7 +14697,7 @@ func (siw *ServerInterfaceWrapper) GetStorageFilesIdFile(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id openapi_types.UUID
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
@@ -20440,7 +20440,7 @@ func (response GetServiceAgentsFilesId200JSONResponse) VisitGetServiceAgentsFile
 }
 
 type GetServiceAgentsFilesIdFileRequestObject struct {
-	Id string `json:"id"`
+	Id openapi_types.UUID `json:"id"`
 }
 
 type GetServiceAgentsFilesIdFileResponseObject interface {
@@ -20456,12 +20456,15 @@ func (response GetServiceAgentsFilesIdFile307JSONResponse) VisitGetServiceAgents
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetServiceAgentsFilesIdFile400Response struct {
+type GetServiceAgentsFilesIdFile400JSONResponse struct {
+	Error *string `json:"error,omitempty"`
 }
 
-func (response GetServiceAgentsFilesIdFile400Response) VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error {
+func (response GetServiceAgentsFilesIdFile400JSONResponse) VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsMeRequestObject struct {
@@ -21233,7 +21236,7 @@ func (response GetStorageFilesId200JSONResponse) VisitGetStorageFilesIdResponse(
 }
 
 type GetStorageFilesIdFileRequestObject struct {
-	Id string `json:"id"`
+	Id openapi_types.UUID `json:"id"`
 }
 
 type GetStorageFilesIdFileResponseObject interface {
@@ -21249,12 +21252,15 @@ func (response GetStorageFilesIdFile307JSONResponse) VisitGetStorageFilesIdFileR
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetStorageFilesIdFile400Response struct {
+type GetStorageFilesIdFile400JSONResponse struct {
+	Error *string `json:"error,omitempty"`
 }
 
-func (response GetStorageFilesIdFile400Response) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+func (response GetStorageFilesIdFile400JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetTagsRequestObject struct {
@@ -30216,7 +30222,7 @@ func (sh *strictHandler) GetServiceAgentsFilesId(ctx *gin.Context, id string) {
 }
 
 // GetServiceAgentsFilesIdFile operation middleware
-func (sh *strictHandler) GetServiceAgentsFilesIdFile(ctx *gin.Context, id string) {
+func (sh *strictHandler) GetServiceAgentsFilesIdFile(ctx *gin.Context, id openapi_types.UUID) {
 	var request GetServiceAgentsFilesIdFileRequestObject
 
 	request.Id = id
@@ -31376,7 +31382,7 @@ func (sh *strictHandler) GetStorageFilesId(ctx *gin.Context, id string) {
 }
 
 // GetStorageFilesIdFile operation middleware
-func (sh *strictHandler) GetStorageFilesIdFile(ctx *gin.Context, id string) {
+func (sh *strictHandler) GetStorageFilesIdFile(ctx *gin.Context, id openapi_types.UUID) {
 	var request GetStorageFilesIdFileRequestObject
 
 	request.Id = id

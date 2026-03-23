@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -174,7 +175,7 @@ func (h *server) DeleteServiceAgentsFilesId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
-func (h *server) GetServiceAgentsFilesIdFile(c *gin.Context, id string) {
+func (h *server) GetServiceAgentsFilesIdFile(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetServiceAgentsFilesIdFile",
 		"request_address": c.ClientIP(),
@@ -192,9 +193,9 @@ func (h *server) GetServiceAgentsFilesIdFile(c *gin.Context, id string) {
 		"agent": a,
 	})
 
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid ID format. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

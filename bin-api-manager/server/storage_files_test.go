@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"mime/multipart"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -413,6 +414,205 @@ func Test_DeleteStorageFilesId(t *testing.T) {
 
 			if w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_GetStorageFilesIdFile(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+
+		responseDownloadURL string
+
+		expectFileID uuid.UUID
+	}{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34/file",
+
+			responseDownloadURL: "https://storage.example.com/file.txt?token=valid",
+
+			expectFileID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseDownloadURL, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusTemporaryRedirect {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusTemporaryRedirect, w.Code)
+			}
+
+			if w.Result().Header["Location"][0] != tt.responseDownloadURL {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.responseDownloadURL, w.Result().Header["Location"][0])
+			}
+		})
+	}
+}
+
+func Test_GetStorageFilesIdFile_NoAgent(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		reqQuery string
+	}{
+		{
+			name:     "no agent in context",
+			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34/file",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			// No agent middleware - agent not set in context
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+			}
+		})
+	}
+}
+
+func Test_GetStorageFilesIdFile_InvalidUUID(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		agent    amagent.Agent
+		reqQuery string
+	}{
+		{
+			name: "invalid UUID",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+			reqQuery: "/storage_files/invalid-uuid/file",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+			}
+		})
+	}
+}
+
+func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+
+		expectFileID uuid.UUID
+	}{
+		{
+			name: "service returns error",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34/file",
+
+			expectFileID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), &tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
 			}
 		})
 	}

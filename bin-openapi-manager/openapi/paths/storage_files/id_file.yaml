@@ -7,15 +7,24 @@ get:
     - name: id
       in: path
       required: true
-      description: The storage file's ID.
+      description: The storage file's ID. Obtained from the `id` field of `GET /storage_files`.
       schema:
         type: string
+        format: uuid
   responses:
     '307':
-      description: The storage file download URL.
+      description: Redirect to the storage file download URL.
       content:
         application/json:
           schema:
             type: string
     '400':
       description: Bad request. Could not find agent information or storage file.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Could not get storage file."

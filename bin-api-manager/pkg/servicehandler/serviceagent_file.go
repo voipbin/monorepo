@@ -194,13 +194,13 @@ func (h *serviceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a
 	}
 
 	// check if download URL is still valid
-	if f.TMDownloadExpire != nil && f.TMDownloadExpire.After(time.Now()) {
+	if f.TMDownloadExpire != nil && f.TMDownloadExpire.After(time.Now()) && f.URIDownload != "" {
 		log.Debugf("Download URL is still valid. file_id: %s", f.ID)
 		return f.URIDownload, nil
 	}
 
-	// URL expired, refresh it
-	log.Debugf("Download URL expired. Refreshing. file_id: %s", f.ID)
+	// URL expired or empty, refresh it
+	log.Debugf("Download URL expired or empty. Refreshing. file_id: %s", f.ID)
 	downloadURI, err := h.reqHandler.StorageV1FileDownloadURIRefresh(ctx, id)
 	if err != nil {
 		log.Errorf("Could not refresh download URI. err: %v", err)

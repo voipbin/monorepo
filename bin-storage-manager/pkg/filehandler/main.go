@@ -30,6 +30,10 @@ const (
 	bucketDirectoryRecording = "recording"
 	bucketDirectoryTmp       = "tmp"
 	bucketDirectoryBin       = "bin" // bin project services directory.
+
+	// downloadURLExpiration is the duration for GCS signed download URLs.
+	// GCS V2 signed URLs have a hard maximum of 7 days.
+	downloadURLExpiration = 7 * 24 * time.Hour
 )
 
 // FileHandler intreface for GCP bucket handler
