@@ -513,7 +513,7 @@ v                   v     v                   v
 <h2>Managing Balance<a class="headerlink" href="#managing-balance" title="Link to this heading"></a></h2>
 <p>Check and manage your account balance.</p>
 <p><strong>Check Balance</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_accounts?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
@@ -536,15 +536,6 @@ v                   v     v                   v
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
-<p><strong>Add Balance (Admin Only)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance_add_force?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;balance&quot;: 100.00
-    }&#39;
-</pre></div>
-</div>
-<p>Note: Balance addition is restricted to users with admin permissions for security.</p>
 </section>
 <section id="balance-lifecycle">
 <h2>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h2>

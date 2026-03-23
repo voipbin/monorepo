@@ -788,10 +788,10 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, coun
 }
 
 // BillingAccountAddBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountAddBalanceForce", ctx, a, billingAccountID, balance)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -803,10 +803,10 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, a, 
 }
 
 // BillingAccountGet mocks base method.
-func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountGet", ctx, a, billingAccountID)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -817,11 +817,71 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, a, billingAccou
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGet), ctx, a, billingAccountID)
 }
 
+// BillingAccountList mocks base method.
+func (m *MockServiceHandler) BillingAccountList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountList", ctx, a, size, token, filters)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountList indicates an expected call of BillingAccountList.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountList(ctx, a, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountList", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountList), ctx, a, size, token, filters)
+}
+
+// BillingAccountSelfGet mocks base method.
+func (m *MockServiceHandler) BillingAccountSelfGet(ctx context.Context, a *agent.Agent) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountSelfGet", ctx, a)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountSelfGet indicates an expected call of BillingAccountSelfGet.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountSelfGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountSelfGet), ctx, a)
+}
+
+// BillingAccountSelfUpdateBasicInfo mocks base method.
+func (m *MockServiceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *agent.Agent, name, detail string) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountSelfUpdateBasicInfo", ctx, a, name, detail)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountSelfUpdateBasicInfo indicates an expected call of BillingAccountSelfUpdateBasicInfo.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfUpdateBasicInfo(ctx, a, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountSelfUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountSelfUpdateBasicInfo), ctx, a, name, detail)
+}
+
+// BillingAccountSelfUpdatePaymentInfo mocks base method.
+func (m *MockServiceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *agent.Agent, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountSelfUpdatePaymentInfo", ctx, a, paymentType, paymentMethod)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountSelfUpdatePaymentInfo indicates an expected call of BillingAccountSelfUpdatePaymentInfo.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfUpdatePaymentInfo(ctx, a, paymentType, paymentMethod any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountSelfUpdatePaymentInfo", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountSelfUpdatePaymentInfo), ctx, a, paymentType, paymentMethod)
+}
+
 // BillingAccountSubtractBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSubtractBalanceForce", ctx, a, billingAccountID, balance)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -833,10 +893,10 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSubtractBalanceForce(ctx
 }
 
 // BillingAccountUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, name, detail string) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountUpdateBasicInfo", ctx, a, billingAccountID, name, detail)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -848,10 +908,10 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountUpdateBasicInfo(ctx, a, 
 }
 
 // BillingAccountUpdatePaymentInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountUpdatePaymentInfo", ctx, a, billingAccountID, paymentType, paymentMethod)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

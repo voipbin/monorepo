@@ -16,7 +16,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BillingManagerAccount'
+            $ref: '#/components/schemas/BillingManagerAccountAdmin'
 
 put:
   summary: Update billing account
@@ -47,4 +47,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BillingManagerAccount'
+            $ref: '#/components/schemas/BillingManagerAccountAdmin'

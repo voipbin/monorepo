@@ -197,6 +197,13 @@ const (
 	BillingManagerAccountPlanTypeUnlimited    BillingManagerAccountPlanType = "unlimited"
 )
 
+// Defines values for BillingManagerAccountStatus.
+const (
+	BillingManagerAccountStatusActive  BillingManagerAccountStatus = "active"
+	BillingManagerAccountStatusDeleted BillingManagerAccountStatus = "deleted"
+	BillingManagerAccountStatusFrozen  BillingManagerAccountStatus = "frozen"
+)
+
 // Defines values for BillingManagerBillingCostType.
 const (
 	BillingManagerBillingCostTypeCallDirectExt    BillingManagerBillingCostType = "call_direct_ext"
@@ -1454,6 +1461,60 @@ type BillingManagerAccount struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// BillingManagerAccountAdmin Internal billing account representation for project admins. Includes all fields including status.
+type BillingManagerAccountAdmin struct {
+	// BalanceCredit The credit balance of the account in micros (1 USD = 1,000,000).
+	BalanceCredit *int64 `json:"balance_credit,omitempty"`
+
+	// BalanceToken The token balance of the account.
+	BalanceToken *int64 `json:"balance_token,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail A human-readable note describing the purpose of this account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the account.
+	Id *string `json:"id,omitempty"`
+
+	// Name The display name of the billing account.
+	Name *string `json:"name,omitempty"`
+
+	// PaddleCustomerId The Paddle customer identifier for this billing account.
+	PaddleCustomerId *string `json:"paddle_customer_id,omitempty"`
+
+	// PaddleSubscriptionId The Paddle subscription identifier for this billing account.
+	PaddleSubscriptionId *string `json:"paddle_subscription_id,omitempty"`
+
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+
+	// PlanType The plan tier of the billing account. Determines resource creation limits.
+	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
+
+	// Status The status of the billing account.
+	Status *BillingManagerAccountStatus `json:"status,omitempty"`
+
+	// TmCreate The timestamp when the account was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The timestamp when the account was deleted, if applicable.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmLastTopup The timestamp of the last token top-up.
+	TmLastTopup *string `json:"tm_last_topup,omitempty"`
+
+	// TmNextTopup The timestamp of the next scheduled token top-up.
+	TmNextTopup *string `json:"tm_next_topup,omitempty"`
+
+	// TmUpdate The timestamp when the account was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
 // BillingManagerAccountPaymentMethod The method of payment used for the account.
 type BillingManagerAccountPaymentMethod string
 
@@ -1462,6 +1523,9 @@ type BillingManagerAccountPaymentType string
 
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
+
+// BillingManagerAccountStatus The status of the billing account.
+type BillingManagerAccountStatus string
 
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
@@ -4546,6 +4610,33 @@ type GetAvailableNumbersParams struct {
 	Type *NumberManagerNumberType `form:"type,omitempty" json:"type,omitempty"`
 }
 
+// PutBillingAccountJSONBody defines parameters for PutBillingAccount.
+type PutBillingAccountJSONBody struct {
+	// Detail A human-readable note describing the purpose of this account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name The display name of the billing account.
+	Name *string `json:"name,omitempty"`
+}
+
+// PutBillingAccountPaymentInfoJSONBody defines parameters for PutBillingAccountPaymentInfo.
+type PutBillingAccountPaymentInfoJSONBody struct {
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+}
+
+// GetBillingAccountsParams defines parameters for GetBillingAccounts.
+type GetBillingAccountsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
 type PutBillingAccountsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
@@ -6220,6 +6311,12 @@ type PostAuthSignupJSONRequestBody = RequestBodyAuthSignupPOST
 // PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
 type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST
 
+// PutBillingAccountJSONRequestBody defines body for PutBillingAccount for application/json ContentType.
+type PutBillingAccountJSONRequestBody PutBillingAccountJSONBody
+
+// PutBillingAccountPaymentInfoJSONRequestBody defines body for PutBillingAccountPaymentInfo for application/json ContentType.
+type PutBillingAccountPaymentInfoJSONRequestBody PutBillingAccountPaymentInfoJSONBody
+
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody
 
@@ -6654,6 +6751,18 @@ type ServerInterface interface {
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
+	// Get billing account info
+	// (GET /billing_account)
+	GetBillingAccount(c *gin.Context)
+	// Update billing account
+	// (PUT /billing_account)
+	PutBillingAccount(c *gin.Context)
+	// Update billing account payment info
+	// (PUT /billing_account/payment_info)
+	PutBillingAccountPaymentInfo(c *gin.Context)
+	// Get list of billing accounts
+	// (GET /billing_accounts)
+	GetBillingAccounts(c *gin.Context, params GetBillingAccountsParams)
 	// Get detailed billing account info
 	// (GET /billing_accounts/{id})
 	GetBillingAccountsId(c *gin.Context, id string)
@@ -8550,6 +8659,79 @@ func (siw *ServerInterfaceWrapper) GetAvailableNumbers(c *gin.Context) {
 	}
 
 	siw.Handler.GetAvailableNumbers(c, params)
+}
+
+// GetBillingAccount operation middleware
+func (siw *ServerInterfaceWrapper) GetBillingAccount(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetBillingAccount(c)
+}
+
+// PutBillingAccount operation middleware
+func (siw *ServerInterfaceWrapper) PutBillingAccount(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutBillingAccount(c)
+}
+
+// PutBillingAccountPaymentInfo operation middleware
+func (siw *ServerInterfaceWrapper) PutBillingAccountPaymentInfo(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutBillingAccountPaymentInfo(c)
+}
+
+// GetBillingAccounts operation middleware
+func (siw *ServerInterfaceWrapper) GetBillingAccounts(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetBillingAccountsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetBillingAccounts(c, params)
 }
 
 // GetBillingAccountsId operation middleware
@@ -15201,6 +15383,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/auth/unregister", wrapper.DeleteAuthUnregister)
 	router.POST(options.BaseURL+"/auth/unregister", wrapper.PostAuthUnregister)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
+	router.GET(options.BaseURL+"/billing_account", wrapper.GetBillingAccount)
+	router.PUT(options.BaseURL+"/billing_account", wrapper.PutBillingAccount)
+	router.PUT(options.BaseURL+"/billing_account/payment_info", wrapper.PutBillingAccountPaymentInfo)
+	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
 	router.PUT(options.BaseURL+"/billing_accounts/:id", wrapper.PutBillingAccountsId)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_add_force", wrapper.PostBillingAccountsIdBalanceAddForce)
@@ -16400,6 +16586,77 @@ func (response GetAvailableNumbers400Response) VisitGetAvailableNumbersResponse(
 	return nil
 }
 
+type GetBillingAccountRequestObject struct {
+}
+
+type GetBillingAccountResponseObject interface {
+	VisitGetBillingAccountResponse(w http.ResponseWriter) error
+}
+
+type GetBillingAccount200JSONResponse BillingManagerAccount
+
+func (response GetBillingAccount200JSONResponse) VisitGetBillingAccountResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutBillingAccountRequestObject struct {
+	Body *PutBillingAccountJSONRequestBody
+}
+
+type PutBillingAccountResponseObject interface {
+	VisitPutBillingAccountResponse(w http.ResponseWriter) error
+}
+
+type PutBillingAccount200JSONResponse BillingManagerAccount
+
+func (response PutBillingAccount200JSONResponse) VisitPutBillingAccountResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutBillingAccountPaymentInfoRequestObject struct {
+	Body *PutBillingAccountPaymentInfoJSONRequestBody
+}
+
+type PutBillingAccountPaymentInfoResponseObject interface {
+	VisitPutBillingAccountPaymentInfoResponse(w http.ResponseWriter) error
+}
+
+type PutBillingAccountPaymentInfo200JSONResponse BillingManagerAccount
+
+func (response PutBillingAccountPaymentInfo200JSONResponse) VisitPutBillingAccountPaymentInfoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingAccountsRequestObject struct {
+	Params GetBillingAccountsParams
+}
+
+type GetBillingAccountsResponseObject interface {
+	VisitGetBillingAccountsResponse(w http.ResponseWriter) error
+}
+
+type GetBillingAccounts200JSONResponse struct {
+	// NextPageToken Token for the next page of results.
+	NextPageToken *string                       `json:"next_page_token,omitempty"`
+	Result        *[]BillingManagerAccountAdmin `json:"result,omitempty"`
+}
+
+func (response GetBillingAccounts200JSONResponse) VisitGetBillingAccountsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetBillingAccountsIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -16408,7 +16665,7 @@ type GetBillingAccountsIdResponseObject interface {
 	VisitGetBillingAccountsIdResponse(w http.ResponseWriter) error
 }
 
-type GetBillingAccountsId200JSONResponse BillingManagerAccount
+type GetBillingAccountsId200JSONResponse BillingManagerAccountAdmin
 
 func (response GetBillingAccountsId200JSONResponse) VisitGetBillingAccountsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -16426,7 +16683,7 @@ type PutBillingAccountsIdResponseObject interface {
 	VisitPutBillingAccountsIdResponse(w http.ResponseWriter) error
 }
 
-type PutBillingAccountsId200JSONResponse BillingManagerAccount
+type PutBillingAccountsId200JSONResponse BillingManagerAccountAdmin
 
 func (response PutBillingAccountsId200JSONResponse) VisitPutBillingAccountsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -16480,7 +16737,7 @@ type PutBillingAccountsIdPaymentInfoResponseObject interface {
 	VisitPutBillingAccountsIdPaymentInfoResponse(w http.ResponseWriter) error
 }
 
-type PutBillingAccountsIdPaymentInfo200JSONResponse BillingManagerAccount
+type PutBillingAccountsIdPaymentInfo200JSONResponse BillingManagerAccountAdmin
 
 func (response PutBillingAccountsIdPaymentInfo200JSONResponse) VisitPutBillingAccountsIdPaymentInfoResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -21621,6 +21878,18 @@ type StrictServerInterface interface {
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
+	// Get billing account info
+	// (GET /billing_account)
+	GetBillingAccount(ctx context.Context, request GetBillingAccountRequestObject) (GetBillingAccountResponseObject, error)
+	// Update billing account
+	// (PUT /billing_account)
+	PutBillingAccount(ctx context.Context, request PutBillingAccountRequestObject) (PutBillingAccountResponseObject, error)
+	// Update billing account payment info
+	// (PUT /billing_account/payment_info)
+	PutBillingAccountPaymentInfo(ctx context.Context, request PutBillingAccountPaymentInfoRequestObject) (PutBillingAccountPaymentInfoResponseObject, error)
+	// Get list of billing accounts
+	// (GET /billing_accounts)
+	GetBillingAccounts(ctx context.Context, request GetBillingAccountsRequestObject) (GetBillingAccountsResponseObject, error)
 	// Get detailed billing account info
 	// (GET /billing_accounts/{id})
 	GetBillingAccountsId(ctx context.Context, request GetBillingAccountsIdRequestObject) (GetBillingAccountsIdResponseObject, error)
@@ -23740,6 +24009,124 @@ func (sh *strictHandler) GetAvailableNumbers(ctx *gin.Context, params GetAvailab
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAvailableNumbersResponseObject); ok {
 		if err := validResponse.VisitGetAvailableNumbersResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetBillingAccount operation middleware
+func (sh *strictHandler) GetBillingAccount(ctx *gin.Context) {
+	var request GetBillingAccountRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetBillingAccount(ctx, request.(GetBillingAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetBillingAccount")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetBillingAccountResponseObject); ok {
+		if err := validResponse.VisitGetBillingAccountResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutBillingAccount operation middleware
+func (sh *strictHandler) PutBillingAccount(ctx *gin.Context) {
+	var request PutBillingAccountRequestObject
+
+	var body PutBillingAccountJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutBillingAccount(ctx, request.(PutBillingAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutBillingAccount")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutBillingAccountResponseObject); ok {
+		if err := validResponse.VisitPutBillingAccountResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutBillingAccountPaymentInfo operation middleware
+func (sh *strictHandler) PutBillingAccountPaymentInfo(ctx *gin.Context) {
+	var request PutBillingAccountPaymentInfoRequestObject
+
+	var body PutBillingAccountPaymentInfoJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutBillingAccountPaymentInfo(ctx, request.(PutBillingAccountPaymentInfoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutBillingAccountPaymentInfo")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutBillingAccountPaymentInfoResponseObject); ok {
+		if err := validResponse.VisitPutBillingAccountPaymentInfoResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetBillingAccounts operation middleware
+func (sh *strictHandler) GetBillingAccounts(ctx *gin.Context, params GetBillingAccountsParams) {
+	var request GetBillingAccountsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetBillingAccounts(ctx, request.(GetBillingAccountsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetBillingAccounts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetBillingAccountsResponseObject); ok {
+		if err := validResponse.VisitGetBillingAccountsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

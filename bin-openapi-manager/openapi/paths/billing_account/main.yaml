@@ -1,0 +1,40 @@
+get:
+  summary: Get billing account info
+  description: Retrieve the billing account of the authenticated customer. The billing account is automatically resolved from the authenticated user's customer record.
+  tags:
+    - Billing
+  responses:
+    '200':
+      description: The billing account information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerAccount'
+
+put:
+  summary: Update billing account
+  description: Update the billing account name and detail of the authenticated customer.
+  tags:
+    - Billing
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The display name of the billing account.
+              example: "Production Account"
+            detail:
+              type: string
+              description: A human-readable note describing the purpose of this account.
+              example: "Main billing account for production services"
+  responses:
+    '200':
+      description: Successfully updated billing account.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerAccount'

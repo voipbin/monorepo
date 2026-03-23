@@ -150,11 +150,15 @@ type ServiceHandler interface {
 	AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// billing accounts
-	BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
-	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
-	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.WebhookMessage, error)
-	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)
-	BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
+	BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.Account, error)
+	BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error)
+	BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error)
+	BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
+	BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
+	BillingAccountSelfGet(ctx context.Context, a *amagent.Agent) (*bmaccount.WebhookMessage, error)
+	BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *amagent.Agent, name string, detail string) (*bmaccount.WebhookMessage, error)
+	BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
+	BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*bmaccount.Account, error)
 
 	// billings
 	BillingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error)

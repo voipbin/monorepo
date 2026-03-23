@@ -258,7 +258,7 @@ Check and manage your account balance.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_account?token=<token>'
 
 **Response:**
 
@@ -285,19 +285,6 @@ The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token``
     $ curl -X GET 'https://api.voipbin.net/v1.0/billings?token=<token>&page_size=10'
 
 Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).
-
-**Add Balance (Admin Only)**
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/billing_accounts/<account-id>/balance_add_force?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "balance": 100.00
-        }'
-
-Note: Balance addition is restricted to users with admin permissions for security.
-
 
 Balance Lifecycle
 -----------------

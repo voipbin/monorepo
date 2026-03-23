@@ -1,0 +1,24 @@
+get:
+  summary: Get list of billing accounts
+  description: Returns a list of all billing accounts. Requires project super admin permission.
+  tags:
+    - Billing
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successfully retrieved billing accounts list.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              next_page_token:
+                type: string
+                description: Token for the next page of results.
+                example: "2026-01-15T09:30:00.000000Z"
+              result:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingManagerAccountAdmin'

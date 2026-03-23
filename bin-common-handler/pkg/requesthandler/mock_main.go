@@ -1330,6 +1330,21 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGet(ctx, accountID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGet), ctx, accountID)
 }
 
+// BillingV1AccountGets mocks base method.
+func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountGets indicates an expected call of BillingV1AccountGets.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, pageToken, pageSize, filters)
+}
+
 // BillingV1AccountIsValidBalance mocks base method.
 func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
