@@ -1,0 +1,21 @@
+get:
+  summary: Download the storage file
+  description: Retrieves the specified storage file and redirects to the download URI.
+  tags:
+    - Storage
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The storage file's ID.
+      schema:
+        type: string
+  responses:
+    '307':
+      description: The storage file download URL.
+      content:
+        application/json:
+          schema:
+            type: string
+    '400':
+      description: Bad request. Could not find agent information or storage file.

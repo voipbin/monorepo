@@ -7058,6 +7058,8 @@ paths:
 
   /service_agents/files/{id}:
     $ref: './paths/service_agents/files_id.yaml'
+  /service_agents/files/{id}/file:
+    $ref: './paths/service_agents/files_id_file.yaml'
   /service_agents/files:
     $ref: './paths/service_agents/files.yaml'
 
@@ -7138,6 +7140,8 @@ paths:
 
   /storage_files/{id}:
     $ref: './paths/storage_files/id.yaml'
+  /storage_files/{id}/file:
+    $ref: './paths/storage_files/id_file.yaml'
   /storage_files:
     $ref: './paths/storage_files/main.yaml'
 

@@ -1,0 +1,21 @@
+get:
+  summary: Download the service agent file
+  description: Retrieves the specified service agent file and redirects to the download URI.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The file's ID.
+      schema:
+        type: string
+  responses:
+    '307':
+      description: The service agent file download URL.
+      content:
+        application/json:
+          schema:
+            type: string
+    '400':
+      description: Bad request. Could not find agent information or file.
