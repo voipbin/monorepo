@@ -2170,3 +2170,63 @@ func Test_resolveTeamMemberAI(t *testing.T) {
 		})
 	}
 }
+
+func Test_mergeParameters(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aiParam   map[string]any
+		teamParam map[string]any
+
+		expectRes map[string]any
+	}{
+		{
+			name:      "both_nil",
+			aiParam:   nil,
+			teamParam: nil,
+			expectRes: nil,
+		},
+		{
+			name:      "ai_only",
+			aiParam:   map[string]any{"key1": "val1"},
+			teamParam: nil,
+			expectRes: map[string]any{"key1": "val1"},
+		},
+		{
+			name:      "team_only",
+			aiParam:   nil,
+			teamParam: map[string]any{"key2": "val2"},
+			expectRes: map[string]any{"key2": "val2"},
+		},
+		{
+			name:      "both_no_overlap",
+			aiParam:   map[string]any{"key1": "val1"},
+			teamParam: map[string]any{"key2": "val2"},
+			expectRes: map[string]any{"key1": "val1", "key2": "val2"},
+		},
+		{
+			name:      "team_overrides_ai_on_collision",
+			aiParam:   map[string]any{"key1": "ai_val"},
+			teamParam: map[string]any{"key1": "team_val"},
+			expectRes: map[string]any{"key1": "team_val"},
+		},
+		{
+			name:      "both_empty_maps",
+			aiParam:   map[string]any{},
+			teamParam: map[string]any{},
+			expectRes: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			res := mergeParameters(tt.aiParam, tt.teamParam)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

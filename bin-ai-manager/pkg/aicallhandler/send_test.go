@@ -383,6 +383,11 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
+
+			// Verify CurrentMemberID was updated in-place on the updated aicall (for team cases with fallback)
+			if tt.expectCurrentMemberIDAfter != uuid.Nil && tt.responseUpdatedAIcall.CurrentMemberID != tt.expectCurrentMemberIDAfter {
+				t.Errorf("expected CurrentMemberID after: %v, got: %v", tt.expectCurrentMemberIDAfter, tt.responseUpdatedAIcall.CurrentMemberID)
+			}
 		})
 	}
 }
