@@ -451,6 +451,22 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	return nil
 }
 
+// mergeParameters merges AI and team parameters, with team overriding AI on key collision.
+// Returns nil if both are empty.
+func mergeParameters(aiParam, teamParam map[string]any) map[string]any {
+	merged := map[string]any{}
+	for k, v := range aiParam {
+		merged[k] = v
+	}
+	for k, v := range teamParam {
+		merged[k] = v
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
+}
+
 func (h *aicallHandler) startAIcallByRealtime(
 	ctx context.Context,
 	a *ai.AI,
@@ -472,18 +488,7 @@ func (h *aicallHandler) startAIcallByRealtime(
 		"activeflow_id": activeflowID,
 	})
 
-	// merge ai parameter and team parameter (team overrides ai on key collision)
-	mergedParam := map[string]any{}
-	for k, v := range a.Parameter {
-		mergedParam[k] = v
-	}
-	for k, v := range teamParameter {
-		mergedParam[k] = v
-	}
-	var parameter map[string]any
-	if len(mergedParam) > 0 {
-		parameter = mergedParam
-	}
+	parameter := mergeParameters(a.Parameter, teamParameter)
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
@@ -529,18 +534,7 @@ func (h *aicallHandler) startAIcallByMessaging(
 		"activeflow_id": activeflowID,
 	})
 
-	// merge ai parameter and team parameter (team overrides ai on key collision)
-	mergedParam := map[string]any{}
-	for k, v := range a.Parameter {
-		mergedParam[k] = v
-	}
-	for k, v := range teamParameter {
-		mergedParam[k] = v
-	}
-	var parameter map[string]any
-	if len(mergedParam) > 0 {
-		parameter = mergedParam
-	}
+	parameter := mergeParameters(a.Parameter, teamParameter)
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
