@@ -88,6 +88,75 @@ func (h *aicallHandler) Create(
 	return res, nil
 }
 
+// CreateByMessaging creates a new aicall for non-realtime (messaging) paths.
+// It only sets AIEngineModel from the AI config and does not set TTS/STT/VAD fields.
+func (h *aicallHandler) CreateByMessaging(
+	ctx context.Context,
+	c *ai.AI,
+	assistanceType aicall.AssistanceType,
+	assistanceID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceType aicall.ReferenceType,
+	referenceID uuid.UUID,
+	pipecatcallID uuid.UUID,
+	currentMemberID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+	parameter map[string]any,
+) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "CreateByMessaging",
+		"ai":   c,
+	})
+
+	id := h.utilHandler.UUIDCreate()
+	tmp := &aicall.AIcall{
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: c.CustomerID,
+		},
+
+		AssistanceType: assistanceType,
+		AssistanceID:   assistanceID,
+
+		AIEngineModel: c.EngineModel,
+
+		Parameter: parameter,
+
+		ActiveflowID:  activeflowID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+
+		ConfbridgeID:    uuid.Nil,
+		PipecatcallID:   pipecatcallID,
+		CurrentMemberID: currentMemberID,
+
+		Gender:   gender,
+		Language: language,
+
+		Status: aicall.StatusInitiating,
+	}
+	log = log.WithField("aicall_id", id.String())
+	log.WithField("aicall", tmp).Debugf("Creating aicall by messaging. aicall_id: %s", tmp.ID)
+
+	if errCreate := h.db.AIcallCreate(ctx, tmp); errCreate != nil {
+		log.Errorf("Could not create a new aicall. err: %v", errCreate)
+		return nil, errCreate
+	}
+	promAIcallCreateTotal.WithLabelValues(string(tmp.ReferenceType)).Inc()
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get created aicall info. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, aicall.EventTypeStatusInitializing, res)
+
+	// todo: start health check
+
+	return res, nil
+}
+
 // Get is handy function for getting a aicall.
 func (h *aicallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	log := logrus.WithFields(

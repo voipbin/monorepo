@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -14,6 +15,35 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+// resolveTeamMemberAI looks up a team member by memberID, falling back to
+// the team's StartMemberID when the requested member is not found.
+// Returns the member's AI config and the matched member ID.
+func (h *aicallHandler) resolveTeamMemberAI(ctx context.Context, t *team.Team, memberID uuid.UUID) (*ai.AI, uuid.UUID, error) {
+	// try to find the requested member first
+	for _, m := range t.Members {
+		if m.ID == memberID {
+			a, err := h.aiHandler.Get(ctx, m.AIID)
+			if err != nil {
+				return nil, uuid.Nil, errors.Wrapf(err, "could not get ai info for team member. ai_id: %s, member_id: %s", m.AIID, m.ID)
+			}
+			return a, m.ID, nil
+		}
+	}
+
+	// fallback: find the start member
+	for _, m := range t.Members {
+		if m.ID == t.StartMemberID {
+			a, err := h.aiHandler.Get(ctx, m.AIID)
+			if err != nil {
+				return nil, uuid.Nil, errors.Wrapf(err, "could not get ai info for team start member. ai_id: %s, member_id: %s", m.AIID, m.ID)
+			}
+			return a, m.ID, nil
+		}
+	}
+
+	return nil, uuid.Nil, fmt.Errorf("could not find member or start member in team. team_id: %s, member_id: %s, start_member_id: %s", t.ID, memberID, t.StartMemberID)
+}
 
 // resolveAI resolves the AI config based on the assistance type.
 // For AssistanceTypeAI, it fetches the AI directly.
@@ -34,17 +64,11 @@ func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.Ass
 			return nil, nil, uuid.Nil, errors.Wrapf(err, "could not get team info. team_id: %s", assistanceID)
 		}
 
-		// find the start member
-		for _, m := range t.Members {
-			if m.ID == t.StartMemberID {
-				c, errAI := h.aiHandler.Get(ctx, m.AIID)
-				if errAI != nil {
-					return nil, nil, uuid.Nil, errors.Wrapf(errAI, "could not get ai info for team start member. ai_id: %s", m.AIID)
-				}
-				return c, t.Parameter, m.ID, nil
-			}
+		a, memberID, err := h.resolveTeamMemberAI(ctx, t, t.StartMemberID)
+		if err != nil {
+			return nil, nil, uuid.Nil, err
 		}
-		return nil, nil, uuid.Nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", assistanceID, t.StartMemberID)
+		return a, t.Parameter, memberID, nil
 
 	default:
 		return nil, nil, uuid.Nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
@@ -110,7 +134,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start ai call
-	res, err := h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, false, teamParameter, currentMemberID)
+	res, err := h.startAIcallByRealtime(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, language, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
@@ -161,7 +185,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Debugf("Could not get the aicall by reference id. Start a new aicall. reference_id: %s. err: %v", referenceID, err)
-		res, err = h.startAIcall(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, uuid.Nil, gender, language, false, teamParameter, currentMemberID)
+		res, err = h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, gender, language, false, teamParameter, currentMemberID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -213,7 +237,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	})
 
 	// start ai call
-	tmp, err := h.startAIcall(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, uuid.Nil, gender, language, false, teamParameter, currentMemberID)
+	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, gender, language, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
@@ -427,7 +451,23 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	return nil
 }
 
-func (h *aicallHandler) startAIcall(
+// mergeParameters merges AI and team parameters, with team overriding AI on key collision.
+// Returns nil if both are empty.
+func mergeParameters(aiParam, teamParam map[string]any) map[string]any {
+	merged := map[string]any{}
+	for k, v := range aiParam {
+		merged[k] = v
+	}
+	for k, v := range teamParam {
+		merged[k] = v
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
+}
+
+func (h *aicallHandler) startAIcallByRealtime(
 	ctx context.Context,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
@@ -443,27 +483,62 @@ func (h *aicallHandler) startAIcall(
 	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "startAIcall",
+		"func":          "startAIcallByRealtime",
 		"ai_id":         a.ID,
 		"activeflow_id": activeflowID,
 	})
 
-	// merge ai parameter and team parameter (team overrides ai on key collision)
-	mergedParam := map[string]any{}
-	for k, v := range a.Parameter {
-		mergedParam[k] = v
-	}
-	for k, v := range teamParameter {
-		mergedParam[k] = v
-	}
-	var parameter map[string]any
-	if len(mergedParam) > 0 {
-		parameter = mergedParam
-	}
+	parameter := mergeParameters(a.Parameter, teamParameter)
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
 	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, currentMemberID, gender, language, parameter)
+	if err != nil {
+		log.Errorf("Could not create aicall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create aicall.")
+	}
+	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+
+	// set activeflow variables
+	if errSet := h.setActiveflowVariables(ctx, res); errSet != nil {
+		return nil, errors.Wrapf(errSet, "could not set the activeflow variables for aicall. aicall_id: %s", res.ID)
+	}
+	log.Debugf("Set activeflow variables for aicall. aicall_id: %s", res.ID)
+
+	// start initial messages
+	if errInitMessages := h.startInitMessages(ctx, a, res, isTask); errInitMessages != nil {
+		return nil, errors.Wrapf(errInitMessages, "could not start initial messages for aicall. aicall_id: %s", res.ID)
+	}
+	log.Debugf("Initialized messages for aicall. aicall_id: %s", res.ID)
+
+	return res, nil
+}
+
+func (h *aicallHandler) startAIcallByMessaging(
+	ctx context.Context,
+	a *ai.AI,
+	assistanceType aicall.AssistanceType,
+	assistanceID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceType aicall.ReferenceType,
+	referenceID uuid.UUID,
+	gender aicall.Gender,
+	language string,
+	isTask bool,
+	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
+) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startAIcallByMessaging",
+		"ai_id":         a.ID,
+		"activeflow_id": activeflowID,
+	})
+
+	parameter := mergeParameters(a.Parameter, teamParameter)
+
+	// create ai call
+	pipecatcallID := h.utilHandler.UUIDCreate()
+	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, pipecatcallID, currentMemberID, gender, language, parameter)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -500,7 +575,7 @@ func (h *aicallHandler) StartTask(ctx context.Context, assistanceType aicall.Ass
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
-	res, err := h.startAIcall(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, uuid.Nil, aicall.GenderNone, "", true, teamParameter, currentMemberID)
+	res, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, aicall.GenderNone, "", true, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start AIcall")
 	}

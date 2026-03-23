@@ -889,7 +889,7 @@ func Test_startPipecatcall(t *testing.T) {
 	}
 }
 
-func Test_startAIcall(t *testing.T) {
+func Test_startAIcallByRealtime(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -1138,7 +1138,236 @@ func Test_startAIcall(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			res, err := h.startAIcallByRealtime(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_startAIcallByMessaging(t *testing.T) {
+	tests := []struct {
+		name string
+
+		ai              *ai.AI
+		assistanceType  aicall.AssistanceType
+		assistanceID    uuid.UUID
+		activeflowID    uuid.UUID
+		referenceType   aicall.ReferenceType
+		referenceID     uuid.UUID
+		gender          aicall.Gender
+		language        string
+		isTask          bool
+		teamParameter   map[string]any
+		currentMemberID uuid.UUID
+
+		responseUUIDPipecatcallID uuid.UUID
+		responseUUIDAIcallID      uuid.UUID
+
+		expectAIcall       *aicall.AIcall
+		expectVariables    map[string]string
+		expectMessageTexts []string
+
+		expectRes *aicall.AIcall
+	}{
+		{
+			name: "normal - messaging path does not set TTS/STT/VAD",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+					CustomerID: uuid.FromStringOrNil("d9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				InitPrompt:  "You are a helpful assistant.",
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
+				STTType:     ai.STTTypeDeepgram,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			activeflowID:   uuid.FromStringOrNil("d34140c8-b659-11f0-be3a-5fc8a6759b80"),
+			referenceType:  aicall.ReferenceTypeConversation,
+			referenceID:    uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
+			gender:         aicall.GenderMale,
+			language:       "en-US",
+			isTask:         false,
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("d9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+
+				ActiveflowID:  uuid.FromStringOrNil("d34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ReferenceID:   uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
+				PipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status:   aicall.StatusInitiating,
+				Gender:   aicall.GenderMale,
+				Language: "en-US",
+			},
+			expectVariables: map[string]string{
+				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
+				"voipbin.aicall.ai_id":           "d30ecf94-b659-11f0-b8ef-13f90dff9ee8",
+				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
+				"voipbin.aicall.gender":          "male",
+				"voipbin.aicall.id":              "d3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.language":        "en-US",
+				"voipbin.aicall.pipecatcall_id":  "d3af613e-b659-11f0-9a72-e3e004fae386",
+			},
+			expectMessageTexts: []string{
+				defaultCommonAIcallSystemPrompt,
+				"You are a helpful assistant.",
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("d9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+
+				ActiveflowID:  uuid.FromStringOrNil("d34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ReferenceID:   uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
+				PipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status:   aicall.StatusInitiating,
+				Gender:   aicall.GenderMale,
+				Language: "en-US",
+			},
+		},
+		{
+			name: "messaging path with task flag",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+					CustomerID: uuid.FromStringOrNil("e9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				TTSType:     ai.TTSTypeCartesia,
+				STTType:     ai.STTTypeDeepgram,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			activeflowID:   uuid.FromStringOrNil("e34140c8-b659-11f0-be3a-5fc8a6759b80"),
+			referenceType:  aicall.ReferenceTypeTask,
+			referenceID:    uuid.Nil,
+			gender:         aicall.GenderNone,
+			language:       "",
+			isTask:         true,
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("e9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+
+				ActiveflowID:  uuid.FromStringOrNil("e34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeTask,
+				PipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status: aicall.StatusInitiating,
+			},
+			expectVariables: map[string]string{
+				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
+				"voipbin.aicall.ai_id":           "e40ecf94-b659-11f0-b8ef-13f90dff9ee8",
+				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
+				"voipbin.aicall.gender":          "",
+				"voipbin.aicall.id":              "e3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.language":        "",
+				"voipbin.aicall.pipecatcall_id":  "e3af613e-b659-11f0-9a72-e3e004fae386",
+			},
+			expectMessageTexts: []string{
+				defaultCommonAItaskSystemPrompt,
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("e9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+
+				ActiveflowID:  uuid.FromStringOrNil("e34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType: aicall.ReferenceTypeTask,
+				PipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
+
+				Status: aicall.StatusInitiating,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+
+			// create
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.expectAIcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.expectAIcall)
+
+			// setActiveflowVariables
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables).Return(nil)
+
+			// startInitMessages
+			if tt.ai.InitPrompt != "" {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			}
+			for _, m := range tt.expectMessageTexts {
+				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
+			}
+
+			res, err := h.startAIcallByMessaging(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1768,6 +1997,235 @@ func Test_resolveAI(t *testing.T) {
 
 			if resCurrentMemberID != tt.expectCurrentMemberID {
 				t.Errorf("expected current member ID: %v, got: %v", tt.expectCurrentMemberID, resCurrentMemberID)
+			}
+		})
+	}
+}
+
+func Test_resolveTeamMemberAI(t *testing.T) {
+	tests := []struct {
+		name string
+
+		team     *team.Team
+		memberID uuid.UUID
+
+		responseAI *ai.AI
+		errAI      error
+
+		expectAI       *ai.AI
+		expectMemberID uuid.UUID
+		expectErr      bool
+	}{
+		{
+			name: "member_found",
+
+			team: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				StartMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+						AIID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+					},
+					{
+						ID:   uuid.FromStringOrNil("d4e5f6a7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+						AIID: uuid.FromStringOrNil("e5f6a7b8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+					},
+				},
+			},
+			memberID: uuid.FromStringOrNil("d4e5f6a7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e5f6a7b8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
+			},
+
+			expectAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e5f6a7b8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
+			},
+			expectMemberID: uuid.FromStringOrNil("d4e5f6a7-b8c9-11f0-d4e5-f6a7b8c9d0e1"),
+			expectErr:      false,
+		},
+		{
+			name: "member_not_found_fallback_to_start_member",
+
+			team: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				StartMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+						AIID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+					},
+				},
+			},
+			memberID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+
+			expectAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			expectMemberID: uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+			expectErr:      false,
+		},
+		{
+			name: "neither_found",
+
+			team: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-e5f6-11f0-a1b2-c3d4e5f6a7b8"),
+				},
+				StartMemberID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("b2c3d4e5-f6a7-11f0-b2c3-d4e5f6a7b8c9"),
+						AIID: uuid.FromStringOrNil("c3d4e5f6-a7b8-11f0-c3d4-e5f6a7b8c9d0"),
+					},
+				},
+			},
+			memberID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			h := &aicallHandler{
+				aiHandler: mockAI,
+			}
+			ctx := context.Background()
+
+			if !tt.expectErr || tt.errAI != nil {
+				// determine which member will be looked up
+				for _, m := range tt.team.Members {
+					if m.ID == tt.memberID {
+						mockAI.EXPECT().Get(ctx, m.AIID).Return(tt.responseAI, tt.errAI)
+						break
+					}
+				}
+				// if memberID was not found, the fallback to start member will call Get
+				found := false
+				for _, m := range tt.team.Members {
+					if m.ID == tt.memberID {
+						found = true
+						break
+					}
+				}
+				if !found {
+					for _, m := range tt.team.Members {
+						if m.ID == tt.team.StartMemberID {
+							mockAI.EXPECT().Get(ctx, m.AIID).Return(tt.responseAI, tt.errAI)
+							break
+						}
+					}
+				}
+			}
+
+			resAI, resMemberID, err := h.resolveTeamMemberAI(ctx, tt.team, tt.memberID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if !reflect.DeepEqual(resAI, tt.expectAI) {
+				t.Errorf("expected AI: %v, got: %v", tt.expectAI, resAI)
+			}
+
+			if resMemberID != tt.expectMemberID {
+				t.Errorf("expected member ID: %v, got: %v", tt.expectMemberID, resMemberID)
+			}
+		})
+	}
+}
+
+func Test_mergeParameters(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aiParam   map[string]any
+		teamParam map[string]any
+
+		expectRes map[string]any
+	}{
+		{
+			name:      "both_nil",
+			aiParam:   nil,
+			teamParam: nil,
+			expectRes: nil,
+		},
+		{
+			name:      "ai_only",
+			aiParam:   map[string]any{"key1": "val1"},
+			teamParam: nil,
+			expectRes: map[string]any{"key1": "val1"},
+		},
+		{
+			name:      "team_only",
+			aiParam:   nil,
+			teamParam: map[string]any{"key2": "val2"},
+			expectRes: map[string]any{"key2": "val2"},
+		},
+		{
+			name:      "both_no_overlap",
+			aiParam:   map[string]any{"key1": "val1"},
+			teamParam: map[string]any{"key2": "val2"},
+			expectRes: map[string]any{"key1": "val1", "key2": "val2"},
+		},
+		{
+			name:      "team_overrides_ai_on_collision",
+			aiParam:   map[string]any{"key1": "ai_val"},
+			teamParam: map[string]any{"key1": "team_val"},
+			expectRes: map[string]any{"key1": "team_val"},
+		},
+		{
+			name:      "both_empty_maps",
+			aiParam:   map[string]any{},
+			teamParam: map[string]any{},
+			expectRes: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			res := mergeParameters(tt.aiParam, tt.teamParam)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
