@@ -60,5 +60,11 @@ func (h *subscribeHandler) processEventPMTeamMemberSwitched(ctx context.Context,
 
 	h.messageHandler.EventPMTeamMemberSwitched(ctx, &evt)
 
+	// update current member ID on the aicall record
+	if _, err := h.aicallHandler.UpdateCurrentMemberID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID); err != nil {
+		log.Errorf("Could not update current member id. aicall_id: %s, to_member_id: %s, err: %v", evt.PipecatcallReferenceID, evt.ToMember.ID, err)
+		// continue — notification message was already created, send path has fallback
+	}
+
 	return nil
 }

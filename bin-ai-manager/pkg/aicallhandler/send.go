@@ -71,6 +71,13 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 		return nil, errors.Wrapf(errTerminate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", aicallID)
 	}
 
+	// resolve current team member's AI config for team-based aicalls
+	if c.AssistanceType == aicall.AssistanceTypeTeam {
+		if err := h.resolveTeamMemberForSend(ctx, c); err != nil {
+			log.Warnf("Could not resolve team member AI config, using existing. err: %v", err)
+		}
+	}
+
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", aicallID, res.ID)
 	pc, errTerminate := h.startPipecatcall(ctx, c)
 	if errTerminate != nil {
@@ -83,4 +90,40 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	}
 
 	return res, nil
+}
+
+// resolveTeamMemberForSend fetches the team config, resolves the current member's AI,
+// and overrides c.AIEngineModel in-memory. If CurrentMemberID was not found in the team,
+// falls back to StartMemberID and updates CurrentMemberID on the DB record.
+func (h *aicallHandler) resolveTeamMemberForSend(ctx context.Context, c *aicall.AIcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "resolveTeamMemberForSend",
+		"aicall_id": c.ID,
+	})
+
+	t, err := h.teamHandler.Get(ctx, c.AssistanceID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get team info. team_id: %s", c.AssistanceID)
+	}
+	log.WithField("team", t).Debugf("Retrieved team info. team_id: %s", t.ID)
+
+	a, resolvedMemberID, err := h.resolveTeamMemberAI(ctx, t, c.CurrentMemberID)
+	if err != nil {
+		return errors.Wrapf(err, "could not resolve team member AI")
+	}
+	log.WithField("ai", a).Debugf("Resolved team member AI. member_id: %s, ai_engine_model: %s", resolvedMemberID, a.EngineModel)
+
+	// override engine model in-memory for this pipecat session
+	c.AIEngineModel = a.EngineModel
+
+	// if fallback occurred, update CurrentMemberID on the DB record
+	if resolvedMemberID != c.CurrentMemberID {
+		log.Infof("CurrentMemberID not found in team, fell back to StartMemberID. updating. aicall_id: %s, old: %s, new: %s", c.ID, c.CurrentMemberID, resolvedMemberID)
+		if _, errUpdate := h.UpdateCurrentMemberID(ctx, c.ID, resolvedMemberID); errUpdate != nil {
+			log.Errorf("Could not update CurrentMemberID after fallback. err: %v", errUpdate)
+		}
+		c.CurrentMemberID = resolvedMemberID
+	}
+
+	return nil
 }

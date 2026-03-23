@@ -1,0 +1,388 @@
+package aicallhandler
+
+import (
+	"context"
+	"fmt"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	"reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
+)
+
+func Test_SendReferenceTypeOthers(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+
+		messageText string
+
+		responseUUIDPipecatcallID uuid.UUID
+		responseUpdatedAIcall    *aicall.AIcall
+		responseTeam             *team.Team
+		responseTeamErr          error
+		responseAI               *ai.AI
+		responseMessages         []*message.Message
+		responsePipecatcall      *pmpipecatcall.Pipecatcall
+		// for fallback case: UpdateCurrentMemberID response
+		responseFallbackAIcall *aicall.AIcall
+
+		expectTeamGet              bool
+		expectAIGet                bool
+		expectUpdateCurrentMember  bool
+		expectLLMType              pmpipecatcall.LLMType
+		expectPipecatcallMessages  []map[string]any
+		expectCurrentMemberIDAfter uuid.UUID
+		expectRes                  *message.Message
+	}{
+		{
+			name: "non_team_aicall_uses_existing_engine_model",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello from user",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000060"),
+			},
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectTeamGet:             false,
+			expectAIGet:               false,
+			expectUpdateCurrentMember: false,
+			expectLLMType:             pmpipecatcall.LLMType("openai.gpt-5"),
+			expectPipecatcallMessages: []map[string]any{},
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			name: "team_aicall_resolves_current_member",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"), // stale model
+				ActiveflowID:    uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000050"),
+				CurrentMemberID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000a0"), // current member
+			},
+			messageText: "hello from user",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"), // still stale after UpdatePipecatcallID
+				ActiveflowID:    uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000060"),
+				CurrentMemberID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000a0"),
+			},
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000020"),
+				},
+				StartMemberID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000090"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000090"), // start member
+						AIID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000b0"),
+					},
+					{
+						ID:   uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000a0"), // current member
+						AIID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000c0"),
+					},
+				},
+			},
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000c0"),
+				},
+				EngineModel: ai.EngineModel("grok.grok-3"), // resolved model
+			},
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectTeamGet:              true,
+			expectAIGet:                true,
+			expectUpdateCurrentMember:  false, // no fallback needed
+			expectLLMType:              pmpipecatcall.LLMType("grok.grok-3"),
+			expectPipecatcallMessages:  []map[string]any{},
+			expectCurrentMemberIDAfter: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000a0"),
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			name: "team_aicall_fallback_to_start_member",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"), // stale
+				ActiveflowID:    uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000050"),
+				CurrentMemberID: uuid.FromStringOrNil("c0000001-0000-0000-0000-0000000000ff"), // non-existent member
+			},
+			messageText: "hello from user",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:    uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000060"),
+				CurrentMemberID: uuid.FromStringOrNil("c0000001-0000-0000-0000-0000000000ff"),
+			},
+			responseTeam: &team.Team{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000020"),
+				},
+				StartMemberID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000090"),
+				Members: []team.Member{
+					{
+						ID:   uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000090"), // start member
+						AIID: uuid.FromStringOrNil("c0000001-0000-0000-0000-0000000000b0"),
+					},
+				},
+			},
+			responseAI: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0000001-0000-0000-0000-0000000000b0"),
+				},
+				EngineModel: ai.EngineModel("gemini.gemini-2.5-flash"), // start member's model
+			},
+			responseFallbackAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000010"),
+				},
+				CurrentMemberID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000090"),
+			},
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectTeamGet:              true,
+			expectAIGet:                true,
+			expectUpdateCurrentMember:  true,
+			expectLLMType:              pmpipecatcall.LLMType("gemini.gemini-2.5-flash"),
+			expectPipecatcallMessages:  []map[string]any{},
+			expectCurrentMemberIDAfter: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000090"),
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			name: "team_fetch_fails_uses_fallback",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"), // will be kept as-is
+				ActiveflowID:    uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000050"),
+				CurrentMemberID: uuid.FromStringOrNil("d0000001-0000-0000-0000-0000000000a0"),
+			},
+			messageText: "hello from user",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:   ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:    uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000030"),
+				ReferenceType:   aicall.ReferenceTypeConversation,
+				ReferenceID:     uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:   uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000060"),
+				CurrentMemberID: uuid.FromStringOrNil("d0000001-0000-0000-0000-0000000000a0"),
+			},
+			responseTeamErr:     fmt.Errorf("team not found"),
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectTeamGet:             true,
+			expectAIGet:               false,
+			expectUpdateCurrentMember: false,
+			expectLLMType:             pmpipecatcall.LLMType("openai.gpt-5"), // falls back to existing
+			expectPipecatcallMessages: []map[string]any{},
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				teamHandler:    mockTeam,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			// 1. messageHandler.Create
+			mockMessage.EXPECT().Create(
+				ctx,
+				tt.aicall.CustomerID,
+				tt.aicall.ID,
+				tt.aicall.ActiveflowID,
+				message.DirectionOutgoing,
+				message.RoleUser,
+				tt.messageText,
+				nil,
+				"",
+			).Return(tt.expectRes, nil)
+
+			// 2. utilHandler.UUIDCreate for new pipecatcallID
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+
+			// 3. UpdatePipecatcallID (db.AIcallUpdate + db.AIcallGet)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
+
+			// 4. team resolution (conditional)
+			if tt.expectTeamGet {
+				mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
+			}
+
+			if tt.expectAIGet {
+				mockAI.EXPECT().Get(ctx, tt.responseAI.ID).Return(tt.responseAI, nil)
+			}
+
+			if tt.expectUpdateCurrentMember {
+				// UpdateCurrentMemberID calls AIcallUpdate + AIcallGet
+				mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
+				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseFallbackAIcall, nil)
+			}
+
+			// 5. startPipecatcall: messageHandler.List for getPipecatcallMessages
+			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+
+			// 6. PipecatV1PipecatcallStart with the expected LLM type
+			mockReq.EXPECT().PipecatV1PipecatcallStart(
+				ctx,
+				tt.responseUpdatedAIcall.PipecatcallID,
+				tt.responseUpdatedAIcall.CustomerID,
+				tt.responseUpdatedAIcall.ActiveflowID,
+				pmpipecatcall.ReferenceTypeAICall,
+				tt.responseUpdatedAIcall.ID,
+				tt.expectLLMType,
+				tt.expectPipecatcallMessages,
+				pmpipecatcall.STTTypeNone,
+				tt.responseUpdatedAIcall.Language,
+				pmpipecatcall.TTSTypeNone,
+				tt.responseUpdatedAIcall.Language,
+				"",
+			).Return(tt.responsePipecatcall, nil)
+
+			// 7. PipecatV1PipecatcallTerminateWithDelay
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
+
+			res, err := h.SendReferenceTypeOthers(ctx, tt.aicall, message.RoleUser, tt.messageText)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
