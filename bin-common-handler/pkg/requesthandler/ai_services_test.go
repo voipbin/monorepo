@@ -27,9 +27,7 @@ func Test_AIV1ServiceTypeChabotcallStart(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceType  amaicall.ReferenceType
 		referenceID    uuid.UUID
-		resume         bool
 		gender         amaicall.Gender
-		language       string
 		requestTimeout int
 
 		response *sock.Response
@@ -46,9 +44,7 @@ func Test_AIV1ServiceTypeChabotcallStart(t *testing.T) {
 			activeflowID:   uuid.FromStringOrNil("db21d8b6-fbab-11ed-8d21-332400f26ee4"),
 			referenceType:  amaicall.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("865089bd-dc1b-45d5-89af-4a09c1d90cea"),
-			resume:         true,
 			gender:         "female",
-			language:       "en-US",
 			requestTimeout: 5000,
 
 			response: &sock.Response{
@@ -62,7 +58,7 @@ func Test_AIV1ServiceTypeChabotcallStart(t *testing.T) {
 				URI:      "/v1/services/type/aicall",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"assistance_type":"ai","assistance_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","resume":true,"gender":"female","language":"en-US"}`),
+				Data:     []byte(`{"assistance_type":"ai","assistance_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female"}`),
 			},
 			expectRes: &service.Service{
 				ID: uuid.FromStringOrNil("134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"),
@@ -83,7 +79,7 @@ func Test_AIV1ServiceTypeChabotcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1ServiceTypeAIcallStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.resume, tt.gender, tt.language, tt.requestTimeout)
+			cf, err := reqHandler.AIV1ServiceTypeAIcallStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
