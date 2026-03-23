@@ -650,6 +650,7 @@ async def init_team_pipeline(
         member_nodes, start_node = build_team_flow(
             resolved_team, id,
             routing_llm, routing_tts, routing_stt,
+            llm_messages=llm_messages,
         )
 
         # FlowManager's create_adapter checks the LLM class type to determine

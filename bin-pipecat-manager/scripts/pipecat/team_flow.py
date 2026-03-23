@@ -33,6 +33,7 @@ def build_team_flow(
     routing_llm,
     routing_tts,
     routing_stt,
+    llm_messages: list = None,
 ) -> tuple[dict, NodeConfig]:
     """Build NodeConfig objects for all team members.
 
@@ -42,6 +43,7 @@ def build_team_flow(
         routing_llm: RoutingLLMService instance.
         routing_tts: RoutingTTSService instance (may be None).
         routing_stt: RoutingSTTService instance (may be None).
+        llm_messages: Conversation history to inject into the start node's task_messages.
 
     Returns:
         Tuple of (member_nodes dict mapping member_id -> NodeConfig, start_node NodeConfig).
@@ -107,6 +109,16 @@ def build_team_flow(
             f"start_member_id {resolved_team['start_member_id']} not found in member_nodes. "
             f"Known members: {list(member_nodes.keys())}"
         )
+
+    # Inject conversation history into the start node so FlowManager.initialize()
+    # includes it in the LLMMessagesUpdateFrame. Without this, FlowManager replaces
+    # the shared LLMContext with only role_messages (system prompt), losing all
+    # prior conversation history.
+    if llm_messages:
+        start_node["task_messages"] = [
+            m for m in llm_messages if m.get("role") and m.get("content")
+        ]
+
     return member_nodes, start_node
 
 
