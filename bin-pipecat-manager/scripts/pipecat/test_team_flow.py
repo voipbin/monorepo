@@ -150,3 +150,56 @@ class TestBuildTeamFlowConversationHistory:
             {"role": "system", "content": "You are a helpful assistant."},
         ]
         assert start_node["task_messages"] == llm_messages
+
+    def test_none_values_in_messages_filtered_out(self):
+        """Messages with None role or content should be excluded."""
+        member = _make_member("m1")
+        team = _make_team([member], "m1")
+        llm_messages = [
+            {"role": None, "content": "text"},     # None role
+            {"role": "user", "content": None},      # None content
+            {"role": "user", "content": "valid"},
+        ]
+
+        _, start_node = build_team_flow(
+            team, "pc-1", MagicMock(), None, None,
+            llm_messages=llm_messages,
+        )
+
+        assert start_node["task_messages"] == [
+            {"role": "user", "content": "valid"},
+        ]
+
+    def test_tool_role_messages_preserved(self):
+        """Tool call results (role=tool) should pass through the filter."""
+        member = _make_member("m1")
+        team = _make_team([member], "m1")
+        llm_messages = [
+            {"role": "user", "content": "Transfer me to sales"},
+            {"role": "assistant", "content": "Transferring now."},
+            {"role": "tool", "content": '{"status": "ok"}', "tool_call_id": "call_123"},
+        ]
+
+        _, start_node = build_team_flow(
+            team, "pc-1", MagicMock(), None, None,
+            llm_messages=llm_messages,
+        )
+
+        assert start_node["task_messages"] == llm_messages
+
+    def test_extra_keys_in_messages_preserved(self):
+        """Extra keys in message dicts should pass through unmodified."""
+        member = _make_member("m1")
+        team = _make_team([member], "m1")
+        llm_messages = [
+            {"role": "user", "content": "hi", "name": "Alice", "timestamp": 12345},
+        ]
+
+        _, start_node = build_team_flow(
+            team, "pc-1", MagicMock(), None, None,
+            llm_messages=llm_messages,
+        )
+
+        assert start_node["task_messages"] == llm_messages
+        assert start_node["task_messages"][0]["name"] == "Alice"
+        assert start_node["task_messages"][0]["timestamp"] == 12345
