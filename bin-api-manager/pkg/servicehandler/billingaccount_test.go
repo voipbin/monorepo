@@ -86,7 +86,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 		detail             string
 
 		responseBillingAccount *bmaccount.Account
-		expectRes              *bmaccount.WebhookMessage
+		expectRes              *bmaccount.Account
 	}{
 		{
 			name: "normal",
@@ -96,7 +96,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			billingAccountID:   uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
 			billingAccountName: "test name",
@@ -109,7 +109,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 				},
 				TMDelete: nil,
 			},
-			expectRes: &bmaccount.WebhookMessage{
+			expectRes: &bmaccount.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -133,7 +133,6 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.billingAccountID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountUpdateBasicInfo(ctx, tt.agent, tt.billingAccountID, tt.billingAccountName, tt.detail)
@@ -159,7 +158,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 		paymentMethod    bmaccount.PaymentMethod
 
 		responseBillingAccount *bmaccount.Account
-		expectRes              *bmaccount.WebhookMessage
+		expectRes              *bmaccount.Account
 	}{
 		{
 			name: "normal",
@@ -169,7 +168,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
 			paymentType:      bmaccount.PaymentTypePrepaid,
@@ -182,7 +181,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 				},
 				TMDelete: nil,
 			},
-			expectRes: &bmaccount.WebhookMessage{
+			expectRes: &bmaccount.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -206,7 +205,6 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.billingAccountID, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.agent, tt.billingAccountID, tt.paymentType, tt.paymentMethod)
@@ -231,7 +229,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 		balance   int64
 
 		responseBillingAccount *bmaccount.Account
-		expectRes              *bmaccount.WebhookMessage
+		expectRes              *bmaccount.Account
 	}{
 		{
 			name: "normal",
@@ -251,7 +249,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
 				},
 			},
-			expectRes: &bmaccount.WebhookMessage{
+			expectRes: &bmaccount.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
 				},
