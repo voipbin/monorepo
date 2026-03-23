@@ -182,7 +182,7 @@ func (h *serviceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a
 	// get file
 	f, err := h.storageFileGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get file info from the storage-manager. err: %v", err)
+		log.Infof("Could not get file info. err: %v", err)
 		return "", fmt.Errorf("could not find file info. err: %v", err)
 	}
 	log.WithField("file", f).Debugf("Retrieved file info. file_id: %s", f.ID)
