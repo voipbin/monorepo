@@ -60,6 +60,7 @@ type AI struct {
 	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
 	STTType          STTType    `json:"stt_type,omitempty" db:"stt_type"`
+	STTLanguage      string     `json:"stt_language,omitempty" db:"stt_language"`
 	VADConfig        *VADConfig `json:"vad_config,omitempty" db:"vad_config,json"`
 	SmartTurnEnabled bool       `json:"smart_turn_enabled,omitempty" db:"smart_turn_enabled"`
 

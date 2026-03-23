@@ -35,7 +35,6 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 		referenceType  aicall.ReferenceType
 		referenceID    uuid.UUID
 		gender         aicall.Gender
-		language       string
 
 		responseAI                *ai.AI
 		responseConfbridge        *cmconfbridge.Confbridge
@@ -61,7 +60,6 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
 			gender:         aicall.GenderFemale,
-			language:       "en-US",
 
 			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
@@ -73,6 +71,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -110,7 +109,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("025e1aa6-b87f-11f0-9a90-63680416f9cb"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 			expectMessageTexts: []string{
@@ -219,15 +218,15 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTType,
-				tt.expectAIcall.Language,
+				tt.expectAIcall.STTLanguage,
 				tt.expectTTSType,
-				tt.expectAIcall.Language,
+				"",
 				tt.expectTTSVoiceID,
 			).Return(&pmpipecatcall.Pipecatcall{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
-			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
@@ -248,7 +247,6 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 		referenceType  aicall.ReferenceType
 		referenceID    uuid.UUID
 		gender         aicall.Gender
-		language       string
 
 		responseAI           *ai.AI
 		responseFlowVariable *fmvariable.Variable
@@ -274,7 +272,6 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeConversation,
 			referenceID:    uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
 			gender:         aicall.GenderFemale,
-			language:       "en-US",
 
 			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
@@ -286,6 +283,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "ee2d23be-b884-11f0-89b5-2f91294e7b2a",
 				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
 			},
 			responseFlowVariable: &fmvariable.Variable{
 				Variables: map[string]string{
@@ -308,7 +306,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
 				PipecatcallID:  uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 
@@ -413,14 +411,14 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTType,
-				tt.responseAIcall.Language,
+				tt.responseAIcall.STTLanguage,
 				tt.expectTTSType,
-				tt.responseAIcall.Language,
+				"",
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}

@@ -170,6 +170,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectTTSType,
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
+				gomock.Any(), // sttLanguage
 				gomock.Any(), // toolNames
 				gomock.Any(), // vadConfig
 				gomock.Any(), // smartTurnEnabled
@@ -388,6 +389,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectTTSType,
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
+				gomock.Any(), // sttLanguage
 				gomock.Any(), // toolNames
 				gomock.Any(), // vadConfig
 				gomock.Any(), // smartTurnEnabled

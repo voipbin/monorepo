@@ -36,7 +36,7 @@ type AIcall struct {
 	Status Status `json:"status,omitempty" db:"status"`
 
 	Gender   Gender `json:"gender,omitempty" db:"gender"`
-	Language string `json:"language,omitempty" db:"language"`
+	STTLanguage string `json:"stt_language,omitempty" db:"stt_language"`
 
 	TMEnd    *time.Time `json:"tm_end" db:"tm_end"`
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`

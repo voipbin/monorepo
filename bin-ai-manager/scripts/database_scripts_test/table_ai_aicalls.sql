@@ -24,7 +24,7 @@ create table ai_aicalls(
   status  varchar(255),   -- status
 
   gender    varchar(255), -- gender
-  language  varchar(255), -- language
+  stt_language  varchar(255), -- stt language
 
   -- timestamps
   tm_end    datetime(6),  --

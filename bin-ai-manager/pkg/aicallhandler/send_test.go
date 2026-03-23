@@ -366,9 +366,9 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectPipecatcallMessages,
 				pmpipecatcall.STTTypeNone,
-				tt.responseUpdatedAIcall.Language,
+				tt.responseUpdatedAIcall.STTLanguage,
 				pmpipecatcall.TTSTypeNone,
-				tt.responseUpdatedAIcall.Language,
+				"",
 				"",
 			).Return(tt.responsePipecatcall, nil)
 

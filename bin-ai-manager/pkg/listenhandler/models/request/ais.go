@@ -25,7 +25,8 @@ type V1DataAIsPost struct {
 	TTSType    ai.TTSType `json:"tts_type,omitempty"`
 	TTSVoiceID string     `json:"tts_voice_id,omitempty"`
 
-	STTType ai.STTType `json:"stt_type,omitempty"`
+	STTType     ai.STTType `json:"stt_type,omitempty"`
+	STTLanguage string     `json:"stt_language,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
@@ -50,7 +51,8 @@ type V1DataAIsIDPut struct {
 	TTSType    ai.TTSType `json:"tts_type,omitempty"`
 	TTSVoiceID string     `json:"tts_voice_id,omitempty"`
 
-	STTType ai.STTType `json:"stt_type,omitempty"`
+	STTType     ai.STTType `json:"stt_type,omitempty"`
+	STTLanguage string     `json:"stt_language,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 

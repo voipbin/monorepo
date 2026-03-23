@@ -19,6 +19,6 @@ type FieldStruct struct {
 	PipecatcallID uuid.UUID      `filter:"pipecatcall_id"`
 	Status        Status         `filter:"status"`
 	Gender        Gender         `filter:"gender"`
-	Language      string         `filter:"language"`
+	STTLanguage   string         `filter:"stt_language"`
 	Deleted       bool           `filter:"deleted"`
 }

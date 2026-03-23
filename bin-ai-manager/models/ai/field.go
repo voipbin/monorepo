@@ -22,6 +22,7 @@ const (
 	FieldTTSVoiceID Field = "tts_voice_id"
 
 	FieldSTTType          Field = "stt_type"
+	FieldSTTLanguage      Field = "stt_language"
 	FieldVADConfig        Field = "vad_config"
 	FieldSmartTurnEnabled Field = "smart_turn_enabled"
 

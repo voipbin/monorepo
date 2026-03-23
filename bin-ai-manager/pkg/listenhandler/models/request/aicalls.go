@@ -19,8 +19,7 @@ type V1DataAIcallsPost struct {
 	ReferenceType aicall.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID            `json:"reference_id,omitempty"`
 
-	Gender   aicall.Gender `json:"gender,omitempty"`
-	Language string        `json:"language,omitempty"`
+	Gender aicall.Gender `json:"gender,omitempty"`
 }
 
 // V1DataAIcallsIDMessagesPost is
