@@ -2,8 +2,10 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -71,6 +73,96 @@ func Test_billingAccountGet(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseBillingAccount) {
 				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.responseBillingAccount, res)
+			}
+		})
+	}
+}
+
+func Test_billingAccountGet_Deleted(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		billingAccountID uuid.UUID
+
+		responseBillingAccount *bmaccount.Account
+	}{
+		{
+			"deleted billing account",
+			uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+			&bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: func() *time.Time { t := time.Now(); return &t }(),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+
+			_, err := h.billingAccountGet(ctx, tt.billingAccountID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingAccountGet_NoPermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent            *amagent.Agent
+		billingAccountID uuid.UUID
+	}{
+		{
+			name: "customer admin has no permission",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			billingAccountID: uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			_, err := h.BillingAccountGet(ctx, tt.agent, tt.billingAccountID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
 			}
 		})
 	}
@@ -286,6 +378,200 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 	}
 }
 
+func Test_BillingAccountUpdateBasicInfo_NoPermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent            *amagent.Agent
+		billingAccountID uuid.UUID
+	}{
+		{
+			name: "customer admin has no permission",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			billingAccountID: uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			_, err := h.BillingAccountUpdateBasicInfo(ctx, tt.agent, tt.billingAccountID, "test", "test")
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingAccountUpdatePaymentInfo_NoPermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent            *amagent.Agent
+		billingAccountID uuid.UUID
+	}{
+		{
+			name: "customer admin has no permission",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			_, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.agent, tt.billingAccountID, bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodCreditCard)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSubtractBalanceForce(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent     *amagent.Agent
+		accountID uuid.UUID
+		balance   int64
+
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.Account
+	}{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			},
+			accountID: uuid.FromStringOrNil("55867314-4cd8-11ee-b465-73c0486f35ff"),
+			balance:   10000000,
+
+			responseBillingAccount: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
+			},
+			expectRes: &bmaccount.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountSubtractBalanceForce(ctx, tt.accountID, tt.balance).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountSubtractBalanceForce(ctx, tt.agent, tt.accountID, tt.balance)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountList_NoPermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+	}{
+		{
+			name: "customer admin has no permission",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			_, err := h.BillingAccountList(ctx, tt.agent, 10, "2020-09-20T03:23:20.995000Z", nil)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
 func Test_BillingAccountSelfGet(t *testing.T) {
 
 	tests := []struct {
@@ -407,6 +693,92 @@ func Test_BillingAccountSelfGet_NoBillingAccount(t *testing.T) {
 	}
 }
 
+func Test_BillingAccountSelfGet_NoPermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+	}{
+		{
+			name: "no permission",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: 0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			_, err := h.BillingAccountSelfGet(ctx, tt.agent)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfGet_CustomerNotFound(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+	}{
+		{
+			name: "customer not found",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(nil, fmt.Errorf("not found"))
+
+			_, err := h.BillingAccountSelfGet(ctx, tt.agent)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
 func Test_BillingAccountSelfUpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
@@ -481,6 +853,57 @@ func Test_BillingAccountSelfUpdateBasicInfo(t *testing.T) {
 	}
 }
 
+func Test_BillingAccountSelfUpdateBasicInfo_NoBillingAccount(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer *cscustomer.Customer
+	}{
+		{
+			name: "no billing account",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.Nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			_, err := h.BillingAccountSelfUpdateBasicInfo(ctx, tt.agent, "test", "test")
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
 func Test_BillingAccountSelfUpdatePaymentInfo(t *testing.T) {
 
 	tests := []struct {
@@ -550,6 +973,57 @@ func Test_BillingAccountSelfUpdatePaymentInfo(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountSelfUpdatePaymentInfo_NoBillingAccount(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent *amagent.Agent
+
+		responseCustomer *cscustomer.Customer
+	}{
+		{
+			name: "no billing account",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			responseCustomer: &cscustomer.Customer{
+				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				BillingAccountID: uuid.Nil,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			_, err := h.BillingAccountSelfUpdatePaymentInfo(ctx, tt.agent, bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodCreditCard)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
 			}
 		})
 	}
