@@ -546,6 +546,27 @@ func (e BillingManagerAccountPlanType) Valid() bool {
 	}
 }
 
+// Defines values for BillingManagerAccountStatus.
+const (
+	BillingManagerAccountStatusActive  BillingManagerAccountStatus = "active"
+	BillingManagerAccountStatusDeleted BillingManagerAccountStatus = "deleted"
+	BillingManagerAccountStatusFrozen  BillingManagerAccountStatus = "frozen"
+)
+
+// Valid indicates whether the value is a known member of the BillingManagerAccountStatus enum.
+func (e BillingManagerAccountStatus) Valid() bool {
+	switch e {
+	case BillingManagerAccountStatusActive:
+		return true
+	case BillingManagerAccountStatusDeleted:
+		return true
+	case BillingManagerAccountStatusFrozen:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BillingManagerBillingCostType.
 const (
 	BillingManagerBillingCostTypeCallDirectExt    BillingManagerBillingCostType = "call_direct_ext"
@@ -3459,6 +3480,60 @@ type BillingManagerAccount struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// BillingManagerAccountAdmin Internal billing account representation for project admins. Includes all fields including status.
+type BillingManagerAccountAdmin struct {
+	// BalanceCredit The credit balance of the account in micros (1 USD = 1,000,000).
+	BalanceCredit *int64 `json:"balance_credit,omitempty"`
+
+	// BalanceToken The token balance of the account.
+	BalanceToken *int64 `json:"balance_token,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail A human-readable note describing the purpose of this account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the account.
+	Id *string `json:"id,omitempty"`
+
+	// Name The display name of the billing account.
+	Name *string `json:"name,omitempty"`
+
+	// PaddleCustomerId The Paddle customer identifier for this billing account.
+	PaddleCustomerId *string `json:"paddle_customer_id,omitempty"`
+
+	// PaddleSubscriptionId The Paddle subscription identifier for this billing account.
+	PaddleSubscriptionId *string `json:"paddle_subscription_id,omitempty"`
+
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+
+	// PlanType The plan tier of the billing account. Determines resource creation limits.
+	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
+
+	// Status The status of the billing account.
+	Status *BillingManagerAccountStatus `json:"status,omitempty"`
+
+	// TmCreate The timestamp when the account was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The timestamp when the account was deleted, if applicable.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmLastTopup The timestamp of the last token top-up.
+	TmLastTopup *string `json:"tm_last_topup,omitempty"`
+
+	// TmNextTopup The timestamp of the next scheduled token top-up.
+	TmNextTopup *string `json:"tm_next_topup,omitempty"`
+
+	// TmUpdate The timestamp when the account was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
 // BillingManagerAccountPaymentMethod The method of payment used for the account.
 type BillingManagerAccountPaymentMethod string
 
@@ -3467,6 +3542,9 @@ type BillingManagerAccountPaymentType string
 
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
+
+// BillingManagerAccountStatus The status of the billing account.
+type BillingManagerAccountStatus string
 
 // BillingManagerBilling defines model for BillingManagerBilling.
 type BillingManagerBilling struct {
@@ -6551,6 +6629,33 @@ type GetAvailableNumbersParams struct {
 	Type *NumberManagerNumberType `form:"type,omitempty" json:"type,omitempty"`
 }
 
+// PutBillingAccountJSONBody defines parameters for PutBillingAccount.
+type PutBillingAccountJSONBody struct {
+	// Detail A human-readable note describing the purpose of this account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name The display name of the billing account.
+	Name *string `json:"name,omitempty"`
+}
+
+// PutBillingAccountPaymentInfoJSONBody defines parameters for PutBillingAccountPaymentInfo.
+type PutBillingAccountPaymentInfoJSONBody struct {
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+}
+
+// GetBillingAccountsParams defines parameters for GetBillingAccounts.
+type GetBillingAccountsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
 type PutBillingAccountsIdJSONBody struct {
 	Detail *string `json:"detail,omitempty"`
@@ -8224,6 +8329,12 @@ type PostAuthSignupJSONRequestBody = RequestBodyAuthSignupPOST
 
 // PostAuthUnregisterJSONRequestBody defines body for PostAuthUnregister for application/json ContentType.
 type PostAuthUnregisterJSONRequestBody = RequestBodyAuthUnregisterPOST
+
+// PutBillingAccountJSONRequestBody defines body for PutBillingAccount for application/json ContentType.
+type PutBillingAccountJSONRequestBody PutBillingAccountJSONBody
+
+// PutBillingAccountPaymentInfoJSONRequestBody defines body for PutBillingAccountPaymentInfo for application/json ContentType.
+type PutBillingAccountPaymentInfoJSONRequestBody PutBillingAccountPaymentInfoJSONBody
 
 // PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
 type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody

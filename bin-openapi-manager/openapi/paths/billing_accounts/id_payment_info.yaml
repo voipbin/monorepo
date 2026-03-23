@@ -27,4 +27,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BillingManagerAccount'
+            $ref: '#/components/schemas/BillingManagerAccountAdmin'

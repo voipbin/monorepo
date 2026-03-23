@@ -480,6 +480,108 @@ components:
           description: The timestamp when the account was deleted, if applicable.
           example: "2026-01-15T09:30:00.000000Z"
 
+    BillingManagerAccountStatus:
+      type: string
+      description: The status of the billing account.
+      example: "active"
+      enum:
+        - active
+        - frozen
+        - deleted
+      x-enum-varnames:
+        - BillingManagerAccountStatusActive
+        - BillingManagerAccountStatusFrozen
+        - BillingManagerAccountStatusDeleted
+
+    BillingManagerAccountAdmin:
+      type: object
+      description: Internal billing account representation for project admins. Includes all fields including status.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the account.
+          example: "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        status:
+          description: The status of the billing account.
+          example: "active"
+          $ref: '#/components/schemas/BillingManagerAccountStatus'
+        name:
+          type: string
+          description: The display name of the billing account.
+          example: "Production Account"
+        detail:
+          type: string
+          description: A human-readable note describing the purpose of this account.
+          example: "Main billing account for production services"
+        plan_type:
+          description: The plan tier of the billing account.
+          example: "basic"
+          $ref: '#/components/schemas/BillingManagerAccountPlanType'
+        balance_credit:
+          type: integer
+          format: int64
+          description: The credit balance of the account in micros (1 USD = 1,000,000).
+          example: 1500000
+        balance_token:
+          type: integer
+          format: int64
+          description: The token balance of the account.
+          example: 500
+        payment_type:
+          description: The type of payment associated with the account.
+          example: "prepaid"
+          $ref: '#/components/schemas/BillingManagerAccountPaymentType'
+        payment_method:
+          description: The method of payment used for the account.
+          example: "credit card"
+          $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+        paddle_subscription_id:
+          type: string
+          description: "The Paddle subscription identifier for this billing account."
+          example: "sub_01h8bxq9f3e4t5a6g7h8j9k0"
+        paddle_customer_id:
+          type: string
+          description: "The Paddle customer identifier for this billing account."
+          example: "ctm_01h8bxq9f3e4t5a6g7h8j9k0"
+        tm_last_topup:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: The timestamp of the last token top-up.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_next_topup:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: The timestamp of the next scheduled token top-up.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: The timestamp when the account was created.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: The timestamp when the account was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: The timestamp when the account was deleted, if applicable.
+          example: "2026-01-15T09:30:00.000000Z"
+
     BillingManagerBillingreferenceType:
       type: string
       description: The type of reference associated with this billing.
@@ -6684,6 +6786,14 @@ paths:
 
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'
+
+  /billing_account:
+    $ref: './paths/billing_account/main.yaml'
+  /billing_account/payment_info:
+    $ref: './paths/billing_account/payment_info.yaml'
+
+  /billing_accounts:
+    $ref: './paths/billing_accounts/main.yaml'
 
   /billing_accounts/{id}:
     $ref: './paths/billing_accounts/id.yaml'

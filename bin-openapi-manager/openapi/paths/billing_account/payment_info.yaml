@@ -1,0 +1,27 @@
+put:
+  summary: Update billing account payment info
+  description: Update the payment type and method of the authenticated customer's billing account.
+  tags:
+    - Billing
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            payment_type:
+              description: The type of payment for the account.
+              example: "prepaid"
+              $ref: '#/components/schemas/BillingManagerAccountPaymentType'
+            payment_method:
+              description: The method of payment for the account.
+              example: "credit card"
+              $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+  responses:
+    '200':
+      description: Successfully updated billing account payment info.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerAccount'
