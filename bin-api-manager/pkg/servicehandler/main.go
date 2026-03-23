@@ -246,6 +246,7 @@ type ServiceHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error)
@@ -265,6 +266,7 @@ type ServiceHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 

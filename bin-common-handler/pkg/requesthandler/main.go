@@ -198,6 +198,7 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
@@ -214,6 +215,7 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 

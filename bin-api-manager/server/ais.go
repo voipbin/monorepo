@@ -49,6 +49,11 @@ func (h *server) PostAis(c *gin.Context) {
 		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
+	var sttLanguage string
+	if req.SttLanguage != nil {
+		sttLanguage = *req.SttLanguage
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		&a,
@@ -62,6 +67,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		sttLanguage,
 		toolNames,
 	)
 	if err != nil {
@@ -236,6 +242,11 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
+	var sttLanguage string
+	if req.SttLanguage != nil {
+		sttLanguage = *req.SttLanguage
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		&a,
@@ -250,6 +261,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		sttLanguage,
 		toolNames,
 	)
 	if err != nil {

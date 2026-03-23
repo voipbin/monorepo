@@ -73,6 +73,7 @@ func (r *requestHandler) AIV1AICreate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.AI, error) {
 	uri := "/v1/ais"
@@ -92,7 +93,8 @@ func (r *requestHandler) AIV1AICreate(
 		TTSType:    ttsType,
 		TTSVoiceID: ttsVoiceID,
 
-		STTType: sttType,
+		STTType:     sttType,
+		STTLanguage: sttLanguage,
 
 		ToolNames: toolNames,
 	}
@@ -150,6 +152,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.AI, error) {
 	uri := fmt.Sprintf("/v1/ais/%s", aiID)
@@ -168,7 +171,8 @@ func (r *requestHandler) AIV1AIUpdate(
 		TTSType:    ttsType,
 		TTSVoiceID: ttsVoiceID,
 
-		STTType: sttType,
+		STTType:     sttType,
+		STTLanguage: sttLanguage,
 
 		ToolNames: toolNames,
 	}
