@@ -234,18 +234,18 @@ func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, eng
 }
 
 // AIcallCreate mocks base method.
-func (m *MockServiceHandler) AIcallCreate(ctx context.Context, a *agent.Agent, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.WebhookMessage, error) {
+func (m *MockServiceHandler) AIcallCreate(ctx context.Context, a *agent.Agent, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender) (*aicall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallCreate", ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "AIcallCreate", ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender)
 	ret0, _ := ret[0].(*aicall.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIcallCreate indicates an expected call of AIcallCreate.
-func (mr *MockServiceHandlerMockRecorder) AIcallCreate(ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AIcallCreate(ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallCreate", reflect.TypeOf((*MockServiceHandler)(nil).AIcallCreate), ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallCreate", reflect.TypeOf((*MockServiceHandler)(nil).AIcallCreate), ctx, a, assistanceType, assistanceID, referenceType, referenceID, gender)
 }
 
 // AIcallDelete mocks base method.
