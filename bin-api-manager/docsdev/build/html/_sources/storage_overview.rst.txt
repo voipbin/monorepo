@@ -67,7 +67,7 @@ Core file management operations.
 
 .. note:: **AI Implementation Hint**
 
-   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, fetch fresh file details via ``GET /storage_files/{id}`` to get a new download URL. Do not cache or persist download URLs for long-term use.
+   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, use ``GET /storage_files/{id}/file`` which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.
 
 **Upload a File**
 
@@ -408,8 +408,8 @@ Troubleshooting
 | Symptom                   | Solution                                          |
 +===========================+===================================================+
 | Download URL expired      | Use ``GET /storage_files/{id}/file`` for          |
-|                           | automatic refresh and redirect; or fetch fresh    |
-|                           | details via ``GET /storage_files/{id}``           |
+|                           | automatic refresh and redirect                    |
+|                           |                                                   |
 +---------------------------+---------------------------------------------------+
 | 307 redirect not followed | Ensure your HTTP client follows redirects         |
 |                           | (curl ``-L``, requests ``allow_redirects=True``)  |

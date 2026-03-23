@@ -250,7 +250,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, fetch fresh file details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> to get a new download URL. Do not cache or persist download URLs for long-term use.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.</p>
 </div>
 <p><strong>Upload a File</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39; \
@@ -571,8 +571,7 @@ request quota increase</p></td>
 <tbody>
 <tr class="row-even"><td><p>Download URL expired</p></td>
 <td><p>Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> for
-automatic refresh and redirect; or fetch fresh
-details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code></p></td>
+automatic refresh and redirect</p></td>
 </tr>
 <tr class="row-odd"><td><p>307 redirect not followed</p></td>
 <td><p>Ensure your HTTP client follows redirects
