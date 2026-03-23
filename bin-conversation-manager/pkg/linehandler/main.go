@@ -11,14 +11,21 @@ import (
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/models/message"
 )
+
+// HookResult contains the conversation and message created from a LINE webhook event.
+type HookResult struct {
+	Conversation *conversation.Conversation
+	Message      *message.Message
+}
 
 // LineHandler defines
 type LineHandler interface {
 	Setup(ctx context.Context, ac *account.Account) error
 	Teardown(ctx context.Context, ac *account.Account) error
 	Send(ctx context.Context, cv *conversation.Conversation, ac *account.Account, text string, medias []media.Media) error
-	Hook(ctx context.Context, ac *account.Account, data []byte) error
+	Hook(ctx context.Context, ac *account.Account, data []byte) ([]*HookResult, error)
 
 	GetPeer(ctx context.Context, ac *account.Account, userID string) (*commonaddress.Address, error)
 }

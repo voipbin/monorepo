@@ -43,6 +43,10 @@ post:
               type: string
             token:
               type: string
+            message_flow_id:
+              type: string
+              format: uuid
+              x-go-type: string
           required:
             - type
             - name

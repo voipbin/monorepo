@@ -3,6 +3,8 @@ package account
 import (
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -17,6 +19,8 @@ type Account struct {
 
 	Secret string `json:"secret,omitempty" db:"secret"` // secret
 	Token  string `json:"token,omitempty" db:"token"`   // usually api token
+
+	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty" db:"message_flow_id,uuid"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
@@ -38,6 +42,8 @@ const (
 
 	FieldSecret Field = "secret"
 	FieldToken  Field = "token"
+
+	FieldMessageFlowID Field = "message_flow_id"
 
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"

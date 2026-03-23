@@ -12,7 +12,6 @@ import (
 	"monorepo/bin-conversation-manager/models/message"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	mmmessage "monorepo/bin-message-manager/models/message"
-	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
 // MessageSend sends the message
@@ -43,11 +42,12 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 }
 
 // MessageExecuteActiveflow creates and executes an activeflow for the given conversation.
-func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
+func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, messageFlowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "MessageExecuteActiveflow",
-		"conversation": cv,
-		"message":      m,
+		"func":            "MessageExecuteActiveflow",
+		"conversation":    cv,
+		"message":         m,
+		"message_flow_id": messageFlowID,
 	})
 
 	// create activeflow
@@ -55,13 +55,13 @@ func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *
 		ctx,
 		uuid.Nil,
 		m.CustomerID,
-		num.MessageFlowID,
+		messageFlowID,
 		fmactiveflow.ReferenceTypeConversation,
 		m.ConversationID,
 		uuid.Nil,
 	)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
+		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, message_flow_id: %s", m.ID, messageFlowID)
 	}
 	log.WithField("activeflow", res).Debugf("Created activeflow. activeflow_id: %s", res.ID)
 
@@ -143,7 +143,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		}
 		log.Debugf("The number has message flow id. number_id: %s, message_flow_id: %s", num.ID, num.MessageFlowID)
 
-		af, err := h.MessageExecuteActiveflow(ctx, cv, m, num)
+		af, err := h.MessageExecuteActiveflow(ctx, cv, m, num.MessageFlowID)
 		if err != nil {
 			return errors.Wrapf(err, "Could not execute the activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
 		}

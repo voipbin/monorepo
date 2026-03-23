@@ -241,6 +241,7 @@ func cmdAccountCreate() *cobra.Command {
 	flags.String("detail", "", "Account description")
 	flags.String("secret", "", "Account secret (required)")
 	flags.String("token", "", "Account token (required)")
+	flags.String("message-flow-id", "", "Message flow ID (UUID) to trigger on incoming messages")
 
 	return cmd
 }
@@ -271,6 +272,8 @@ func runAccountCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("token is required")
 	}
 
+	messageFlowID := uuid.FromStringOrNil(viper.GetString("message-flow-id"))
+
 	res, err := accountHandler.Create(
 		context.Background(),
 		customerID,
@@ -279,6 +282,7 @@ func runAccountCreate(cmd *cobra.Command, args []string) error {
 		viper.GetString("detail"),
 		secret,
 		token,
+		messageFlowID,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create account")

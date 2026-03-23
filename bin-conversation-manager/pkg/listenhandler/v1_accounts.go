@@ -88,7 +88,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Type, req.Name, req.Detail, req.Secret, req.Token)
+	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Type, req.Name, req.Detail, req.Secret, req.Token, req.MessageFlowID)
 	if err != nil {
 		log.Errorf("Could not create the account. err: %v", err)
 		return nil, errors.Wrap(err, "could not create the account")
@@ -167,6 +167,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 		string(account.FieldType),
 		string(account.FieldSecret),
 		string(account.FieldToken),
+		string(account.FieldMessageFlowID),
 	}
 	filteredItems, err := requesthandler.GetFilteredItems(m, allowedItems)
 	if err != nil {

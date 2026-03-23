@@ -165,12 +165,13 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		accountType cvaccount.Type
-		accountName string
-		detail      string
-		secret      string
-		token       string
+		customerID    uuid.UUID
+		accountType   cvaccount.Type
+		accountName   string
+		detail        string
+		secret        string
+		token         string
+		messageFlowID uuid.UUID
 
 		response *sock.Response
 
@@ -181,12 +182,13 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:  uuid.FromStringOrNil("2292b6c0-003e-11ee-9fb5-fff568769b60"),
-			accountType: cvaccount.TypeLine,
-			accountName: "test name",
-			detail:      "test detail",
-			secret:      "test secret",
-			token:       "test token",
+			customerID:    uuid.FromStringOrNil("2292b6c0-003e-11ee-9fb5-fff568769b60"),
+			accountType:   cvaccount.TypeLine,
+			accountName:   "test name",
+			detail:        "test detail",
+			secret:        "test secret",
+			token:         "test token",
+			messageFlowID: uuid.Nil,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -199,7 +201,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 				URI:      "/v1/accounts",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"2292b6c0-003e-11ee-9fb5-fff568769b60","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
+				Data:     []byte(`{"customer_id":"2292b6c0-003e-11ee-9fb5-fff568769b60","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token","message_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 			expectRes: &cvaccount.Account{
 				Identity: identity.Identity{
@@ -223,7 +225,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1AccountCreate(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
+			res, err := reqHandler.ConversationV1AccountCreate(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

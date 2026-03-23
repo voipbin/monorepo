@@ -19,7 +19,7 @@ import (
 )
 
 // Hook handles received line message
-func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) error {
+func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) ([]*HookResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Hook",
 		"account_id": ac.ID,
@@ -32,21 +32,26 @@ func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte
 
 	if errUnmarshal := json.Unmarshal(data, tmp); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
-		return errUnmarshal
+		return nil, errUnmarshal
 	}
 
+	results := []*HookResult{}
 	for _, e := range tmp.Events {
-		if errHook := h.hookEventHandle(ctx, ac, e); errHook != nil {
-			log.Errorf("Could not handle the message. err: %v", errHook)
+		r, err := h.hookEventHandle(ctx, ac, e)
+		if err != nil {
+			log.Errorf("Could not handle the message. err: %v", err)
 			continue
+		}
+		if r != nil {
+			results = append(results, r)
 		}
 	}
 
-	return nil
+	return results, nil
 }
 
 // hookEventHandle handles the received line event.
-func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, e *linebot.Event) error {
+func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, e *linebot.Event) (*HookResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "hookEventHandle",
 		"customer_id": ac,
@@ -57,20 +62,21 @@ func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, 
 	case linebot.EventTypeFollow:
 		if errHook := h.hookEventTypeFollow(ctx, ac, e); errHook != nil {
 			log.Errorf("Could not handle the line event follow. err: %v", errHook)
-			return errHook
+			return nil, errHook
 		}
-		return nil
+		return nil, nil
 
 	case linebot.EventTypeMessage:
-		if errHook := h.hookEventTypeMessage(ctx, ac, e); errHook != nil {
-			log.Errorf("Could not handle the line event message. err: %v", errHook)
-			return errHook
+		r, err := h.hookEventTypeMessage(ctx, ac, e)
+		if err != nil {
+			log.Errorf("Could not handle the line event message. err: %v", err)
+			return nil, err
 		}
-		return nil
+		return r, nil
 
 	default:
 		log.Errorf("Unsupported event type. event_type: %s", e.Type)
-		return fmt.Errorf("unsupported event type. event_type: %s", e.Type)
+		return nil, fmt.Errorf("unsupported event type. event_type: %s", e.Type)
 	}
 }
 
@@ -120,7 +126,7 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 }
 
 // hookEventTypeMessage handles line's message type event.
-func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Account, e *linebot.Event) error {
+func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Account, e *linebot.Event) (*HookResult, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "hookEventTypeMessage",
 		"customer_id": ac,
@@ -131,7 +137,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 	// get reference id
 	dialogID := h.getDialogID(e)
 	if dialogID == "" {
-		return fmt.Errorf("could not get reference id. dialog_id: %s", dialogID)
+		return nil, fmt.Errorf("could not get reference id. dialog_id: %s", dialogID)
 	}
 
 	// get conversation
@@ -143,9 +149,9 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 
 	cvs, err := h.reqHandler.ConversationV1ConversationList(ctx, "", 1, fields)
 	if err != nil {
-		return errors.Wrapf(err, "Could not get conversations")
+		return nil, errors.Wrapf(err, "Could not get conversations")
 	} else if len(cvs) == 0 {
-		return fmt.Errorf("could not find conversation. dialog_id: %s", dialogID)
+		return nil, fmt.Errorf("could not find conversation. dialog_id: %s", dialogID)
 	}
 	cv := cvs[0]
 
@@ -175,11 +181,14 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		medias,
 	)
 	if err != nil {
-		return errors.Wrapf(err, "Could not create a message")
+		return nil, errors.Wrapf(err, "Could not create a message")
 	}
 	log.WithField("message", m).Debugf("Created a new message. message_id: %s", m.ID)
 
-	return nil
+	return &HookResult{
+		Conversation: &cv,
+		Message:      m,
+	}, nil
 }
 
 // getDialogID returns a reference id

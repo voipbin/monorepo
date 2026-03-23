@@ -27,9 +27,10 @@ func Test_Create(t *testing.T) {
 		customerID  uuid.UUID
 		accountType account.Type
 		accountName string
-		detail      string
-		secret      string
-		token       string
+		detail        string
+		secret        string
+		token         string
+		messageFlowID uuid.UUID
 
 		responseUUID    uuid.UUID
 		responseAccount *account.Account
@@ -93,7 +94,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount)
 
-			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
+			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

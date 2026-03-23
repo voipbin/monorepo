@@ -60,11 +60,12 @@ func (mr *MockLineHandlerMockRecorder) GetPeer(ctx, ac, userID any) *gomock.Call
 }
 
 // Hook mocks base method.
-func (m *MockLineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) error {
+func (m *MockLineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) ([]*HookResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Hook", ctx, ac, data)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]*HookResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Hook indicates an expected call of Hook.

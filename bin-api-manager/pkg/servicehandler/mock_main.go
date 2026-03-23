@@ -1753,18 +1753,18 @@ func (mr *MockServiceHandlerMockRecorder) ContactUpdate(ctx, a, contactID, first
 }
 
 // ConversationAccountCreate mocks base method.
-func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *agent.Agent, accountType account0.Type, name, detail, secret, token string) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *agent.Agent, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, a, accountType, name, detail, secret, token)
+	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, a, accountType, name, detail, secret, token, messageFlowID)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationAccountCreate indicates an expected call of ConversationAccountCreate.
-func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, a, accountType, name, detail, secret, token any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, a, accountType, name, detail, secret, token, messageFlowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountCreate), ctx, a, accountType, name, detail, secret, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountCreate), ctx, a, accountType, name, detail, secret, token, messageFlowID)
 }
 
 // ConversationAccountDelete mocks base method.
