@@ -47,7 +47,6 @@ Create a basic AI voice assistant that answers questions during a call. The AI w
                     "type": "ai",
                     "option": {
                         "initial_prompt": "You are a helpful customer service assistant. Answer questions politely and concisely.",
-                        "language": "en-US",
                         "voice_type": "female"
                     }
                 }
@@ -102,7 +101,6 @@ Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. T
                     "type": "ai_talk",
                     "option": {
                         "initial_prompt": "You are an expert sales representative for VoIPBIN. Help customers understand our calling and messaging platform. Be enthusiastic but professional.",
-                        "language": "en-US",
                         "voice_type": "male"
                     }
                 }
@@ -167,8 +165,7 @@ Customize the AI voice by specifying an ElevenLabs Voice ID using variables.
                 {
                     "type": "ai_talk",
                     "option": {
-                        "initial_prompt": "You are a friendly receptionist. Greet callers warmly and help them with their inquiries.",
-                        "language": "en-US"
+                        "initial_prompt": "You are a friendly receptionist. Greet callers warmly and help them with their inquiries."
                     }
                 }
             ]
@@ -314,8 +311,9 @@ Best Practices
 
 **Language Support:**
 - AI supports multiple languages (see :ref:`supported languages <transcribe-overview-supported_languages>`)
-- Match the ``language`` parameter with the user's expected language
-- AI can detect and respond in multiple languages if not constrained
+- Set the ``stt_language`` field on the AI configuration (``POST /ais`` or ``PUT /ais``) to match the user's expected language in BCP-47 format (e.g., ``ko-KR``, ``en-US``). See :ref:`STT Language <ai-struct-ai-stt_language>`.
+- If ``stt_language`` is omitted, the STT provider uses auto-detection, which may reduce accuracy for non-English calls
+- For multilingual deployments, create separate AI configurations per language and reference the appropriate ``ai_id`` in each flow
 
 **Context Retention:**
 - AI remembers conversation history within the same call

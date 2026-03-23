@@ -203,6 +203,7 @@
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;stt_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stt_language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;vad_config&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
         <span class="s2">&quot;start_secs&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
@@ -230,6 +231,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_type</span></code> (enum string, Required): Text-to-Speech provider. See <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tts_voice_id</span></code> (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in <a class="reference internal" href="#ai-struct-ai-tts-type"><span class="std std-ref">TTS Types</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stt_type</span></code> (enum string, Required): Speech-to-Text provider. See <a class="reference internal" href="#ai-struct-ai-stt-type"><span class="std std-ref">STT Types</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stt_language</span></code> (String, Optional): STT language in BCP-47 format (e.g., <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">en-US</span></code>). Controls which language the Speech-to-Text engine listens for. When set, the STT provider is configured to recognize this specific language, improving accuracy for non-English calls. Empty string or omitted means auto-detect (provider default).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">vad_config</span></code> (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See <a class="reference internal" href="#ai-struct-ai-vad-config"><span class="std std-ref">VAD Config</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">smart_turn_enabled</span></code> (Boolean, Optional): Enable smart turn detection using Pipecat’s LocalSmartTurnAnalyzerV3 for more natural turn-taking. When <code class="docutils literal notranslate"><span class="pre">true</span></code>, the VAD <code class="docutils literal notranslate"><span class="pre">stop_secs</span></code> parameter is automatically forced to <code class="docutils literal notranslate"><span class="pre">0.2</span></code> regardless of <code class="docutils literal notranslate"><span class="pre">vad_config</span></code> settings. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>. See <a class="reference internal" href="#ai-struct-ai-smart-turn"><span class="std std-ref">Smart Turn</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tool_names</span></code> (Array of String, Optional): List of enabled tool functions. Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> to enable all tools, <code class="docutils literal notranslate"><span class="pre">[]</span></code> to disable all tools, or list specific tool names. See <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p></li>
@@ -262,6 +264,7 @@
     <span class="s2">&quot;tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tts_voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;EXAVITQu4vr4xnSDxMaL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;stt_type&quot;</span><span class="p">:</span> <span class="s2">&quot;deepgram&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stt_language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
     <span class="s2">&quot;vad_config&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;stop_secs&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
     <span class="p">},</span>
@@ -493,6 +496,71 @@
 </tbody>
 </table>
 </section>
+<section id="stt-language">
+<span id="ai-struct-ai-stt-language"></span><h2>STT Language<a class="headerlink" href="#stt-language" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> field specifies which language the Speech-to-Text engine should recognize. The value must be in BCP-47 format (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
+<p>When set, the STT provider is explicitly configured for the specified language, which improves recognition accuracy — especially for non-English conversations. When omitted or set to an empty string, the STT provider uses its default auto-detection behavior.</p>
+<p><strong>Common BCP-47 Language Codes</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Language Code</p></th>
+<th class="head"><p>Language</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>en-US</p></td>
+<td><p>English (United States)</p></td>
+</tr>
+<tr class="row-odd"><td><p>en-GB</p></td>
+<td><p>English (United Kingdom)</p></td>
+</tr>
+<tr class="row-even"><td><p>ko-KR</p></td>
+<td><p>Korean</p></td>
+</tr>
+<tr class="row-odd"><td><p>ja-JP</p></td>
+<td><p>Japanese</p></td>
+</tr>
+<tr class="row-even"><td><p>zh-CN</p></td>
+<td><p>Chinese (Simplified)</p></td>
+</tr>
+<tr class="row-odd"><td><p>de-DE</p></td>
+<td><p>German</p></td>
+</tr>
+<tr class="row-even"><td><p>fr-FR</p></td>
+<td><p>French</p></td>
+</tr>
+<tr class="row-odd"><td><p>es-ES</p></td>
+<td><p>Spanish (Spain)</p></td>
+</tr>
+<tr class="row-even"><td><p>pt-BR</p></td>
+<td><p>Portuguese (Brazil)</p></td>
+</tr>
+<tr class="row-odd"><td><p>it-IT</p></td>
+<td><p>Italian</p></td>
+</tr>
+<tr class="row-even"><td><p>nl-NL</p></td>
+<td><p>Dutch</p></td>
+</tr>
+<tr class="row-odd"><td><p>ru-RU</p></td>
+<td><p>Russian</p></td>
+</tr>
+<tr class="row-even"><td><p>ar-SA</p></td>
+<td><p>Arabic</p></td>
+</tr>
+<tr class="row-odd"><td><p>hi-IN</p></td>
+<td><p>Hindi</p></td>
+</tr>
+<tr class="row-even"><td><p>pl-PL</p></td>
+<td><p>Polish</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> is configured on the AI resource itself, not per-call. If you need different STT languages for different call scenarios, create separate AI configurations — one per language — and reference the appropriate <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> in each flow action.</p>
+</div>
+</section>
 <section id="vad-config">
 <span id="ai-struct-ai-vad-config"></span><h2>VAD Config<a class="headerlink" href="#vad-config" title="Link to this heading"></a></h2>
 <p>Voice Activity Detection configuration for tuning speech detection sensitivity and timing.</p>
@@ -605,6 +673,7 @@
 <li><a class="reference internal" href="#engine-model">Engine Model</a></li>
 <li><a class="reference internal" href="#tts-type">TTS Type</a></li>
 <li><a class="reference internal" href="#stt-type">STT Type</a></li>
+<li><a class="reference internal" href="#stt-language">STT Language</a></li>
 <li><a class="reference internal" href="#vad-config">VAD Config</a></li>
 <li><a class="reference internal" href="#smart-turn">Smart Turn</a></li>
 <li><a class="reference internal" href="#tool-names">Tool Names</a></li>

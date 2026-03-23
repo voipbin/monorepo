@@ -396,7 +396,9 @@
 </section>
 <section id="multilingual-support">
 <h2>Multilingual Support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h2>
-<p>VoIPBIN’s AI supports multiple languages. See supported languages: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
+<p>VoIPBIN’s AI supports multiple languages. The STT language is configured on the AI resource itself using the <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> field in BCP-47 format (e.g., <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">en-US</span></code>). This tells the Speech-to-Text engine which language to listen for, improving recognition accuracy.</p>
+<p>To support multiple languages, create separate AI configurations — one per language — and reference the appropriate <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> in each flow action. When <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> is omitted, the STT provider uses auto-detection.</p>
+<p>See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-stt-language"><span class="std std-ref">STT Language</span></a> for supported language codes and <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a> for the full list.</p>
 </section>
 </section>
 <section id="tool-functions">

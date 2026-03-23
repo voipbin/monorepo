@@ -23,6 +23,7 @@ AI
         "tts_type": "<string>",
         "tts_voice_id": "<string>",
         "stt_type": "<string>",
+        "stt_language": "<string>",
         "vad_config": {
             "confidence": <number>,
             "start_secs": <number>,
@@ -48,6 +49,7 @@ AI
 * ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``stt_type`` (enum string, Required): Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.
+* ``stt_language`` (String, Optional): STT language in BCP-47 format (e.g., ``ko-KR``, ``en-US``). Controls which language the Speech-to-Text engine listens for. When set, the STT provider is configured to recognize this specific language, improving accuracy for non-English calls. Empty string or omitted means auto-detect (provider default).
 * ``vad_config`` (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See :ref:`VAD Config <ai-struct-ai-vad_config>`.
 * ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
@@ -81,6 +83,7 @@ Example
         "tts_type": "elevenlabs",
         "tts_voice_id": "EXAVITQu4vr4xnSDxMaL",
         "stt_type": "deepgram",
+        "stt_language": "en-US",
         "vad_config": {
             "stop_secs": 0.5
         },
@@ -185,6 +188,40 @@ deepgram         Deepgram speech recognition (recommended)
 cartesia         Cartesia speech recognition
 elevenlabs       ElevenLabs speech recognition
 ================ =======================================
+
+.. _ai-struct-ai-stt_language:
+
+STT Language
+------------
+The ``stt_language`` field specifies which language the Speech-to-Text engine should recognize. The value must be in BCP-47 format (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
+
+When set, the STT provider is explicitly configured for the specified language, which improves recognition accuracy — especially for non-English conversations. When omitted or set to an empty string, the STT provider uses its default auto-detection behavior.
+
+**Common BCP-47 Language Codes**
+
+======================== ====================================
+Language Code            Language
+======================== ====================================
+en-US                    English (United States)
+en-GB                    English (United Kingdom)
+ko-KR                    Korean
+ja-JP                    Japanese
+zh-CN                    Chinese (Simplified)
+de-DE                    German
+fr-FR                    French
+es-ES                    Spanish (Spain)
+pt-BR                    Portuguese (Brazil)
+it-IT                    Italian
+nl-NL                    Dutch
+ru-RU                    Russian
+ar-SA                    Arabic
+hi-IN                    Hindi
+pl-PL                    Polish
+======================== ====================================
+
+.. note:: **AI Implementation Hint**
+
+   The ``stt_language`` is configured on the AI resource itself, not per-call. If you need different STT languages for different call scenarios, create separate AI configurations — one per language — and reference the appropriate ``ai_id`` in each flow action.
 
 .. _ai-struct-ai-vad_config:
 
