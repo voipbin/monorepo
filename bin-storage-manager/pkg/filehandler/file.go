@@ -69,7 +69,7 @@ func (h *fileHandler) Create(
 	log.WithField("dst_attrs", dstAttrs).Debugf("Moved file. bucket_link: %s", dstAttrs.MediaLink)
 
 	// get dowload uri
-	expireDuration := 3650 * 24 * time.Hour // valid for 10 years
+	expireDuration := 7 * 24 * time.Hour // valid for 7 days
 	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeNowAdd(expireDuration)
 
