@@ -519,7 +519,7 @@ v                   v     v                   v
 <h3>Managing Balance<a class="headerlink" href="#managing-balance" title="Link to this heading"></a></h3>
 <p>Check and manage your account balance.</p>
 <p><strong>Check Balance</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_accounts?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
@@ -542,7 +542,8 @@ v                   v     v                   v
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
-<p><strong>Add Balance (Admin Only)</strong></p>
+<p><strong>Add Balance (Project Admin Only)</strong></p>
+<p>This operation uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoint, which requires project super admin permissions.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;account-id&gt;/balance_add_force?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data &#39;{
@@ -550,7 +551,7 @@ v                   v     v                   v
     }&#39;
 </pre></div>
 </div>
-<p>Note: Balance addition is restricted to users with admin permissions for security.</p>
+<p>Note: Balance addition is restricted to project super admins. The <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoints require explicit account ID and elevated permissions. Regular customer users should use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> (singular, no ID) to check their balance.</p>
 </section>
 <section id="balance-lifecycle">
 <h3>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h3>
@@ -709,8 +710,9 @@ v                   v     v                   v
 <p>Before managing billing accounts, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>The billing account ID (UUID). Obtain it via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code> which lists all billing accounts for the authenticated customer.</p></li>
-<li><p>(For adding balance) Admin-level permissions on the account.</p></li>
+<li><p>(For customer admin users) No billing account ID is needed. The <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> endpoint (singular, no ID) auto-resolves the billing account from your authenticated session.</p></li>
+<li><p>(For project super admins only) The billing account ID (UUID) is needed for admin endpoints like <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_accounts/{id}</span></code> (plural, with ID).</p></li>
+<li><p>(For adding balance) Project super admin permissions are required.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -721,7 +723,8 @@ v                   v     v                   v
 <h3>Check Account Balance<a class="headerlink" href="#check-account-balance" title="Link to this heading"></a></h3>
 <p>Check your billing account balance before initiating calls or sending messages to ensure sufficient funds.</p>
 <p><strong>Get Billing Account:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<p>The <code class="docutils literal notranslate"><span class="pre">/billing_account</span></code> endpoint (singular, no ID) auto-resolves the billing account from your authenticated session.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
@@ -741,7 +744,8 @@ v                   v     v                   v
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (69772630 = $69.77). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> field is the current token count.</p>
-<p><strong>List All Billing Accounts:</strong></p>
+<p><strong>List All Billing Accounts (Project Admin Only):</strong></p>
+<p>This endpoint uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> (plural) path and requires project super admin permissions.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
@@ -765,10 +769,15 @@ v                   v     v                   v
 }
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Regular customer users should use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code> (singular, no ID) to retrieve their own billing account. The plural <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> endpoint is restricted to project super admins.</p>
+</div>
 </section>
-<section id="add-balance-admin-only">
-<h3>Add Balance (Admin Only)<a class="headerlink" href="#add-balance-admin-only" title="Link to this heading"></a></h3>
-<p>Only users with admin permissions can add balance to accounts. This ensures account security and prevents unauthorized access.</p>
+<section id="add-balance-project-admin-only">
+<h3>Add Balance (Project Admin Only)<a class="headerlink" href="#add-balance-project-admin-only" title="Link to this heading"></a></h3>
+<p>Only project super admins can add balance to accounts. This operation uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoint (plural, with explicit account ID).</p>
 <p><strong>Add Balance:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/billing_accounts/&lt;billing-account-id&gt;/balance?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -793,7 +802,7 @@ v                   v     v                   v
 }
 </pre></div>
 </div>
-<p><strong>Important:</strong> This operation requires admin permissions. Regular users will receive a permission error.</p>
+<p><strong>Important:</strong> This operation requires project super admin permissions. Regular customer users will receive a permission error. The <code class="docutils literal notranslate"><span class="pre">/billing_accounts/{id}</span></code> endpoints are not available to normal customer users.</p>
 </section>
 <section id="understanding-service-rates">
 <h3>Understanding Service Rates<a class="headerlink" href="#understanding-service-rates" title="Link to this heading"></a></h3>
@@ -831,13 +840,13 @@ Credit cost: 10 x $0.01 = $0.10
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
-<span class="k">def</span> <span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">billing_account_id</span><span class="p">,</span> <span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">&quot;vn&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">&quot;vn&quot;</span><span class="p">):</span>
     <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">}</span>
 
-    <span class="c1"># Get billing account</span>
+    <span class="c1"># Get billing account (auto-resolved from authenticated session)</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_accounts/</span><span class="si">{</span><span class="n">billing_account_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_account&quot;</span><span class="p">,</span>
         <span class="n">params</span><span class="o">=</span><span class="n">params</span>
     <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 
@@ -871,23 +880,23 @@ Credit cost: 10 x $0.01 = $0.10
     <span class="k">return</span> <span class="kc">True</span>
 
 <span class="c1"># Check for a 10 minute VN call</span>
-<span class="n">check_balance_and_call</span><span class="p">(</span><span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;vn&quot;</span><span class="p">)</span>
+<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;vn&quot;</span><span class="p">)</span>
 
 <span class="c1"># Check for a 5 minute PSTN call</span>
-<span class="n">check_balance_and_call</span><span class="p">(</span><span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;pstn&quot;</span><span class="p">)</span>
+<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;pstn&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Node.js Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const axios = require(&#39;axios&#39;);
 
-async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callType = &#39;vn&#39;) {
+async function checkBalanceAndCall(callDurationMinutes, callType = &#39;vn&#39;) {
     try {
         const baseUrl = &#39;https://api.voipbin.net/v1.0&#39;;
         const params = { token: &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39; };
 
-        // Get billing account
+        // Get billing account (auto-resolved from authenticated session)
         const accountResponse = await axios.get(
-            `${baseUrl}/billing_accounts/${billingAccountId}`,
+            `${baseUrl}/billing_account`,
             { params }
         );
         const account = accountResponse.data;
@@ -931,7 +940,7 @@ async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callTy
 }
 
 // Check for a 10 minute VN call
-checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&#39;);
+checkBalanceAndCall(10, &#39;vn&#39;);
 </pre></div>
 </div>
 </section>
@@ -1108,8 +1117,8 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <section id="balance-management-workflow">
 <h3>Balance Management Workflow<a class="headerlink" href="#balance-management-workflow" title="Link to this heading"></a></h3>
 <p><strong>1. Initial Setup:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current balance</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_accounts</span><span class="o">/&lt;</span><span class="n">account</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current balance (auto-resolved from authenticated session)</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_account</span>
 
 <span class="c1"># Set up webhook for balance monitoring</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">webhooks</span>
@@ -1139,7 +1148,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 <p><strong>Common Issues:</strong></p>
 <p><strong>Insufficient balance error:</strong></p>
 <ul class="simple">
-<li><p>Check credit balance: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_accounts/&lt;account-id&gt;</span></code></p></li>
+<li><p>Check credit balance: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/billing_account</span></code></p></li>
 <li><p>PSTN calls and number purchases require credit balance</p></li>
 </ul>
 <p><strong>Unexpected credit charges:</strong></p>
@@ -1297,7 +1306,7 @@ checkBalanceAndCall(&#39;62918cd8-0cd7-11ee-8571-b738bed3a5c4&#39;, 10, &#39;vn&
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li><a class="reference internal" href="#check-account-balance">Check Account Balance</a></li>
-<li><a class="reference internal" href="#add-balance-admin-only">Add Balance (Admin Only)</a></li>
+<li><a class="reference internal" href="#add-balance-project-admin-only">Add Balance (Project Admin Only)</a></li>
 <li><a class="reference internal" href="#understanding-service-rates">Understanding Service Rates</a></li>
 <li><a class="reference internal" href="#check-balance-before-call">Check Balance Before Call</a></li>
 <li><a class="reference internal" href="#monitor-balance-with-webhooks">Monitor Balance with Webhooks</a></li>

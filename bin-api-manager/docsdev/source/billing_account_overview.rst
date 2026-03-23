@@ -258,7 +258,7 @@ Check and manage your account balance.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_accounts?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/billing_account?token=<token>'
 
 **Response:**
 
@@ -286,7 +286,9 @@ The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token``
 
 Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).
 
-**Add Balance (Admin Only)**
+**Add Balance (Project Admin Only)**
+
+This operation uses the admin-only ``/billing_accounts/{id}`` endpoint, which requires project super admin permissions.
 
 .. code::
 
@@ -296,7 +298,7 @@ Returns a paginated list of billing ledger entries showing all transactions (usa
             "balance": 100.00
         }'
 
-Note: Balance addition is restricted to users with admin permissions for security.
+Note: Balance addition is restricted to project super admins. The ``/billing_accounts/{id}`` endpoints require explicit account ID and elevated permissions. Regular customer users should use ``GET /v1.0/billing_account`` (singular, no ID) to check their balance.
 
 
 Balance Lifecycle

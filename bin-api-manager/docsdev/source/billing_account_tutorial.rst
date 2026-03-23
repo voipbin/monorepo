@@ -9,8 +9,9 @@ Prerequisites
 Before managing billing accounts, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* The billing account ID (UUID). Obtain it via ``GET /billing_accounts`` which lists all billing accounts for the authenticated customer.
-* (For adding balance) Admin-level permissions on the account.
+* (For customer admin users) No billing account ID is needed. The ``GET /v1.0/billing_account`` endpoint (singular, no ID) auto-resolves the billing account from your authenticated session.
+* (For project super admins only) The billing account ID (UUID) is needed for admin endpoints like ``GET /v1.0/billing_accounts/{id}`` (plural, with ID).
+* (For adding balance) Project super admin permissions are required.
 
 .. note:: **AI Implementation Hint**
 
@@ -23,9 +24,11 @@ Check your billing account balance before initiating calls or sending messages t
 
 **Get Billing Account:**
 
+The ``/billing_account`` endpoint (singular, no ID) auto-resolves the billing account from your authenticated session.
+
 .. code::
 
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/<billing-account-id>?token=<YOUR_AUTH_TOKEN>'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_account?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
@@ -45,7 +48,9 @@ Check your billing account balance before initiating calls or sending messages t
 
 The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_token`` field is the current token count.
 
-**List All Billing Accounts:**
+**List All Billing Accounts (Project Admin Only):**
+
+This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requires project super admin permissions.
 
 .. code::
 
@@ -71,10 +76,14 @@ The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_tok
         ]
     }
 
-Add Balance (Admin Only)
--------------------------
+.. note:: **AI Implementation Hint**
 
-Only users with admin permissions can add balance to accounts. This ensures account security and prevents unauthorized access.
+   Regular customer users should use ``GET /v1.0/billing_account`` (singular, no ID) to retrieve their own billing account. The plural ``/billing_accounts`` endpoint is restricted to project super admins.
+
+Add Balance (Project Admin Only)
+----------------------------------
+
+Only project super admins can add balance to accounts. This operation uses the admin-only ``/billing_accounts/{id}`` endpoint (plural, with explicit account ID).
 
 **Add Balance:**
 
@@ -102,7 +111,7 @@ Only users with admin permissions can add balance to accounts. This ensures acco
         "tm_update": "2024-01-15T10:30:00Z"
     }
 
-**Important:** This operation requires admin permissions. Regular users will receive a permission error.
+**Important:** This operation requires project super admin permissions. Regular customer users will receive a permission error. The ``/billing_accounts/{id}`` endpoints are not available to normal customer users.
 
 Understanding Service Rates
 ----------------------------
@@ -155,13 +164,13 @@ Programmatically verify balance before initiating calls to ensure successful com
     import requests
     import math
 
-    def check_balance_and_call(billing_account_id, call_duration_minutes, call_type="vn"):
+    def check_balance_and_call(call_duration_minutes, call_type="vn"):
         base_url = "https://api.voipbin.net/v1.0"
         params = {"token": "<YOUR_AUTH_TOKEN>"}
 
-        # Get billing account
+        # Get billing account (auto-resolved from authenticated session)
         account = requests.get(
-            f"{base_url}/billing_accounts/{billing_account_id}",
+            f"{base_url}/billing_account",
             params=params
         ).json()
 
@@ -195,10 +204,10 @@ Programmatically verify balance before initiating calls to ensure successful com
         return True
 
     # Check for a 10 minute VN call
-    check_balance_and_call("62918cd8-0cd7-11ee-8571-b738bed3a5c4", 10, "vn")
+    check_balance_and_call(10, "vn")
 
     # Check for a 5 minute PSTN call
-    check_balance_and_call("62918cd8-0cd7-11ee-8571-b738bed3a5c4", 5, "pstn")
+    check_balance_and_call(5, "pstn")
 
 **Node.js Example:**
 
@@ -206,14 +215,14 @@ Programmatically verify balance before initiating calls to ensure successful com
 
     const axios = require('axios');
 
-    async function checkBalanceAndCall(billingAccountId, callDurationMinutes, callType = 'vn') {
+    async function checkBalanceAndCall(callDurationMinutes, callType = 'vn') {
         try {
             const baseUrl = 'https://api.voipbin.net/v1.0';
             const params = { token: '<YOUR_AUTH_TOKEN>' };
 
-            // Get billing account
+            // Get billing account (auto-resolved from authenticated session)
             const accountResponse = await axios.get(
-                `${baseUrl}/billing_accounts/${billingAccountId}`,
+                `${baseUrl}/billing_account`,
                 { params }
             );
             const account = accountResponse.data;
@@ -257,7 +266,7 @@ Programmatically verify balance before initiating calls to ensure successful com
     }
 
     // Check for a 10 minute VN call
-    checkBalanceAndCall('62918cd8-0cd7-11ee-8571-b738bed3a5c4', 10, 'vn');
+    checkBalanceAndCall(10, 'vn');
 
 Monitor Balance with Webhooks
 ------------------------------
@@ -447,8 +456,8 @@ Balance Management Workflow
 
 .. code::
 
-    # Check current balance
-    GET /v1.0/billing_accounts/<account-id>
+    # Check current balance (auto-resolved from authenticated session)
+    GET /v1.0/billing_account
 
     # Set up webhook for balance monitoring
     POST /v1.0/webhooks
@@ -484,7 +493,7 @@ Troubleshooting
 
 **Insufficient balance error:**
 
-- Check credit balance: ``GET /v1.0/billing_accounts/<account-id>``
+- Check credit balance: ``GET /v1.0/billing_account``
 - PSTN calls and number purchases require credit balance
 
 **Unexpected credit charges:**
