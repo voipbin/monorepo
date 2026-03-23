@@ -84,6 +84,10 @@ put:
             stt_type:
               type: string
               description: Speech-to-text engine type.
+            stt_language:
+              type: string
+              description: "STT language in BCP-47 format (e.g., ko-KR, en-US)."
+              example: "en-US"
             vad_config:
               $ref: '#/components/schemas/AIManagerVADConfig'
               description: Voice Activity Detection configuration. All fields are optional.
