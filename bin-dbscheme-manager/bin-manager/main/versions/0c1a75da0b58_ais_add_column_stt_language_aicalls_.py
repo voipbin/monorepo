@@ -18,15 +18,15 @@ depends_on = None
 
 def upgrade():
     # Add stt_language to ais table
-    op.execute("""ALTER TABLE ais ADD COLUMN stt_language VARCHAR(16) NOT NULL DEFAULT '' AFTER stt_type""")
+    op.execute("""ALTER TABLE ai_ais ADD COLUMN stt_language VARCHAR(255) NOT NULL DEFAULT '' AFTER stt_type""")
 
     # Rename language -> stt_language in aicalls table
-    op.execute("""ALTER TABLE aicalls CHANGE COLUMN language stt_language VARCHAR(255) NOT NULL DEFAULT ''""")
+    op.execute("""ALTER TABLE ai_aicalls CHANGE COLUMN language stt_language VARCHAR(255) NOT NULL DEFAULT ''""")
 
 
 def downgrade():
     # Rename stt_language -> language in aicalls table
-    op.execute("""ALTER TABLE aicalls CHANGE COLUMN stt_language language VARCHAR(255) NOT NULL DEFAULT ''""")
+    op.execute("""ALTER TABLE ai_aicalls CHANGE COLUMN stt_language language VARCHAR(255) NOT NULL DEFAULT ''""")
 
     # Remove stt_language from ais table
-    op.execute("""ALTER TABLE ais DROP COLUMN stt_language""")
+    op.execute("""ALTER TABLE ai_ais DROP COLUMN stt_language""")
