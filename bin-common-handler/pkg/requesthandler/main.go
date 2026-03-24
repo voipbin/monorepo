@@ -36,6 +36,8 @@ import (
 
 	"monorepo/bin-common-handler/models/service"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
@@ -66,7 +68,6 @@ import (
 
 	rmastcontact "monorepo/bin-registrar-manager/models/astcontact"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
-	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
@@ -854,6 +855,14 @@ type RequestHandler interface {
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 	ContactV1TagRemove(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 
+	// direct-manager directs
+	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectGet(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectGetByHash(ctx context.Context, hash string) (*dmdirect.Direct, error)
+	DirectV1DirectGets(ctx context.Context, pageToken string, pageSize uint64, filters map[dmdirect.Field]any) ([]*dmdirect.Direct, error)
+	DirectV1DirectDelete(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectRegenerate(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
+
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
 	ConversationV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error)
@@ -1125,10 +1134,6 @@ type RequestHandler interface {
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.Extension, error)
 	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
-	RegistrarV1ExtensionGetByDirectHash(ctx context.Context, hash string) (*rmextension.Extension, error)
-
-	// registrar-manager extension-direct
-	RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*rmextensiondirect.ExtensionDirect, error)
 
 	// registrar-manager trunk
 	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)

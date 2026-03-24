@@ -311,6 +311,14 @@ func (r *requestHandler) sendRequestRag(ctx context.Context, uri string, method 
 	return r.sendRequest(ctx, commonoutline.QueueNameRagRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
+// sendRequestDirect send a request to the direct-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestDirect(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameDirectRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
+
 // sendRequestRTPEngine sends a request to the rtpengine-proxy and returns the response.
 // The queue name is dynamically constructed from the rtpengineID: rtpengine.<rtpengineID>.request
 // timeout millisecond

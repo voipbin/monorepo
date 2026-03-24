@@ -46,6 +46,7 @@ import (
 	message0 "monorepo/bin-conversation-manager/models/message"
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
+	direct "monorepo/bin-direct-manager/models/direct"
 	email "monorepo/bin-email-manager/models/email"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
@@ -65,7 +66,6 @@ import (
 	rag "monorepo/bin-rag-manager/models/rag"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	extension "monorepo/bin-registrar-manager/models/extension"
-	extensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
@@ -3701,6 +3701,96 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdateMetadata(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdateMetadata", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdateMetadata), ctx, customerID, metadata)
 }
 
+// DirectV1DirectCreate mocks base method.
+func (m *MockRequestHandler) DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectCreate", ctx, customerID, resourceType, resourceID)
+	ret0, _ := ret[0].(*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectCreate indicates an expected call of DirectV1DirectCreate.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectCreate(ctx, customerID, resourceType, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectCreate", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectCreate), ctx, customerID, resourceType, resourceID)
+}
+
+// DirectV1DirectDelete mocks base method.
+func (m *MockRequestHandler) DirectV1DirectDelete(ctx context.Context, id uuid.UUID) (*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectDelete", ctx, id)
+	ret0, _ := ret[0].(*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectDelete indicates an expected call of DirectV1DirectDelete.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectDelete", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectDelete), ctx, id)
+}
+
+// DirectV1DirectGet mocks base method.
+func (m *MockRequestHandler) DirectV1DirectGet(ctx context.Context, id uuid.UUID) (*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectGet", ctx, id)
+	ret0, _ := ret[0].(*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectGet indicates an expected call of DirectV1DirectGet.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectGet", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectGet), ctx, id)
+}
+
+// DirectV1DirectGetByHash mocks base method.
+func (m *MockRequestHandler) DirectV1DirectGetByHash(ctx context.Context, hash string) (*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectGetByHash", ctx, hash)
+	ret0, _ := ret[0].(*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectGetByHash indicates an expected call of DirectV1DirectGetByHash.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectGetByHash(ctx, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectGetByHash", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectGetByHash), ctx, hash)
+}
+
+// DirectV1DirectGets mocks base method.
+func (m *MockRequestHandler) DirectV1DirectGets(ctx context.Context, pageToken string, pageSize uint64, filters map[direct.Field]any) ([]*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectGets indicates an expected call of DirectV1DirectGets.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectGets", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectGets), ctx, pageToken, pageSize, filters)
+}
+
+// DirectV1DirectRegenerate mocks base method.
+func (m *MockRequestHandler) DirectV1DirectRegenerate(ctx context.Context, id uuid.UUID) (*direct.Direct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectV1DirectRegenerate", ctx, id)
+	ret0, _ := ret[0].(*direct.Direct)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectV1DirectRegenerate indicates an expected call of DirectV1DirectRegenerate.
+func (mr *MockRequestHandlerMockRecorder) DirectV1DirectRegenerate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectV1DirectRegenerate", reflect.TypeOf((*MockRequestHandler)(nil).DirectV1DirectRegenerate), ctx, id)
+}
+
 // EmailV1EmailDelete mocks base method.
 func (m *MockRequestHandler) EmailV1EmailDelete(ctx context.Context, id uuid.UUID) (*email.Email, error) {
 	m.ctrl.T.Helper()
@@ -5231,21 +5321,6 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionDelete(ctx, extens
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionDelete", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionDelete), ctx, extensionID)
 }
 
-// RegistrarV1ExtensionDirectGetByHash mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionDirectGetByHash", ctx, hash)
-	ret0, _ := ret[0].(*extensiondirect.ExtensionDirect)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1ExtensionDirectGetByHash indicates an expected call of RegistrarV1ExtensionDirectGetByHash.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionDirectGetByHash(ctx, hash any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionDirectGetByHash", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionDirectGetByHash), ctx, hash)
-}
-
 // RegistrarV1ExtensionGet mocks base method.
 func (m *MockRequestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
@@ -5259,21 +5334,6 @@ func (m *MockRequestHandler) RegistrarV1ExtensionGet(ctx context.Context, extens
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extensionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGet), ctx, extensionID)
-}
-
-// RegistrarV1ExtensionGetByDirectHash mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionGetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGetByDirectHash", ctx, hash)
-	ret0, _ := ret[0].(*extension.Extension)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1ExtensionGetByDirectHash indicates an expected call of RegistrarV1ExtensionGetByDirectHash.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetByDirectHash(ctx, hash any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetByDirectHash", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetByDirectHash), ctx, hash)
 }
 
 // RegistrarV1ExtensionList mocks base method.
