@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *requestHandler) AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error) {
+func (r *requestHandler) AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender) (*amaicall.AIcall, error) {
 	uri := "/v1/aicalls"
 
 	data := &cbrequest.V1DataAIcallsPost{
@@ -27,8 +27,7 @@ func (r *requestHandler) AIV1AIcallStart(ctx context.Context, assistanceType ama
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
-		Gender:   gender,
-		Language: language,
+		Gender: gender,
 	}
 
 	m, err := json.Marshal(data)

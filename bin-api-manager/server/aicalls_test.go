@@ -33,7 +33,6 @@ func Test_PostAicalls(t *testing.T) {
 		expectedReferenceType  amaicall.ReferenceType
 		expectedReferenceID    uuid.UUID
 		expectedGender         amaicall.Gender
-		expectedLanguage       string
 		expectedRes            string
 	}{
 		{
@@ -58,7 +57,6 @@ func Test_PostAicalls(t *testing.T) {
 			expectedReferenceType:  amaicall.ReferenceTypeCall,
 			expectedReferenceID:    uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
 			expectedGender:         amaicall.GenderMale,
-			expectedLanguage:       "en-US",
 			expectedRes:            `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
@@ -91,7 +89,6 @@ func Test_PostAicalls(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedGender,
-				tt.expectedLanguage,
 			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)

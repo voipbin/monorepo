@@ -91,9 +91,9 @@ func TestFieldConstants(t *testing.T) {
 			expected: "gender",
 		},
 		{
-			name:     "field_language",
-			constant: FieldLanguage,
-			expected: "language",
+			name:     "field_stt_language",
+			constant: FieldSTTLanguage,
+			expected: "stt_language",
 		},
 		{
 			name:     "field_tm_end",

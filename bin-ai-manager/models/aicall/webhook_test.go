@@ -37,7 +37,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 				PipecatcallID: uuid.Must(uuid.NewV4()),
 				Status:        StatusProgressing,
 				Gender:        GenderFemale,
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 				TMEnd:         ptrTime(time.Now()),
 				TMCreate:      ptrTime(time.Now()),
 				TMUpdate:      ptrTime(time.Now()),
@@ -73,8 +73,8 @@ func TestConvertWebhookMessage(t *testing.T) {
 				if wh.Gender != ac.Gender {
 					t.Errorf("Wrong Gender. expect: %s, got: %s", ac.Gender, wh.Gender)
 				}
-				if wh.Language != ac.Language {
-					t.Errorf("Wrong Language. expect: %s, got: %s", ac.Language, wh.Language)
+				if wh.STTLanguage != ac.STTLanguage {
+					t.Errorf("Wrong STTLanguage. expect: %s, got: %s", ac.STTLanguage, wh.STTLanguage)
 				}
 			},
 		},
@@ -150,7 +150,7 @@ func TestCreateWebhookEvent(t *testing.T) {
 				AssistanceID:   uuid.Must(uuid.NewV4()),
 				Status:         StatusProgressing,
 				Gender:        GenderMale,
-				Language:      "ko-KR",
+				STTLanguage:   "ko-KR",
 				ReferenceType: ReferenceTypeConversation,
 				ReferenceID:   uuid.Must(uuid.NewV4()),
 				TMCreate:      ptrTime(time.Now()),

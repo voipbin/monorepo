@@ -11,5 +11,6 @@ type FieldStruct struct {
 	EngineModel EngineModel `filter:"engine_model"`
 	TTSType     TTSType     `filter:"tts_type"`
 	STTType     STTType     `filter:"stt_type"`
+	STTLanguage string      `filter:"stt_language"`
 	Deleted     bool        `filter:"deleted"`
 }

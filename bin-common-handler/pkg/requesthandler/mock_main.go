@@ -118,18 +118,18 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AIV1AICreate mocks base method.
-func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AICreate indicates an expected call of AIV1AICreate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 }
 
 // AIV1AIDelete mocks base method.
@@ -178,18 +178,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, f
 }
 
 // AIV1AIUpdate mocks base method.
-func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, toolNames []tool.ToolName) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIUpdate indicates an expected call of AIV1AIUpdate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 }
 
 // AIV1AIcallDelete mocks base method.
@@ -238,18 +238,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallList(ctx, pageToken, pageSiz
 }
 
 // AIV1AIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, language string) (*aicall.AIcall, error) {
+func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, language)
+	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIcallStart indicates an expected call of AIV1AIcallStart.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, language any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender)
 }
 
 // AIV1AIcallTerminate mocks base method.
@@ -357,18 +357,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1MessageSend(ctx, aicallID, role, c
 }
 
 // AIV1ServiceTypeAIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, resume bool, gender aicall.Gender, language string, requestTimeout int) (*service.Service, error) {
+func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID, gender aicall.Gender, requestTimeout int) (*service.Service, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1ServiceTypeAIcallStart", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, resume, gender, language, requestTimeout)
+	ret := m.ctrl.Call(m, "AIV1ServiceTypeAIcallStart", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, requestTimeout)
 	ret0, _ := ret[0].(*service.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1ServiceTypeAIcallStart indicates an expected call of AIV1ServiceTypeAIcallStart.
-func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeAIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, resume, gender, language, requestTimeout any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeAIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, requestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeAIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeAIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, resume, gender, language, requestTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeAIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeAIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, gender, requestTimeout)
 }
 
 // AIV1ServiceTypeSummaryStart mocks base method.

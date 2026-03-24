@@ -228,7 +228,6 @@
                 &quot;type&quot;: &quot;ai&quot;,
                 &quot;option&quot;: {
                     &quot;initial_prompt&quot;: &quot;You are a helpful customer service assistant. Answer questions politely and concisely.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;,
                     &quot;voice_type&quot;: &quot;female&quot;
                 }
             }
@@ -279,7 +278,6 @@
                 &quot;type&quot;: &quot;ai_talk&quot;,
                 &quot;option&quot;: {
                     &quot;initial_prompt&quot;: &quot;You are an expert sales representative for VoIPBIN. Help customers understand our calling and messaging platform. Be enthusiastic but professional.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;,
                     &quot;voice_type&quot;: &quot;male&quot;
                 }
             }
@@ -341,8 +339,7 @@
             {
                 &quot;type&quot;: &quot;ai_talk&quot;,
                 &quot;option&quot;: {
-                    &quot;initial_prompt&quot;: &quot;You are a friendly receptionist. Greet callers warmly and help them with their inquiries.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                    &quot;initial_prompt&quot;: &quot;You are a friendly receptionist. Greet callers warmly and help them with their inquiries.&quot;
                 }
             }
         ]
@@ -481,8 +478,9 @@
 - Define the tone (professional, friendly, technical, etc.)</p>
 <p><strong>Language Support:</strong>
 - AI supports multiple languages (see <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>)
-- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with the user’s expected language
-- AI can detect and respond in multiple languages if not constrained</p>
+- Set the <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> field on the AI configuration (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais</span></code>) to match the user’s expected language in BCP-47 format (e.g., <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">en-US</span></code>). See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-stt-language"><span class="std std-ref">STT Language</span></a>.
+- If <code class="docutils literal notranslate"><span class="pre">stt_language</span></code> is omitted, the STT provider uses auto-detection, which may reduce accuracy for non-English calls
+- For multilingual deployments, create separate AI configurations per language and reference the appropriate <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> in each flow</p>
 <p><strong>Context Retention:</strong>
 - AI remembers conversation history within the same call
 - Variables set during the call are available to AI

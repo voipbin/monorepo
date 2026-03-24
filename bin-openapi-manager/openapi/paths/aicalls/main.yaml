@@ -43,15 +43,12 @@ post:
               type: string
             gender:
               $ref: '#/components/schemas/AIManagerAIcallGender'
-            language:
-              type: string
           required:
             - assistance_type
             - assistance_id
             - reference_type
             - reference_id
             - gender
-            - language
   responses:
     '200':
       description: Details of the created chatboaicall.

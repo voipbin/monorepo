@@ -34,7 +34,7 @@ func Test_getRequest(t *testing.T) {
 					ID: uuid.FromStringOrNil("53ae45c0-ff1b-11ef-9018-7b56cb798145"),
 				},
 				AIEngineModel: ai.EngineModelGeminiGeminiProLatest,
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 			},
 			message: &message.Message{
 				Content: "test message",
@@ -65,7 +65,7 @@ func Test_getRequest(t *testing.T) {
 					ID: uuid.FromStringOrNil("53fa04ba-ff1b-11ef-a65c-cf8e61d0c4ae"),
 				},
 				AIEngineModel: "dialogflow.cx",
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 			},
 			message: &message.Message{
 				Content: "test message CX",

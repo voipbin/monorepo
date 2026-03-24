@@ -42,7 +42,7 @@ func Test_ProcessStart(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("5b2ad484-093a-11f0-928b-3bd49b19fd87"),
 				ReferenceType: aicall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("6f69db50-a705-11ed-bc35-177b3c1673d4"),
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 			},
 
 			responseTranscribe: &tmtranscribe.Transcribe{

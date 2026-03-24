@@ -198,6 +198,7 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
@@ -214,6 +215,7 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 
@@ -244,7 +246,7 @@ type RequestHandler interface {
 	AIV1ToolList(ctx context.Context) ([]amtool.Tool, error)
 
 	// ai-manager aicall
-	AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
+	AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender) (*amaicall.AIcall, error)
 	AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
@@ -280,9 +282,7 @@ type RequestHandler interface {
 		activeflowID uuid.UUID,
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
-		resume bool,
 		gender amaicall.Gender,
-		language string,
 		requestTimeout int,
 	) (*service.Service, error)
 	AIV1ServiceTypeSummaryStart(

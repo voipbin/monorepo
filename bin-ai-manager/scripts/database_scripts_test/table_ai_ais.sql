@@ -18,7 +18,8 @@ create table ai_ais(
   tts_type      varchar(255),
   tts_voice_id  varchar(255),
 
-  stt_type    varchar(255),
+  stt_type      varchar(255),
+  stt_language  varchar(255),
 
   vad_config  json,           -- VAD configuration
 

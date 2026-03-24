@@ -31,7 +31,7 @@ const (
 	FieldStatus Field = "status"
 
 	FieldGender   Field = "gender"
-	FieldLanguage Field = "language"
+	FieldSTTLanguage Field = "stt_language"
 
 	FieldTMEnd    Field = "tm_end"
 	FieldTMCreate Field = "tm_create"

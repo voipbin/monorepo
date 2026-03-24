@@ -38,6 +38,7 @@ func Test_PostAis(t *testing.T) {
 		expectedTTSType     amai.TTSType
 		expectedTTSVoiceID  string
 		expectedSTTType     amai.STTType
+		expectedSTTLanguage string
 		expectedRagID       uuid.UUID
 		expectedToolNames   []amtool.ToolName
 		expectedRes         string
@@ -70,6 +71,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -102,6 +104,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
 			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -134,6 +137,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameAll},
 			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -166,6 +170,7 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -198,6 +203,40 @@ func Test_PostAis(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
+			expectedRagID:       uuid.Nil,
+			expectedToolNames:   nil,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with stt_language",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/ais",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","stt_language":"ko-KR"}`),
+
+			responseAI: &amai.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
+				},
+			},
+
+			expectedName:        "test name",
+			expectedDetail:      "test detail",
+			expectedEngineModel: amai.EngineModelOpenaiGPT5,
+			expectedParameter: map[string]any{
+				"key1": "val1",
+			},
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -238,6 +277,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
+				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
 			).Return(tt.responseAI, nil)
 
@@ -519,6 +559,7 @@ func Test_PutAisId(t *testing.T) {
 		expectedTTSType     amai.TTSType
 		expectedTTSVoiceID  string
 		expectedSTTType     amai.STTType
+		expectedSTTLanguage string
 		expectedRagID       uuid.UUID
 		expectedToolNames   []amtool.ToolName
 		expectedRes         string
@@ -552,6 +593,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -585,6 +627,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
 			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -618,6 +661,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -651,6 +695,41 @@ func Test_PutAisId(t *testing.T) {
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
 			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "",
+			expectedRagID:       uuid.Nil,
+			expectedToolNames:   nil,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with stt_language",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","stt_language":"ko-KR"}`),
+
+			responseAI: &amai.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			expectedAIID:        uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			expectedName:        "test name",
+			expectedDetail:      "test detail",
+			epxectedEngineModel: amai.EngineModelOpenaiGPT5,
+			expectedParameter: map[string]any{
+				"key1": "val1",
+			},
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
 			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","rag_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
@@ -692,6 +771,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
+				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
 			).Return(tt.responseAI, nil)
 

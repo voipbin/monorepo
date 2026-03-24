@@ -37,7 +37,7 @@ type WebhookMessage struct {
 	Status Status `json:"status,omitempty"`
 
 	Gender   Gender `json:"gender,omitempty"`
-	Language string `json:"language,omitempty"`
+	STTLanguage string `json:"stt_language,omitempty"`
 
 	TMEnd    *time.Time `json:"tm_end"`
 	TMCreate *time.Time `json:"tm_create"`
@@ -72,8 +72,8 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 
 		Status: h.Status,
 
-		Gender:   h.Gender,
-		Language: h.Language,
+		Gender:      h.Gender,
+		STTLanguage: h.STTLanguage,
 
 		TMEnd:    h.TMEnd,
 		TMCreate: h.TMCreate,

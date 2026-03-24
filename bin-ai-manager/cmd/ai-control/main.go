@@ -97,6 +97,7 @@ func cmdCreate() *cobra.Command {
 	flags.String("tts-type", "", "TTS type (e.g., openai, elevenlabs, cartesia)")
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
+	flags.String("stt-language", "", "STT language (e.g., en-US, ko-KR)")
 	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
 	flags.Bool("smart-turn-enabled", false, "Enable smart turn detection")
 
@@ -148,6 +149,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("tts-type", "", "TTS type (e.g., openai, elevenlabs, cartesia)")
 	flags.String("tts-voice-id", "", "TTS voice ID")
 	flags.String("stt-type", "", "STT type (e.g., deepgram, elevenlabs)")
+	flags.String("stt-language", "", "STT language (e.g., en-US, ko-KR)")
 	flags.String("vad-config", "", "VAD configuration (JSON string, e.g., '{\"stop_secs\": 0.5}')")
 	flags.Bool("smart-turn-enabled", false, "Enable smart turn detection")
 
@@ -186,6 +188,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	ttsType := ai.TTSType(viper.GetString("tts-type"))
 	ttsVoiceID := viper.GetString("tts-voice-id")
 	sttType := ai.STTType(viper.GetString("stt-type"))
+	sttLanguage := viper.GetString("stt-language")
 
 	var vadConfig *ai.VADConfig
 	if vadConfigStr := viper.GetString("vad-config"); vadConfigStr != "" {
@@ -230,6 +233,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		sttLanguage,
 		nil, // toolNames - nil means default (all tools)
 		vadConfig,
 		smartTurnEnabled,
@@ -306,6 +310,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	ttsType := ai.TTSType(viper.GetString("tts-type"))
 	ttsVoiceID := viper.GetString("tts-voice-id")
 	sttType := ai.STTType(viper.GetString("stt-type"))
+	sttLanguage := viper.GetString("stt-language")
 
 	var vadConfig *ai.VADConfig
 	if vadConfigStr := viper.GetString("vad-config"); vadConfigStr != "" {
@@ -350,6 +355,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		sttLanguage,
 		nil, // toolNames - nil keeps existing value
 		vadConfig,
 		smartTurnEnabled,

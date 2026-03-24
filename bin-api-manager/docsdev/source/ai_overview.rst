@@ -222,7 +222,11 @@ VoIPBIN's AI supports context saving. During a conversation, the AI remembers pr
 
 Multilingual Support
 --------------------
-VoIPBIN's AI supports multiple languages. See supported languages: :ref:`supported languages <transcribe-overview-supported_languages>`.
+VoIPBIN's AI supports multiple languages. The STT language is configured on the AI resource itself using the ``stt_language`` field in BCP-47 format (e.g., ``ko-KR``, ``en-US``). This tells the Speech-to-Text engine which language to listen for, improving recognition accuracy.
+
+To support multiple languages, create separate AI configurations — one per language — and reference the appropriate ``ai_id`` in each flow action. When ``stt_language`` is omitted, the STT provider uses auto-detection.
+
+See :ref:`STT Language <ai-struct-ai-stt_language>` for supported language codes and :ref:`supported languages <transcribe-overview-supported_languages>` for the full list.
 
 Tool Functions
 ==============

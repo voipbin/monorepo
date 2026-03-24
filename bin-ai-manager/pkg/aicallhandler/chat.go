@@ -27,7 +27,7 @@ func (h *aicallHandler) setActiveflowVariables(ctx context.Context, cc *aicall.A
 		variableAIEngineModel: string(cc.AIEngineModel),
 		variableConfbridgeID:  cc.ConfbridgeID.String(),
 		variableGender:        string(cc.Gender),
-		variableLanguage:      cc.Language,
+		variableSTTLanguage:   cc.STTLanguage,
 		variablePipecatcallID: cc.PipecatcallID.String(),
 	}
 

@@ -55,7 +55,7 @@ func Test_AIcallCreate(t *testing.T) {
 				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
 				Status:        aicall.StatusInitiating,
 				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 			},
 
 			responseCurTime: curTime,
@@ -81,7 +81,7 @@ func Test_AIcallCreate(t *testing.T) {
 				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
 				Status:        aicall.StatusInitiating,
 				Gender:        aicall.GenderFemale,
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 				TMEnd:         nil,
 				TMCreate:      curTime,
 				TMUpdate:      nil,

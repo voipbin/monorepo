@@ -25,6 +25,7 @@ func (h *aiHandler) dbCreate(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	sttLanguage string,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
@@ -49,7 +50,8 @@ func (h *aiHandler) dbCreate(
 		TTSType:    ttsType,
 		TTSVoiceID: ttsVoiceID,
 
-		STTType: sttType,
+		STTType:     sttType,
+		STTLanguage: sttLanguage,
 
 		ToolNames: toolNames,
 
@@ -119,6 +121,7 @@ func (h *aiHandler) dbUpdate(
 	ttsType ai.TTSType,
 	ttsVoice string,
 	sttType ai.STTType,
+	sttLanguage string,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
@@ -134,6 +137,7 @@ func (h *aiHandler) dbUpdate(
 		ai.FieldTTSType:     ttsType,
 		ai.FieldTTSVoiceID:  ttsVoice,
 		ai.FieldSTTType:     sttType,
+		ai.FieldSTTLanguage: sttLanguage,
 		ai.FieldToolNames:        toolNames,
 		ai.FieldVADConfig:        vadConfig,
 		ai.FieldSmartTurnEnabled: smartTurnEnabled,

@@ -45,6 +45,7 @@ func (h *serviceHandler) AICreate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -60,6 +61,7 @@ func (h *serviceHandler) AICreate(
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
 		"stt_type":     sttType,
+		"stt_language": sttLanguage,
 		"tool_names":   toolNames,
 	})
 
@@ -96,6 +98,7 @@ func (h *serviceHandler) AICreate(
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		sttLanguage,
 		toolNames,
 	)
 	if err != nil {
@@ -252,6 +255,7 @@ func (h *serviceHandler) AIUpdate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -268,6 +272,7 @@ func (h *serviceHandler) AIUpdate(
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
 		"stt_type":     sttType,
+		"stt_language": sttLanguage,
 		"tool_names":   toolNames,
 	})
 
@@ -311,6 +316,7 @@ func (h *serviceHandler) AIUpdate(
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		sttLanguage,
 		toolNames,
 	)
 	if err != nil {

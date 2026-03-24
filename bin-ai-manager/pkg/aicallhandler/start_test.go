@@ -37,7 +37,6 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceID    uuid.UUID
 		gender         aicall.Gender
-		language       string
 
 		responseConfbridge        *cmconfbridge.Confbridge
 		responseUUIDPipecatcallID uuid.UUID
@@ -69,13 +68,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
 				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
 			activeflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
 			referenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
 			gender:         aicall.GenderFemale,
-			language:       "en-US",
 
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -101,7 +100,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 			responseMessages: []*message.Message{
@@ -130,7 +129,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 			expectVariables: map[string]string{
@@ -139,7 +138,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				variableAIEngineModel: "openai.gpt-5",
 				variableConfbridgeID:  "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
 				variableGender:        string(aicall.GenderFemale),
-				variableLanguage:      "en-US",
+				variableSTTLanguage:   "en-US",
 				variablePipecatcallID: "a4e5c7ae-b539-11f0-ac68-c38f244d145b",
 			},
 			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5"),
@@ -170,7 +169,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 		},
@@ -225,13 +224,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectPipecatcallMessages,
 				tt.expectSTTType,
-				tt.responseAIcall.Language,
+				tt.responseAIcall.STTLanguage,
 				tt.expectTTSType,
-				tt.responseAIcall.Language,
+				"",
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil, uuid.Nil)
+			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -251,7 +250,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		assistanceType aicall.AssistanceType
 		assistanceID   uuid.UUID
 		gender         aicall.Gender
-		language       string
 
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -268,12 +266,12 @@ func Test_startReferenceTypeNone(t *testing.T) {
 					ID:         uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				InitPrompt: "hello, this is init prompt message.",
+				InitPrompt:  "hello, this is init prompt message.",
+				STTLanguage: "en-US",
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
 			gender:         aicall.GenderFemale,
-			language:       "en-US",
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
@@ -326,7 +324,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, tt.language, nil, uuid.Nil)
+			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.gender, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -348,7 +346,6 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceID    uuid.UUID
 		gender         aicall.Gender
-		language       string
 
 		responseVarible           *fmvariable.Variable
 		responseAIcall            *aicall.AIcall
@@ -373,14 +370,14 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				InitPrompt: "hello, this is init prompt message.",
+				InitPrompt:  "hello, this is init prompt message.",
+				STTLanguage: "en-US",
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
 			activeflowID:   uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
 			referenceID:    uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
 			gender:         aicall.GenderFemale,
-			language:       "en-US",
 
 			responseVarible: &fmvariable.Variable{
 				Variables: map[string]string{
@@ -422,7 +419,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
 				PipecatcallID:  uuid.FromStringOrNil("19f84290-b465-11f0-81ef-07fea8c8aa82"),
 				Gender:         aicall.GenderFemale,
-				Language:       "en-US",
+				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
 			expectMessageContent: "test user message.",
@@ -497,14 +494,14 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTTType,
-				tt.responseAIcall.Language,
+				tt.responseAIcall.STTLanguage,
 				tt.expectTTSType,
-				tt.responseAIcall.Language,
+				"",
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, tt.language, nil, uuid.Nil)
+			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, tt.gender, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -796,7 +793,7 @@ func Test_startPipecatcall(t *testing.T) {
 				AITTSType:     ai.TTSTypeElevenLabs,
 				AITTSVoiceID:  "fa5c67b8-b62b-11f0-aab5-630972321af9",
 				AISTTType:     ai.STTTypeDeepgram,
-				Language:      "en-US",
+				STTLanguage:   "en-US",
 			},
 
 			responseMessages: []*message.Message{
@@ -871,9 +868,9 @@ func Test_startPipecatcall(t *testing.T) {
 				tt.expectLLMType,
 				tt.expectLLMMessages,
 				tt.expectSTTType,
-				tt.aicall.Language,
+				tt.aicall.STTLanguage,
 				tt.expectTTSType,
-				tt.aicall.Language,
+				"",
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
@@ -901,7 +898,6 @@ func Test_startAIcallByRealtime(t *testing.T) {
 		referenceID     uuid.UUID
 		confbridgeID    uuid.UUID
 		gender          aicall.Gender
-		language        string
 		isTask          bool
 		teamParameter   map[string]any
 		currentMemberID uuid.UUID
@@ -923,7 +919,8 @@ func Test_startAIcallByRealtime(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
 				},
-				InitPrompt: "You are a helpful assistant.",
+				InitPrompt:  "You are a helpful assistant.",
+				STTLanguage: "en-US",
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
@@ -932,7 +929,6 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			referenceID:    uuid.FromStringOrNil("b3662e38-b659-11f0-820a-833195d45f7e"),
 			confbridgeID:   uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
 			gender:         aicall.GenderMale,
-			language:       "en-US",
 			isTask:         false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -954,7 +950,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderMale,
-				Language: "en-US",
+				STTLanguage: "en-US",
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": "",
@@ -962,7 +958,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				"voipbin.aicall.confbridge_id":   "b3864e5c-b659-11f0-ab17-6b281e446482",
 				"voipbin.aicall.gender":          "male",
 				"voipbin.aicall.id":              "b3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.language":        "en-US",
+				"voipbin.aicall.stt_language":        "en-US",
 				"voipbin.aicall.pipecatcall_id":  "b3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
@@ -985,7 +981,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderMale,
-				Language: "en-US",
+				STTLanguage: "en-US",
 			},
 		},
 		{
@@ -1000,6 +996,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 					"shared_key": "ai_value",
 					"ai_only":    "ai_data",
 				},
+				STTLanguage: "ko-KR",
 			},
 			assistanceType: aicall.AssistanceTypeTeam,
 			assistanceID:   uuid.FromStringOrNil("c40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
@@ -1008,7 +1005,6 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			referenceID:    uuid.FromStringOrNil("c3662e38-b659-11f0-820a-833195d45f7e"),
 			confbridgeID:   uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
 			gender:         aicall.GenderFemale,
-			language:       "ko-KR",
 			isTask:         false,
 			teamParameter: map[string]any{
 				"shared_key": "team_value",
@@ -1039,7 +1035,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderFemale,
-				Language: "ko-KR",
+				STTLanguage: "ko-KR",
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": "",
@@ -1047,7 +1043,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				"voipbin.aicall.confbridge_id":   "c3864e5c-b659-11f0-ab17-6b281e446482",
 				"voipbin.aicall.gender":          "female",
 				"voipbin.aicall.id":              "c3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.language":        "ko-KR",
+				"voipbin.aicall.stt_language":        "ko-KR",
 				"voipbin.aicall.pipecatcall_id":  "c3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
@@ -1075,7 +1071,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderFemale,
-				Language: "ko-KR",
+				STTLanguage: "ko-KR",
 			},
 		},
 	}
@@ -1138,7 +1134,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcallByRealtime(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			res, err := h.startAIcallByRealtime(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1161,7 +1157,6 @@ func Test_startAIcallByMessaging(t *testing.T) {
 		referenceType   aicall.ReferenceType
 		referenceID     uuid.UUID
 		gender          aicall.Gender
-		language        string
 		isTask          bool
 		teamParameter   map[string]any
 		currentMemberID uuid.UUID
@@ -1188,6 +1183,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				TTSType:     ai.TTSTypeElevenLabs,
 				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
 				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
@@ -1195,7 +1191,6 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeConversation,
 			referenceID:    uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
 			gender:         aicall.GenderMale,
-			language:       "en-US",
 			isTask:         false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -1218,7 +1213,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderMale,
-				Language: "en-US",
+				STTLanguage: "en-US",
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
@@ -1226,7 +1221,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
 				"voipbin.aicall.gender":          "male",
 				"voipbin.aicall.id":              "d3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.language":        "en-US",
+				"voipbin.aicall.stt_language":        "en-US",
 				"voipbin.aicall.pipecatcall_id":  "d3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
@@ -1250,7 +1245,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 
 				Status:   aicall.StatusInitiating,
 				Gender:   aicall.GenderMale,
-				Language: "en-US",
+				STTLanguage: "en-US",
 			},
 		},
 		{
@@ -1271,7 +1266,6 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeTask,
 			referenceID:    uuid.Nil,
 			gender:         aicall.GenderNone,
-			language:       "",
 			isTask:         true,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -1299,7 +1293,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
 				"voipbin.aicall.gender":          "",
 				"voipbin.aicall.id":              "e3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.language":        "",
+				"voipbin.aicall.stt_language":        "",
 				"voipbin.aicall.pipecatcall_id":  "e3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
@@ -1367,7 +1361,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcallByMessaging(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			res, err := h.startAIcallByMessaging(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

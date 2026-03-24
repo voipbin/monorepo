@@ -80,7 +80,7 @@ func (h *engineDialogflowHandler) getRequest(engineData *engine_dialogflow.Engin
 		sessionPath = fmt.Sprintf("projects/%s/locations/%s/agents/%s/sessions/%s", engineData.ProjectID, engineData.Region, engineData.AgentID, cc.ID)
 	}
 
-	lang := GetLanguage(cc.Language)
+	lang := GetLanguage(cc.STTLanguage)
 	res := &dialogflowpb.DetectIntentRequest{
 		Session: sessionPath,
 		QueryInput: &dialogflowpb.QueryInput{

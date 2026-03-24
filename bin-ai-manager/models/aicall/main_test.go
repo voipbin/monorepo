@@ -117,7 +117,7 @@ func TestAIcall(t *testing.T) {
 				PipecatcallID: tt.pipecatcallID,
 				Status:        tt.status,
 				Gender:        tt.gender,
-				Language:      tt.language,
+				STTLanguage:   tt.language,
 			}
 
 			if ac.AssistanceType != tt.assistanceType {
@@ -159,8 +159,8 @@ func TestAIcall(t *testing.T) {
 			if ac.Gender != tt.gender {
 				t.Errorf("Wrong Gender. expect: %s, got: %s", tt.gender, ac.Gender)
 			}
-			if ac.Language != tt.language {
-				t.Errorf("Wrong Language. expect: %s, got: %s", tt.language, ac.Language)
+			if ac.STTLanguage != tt.language {
+				t.Errorf("Wrong STTLanguage. expect: %s, got: %s", tt.language, ac.STTLanguage)
 			}
 		})
 	}

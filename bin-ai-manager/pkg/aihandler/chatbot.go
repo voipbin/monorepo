@@ -25,6 +25,7 @@ func (h *aiHandler) Create(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	sttLanguage string,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
@@ -46,7 +47,7 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig, smartTurnEnabled)
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -68,6 +69,7 @@ func (h *aiHandler) Update(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	sttLanguage string,
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
@@ -89,7 +91,7 @@ func (h *aiHandler) Update(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
-	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, toolNames, vadConfig, smartTurnEnabled)
+	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}

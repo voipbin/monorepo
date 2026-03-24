@@ -3083,6 +3083,9 @@ type AIManagerAI struct {
 	// SmartTurnEnabled Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.
 	SmartTurnEnabled *bool `json:"smart_turn_enabled,omitempty"`
 
+	// SttLanguage STT language in BCP-47 format (e.g., ko-KR, en-US). Empty for auto-detect.
+	SttLanguage *string `json:"stt_language,omitempty"`
+
 	// SttType Speech-to-text provider type.
 	SttType *AIManagerAISTTType `json:"stt_type,omitempty"`
 
@@ -3161,9 +3164,6 @@ type AIManagerAIcall struct {
 	// Id The unique identifier of the AI call.
 	Id *string `json:"id,omitempty"`
 
-	// Language Language used during the AI call.
-	Language *string `json:"language,omitempty"`
-
 	// Parameter Merged key-value parameter data from AI and team configuration.
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
@@ -3175,6 +3175,9 @@ type AIManagerAIcall struct {
 
 	// Status Status of the ai call.
 	Status *AIManagerAIcallStatus `json:"status,omitempty"`
+
+	// SttLanguage STT language copied from AI config at creation time.
+	SttLanguage *string `json:"stt_language,omitempty"`
 
 	// TmCreate Timestamp when the AI call was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -4843,12 +4846,6 @@ type FlowManagerActionOptionAITalk struct {
 
 	// Gender Gender associated with the AI call.
 	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
-
-	// Language BCP47 language code (e.g., en-US).
-	Language *string `json:"language,omitempty"`
-
-	// Resume Whether to resume a previous AI conversation.
-	Resume *bool `json:"resume,omitempty"`
 }
 
 // FlowManagerActionOptionAMD defines model for FlowManagerActionOptionAMD.
@@ -6476,7 +6473,6 @@ type PostAicallsJSONBody struct {
 
 	// Gender Gender associated with the AI call.
 	Gender      AIManagerAIcallGender `json:"gender"`
-	Language    string                `json:"language"`
 	ReferenceId string                `json:"reference_id"`
 
 	// ReferenceType Type of reference associated with the ai call.
@@ -6531,6 +6527,9 @@ type PostAisJSONBody struct {
 	// RagId The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear.
 	RagId *string `json:"rag_id,omitempty"`
 
+	// SttLanguage STT language in BCP-47 format (e.g., ko-KR, en-US).
+	SttLanguage *string `json:"stt_language,omitempty"`
+
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
@@ -6564,6 +6563,9 @@ type PutAisIdJSONBody struct {
 
 	// RagId The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear.
 	RagId *string `json:"rag_id,omitempty"`
+
+	// SttLanguage STT language in BCP-47 format (e.g., ko-KR, en-US).
+	SttLanguage *string `json:"stt_language,omitempty"`
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`

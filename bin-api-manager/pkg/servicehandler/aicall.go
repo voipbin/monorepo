@@ -22,7 +22,6 @@ func (h *serviceHandler) AIcallCreate(
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
 	gender amaicall.Gender,
-	language string,
 ) (*amaicall.WebhookMessage, error) {
 
 	// resolve customer ID based on assistance type
@@ -56,7 +55,6 @@ func (h *serviceHandler) AIcallCreate(
 		referenceType,
 		referenceID,
 		gender,
-		language,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall")
