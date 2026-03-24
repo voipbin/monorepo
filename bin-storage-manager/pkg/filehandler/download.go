@@ -29,7 +29,7 @@ func (h *fileHandler) DownloadURIRefresh(ctx context.Context, id uuid.UUID) (str
 	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeNowAdd(expireDuration)
 
-	downloadURI, err := h.bucketfileGenerateDownloadURI(f.BucketName, f.Filepath, tmExpire)
+	downloadURI, err := h.bucketfileGenerateDownloadURI(f.BucketName, f.Filepath, tmExpire, f.Filename)
 	if err != nil {
 		log.Errorf("Could not generate download URI. err: %v", err)
 		return "", err

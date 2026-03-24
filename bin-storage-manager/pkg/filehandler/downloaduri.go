@@ -26,7 +26,7 @@ func (h *fileHandler) DownloadURIGet(ctx context.Context, bucketName string, fil
 
 	// get download uri with expiration
 	tmExpire := time.Now().UTC().Add(expire)
-	resDownloadURL, err := h.bucketfileGenerateDownloadURI(bucketName, filepath, tmExpire)
+	resDownloadURL, err := h.bucketfileGenerateDownloadURI(bucketName, filepath, tmExpire, "")
 	if err != nil {
 		log.Errorf("Could not get download link. err: %v", err)
 		return "", "", err
