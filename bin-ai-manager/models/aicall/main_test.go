@@ -24,7 +24,6 @@ func TestAIcall(t *testing.T) {
 		confbridgeID  uuid.UUID
 		pipecatcallID uuid.UUID
 		status        Status
-		gender        Gender
 		language      string
 	}{
 		{
@@ -42,7 +41,6 @@ func TestAIcall(t *testing.T) {
 			confbridgeID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440004"),
 			pipecatcallID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440005"),
 			status:        StatusProgressing,
-			gender:        GenderFemale,
 			language:      "en-US",
 		},
 		{
@@ -60,7 +58,6 @@ func TestAIcall(t *testing.T) {
 			confbridgeID:  uuid.Nil,
 			pipecatcallID: uuid.Nil,
 			status:        "",
-			gender:        GenderNone,
 			language:      "",
 		},
 		{
@@ -78,7 +75,6 @@ func TestAIcall(t *testing.T) {
 			confbridgeID:  uuid.Nil,
 			pipecatcallID: uuid.Nil,
 			status:        StatusInitiating,
-			gender:        GenderMale,
 			language:      "ko-KR",
 		},
 		{
@@ -96,7 +92,6 @@ func TestAIcall(t *testing.T) {
 			confbridgeID:  uuid.Nil,
 			pipecatcallID: uuid.Nil,
 			status:        StatusTerminated,
-			gender:        GenderNeutral,
 			language:      "ja-JP",
 		},
 	}
@@ -116,7 +111,6 @@ func TestAIcall(t *testing.T) {
 				ConfbridgeID:  tt.confbridgeID,
 				PipecatcallID: tt.pipecatcallID,
 				Status:        tt.status,
-				Gender:        tt.gender,
 				STTLanguage:   tt.language,
 			}
 
@@ -155,9 +149,6 @@ func TestAIcall(t *testing.T) {
 			}
 			if ac.Status != tt.status {
 				t.Errorf("Wrong Status. expect: %s, got: %s", tt.status, ac.Status)
-			}
-			if ac.Gender != tt.gender {
-				t.Errorf("Wrong Gender. expect: %s, got: %s", tt.gender, ac.Gender)
 			}
 			if ac.STTLanguage != tt.language {
 				t.Errorf("Wrong STTLanguage. expect: %s, got: %s", tt.language, ac.STTLanguage)
@@ -238,43 +229,6 @@ func TestStatusConstants(t *testing.T) {
 			name:     "status_terminated",
 			constant: StatusTerminated,
 			expected: "terminated",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if string(tt.constant) != tt.expected {
-				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
-			}
-		})
-	}
-}
-
-func TestGenderConstants(t *testing.T) {
-	tests := []struct {
-		name     string
-		constant Gender
-		expected string
-	}{
-		{
-			name:     "gender_none",
-			constant: GenderNone,
-			expected: "",
-		},
-		{
-			name:     "gender_male",
-			constant: GenderMale,
-			expected: "male",
-		},
-		{
-			name:     "gender_female",
-			constant: GenderFemale,
-			expected: "female",
-		},
-		{
-			name:     "gender_neutral",
-			constant: GenderNeutral,
-			expected: "neutral",
 		},
 	}
 

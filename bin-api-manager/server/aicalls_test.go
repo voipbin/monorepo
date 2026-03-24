@@ -32,7 +32,6 @@ func Test_PostAicalls(t *testing.T) {
 		expectedAssistanceID   uuid.UUID
 		expectedReferenceType  amaicall.ReferenceType
 		expectedReferenceID    uuid.UUID
-		expectedGender         amaicall.Gender
 		expectedRes            string
 	}{
 		{
@@ -44,7 +43,7 @@ func Test_PostAicalls(t *testing.T) {
 			},
 
 			reqQuery: "/aicalls",
-			reqBody:  []byte(`{"assistance_type":"ai","assistance_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","gender":"male","language":"en-US"}`),
+			reqBody:  []byte(`{"assistance_type":"ai","assistance_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","language":"en-US"}`),
 
 			response: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -56,7 +55,6 @@ func Test_PostAicalls(t *testing.T) {
 			expectedAssistanceID:   uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"),
 			expectedReferenceType:  amaicall.ReferenceTypeCall,
 			expectedReferenceID:    uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33"),
-			expectedGender:         amaicall.GenderMale,
 			expectedRes:            `{"id":"b71393dc-efac-11ef-829f-5330fc080fd2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
@@ -88,7 +86,6 @@ func Test_PostAicalls(t *testing.T) {
 				tt.expectedAssistanceID,
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
-				tt.expectedGender,
 			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)

@@ -375,7 +375,7 @@ Key Features
 
 Built-in ElevenLabs Voice IDs
 ---------------------------------
-VoIPBIN uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
+VoIPBIN uses a predefined set of voice IDs for various languages. Here are the default ElevenLabs Voice IDs currently in use:
 
 =========================== ==================================== =================================== =================================
 Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)

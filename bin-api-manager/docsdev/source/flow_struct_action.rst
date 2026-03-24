@@ -329,14 +329,12 @@ Parameters
         "type": "chatbot_talk",
         "option": {
             "chatbot_id": "<string>",
-            "gender": "<string>",
             "language": "<string>",
             "duration": <number>
         }
     }
 
 * ``chatbot_id`` (UUID): Chatbot ID. Obtained from the chatbot management API.
-* ``gender`` (enum string): Voice gender for TTS output. Values: ``male``, ``female``, ``neutral``.
 * ``language`` (String): Language in BCP47 format (e.g., ``en-US``).
 * ``duration`` (Integer): Maximum duration for the chatbot session, in seconds.
 

@@ -45,7 +45,6 @@ type AIcallHandler interface {
 		activeflowID uuid.UUID,
 		referenceType aicall.ReferenceType,
 		referenceID uuid.UUID,
-		gender aicall.Gender,
 	) (*aicall.AIcall, error)
 
 	ServiceStart(
@@ -55,7 +54,6 @@ type AIcallHandler interface {
 		activeflowID uuid.UUID,
 		referenceType aicall.ReferenceType,
 		referenceID uuid.UUID,
-		gender aicall.Gender,
 	) (*commonservice.Service, error)
 	ServiceStartTypeTask(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) (*commonservice.Service, error)
 
@@ -75,7 +73,6 @@ const (
 	variableAIID          = "voipbin.aicall.ai_id"
 	variableAIEngineModel = "voipbin.aicall.ai_engine_model"
 	variableConfbridgeID  = "voipbin.aicall.confbridge_id"
-	variableGender        = "voipbin.aicall.gender"
 	variableSTTLanguage   = "voipbin.aicall.stt_language"
 	variablePipecatcallID = "voipbin.aicall.pipecatcall_id"
 )

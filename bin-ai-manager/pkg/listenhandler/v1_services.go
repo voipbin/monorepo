@@ -24,7 +24,7 @@ func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.ServiceStart(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender)
+	tmp, err := h.aicallHandler.ServiceStart(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not start ai service. err: %v", err)
 		return simpleResponse(500), nil

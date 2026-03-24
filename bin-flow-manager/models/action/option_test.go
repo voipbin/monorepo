@@ -901,13 +901,11 @@ func Test_marshal_OptionAITalk(t *testing.T) {
 
 			option: []byte(`{
 				"ai_id":"d1c4f676-a8a5-11ed-85ca-7fe57e970bcd",
-				"gender":"female",
 				"duration":6000
 			}`),
 
 			expectedRes: OptionAITalk{
 				AIID:     uuid.FromStringOrNil("d1c4f676-a8a5-11ed-85ca-7fe57e970bcd"),
-				Gender:   "female",
 				Duration: 6000,
 			},
 		},
@@ -916,14 +914,12 @@ func Test_marshal_OptionAITalk(t *testing.T) {
 
 			option: []byte(`{
 				"assistance_type":"ai",
-				"assistance_id":"a1b2c3d4-1111-2222-3333-444455556666",
-				"gender":"male"
+				"assistance_id":"a1b2c3d4-1111-2222-3333-444455556666"
 			}`),
 
 			expectedRes: OptionAITalk{
 				AssistanceType: amaicall.AssistanceTypeAI,
 				AssistanceID:   uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666"),
-				Gender:         "male",
 			},
 		},
 		{
@@ -932,14 +928,12 @@ func Test_marshal_OptionAITalk(t *testing.T) {
 			option: []byte(`{
 				"assistance_type":"team",
 				"assistance_id":"b2c3d4e5-2222-3333-4444-555566667777",
-				"gender":"female",
 				"duration":3000
 			}`),
 
 			expectedRes: OptionAITalk{
 				AssistanceType: amaicall.AssistanceTypeTeam,
 				AssistanceID:   uuid.FromStringOrNil("b2c3d4e5-2222-3333-4444-555566667777"),
-				Gender:         "female",
 				Duration:       3000,
 			},
 		},

@@ -54,7 +54,7 @@ func Test_AIcallCreate(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
 				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
 				Status:        aicall.StatusInitiating,
-				Gender:        aicall.GenderFemale,
+
 				STTLanguage:   "en-US",
 			},
 
@@ -80,7 +80,7 @@ func Test_AIcallCreate(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("24c07cfb-92b0-4334-b5e8-fea9b8c5fdbd"),
 				PipecatcallID: uuid.FromStringOrNil("c8f5048e-afbc-11f0-b7de-3f3a52b42500"),
 				Status:        aicall.StatusInitiating,
-				Gender:        aicall.GenderFemale,
+
 				STTLanguage:   "en-US",
 				TMEnd:         nil,
 				TMCreate:      curTime,

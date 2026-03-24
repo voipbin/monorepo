@@ -82,7 +82,6 @@ func (h *aicallHandler) Start(
 	activeflowID uuid.UUID,
 	referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
-	gender aicall.Gender,
 ) (*aicall.AIcall, error) {
 
 	// resolve AI config based on assistance type
@@ -93,13 +92,13 @@ func (h *aicallHandler) Start(
 
 	switch referenceType {
 	case aicall.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, teamParameter, currentMemberID)
+		return h.startReferenceTypeCall(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeConversation:
-		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, gender, teamParameter, currentMemberID)
+		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeNone:
-		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, gender, teamParameter, currentMemberID)
+		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, teamParameter, currentMemberID)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -114,7 +113,6 @@ func (h *aicallHandler) startReferenceTypeCall(
 	assistanceID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceID uuid.UUID,
-	gender aicall.Gender,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
@@ -132,7 +130,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start ai call
-	res, err := h.startAIcallByRealtime(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, gender, false, teamParameter, currentMemberID)
+	res, err := h.startAIcallByRealtime(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
@@ -156,7 +154,6 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	assistanceID uuid.UUID,
 	activeflowID uuid.UUID,
 	referenceID uuid.UUID,
-	gender aicall.Gender,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
@@ -182,7 +179,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	res, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Debugf("Could not get the aicall by reference id. Start a new aicall. reference_id: %s. err: %v", referenceID, err)
-		res, err = h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, gender, false, teamParameter, currentMemberID)
+		res, err = h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, false, teamParameter, currentMemberID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -223,7 +220,6 @@ func (h *aicallHandler) startReferenceTypeNone(
 	c *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
-	gender aicall.Gender,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
@@ -233,7 +229,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	})
 
 	// start ai call
-	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, gender, false, teamParameter, currentMemberID)
+	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
@@ -472,7 +468,6 @@ func (h *aicallHandler) startAIcallByRealtime(
 	referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
 	confbridgeID uuid.UUID,
-	gender aicall.Gender,
 	isTask bool,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
@@ -487,7 +482,7 @@ func (h *aicallHandler) startAIcallByRealtime(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, currentMemberID, gender, parameter)
+	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, currentMemberID, parameter)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -517,7 +512,6 @@ func (h *aicallHandler) startAIcallByMessaging(
 	activeflowID uuid.UUID,
 	referenceType aicall.ReferenceType,
 	referenceID uuid.UUID,
-	gender aicall.Gender,
 	isTask bool,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
@@ -532,7 +526,7 @@ func (h *aicallHandler) startAIcallByMessaging(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, pipecatcallID, currentMemberID, gender, parameter)
+	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, pipecatcallID, currentMemberID, parameter)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -569,7 +563,7 @@ func (h *aicallHandler) StartTask(ctx context.Context, assistanceType aicall.Ass
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
-	res, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, aicall.GenderNone, true, teamParameter, currentMemberID)
+	res, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, true, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start AIcall")
 	}

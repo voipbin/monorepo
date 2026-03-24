@@ -74,14 +74,6 @@ const (
 	AIManagerAIcallAssistanceTypeTeam AIManagerAIcallAssistanceType = "team"
 )
 
-// Defines values for AIManagerAIcallGender.
-const (
-	AIManagerAIcallGenderFemale  AIManagerAIcallGender = "female"
-	AIManagerAIcallGenderMale    AIManagerAIcallGender = "male"
-	AIManagerAIcallGenderNeutral AIManagerAIcallGender = "neutral"
-	AIManagerAIcallGenderNone    AIManagerAIcallGender = ""
-)
-
 // Defines values for AIManagerAIcallReferenceType.
 const (
 	AIManagerAIcallReferenceTypeCall         AIManagerAIcallReferenceType = "call"
@@ -1139,9 +1131,6 @@ type AIManagerAIcall struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
-	// Gender Gender associated with the AI call.
-	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
-
 	// Id The unique identifier of the AI call.
 	Id *string `json:"id,omitempty"`
 
@@ -1175,9 +1164,6 @@ type AIManagerAIcall struct {
 
 // AIManagerAIcallAssistanceType Type of assistance entity associated with the AI call.
 type AIManagerAIcallAssistanceType string
-
-// AIManagerAIcallGender Gender associated with the AI call.
-type AIManagerAIcallGender string
 
 // AIManagerAIcallReferenceType Type of reference associated with the ai call.
 type AIManagerAIcallReferenceType string
@@ -2824,9 +2810,6 @@ type FlowManagerActionOptionAITalk struct {
 
 	// Duration Maximum duration of the AI talk session in seconds.
 	Duration *int `json:"duration,omitempty"`
-
-	// Gender Gender associated with the AI call.
-	Gender *AIManagerAIcallGender `json:"gender,omitempty"`
 }
 
 // FlowManagerActionOptionAMD defines model for FlowManagerActionOptionAMD.
@@ -4451,10 +4434,7 @@ type PostAicallsJSONBody struct {
 
 	// AssistanceType Type of assistance entity associated with the AI call.
 	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`
-
-	// Gender Gender associated with the AI call.
-	Gender      AIManagerAIcallGender `json:"gender"`
-	ReferenceId string                `json:"reference_id"`
+	ReferenceId    string                        `json:"reference_id"`
 
 	// ReferenceType Type of reference associated with the ai call.
 	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
