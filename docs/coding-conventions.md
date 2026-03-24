@@ -1041,18 +1041,31 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 
 ### 10.3 Filters from Request Body
 
-Filters are parsed from the request body, not URL query parameters:
+**CRITICAL: Pagination parameters go in the URL. Filter parameters go in the request body JSON.**
 
 ```go
-// CORRECT — filters in request body
-type V1DataAgentsGet struct {
-    PageSize  uint64                `json:"page_size"`
-    PageToken string                `json:"page_token"`
-    Filters   map[agent.Field]any   `json:"filters"`
+// ✅ CORRECT — pagination from URL, filters from request body
+func (h *listenHandler) processV1AgentsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+    u, err := url.Parse(m.URI)
+
+    // Pagination from URL
+    tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+    pageSize := uint64(tmpSize)
+    pageToken := u.Query().Get(PageToken)
+
+    // Filters from request body
+    tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+    filters, err := utilhandler.ConvertFilters[agent.FieldStruct, agent.Field](agent.FieldStruct{}, tmpFilters)
+
+    tmp, err := h.agentHandler.List(ctx, pageSize, pageToken, filters)
 }
 
-// For detailed filter parsing patterns, see docs/common-workflows.md
+// ❌ WRONG — never parse filters from URL query parameters
+customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))  // Will be uuid.Nil!
 ```
+
+Filter fields are defined via `FieldStruct` with `filter:` tags in `models/<resource>/filters.go`.
+For the complete implementation guide, see [common-workflows.md](common-workflows.md#parsing-filters-from-request-body).
 
 ### 10.4 OpenAPI Schema Sync
 
