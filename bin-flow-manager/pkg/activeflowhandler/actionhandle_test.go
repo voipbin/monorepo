@@ -4538,7 +4538,6 @@ func Test_actionHandleAITalk(t *testing.T) {
 		expectedActiveflowID   uuid.UUID
 		expectedReferenceType  amaicall.ReferenceType
 		expectedReferenceID    uuid.UUID
-		expectedGender         amaicall.Gender
 	}{
 		{
 			name: "normal",
@@ -4554,8 +4553,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 					ID:   uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
 					Type: action.TypeAITalk,
 					Option: map[string]any{
-						"ai_id":  "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
-						"gender": "female",
+						"ai_id": "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
 					},
 				},
 
@@ -4567,8 +4565,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 								ID:   uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
 								Type: action.TypeAITalk,
 								Option: map[string]any{
-									"ai_id":  "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
-									"gender": "female",
+									"ai_id": "bb17f504-a8f5-11ed-a974-2f810c03cbf8",
 								},
 							},
 						},
@@ -4599,7 +4596,6 @@ func Test_actionHandleAITalk(t *testing.T) {
 			expectedActiveflowID:   uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
 			expectedReferenceType:  amaicall.ReferenceTypeCall,
 			expectedReferenceID:    uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
-			expectedGender:         amaicall.GenderFemale,
 		},
 	}
 
@@ -4625,7 +4621,7 @@ func Test_actionHandleAITalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAssistanceType, tt.expectedAssistanceID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, 30000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAssistanceType, tt.expectedAssistanceID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, 30000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)

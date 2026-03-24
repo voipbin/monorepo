@@ -285,7 +285,6 @@ type ServiceHandler interface {
 		assistanceID uuid.UUID,
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
-		gender amaicall.Gender,
 	) (*amaicall.WebhookMessage, error)
 	AIcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amaicall.WebhookMessage, error)
 	AIcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amaicall.WebhookMessage, error)

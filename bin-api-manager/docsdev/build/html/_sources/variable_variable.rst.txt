@@ -86,7 +86,6 @@ AI Call
 * ``voipbin.aicall.ai_id`` (UUID): The AI configuration ID used. Obtained from ``GET /ais``.
 * ``voipbin.aicall.ai_engine_model`` (String): The AI engine model name (e.g., ``"gpt-4"``).
 * ``voipbin.aicall.confbridge_id`` (UUID): The conference bridge ID hosting the AI call.
-* ``voipbin.aicall.gender`` (enum string): The AI voice gender (e.g., ``"male"``, ``"female"``).
 * ``voipbin.aicall.language`` (String): The AI voice language (e.g., ``"en-US"``).
 
 AI Summary

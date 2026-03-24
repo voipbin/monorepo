@@ -445,7 +445,6 @@ Integrate AI for natural language interactions:
           "option": {
             "ai_id": "your-ai-agent-id",
             "language": "en-US",
-            "gender": "female",
             "duration": 300
           }
         },

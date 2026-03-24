@@ -1431,17 +1431,13 @@
                   },
                   "reference_id": {
                     "type": "string"
-                  },
-                  "gender": {
-                    "$ref": "#/components/schemas/AIManagerAIcallGender"
                   }
                 },
                 "required": [
                   "assistance_type",
                   "assistance_id",
                   "reference_type",
-                  "reference_id",
-                  "gender"
+                  "reference_id"
                 ]
               }
             }
@@ -16586,23 +16582,6 @@
           "AIManagerAIcallAssistanceTypeTeam"
         ]
       },
-      "AIManagerAIcallGender": {
-        "type": "string",
-        "description": "Gender associated with the AI call.",
-        "example": "female",
-        "enum": [
-          "",
-          "male",
-          "female",
-          "neutral"
-        ],
-        "x-enum-varnames": [
-          "AIManagerAIcallGenderNone",
-          "AIManagerAIcallGenderMale",
-          "AIManagerAIcallGenderFemale",
-          "AIManagerAIcallGenderNeutral"
-        ]
-      },
       "AIManagerAIcallReferenceType": {
         "type": "string",
         "description": "Type of reference associated with the ai call.",
@@ -16845,11 +16824,6 @@
             "$ref": "#/components/schemas/AIManagerAIcallStatus",
             "description": "Status of the AI call.",
             "example": "progressing"
-          },
-          "gender": {
-            "$ref": "#/components/schemas/AIManagerAIcallGender",
-            "description": "Gender associated with the AI call.",
-            "example": "female"
           },
           "stt_language": {
             "type": "string",
@@ -18627,11 +18601,6 @@
             "x-go-type": "string",
             "description": "The unique identifier of the assistance entity (AI or Team).",
             "example": "6f7a8b9c-0d1e-2345-f012-345678901234"
-          },
-          "gender": {
-            "$ref": "#/components/schemas/AIManagerAIcallGender",
-            "description": "Voice gender for the AI.",
-            "example": "female"
           },
           "duration": {
             "type": "integer",

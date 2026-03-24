@@ -23,7 +23,6 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 	activeflowID uuid.UUID,
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
-	gender amaicall.Gender,
 	requestTimeout int,
 ) (*service.Service, error) {
 	uri := "/v1/services/type/aicall"
@@ -34,7 +33,6 @@ func (r *requestHandler) AIV1ServiceTypeAIcallStart(
 		ActiveflowID:   activeflowID,
 		ReferenceType:  referenceType,
 		ReferenceID:    referenceID,
-		Gender:         gender,
 	}
 
 	m, err := json.Marshal(data)

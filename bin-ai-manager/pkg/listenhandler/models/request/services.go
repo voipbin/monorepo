@@ -18,7 +18,6 @@ type V1DataServicesTypeAIcallPost struct {
 	ReferenceType aicall.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID            `json:"reference_id"`
 
-	Gender aicall.Gender `json:"gender"`
 }
 
 // V1DataServicesTypeSummaryPost is

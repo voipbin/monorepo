@@ -35,7 +35,6 @@ type AIcall struct {
 
 	Status Status `json:"status,omitempty" db:"status"`
 
-	Gender   Gender `json:"gender,omitempty" db:"gender"`
 	STTLanguage string `json:"stt_language,omitempty" db:"stt_language"`
 
 	TMEnd    *time.Time `json:"tm_end" db:"tm_end"`
@@ -75,17 +74,6 @@ const (
 	StatusResuming    Status = "resuming"
 	StatusTerminating Status = "terminating" // the call is terminating.
 	StatusTerminated  Status = "terminated"
-)
-
-// Gender define
-type Gender string
-
-// list of genders
-const (
-	GenderNone    Gender = ""
-	GenderMale    Gender = "male"
-	GenderFemale  Gender = "female"
-	GenderNeutral Gender = "neutral"
 )
 
 // Message defines

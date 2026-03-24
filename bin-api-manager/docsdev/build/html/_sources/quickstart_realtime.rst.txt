@@ -52,7 +52,6 @@ With event subscription configured and Linphone registered, make an outbound cal
                     "type": "talk",
                     "option": {
                         "text": "Hello. This is the VoIPBIN real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.",
-                        "gender": "female",
                         "language": "en-US"
                     }
                 },

@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (credit deduction per call minute)
    * **Async:** Yes. ``POST /calls`` returns immediately with status ``dialing``. Poll ``GET /calls/{id}`` or subscribe via WebSocket to track call status changes.
 
-The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different gender and accents.
+The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different voices and accents.
 
 With the VoIPBIN API you can:
 
@@ -17,7 +17,7 @@ With the VoIPBIN API you can:
 - Control the flow of inbound and outbound calls in JSON with VoIPBIN's actions.
 - Record and store inbound or outbound calls.
 - Create conference calls.
-- Send text-to-speech messages in 50 languages with different gender and accents.
+- Send text-to-speech messages in 50 languages with different voices and accents.
 
 
 Protocol

@@ -30,7 +30,6 @@ const (
 
 	FieldStatus Field = "status"
 
-	FieldGender   Field = "gender"
 	FieldSTTLanguage Field = "stt_language"
 
 	FieldTMEnd    Field = "tm_end"

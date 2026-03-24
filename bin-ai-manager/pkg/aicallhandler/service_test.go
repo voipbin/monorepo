@@ -34,7 +34,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceType  aicall.ReferenceType
 		referenceID    uuid.UUID
-		gender         aicall.Gender
+
 
 		responseAI                *ai.AI
 		responseConfbridge        *cmconfbridge.Confbridge
@@ -59,7 +59,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 			activeflowID:   uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
 			referenceType:  aicall.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-			gender:         aicall.GenderFemale,
+
 
 			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
@@ -108,7 +108,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("025e1aa6-b87f-11f0-9a90-63680416f9cb"),
-				Gender:         aicall.GenderFemale,
+
 				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
@@ -226,7 +226,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
-			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender)
+			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
@@ -246,7 +246,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceType  aicall.ReferenceType
 		referenceID    uuid.UUID
-		gender         aicall.Gender
+
 
 		responseAI           *ai.AI
 		responseFlowVariable *fmvariable.Variable
@@ -271,7 +271,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			activeflowID:   uuid.FromStringOrNil("c3ff93fa-b885-11f0-82cb-3f47ec04d13d"),
 			referenceType:  aicall.ReferenceTypeConversation,
 			referenceID:    uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
-			gender:         aicall.GenderFemale,
+
 
 			responseAI: &ai.AI{
 				Identity: commonidentity.Identity{
@@ -305,7 +305,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 				ReferenceType:  aicall.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("c436f642-b885-11f0-8b5f-7b234b8f9158"),
 				PipecatcallID:  uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
-				Gender:         aicall.GenderFemale,
+
 				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
 			},
@@ -418,7 +418,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			).Return(tt.responsePipecatcall, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
-			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender)
+			res, err := h.ServiceStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}

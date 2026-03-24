@@ -102,7 +102,6 @@ func Test_processV1AIcallsPost(t *testing.T) {
 		expectedActiveflowID   uuid.UUID
 		expectedReferenceType  aicall.ReferenceType
 		expectedReferenceID    uuid.UUID
-		expectedGender         aicall.Gender
 		expectedRes            *sock.Response
 	}{
 		{
@@ -111,7 +110,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				URI:      "/v1/aicalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"assistance_type": "ai", "assistance_id": "f9e5ec32-ef4d-11ef-80de-8bc376898e49", "activeflow_id": "969e3754-0cc3-11f0-80b3-7760a1de452c", "reference_type": "call", "reference_id":"fa2471be-ef4d-11ef-80b1-5bee84085737","gender":"female"}`),
+				Data:     []byte(`{"assistance_type": "ai", "assistance_id": "f9e5ec32-ef4d-11ef-80de-8bc376898e49", "activeflow_id": "969e3754-0cc3-11f0-80b3-7760a1de452c", "reference_type": "call", "reference_id":"fa2471be-ef4d-11ef-80b1-5bee84085737"}`),
 			},
 
 			responseAIcall: &aicall.AIcall{
@@ -125,7 +124,6 @@ func Test_processV1AIcallsPost(t *testing.T) {
 			expectedActiveflowID:   uuid.FromStringOrNil("969e3754-0cc3-11f0-80b3-7760a1de452c"),
 			expectedReferenceType:  aicall.ReferenceTypeCall,
 			expectedReferenceID:    uuid.FromStringOrNil("fa2471be-ef4d-11ef-80b1-5bee84085737"),
-			expectedGender:         aicall.GenderFemale,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -147,7 +145,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAssistanceType, tt.expectedAssistanceID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAssistanceType, tt.expectedAssistanceID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -30,7 +30,6 @@ func Test_AIcallCreate(t *testing.T) {
 		assistanceID   uuid.UUID
 		referenceType  amaicall.ReferenceType
 		referenceID    uuid.UUID
-		gender         amaicall.Gender
 
 		responseAI     *amai.AI
 		responseAIcall *amaicall.AIcall
@@ -53,7 +52,6 @@ func Test_AIcallCreate(t *testing.T) {
 			assistanceID:   uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
 			referenceType:  amaicall.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
-			gender:        amaicall.GenderMale,
 
 			responseAI: &amai.AI{
 				Identity: commonidentity.Identity{
@@ -99,10 +97,9 @@ func Test_AIcallCreate(t *testing.T) {
 				uuid.Nil,
 				tt.referenceType,
 				tt.referenceID,
-				tt.gender,
 			).Return(tt.responseAIcall, nil)
 
-			res, err := h.AIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID, tt.gender)
+			res, err := h.AIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

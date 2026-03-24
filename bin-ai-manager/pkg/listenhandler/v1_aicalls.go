@@ -88,7 +88,7 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.Start(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Gender)
+	tmp, err := h.aicallHandler.Start(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return simpleResponse(500), nil

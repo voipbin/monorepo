@@ -41,14 +41,11 @@ post:
               $ref: '#/components/schemas/AIManagerAIcallReferenceType'
             reference_id:
               type: string
-            gender:
-              $ref: '#/components/schemas/AIManagerAIcallGender'
           required:
             - assistance_type
             - assistance_id
             - reference_type
             - reference_id
-            - gender
   responses:
     '200':
       description: Details of the created chatboaicall.

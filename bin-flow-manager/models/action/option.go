@@ -55,7 +55,6 @@ type OptionAITalk struct {
 	AIID           uuid.UUID              `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
 	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
 	AssistanceID   uuid.UUID              `json:"assistance_id,omitempty"`
-	Gender         amaicall.Gender        `json:"gender,omitempty"`
 	Duration       int                    `json:"duration,omitempty"` // ai talk duration. seconds
 }
 

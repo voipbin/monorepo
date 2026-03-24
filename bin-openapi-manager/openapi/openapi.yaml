@@ -2097,21 +2097,6 @@ components:
         - AIManagerAIcallAssistanceTypeAI
         - AIManagerAIcallAssistanceTypeTeam
 
-    AIManagerAIcallGender:
-      type: string
-      description: Gender associated with the AI call.
-      example: "female"
-      enum:
-        - ""
-        - male
-        - female
-        - neutral
-      x-enum-varnames:
-        - AIManagerAIcallGenderNone
-        - AIManagerAIcallGenderMale
-        - AIManagerAIcallGenderFemale
-        - AIManagerAIcallGenderNeutral
-
     AIManagerAIcallReferenceType:
       type: string
       description: Type of reference associated with the ai call.
@@ -2327,10 +2312,6 @@ components:
           $ref: '#/components/schemas/AIManagerAIcallStatus'
           description: Status of the AI call.
           example: "progressing"
-        gender:
-          $ref: '#/components/schemas/AIManagerAIcallGender'
-          description: Gender associated with the AI call.
-          example: "female"
         stt_language:
           type: string
           description: "STT language copied from AI config at creation time."
@@ -3850,10 +3831,6 @@ components:
           x-go-type: string
           description: The unique identifier of the assistance entity (AI or Team).
           example: "6f7a8b9c-0d1e-2345-f012-345678901234"
-        gender:
-          $ref: '#/components/schemas/AIManagerAIcallGender'
-          description: Voice gender for the AI.
-          example: "female"
         duration:
           type: integer
           description: Maximum duration of the AI talk session in seconds.
