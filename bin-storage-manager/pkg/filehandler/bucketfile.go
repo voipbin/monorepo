@@ -3,8 +3,10 @@ package filehandler
 import (
 	"archive/zip"
 	"context"
+	"fmt"
 	"io"
 	"monorepo/bin-storage-manager/models/file"
+	"net/url"
 	"time"
 
 	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
@@ -134,16 +136,24 @@ func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string,
 	return res, nil
 }
 
-// bucketfileGenerateDownloadURI returns google cloud storage signed url for file download
-func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time) (string, error) {
+// bucketfileGenerateDownloadURI returns google cloud storage signed url for file download.
+// If filename is non-empty, the URL includes response-content-disposition=attachment to
+// force the browser to download the file instead of displaying it.
+func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time, filename string) (string, error) {
 
 	// create opt
 	opts := &storage.SignedURLOptions{
-		Scheme:         storage.SigningSchemeV2,
+		Scheme:         storage.SigningSchemeV4,
 		Method:         "GET",
 		GoogleAccessID: h.accessID,
 		PrivateKey:     h.privateKey,
 		Expires:        expire,
+	}
+
+	if filename != "" {
+		opts.QueryParameters = url.Values{
+			"response-content-disposition": {fmt.Sprintf(`attachment; filename="%s"`, filename)},
+		}
 	}
 
 	if opts.PrivateKey == nil {
