@@ -89,6 +89,21 @@ func (mr *MockStorageHandlerMockRecorder) FileDelete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileDelete", reflect.TypeOf((*MockStorageHandler)(nil).FileDelete), ctx, id)
 }
 
+// FileDownloadURIRefresh mocks base method.
+func (m *MockStorageHandler) FileDownloadURIRefresh(ctx context.Context, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileDownloadURIRefresh", ctx, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileDownloadURIRefresh indicates an expected call of FileDownloadURIRefresh.
+func (mr *MockStorageHandlerMockRecorder) FileDownloadURIRefresh(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileDownloadURIRefresh", reflect.TypeOf((*MockStorageHandler)(nil).FileDownloadURIRefresh), ctx, id)
+}
+
 // FileGet mocks base method.
 func (m *MockStorageHandler) FileGet(ctx context.Context, id uuid.UUID) (*file.File, error) {
 	m.ctrl.T.Helper()

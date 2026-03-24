@@ -840,6 +840,7 @@ type ServiceHandler interface {
 	ServiceAgentFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	ServiceAgentFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	ServiceAgentFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
+	ServiceAgentFileDownloadRedirect(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error)
 
 	// service_agent me
 	ServiceAgentMeGet(ctx context.Context, a *amagent.Agent) (*amagent.WebhookMessage, error)
@@ -860,6 +861,7 @@ type ServiceHandler interface {
 	StorageFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	StorageFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
 	StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	StorageFileDownloadRedirect(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error)
 
 	// tag handlers
 	TagCreate(ctx context.Context, a *amagent.Agent, name string, detail string) (*tmtag.WebhookMessage, error)

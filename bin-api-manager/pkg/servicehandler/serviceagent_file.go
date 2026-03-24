@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"time"
+
 	amagent "monorepo/bin-agent-manager/models/agent"
 	smfile "monorepo/bin-storage-manager/models/file"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -164,6 +166,48 @@ func (h *serviceHandler) ServiceAgentFileDelete(ctx context.Context, a *amagent.
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// ServiceAgentFileDownloadRedirect returns a working download URL for the given service agent file.
+// If the stored URL has expired, it refreshes via storage-manager RPC.
+func (h *serviceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentFileDownloadRedirect",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"file_id":     id,
+	})
+	log.Debug("Getting service agent file download URL.")
+
+	// get file
+	f, err := h.storageFileGet(ctx, id)
+	if err != nil {
+		log.Infof("Could not get file info. err: %v", err)
+		return "", fmt.Errorf("could not find file info. err: %v", err)
+	}
+	log.WithField("file", f).Debugf("Retrieved file info. file_id: %s", f.ID)
+
+	// Check permission - file must belong to the same customer
+	if f.CustomerID != a.CustomerID {
+		log.Info("The user has no permission.")
+		return "", fmt.Errorf("user has no permission")
+	}
+
+	// check if download URL is still valid
+	if f.TMDownloadExpire != nil && f.TMDownloadExpire.After(time.Now()) && f.URIDownload != "" {
+		log.Debugf("Download URL is still valid. file_id: %s", f.ID)
+		return f.URIDownload, nil
+	}
+
+	// URL expired or empty, refresh it
+	log.Debugf("Download URL expired or empty. Refreshing. file_id: %s", f.ID)
+	downloadURI, err := h.reqHandler.StorageV1FileDownloadURIRefresh(ctx, id)
+	if err != nil {
+		log.Errorf("Could not refresh download URI. err: %v", err)
+		return "", fmt.Errorf("could not refresh download URI. err: %v", err)
+	}
+
+	return downloadURI, nil
 }
 
 // convertFileFilters converts map[string]string to map[smfile.Field]any

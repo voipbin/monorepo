@@ -30,6 +30,10 @@ const (
 	bucketDirectoryRecording = "recording"
 	bucketDirectoryTmp       = "tmp"
 	bucketDirectoryBin       = "bin" // bin project services directory.
+
+	// downloadURLExpiration is the duration for GCS signed download URLs.
+	// GCS V2 signed URLs have a hard maximum of 7 days.
+	downloadURLExpiration = 7 * 24 * time.Hour
 )
 
 // FileHandler intreface for GCP bucket handler
@@ -54,6 +58,7 @@ type FileHandler interface {
 
 	CompressCreate(ctx context.Context, files []*file.File) (string, string, error)
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
+	DownloadURIRefresh(ctx context.Context, id uuid.UUID) (string, error)
 
 	IsExist(ctx context.Context, bucketName string, filepath string) bool
 
