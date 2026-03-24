@@ -44,9 +44,10 @@ var (
 	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// files
-	regV1FilesGet = regexp.MustCompile(`/v1/files\?`)
-	regV1Files    = regexp.MustCompile("/v1/files$")
-	regV1FilesID  = regexp.MustCompile("/v1/files/" + regUUID + "$")
+	regV1FilesGet                  = regexp.MustCompile(`/v1/files\?`)
+	regV1Files                     = regexp.MustCompile("/v1/files$")
+	regV1FilesID                   = regexp.MustCompile("/v1/files/" + regUUID + "$")
+	regV1FilesIDDownloadURIRefresh = regexp.MustCompile("/v1/files/" + regUUID + "/download_uri_refresh$")
 
 	// compress
 	regV1Compressfiles = regexp.MustCompile("/v1/compressfiles$")
@@ -164,6 +165,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1FilesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/files"
 		response, err = h.v1FilesGet(ctx, m)
+
+	case regV1FilesIDDownloadURIRefresh.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/files/<file-id>/download_uri_refresh"
+		response, err = h.v1FilesIDDownloadURIRefresh(ctx, m)
 
 	case regV1FilesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/files/<file-id>"

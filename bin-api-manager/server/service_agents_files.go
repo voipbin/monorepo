@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -172,4 +173,39 @@ func (h *server) DeleteServiceAgentsFilesId(c *gin.Context, id string) {
 	}
 
 	c.JSON(200, res)
+}
+
+func (h *server) GetServiceAgentsFilesIdFile(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetServiceAgentsFilesIdFile",
+		"request_address": c.ClientIP(),
+		"file_id":         id,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	downloadURI, err := h.serviceHandler.ServiceAgentFileDownloadRedirect(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not get service agent file download URL. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.Redirect(http.StatusTemporaryRedirect, downloadURI)
 }

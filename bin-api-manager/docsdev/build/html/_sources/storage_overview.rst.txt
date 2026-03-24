@@ -67,7 +67,7 @@ Core file management operations.
 
 .. note:: **AI Implementation Hint**
 
-   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, fetch fresh file details via ``GET /storage_files/{id}`` to get a new download URL. Do not cache or persist download URLs for long-term use.
+   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, use ``GET /storage_files/{id}/file`` which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.
 
 **Upload a File**
 
@@ -103,11 +103,58 @@ Core file management operations.
 
     $ curl -X GET 'https://api.voipbin.net/v1.0/storage_files/<file-id>?token=<token>'
 
+**Download a File (Direct)**
+
+.. code::
+
+    $ curl -L -X GET 'https://api.voipbin.net/v1.0/storage_files/<file-id>/file?token=<token>' \
+        --output downloaded_file.pdf
+
+.. note:: **AI Implementation Hint**
+
+   ``GET https://api.voipbin.net/v1.0/storage_files/{id}/file`` returns an HTTP **307 Temporary Redirect** to a time-limited signed Google Cloud Storage URL. The ``Location`` header contains the actual download URL. Most HTTP clients (curl with ``-L``, browsers, ``requests`` with ``allow_redirects=True``) follow the redirect automatically. The ``{id}`` parameter is the file's UUID, obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/storage_files``. This endpoint requires **CustomerAdmin** or **CustomerManager** permission. If the stored download URL has expired, the server automatically refreshes it before redirecting -- so unlike ``uri_download`` from ``GET /storage_files/{id}``, you never need to worry about expiration.
+
+**Response:**
+
+The server responds with HTTP 307 and a ``Location`` header:
+
+.. code::
+
+    HTTP/1.1 307 Temporary Redirect
+    Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&X-Goog-Expires=...
+
+The client follows the redirect and receives the file content directly from the storage backend.
+
 **Delete a File**
 
 .. code::
 
     $ curl -X DELETE 'https://api.voipbin.net/v1.0/storage_files/<file-id>?token=<token>'
+
+
+Service Agent File Download
+---------------------------
+Service agents have their own file storage scoped to the authenticated agent. Files uploaded via ``POST /service_agents/files`` (e.g., talk attachments) can be downloaded using the same redirect pattern as storage files.
+
+**Download a Service Agent File**
+
+.. code::
+
+    $ curl -L -X GET 'https://api.voipbin.net/v1.0/service_agents/files/<file-id>/file?token=<token>' \
+        --output downloaded_file.pdf
+
+.. note:: **AI Implementation Hint**
+
+   ``GET https://api.voipbin.net/v1.0/service_agents/files/{id}/file`` behaves identically to the storage file download: it returns an HTTP **307 Temporary Redirect** to a time-limited signed URL. The ``{id}`` parameter is the file's UUID, obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/service_agents/files``. Unlike ``GET /storage_files/{id}/file`` which requires CustomerAdmin or CustomerManager permission, this endpoint requires only that the file belongs to the same customer as the authenticated agent. If the download URL has expired, the server refreshes it automatically before redirecting.
+
+**Response:**
+
+The server responds with HTTP 307 and a ``Location`` header:
+
+.. code::
+
+    HTTP/1.1 307 Temporary Redirect
+    Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&X-Goog-Expires=...
 
 
 Storage Account Management
@@ -249,8 +296,9 @@ Store and access call recordings.
        -> List of recording files
 
     3. Download recording
-       GET /storage_files/{id}
-       -> download_url in response
+       GET /storage_files/{id}/file
+       -> HTTP 307 redirect to signed download URL
+       (or GET /storage_files/{id} for metadata + download_url)
 
     4. Clean up old recordings
        DELETE /storage_files/{id}
@@ -356,13 +404,18 @@ Troubleshooting
 
 **Download Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Download URL expired      | Get fresh file details; URLs are time-limited  |
-+---------------------------+------------------------------------------------+
-| File not found            | Verify file ID; file may have been deleted     |
-+---------------------------+------------------------------------------------+
++---------------------------+---------------------------------------------------+
+| Symptom                   | Solution                                          |
++===========================+===================================================+
+| Download URL expired      | Use ``GET /storage_files/{id}/file`` for          |
+|                           | automatic refresh and redirect                    |
+|                           |                                                   |
++---------------------------+---------------------------------------------------+
+| 307 redirect not followed | Ensure your HTTP client follows redirects         |
+|                           | (curl ``-L``, requests ``allow_redirects=True``)  |
++---------------------------+---------------------------------------------------+
+| File not found            | Verify file ID; file may have been deleted        |
++---------------------------+---------------------------------------------------+
 
 **Management Issues**
 

@@ -1,0 +1,32 @@
+get:
+  summary: Download the service agent file
+  description: Retrieves the specified service agent file and redirects to the download URI.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The file's ID. Obtained from the `id` field of `GET /service_agents/files`.
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    '307':
+      description: Redirect to the service agent file download URL.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: "https://storage.googleapis.com/bucket/storage/550e8400-e29b-41d4-a716-446655440000?X-Goog-Signature=abc123"
+    '400':
+      description: Bad request. Could not find agent information or file.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Could not get service agent file."

@@ -120,6 +120,21 @@ func (mr *MockFileHandlerMockRecorder) DownloadURIGet(ctx, bucketName, filepath,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIGet", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIGet), ctx, bucketName, filepath, expire)
 }
 
+// DownloadURIRefresh mocks base method.
+func (m *MockFileHandler) DownloadURIRefresh(ctx context.Context, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DownloadURIRefresh", ctx, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DownloadURIRefresh indicates an expected call of DownloadURIRefresh.
+func (mr *MockFileHandlerMockRecorder) DownloadURIRefresh(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIRefresh", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIRefresh), ctx, id)
+}
+
 // EventCustomerDeleted mocks base method.
 func (m *MockFileHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()

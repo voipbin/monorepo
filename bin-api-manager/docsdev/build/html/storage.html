@@ -256,7 +256,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, fetch fresh file details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> to get a new download URL. Do not cache or persist download URLs for long-term use.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.</p>
 </div>
 <p><strong>Upload a File</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39; \
@@ -284,8 +284,45 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
+<p><strong>Download a File (Direct)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
+    --output downloaded_file.pdf
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files/{id}/file</span></code> returns an HTTP <strong>307 Temporary Redirect</strong> to a time-limited signed Google Cloud Storage URL. The <code class="docutils literal notranslate"><span class="pre">Location</span></code> header contains the actual download URL. Most HTTP clients (curl with <code class="docutils literal notranslate"><span class="pre">-L</span></code>, browsers, <code class="docutils literal notranslate"><span class="pre">requests</span></code> with <code class="docutils literal notranslate"><span class="pre">allow_redirects=True</span></code>) follow the redirect automatically. The <code class="docutils literal notranslate"><span class="pre">{id}</span></code> parameter is the file’s UUID, obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files</span></code>. This endpoint requires <strong>CustomerAdmin</strong> or <strong>CustomerManager</strong> permission. If the stored download URL has expired, the server automatically refreshes it before redirecting – so unlike <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code>, you never need to worry about expiration.</p>
+</div>
+<p><strong>Response:</strong></p>
+<p>The server responds with HTTP 307 and a <code class="docutils literal notranslate"><span class="pre">Location</span></code> header:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HTTP/1.1 307 Temporary Redirect
+Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&amp;X-Goog-Expires=...
+</pre></div>
+</div>
+<p>The client follows the redirect and receives the file content directly from the storage backend.</p>
 <p><strong>Delete a File</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+</section>
+<section id="service-agent-file-download">
+<h3>Service Agent File Download<a class="headerlink" href="#service-agent-file-download" title="Link to this heading"></a></h3>
+<p>Service agents have their own file storage scoped to the authenticated agent. Files uploaded via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/files</span></code> (e.g., talk attachments) can be downloaded using the same redirect pattern as storage files.</p>
+<p><strong>Download a Service Agent File</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/service_agents/files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
+    --output downloaded_file.pdf
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/files/{id}/file</span></code> behaves identically to the storage file download: it returns an HTTP <strong>307 Temporary Redirect</strong> to a time-limited signed URL. The <code class="docutils literal notranslate"><span class="pre">{id}</span></code> parameter is the file’s UUID, obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/files</span></code>. Unlike <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> which requires CustomerAdmin or CustomerManager permission, this endpoint requires only that the file belongs to the same customer as the authenticated agent. If the download URL has expired, the server refreshes it automatically before redirecting.</p>
+</div>
+<p><strong>Response:</strong></p>
+<p>The server responds with HTTP 307 and a <code class="docutils literal notranslate"><span class="pre">Location</span></code> header:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HTTP/1.1 307 Temporary Redirect
+Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&amp;X-Goog-Expires=...
 </pre></div>
 </div>
 </section>
@@ -425,8 +462,9 @@
    -&gt; List of recording files
 
 3. Download recording
-   GET /storage_files/{id}
-   -&gt; download_url in response
+   GET /storage_files/{id}/file
+   -&gt; HTTP 307 redirect to signed download URL
+   (or GET /storage_files/{id} for metadata + download_url)
 
 4. Clean up old recordings
    DELETE /storage_files/{id}
@@ -538,9 +576,14 @@ request quota increase</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Download URL expired</p></td>
-<td><p>Get fresh file details; URLs are time-limited</p></td>
+<td><p>Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> for
+automatic refresh and redirect</p></td>
 </tr>
-<tr class="row-odd"><td><p>File not found</p></td>
+<tr class="row-odd"><td><p>307 redirect not followed</p></td>
+<td><p>Ensure your HTTP client follows redirects
+(curl <code class="docutils literal notranslate"><span class="pre">-L</span></code>, requests <code class="docutils literal notranslate"><span class="pre">allow_redirects=True</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>File not found</p></td>
 <td><p>Verify file ID; file may have been deleted</p></td>
 </tr>
 </tbody>
@@ -725,6 +768,7 @@ be in use</p></td>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#how-storage-works">How Storage Works</a></li>
 <li><a class="reference internal" href="#file-operations">File Operations</a></li>
+<li><a class="reference internal" href="#service-agent-file-download">Service Agent File Download</a></li>
 <li><a class="reference internal" href="#storage-account-management">Storage Account Management</a></li>
 <li><a class="reference internal" href="#file-types-and-sources">File Types and Sources</a></li>
 <li><a class="reference internal" href="#quota-management">Quota Management</a></li>

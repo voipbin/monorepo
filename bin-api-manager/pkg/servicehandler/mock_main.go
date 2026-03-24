@@ -3897,6 +3897,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileDelete(ctx, a, id any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileDelete), ctx, a, id)
 }
 
+// ServiceAgentFileDownloadRedirect mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a *agent.Agent, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentFileDownloadRedirect", ctx, a, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentFileDownloadRedirect indicates an expected call of ServiceAgentFileDownloadRedirect.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileDownloadRedirect(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileDownloadRedirect", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileDownloadRedirect), ctx, a, id)
+}
+
 // ServiceAgentFileGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentFileGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -4465,6 +4480,21 @@ func (m *MockServiceHandler) StorageFileDelete(ctx context.Context, a *agent.Age
 func (mr *MockServiceHandlerMockRecorder) StorageFileDelete(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileDelete", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileDelete), ctx, a, id)
+}
+
+// StorageFileDownloadRedirect mocks base method.
+func (m *MockServiceHandler) StorageFileDownloadRedirect(ctx context.Context, a *agent.Agent, id uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageFileDownloadRedirect", ctx, a, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageFileDownloadRedirect indicates an expected call of StorageFileDownloadRedirect.
+func (mr *MockServiceHandlerMockRecorder) StorageFileDownloadRedirect(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileDownloadRedirect", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileDownloadRedirect), ctx, a, id)
 }
 
 // StorageFileGet mocks base method.

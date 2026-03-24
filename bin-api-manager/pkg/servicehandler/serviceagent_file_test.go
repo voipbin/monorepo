@@ -2,8 +2,10 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -231,6 +233,199 @@ func Test_StorageFileList(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
+
+	futureTime := time.Now().Add(1 * time.Hour)
+	pastTime := time.Now().Add(-1 * time.Hour)
+
+	tests := []struct {
+		name string
+
+		agent  *amagent.Agent
+		fileID uuid.UUID
+
+		responseStorageFile *smfile.File
+		responseStorageErr  error
+		responseRefreshURI  string
+		responseRefreshErr  error
+		expectRefreshCalled bool
+		expectRes           string
+		expectErr           bool
+	}{
+		{
+			name: "valid URL not expired",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000003"),
+
+			responseStorageFile: &smfile.File{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000003"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000002"),
+				},
+				URIDownload:      "https://storage.example.com/file.txt?token=valid",
+				TMDownloadExpire: &futureTime,
+			},
+			expectRefreshCalled: false,
+			expectRes:           "https://storage.example.com/file.txt?token=valid",
+			expectErr:           false,
+		},
+		{
+			name: "expired URL triggers refresh",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000003"),
+
+			responseStorageFile: &smfile.File{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000003"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000002"),
+				},
+				URIDownload:      "https://storage.example.com/file.txt?token=expired",
+				TMDownloadExpire: &pastTime,
+			},
+			responseRefreshURI:  "https://storage.example.com/file.txt?token=fresh",
+			expectRefreshCalled: true,
+			expectRes:           "https://storage.example.com/file.txt?token=fresh",
+			expectErr:           false,
+		},
+		{
+			name: "nil expiration triggers refresh",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000003"),
+
+			responseStorageFile: &smfile.File{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000003"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000002"),
+				},
+				URIDownload:      "https://storage.example.com/file.txt?token=old",
+				TMDownloadExpire: nil,
+			},
+			responseRefreshURI:  "https://storage.example.com/file.txt?token=refreshed",
+			expectRefreshCalled: true,
+			expectRes:           "https://storage.example.com/file.txt?token=refreshed",
+			expectErr:           false,
+		},
+		{
+			name: "empty URIDownload triggers refresh",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000003"),
+
+			responseStorageFile: &smfile.File{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000003"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000002"),
+				},
+				URIDownload:      "",
+				TMDownloadExpire: &futureTime,
+			},
+			responseRefreshURI:  "https://storage.example.com/file.txt?token=new",
+			expectRefreshCalled: true,
+			expectRes:           "https://storage.example.com/file.txt?token=new",
+			expectErr:           false,
+		},
+		{
+			name: "permission denied - different customer",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000003"),
+
+			responseStorageFile: &smfile.File{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000003"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-999999999999"), // different customer
+				},
+				URIDownload:      "https://storage.example.com/file.txt?token=valid",
+				TMDownloadExpire: &futureTime,
+			},
+			expectRefreshCalled: false,
+			expectErr:           true,
+		},
+		{
+			name: "file not found",
+
+			agent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000002"),
+				},
+			},
+			fileID: uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000003"),
+
+			responseStorageFile: nil,
+			responseStorageErr:  fmt.Errorf("file not found"),
+			expectRefreshCalled: false,
+			expectErr:           true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().StorageV1FileGet(ctx, tt.fileID).Return(tt.responseStorageFile, tt.responseStorageErr)
+
+			if tt.expectRefreshCalled {
+				mockReq.EXPECT().StorageV1FileDownloadURIRefresh(ctx, tt.fileID).Return(tt.responseRefreshURI, tt.responseRefreshErr)
+			}
+
+			res, err := h.ServiceAgentFileDownloadRedirect(ctx, tt.agent, tt.fileID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: ok")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
 			}
 		})
 	}
