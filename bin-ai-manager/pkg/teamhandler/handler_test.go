@@ -14,6 +14,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
@@ -43,6 +45,8 @@ func Test_Create(t *testing.T) {
 		},
 	}
 
+	directID := uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111")
+
 	tests := []struct {
 		name string
 
@@ -52,8 +56,9 @@ func Test_Create(t *testing.T) {
 		startMemberID uuid.UUID
 		members       []team.Member
 
-		responseUUID uuid.UUID
-		responseTeam *team.Team
+		responseUUID   uuid.UUID
+		responseDirect *dmdirect.Direct
+		responseTeam   *team.Team
 
 		expectTeam *team.Team
 	}{
@@ -67,6 +72,15 @@ func Test_Create(t *testing.T) {
 			members:       members,
 
 			responseUUID: teamID,
+			responseDirect: &dmdirect.Direct{
+				Identity: identity.Identity{
+					ID:         directID,
+					CustomerID: customerID,
+				},
+				ResourceType: "ai_team",
+				ResourceID:   teamID,
+				Hash:         "direct.abc123def456",
+			},
 			responseTeam: &team.Team{
 				Identity: identity.Identity{
 					ID:         teamID,
@@ -83,6 +97,8 @@ func Test_Create(t *testing.T) {
 				Detail:        "test detail",
 				StartMemberID: memberA,
 				Members:       members,
+				DirectID:      directID,
+				DirectHash:    "direct.abc123def456",
 			},
 		},
 	}
@@ -106,9 +122,10 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 			mockDB.EXPECT().AIGet(ctx, aiB).Return(&ai.AI{}, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "ai_team", tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().TeamCreate(ctx, tt.expectTeam).Return(nil)
 			mockDB.EXPECT().TeamGet(ctx, tt.responseUUID).Return(tt.responseTeam, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeCreated, tt.responseTeam)
@@ -316,6 +333,8 @@ func Test_Delete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
 				},
+				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
+				DirectHash: "direct.test123hash",
 			},
 		},
 	}
@@ -339,6 +358,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
+			mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseTeam.DirectID).Return(nil, nil)
 			mockDB.EXPECT().TeamDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeDeleted, tt.responseTeam)
@@ -504,7 +525,18 @@ func Test_Delete_db_delete_error(t *testing.T) {
 
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995")
+	directID := uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222")
 
+	responseTeam := &team.Team{
+		Identity: identity.Identity{
+			ID: id,
+		},
+		DirectID:   directID,
+		DirectHash: "direct.test123hash",
+	}
+
+	mockDB.EXPECT().TeamGet(ctx, id).Return(responseTeam, nil)
+	mockReq.EXPECT().DirectV1DirectDelete(ctx, directID).Return(nil, nil)
 	mockDB.EXPECT().TeamDelete(ctx, id).Return(fmt.Errorf("db error"))
 
 	_, err := h.Delete(ctx, id)
@@ -532,7 +564,15 @@ func Test_Delete_db_get_error(t *testing.T) {
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995")
 
+	// First TeamGet (before delete) succeeds with no direct
+	firstTeam := &team.Team{
+		Identity: identity.Identity{
+			ID: id,
+		},
+	}
+	mockDB.EXPECT().TeamGet(ctx, id).Return(firstTeam, nil)
 	mockDB.EXPECT().TeamDelete(ctx, id).Return(nil)
+	// Second TeamGet (after delete) fails
 	mockDB.EXPECT().TeamGet(ctx, id).Return(nil, fmt.Errorf("db error"))
 
 	_, err := h.Delete(ctx, id)
@@ -665,7 +705,9 @@ func Test_Create_db_create_error(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(teamID)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "direct.test"}, nil)
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(fmt.Errorf("db error"))
+	mockReq.EXPECT().DirectV1DirectDelete(ctx, gomock.Any()).Return(nil, nil)
 
 	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members, nil)
 	if err == nil {
@@ -702,6 +744,7 @@ func Test_Create_db_get_error(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(teamID)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "direct.test"}, nil)
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().TeamGet(ctx, teamID).Return(nil, fmt.Errorf("db error"))
 

@@ -14480,6 +14480,11 @@
             },
             "description": "Agent's endpoint addresses for receiving calls."
           },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
+          },
           "tm_create": {
             "type": "string",
             "format": "date-time",
@@ -16398,6 +16403,11 @@
               "all"
             ]
           },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
+          },
           "tm_create": {
             "type": "string",
             "format": "date-time",
@@ -16470,6 +16480,11 @@
               "language": "en-US",
               "department": "support"
             }
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "tm_create": {
             "type": "string",
@@ -17313,6 +17328,11 @@
               "format": "uuid",
               "x-go-type": "string"
             }
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "tm_end": {
             "type": "string",
@@ -20467,7 +20487,7 @@
           },
           "direct_hash": {
             "type": "string",
-            "description": "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
             "example": "a8f3b2c1d4e5"
           },
           "tm_create": {

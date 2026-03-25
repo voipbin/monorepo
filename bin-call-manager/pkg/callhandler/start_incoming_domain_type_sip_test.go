@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 	nmnumber "monorepo/bin-number-manager/models/number"
@@ -356,6 +357,7 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 		channel *channel.Channel
 
 		responseSource    *commonaddress.Address
+		responseDirect    *dmdirect.Direct
 		responseExtension *rmextension.Extension
 		responseFlow      *fmflow.Flow
 	}{
@@ -379,13 +381,21 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1d2d3d4-d5d6-d7d8-d9da-dbdcdddedfee"),
+					CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
+				},
+				ResourceType: "extension",
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+				Hash:         "a3f8b2c1d4e5",
+			},
 			responseExtension: &rmextension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 					CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
 				},
-				Extension:  "1001",
-				DirectHash: "a3f8b2c1d4e5",
+				Extension: "1001",
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -419,7 +429,8 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
-			mockReq.EXPECT().RegistrarV1ExtensionGetByDirectHash(ctx, "a3f8b2c1d4e5").Return(tt.responseExtension, nil)
+			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "a3f8b2c1d4e5").Return(tt.responseDirect, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.responseDirect.ResourceID).Return(tt.responseExtension, nil)
 
 			expectDestination := commonaddress.Address{
 				Type:       commonaddress.TypeExtension,
@@ -464,7 +475,7 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 	}
 }
 
-func Test_startIncomingDomainTypeSIP_directExtension_hashNotFound(t *testing.T) {
+func Test_startIncomingDomainTypeSIP_directHashNotFound(t *testing.T) {
 	tests := []struct {
 		name    string
 		channel *channel.Channel
@@ -506,7 +517,7 @@ func Test_startIncomingDomainTypeSIP_directExtension_hashNotFound(t *testing.T) 
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			})
-			mockReq.EXPECT().RegistrarV1ExtensionGetByDirectHash(ctx, "invalidhash12").Return(nil, fmt.Errorf("not found"))
+			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "invalidhash12").Return(nil, fmt.Errorf("not found"))
 			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {

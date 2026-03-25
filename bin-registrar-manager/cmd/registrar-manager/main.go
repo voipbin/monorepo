@@ -25,7 +25,6 @@ import (
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
-	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/listenhandler"
 	"monorepo/bin-registrar-manager/pkg/subscribehandler"
@@ -133,8 +132,7 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
-	extensionDirectHandler := extensiondirecthandler.NewExtensionDirectHandler(dbBin)
-	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, extensionDirectHandler)
+	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler)
 	trunkHandler := trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler)
 	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin)
 

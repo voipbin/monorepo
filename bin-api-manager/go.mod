@@ -20,6 +20,8 @@ replace monorepo/bin-contact-manager => ../bin-contact-manager
 
 replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
+replace monorepo/bin-direct-manager => ../bin-direct-manager
+
 replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
@@ -241,6 +243,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 )

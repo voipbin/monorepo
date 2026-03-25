@@ -26,6 +26,8 @@ type WebhookMessage struct {
 	TagIDs     []uuid.UUID             `json:"tag_ids"`    // agent's tag ids
 	Addresses  []commonaddress.Address `json:"addresses"`  // agent's endpoint addresses
 
+	DirectHash string `json:"direct_hash"` // direct hash
+
 	TMCreate *time.Time `json:"tm_create,omitempty"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update,omitempty"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete,omitempty"` // Deleted timestamp.
@@ -47,6 +49,8 @@ func (h *Agent) ConvertWebhookMessage() *WebhookMessage {
 		Permission: h.Permission,
 		TagIDs:     h.TagIDs,
 		Addresses:  h.Addresses,
+
+		DirectHash: h.DirectHash,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

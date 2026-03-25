@@ -10,6 +10,9 @@ create table ai_teams(
   members         json,           -- members as json array
   parameter       json,           -- parameter as json object
 
+  direct_id       binary(16),     -- direct id
+  direct_hash     varchar(255),   -- direct hash
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

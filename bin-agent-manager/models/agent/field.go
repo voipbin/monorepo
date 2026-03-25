@@ -20,6 +20,8 @@ const (
 	FieldPermission Field = "permission" // permission
 	FieldTagIDs     Field = "tag_ids"    // tag_ids
 	FieldAddresses  Field = "addresses"  // addresses
+	FieldDirectID   Field = "direct_id"  // direct_id
+	FieldDirectHash Field = "direct_hash" // direct_hash
 
 	FieldTMCreate Field = "tm_create" // tm_create
 	FieldTMUpdate Field = "tm_update" // tm_update

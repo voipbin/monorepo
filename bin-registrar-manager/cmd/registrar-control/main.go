@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
-	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -104,8 +103,7 @@ func initExtensionHandler() (extensionhandler.ExtensionHandler, error) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
 
-	extensionDirectHandler := extensiondirecthandler.NewExtensionDirectHandler(dbBin)
-	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, extensionDirectHandler), nil
+	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler), nil
 }
 
 func initTrunkHandler() (trunkhandler.TrunkHandler, error) {

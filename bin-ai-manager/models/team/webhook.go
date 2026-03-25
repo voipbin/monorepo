@@ -19,6 +19,8 @@ type WebhookMessage struct {
 	Members       []Member       `json:"members,omitempty"`
 	Parameter     map[string]any `json:"parameter,omitempty"`
 
+	DirectHash string `json:"direct_hash,omitempty"`
+
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete"`
@@ -34,6 +36,8 @@ func (h *Team) ConvertWebhookMessage() *WebhookMessage {
 		StartMemberID: h.StartMemberID,
 		Members:       h.Members,
 		Parameter:     h.Parameter,
+
+		DirectHash: h.DirectHash,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

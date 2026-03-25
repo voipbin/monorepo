@@ -1132,7 +1132,7 @@ type RequestHandler interface {
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
-	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.Extension, error)
+	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// registrar-manager trunk

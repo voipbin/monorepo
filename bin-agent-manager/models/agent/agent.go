@@ -26,6 +26,9 @@ type Agent struct {
 	TagIDs     []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`    // agent's tag ids
 	Addresses  []commonaddress.Address `json:"addresses" db:"addresses,json"` // agent's endpoint addresses
 
+	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"`  // direct id for direct hash
+	DirectHash string    `json:"direct_hash" db:"direct_hash"`    // direct hash
+
 	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"` // Deleted timestamp.

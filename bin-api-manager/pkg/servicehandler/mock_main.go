@@ -2368,18 +2368,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionList(ctx, a, size, token any)
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, password string, direct, directRegenerate *bool) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, a, id, name, detail, password, direct, directRegenerate)
+	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, a, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExtensionUpdate indicates an expected call of ExtensionUpdate.
-func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, detail, password, direct, directRegenerate any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, detail, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), ctx, a, id, name, detail, password, direct, directRegenerate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), ctx, a, id, name, detail, password)
 }
 
 // FlowCreate mocks base method.

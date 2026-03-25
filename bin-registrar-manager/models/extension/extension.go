@@ -3,6 +3,8 @@ package extension
 import (
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
@@ -27,7 +29,8 @@ type Extension struct {
 	Username string `json:"username" db:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	Password string `json:"password" db:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
-	DirectHash string `json:"direct_hash" db:"-"` // populated from registrar_directs table
+	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"`
+	DirectHash string    `json:"direct_hash" db:"direct_hash"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`

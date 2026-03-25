@@ -8,10 +8,13 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -29,7 +32,7 @@ func TestCreate(t *testing.T) {
 		sttType          ai.STTType
 		vadConfig        *ai.VADConfig
 		smartTurnEnabled bool
-		setupMock        func(*dbhandler.MockDBHandler)
+		setupMock        func(*dbhandler.MockDBHandler, *requesthandler.MockRequestHandler)
 		wantError        bool
 		errorMsg         string
 	}{
@@ -40,9 +43,10 @@ func TestCreate(t *testing.T) {
 			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI"}
 				testAI.ID = uuid.Must(uuid.NewV4())
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "direct.test"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},
@@ -55,7 +59,7 @@ func TestCreate(t *testing.T) {
 			engineModel: ai.EngineModel("invalid.model"),
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				// Should not call database
 			},
 			wantError: true,
@@ -68,7 +72,7 @@ func TestCreate(t *testing.T) {
 			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSType("gcp"),
 			sttType:     ai.STTTypeNone,
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				// Should not call database
 			},
 			wantError: true,
@@ -81,7 +85,7 @@ func TestCreate(t *testing.T) {
 			engineModel: ai.EngineModelOpenaiGPT5,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTType("gcp"),
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				// Should not call database
 			},
 			wantError: true,
@@ -94,8 +98,10 @@ func TestCreate(t *testing.T) {
 			engineModel: ai.EngineModelGeminiGemini2Dot5Flash,
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "direct.test"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(errors.New("database error")).Times(1)
+				r.EXPECT().DirectV1DirectDelete(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 			},
 			wantError: true,
 			errorMsg:  "could not create ai",
@@ -108,7 +114,7 @@ func TestCreate(t *testing.T) {
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
 			vadConfig:   &ai.VADConfig{Confidence: float64Ptr(1.5)},
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				// Should not call database
 			},
 			wantError: true,
@@ -122,9 +128,10 @@ func TestCreate(t *testing.T) {
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
 			vadConfig:   &ai.VADConfig{Confidence: float64Ptr(0.8), StopSecs: float64Ptr(0.5)},
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI with VAD"}
 				testAI.ID = uuid.Must(uuid.NewV4())
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "direct.test"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},
@@ -138,9 +145,10 @@ func TestCreate(t *testing.T) {
 			ttsType:          ai.TTSTypeNone,
 			sttType:          ai.STTTypeNone,
 			smartTurnEnabled: true,
-			setupMock: func(m *dbhandler.MockDBHandler) {
+			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI with Smart Turn", SmartTurnEnabled: true}
 				testAI.ID = uuid.Must(uuid.NewV4())
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "direct.test"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},
@@ -154,12 +162,14 @@ func TestCreate(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(ctrl)
+			mockReq := requesthandler.NewMockRequestHandler(ctrl)
 			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-			tt.setupMock(mockDB)
+			tt.setupMock(mockDB, mockReq)
 
 			h := &aiHandler{
 				db:            mockDB,
+				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   utilhandler.NewUtilHandler(),
 			}

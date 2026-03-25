@@ -3,9 +3,12 @@ package agenthandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"monorepo/bin-agent-manager/pkg/metricshandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -69,7 +72,22 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		return nil, err
 	}
 
+	// generate agent UUID first
 	id := h.utilHandler.UUIDCreate()
+	log = log.WithField("agent_id", id)
+
+	// create direct hash via direct-manager
+	rpcStart := time.Now()
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "agent", id)
+	metricshandler.RPCCallDuration.WithLabelValues("direct-manager", "DirectCreate").Observe(float64(time.Since(rpcStart).Milliseconds()))
+	if err != nil {
+		metricshandler.RPCCallTotal.WithLabelValues("direct-manager", "DirectCreate", "failure").Inc()
+		log.Errorf("Could not create direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not create direct hash: %w", err)
+	}
+	metricshandler.RPCCallTotal.WithLabelValues("direct-manager", "DirectCreate", "success").Inc()
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
 	a := &agent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -86,11 +104,19 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		Permission: permission,
 		TagIDs:     tags,
 		Addresses:  addresses,
+
+		DirectID:   d.ID,
+		DirectHash: d.Hash,
 	}
-	log = log.WithField("agent_id", id)
 
 	if err := h.db.AgentCreate(ctx, a); err != nil {
 		log.Errorf("Could not create a new agent. err: %v", err)
+
+		// cleanup orphaned direct
+		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
+			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
+
 		return nil, err
 	}
 
@@ -113,6 +139,20 @@ func (h *agentHandler) dbDelete(ctx context.Context, id uuid.UUID) (*agent.Agent
 		"agent_id": id,
 	})
 	log.Debug("Deleting the agent info.")
+
+	// get agent to retrieve direct_id before deletion
+	ag, err := h.db.AgentGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get agent info for deletion. err: %v", err)
+		return nil, err
+	}
+
+	// delete direct hash via direct-manager (best-effort, don't block agent deletion)
+	if ag.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, ag.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", ag.DirectID, errDirect)
+		}
+	}
 
 	if err := h.db.AgentDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the agent. err: %v", err)

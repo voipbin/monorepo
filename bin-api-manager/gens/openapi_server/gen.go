@@ -1032,6 +1032,9 @@ type AIManagerAI struct {
 	// Detail Detailed information about the AI.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
@@ -1278,6 +1281,9 @@ type AIManagerTeam struct {
 	// Detail Detailed description of the team.
 	Detail string `json:"detail"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id The unique identifier of the team.
 	Id string `json:"id"`
 
@@ -1358,6 +1364,9 @@ type AgentManagerAgent struct {
 
 	// Detail Additional detail or notes about the agent.
 	Detail *string `json:"detail,omitempty"`
+
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the agent.
 	Id *string `json:"id,omitempty"`
@@ -2133,6 +2142,9 @@ type ConferenceManagerConference struct {
 
 	// Detail Detailed information about the conference.
 	Detail *string `json:"detail,omitempty"`
+
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the conference.
 	Id *string `json:"id,omitempty"`
@@ -3646,7 +3658,7 @@ type RegistrarManagerExtension struct {
 	// Detail Detailed description of the extension.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
