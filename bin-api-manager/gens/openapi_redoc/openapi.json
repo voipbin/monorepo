@@ -6780,14 +6780,6 @@
                   },
                   "password": {
                     "type": "string"
-                  },
-                  "direct": {
-                    "type": "boolean",
-                    "description": "Enable (true) or disable (false) direct extension access"
-                  },
-                  "direct_regenerate": {
-                    "type": "boolean",
-                    "description": "Regenerate the direct extension hash (only when direct is enabled)"
                   }
                 },
                 "required": [
