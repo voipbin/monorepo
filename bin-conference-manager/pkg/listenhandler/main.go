@@ -50,7 +50,8 @@ var (
 	regV1ConferencesCountByCustomer   = regexp.MustCompile("/v1/conferences/count_by_customer$")
 	regV1Conferences                  = regexp.MustCompile("/v1/conferences$")
 	regV1ConferencesGet               = regexp.MustCompile(`/v1/conferences\?`)
-	regV1ConferencesID                = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
+	regV1ConferencesIDDirectHashRegenerate = regexp.MustCompile("/v1/conferences/" + regUUID + "/direct-hash-regenerate$")
+	regV1ConferencesID                     = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
 	regV1ConferencesIDRecordingID     = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
 	regV1ConferencesIDRecordingStart  = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
 	regV1ConferencesIDRecordingStop   = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
@@ -176,6 +177,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ConferencesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConferencesGet(ctx, m)
 		requestType = "/v1/conferences"
+
+	// POST /conferences/<conference-id>/direct-hash-regenerate
+	case regV1ConferencesIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ConferencesIDDirectHashRegenerate(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/direct-hash-regenerate"
 
 	// GET /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
