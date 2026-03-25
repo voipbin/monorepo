@@ -9,6 +9,7 @@ import (
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
@@ -304,6 +305,58 @@ func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension
 
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
 	promExtensionDeleteTotal.Inc()
+
+	return res, nil
+}
+
+// DirectHashRegenerate regenerates (or creates) the direct hash for the given extension.
+func (h *extensionHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "DirectHashRegenerate",
+		"extension_id": id,
+	})
+
+	// get current extension
+	ext, err := h.dbBin.ExtensionGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get extension. err: %v", err)
+		return nil, fmt.Errorf("could not get extension: %w", err)
+	}
+	log.WithField("extension", ext).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
+
+	// regenerate or create direct
+	var d *dmdirect.Direct
+	if ext.DirectID != uuid.Nil {
+		d, err = h.reqHandler.DirectV1DirectRegenerate(ctx, ext.DirectID)
+		if err != nil {
+			log.Errorf("Could not regenerate direct hash. err: %v", err)
+			return nil, fmt.Errorf("could not regenerate direct hash: %w", err)
+		}
+	} else {
+		d, err = h.reqHandler.DirectV1DirectCreate(ctx, ext.CustomerID, "extension", id)
+		if err != nil {
+			log.Errorf("Could not create direct hash. err: %v", err)
+			return nil, fmt.Errorf("could not create direct hash: %w", err)
+		}
+	}
+	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+
+	// update extension with new direct info
+	fields := map[extension.Field]any{
+		extension.FieldDirectID:   d.ID,
+		extension.FieldDirectHash: d.Hash,
+	}
+	if err := h.dbBin.ExtensionUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update extension direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not update extension: %w", err)
+	}
+
+	// return updated extension
+	res, err := h.dbBin.ExtensionGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated extension. err: %v", err)
+		return nil, err
+	}
 
 	return res, nil
 }

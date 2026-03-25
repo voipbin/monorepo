@@ -34,6 +34,7 @@ type ExtensionHandler interface {
 	List(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error)
 	GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) (*extension.Extension, error)
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }

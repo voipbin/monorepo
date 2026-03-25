@@ -52,7 +52,8 @@ var (
 	regV1ExtensionsCountByCustomer = regexp.MustCompile("/v1/extensions/count_by_customer$")
 	regV1Extensions                = regexp.MustCompile("/v1/extensions$")
 	regV1ExtensionsGet             = regexp.MustCompile(`/v1/extensions\?`)
-	regV1ExtensionsID              = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
+	regV1ExtensionsIDDirectHashRegenerate = regexp.MustCompile("/v1/extensions/" + regUUID + "/direct-hash-regenerate$")
+	regV1ExtensionsID                     = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
 	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `(\?.*)?$`)
 
@@ -172,6 +173,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ExtensionsCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsCountByCustomerGet(ctx, m)
 		requestType = "/v1/extensions/count_by_customer"
+
+	case regV1ExtensionsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ExtensionsIDDirectHashRegenerate(ctx, m)
+		requestType = "/v1/extensions/<extension-id>/direct-hash-regenerate"
 
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsIDGet(ctx, m)
