@@ -90,6 +90,21 @@ func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAgentHandler)(nil).Delete), ctx, id)
 }
 
+// DirectHashRegenerate mocks base method.
+func (m *MockAgentHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectHashRegenerate", ctx, id)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectHashRegenerate indicates an expected call of DirectHashRegenerate.
+func (mr *MockAgentHandlerMockRecorder) DirectHashRegenerate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectHashRegenerate", reflect.TypeOf((*MockAgentHandler)(nil).DirectHashRegenerate), ctx, id)
+}
+
 // EventCustomerCreated mocks base method.
 func (m *MockAgentHandler) EventCustomerCreated(ctx context.Context, cu *customer.Customer, headless bool) error {
 	m.ctrl.T.Helper()

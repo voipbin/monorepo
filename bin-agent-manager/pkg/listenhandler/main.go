@@ -54,7 +54,8 @@ var (
 	regV1AgentsIDStatus             = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
 	regV1AgentsIDPassword           = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
 	regV1AgentsIDPermission         = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
-	regV1AgentsGetCustomerIDAddress = regexp.MustCompile("/v1/agents/get_by_customer_id_address$")
+	regV1AgentsIDDirectHashRegenerate = regexp.MustCompile("/v1/agents/" + regUUID + "/direct-hash-regenerate$")
+	regV1AgentsGetCustomerIDAddress   = regexp.MustCompile("/v1/agents/get_by_customer_id_address$")
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
@@ -143,6 +144,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Agents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AgentsPost(ctx, m)
 		requestType = "/v1/agents"
+
+	// POST /agents/<agent-id>/direct-hash-regenerate
+	case regV1AgentsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AgentsIDDirectHashRegenerate(ctx, m)
+		requestType = "/v1/agents/<agent-id>/direct-hash-regenerate"
 
 	// GET /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
