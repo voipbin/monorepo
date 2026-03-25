@@ -50,7 +50,7 @@ func TestProcessV1DirectsGet(t *testing.T) {
 					},
 					ResourceType: "extension",
 					ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-					Hash:         "direct.abcdef123456",
+					Hash:         "abcdef123456",
 					TMCreate:     tmCreate,
 					TMUpdate:     nil,
 				},
@@ -58,7 +58,7 @@ func TestProcessV1DirectsGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"direct.abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}]`),
 			},
 		},
 	}
@@ -124,14 +124,14 @@ func TestProcessV1DirectsPost(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.abcdef123456",
+				Hash:         "abcdef123456",
 				TMCreate:     tmCreate,
 				TMUpdate:     nil,
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"direct.abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}`),
 			},
 		},
 	}
@@ -192,14 +192,14 @@ func TestProcessV1DirectsIDGet(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.abcdef123456",
+				Hash:         "abcdef123456",
 				TMCreate:     tmCreate,
 				TMUpdate:     nil,
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"direct.abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527","hash":"abcdef123456","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null}`),
 			},
 		},
 	}
@@ -306,23 +306,23 @@ func TestProcessV1DirectsByHashGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/directs/by-hash/direct.abcdef123456",
+				URI:      "/v1/directs/by-hash/abcdef123456",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			"direct.abcdef123456",
+			"abcdef123456",
 
 			&direct.Direct{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 				},
-				Hash: "direct.abcdef123456",
+				Hash: "abcdef123456",
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","resource_type":"","resource_id":"00000000-0000-0000-0000-000000000000","hash":"direct.abcdef123456","tm_create":null,"tm_update":null}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","resource_type":"","resource_id":"00000000-0000-0000-0000-000000000000","hash":"abcdef123456","tm_create":null,"tm_update":null}`),
 			},
 		},
 	}
@@ -379,12 +379,12 @@ func TestProcessV1DirectsIDRegenerate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
 				},
-				Hash: "direct.newgenerated",
+				Hash: "newgenerated00",
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","resource_type":"","resource_id":"00000000-0000-0000-0000-000000000000","hash":"direct.newgenerated","tm_create":null,"tm_update":null}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","resource_type":"","resource_id":"00000000-0000-0000-0000-000000000000","hash":"newgenerated00","tm_create":null,"tm_update":null}`),
 			},
 		},
 	}

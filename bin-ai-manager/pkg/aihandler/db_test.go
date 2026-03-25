@@ -65,7 +65,7 @@ func Test_Create(t *testing.T) {
 				},
 				ResourceType: "ai",
 				ResourceID:   uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
-				Hash:         "direct.abc123def456",
+				Hash:         "abc123def456",
 			},
 			responseAI: &ai.AI{
 				Identity: identity.Identity{
@@ -90,7 +90,7 @@ func Test_Create(t *testing.T) {
 				TTSVoiceID: "test-voice-id",
 				STTType:    ai.STTTypeDeepgram,
 				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
-				DirectHash: "direct.abc123def456",
+				DirectHash: "abc123def456",
 			},
 		},
 	}
@@ -270,7 +270,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
 				},
 				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
-				DirectHash: "direct.test123hash",
+				DirectHash: "test123hash0",
 			},
 		},
 	}

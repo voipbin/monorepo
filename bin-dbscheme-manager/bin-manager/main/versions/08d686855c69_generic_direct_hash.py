@@ -40,10 +40,10 @@ def upgrade():
         op.execute(f"ALTER TABLE {table} ADD COLUMN direct_id binary(16), ADD COLUMN direct_hash varchar(255)")
 
     # Step 3: Migrate existing registrar_directs data
-    # Existing hash values are raw hex — prepend "direct." prefix
+    # Existing hash values are raw hex — store as-is (no prefix)
     op.execute("""
         INSERT INTO direct_directs (id, customer_id, resource_type, resource_id, hash, tm_create, tm_update)
-        SELECT id, customer_id, 'extension', extension_id, CONCAT('direct.', hash), tm_create, tm_update
+        SELECT id, customer_id, 'extension', extension_id, hash, tm_create, tm_update
         FROM registrar_directs
         WHERE tm_delete IS NULL
     """)
@@ -77,10 +77,10 @@ def downgrade():
         )
     """)
 
-    # Migrate data back — strip "direct." prefix
+    # Migrate data back
     op.execute("""
         INSERT INTO registrar_directs (id, customer_id, extension_id, hash, tm_create, tm_update)
-        SELECT id, customer_id, resource_id, REPLACE(hash, 'direct.', ''), tm_create, tm_update
+        SELECT id, customer_id, resource_id, hash, tm_create, tm_update
         FROM direct_directs
         WHERE resource_type = 'extension'
     """)

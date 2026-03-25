@@ -38,7 +38,7 @@ func Test_Get(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.abcdef123456",
+				Hash:         "abcdef123456",
 			},
 		},
 	}
@@ -151,7 +151,7 @@ func Test_Delete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
 				},
-				Hash: "direct.abcdef123456",
+				Hash: "abcdef123456",
 			},
 		},
 	}
@@ -265,26 +265,26 @@ func Test_GetByHash(t *testing.T) {
 	}{
 		{
 			name: "cache hit",
-			hash: "direct.abcdef123456",
+			hash: "abcdef123456",
 
 			cacheHit: true,
 			responseDirect: &direct.Direct{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("27d26bf2-2a01-11ee-82a4-63ea4f4f7211"),
 				},
-				Hash: "direct.abcdef123456",
+				Hash: "abcdef123456",
 			},
 		},
 		{
 			name: "cache miss",
-			hash: "direct.abcdef123456",
+			hash: "abcdef123456",
 
 			cacheHit: false,
 			responseDirect: &direct.Direct{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("27d26bf2-2a01-11ee-82a4-63ea4f4f7211"),
 				},
-				Hash: "direct.abcdef123456",
+				Hash: "abcdef123456",
 			},
 		},
 	}
@@ -345,13 +345,13 @@ func Test_Regenerate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
 				},
-				Hash: "direct.oldhash00001",
+				Hash: "oldhash00001",
 			},
 			regeneratedDirect: &direct.Direct{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a6b3cf48-2a4b-11ee-b574-2bad4f039ce5"),
 				},
-				Hash: "direct.newhash00001",
+				Hash: "newhash00001",
 			},
 		},
 	}

@@ -21,7 +21,7 @@ func generateHash() (string, error) {
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("could not generate random bytes: %v", err)
 	}
-	return direct.DirectPrefix + hex.EncodeToString(b), nil
+	return hex.EncodeToString(b), nil
 }
 
 // Create creates a new direct hash.

@@ -34,7 +34,7 @@ func Test_DirectCreate(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.abcdef123456",
+				Hash:         "abcdef123456",
 			},
 
 			responseCurTime: curTime,
@@ -45,7 +45,7 @@ func Test_DirectCreate(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.abcdef123456",
+				Hash:         "abcdef123456",
 				TMCreate:     curTime,
 				TMUpdate:     nil,
 			},
@@ -104,9 +104,9 @@ func Test_DirectGetByHash(t *testing.T) {
 				},
 				ResourceType: "conference",
 				ResourceID:   uuid.FromStringOrNil("d4e5f6a7-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.hash123test",
+				Hash:         "hash123test0",
 			},
-			hash: "direct.hash123test",
+			hash: "hash123test0",
 
 			responseCurTime: curTime,
 			expectRes: &direct.Direct{
@@ -116,7 +116,7 @@ func Test_DirectGetByHash(t *testing.T) {
 				},
 				ResourceType: "conference",
 				ResourceID:   uuid.FromStringOrNil("d4e5f6a7-4e69-11ec-afe3-77ba49fae527"),
-				Hash:         "direct.hash123test",
+				Hash:         "hash123test0",
 				TMCreate:     curTime,
 				TMUpdate:     nil,
 			},
@@ -178,7 +178,7 @@ func Test_DirectGets(t *testing.T) {
 					},
 					ResourceType: "extension",
 					ResourceID:   uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-					Hash:         "direct.list00000001",
+					Hash:         "list0000000001",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -187,7 +187,7 @@ func Test_DirectGets(t *testing.T) {
 					},
 					ResourceType: "conference",
 					ResourceID:   uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-					Hash:         "direct.list00000002",
+					Hash:         "list0000000002",
 				},
 			},
 
@@ -205,7 +205,7 @@ func Test_DirectGets(t *testing.T) {
 					},
 					ResourceType: "extension",
 					ResourceID:   uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-					Hash:         "direct.list00000001",
+					Hash:         "list0000000001",
 					TMCreate:     curTime,
 					TMUpdate:     nil,
 				},
@@ -216,7 +216,7 @@ func Test_DirectGets(t *testing.T) {
 					},
 					ResourceType: "conference",
 					ResourceID:   uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-					Hash:         "direct.list00000002",
+					Hash:         "list0000000002",
 					TMCreate:     curTime,
 					TMUpdate:     nil,
 				},
@@ -307,7 +307,7 @@ func Test_DirectDelete(t *testing.T) {
 				},
 				ResourceType: "agent",
 				ResourceID:   uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-				Hash:         "direct.deletetest01",
+				Hash:         "deletetest0001",
 			},
 
 			responseCurTime: curTime,
@@ -366,15 +366,15 @@ func Test_DirectUpdate(t *testing.T) {
 				},
 				ResourceType: "ai",
 				ResourceID:   uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
-				Hash:         "direct.update000001",
+				Hash:         "update00000001",
 			},
 
 			updateFields: map[direct.Field]any{
-				direct.FieldHash: "direct.updated00001",
+				direct.FieldHash: "updated0000001",
 			},
 
 			responseCurTime: curTime,
-			expectHash:      "direct.updated00001",
+			expectHash:      "updated0000001",
 		},
 	}
 

@@ -74,7 +74,7 @@ func Test_Create(t *testing.T) {
 				},
 				ResourceType: "conference",
 				ResourceID:   uuid.FromStringOrNil("944e0272-06b5-11f0-8fb6-43b650d2e25d"),
-				Hash:         "direct.abc123def456",
+				Hash:         "abc123def456",
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -102,7 +102,7 @@ func Test_Create(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				DirectID:          uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
-				DirectHash:        "direct.abc123def456",
+				DirectHash:        "abc123def456",
 			},
 			expectRes: &conference.Conference{
 				Identity: commonidentity.Identity{

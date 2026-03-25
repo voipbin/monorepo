@@ -79,7 +79,7 @@ func Test_Create(t *testing.T) {
 				},
 				ResourceType: "ai_team",
 				ResourceID:   teamID,
-				Hash:         "direct.abc123def456",
+				Hash:         "abc123def456",
 			},
 			responseTeam: &team.Team{
 				Identity: identity.Identity{
@@ -98,7 +98,7 @@ func Test_Create(t *testing.T) {
 				StartMemberID: memberA,
 				Members:       members,
 				DirectID:      directID,
-				DirectHash:    "direct.abc123def456",
+				DirectHash:    "abc123def456",
 			},
 		},
 	}
@@ -334,7 +334,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
 				},
 				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
-				DirectHash: "direct.test123hash",
+				DirectHash: "test123hash0",
 			},
 		},
 	}
@@ -532,7 +532,7 @@ func Test_Delete_db_delete_error(t *testing.T) {
 			ID: id,
 		},
 		DirectID:   directID,
-		DirectHash: "direct.test123hash",
+		DirectHash: "test123hash0",
 	}
 
 	mockDB.EXPECT().TeamGet(ctx, id).Return(responseTeam, nil)
@@ -705,7 +705,7 @@ func Test_Create_db_create_error(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(teamID)
-	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "direct.test"}, nil)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil)
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(fmt.Errorf("db error"))
 	mockReq.EXPECT().DirectV1DirectDelete(ctx, gomock.Any()).Return(nil, nil)
 
@@ -744,7 +744,7 @@ func Test_Create_db_get_error(t *testing.T) {
 
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(teamID)
-	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "direct.test"}, nil)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "ai_team", teamID).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil)
 	mockDB.EXPECT().TeamCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().TeamGet(ctx, teamID).Return(nil, fmt.Errorf("db error"))
 

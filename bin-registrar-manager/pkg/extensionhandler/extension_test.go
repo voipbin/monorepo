@@ -66,7 +66,7 @@ func Test_Create(t *testing.T) {
 				},
 				ResourceType: "extension",
 				ResourceID:   uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
-				Hash:         "direct.abc123def456",
+				Hash:         "abc123def456",
 			},
 			responseExtension: &extension.Extension{
 				Identity: commonidentity.Identity{
@@ -77,7 +77,7 @@ func Test_Create(t *testing.T) {
 				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
-				DirectHash: "direct.abc123def456",
+				DirectHash: "abc123def456",
 			},
 
 			expectAOR: &astaor.AstAOR{
@@ -113,7 +113,7 @@ func Test_Create(t *testing.T) {
 				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
-				DirectHash: "direct.abc123def456",
+				DirectHash: "abc123def456",
 			},
 			expectSIPAuth: &sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
@@ -337,7 +337,7 @@ func Test_ExtensionDelete(t *testing.T) {
 				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
 				Password:   "test password",
 				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
-				DirectHash: "direct.test123hash",
+				DirectHash: "test123hash0",
 			},
 
 			&extension.Extension{
@@ -353,7 +353,7 @@ func Test_ExtensionDelete(t *testing.T) {
 				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
 				Password:   "test password",
 				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
-				DirectHash: "direct.test123hash",
+				DirectHash: "test123hash0",
 			},
 		},
 	}
