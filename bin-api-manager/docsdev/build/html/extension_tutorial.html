@@ -327,12 +327,8 @@
 </section>
 <section id="regenerate-direct-extension-hash">
 <h3>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading"></a></h3>
-<p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;direct_regenerate&quot;: true
-}&#39;
+<p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. If the extension has no existing direct hash, one is created automatically. Useful when the existing hash has been compromised or shared unintentionally.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
@@ -348,6 +344,11 @@
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. Update any stored SIP URIs that reference the old hash.</p>
 </div>
 </section>
 <section id="disable-direct-extension">

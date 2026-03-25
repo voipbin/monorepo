@@ -315,7 +315,7 @@ Direct extensions provide a public SIP URI that allows external callers to reach
 
 - **Enable**: Update the extension with ``"direct": true`` to generate a hash
 - **Disable**: Update the extension with ``"direct": false`` to remove the hash
-- **Regenerate**: Update the extension with ``"direct_regenerate": true`` to create a new hash (invalidates the old one)
+- **Regenerate**: Call ``POST /extensions/{id}/direct-hash-regenerate`` to create a new hash (invalidates the old one)
 
 The ``direct_hash`` field in the extension response contains the current hash. An empty string indicates direct access is disabled.
 

@@ -86,3 +86,32 @@ Update agent's addresses.
                 }
             ]
         }'
+
+Regenerate direct agent hash
+------------------------------
+
+Regenerate the direct hash for an agent. This invalidates the previous SIP URI and creates a new one. If the agent has no existing direct hash, one is created automatically.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/direct-hash-regenerate?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "username": "test2",
+        "name": "test tag",
+        "detail": "test tag example",
+        "ring_method": "ringall",
+        "status": "offline",
+        "permission": 0,
+        "tag_ids": [],
+        "addresses": [],
+        "direct_hash": "e9f0a1b2c3d4",
+        "tm_create": "2022-10-22 16:16:16.874761",
+        "tm_update": "2022-10-22 16:20:00.123456",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is ``sip:direct.<hash>@sip.voipbin.net``.

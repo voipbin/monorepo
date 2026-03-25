@@ -490,6 +490,30 @@
 - Handle cases where AI may not understand the input
 - Provide clear instructions to users about what they can ask</p>
 </section>
+<section id="regenerate-direct-ai-hash">
+<h3>Regenerate direct AI hash<a class="headerlink" href="#regenerate-direct-ai-hash" title="Link to this heading"></a></h3>
+<p>Regenerate the direct hash for an AI configuration. This invalidates the previous SIP URI and creates a new one. If the AI has no existing direct hash, one is created automatically.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais/a092c5d9-632c-48d7-b70b-499f2ca084b1/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Sales Assistant AI&quot;,
+    &quot;detail&quot;: &quot;AI assistant for handling sales inquiries&quot;,
+    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;direct_hash&quot;: &quot;c5d6e7f8a9b0&quot;,
+    &quot;tm_create&quot;: &quot;2024-02-09 07:01:35.666687&quot;,
+    &quot;tm_update&quot;: &quot;2024-02-09 07:05:12.123456&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+</div>
+</section>
 <section id="troubleshooting">
 <h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -547,6 +571,7 @@
 <li><a class="reference internal" href="#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li><a class="reference internal" href="#real-time-ai-summary">Real-Time AI Summary</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#regenerate-direct-ai-hash">Regenerate direct AI hash</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>

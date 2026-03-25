@@ -927,6 +927,7 @@ Every 5 seconds, for each participant:
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -947,6 +948,7 @@ Every 5 seconds, for each participant:
 <li><p><code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> to retrieve participant details.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this conference’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct conference access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences/{id}/direct-hash-regenerate</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the conference was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to any conference property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the conference was deleted.</p></li>
@@ -992,6 +994,7 @@ Every 5 seconds, for each participant:
     <span class="s2">&quot;conferencecall_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:08:56.672025&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-08-06 19:11:13.040418&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -1272,6 +1275,31 @@ Every 5 seconds, for each participant:
 </div>
 </section>
 </section>
+<section id="regenerate-direct-conference-hash">
+<h3>Regenerate direct conference hash<a class="headerlink" href="#regenerate-direct-conference-hash" title="Link to this heading"></a></h3>
+<p>Regenerate the direct hash for a conference. This invalidates the previous SIP URI and creates a new one. If the conference has no existing direct hash, one is created automatically.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences/99accfb7-c0dd-4a54-997d-dd18af7bc280/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;test conference&quot;,
+    &quot;detail&quot;: &quot;test conference for example.&quot;,
+    &quot;direct_hash&quot;: &quot;b3c4d5e6f7a8&quot;,
+    &quot;tm_create&quot;: &quot;2022-02-03 06:08:56.672025&quot;,
+    &quot;tm_update&quot;: &quot;2022-08-06 19:11:13.040418&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+</div>
+</section>
 <section id="troubleshooting">
 <h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -1385,6 +1413,7 @@ Every 5 seconds, for each participant:
 <li><a class="reference internal" href="#id10">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#regenerate-direct-conference-hash">Regenerate direct conference hash</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>

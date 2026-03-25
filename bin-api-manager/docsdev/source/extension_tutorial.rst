@@ -154,15 +154,11 @@ Enable direct access for an extension. This generates a unique hash that allows 
 Regenerate direct extension hash
 ---------------------------------
 
-Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. Useful when the existing hash has been compromised or shared unintentionally.
+Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. If the extension has no existing direct hash, one is created automatically. Useful when the existing hash has been compromised or shared unintentionally.
 
 .. code::
 
-    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "direct_regenerate": true
-    }'
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/direct-hash-regenerate?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
@@ -177,6 +173,10 @@ Regenerate the direct extension hash. This invalidates the previous SIP URI and 
         "tm_update": "2021-02-23 02:18:45.334567",
         "tm_delete": ""
     }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. Update any stored SIP URIs that reference the old hash.
 
 Disable direct extension
 ------------------------

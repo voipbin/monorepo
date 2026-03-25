@@ -24,6 +24,7 @@ Agent
         "addresses": [
             ...
         ],
+        "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -38,6 +39,7 @@ Agent
 * ``permission`` (Integer): The agent's permission level as a bitmask value. See :ref:`Permission <agent-struct-agent-permission>`.
 * ``tag_ids`` (Array of UUID): List of tag IDs assigned to this agent for skill-based routing. Each ID is obtained from the ``id`` field of ``GET /tags``.
 * ``addresses`` (Array of Object): List of contact addresses where calls are delivered to this agent. See :ref:`Address <common-struct-address-address>`.
+* ``direct_hash`` (String): Hash for direct agent access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /agents/{id}/direct-hash-regenerate``.
 * ``tm_create`` (string, ISO 8601): Timestamp when the agent was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when the agent was last updated.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the agent was deleted, if applicable.
