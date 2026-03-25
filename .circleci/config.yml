@@ -26,6 +26,7 @@ workflows:
             bin-conversation-manager/.* run-bin-conversation-manager true
             bin-customer-manager/.*     run-bin-customer-manager true
             bin-dbscheme-manager/.*     run-bin-dbscheme-manager true
+            bin-direct-manager/.*      run-bin-direct-manager true
             bin-email-manager/.*        run-bin-email-manager true
             bin-flow-manager/.*         run-bin-flow-manager true
             bin-hook-manager/.*         run-bin-hook-manager true
