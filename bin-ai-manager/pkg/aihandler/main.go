@@ -57,6 +57,7 @@ type AIHandler interface {
 		vadConfig *ai.VADConfig,
 		smartTurnEnabled bool,
 	) (*ai.AI, error)
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 }
 
 // aiHandler structure for service handle
