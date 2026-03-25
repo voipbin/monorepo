@@ -6738,6 +6738,8 @@ paths:
     $ref: './paths/agents/id_status.yaml'
   /agents/{id}/password:
     $ref: './paths/agents/id_password.yaml'
+  /agents/{id}/direct-hash-regenerate:
+    $ref: './paths/agents/id_direct_hash_regenerate.yaml'
 
   /aimessages/{id}:
     $ref: './paths/aimessages/id.yaml'
@@ -6751,6 +6753,8 @@ paths:
 
   /ais/{id}:
     $ref: './paths/ais/id.yaml'
+  /ais/{id}/direct-hash-regenerate:
+    $ref: './paths/ais/id_direct_hash_regenerate.yaml'
   /ais:
     $ref: './paths/ais/main.yaml'
 
@@ -6761,6 +6765,8 @@ paths:
 
   /teams/{id}:
     $ref: './paths/teams/id.yaml'
+  /teams/{id}/direct-hash-regenerate:
+    $ref: './paths/teams/id_direct_hash_regenerate.yaml'
   /teams:
     $ref: './paths/teams/main.yaml'
 
@@ -6858,6 +6864,8 @@ paths:
     $ref: './paths/conferences/id_transcribe_start.yaml'
   /conferences/{id}/transcribe_stop:
     $ref: './paths/conferences/id_transcribe_stop.yaml'
+  /conferences/{id}/direct-hash-regenerate:
+    $ref: './paths/conferences/id_direct_hash_regenerate.yaml'
   /conferences/{id}:
     $ref: './paths/conferences/id.yaml'
   /conferences:
@@ -6921,6 +6929,8 @@ paths:
 
   /extensions/{id}:
     $ref: './paths/extensions/id.yaml'
+  /extensions/{id}/direct-hash-regenerate:
+    $ref: './paths/extensions/id_direct_hash_regenerate.yaml'
   /extensions:
     $ref: './paths/extensions/main.yaml'
 

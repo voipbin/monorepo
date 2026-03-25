@@ -1,0 +1,23 @@
+post:
+  summary: Regenerate direct hash for conference
+  description: Regenerates the direct hash for the specified conference. If no direct hash exists, one is created. Returns the updated conference with the new direct_hash.
+  tags:
+    - Conference
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the conference. Returned from the `GET /conferences` response."
+  responses:
+    '200':
+      description: Direct hash regenerated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConferenceManagerConference'
+    '400':
+      description: Unable to regenerate direct hash.
