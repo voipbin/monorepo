@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gofrs/uuid"
@@ -39,6 +40,7 @@ func Test_Create(t *testing.T) {
 
 		responseUUID       uuid.UUID
 		responseConfbridge *cmconfbridge.Confbridge
+		responseDirect     *dmdirect.Direct
 		responseFlow       *fmflow.Flow
 
 		expectConference *conference.Conference
@@ -65,6 +67,15 @@ func Test_Create(t *testing.T) {
 					ID: uuid.FromStringOrNil("a5aab3aa-5b8a-11ec-bf89-432b7557fb8b"),
 				},
 			},
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+				},
+				ResourceType: "conference",
+				ResourceID:   uuid.FromStringOrNil("944e0272-06b5-11f0-8fb6-43b650d2e25d"),
+				Hash:         "abc123def456",
+			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a5d4bad8-5b8a-11ec-a510-57d74c7f1270"),
@@ -90,6 +101,8 @@ func Test_Create(t *testing.T) {
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
+				DirectID:          uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+				DirectHash:        "abc123def456",
 			},
 			expectRes: &conference.Conference{
 				Identity: commonidentity.Identity{
@@ -128,6 +141,7 @@ func Test_Create(t *testing.T) {
 				confbridgeType = cmconfbridge.TypeConference
 			}
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, tt.responseUUID, confbridgeType).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "conference", tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().ConferenceCreate(ctx, tt.expectConference).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
@@ -518,6 +532,7 @@ func Test_Delete(t *testing.T) {
 		id uuid.UUID
 
 		responseConference *conference.Conference
+		responseDirect     *dmdirect.Direct
 	}{
 		{
 			"normal",
@@ -528,7 +543,13 @@ func Test_Delete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
 				},
-				Status: conference.StatusTerminating,
+				Status:   conference.StatusTerminating,
+				DirectID: uuid.FromStringOrNil("e2e2e2e2-2222-2222-2222-222222222222"),
+			},
+			&dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e2e2e2e2-2222-2222-2222-222222222222"),
+				},
 			},
 		},
 	}
@@ -550,6 +571,12 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
+			// initial Get for DirectID
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			// delete direct hash
+			mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseConference.DirectID).Return(tt.responseDirect, nil)
+
+			// Terminating flow: Get + UpdateStatus + Get + PublishWebhookEvent
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
 			mockDB.EXPECT().ConferenceDelete(ctx, tt.id).Return(nil)

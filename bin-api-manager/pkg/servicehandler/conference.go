@@ -355,6 +355,36 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagen
 	return res, nil
 }
 
+// ConferenceDirectHashRegenerate regenerates the direct hash for the conference.
+func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceDirectHashRegenerate",
+		"customer_id":   a.CustomerID,
+		"conference_id": conferenceID,
+	})
+	log.Debug("Regenerating conference direct hash.")
+
+	c, err := h.conferenceGet(ctx, conferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.ConferenceV1ConferenceDirectHashRegenerate(ctx, conferenceID)
+	if err != nil {
+		log.Errorf("Could not regenerate conference direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ConferenceMediaStreamStart starts a media streaming of the conference
 // it returns error if it failed.
 func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {

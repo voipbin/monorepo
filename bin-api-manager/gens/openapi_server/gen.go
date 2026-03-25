@@ -1032,6 +1032,9 @@ type AIManagerAI struct {
 	// Detail Detailed information about the AI.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
@@ -1278,6 +1281,9 @@ type AIManagerTeam struct {
 	// Detail Detailed description of the team.
 	Detail string `json:"detail"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id The unique identifier of the team.
 	Id string `json:"id"`
 
@@ -1358,6 +1364,9 @@ type AgentManagerAgent struct {
 
 	// Detail Additional detail or notes about the agent.
 	Detail *string `json:"detail,omitempty"`
+
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the agent.
 	Id *string `json:"id,omitempty"`
@@ -2133,6 +2142,9 @@ type ConferenceManagerConference struct {
 
 	// Detail Detailed information about the conference.
 	Detail *string `json:"detail,omitempty"`
+
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the conference.
 	Id *string `json:"id,omitempty"`
@@ -3646,7 +3658,7 @@ type RegistrarManagerExtension struct {
 	// Detail Detailed description of the extension.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
@@ -5220,15 +5232,9 @@ type PostExtensionsJSONBody struct {
 
 // PutExtensionsIdJSONBody defines parameters for PutExtensionsId.
 type PutExtensionsIdJSONBody struct {
-	Detail string `json:"detail"`
-
-	// Direct Enable (true) or disable (false) direct extension access
-	Direct *bool `json:"direct,omitempty"`
-
-	// DirectRegenerate Regenerate the direct extension hash (only when direct is enabled)
-	DirectRegenerate *bool  `json:"direct_regenerate,omitempty"`
-	Name             string `json:"name"`
-	Password         string `json:"password"`
+	Detail   string `json:"detail"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 // GetFlowsParams defines parameters for GetFlows.
@@ -6649,6 +6655,9 @@ type ServerInterface interface {
 	// Update an agent's addresses
 	// (PUT /agents/{id}/addresses)
 	PutAgentsIdAddresses(c *gin.Context, id string)
+	// Regenerate direct hash for agent
+	// (POST /agents/{id}/direct-hash-regenerate)
+	PostAgentsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Update an agent's password
 	// (PUT /agents/{id}/password)
 	PutAgentsIdPassword(c *gin.Context, id string)
@@ -6703,6 +6712,9 @@ type ServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(c *gin.Context, id string)
+	// Regenerate direct hash for AI
+	// (POST /ais/{id}/direct-hash-regenerate)
+	PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Gets a list of ai summaries.
 	// (GET /aisummaries)
 	GetAisummaries(c *gin.Context, params GetAisummariesParams)
@@ -6883,6 +6895,9 @@ type ServerInterface interface {
 	// Update conference details
 	// (PUT /conferences/{id})
 	PutConferencesId(c *gin.Context, id string)
+	// Regenerate direct hash for conference
+	// (POST /conferences/{id}/direct-hash-regenerate)
+	PostConferencesIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Start media streaming for a conference
 	// (GET /conferences/{id}/media_stream)
 	GetConferencesIdMediaStream(c *gin.Context, id string, params GetConferencesIdMediaStreamParams)
@@ -7036,6 +7051,9 @@ type ServerInterface interface {
 	// Update an extension
 	// (PUT /extensions/{id})
 	PutExtensionsId(c *gin.Context, id string)
+	// Regenerate direct hash for extension
+	// (POST /extensions/{id}/direct-hash-regenerate)
+	PostExtensionsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Retrieve a list of flows
 	// (GET /flows)
 	GetFlows(c *gin.Context, params GetFlowsParams)
@@ -7495,6 +7513,9 @@ type ServerInterface interface {
 	// Update a team.
 	// (PUT /teams/{id})
 	PutTeamsId(c *gin.Context, id string)
+	// Regenerate direct hash for team
+	// (POST /teams/{id}/direct-hash-regenerate)
+	PostTeamsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_types.UUID)
@@ -7949,6 +7970,30 @@ func (siw *ServerInterfaceWrapper) PutAgentsIdAddresses(c *gin.Context) {
 	}
 
 	siw.Handler.PutAgentsIdAddresses(c, id)
+}
+
+// PostAgentsIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostAgentsIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAgentsIdDirectHashRegenerate(c, id)
 }
 
 // PutAgentsIdPassword operation middleware
@@ -8419,6 +8464,30 @@ func (siw *ServerInterfaceWrapper) PutAisId(c *gin.Context) {
 	}
 
 	siw.Handler.PutAisId(c, id)
+}
+
+// PostAisIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostAisIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAisIdDirectHashRegenerate(c, id)
 }
 
 // GetAisummaries operation middleware
@@ -9883,6 +9952,30 @@ func (siw *ServerInterfaceWrapper) PutConferencesId(c *gin.Context) {
 	siw.Handler.PutConferencesId(c, id)
 }
 
+// PostConferencesIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostConferencesIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConferencesIdDirectHashRegenerate(c, id)
+}
+
 // GetConferencesIdMediaStream operation middleware
 func (siw *ServerInterfaceWrapper) GetConferencesIdMediaStream(c *gin.Context) {
 
@@ -11158,6 +11251,30 @@ func (siw *ServerInterfaceWrapper) PutExtensionsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutExtensionsId(c, id)
+}
+
+// PostExtensionsIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostExtensionsIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostExtensionsIdDirectHashRegenerate(c, id)
 }
 
 // GetFlows operation middleware
@@ -14935,6 +15052,30 @@ func (siw *ServerInterfaceWrapper) PutTeamsId(c *gin.Context) {
 	siw.Handler.PutTeamsId(c, id)
 }
 
+// PostTeamsIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostTeamsIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostTeamsIdDirectHashRegenerate(c, id)
+}
+
 // GetTimelinesCallsCallIdPcap operation middleware
 func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdPcap(c *gin.Context) {
 
@@ -15391,6 +15532,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/agents/:id", wrapper.GetAgentsId)
 	router.PUT(options.BaseURL+"/agents/:id", wrapper.PutAgentsId)
 	router.PUT(options.BaseURL+"/agents/:id/addresses", wrapper.PutAgentsIdAddresses)
+	router.POST(options.BaseURL+"/agents/:id/direct-hash-regenerate", wrapper.PostAgentsIdDirectHashRegenerate)
 	router.PUT(options.BaseURL+"/agents/:id/password", wrapper.PutAgentsIdPassword)
 	router.PUT(options.BaseURL+"/agents/:id/permission", wrapper.PutAgentsIdPermission)
 	router.PUT(options.BaseURL+"/agents/:id/status", wrapper.PutAgentsIdStatus)
@@ -15409,6 +15551,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/ais/:id", wrapper.DeleteAisId)
 	router.GET(options.BaseURL+"/ais/:id", wrapper.GetAisId)
 	router.PUT(options.BaseURL+"/ais/:id", wrapper.PutAisId)
+	router.POST(options.BaseURL+"/ais/:id/direct-hash-regenerate", wrapper.PostAisIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/aisummaries", wrapper.GetAisummaries)
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
@@ -15469,6 +15612,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/conferences/:id", wrapper.DeleteConferencesId)
 	router.GET(options.BaseURL+"/conferences/:id", wrapper.GetConferencesId)
 	router.PUT(options.BaseURL+"/conferences/:id", wrapper.PutConferencesId)
+	router.POST(options.BaseURL+"/conferences/:id/direct-hash-regenerate", wrapper.PostConferencesIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/conferences/:id/media_stream", wrapper.GetConferencesIdMediaStream)
 	router.POST(options.BaseURL+"/conferences/:id/recording_start", wrapper.PostConferencesIdRecordingStart)
 	router.POST(options.BaseURL+"/conferences/:id/recording_stop", wrapper.PostConferencesIdRecordingStop)
@@ -15520,6 +15664,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/extensions/:id", wrapper.DeleteExtensionsId)
 	router.GET(options.BaseURL+"/extensions/:id", wrapper.GetExtensionsId)
 	router.PUT(options.BaseURL+"/extensions/:id", wrapper.PutExtensionsId)
+	router.POST(options.BaseURL+"/extensions/:id/direct-hash-regenerate", wrapper.PostExtensionsIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/flows", wrapper.GetFlows)
 	router.POST(options.BaseURL+"/flows", wrapper.PostFlows)
 	router.DELETE(options.BaseURL+"/flows/:id", wrapper.DeleteFlowsId)
@@ -15673,6 +15818,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/teams/:id", wrapper.DeleteTeamsId)
 	router.GET(options.BaseURL+"/teams/:id", wrapper.GetTeamsId)
 	router.PUT(options.BaseURL+"/teams/:id", wrapper.PutTeamsId)
+	router.POST(options.BaseURL+"/teams/:id/direct-hash-regenerate", wrapper.PostTeamsIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/timelines/calls/:call_id/pcap", wrapper.GetTimelinesCallsCallIdPcap)
 	router.GET(options.BaseURL+"/timelines/calls/:call_id/sip-analysis", wrapper.GetTimelinesCallsCallIdSipAnalysis)
 	router.GET(options.BaseURL+"/timelines/:resource_type/:resource_id/events", wrapper.GetTimelinesResourceTypeResourceIdEvents)
@@ -16032,6 +16178,31 @@ func (response PutAgentsIdAddresses200JSONResponse) VisitPutAgentsIdAddressesRes
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostAgentsIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAgentsIdDirectHashRegenerateResponseObject interface {
+	VisitPostAgentsIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostAgentsIdDirectHashRegenerate200JSONResponse AgentManagerAgent
+
+func (response PostAgentsIdDirectHashRegenerate200JSONResponse) VisitPostAgentsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAgentsIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostAgentsIdDirectHashRegenerate400Response) VisitPostAgentsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type PutAgentsIdPasswordRequestObject struct {
 	Id   string `json:"id"`
 	Body *PutAgentsIdPasswordJSONRequestBody
@@ -16373,6 +16544,31 @@ func (response PutAisId200JSONResponse) VisitPutAisIdResponse(w http.ResponseWri
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAisIdDirectHashRegenerateResponseObject interface {
+	VisitPostAisIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostAisIdDirectHashRegenerate200JSONResponse AIManagerAI
+
+func (response PostAisIdDirectHashRegenerate200JSONResponse) VisitPostAisIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostAisIdDirectHashRegenerate400Response) VisitPostAisIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type GetAisummariesRequestObject struct {
@@ -17553,6 +17749,31 @@ func (response PutConferencesId200JSONResponse) VisitPutConferencesIdResponse(w 
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostConferencesIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostConferencesIdDirectHashRegenerateResponseObject interface {
+	VisitPostConferencesIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostConferencesIdDirectHashRegenerate200JSONResponse ConferenceManagerConference
+
+func (response PostConferencesIdDirectHashRegenerate200JSONResponse) VisitPostConferencesIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConferencesIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostConferencesIdDirectHashRegenerate400Response) VisitPostConferencesIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type GetConferencesIdMediaStreamRequestObject struct {
 	Id     string `json:"id"`
 	Params GetConferencesIdMediaStreamParams
@@ -18495,6 +18716,31 @@ func (response PutExtensionsId200JSONResponse) VisitPutExtensionsIdResponse(w ht
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostExtensionsIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostExtensionsIdDirectHashRegenerateResponseObject interface {
+	VisitPostExtensionsIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostExtensionsIdDirectHashRegenerate200JSONResponse RegistrarManagerExtension
+
+func (response PostExtensionsIdDirectHashRegenerate200JSONResponse) VisitPostExtensionsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostExtensionsIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostExtensionsIdDirectHashRegenerate400Response) VisitPostExtensionsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type GetFlowsRequestObject struct {
@@ -21425,6 +21671,31 @@ func (response PutTeamsId200JSONResponse) VisitPutTeamsIdResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostTeamsIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostTeamsIdDirectHashRegenerateResponseObject interface {
+	VisitPostTeamsIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostTeamsIdDirectHashRegenerate200JSONResponse AIManagerTeam
+
+func (response PostTeamsIdDirectHashRegenerate200JSONResponse) VisitPostTeamsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTeamsIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostTeamsIdDirectHashRegenerate400Response) VisitPostTeamsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type GetTimelinesCallsCallIdPcapRequestObject struct {
 	CallId openapi_types.UUID `json:"call_id"`
 }
@@ -21888,6 +22159,9 @@ type StrictServerInterface interface {
 	// Update an agent's addresses
 	// (PUT /agents/{id}/addresses)
 	PutAgentsIdAddresses(ctx context.Context, request PutAgentsIdAddressesRequestObject) (PutAgentsIdAddressesResponseObject, error)
+	// Regenerate direct hash for agent
+	// (POST /agents/{id}/direct-hash-regenerate)
+	PostAgentsIdDirectHashRegenerate(ctx context.Context, request PostAgentsIdDirectHashRegenerateRequestObject) (PostAgentsIdDirectHashRegenerateResponseObject, error)
 	// Update an agent's password
 	// (PUT /agents/{id}/password)
 	PutAgentsIdPassword(ctx context.Context, request PutAgentsIdPasswordRequestObject) (PutAgentsIdPasswordResponseObject, error)
@@ -21942,6 +22216,9 @@ type StrictServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(ctx context.Context, request PutAisIdRequestObject) (PutAisIdResponseObject, error)
+	// Regenerate direct hash for AI
+	// (POST /ais/{id}/direct-hash-regenerate)
+	PostAisIdDirectHashRegenerate(ctx context.Context, request PostAisIdDirectHashRegenerateRequestObject) (PostAisIdDirectHashRegenerateResponseObject, error)
 	// Gets a list of ai summaries.
 	// (GET /aisummaries)
 	GetAisummaries(ctx context.Context, request GetAisummariesRequestObject) (GetAisummariesResponseObject, error)
@@ -22122,6 +22399,9 @@ type StrictServerInterface interface {
 	// Update conference details
 	// (PUT /conferences/{id})
 	PutConferencesId(ctx context.Context, request PutConferencesIdRequestObject) (PutConferencesIdResponseObject, error)
+	// Regenerate direct hash for conference
+	// (POST /conferences/{id}/direct-hash-regenerate)
+	PostConferencesIdDirectHashRegenerate(ctx context.Context, request PostConferencesIdDirectHashRegenerateRequestObject) (PostConferencesIdDirectHashRegenerateResponseObject, error)
 	// Start media streaming for a conference
 	// (GET /conferences/{id}/media_stream)
 	GetConferencesIdMediaStream(ctx context.Context, request GetConferencesIdMediaStreamRequestObject) (GetConferencesIdMediaStreamResponseObject, error)
@@ -22275,6 +22555,9 @@ type StrictServerInterface interface {
 	// Update an extension
 	// (PUT /extensions/{id})
 	PutExtensionsId(ctx context.Context, request PutExtensionsIdRequestObject) (PutExtensionsIdResponseObject, error)
+	// Regenerate direct hash for extension
+	// (POST /extensions/{id}/direct-hash-regenerate)
+	PostExtensionsIdDirectHashRegenerate(ctx context.Context, request PostExtensionsIdDirectHashRegenerateRequestObject) (PostExtensionsIdDirectHashRegenerateResponseObject, error)
 	// Retrieve a list of flows
 	// (GET /flows)
 	GetFlows(ctx context.Context, request GetFlowsRequestObject) (GetFlowsResponseObject, error)
@@ -22734,6 +23017,9 @@ type StrictServerInterface interface {
 	// Update a team.
 	// (PUT /teams/{id})
 	PutTeamsId(ctx context.Context, request PutTeamsIdRequestObject) (PutTeamsIdResponseObject, error)
+	// Regenerate direct hash for team
+	// (POST /teams/{id}/direct-hash-regenerate)
+	PostTeamsIdDirectHashRegenerate(ctx context.Context, request PostTeamsIdDirectHashRegenerateRequestObject) (PostTeamsIdDirectHashRegenerateResponseObject, error)
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(ctx context.Context, request GetTimelinesCallsCallIdPcapRequestObject) (GetTimelinesCallsCallIdPcapResponseObject, error)
@@ -23263,6 +23549,33 @@ func (sh *strictHandler) PutAgentsIdAddresses(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutAgentsIdAddressesResponseObject); ok {
 		if err := validResponse.VisitPutAgentsIdAddressesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAgentsIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostAgentsIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAgentsIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAgentsIdDirectHashRegenerate(ctx, request.(PostAgentsIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAgentsIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAgentsIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostAgentsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -23807,6 +24120,33 @@ func (sh *strictHandler) PutAisId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutAisIdResponseObject); ok {
 		if err := validResponse.VisitPutAisIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAisIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostAisIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAisIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAisIdDirectHashRegenerate(ctx, request.(PostAisIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAisIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAisIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostAisIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -25616,6 +25956,33 @@ func (sh *strictHandler) PutConferencesId(ctx *gin.Context, id string) {
 	}
 }
 
+// PostConferencesIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostConferencesIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostConferencesIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConferencesIdDirectHashRegenerate(ctx, request.(PostConferencesIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConferencesIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConferencesIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostConferencesIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetConferencesIdMediaStream operation middleware
 func (sh *strictHandler) GetConferencesIdMediaStream(ctx *gin.Context, id string, params GetConferencesIdMediaStreamParams) {
 	var request GetConferencesIdMediaStreamRequestObject
@@ -27167,6 +27534,33 @@ func (sh *strictHandler) PutExtensionsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutExtensionsIdResponseObject); ok {
 		if err := validResponse.VisitPutExtensionsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostExtensionsIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostExtensionsIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostExtensionsIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostExtensionsIdDirectHashRegenerate(ctx, request.(PostExtensionsIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostExtensionsIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostExtensionsIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostExtensionsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -31681,6 +32075,33 @@ func (sh *strictHandler) PutTeamsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutTeamsIdResponseObject); ok {
 		if err := validResponse.VisitPutTeamsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostTeamsIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostTeamsIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostTeamsIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostTeamsIdDirectHashRegenerate(ctx, request.(PostTeamsIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostTeamsIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostTeamsIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostTeamsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -10,6 +10,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -33,8 +35,9 @@ func Test_Create(t *testing.T) {
 		ttsVoiceID  string
 		sttType     ai.STTType
 
-		responseUUID uuid.UUID
-		responseAI   *ai.AI
+		responseUUID   uuid.UUID
+		responseDirect *dmdirect.Direct
+		responseAI     *ai.AI
 
 		expectAI *ai.AI
 	}{
@@ -55,6 +58,15 @@ func Test_Create(t *testing.T) {
 			sttType:    ai.STTTypeDeepgram,
 
 			responseUUID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+			responseDirect: &dmdirect.Direct{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
+				},
+				ResourceType: "ai",
+				ResourceID:   uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+				Hash:         "abc123def456",
+			},
 			responseAI: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
@@ -77,6 +89,8 @@ func Test_Create(t *testing.T) {
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "test-voice-id",
 				STTType:    ai.STTTypeDeepgram,
+				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+				DirectHash: "abc123def456",
 			},
 		},
 	}
@@ -101,6 +115,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "ai", tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AICreate(ctx, tt.expectAI).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
@@ -254,6 +269,8 @@ func Test_Delete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e7b895be-a710-11ed-9514-131c8c2fd995"),
 				},
+				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
+				DirectHash: "test123hash0",
 			},
 		},
 	}
@@ -277,6 +294,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
+			mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseAI.DirectID).Return(nil, nil)
 			mockDB.EXPECT().AIDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeDeleted, tt.responseAI)

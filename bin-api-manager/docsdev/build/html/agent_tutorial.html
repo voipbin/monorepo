@@ -268,6 +268,34 @@
 </pre></div>
 </div>
 </section>
+<section id="regenerate-direct-agent-hash">
+<h3>Regenerate direct agent hash<a class="headerlink" href="#regenerate-direct-agent-hash" title="Link to this heading"></a></h3>
+<p>Regenerate the direct hash for an agent. This invalidates the previous SIP URI and creates a new one. If the agent has no existing direct hash, one is created automatically.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+    &quot;username&quot;: &quot;test2&quot;,
+    &quot;name&quot;: &quot;test tag&quot;,
+    &quot;detail&quot;: &quot;test tag example&quot;,
+    &quot;ring_method&quot;: &quot;ringall&quot;,
+    &quot;status&quot;: &quot;offline&quot;,
+    &quot;permission&quot;: 0,
+    &quot;tag_ids&quot;: [],
+    &quot;addresses&quot;: [],
+    &quot;direct_hash&quot;: &quot;e9f0a1b2c3d4&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;2022-10-22 16:20:00.123456&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+</div>
+</section>
 </section>
 </section>
 
@@ -284,6 +312,7 @@
 <li><a class="reference internal" href="#create-a-new-agent">Create a new agent</a></li>
 <li><a class="reference internal" href="#update-agent-s-status">Update agent’s status</a></li>
 <li><a class="reference internal" href="#update-agent-s-addresses">Update agent’s addresses</a></li>
+<li><a class="reference internal" href="#regenerate-direct-agent-hash">Regenerate direct agent hash</a></li>
 </ul>
 </li>
 </ul>

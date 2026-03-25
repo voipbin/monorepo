@@ -20,6 +20,10 @@ type Team struct {
 	Members       []Member       `json:"members,omitempty" db:"members,json"`
 	Parameter     map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 
+	// direct hash
+	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`
+	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`

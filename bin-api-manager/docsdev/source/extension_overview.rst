@@ -313,11 +313,10 @@ Direct extensions provide a public SIP URI that allows external callers to reach
 
 **Managing Direct Extensions**
 
-- **Enable**: Update the extension with ``"direct": true`` to generate a hash
-- **Disable**: Update the extension with ``"direct": false`` to remove the hash
-- **Regenerate**: Update the extension with ``"direct_regenerate": true`` to create a new hash (invalidates the old one)
+- A direct hash is automatically created when the extension is created
+- **Regenerate**: Call ``POST /extensions/{id}/direct-hash-regenerate`` to create a new hash (invalidates the old one)
 
-The ``direct_hash`` field in the extension response contains the current hash. An empty string indicates direct access is disabled.
+The ``direct_hash`` field in the extension response contains the current hash.
 
 **Use Cases**
 

@@ -40,9 +40,11 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: &tmCreate,
-				TMUpdate: &tmUpdate,
-				TMDelete: nil,
+				DirectID:   uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+				DirectHash: "test_direct_hash",
+				TMCreate:   &tmCreate,
+				TMUpdate:   &tmUpdate,
+				TMDelete:   nil,
 			},
 			expectRes: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -62,9 +64,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: &tmCreate,
-				TMUpdate: &tmUpdate,
-				TMDelete: nil,
+				DirectHash: "test_direct_hash",
+				TMCreate:   &tmCreate,
+				TMUpdate:   &tmUpdate,
+				TMDelete:   nil,
 			},
 		},
 	}

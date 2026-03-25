@@ -336,6 +336,10 @@ components:
           items:
             $ref: '#/components/schemas/CommonAddress'
           description: "Agent's endpoint addresses for receiving calls."
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
           format: date-time
@@ -1945,6 +1949,10 @@ components:
             List of tool names enabled for this AI. Use `["all"]` to enable all available tools.
             See the Tool Functions documentation for detailed descriptions of each tool.
           example: ["all"]
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
           format: date-time
@@ -2005,6 +2013,10 @@ components:
           example:
             language: "en-US"
             department: "support"
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
           format: date-time
@@ -2723,6 +2735,10 @@ components:
             type: string
             format: uuid
             x-go-type: string
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         tm_end:
           type: string
           format: date-time
@@ -5433,7 +5449,7 @@ components:
           example: "s3cur3P@ss"
         direct_hash:
           type: string
-          description: "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net"
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
           example: "a8f3b2c1d4e5"
         tm_create:
           type: string
@@ -6722,6 +6738,8 @@ paths:
     $ref: './paths/agents/id_status.yaml'
   /agents/{id}/password:
     $ref: './paths/agents/id_password.yaml'
+  /agents/{id}/direct-hash-regenerate:
+    $ref: './paths/agents/id_direct_hash_regenerate.yaml'
 
   /aimessages/{id}:
     $ref: './paths/aimessages/id.yaml'
@@ -6735,6 +6753,8 @@ paths:
 
   /ais/{id}:
     $ref: './paths/ais/id.yaml'
+  /ais/{id}/direct-hash-regenerate:
+    $ref: './paths/ais/id_direct_hash_regenerate.yaml'
   /ais:
     $ref: './paths/ais/main.yaml'
 
@@ -6745,6 +6765,8 @@ paths:
 
   /teams/{id}:
     $ref: './paths/teams/id.yaml'
+  /teams/{id}/direct-hash-regenerate:
+    $ref: './paths/teams/id_direct_hash_regenerate.yaml'
   /teams:
     $ref: './paths/teams/main.yaml'
 
@@ -6842,6 +6864,8 @@ paths:
     $ref: './paths/conferences/id_transcribe_start.yaml'
   /conferences/{id}/transcribe_stop:
     $ref: './paths/conferences/id_transcribe_stop.yaml'
+  /conferences/{id}/direct-hash-regenerate:
+    $ref: './paths/conferences/id_direct_hash_regenerate.yaml'
   /conferences/{id}:
     $ref: './paths/conferences/id.yaml'
   /conferences:
@@ -6905,6 +6929,8 @@ paths:
 
   /extensions/{id}:
     $ref: './paths/extensions/id.yaml'
+  /extensions/{id}/direct-hash-regenerate:
+    $ref: './paths/extensions/id_direct_hash_regenerate.yaml'
   /extensions:
     $ref: './paths/extensions/main.yaml'
 

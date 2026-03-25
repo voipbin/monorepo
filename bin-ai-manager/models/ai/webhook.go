@@ -35,6 +35,8 @@ type WebhookMessage struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
+	DirectHash string `json:"direct_hash,omitempty"`
+
 	// timestamp
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
@@ -65,6 +67,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		SmartTurnEnabled: h.SmartTurnEnabled,
 
 		ToolNames: h.ToolNames,
+
+		DirectHash: h.DirectHash,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

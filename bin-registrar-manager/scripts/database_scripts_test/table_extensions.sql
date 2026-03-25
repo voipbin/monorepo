@@ -17,6 +17,9 @@ create table registrar_extensions (
   username      varchar(255),
   password      varchar(255),
 
+  direct_id     binary(16),
+  direct_hash   varchar(255),
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

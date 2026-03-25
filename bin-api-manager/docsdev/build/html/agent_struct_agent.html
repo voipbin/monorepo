@@ -204,6 +204,7 @@
     <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -220,6 +221,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">permission</span></code> (Integer): The agent’s permission level as a bitmask value. See <a class="reference internal" href="#agent-struct-agent-permission"><span class="std std-ref">Permission</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): List of tag IDs assigned to this agent for skill-based routing. Each ID is obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">addresses</span></code> (Array of Object): List of contact addresses where calls are delivered to this agent. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct agent access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents/{id}/direct-hash-regenerate</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the agent was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the agent was last updated.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the agent was deleted, if applicable.</p></li>

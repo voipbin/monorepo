@@ -28,6 +28,9 @@ const (
 	FieldTranscribeID  Field = "transcribe_id"  // transcribe_id
 	FieldTranscribeIDs Field = "transcribe_ids" // transcribe_ids
 
+	FieldDirectID   Field = "direct_id"   // direct_id
+	FieldDirectHash Field = "direct_hash" // direct_hash
+
 	FieldTMEnd Field = "tm_end" // tm_end
 
 	FieldTMCreate Field = "tm_create" // tm_create

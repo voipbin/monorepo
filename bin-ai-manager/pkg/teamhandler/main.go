@@ -22,6 +22,7 @@ type TeamHandler interface {
 	List(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error)
 	Delete(ctx context.Context, id uuid.UUID) (*team.Team, error)
 	Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error)
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*team.Team, error)
 }
 
 type teamHandler struct {

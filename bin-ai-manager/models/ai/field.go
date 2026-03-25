@@ -28,6 +28,9 @@ const (
 
 	FieldToolNames Field = "tool_names"
 
+	FieldDirectID   Field = "direct_id"
+	FieldDirectHash Field = "direct_hash"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"

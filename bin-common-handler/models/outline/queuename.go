@@ -65,6 +65,11 @@ const (
 	QueueNameCustomerRequest   QueueName = "bin-manager.customer-manager.request"
 	QueueNameCustomerSubscribe QueueName = "bin-manager.customer-manager.subscribe"
 
+	// direct-manager
+	QueueNameDirectEvent     QueueName = "bin-manager.direct-manager.event"
+	QueueNameDirectRequest   QueueName = "bin-manager.direct-manager.request"
+	QueueNameDirectSubscribe QueueName = "bin-manager.direct-manager.subscribe"
+
 	// email-manager
 	QueueNameEmailEvent     QueueName = "bin-manager.email-manager.event"
 	QueueNameEmailRequest   QueueName = "bin-manager.email-manager.request"

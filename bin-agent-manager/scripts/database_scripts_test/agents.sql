@@ -16,6 +16,9 @@ create table agent_agents(
   tag_ids     json,
   addresses   json,
 
+  direct_id   binary(16),
+  direct_hash varchar(255),
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6),

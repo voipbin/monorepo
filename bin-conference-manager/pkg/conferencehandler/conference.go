@@ -79,6 +79,14 @@ func (h *conferenceHandler) Create(
 		timeout = defaultConferenceTimeout
 	}
 
+	// create direct hash via direct-manager
+	d, errDirect := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "conference", id)
+	if errDirect != nil {
+		log.Errorf("Could not create direct hash. err: %v", errDirect)
+		return nil, fmt.Errorf("could not create direct hash: %w", errDirect)
+	}
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
 	// create a conference struct
 	tmp := &conference.Conference{
 		Identity: commonidentity.Identity{
@@ -99,11 +107,20 @@ func (h *conferenceHandler) Create(
 		ConferencecallIDs: []uuid.UUID{},
 		RecordingIDs:      []uuid.UUID{},
 		TranscribeIDs:     []uuid.UUID{},
+
+		DirectID:   d.ID,
+		DirectHash: d.Hash,
 	}
 
 	// create a conference record
 	if err := h.db.ConferenceCreate(ctx, tmp); err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
+
+		// cleanup orphaned direct
+		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
+			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
+
 		return nil, err
 	}
 	promConferenceCreateTotal.WithLabelValues(string(tmp.Type)).Inc()
@@ -153,6 +170,20 @@ func (h *conferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*conferen
 		"func":          "Delete",
 		"conference_id": id,
 	})
+
+	// get conference first to have the DirectID for cleanup
+	cf, errGet := h.Get(ctx, id)
+	if errGet != nil {
+		log.Errorf("Could not get conference. err: %v", errGet)
+		return nil, errGet
+	}
+
+	// delete direct hash via direct-manager (best-effort, don't block conference deletion)
+	if cf.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, cf.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", cf.DirectID, errDirect)
+		}
+	}
 
 	_, errTerm := h.Terminating(ctx, id)
 	if errTerm != nil {

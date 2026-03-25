@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -210,6 +211,9 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			mockDB.EXPECT().AgentList(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
 
 			for _, ag := range tt.responseAgents {
+				// dbDelete: get agent to retrieve direct_id
+				mockDB.EXPECT().AgentGet(ctx, ag.ID).Return(ag, nil)
+				// dbDelete: direct_id is Nil, so no DirectV1DirectDelete call
 				mockDB.EXPECT().AgentDelete(ctx, ag.ID).Return(nil)
 				mockDB.EXPECT().AgentGet(ctx, ag.ID).Return(ag, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, ag.CustomerID, agent.EventTypeAgentDeleted, ag)
@@ -229,9 +233,10 @@ func Test_EventCustomerCreated(t *testing.T) {
 
 		customer *cmcustomer.Customer
 
-		responseUUID  uuid.UUID
-		responseHash  string
-		responseAgent *agent.Agent
+		responseUUID   uuid.UUID
+		responseHash   string
+		responseDirect *dmdirect.Direct
+		responseAgent  *agent.Agent
 	}{
 		{
 			name: "normal",
@@ -243,6 +248,12 @@ func Test_EventCustomerCreated(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("38979028-c8e5-11ef-ab04-9b5ea42ae2be"),
 			responseHash: "hash_string",
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1d2e3f4-a5b6-7890-abcd-ef1234567890"),
+				},
+				Hash: "direct_hash_value",
+			},
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
@@ -278,6 +289,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 			// agent dbCreate expectations
 			mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return(tt.responseHash, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customer.ID, "agent", tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
@@ -335,6 +347,12 @@ func Test_EventCustomerCreated_Headless(t *testing.T) {
 	// agent dbCreate expectations
 	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, cu.ID, "agent", responseUUID).Return(&dmdirect.Direct{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c1d2e3f4-a5b6-7890-abcd-ef1234567890"),
+		},
+		Hash: "direct_hash_value",
+	}, nil)
 	mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().AgentGet(ctx, responseUUID).Return(responseAgent, nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, responseAgent.CustomerID, agent.EventTypeAgentCreated, responseAgent)
@@ -386,6 +404,12 @@ func Test_EventCustomerCreated_EmailFails(t *testing.T) {
 	// agent dbCreate expectations
 	mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return("hash_string", nil)
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customer.ID, "agent", responseUUID).Return(&dmdirect.Direct{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c1d2e3f4-a5b6-7890-abcd-ef1234567890"),
+		},
+		Hash: "direct_hash_value",
+	}, nil)
 	mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().AgentGet(ctx, responseUUID).Return(responseAgent, nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, responseAgent.CustomerID, agent.EventTypeAgentCreated, responseAgent)

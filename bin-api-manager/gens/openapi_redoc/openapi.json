@@ -1145,6 +1145,43 @@
         }
       }
     },
+    "/agents/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for agent",
+        "description": "Regenerates the direct hash for the specified agent. If no direct hash exists, one is created. Returns the updated agent with the new direct_hash.",
+        "tags": [
+          "Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the agent. Returned from the `GET /agents` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentManagerAgent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
+          }
+        }
+      }
+    },
     "/aimessages/{id}": {
       "get": {
         "summary": "Retrieve details of a aicall message",
@@ -1625,6 +1662,43 @@
         }
       }
     },
+    "/ais/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for AI",
+        "description": "Regenerates the direct hash for the specified AI. If no direct hash exists, one is created. Returns the updated AI with the new direct_hash.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the AI. Returned from the `GET /ais` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAI"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
+          }
+        }
+      }
+    },
     "/ais": {
       "get": {
         "summary": "Gets a list of ais.",
@@ -2062,6 +2136,43 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/teams/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for team",
+        "description": "Regenerates the direct hash for the specified team. If no direct hash exists, one is created. Returns the updated team with the new direct_hash.",
+        "tags": [
+          "Team"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the team. Returned from the `GET /teams` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerTeam"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
           }
         }
       }
@@ -4491,6 +4602,43 @@
         }
       }
     },
+    "/conferences/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for conference",
+        "description": "Regenerates the direct hash for the specified conference. If no direct hash exists, one is created. Returns the updated conference with the new direct_hash.",
+        "tags": [
+          "Conference"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the conference. Returned from the `GET /conferences` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConferenceManagerConference"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
+          }
+        }
+      }
+    },
     "/conferences/{id}": {
       "get": {
         "summary": "Get conference details",
@@ -6780,14 +6928,6 @@
                   },
                   "password": {
                     "type": "string"
-                  },
-                  "direct": {
-                    "type": "boolean",
-                    "description": "Enable (true) or disable (false) direct extension access"
-                  },
-                  "direct_regenerate": {
-                    "type": "boolean",
-                    "description": "Regenerate the direct extension hash (only when direct is enabled)"
                   }
                 },
                 "required": [
@@ -6838,6 +6978,43 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/extensions/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for extension",
+        "description": "Regenerates the direct hash for the specified extension. If no direct hash exists, one is created. Returns the updated extension with the new direct_hash.",
+        "tags": [
+          "Extension"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the extension. Returned from the `GET /extensions` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrarManagerExtension"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
           }
         }
       }
@@ -14480,6 +14657,11 @@
             },
             "description": "Agent's endpoint addresses for receiving calls."
           },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
+          },
           "tm_create": {
             "type": "string",
             "format": "date-time",
@@ -16398,6 +16580,11 @@
               "all"
             ]
           },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
+          },
           "tm_create": {
             "type": "string",
             "format": "date-time",
@@ -16470,6 +16657,11 @@
               "language": "en-US",
               "department": "support"
             }
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "tm_create": {
             "type": "string",
@@ -17313,6 +17505,11 @@
               "format": "uuid",
               "x-go-type": "string"
             }
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "tm_end": {
             "type": "string",
@@ -20467,7 +20664,7 @@
           },
           "direct_hash": {
             "type": "string",
-            "description": "Hash for direct extension access via SIP URI sip:direct.<hash>@sip.voipbin.net",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
             "example": "a8f3b2c1d4e5"
           },
           "tm_create": {

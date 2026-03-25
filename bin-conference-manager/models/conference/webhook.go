@@ -33,6 +33,8 @@ type WebhookMessage struct {
 	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty"`
 	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty"`
 
+	DirectHash string `json:"direct_hash"`
+
 	TMEnd *time.Time `json:"tm_end"`
 
 	TMCreate *time.Time `json:"tm_create"`
@@ -64,6 +66,8 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 
 		TranscribeID:  h.TranscribeID,
 		TranscribeIDs: h.TranscribeIDs,
+
+		DirectHash: h.DirectHash,
 
 		TMEnd: h.TMEnd,
 

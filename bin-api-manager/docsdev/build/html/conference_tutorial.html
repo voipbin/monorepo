@@ -323,6 +323,31 @@
 }
 </pre></div>
 </div>
+<section id="regenerate-direct-conference-hash">
+<h3>Regenerate direct conference hash<a class="headerlink" href="#regenerate-direct-conference-hash" title="Link to this heading"></a></h3>
+<p>Regenerate the direct hash for a conference. This invalidates the previous SIP URI and creates a new one. If the conference has no existing direct hash, one is created automatically.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences/99accfb7-c0dd-4a54-997d-dd18af7bc280/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;test conference&quot;,
+    &quot;detail&quot;: &quot;test conference for example.&quot;,
+    &quot;direct_hash&quot;: &quot;b3c4d5e6f7a8&quot;,
+    &quot;tm_create&quot;: &quot;2022-02-03 06:08:56.672025&quot;,
+    &quot;tm_update&quot;: &quot;2022-08-06 19:11:13.040418&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+</div>
+</section>
 <section id="troubleshooting">
 <h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -393,6 +418,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#id4">Example</a><ul>
+<li><a class="reference internal" href="#regenerate-direct-conference-hash">Regenerate direct conference hash</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>

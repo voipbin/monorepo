@@ -11,6 +11,8 @@ const (
 	FieldStartMemberID Field = "start_member_id"
 	FieldMembers       Field = "members"
 	FieldParameter     Field = "parameter"
+	FieldDirectID      Field = "direct_id"
+	FieldDirectHash    Field = "direct_hash"
 	FieldTMCreate      Field = "tm_create"
 	FieldTMUpdate      Field = "tm_update"
 	FieldTMDelete      Field = "tm_delete"

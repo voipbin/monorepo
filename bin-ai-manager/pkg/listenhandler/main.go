@@ -56,9 +56,10 @@ var (
 	//// v1
 
 	// ais
-	regV1AIsGet = regexp.MustCompile(`/v1/ais\?`)
-	regV1AIs    = regexp.MustCompile("/v1/ais$")
-	regV1AIsID  = regexp.MustCompile("/v1/ais/" + regUUID + "$")
+	regV1AIsGet                      = regexp.MustCompile(`/v1/ais\?`)
+	regV1AIs                         = regexp.MustCompile("/v1/ais$")
+	regV1AIsIDDirectHashRegenerate   = regexp.MustCompile("/v1/ais/" + regUUID + "/direct-hash-regenerate$")
+	regV1AIsID                       = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
 	// aicalls
 	regV1AIcallsGet           = regexp.MustCompile(`/v1/aicalls\?`)
@@ -86,9 +87,10 @@ var (
 	regV1Tools = regexp.MustCompile("/v1/tools$")
 
 	// teams
-	regV1TeamsGet = regexp.MustCompile(`/v1/teams\?`)
-	regV1Teams    = regexp.MustCompile("/v1/teams$")
-	regV1TeamsID  = regexp.MustCompile("/v1/teams/" + regUUID + "$")
+	regV1TeamsGet                      = regexp.MustCompile(`/v1/teams\?`)
+	regV1Teams                         = regexp.MustCompile("/v1/teams$")
+	regV1TeamsIDDirectHashRegenerate   = regexp.MustCompile("/v1/teams/" + regUUID + "/direct-hash-regenerate$")
+	regV1TeamsID                       = regexp.MustCompile("/v1/teams/" + regUUID + "$")
 )
 
 var (
@@ -203,6 +205,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIs.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIsPost(ctx, m)
 		requestType = "/v1/ais"
+
+	// POST /ais/<ai-id>/direct-hash-regenerate
+	case regV1AIsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIsIDDirectHashRegenerate(ctx, m)
+		requestType = "/v1/ais/<ai-id>/direct-hash-regenerate"
 
 	// GET /ais/<ai-id>
 	case regV1AIsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
@@ -331,6 +338,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Teams.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TeamsPost(ctx, m)
 		requestType = "/v1/teams"
+
+	// POST /teams/<team-id>/direct-hash-regenerate
+	case regV1TeamsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1TeamsIDDirectHashRegenerate(ctx, m)
+		requestType = "/v1/teams/<team-id>/direct-hash-regenerate"
 
 	// GET /teams/<team-id>
 	case regV1TeamsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

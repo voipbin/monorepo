@@ -137,6 +137,7 @@ type ServiceHandler interface {
 	AgentUpdatePermission(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error)
 	AgentUpdateStatus(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)
 	AgentUpdateTagIDs(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
+	AgentDirectHashRegenerate(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 
 	// auth handlers
 	AuthLogin(ctx context.Context, username, password string) (string, error)
@@ -269,6 +270,7 @@ type ServiceHandler interface {
 		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
+	AIDirectHashRegenerate(ctx context.Context, a *amagent.Agent, aiID uuid.UUID) (*amai.WebhookMessage, error)
 
 	// team handlers
 	TeamCreate(ctx context.Context, a *amagent.Agent, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
@@ -276,6 +278,7 @@ type ServiceHandler interface {
 	TeamGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
 	TeamDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error)
 	TeamUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
+	TeamDirectHashRegenerate(ctx context.Context, a *amagent.Agent, teamID uuid.UUID) (*amteam.WebhookMessage, error)
 
 	// aicall handlers
 	AIcallCreate(
@@ -343,6 +346,7 @@ type ServiceHandler interface {
 	ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceTranscribeStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error)
 	ConferenceTranscribeStop(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceDirectHashRegenerate(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceUpdate(
 		ctx context.Context,
 		a *amagent.Agent,
@@ -517,7 +521,8 @@ type ServiceHandler interface {
 	ExtensionDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
-	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.WebhookMessage, error)
+	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
+	ExtensionDirectHashRegenerate(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error)
 
 	// email handlers
 	EmailSend(

@@ -49,6 +49,7 @@ type AgentHandler interface {
 	UpdatePermissionRaw(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 
 	PasswordForgot(ctx context.Context, username string, emailType PasswordResetEmailType) error
 	PasswordReset(ctx context.Context, token string, password string) error

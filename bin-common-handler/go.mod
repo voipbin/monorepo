@@ -22,6 +22,8 @@ replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
 replace monorepo/bin-customer-manager => ../bin-customer-manager
 
+replace monorepo/bin-direct-manager => ../bin-direct-manager
+
 replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
@@ -85,6 +87,7 @@ require (
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
+	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0

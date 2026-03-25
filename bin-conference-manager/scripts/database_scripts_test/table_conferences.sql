@@ -25,6 +25,10 @@ create table conference_conferences(
   transcribe_id  binary(16),  -- current transcribe id
   transcribe_ids json,        -- transcribe ids
 
+  -- direct hash
+  direct_id   binary(16),    -- direct id
+  direct_hash varchar(255),  -- direct hash
+
   -- timestamps
   tm_end    datetime(6),  --
   tm_create datetime(6),  --

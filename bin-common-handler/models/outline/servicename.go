@@ -19,6 +19,7 @@ const (
 	ServiceNameContactManager    ServiceName = "contact-manager"
 	ServiceNameConferenceManager ServiceName = "conference-manager"
 	ServiceNameCustomerManager   ServiceName = "customer-manager"
+	ServiceNameDirectManager     ServiceName = "direct-manager"
 	ServiceNameEmailManager      ServiceName = "email-manager"
 	ServiceNameFlowManager       ServiceName = "flow-manager"
 	ServiceNameHookManager       ServiceName = "hook-manager"

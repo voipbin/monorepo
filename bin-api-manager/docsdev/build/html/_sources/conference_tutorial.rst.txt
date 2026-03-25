@@ -145,6 +145,32 @@ Example
         "tm_delete": "9999-01-01 00:00:00.000000"   // 9999-01-01 means not deleted
     }
 
+Regenerate direct conference hash
+----------------------------------
+
+Regenerate the direct hash for a conference. This invalidates the previous SIP URI and creates a new one. If the conference has no existing direct hash, one is created automatically.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/conferences/99accfb7-c0dd-4a54-997d-dd18af7bc280/direct-hash-regenerate?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "conference",
+        "status": "progressing",
+        "name": "test conference",
+        "detail": "test conference for example.",
+        "direct_hash": "b3c4d5e6f7a8",
+        "tm_create": "2022-02-03 06:08:56.672025",
+        "tm_update": "2022-08-06 19:11:13.040418",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is ``sip:direct.<hash>@sip.voipbin.net``.
+
 Troubleshooting
 ---------------
 

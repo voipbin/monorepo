@@ -8,7 +8,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
-	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -95,15 +94,13 @@ func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensi
 // RegistrarV1ExtensionUpdate sends a request to registrar-manager
 // to update the detail extension info.
 // it returns updated extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string, direct *bool, directRegenerate *bool) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", id)
 
 	data := &rmrequest.V1DataExtensionsIDPut{
-		Name:             name,
-		Detail:           detail,
-		Password:         password,
-		Direct:           direct,
-		DirectRegenerate: directRegenerate,
+		Name:     name,
+		Detail:   detail,
+		Password: password,
 	}
 
 	m, err := json.Marshal(data)
@@ -172,6 +169,24 @@ func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context,
 	return &res, nil
 }
 
+// RegistrarV1ExtensionDirectHashRegenerate sends a request to registrar-manager
+// to regenerate (or create) the direct hash for the given extension.
+func (r *requestHandler) RegistrarV1ExtensionDirectHashRegenerate(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions/%s/direct-hash-regenerate", extensionID)
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPost, "registrar/extensions", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmextension.Extension
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // RegistrarV1ExtensionCountByCustomerID sends a request to registrar-manager
 // to get the count of extensions for the given customer.
 func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
@@ -197,39 +212,3 @@ func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Conte
 	return res.Count, nil
 }
 
-// RegistrarV1ExtensionGetByDirectHash sends a request to registrar-manager
-// to get the extension corresponding to the given direct hash.
-// It resolves hash → extension in a single RPC call.
-func (r *requestHandler) RegistrarV1ExtensionGetByDirectHash(ctx context.Context, hash string) (*rmextension.Extension, error) {
-	uri := fmt.Sprintf("/v1/extensions/by-direct-hash/%s", url.PathEscape(hash))
-
-	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var res rmextension.Extension
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
-// RegistrarV1ExtensionDirectGetByHash sends a request to registrar-manager
-// to get the extension direct by hash.
-func (r *requestHandler) RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*rmextensiondirect.ExtensionDirect, error) {
-	uri := fmt.Sprintf("/v1/extension-directs?hash=%s", url.QueryEscape(hash))
-
-	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension-direct", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var res rmextensiondirect.ExtensionDirect
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}

@@ -27,6 +27,9 @@ create table ai_ais(
 
   tool_names  json,           -- enabled tools for this AI
 
+  direct_id     binary(16),     -- direct id
+  direct_hash   varchar(255),   -- direct hash
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

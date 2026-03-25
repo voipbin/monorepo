@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -262,4 +263,40 @@ func convertOpenAPIMembers(apiMembers []openapi_server.AIManagerTeamMember) []am
 		}
 	}
 	return members
+}
+
+func (h *server) PostTeamsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostTeamsIdDirectHashRegenerate",
+		"request_address": c.ClientIP(),
+		"team_id":         id,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	teamID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid team ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.TeamDirectHashRegenerate(c.Request.Context(), &a, teamID)
+	if err != nil {
+		log.Errorf("Could not regenerate team direct hash. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 }

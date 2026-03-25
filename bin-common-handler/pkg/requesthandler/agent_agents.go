@@ -393,6 +393,24 @@ func (r *requestHandler) AgentV1AgentUpdatePermission(ctx context.Context, id uu
 	return &res, nil
 }
 
+// AgentV1AgentDirectHashRegenerate sends a request to agent-manager
+// to regenerate (or create) the direct hash for the given agent.
+func (r *requestHandler) AgentV1AgentDirectHashRegenerate(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/agents/%s/direct-hash-regenerate", agentID)
+
+	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amagent.Agent
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AgentV1AgentCountByCustomerID sends a request to agent-manager
 // to get the count of agents for the given customer.
 func (r *requestHandler) AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {

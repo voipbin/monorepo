@@ -35,6 +35,9 @@ type Conference struct {
 	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty" db:"transcribe_id,uuid"`
 	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty" db:"transcribe_ids,json"`
 
+	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"`
+	DirectHash string    `json:"direct_hash" db:"direct_hash"`
+
 	TMEnd *time.Time `json:"tm_end" db:"tm_end"` // represent the timestamp for conference ended.
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`

@@ -162,7 +162,7 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, si
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionUpdate",
 		"customer_id":  a.CustomerID,
@@ -181,9 +181,39 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password, direct, directRegenerate)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ExtensionDirectHashRegenerate regenerates the direct hash for the extension.
+func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "ExtensionDirectHashRegenerate",
+		"customer_id":  a.CustomerID,
+		"extension_id": extensionID,
+	})
+	log.Debug("Regenerating extension direct hash.")
+
+	e, err := h.extensionGet(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.RegistrarV1ExtensionDirectHashRegenerate(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not regenerate extension direct hash. err: %v", err)
 		return nil, err
 	}
 

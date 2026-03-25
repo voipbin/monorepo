@@ -2,6 +2,7 @@ package teamhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -33,6 +34,15 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 	}
 
 	id := h.utilHandler.UUIDCreate()
+
+	// create direct hash via direct-manager
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "ai_team", id)
+	if err != nil {
+		log.Errorf("Could not create direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not create direct hash: %w", err)
+	}
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
 	t := &team.Team{
 		Identity: identity.Identity{
 			ID:         id,
@@ -43,9 +53,15 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 		StartMemberID: startMemberID,
 		Members:       members,
 		Parameter:     parameter,
+		DirectID:      d.ID,
+		DirectHash:    d.Hash,
 	}
 
 	if err := h.db.TeamCreate(ctx, t); err != nil {
+		// cleanup orphaned direct
+		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
+			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
 		return nil, errors.Wrapf(err, "could not create team")
 	}
 
@@ -94,6 +110,20 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Delete",
 	})
+
+	// get the team to retrieve the direct_id before deletion
+	t, err := h.db.TeamGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get team for delete")
+	}
+	log.WithField("team", t).Debugf("Retrieved team info. team_id: %s", t.ID)
+
+	// delete direct hash via direct-manager (best-effort, don't block team deletion)
+	if t.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, t.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", t.DirectID, errDirect)
+		}
+	}
 
 	if err := h.db.TeamDelete(ctx, id); err != nil {
 		return nil, errors.Wrapf(err, "could not delete team")

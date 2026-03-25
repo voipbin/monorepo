@@ -659,12 +659,6 @@ func Test_convertAggregatedEventData_LongestPrefixMatch(t *testing.T) {
 			wantType:  "*conversation.WebhookMessage",
 		},
 		{
-			name:      "extension_direct_ beats extension_",
-			eventType: "extension_direct_created",
-			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,
-			wantType:  "*extensiondirect.WebhookMessage",
-		},
-		{
 			name:      "extension_ matches extension event",
 			eventType: "extension_created",
 			data:      `{"id":"550e8400-e29b-41d4-a716-446655440000"}`,

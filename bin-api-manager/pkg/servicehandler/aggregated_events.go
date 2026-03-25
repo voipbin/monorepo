@@ -38,7 +38,6 @@ import (
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
-	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 	rtprovider "monorepo/bin-route-manager/models/provider"
 	rtroute "monorepo/bin-route-manager/models/route"
@@ -192,7 +191,6 @@ var eventConverters = map[string]eventConverter{
 	"customer_":             newEventConverter(func(v *cucustomer.Customer) any { return v.ConvertWebhookMessage() }),
 	"email_":                newEventConverter(func(v *ememail.Email) any { return v.ConvertWebhookMessage() }),
 	"extension_":            newEventConverter(func(v *rmextension.Extension) any { return v.ConvertWebhookMessage() }),
-	"extension_direct_":     newEventConverter(func(v *rmextensiondirect.ExtensionDirect) any { return v.ConvertWebhookMessage() }),
 	"file_":                 newEventConverter(func(v *smfile.File) any { return v.ConvertWebhookMessage() }),
 	"flow_":                 newEventConverter(func(v *fmflow.Flow) any { return v.ConvertWebhookMessage() }),
 	"groupcall_":            newEventConverter(func(v *cmgroupcall.Groupcall) any { return v.ConvertWebhookMessage() }),

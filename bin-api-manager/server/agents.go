@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -482,6 +483,42 @@ func (h *server) PutAgentsIdPassword(c *gin.Context, id string) {
 	res, err := h.serviceHandler.AgentUpdatePassword(c.Request.Context(), &a, target, password)
 	if err != nil {
 		log.Errorf("Could not update the agent's password. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostAgentsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostAgentsIdDirectHashRegenerate",
+		"request_address": c.ClientIP(),
+		"agent_id":        id,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	agentID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid agent ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.AgentDirectHashRegenerate(c.Request.Context(), &a, agentID)
+	if err != nil {
+		log.Errorf("Could not regenerate agent direct hash. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

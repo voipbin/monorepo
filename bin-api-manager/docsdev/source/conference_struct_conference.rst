@@ -36,6 +36,7 @@ Conference
         "recording_ids": [
             ...
         ],
+        "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -54,6 +55,7 @@ Conference
 * ``conferencecall_ids`` (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with ``GET /conferencecalls/{id}`` to retrieve participant details.
 * ``recording_id`` (UUID): The currently active recording's ID. Obtained from ``GET /recordings``. Set to ``00000000-0000-0000-0000-000000000000`` if no recording is active.
 * ``recording_ids`` (Array of UUID): List of all recording IDs created during this conference's lifetime. Each ID can be used with ``GET /recordings/{id}`` to retrieve the recording.
+* ``direct_hash`` (String): Hash for direct conference access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /conferences/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the conference was created.
 * ``tm_update`` (String, ISO 8601): Timestamp of the last update to any conference property.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the conference was deleted.
@@ -102,6 +104,7 @@ Example
         "conferencecall_ids": [],
         "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "direct_hash": "",
         "tm_create": "2022-02-03 06:08:56.672025",
         "tm_update": "2022-08-06 19:11:13.040418",
         "tm_delete": "9999-01-01 00:00:00.000000"

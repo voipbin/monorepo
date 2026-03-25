@@ -345,6 +345,24 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStop(ctx context.Contex
 	return &res, nil
 }
 
+// ConferenceV1ConferenceDirectHashRegenerate sends a request to conference-manager
+// to regenerate (or create) the direct hash for the given conference.
+func (r *requestHandler) ConferenceV1ConferenceDirectHashRegenerate(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/direct-hash-regenerate", conferenceID)
+
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferences", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cfconference.Conference
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // ConferenceV1ConferenceCountByCustomerID sends a request to conference-manager
 // to get the count of conferences for the given customer.
 func (r *requestHandler) ConferenceV1ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {

@@ -2,9 +2,11 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -17,9 +19,6 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 )
 
-// directExtensionPrefix is the prefix used for direct extension destinations.
-const directExtensionPrefix = "direct."
-
 // startIncomingDomainTypeSIP handles sip domain type incoming call.
 func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -27,10 +26,10 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 		"channel_id": cn.ID,
 	})
 
-	// check for direct extension hash
-	if strings.HasPrefix(cn.DestinationNumber, directExtensionPrefix) {
-		hash := strings.TrimPrefix(cn.DestinationNumber, directExtensionPrefix)
-		return h.startIncomingDomainTypeSIPDirectExtension(ctx, cn, hash)
+	// check for direct hash
+	if strings.HasPrefix(cn.DestinationNumber, dmdirect.DirectPrefix) {
+		hash := strings.TrimPrefix(cn.DestinationNumber, dmdirect.DirectPrefix)
+		return h.startIncomingDomainTypeSIPDirect(ctx, cn, hash)
 	}
 
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
@@ -73,22 +72,53 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	return nil
 }
 
-// startIncomingDomainTypeSIPDirectExtension handles incoming call to a direct extension via sip:direct.<hash>@sip.voipbin.net.
-func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Context, cn *channel.Channel, hash string) error {
+// startIncomingDomainTypeSIPDirect handles incoming call to a direct resource via sip:direct.<hash>@sip.voipbin.net.
+// It resolves the hash via direct-manager and dispatches to the appropriate handler based on resource_type.
+func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *channel.Channel, hash string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "startIncomingDomainTypeSIPDirectExtension",
+		"func":       "startIncomingDomainTypeSIPDirect",
 		"channel_id": cn.ID,
 		"hash":       hash,
 	})
-	log.Debugf("Starting direct extension call handler. hash: %s", hash)
+	log.Debugf("Starting direct call handler. hash: %s", hash)
 
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
 
-	// resolve hash to extension
-	ext, err := h.reqHandler.RegistrarV1ExtensionGetByDirectHash(ctx, hash)
+	// resolve hash to direct record
+	d, err := h.reqHandler.DirectV1DirectGetByHash(ctx, hash)
 	if err != nil {
-		log.Errorf("Could not get extension by direct hash. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		log.Errorf("Could not get direct by hash. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+	log.WithField("direct", d).Debugf("Retrieved direct info. direct_id: %s, resource_type: %s, resource_id: %s", d.ID, d.ResourceType, d.ResourceID)
+
+	// dispatch by resource type
+	switch d.ResourceType {
+	case "extension":
+		return h.startIncomingDomainTypeSIPDirectExtension(ctx, cn, d, source)
+	case "conference":
+		return h.startIncomingDomainTypeSIPDirectConference(ctx, cn, d, source)
+	default:
+		log.Errorf("Unsupported direct resource type. resource_type: %s", d.ResourceType)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+}
+
+// startIncomingDomainTypeSIPDirectExtension handles direct hash call routed to an extension.
+func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDirectExtension",
+		"channel_id":  cn.ID,
+		"resource_id": d.ResourceID,
+	})
+
+	// get extension info
+	ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, d.ResourceID)
+	if err != nil {
+		log.Errorf("Could not get extension. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return nil
 	}
 	log.WithField("extension", ext).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
@@ -99,39 +129,69 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Cont
 		TargetName: ext.Extension,
 	}
 
-	// create temp connect flow
 	actions := []fmaction.Action{
 		{
 			Type: fmaction.TypeConnect,
 			Option: fmaction.ConvertOption(fmaction.OptionConnect{
-				Source: *source,
-				Destinations: []commonaddress.Address{
-					*destination,
-				},
-				EarlyMedia:  false,
-				RelayReason: false,
+				Source:       *source,
+				Destinations: []commonaddress.Address{*destination},
+				EarlyMedia:   false,
+				RelayReason:  false,
 			}),
 		},
 	}
 
-	f, err := h.reqHandler.FlowV1FlowCreate(
-		ctx,
-		ext.CustomerID,
-		fmflow.TypeFlow,
-		"tmp",
-		"tmp flow for direct extension dialing",
-		actions,
-		uuid.Nil,
-		false,
-	)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, ext.CustomerID, fmflow.TypeFlow, "tmp", "tmp flow for direct extension dialing", actions, uuid.Nil, false)
 	if err != nil {
 		log.Errorf("Could not create flow. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
 		return nil
 	}
 
-	// start the call type flow
 	h.startCallTypeFlow(ctx, cn, ext.CustomerID, f.ID, source, destination, nil)
+	return nil
+}
 
+// startIncomingDomainTypeSIPDirectConference handles direct hash call routed to a conference.
+func (h *callHandler) startIncomingDomainTypeSIPDirectConference(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDirectConference",
+		"channel_id":  cn.ID,
+		"resource_id": d.ResourceID,
+	})
+
+	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, d.ResourceID)
+	if err != nil {
+		log.Errorf("Could not get conference. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+	log.WithField("conference", cf).Debugf("Retrieved conference info. conference_id: %s", cf.ID)
+
+	destination := &commonaddress.Address{
+		Type:   commonaddress.TypeConference,
+		Target: cf.ID.String(),
+	}
+
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeAnswer,
+		},
+		{
+			Type: fmaction.TypeConferenceJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConferenceJoin{
+				ConferenceID: cf.ID,
+			}),
+		},
+	}
+
+	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, cf.CustomerID, fmflow.TypeFlow, "tmp", fmt.Sprintf("tmp flow for direct conference join. conference_id: %s", cf.ID), actions, uuid.Nil, false)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, tmpFlow.ID, source, destination, nil)
 	return nil
 }

@@ -2,9 +2,11 @@ package aihandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
@@ -30,7 +32,20 @@ func (h *aiHandler) dbCreate(
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
 ) (*ai.AI, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "dbCreate",
+	})
+
 	id := h.utilHandler.UUIDCreate()
+
+	// create direct hash via direct-manager
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "ai", id)
+	if err != nil {
+		log.Errorf("Could not create direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not create direct hash: %w", err)
+	}
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
 	c := &ai.AI{
 		Identity: identity.Identity{
 			ID:         id,
@@ -57,9 +72,16 @@ func (h *aiHandler) dbCreate(
 
 		VADConfig:        vadConfig,
 		SmartTurnEnabled: smartTurnEnabled,
+
+		DirectID:   d.ID,
+		DirectHash: d.Hash,
 	}
 
 	if err := h.db.AICreate(ctx, c); err != nil {
+		// cleanup orphaned direct
+		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
+			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
 
@@ -94,6 +116,24 @@ func (h *aiHandler) List(ctx context.Context, size uint64, token string, filters
 
 // Delete deletes the ai.
 func (h *aiHandler) Delete(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Delete",
+	})
+
+	// get the ai to retrieve the direct_id before deletion
+	a, err := h.db.AIGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get ai for delete")
+	}
+	log.WithField("ai", a).Debugf("Retrieved ai info. ai_id: %s", a.ID)
+
+	// delete direct hash via direct-manager (best-effort, don't block ai deletion)
+	if a.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, a.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", a.DirectID, errDirect)
+		}
+	}
+
 	if err := h.db.AIDelete(ctx, id); err != nil {
 		return nil, errors.Wrapf(err, "could not delete ai")
 	}

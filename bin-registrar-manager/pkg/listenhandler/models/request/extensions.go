@@ -21,11 +21,9 @@ type V1DataExtensionsPost struct {
 // v1 data type request struct for
 // /v1/extensions/{id} PUT
 type V1DataExtensionsIDPut struct {
-	Name             string `json:"name"`
-	Detail           string `json:"detail"`
-	Password         string `json:"password"`
-	Direct           *bool  `json:"direct,omitempty"`
-	DirectRegenerate *bool  `json:"direct_regenerate,omitempty"`
+	Name     string `json:"name"`
+	Detail   string `json:"detail"`
+	Password string `json:"password"`
 }
 
 // V1DataExtensionsExtensionExtensionGet is

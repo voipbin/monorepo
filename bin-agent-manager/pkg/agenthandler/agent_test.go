@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	"github.com/gofrs/uuid"
@@ -87,11 +88,12 @@ func Test_Create(t *testing.T) {
 		tags       []uuid.UUID
 		addresses  []commonaddress.Address
 
-		responseUUID  uuid.UUID
-		responseHash  string
-		responseAgent *agent.Agent
-		expectedAgent *agent.Agent
-		expectedRes   *agent.Agent
+		responseUUID   uuid.UUID
+		responseHash   string
+		responseDirect *dmdirect.Direct
+		responseAgent  *agent.Agent
+		expectedAgent  *agent.Agent
+		expectedRes    *agent.Agent
 	}{
 		{
 			name: "normal",
@@ -108,6 +110,12 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 			responseHash: "hash_string",
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				},
+				Hash: "direct_hash_value",
+			},
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
@@ -127,6 +135,8 @@ func Test_Create(t *testing.T) {
 				Permission:   agent.PermissionNone,
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
+				DirectID:     uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				DirectHash:   "direct_hash_value",
 			},
 			expectedRes: &agent.Agent{
 				Identity: commonidentity.Identity{
@@ -163,6 +173,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "agent", tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AgentCreate(ctx, tt.expectedAgent).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
@@ -203,6 +214,7 @@ func Test_Delete(t *testing.T) {
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
 				Addresses:  []commonaddress.Address{},
+				DirectID:   uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			},
 		},
 	}
@@ -227,6 +239,10 @@ func Test_Delete(t *testing.T) {
 			// is only admin
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 
+			// dbDelete: get agent to retrieve direct_id
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			// dbDelete: delete direct hash (best-effort)
+			mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseAgent.DirectID).Return(nil, nil)
 			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
@@ -263,6 +279,7 @@ func Test_deleteForce(t *testing.T) {
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
 				Addresses:  []commonaddress.Address{},
+				DirectID:   uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
 			},
 		},
 	}
@@ -283,6 +300,10 @@ func Test_deleteForce(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// dbDelete: get agent to retrieve direct_id
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			// dbDelete: delete direct hash (best-effort)
+			mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseAgent.DirectID).Return(nil, nil)
 			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)

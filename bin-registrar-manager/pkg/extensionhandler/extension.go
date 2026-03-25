@@ -9,12 +9,12 @@ import (
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
-	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
@@ -90,8 +90,18 @@ func (h *extensionHandler) Create(
 		return nil, errCreate
 	}
 
-	// create a new extension
+	// generate extension UUID first
 	id := h.utilHandler.UUIDCreate()
+
+	// create direct hash via direct-manager
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "extension", id)
+	if err != nil {
+		log.Errorf("Could not create direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not create direct hash: %w", err)
+	}
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
+	// create a new extension
 	e := &extension.Extension{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -111,9 +121,18 @@ func (h *extensionHandler) Create(
 		Realm:    realm,
 		Username: ext,
 		Password: password,
+
+		DirectID:   d.ID,
+		DirectHash: d.Hash,
 	}
 	if errCreate := h.dbBin.ExtensionCreate(ctx, e); errCreate != nil {
 		log.Errorf("Could not create extension. err: %v", errCreate)
+
+		// cleanup orphaned direct
+		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
+			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
+
 		return nil, errCreate
 	}
 
@@ -143,11 +162,6 @@ func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Ex
 		return nil, err
 	}
 
-	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, res.ID)
-	if err == nil && direct != nil {
-		res.DirectHash = direct.Hash
-	}
-
 	return res, nil
 }
 
@@ -167,24 +181,6 @@ func (h *extensionHandler) List(ctx context.Context, token string, limit uint64,
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err
-	}
-
-	// batch fetch direct records
-	extIDs := make([]uuid.UUID, len(res))
-	for i, ext := range res {
-		extIDs[i] = ext.ID
-	}
-
-	directs, _ := h.extensionDirectHandler.GetByExtensionIDs(ctx, extIDs)
-	directMap := make(map[uuid.UUID]string)
-	for _, d := range directs {
-		directMap[d.ExtensionID] = d.Hash
-	}
-
-	for _, ext := range res {
-		if hash, ok := directMap[ext.ID]; ok {
-			ext.DirectHash = hash
-		}
 	}
 
 	return res, nil
@@ -234,9 +230,9 @@ func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, fields map[
 	sip := res.GenerateSIPAuth()
 	sipFields := map[sipauth.Field]any{
 		sipauth.FieldAuthTypes:  sip.AuthTypes,
-		sipauth.FieldRealm:      sip.Realm,
+		sipauth.FieldRealm:     sip.Realm,
 		sipauth.FieldUsername:   sip.Username,
-		sipauth.FieldPassword:   sip.Password,
+		sipauth.FieldPassword:  sip.Password,
 		sipauth.FieldAllowedIPs: sip.AllowedIPs,
 	}
 	if err := h.dbBin.SIPAuthUpdate(ctx, sip.ID, sipFields); err != nil {
@@ -261,6 +257,13 @@ func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension
 	if err != nil {
 		log.Errorf("Could not get delete extension info. err: %v", err)
 		return nil, err
+	}
+
+	// delete direct hash via direct-manager (best-effort, don't block extension deletion)
+	if ext.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, ext.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", ext.DirectID, errDirect)
+		}
 	}
 
 	// delete extension
@@ -300,79 +303,60 @@ func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension
 		return nil, err
 	}
 
-	// delete extension direct if exists
-	direct, errDirect := h.extensionDirectHandler.GetByExtensionID(ctx, id)
-	if errDirect == nil && direct != nil {
-		if _, errDelete := h.extensionDirectHandler.Delete(ctx, direct.ID); errDelete != nil {
-			log.Errorf("Could not delete extension direct. err: %v", errDelete)
-		}
-	}
-
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
 	promExtensionDeleteTotal.Inc()
 
 	return res, nil
 }
 
-// DirectEnable enables direct extension access
-func (h *extensionHandler) DirectEnable(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
-	ext, err := h.dbBin.ExtensionGet(ctx, extensionID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get extension: %w", err)
-	}
-
-	return h.extensionDirectHandler.Create(ctx, ext.CustomerID, ext.ID)
-}
-
-// DirectDisable disables direct extension access
-func (h *extensionHandler) DirectDisable(ctx context.Context, extensionID uuid.UUID) error {
-	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, extensionID)
-	if err != nil {
-		return nil // already disabled, no-op
-	}
-
-	_, err = h.extensionDirectHandler.Delete(ctx, direct.ID)
-	return err
-}
-
-// DirectRegenerate regenerates the direct extension hash
-func (h *extensionHandler) DirectRegenerate(ctx context.Context, extensionID uuid.UUID) (*extensiondirect.ExtensionDirect, error) {
-	direct, err := h.extensionDirectHandler.GetByExtensionID(ctx, extensionID)
-	if err != nil {
-		return nil, fmt.Errorf("direct extension not enabled: %w", err)
-	}
-
-	return h.extensionDirectHandler.Regenerate(ctx, direct.ID)
-}
-
-// GetDirectByHash returns extension direct by hash
-func (h *extensionHandler) GetDirectByHash(ctx context.Context, hash string) (*extensiondirect.ExtensionDirect, error) {
-	return h.extensionDirectHandler.GetByHash(ctx, hash)
-}
-
-// GetByDirectHash returns the extension corresponding to the given direct hash.
-// It resolves hash → ExtensionDirect → Extension and populates DirectHash.
-func (h *extensionHandler) GetByDirectHash(ctx context.Context, hash string) (*extension.Extension, error) {
+// DirectHashRegenerate regenerates (or creates) the direct hash for the given extension.
+func (h *extensionHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "GetByDirectHash",
-		"hash": hash,
+		"func":         "DirectHashRegenerate",
+		"extension_id": id,
 	})
 
-	direct, err := h.extensionDirectHandler.GetByHash(ctx, hash)
+	// get current extension
+	ext, err := h.dbBin.ExtensionGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get extension direct by hash. err: %v", err)
+		log.Errorf("Could not get extension. err: %v", err)
+		return nil, fmt.Errorf("could not get extension: %w", err)
+	}
+	log.WithField("extension", ext).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
+
+	// regenerate or create direct
+	var d *dmdirect.Direct
+	if ext.DirectID != uuid.Nil {
+		d, err = h.reqHandler.DirectV1DirectRegenerate(ctx, ext.DirectID)
+		if err != nil {
+			log.Errorf("Could not regenerate direct hash. err: %v", err)
+			return nil, fmt.Errorf("could not regenerate direct hash: %w", err)
+		}
+	} else {
+		d, err = h.reqHandler.DirectV1DirectCreate(ctx, ext.CustomerID, "extension", id)
+		if err != nil {
+			log.Errorf("Could not create direct hash. err: %v", err)
+			return nil, fmt.Errorf("could not create direct hash: %w", err)
+		}
+	}
+	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+
+	// update extension with new direct info
+	fields := map[extension.Field]any{
+		extension.FieldDirectID:   d.ID,
+		extension.FieldDirectHash: d.Hash,
+	}
+	if err := h.dbBin.ExtensionUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update extension direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not update extension: %w", err)
+	}
+
+	// return updated extension
+	res, err := h.dbBin.ExtensionGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated extension. err: %v", err)
 		return nil, err
 	}
-	log.WithField("extension_direct", direct).Debugf("Retrieved extension direct. extension_id: %s", direct.ExtensionID)
-
-	res, err := h.dbBin.ExtensionGet(ctx, direct.ExtensionID)
-	if err != nil {
-		log.Errorf("Could not get extension. extension_id: %s, err: %v", direct.ExtensionID, err)
-		return nil, err
-	}
-	log.WithField("extension", res).Debugf("Retrieved extension info. extension_id: %s", res.ID)
-
-	res.DirectHash = direct.Hash
 
 	return res, nil
 }

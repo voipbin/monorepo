@@ -36,6 +36,8 @@ import (
 
 	"monorepo/bin-common-handler/models/service"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
@@ -66,7 +68,6 @@ import (
 
 	rmastcontact "monorepo/bin-registrar-manager/models/astcontact"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
-	rmextensiondirect "monorepo/bin-registrar-manager/models/extensiondirect"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
@@ -202,6 +203,7 @@ type RequestHandler interface {
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
+	AIV1AIDirectHashRegenerate(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIUpdate(
 		ctx context.Context,
 		aiID uuid.UUID,
@@ -232,6 +234,7 @@ type RequestHandler interface {
 		parameter map[string]any,
 	) (*amteam.Team, error)
 	AIV1TeamDelete(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
+	AIV1TeamDirectHashRegenerate(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)
 	AIV1TeamUpdate(
 		ctx context.Context,
 		teamID uuid.UUID,
@@ -406,6 +409,7 @@ type RequestHandler interface {
 	AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
 	AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+	AgentV1AgentDirectHashRegenerate(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
 
 	// agent-manager login
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
@@ -779,6 +783,7 @@ type RequestHandler interface {
 	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+	ConferenceV1ConferenceDirectHashRegenerate(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
@@ -853,6 +858,14 @@ type RequestHandler interface {
 	// contact-manager tags
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 	ContactV1TagRemove(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
+
+	// direct-manager directs
+	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectGet(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectGetByHash(ctx context.Context, hash string) (*dmdirect.Direct, error)
+	DirectV1DirectGets(ctx context.Context, pageToken string, pageSize uint64, filters map[dmdirect.Field]any) ([]*dmdirect.Direct, error)
+	DirectV1DirectDelete(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
+	DirectV1DirectRegenerate(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
@@ -1123,12 +1136,9 @@ type RequestHandler interface {
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
-	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string, direct *bool, directRegenerate *bool) (*rmextension.Extension, error)
+	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
-	RegistrarV1ExtensionGetByDirectHash(ctx context.Context, hash string) (*rmextension.Extension, error)
-
-	// registrar-manager extension-direct
-	RegistrarV1ExtensionDirectGetByHash(ctx context.Context, hash string) (*rmextensiondirect.ExtensionDirect, error)
+	RegistrarV1ExtensionDirectHashRegenerate(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 
 	// registrar-manager trunk
 	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)

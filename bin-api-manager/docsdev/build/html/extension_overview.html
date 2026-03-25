@@ -462,11 +462,10 @@
 </div>
 <p><strong>Managing Direct Extensions</strong></p>
 <ul class="simple">
-<li><p><strong>Enable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">true</span></code> to generate a hash</p></li>
-<li><p><strong>Disable</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;:</span> <span class="pre">false</span></code> to remove the hash</p></li>
-<li><p><strong>Regenerate</strong>: Update the extension with <code class="docutils literal notranslate"><span class="pre">&quot;direct_regenerate&quot;:</span> <span class="pre">true</span></code> to create a new hash (invalidates the old one)</p></li>
+<li><p>A direct hash is automatically created when the extension is created</p></li>
+<li><p><strong>Regenerate</strong>: Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions/{id}/direct-hash-regenerate</span></code> to create a new hash (invalidates the old one)</p></li>
 </ul>
-<p>The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field in the extension response contains the current hash. An empty string indicates direct access is disabled.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field in the extension response contains the current hash.</p>
 <p><strong>Use Cases</strong></p>
 <ul class="simple">
 <li><p>Share a simple SIP address with external partners or customers</p></li>

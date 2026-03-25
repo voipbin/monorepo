@@ -1,0 +1,23 @@
+post:
+  summary: Regenerate direct hash for extension
+  description: Regenerates the direct hash for the specified extension. If no direct hash exists, one is created. Returns the updated extension with the new direct_hash.
+  tags:
+    - Extension
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the extension. Returned from the `GET /extensions` response."
+  responses:
+    '200':
+      description: Direct hash regenerated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrarManagerExtension'
+    '400':
+      description: Unable to regenerate direct hash.

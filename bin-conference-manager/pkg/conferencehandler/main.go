@@ -64,6 +64,8 @@ type ConferenceHandler interface {
 
 	TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error)
 	TranscribeStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 }
 
 // conferenceHandler structure for service handle

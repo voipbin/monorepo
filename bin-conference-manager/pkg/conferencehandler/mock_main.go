@@ -103,6 +103,21 @@ func (mr *MockConferenceHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockConferenceHandler)(nil).Delete), ctx, id)
 }
 
+// DirectHashRegenerate mocks base method.
+func (m *MockConferenceHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectHashRegenerate", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectHashRegenerate indicates an expected call of DirectHashRegenerate.
+func (mr *MockConferenceHandlerMockRecorder) DirectHashRegenerate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectHashRegenerate", reflect.TypeOf((*MockConferenceHandler)(nil).DirectHashRegenerate), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockConferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()

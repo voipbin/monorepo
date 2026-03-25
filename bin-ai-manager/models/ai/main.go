@@ -68,6 +68,10 @@ type AI struct {
 	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools
 	ToolNames []tool.ToolName `json:"tool_names,omitempty" db:"tool_names,json"`
 
+	// direct hash
+	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`
+	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`
+
 	// timestamp
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`

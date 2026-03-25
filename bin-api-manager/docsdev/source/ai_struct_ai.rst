@@ -32,6 +32,7 @@ AI
         },
         "smart_turn_enabled": <boolean>,
         "tool_names": ["<string>"],
+        "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -53,6 +54,7 @@ AI
 * ``vad_config`` (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See :ref:`VAD Config <ai-struct-ai-vad_config>`.
 * ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
+* ``direct_hash`` (String): Hash for direct AI access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /ais/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the AI configuration was deleted, if applicable.
@@ -89,6 +91,7 @@ Example
         },
         "smart_turn_enabled": true,
         "tool_names": ["connect_call", "send_email", "stop_service"],
+        "direct_hash": "",
         "tm_create": "2024-02-09 07:01:35.666687",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"

@@ -378,6 +378,30 @@ Best Practices
 - Test each AI configuration individually via ``POST /calls`` with an inline ``ai_talk`` action before assembling them into a team.
 - Verify transitions by testing conversations that should trigger each ``function_name``.
 
+Regenerate direct team hash
+----------------------------
+
+Regenerate the direct hash for a team. This invalidates the previous SIP URI and creates a new one. If the team has no existing direct hash, one is created automatically.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/teams/c3d4e5f6-a7b8-9012-cdef-345678901234/direct-hash-regenerate?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Customer Service Team",
+        "detail": "Routes callers to billing or technical support",
+        "direct_hash": "d7e8f9a0b1c2",
+        "tm_create": "2026-02-27 10:00:00.000000",
+        "tm_update": "2026-02-27 10:05:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is ``sip:direct.<hash>@sip.voipbin.net``.
+
 Troubleshooting
 ---------------
 

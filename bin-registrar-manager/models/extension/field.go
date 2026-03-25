@@ -22,6 +22,9 @@ const (
 	FieldUsername Field = "username" // username
 	FieldPassword Field = "password" // password
 
+	FieldDirectID   Field = "direct_id"   // direct_id
+	FieldDirectHash Field = "direct_hash" // direct_hash
+
 	FieldTMCreate Field = "tm_create" // tm_create
 	FieldTMUpdate Field = "tm_update" // tm_update
 	FieldTMDelete Field = "tm_delete" // tm_delete

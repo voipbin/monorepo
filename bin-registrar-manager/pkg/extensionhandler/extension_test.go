@@ -12,6 +12,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -20,10 +22,8 @@ import (
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
-	"monorepo/bin-registrar-manager/models/extensiondirect"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
-	"monorepo/bin-registrar-manager/pkg/extensiondirecthandler"
 )
 
 func Test_Create(t *testing.T) {
@@ -38,6 +38,7 @@ func Test_Create(t *testing.T) {
 		password   string
 
 		responseUUIDExtensionID uuid.UUID
+		responseDirect          *dmdirect.Direct
 		responseExtension       *extension.Extension
 
 		expectAOR       *astaor.AstAOR
@@ -58,18 +59,28 @@ func Test_Create(t *testing.T) {
 			password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 
 			responseUUIDExtensionID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				},
+				ResourceType: "extension",
+				ResourceID:   uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				Hash:         "abc123def456",
+			},
 			responseExtension: &extension.Extension{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 				},
-				Extension: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
-				Realm:     "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
-				Username:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
-				Password:  "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+				Extension:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+				DirectHash: "abc123def456",
 			},
 
 			expectAOR: &astaor.AstAOR{
-				// ID:             getStringPointer("7515a10e-5959-11ee-a4f2-3f55a7e37970"),
 				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 				MaxContacts:    getIntegerPointer(defaultMaxContacts),
 				RemoveExisting: getStringPointer("yes"),
@@ -101,6 +112,8 @@ func Test_Create(t *testing.T) {
 				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+				DirectHash: "abc123def456",
 			},
 			expectSIPAuth: &sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
@@ -125,14 +138,12 @@ func Test_Create(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			utilHandler:            mockUtil,
-			reqHandler:             mockReq,
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			notifyHandler:          mockNotify,
-			extensionDirectHandler: mockExtDirect,
+			utilHandler:   mockUtil,
+			reqHandler:    mockReq,
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
 		}
 		ctx := context.Background()
 
@@ -146,6 +157,7 @@ func Test_Create(t *testing.T) {
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
 		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExtensionID)
+		mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "extension", tt.responseUUIDExtensionID).Return(tt.responseDirect, nil)
 		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
 		mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)
@@ -190,22 +202,15 @@ func Test_Get(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
-		mockUtil := utilhandler.NewMockUtilHandler(mc)
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
-		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			utilHandler:            mockUtil,
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			notifyHandler:          mockNotify,
-			extensionDirectHandler: mockExtDirect,
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
 		}
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
-		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.responseExtension.ID).Return(nil, fmt.Errorf("not found"))
 
 		res, err := h.Get(ctx, tt.id)
 		if err != nil {
@@ -285,12 +290,10 @@ func Test_Update(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			notifyHandler:          mockNotify,
-			extensionDirectHandler: mockExtDirect,
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
 		}
 
 		ctx := context.Background()
@@ -333,6 +336,8 @@ func Test_ExtensionDelete(t *testing.T) {
 				AORID:      "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
 				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
 				Password:   "test password",
+				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
+				DirectHash: "test123hash0",
 			},
 
 			&extension.Extension{
@@ -347,6 +352,8 @@ func Test_ExtensionDelete(t *testing.T) {
 				AORID:      "4a6b7618-6f46-11eb-a2fb-1f7595db4195@test.sip.voipbin.net",
 				Extension:  "4a6b7618-6f46-11eb-a2fb-1f7595db4195",
 				Password:   "test password",
+				DirectID:   uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
+				DirectHash: "test123hash0",
 			},
 		},
 	}
@@ -355,27 +362,27 @@ func Test_ExtensionDelete(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
+		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			notifyHandler:          mockNotify,
-			extensionDirectHandler: mockExtDirect,
+			reqHandler:    mockReq,
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
 		}
 
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
+		mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseExtension.DirectID).Return(nil, fmt.Errorf("not found"))
 		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.responseExtension.ID).Return(nil)
 		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.responseExtension.EndpointID).Return(nil)
 		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.responseExtension.AuthID).Return(nil)
 		mockDBAst.EXPECT().AstAORDelete(ctx, tt.responseExtension.AORID).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
 		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseExtension.ID).Return(nil)
-		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.responseExtension.ID).Return(nil, fmt.Errorf("not found"))
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.responseExtension)
 
 		res, err := h.Delete(ctx, tt.responseExtension.ID)
@@ -421,17 +428,14 @@ func Test_ExtensionGet(t *testing.T) {
 
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			extensionDirectHandler: mockExtDirect,
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
 		}
 
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
-		mockExtDirect.EXPECT().GetByExtensionID(ctx, tt.ext.ID).Return(nil, fmt.Errorf("not found"))
 		res, err := h.Get(ctx, tt.ext.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -441,100 +445,6 @@ func Test_ExtensionGet(t *testing.T) {
 			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.ext, res)
 		}
 
-	}
-}
-
-func Test_GetByDirectHash(t *testing.T) {
-
-	type test struct {
-		name string
-
-		hash string
-
-		responseDirect    *extensiondirect.ExtensionDirect
-		responseDirectErr error
-		responseExtension *extension.Extension
-
-		expectRes *extension.Extension
-		expectErr bool
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			hash: "abc123def456",
-
-			responseDirect: &extensiondirect.ExtensionDirect{
-				ExtensionID: uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
-				Hash:        "abc123def456",
-			},
-			responseDirectErr: nil,
-			responseExtension: &extension.Extension{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
-					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-				},
-				Extension: "test-ext",
-			},
-
-			expectRes: &extension.Extension{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
-					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-				},
-				Extension:  "test-ext",
-				DirectHash: "abc123def456",
-			},
-			expectErr: false,
-		},
-		{
-			name: "hash not found",
-
-			hash: "nonexistent",
-
-			responseDirect:    nil,
-			responseDirectErr: fmt.Errorf("not found"),
-
-			expectRes: nil,
-			expectErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDBBin := dbhandler.NewMockDBHandler(mc)
-			mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
-			h := &extensionHandler{
-				dbBin:                  mockDBBin,
-				extensionDirectHandler: mockExtDirect,
-			}
-			ctx := context.Background()
-
-			mockExtDirect.EXPECT().GetByHash(ctx, tt.hash).Return(tt.responseDirect, tt.responseDirectErr)
-			if tt.responseDirectErr == nil {
-				mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseDirect.ExtensionID).Return(tt.responseExtension, nil)
-			}
-
-			res, err := h.GetByDirectHash(ctx, tt.hash)
-			if tt.expectErr {
-				if err == nil {
-					t.Errorf("Wrong match. expect: error, got: nil")
-				}
-				return
-			}
-
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
 	}
 }
 
@@ -576,17 +486,14 @@ func Test_List(t *testing.T) {
 
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
-		mockExtDirect := extensiondirecthandler.NewMockExtensionDirectHandler(mc)
 		h := &extensionHandler{
-			dbAst:                  mockDBAst,
-			dbBin:                  mockDBBin,
-			extensionDirectHandler: mockExtDirect,
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
 		}
 
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionList(gomock.Any(), tt.limit, tt.token, tt.filters).Return(tt.exts, nil)
-		mockExtDirect.EXPECT().GetByExtensionIDs(gomock.Any(), gomock.Any()).Return([]*extensiondirect.ExtensionDirect{}, nil)
 		res, err := h.List(ctx, tt.token, tt.limit, tt.filters)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

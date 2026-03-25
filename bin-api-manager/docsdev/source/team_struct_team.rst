@@ -31,6 +31,7 @@ Team
             }
         ],
         "parameter": "<object>",
+        "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -43,6 +44,7 @@ Team
 * ``start_member_id`` (UUID, Required): The member where the conversation begins. Must match one of the ``id`` values in the ``members`` array.
 * ``members`` (Array of Member, Required): The list of members (nodes) in the team graph. At least one member is required. See :ref:`Member <team-struct-team-member>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+* ``direct_hash`` (String): Hash for direct team access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /teams/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the team was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the team was last updated.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the team was deleted, if applicable.
@@ -103,6 +105,7 @@ Example
             "language": "en",
             "department": "customer-service"
         },
+        "direct_hash": "",
         "tm_create": "2026-02-27 10:00:00.000000",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
