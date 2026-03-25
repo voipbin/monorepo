@@ -96,6 +96,24 @@ func (r *requestHandler) AIV1TeamCreate(
 	return &res, nil
 }
 
+// AIV1TeamDirectHashRegenerate sends a request to ai-manager
+// to regenerate (or create) the direct hash for the given team.
+func (r *requestHandler) AIV1TeamDirectHashRegenerate(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error) {
+	uri := fmt.Sprintf("/v1/teams/%s/direct-hash-regenerate", teamID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/teams", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amteam.Team
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1TeamDelete sends a request to ai-manager
 // to deleting a team.
 // it returns deleted team if it succeed.

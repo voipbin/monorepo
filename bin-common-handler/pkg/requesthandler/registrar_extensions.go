@@ -169,6 +169,24 @@ func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context,
 	return &res, nil
 }
 
+// RegistrarV1ExtensionDirectHashRegenerate sends a request to registrar-manager
+// to regenerate (or create) the direct hash for the given extension.
+func (r *requestHandler) RegistrarV1ExtensionDirectHashRegenerate(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions/%s/direct-hash-regenerate", extensionID)
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPost, "registrar/extensions", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmextension.Extension
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // RegistrarV1ExtensionCountByCustomerID sends a request to registrar-manager
 // to get the count of extensions for the given customer.
 func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
