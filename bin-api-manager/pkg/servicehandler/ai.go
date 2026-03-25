@@ -111,6 +111,36 @@ func (h *serviceHandler) AICreate(
 	return res, nil
 }
 
+// AIDirectHashRegenerate regenerates the direct hash for the AI.
+func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *amagent.Agent, aiID uuid.UUID) (*amai.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "AIDirectHashRegenerate",
+		"customer_id": a.CustomerID,
+		"ai_id":       aiID,
+	})
+	log.Debug("Regenerating AI direct hash.")
+
+	c, err := h.aiGet(ctx, aiID)
+	if err != nil {
+		log.Errorf("Could not get ai info. err: %v", err)
+		return nil, fmt.Errorf("could not find ai info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.AIV1AIDirectHashRegenerate(ctx, aiID)
+	if err != nil {
+		log.Errorf("Could not regenerate AI direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // AIGetsByCustomerID gets the list of AIs of the given customer id.
 // It returns list of AIs if it succeed.
 func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error) {

@@ -71,6 +71,36 @@ func (h *serviceHandler) TeamCreate(
 	return res, nil
 }
 
+// TeamDirectHashRegenerate regenerates the direct hash for the team.
+func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *amagent.Agent, teamID uuid.UUID) (*amteam.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "TeamDirectHashRegenerate",
+		"customer_id": a.CustomerID,
+		"team_id":     teamID,
+	})
+	log.Debug("Regenerating team direct hash.")
+
+	c, err := h.teamGet(ctx, teamID)
+	if err != nil {
+		log.Errorf("Could not get team info. err: %v", err)
+		return nil, fmt.Errorf("could not find team info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.AIV1TeamDirectHashRegenerate(ctx, teamID)
+	if err != nil {
+		log.Errorf("Could not regenerate team direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // TeamGetsByCustomerID gets the list of teams of the given customer id.
 func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amteam.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{

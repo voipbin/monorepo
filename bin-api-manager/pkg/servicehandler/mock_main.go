@@ -128,6 +128,21 @@ func (mr *MockServiceHandlerMockRecorder) AIDelete(ctx, a, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIDelete", reflect.TypeOf((*MockServiceHandler)(nil).AIDelete), ctx, a, id)
 }
 
+// AIDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) AIDirectHashRegenerate(ctx context.Context, a *agent.Agent, aiID uuid.UUID) (*ai.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIDirectHashRegenerate", ctx, a, aiID)
+	ret0, _ := ret[0].(*ai.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIDirectHashRegenerate indicates an expected call of AIDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) AIDirectHashRegenerate(ctx, a, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).AIDirectHashRegenerate), ctx, a, aiID)
+}
+
 // AIGet mocks base method.
 func (m *MockServiceHandler) AIGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -546,6 +561,21 @@ func (m *MockServiceHandler) AgentDelete(ctx context.Context, a *agent.Agent, ag
 func (mr *MockServiceHandlerMockRecorder) AgentDelete(ctx, a, agentID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDelete", reflect.TypeOf((*MockServiceHandler)(nil).AgentDelete), ctx, a, agentID)
+}
+
+// AgentDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) AgentDirectHashRegenerate(ctx context.Context, a *agent.Agent, agentID uuid.UUID) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentDirectHashRegenerate", ctx, a, agentID)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentDirectHashRegenerate indicates an expected call of AgentDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) AgentDirectHashRegenerate(ctx, a, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).AgentDirectHashRegenerate), ctx, a, agentID)
 }
 
 // AgentGet mocks base method.
@@ -1436,6 +1466,21 @@ func (m *MockServiceHandler) ConferenceDelete(ctx context.Context, a *agent.Agen
 func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(ctx, a, confID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceDelete), ctx, a, confID)
+}
+
+// ConferenceDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID) (*conference.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceDirectHashRegenerate", ctx, a, conferenceID)
+	ret0, _ := ret[0].(*conference.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceDirectHashRegenerate indicates an expected call of ConferenceDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) ConferenceDirectHashRegenerate(ctx, a, conferenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceDirectHashRegenerate), ctx, a, conferenceID)
 }
 
 // ConferenceGet mocks base method.
@@ -2335,6 +2380,21 @@ func (m *MockServiceHandler) ExtensionDelete(ctx context.Context, a *agent.Agent
 func (mr *MockServiceHandlerMockRecorder) ExtensionDelete(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionDelete), ctx, a, id)
+}
+
+// ExtensionDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *agent.Agent, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionDirectHashRegenerate", ctx, a, extensionID)
+	ret0, _ := ret[0].(*extension.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionDirectHashRegenerate indicates an expected call of ExtensionDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) ExtensionDirectHashRegenerate(ctx, a, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionDirectHashRegenerate), ctx, a, extensionID)
 }
 
 // ExtensionGet mocks base method.
@@ -4630,6 +4690,21 @@ func (m *MockServiceHandler) TeamDelete(ctx context.Context, a *agent.Agent, id 
 func (mr *MockServiceHandlerMockRecorder) TeamDelete(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamDelete", reflect.TypeOf((*MockServiceHandler)(nil).TeamDelete), ctx, a, id)
+}
+
+// TeamDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) TeamDirectHashRegenerate(ctx context.Context, a *agent.Agent, teamID uuid.UUID) (*team.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TeamDirectHashRegenerate", ctx, a, teamID)
+	ret0, _ := ret[0].(*team.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TeamDirectHashRegenerate indicates an expected call of TeamDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) TeamDirectHashRegenerate(ctx, a, teamID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).TeamDirectHashRegenerate), ctx, a, teamID)
 }
 
 // TeamGet mocks base method.

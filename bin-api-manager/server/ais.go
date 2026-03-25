@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -266,6 +267,42 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostAisIdDirectHashRegenerate",
+		"request_address": c.ClientIP(),
+		"ai_id":           id,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	aiID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid AI ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.AIDirectHashRegenerate(c.Request.Context(), &a, aiID)
+	if err != nil {
+		log.Errorf("Could not regenerate AI direct hash. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

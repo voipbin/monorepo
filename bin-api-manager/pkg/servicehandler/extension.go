@@ -191,6 +191,36 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 	return res, nil
 }
 
+// ExtensionDirectHashRegenerate regenerates the direct hash for the extension.
+func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "ExtensionDirectHashRegenerate",
+		"customer_id":  a.CustomerID,
+		"extension_id": extensionID,
+	})
+	log.Debug("Regenerating extension direct hash.")
+
+	e, err := h.extensionGet(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.RegistrarV1ExtensionDirectHashRegenerate(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not regenerate extension direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // convertExtensionFilters converts map[string]string to map[rmextension.Field]any
 func (h *serviceHandler) convertExtensionFilters(filters map[string]string) (map[rmextension.Field]any, error) {
 	// Convert to map[string]any first

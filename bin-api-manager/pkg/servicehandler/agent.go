@@ -426,6 +426,36 @@ func (h *serviceHandler) agentUpdatePassword(ctx context.Context, agentID uuid.U
 	return res, nil
 }
 
+// AgentDirectHashRegenerate regenerates the direct hash for the agent.
+func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "AgentDirectHashRegenerate",
+		"customer_id": a.CustomerID,
+		"agent_id":    agentID,
+	})
+	log.Debug("Regenerating agent direct hash.")
+
+	af, err := h.agentGet(ctx, agentID)
+	if err != nil {
+		log.Errorf("Could not validate the agent info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.AgentV1AgentDirectHashRegenerate(ctx, agentID)
+	if err != nil {
+		log.Errorf("Could not regenerate agent direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // convertAgentFilters converts map[string]string to map[amagent.Field]any
 func (h *serviceHandler) convertAgentFilters(filters map[string]string) (map[amagent.Field]any, error) {
 	// Convert to map[string]any first
