@@ -28,8 +28,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 
 	// check for direct hash
 	if strings.HasPrefix(cn.DestinationNumber, dmdirect.DirectPrefix) {
-		hash := strings.TrimPrefix(cn.DestinationNumber, dmdirect.DirectPrefix)
-		return h.startIncomingDomainTypeSIPDirect(ctx, cn, hash)
+		return h.startIncomingDomainTypeSIPDirect(ctx, cn, cn.DestinationNumber)
 	}
 
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)

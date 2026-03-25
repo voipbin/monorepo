@@ -16,12 +16,13 @@ import (
 )
 
 // generateHash generates a unique direct hash using crypto/rand.
+// The hash includes the "direct." prefix for SIP URI routing.
 func generateHash() (string, error) {
 	b := make([]byte, 6)
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("could not generate random bytes: %v", err)
 	}
-	return hex.EncodeToString(b), nil
+	return direct.DirectPrefix + hex.EncodeToString(b), nil
 }
 
 // Create creates a new direct hash.
