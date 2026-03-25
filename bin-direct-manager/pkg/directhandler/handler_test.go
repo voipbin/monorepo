@@ -3,6 +3,7 @@ package directhandler
 import (
 	"context"
 	"reflect"
+	"strings"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -17,6 +18,48 @@ import (
 	"monorepo/bin-direct-manager/pkg/cachehandler"
 	"monorepo/bin-direct-manager/pkg/dbhandler"
 )
+
+func Test_generateHash(t *testing.T) {
+	t.Run("has direct prefix", func(t *testing.T) {
+		hash, err := generateHash()
+		if err != nil {
+			t.Fatalf("generateHash() returned error: %v", err)
+		}
+
+		if !strings.HasPrefix(hash, direct.DirectPrefix) {
+			t.Errorf("generateHash() = %q, want prefix %q", hash, direct.DirectPrefix)
+		}
+	})
+
+	t.Run("has correct length", func(t *testing.T) {
+		hash, err := generateHash()
+		if err != nil {
+			t.Fatalf("generateHash() returned error: %v", err)
+		}
+
+		// "direct." (7 chars) + 12 hex chars = 19 total
+		expectedLen := len(direct.DirectPrefix) + 12
+		if len(hash) != expectedLen {
+			t.Errorf("generateHash() length = %d, want %d, hash: %q", len(hash), expectedLen, hash)
+		}
+	})
+
+	t.Run("generates unique hashes", func(t *testing.T) {
+		hash1, err := generateHash()
+		if err != nil {
+			t.Fatalf("generateHash() returned error: %v", err)
+		}
+
+		hash2, err := generateHash()
+		if err != nil {
+			t.Fatalf("generateHash() returned error: %v", err)
+		}
+
+		if hash1 == hash2 {
+			t.Errorf("generateHash() produced identical hashes: %q", hash1)
+		}
+	})
+}
 
 func Test_Get(t *testing.T) {
 
@@ -238,7 +281,12 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().DirectCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().DirectCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, d *direct.Direct) error {
+				if !strings.HasPrefix(d.Hash, direct.DirectPrefix) {
+					t.Errorf("DirectCreate hash = %q, want prefix %q", d.Hash, direct.DirectPrefix)
+				}
+				return nil
+			})
 			mockDB.EXPECT().DirectGet(ctx, tt.responseUUID).Return(tt.responseDirect, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, direct.EventTypeDirectCreated, tt.responseDirect)
 
@@ -375,8 +423,16 @@ func Test_Regenerate(t *testing.T) {
 
 			// get current
 			mockDB.EXPECT().DirectGet(ctx, tt.id).Return(tt.currentDirect, nil)
-			// update with new hash
-			mockDB.EXPECT().DirectUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+			// update with new hash - verify it has the direct. prefix
+			mockDB.EXPECT().DirectUpdate(ctx, tt.id, gomock.Any()).DoAndReturn(func(_ context.Context, _ uuid.UUID, fields map[direct.Field]any) error {
+				hash, ok := fields[direct.FieldHash]
+				if !ok {
+					t.Errorf("DirectUpdate missing FieldHash")
+				} else if !strings.HasPrefix(hash.(string), direct.DirectPrefix) {
+					t.Errorf("DirectUpdate hash = %q, want prefix %q", hash, direct.DirectPrefix)
+				}
+				return nil
+			})
 			// invalidate old cache
 			mockCache.EXPECT().DirectDeleteByHash(ctx, tt.currentDirect.Hash).Return(nil)
 			// get updated

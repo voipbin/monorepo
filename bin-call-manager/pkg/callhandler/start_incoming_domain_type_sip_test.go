@@ -429,7 +429,7 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
-			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "a3f8b2c1d4e5").Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "direct.a3f8b2c1d4e5").Return(tt.responseDirect, nil)
 			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.responseDirect.ResourceID).Return(tt.responseExtension, nil)
 
 			expectDestination := commonaddress.Address{
@@ -517,7 +517,7 @@ func Test_startIncomingDomainTypeSIP_directHashNotFound(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			})
-			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "invalidhash12").Return(nil, fmt.Errorf("not found"))
+			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "direct.invalidhash12").Return(nil, fmt.Errorf("not found"))
 			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
