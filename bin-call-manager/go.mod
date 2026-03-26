@@ -82,6 +82,7 @@ require (
 	k8s.io/api v0.36.0-alpha.0
 	k8s.io/apimachinery v0.36.0-alpha.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
+	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
@@ -139,7 +140,6 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570 // indirect
-	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
