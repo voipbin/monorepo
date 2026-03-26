@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
@@ -98,6 +99,12 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 		return h.startIncomingDomainTypeSIPDirectExtension(ctx, cn, d, source)
 	case "conference":
 		return h.startIncomingDomainTypeSIPDirectConference(ctx, cn, d, source)
+	case "ai":
+		return h.startIncomingDomainTypeSIPDirectAI(ctx, cn, d, source)
+	case "ai_team":
+		return h.startIncomingDomainTypeSIPDirectAITeam(ctx, cn, d, source)
+	case "agent":
+		return h.startIncomingDomainTypeSIPDirectAgent(ctx, cn, d, source)
 	default:
 		log.Errorf("Unsupported direct resource type. resource_type: %s", d.ResourceType)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
@@ -192,5 +199,140 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectConference(ctx context.Con
 	}
 
 	h.startCallTypeFlow(ctx, cn, cf.CustomerID, tmpFlow.ID, source, destination, nil)
+	return nil
+}
+
+// startIncomingDomainTypeSIPDirectAI handles direct hash call routed to an AI resource.
+func (h *callHandler) startIncomingDomainTypeSIPDirectAI(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDirectAI",
+		"channel_id":  cn.ID,
+		"resource_id": d.ResourceID,
+	})
+
+	a, err := h.reqHandler.AIV1AIGet(ctx, d.ResourceID)
+	if err != nil {
+		log.Errorf("Could not get AI. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+	log.WithField("ai", a).Debugf("Retrieved AI info. ai_id: %s", a.ID)
+
+	destination := &commonaddress.Address{
+		Type:   commonaddress.TypeAI,
+		Target: d.ResourceID.String(),
+	}
+
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeAnswer,
+		},
+		{
+			Type: fmaction.TypeAITalk,
+			Option: fmaction.ConvertOption(fmaction.OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeAI,
+				AssistanceID:   a.ID,
+			}),
+		},
+	}
+
+	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, "tmp", fmt.Sprintf("tmp flow for direct ai call. ai_id: %s", a.ID), actions, uuid.Nil, false)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	h.startCallTypeFlow(ctx, cn, a.CustomerID, tmpFlow.ID, source, destination, nil)
+	return nil
+}
+
+// startIncomingDomainTypeSIPDirectAITeam handles direct hash call routed to an AI team resource.
+func (h *callHandler) startIncomingDomainTypeSIPDirectAITeam(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDirectAITeam",
+		"channel_id":  cn.ID,
+		"resource_id": d.ResourceID,
+	})
+
+	team, err := h.reqHandler.AIV1TeamGet(ctx, d.ResourceID)
+	if err != nil {
+		log.Errorf("Could not get AI team. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+	log.WithField("team", team).Debugf("Retrieved AI team info. team_id: %s", team.ID)
+
+	destination := &commonaddress.Address{
+		Type:   commonaddress.TypeAITeam,
+		Target: d.ResourceID.String(),
+	}
+
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeAnswer,
+		},
+		{
+			Type: fmaction.TypeAITalk,
+			Option: fmaction.ConvertOption(fmaction.OptionAITalk{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   team.ID,
+			}),
+		},
+	}
+
+	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, team.CustomerID, fmflow.TypeFlow, "tmp", fmt.Sprintf("tmp flow for direct ai team call. team_id: %s", team.ID), actions, uuid.Nil, false)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	h.startCallTypeFlow(ctx, cn, team.CustomerID, tmpFlow.ID, source, destination, nil)
+	return nil
+}
+
+// startIncomingDomainTypeSIPDirectAgent handles direct hash call routed to an agent resource.
+func (h *callHandler) startIncomingDomainTypeSIPDirectAgent(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDirectAgent",
+		"channel_id":  cn.ID,
+		"resource_id": d.ResourceID,
+	})
+
+	ag, err := h.reqHandler.AgentV1AgentGet(ctx, d.ResourceID)
+	if err != nil {
+		log.Errorf("Could not get agent. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+	log.WithField("agent", ag).Debugf("Retrieved agent info. agent_id: %s", ag.ID)
+
+	destination := &commonaddress.Address{
+		Type:       commonaddress.TypeAgent,
+		Target:     ag.ID.String(),
+		TargetName: ag.Name,
+	}
+
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeConnect,
+			Option: fmaction.ConvertOption(fmaction.OptionConnect{
+				Source:       *source,
+				Destinations: []commonaddress.Address{*destination},
+				EarlyMedia:   false,
+				RelayReason:  false,
+			}),
+		},
+	}
+
+	tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, ag.CustomerID, fmflow.TypeFlow, "tmp", fmt.Sprintf("tmp flow for direct agent call. agent_id: %s", ag.ID), actions, uuid.Nil, false)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	h.startCallTypeFlow(ctx, cn, ag.CustomerID, tmpFlow.ID, source, destination, nil)
 	return nil
 }

@@ -16,6 +16,8 @@ type Type string
 const (
 	TypeNone       Type = ""           // no type specified
 	TypeAgent      Type = "agent"      // target is agent's id.
+	TypeAI         Type = "ai"         // target is AI resource's id
+	TypeAITeam     Type = "ai_team"   // target is AI team's id
 	TypeConference Type = "conference" // target is conference's id
 	TypeEmail      Type = "email"      // target is email address
 	TypeExtension  Type = "extension"  // target is extension
