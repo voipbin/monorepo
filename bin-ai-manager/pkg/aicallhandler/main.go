@@ -97,7 +97,7 @@ var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
 	ai.TTSTypeDeepgram:   "aura-2-thalia-en",                     // Thalia (neutral, English). https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices
 	ai.TTSTypeElevenLabs: "EXAVITQu4vr4xnSDxMaL",                 // Rachel. https://api.elevenlabs.io/docs
 	ai.TTSTypeFish:       "",
-	ai.TTSTypeGoogle:     "en-US-Chirp-HD-F",                        // Female, Chirp HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp-hd
+	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                 // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
 	ai.TTSTypeGroq:       "llama-voice-en",                        // Placeholder (Groq doesn't expose standard TTS, assumed)
 	ai.TTSTypeHume:       "emotional-neutral-en",                  // Neutral English emotional TTS. https://dev.hume.ai/docs/tts
 	ai.TTSTypeInworld:    "English_Female_Generic",                // Generic female character. https://docs.inworld.ai/voices
