@@ -158,9 +158,8 @@ pipecatcallhandler.Start
   │    └─ WebSocket client → connects to Go :8080
   │         ↓
   └─→ Goroutines:
-       ├─ runWebSocketAsteriskRead (closes ConnAstDone on WS disconnect)
        ├─ RunnerStart (Python Pipecat pipeline)
-       ├─ runAsteriskReceivedMediaHandle (Asterisk → Pipecat audio bridge)
+       ├─ runAsteriskReceivedMediaHandle (Asterisk → Pipecat audio bridge, closes ConnAstDone on WS disconnect)
        └─ Lifecycle monitor (waits on ConnAstDone, triggers cleanup)
 ```
 
