@@ -9,7 +9,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -86,25 +85,4 @@ func (h *pipecatcallHandler) websocketAsteriskConnect(ctx context.Context, media
 	}
 
 	return conn, nil
-}
-
-// runWebSocketAsteriskRead reads from the WebSocket connection to handle
-// ping/pong and close frames. Without a read loop, gorilla/websocket won't
-// acknowledge pings. Closes doneCh when the connection is closed or encounters
-// an error, signalling handlers to tear down their sessions.
-func runWebSocketAsteriskRead(conn *websocket.Conn, doneCh chan struct{}) {
-	log := logrus.WithField("func", "runWebSocketAsteriskRead")
-	defer close(doneCh)
-
-	for {
-		_, _, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				log.Debugf("Asterisk WebSocket closed normally: %v", err)
-			} else {
-				log.Errorf("Asterisk WebSocket read error: %v", err)
-			}
-			return
-		}
-	}
 }

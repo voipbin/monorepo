@@ -277,7 +277,13 @@ async def init_single_ai_pipeline(
         if transport_input:
             await transport_input.cleanup()
         await transport_output.cleanup()
-        tool_unregister(llm_service, tool_names)
+        if stt_service:
+            await stt_service.cleanup()
+        if tts_service:
+            await tts_service.cleanup()
+        if llm_service:
+            tool_unregister(llm_service, tool_names)
+            await llm_service.cleanup()
         await task_manager.remove(id)
         raise
 
@@ -289,6 +295,8 @@ async def init_single_ai_pipeline(
         "transport_input": transport_input,
         "transport_output": transport_output,
         "llm_service": llm_service,
+        "tts_service": tts_service,
+        "stt_service": stt_service,
         "tool_names": tool_names,
     }
 
@@ -299,6 +307,8 @@ async def execute_single_ai_pipeline(id: str, ctx: dict):
     transport_input = ctx["transport_input"]
     transport_output = ctx["transport_output"]
     llm_service = ctx["llm_service"]
+    tts_service = ctx["tts_service"]
+    stt_service = ctx["stt_service"]
     tool_names = ctx["tool_names"]
 
     try:
@@ -317,8 +327,13 @@ async def execute_single_ai_pipeline(id: str, ctx: dict):
             await transport_input.cleanup()
         if transport_output:
             await transport_output.cleanup()
+        if stt_service:
+            await stt_service.cleanup()
+        if tts_service:
+            await tts_service.cleanup()
         if llm_service:
             tool_unregister(llm_service, tool_names)
+            await llm_service.cleanup()
         await task_manager.remove(id)
         logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
 
@@ -691,6 +706,12 @@ async def init_team_pipeline(
         if transport_input:
             await transport_input.cleanup()
         await transport_output.cleanup()
+        if routing_stt:
+            await routing_stt.cleanup()
+        if routing_tts:
+            await routing_tts.cleanup()
+        if routing_llm:
+            await routing_llm.cleanup()
         await task_manager.remove(id)
         raise
 
@@ -701,6 +722,9 @@ async def init_team_pipeline(
         "task": task,
         "transport_input": transport_input,
         "transport_output": transport_output,
+        "routing_llm": routing_llm,
+        "routing_tts": routing_tts,
+        "routing_stt": routing_stt,
     }
 
 
@@ -709,6 +733,9 @@ async def execute_team_pipeline(id: str, ctx: dict):
     task = ctx["task"]
     transport_input = ctx["transport_input"]
     transport_output = ctx["transport_output"]
+    routing_llm = ctx["routing_llm"]
+    routing_tts = ctx["routing_tts"]
+    routing_stt = ctx["routing_stt"]
 
     try:
         runner = PipelineRunner()
@@ -726,5 +753,11 @@ async def execute_team_pipeline(id: str, ctx: dict):
             await transport_input.cleanup()
         if transport_output:
             await transport_output.cleanup()
+        if routing_stt:
+            await routing_stt.cleanup()
+        if routing_tts:
+            await routing_tts.cleanup()
+        if routing_llm:
+            await routing_llm.cleanup()
         await task_manager.remove(id)
         logger.info(f"[TEAM][CLEANUP] Team pipeline cleaned. pipeline id={id}")
