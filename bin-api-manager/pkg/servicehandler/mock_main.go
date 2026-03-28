@@ -862,6 +862,21 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountList(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountList", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountList), ctx, a, size, token, filters)
 }
 
+// BillingAccountSelfCreatePaddlePortalSession mocks base method.
+func (m *MockServiceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *agent.Agent) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountSelfCreatePaddlePortalSession", ctx, a)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountSelfCreatePaddlePortalSession indicates an expected call of BillingAccountSelfCreatePaddlePortalSession.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfCreatePaddlePortalSession(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountSelfCreatePaddlePortalSession", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountSelfCreatePaddlePortalSession), ctx, a)
+}
+
 // BillingAccountSelfGet mocks base method.
 func (m *MockServiceHandler) BillingAccountSelfGet(ctx context.Context, a *agent.Agent) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()

@@ -2643,6 +2643,35 @@
         }
       }
     },
+    "/billing_account/paddle_portal_session": {
+      "post": {
+        "operationId": "postBillingAccountPaddlePortalSession",
+        "summary": "Create Paddle portal session",
+        "description": "Generate a Paddle Customer Portal session URL for the authenticated customer to manage their subscription. The customer must have an active Paddle subscription linked to their billing account.",
+        "tags": [
+          "Billing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully created portal session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "The Paddle Customer Portal URL. Valid for a limited time.",
+                      "example": "https://customer-portal.paddle.com/cpl_session_abc123"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/billing_accounts": {
       "get": {
         "summary": "Get list of billing accounts",
@@ -14728,6 +14757,19 @@
           "BillingManagerAccountPlanTypeUnlimited"
         ]
       },
+      "BillingManagerAccountPlanStatus": {
+        "type": "string",
+        "description": "The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.",
+        "example": "active",
+        "enum": [
+          "active",
+          "canceling"
+        ],
+        "x-enum-varnames": [
+          "BillingManagerAccountPlanStatusActive",
+          "BillingManagerAccountPlanStatusCanceling"
+        ]
+      },
       "BillingManagerAccount": {
         "type": "object",
         "properties": {
@@ -14759,6 +14801,11 @@
             "description": "The plan tier of the billing account.",
             "example": "basic",
             "$ref": "#/components/schemas/BillingManagerAccountPlanType"
+          },
+          "plan_status": {
+            "description": "The subscription plan status.",
+            "example": "active",
+            "$ref": "#/components/schemas/BillingManagerAccountPlanStatus"
           },
           "balance_credit": {
             "type": "integer",
@@ -14881,6 +14928,11 @@
             "description": "The plan tier of the billing account.",
             "example": "basic",
             "$ref": "#/components/schemas/BillingManagerAccountPlanType"
+          },
+          "plan_status": {
+            "description": "The subscription plan status.",
+            "example": "active",
+            "$ref": "#/components/schemas/BillingManagerAccountPlanStatus"
           },
           "balance_credit": {
             "type": "integer",

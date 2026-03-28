@@ -400,6 +400,17 @@ components:
         - BillingManagerAccountPlanTypeProfessional
         - BillingManagerAccountPlanTypeUnlimited
 
+    BillingManagerAccountPlanStatus:
+      type: string
+      description: The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+      example: "active"
+      enum:
+        - active
+        - canceling
+      x-enum-varnames:
+        - BillingManagerAccountPlanStatusActive
+        - BillingManagerAccountPlanStatusCanceling
+
     BillingManagerAccount:
       type: object
       properties:
@@ -427,6 +438,10 @@ components:
           description: The plan tier of the billing account.
           example: "basic"
           $ref: '#/components/schemas/BillingManagerAccountPlanType'
+        plan_status:
+          description: The subscription plan status.
+          example: "active"
+          $ref: '#/components/schemas/BillingManagerAccountPlanStatus'
         balance_credit:
           type: integer
           format: int64
@@ -529,6 +544,10 @@ components:
           description: The plan tier of the billing account.
           example: "basic"
           $ref: '#/components/schemas/BillingManagerAccountPlanType'
+        plan_status:
+          description: The subscription plan status.
+          example: "active"
+          $ref: '#/components/schemas/BillingManagerAccountPlanStatus'
         balance_credit:
           type: integer
           format: int64
@@ -6786,6 +6805,8 @@ paths:
     $ref: './paths/billing_account/main.yaml'
   /billing_account/payment_info:
     $ref: './paths/billing_account/payment_info.yaml'
+  /billing_account/paddle_portal_session:
+    $ref: './paths/billing_account/paddle_portal_session.yaml'
 
   /billing_accounts:
     $ref: './paths/billing_accounts/main.yaml'

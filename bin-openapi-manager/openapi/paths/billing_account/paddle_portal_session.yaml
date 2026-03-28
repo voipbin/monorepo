@@ -1,0 +1,18 @@
+post:
+  operationId: postBillingAccountPaddlePortalSession
+  summary: Create Paddle portal session
+  description: Generate a Paddle Customer Portal session URL for the authenticated customer to manage their subscription. The customer must have an active Paddle subscription linked to their billing account.
+  tags:
+    - Billing
+  responses:
+    '200':
+      description: Successfully created portal session.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                description: The Paddle Customer Portal URL. Valid for a limited time.
+                example: "https://customer-portal.paddle.com/cpl_session_abc123"

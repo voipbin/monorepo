@@ -13,7 +13,8 @@ const (
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
 
-	FieldPlanType Field = "plan_type"
+	FieldPlanType   Field = "plan_type"
+	FieldPlanStatus Field = "plan_status"
 
 	FieldBalanceCredit Field = "balance_credit"
 	FieldBalanceToken  Field = "balance_token"

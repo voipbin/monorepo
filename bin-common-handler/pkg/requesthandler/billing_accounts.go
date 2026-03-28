@@ -254,3 +254,22 @@ func (r *requestHandler) BillingV1AccountIsValidResourceLimitByCustomerID(ctx co
 	return res.Valid, nil
 }
 
+// BillingV1AccountPaddlePortalSession creates a Paddle Customer Portal session for the given account.
+func (r *requestHandler) BillingV1AccountPaddlePortalSession(ctx context.Context, accountID uuid.UUID) (string, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/paddle_portal_session", accountID)
+
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/paddle_portal_session", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return "", err
+	}
+
+	var res struct {
+		URL string `json:"url"`
+	}
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return "", errParse
+	}
+
+	return res.URL, nil
+}
+

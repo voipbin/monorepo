@@ -117,3 +117,28 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+func (h *server) PostBillingAccountPaddlePortalSession(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostBillingAccountPaddlePortalSession",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithField("agent", a)
+
+	url, err := h.serviceHandler.BillingAccountSelfCreatePaddlePortalSession(c.Request.Context(), &a)
+	if err != nil {
+		log.Infof("Could not create portal session. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, gin.H{"url": url})
+}

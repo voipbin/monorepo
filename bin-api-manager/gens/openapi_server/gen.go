@@ -181,6 +181,12 @@ const (
 	BillingManagerAccountPaymentTypePrepaid BillingManagerAccountPaymentType = "prepaid"
 )
 
+// Defines values for BillingManagerAccountPlanStatus.
+const (
+	BillingManagerAccountPlanStatusActive    BillingManagerAccountPlanStatus = "active"
+	BillingManagerAccountPlanStatusCanceling BillingManagerAccountPlanStatus = "canceling"
+)
+
 // Defines values for BillingManagerAccountPlanType.
 const (
 	BillingManagerAccountPlanTypeBasic        BillingManagerAccountPlanType = "basic"
@@ -1440,6 +1446,9 @@ type BillingManagerAccount struct {
 	// PaymentType The type of payment associated with the account.
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
+	// PlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+	PlanStatus *BillingManagerAccountPlanStatus `json:"plan_status,omitempty"`
+
 	// PlanType The plan tier of the billing account. Determines resource creation limits.
 	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
 
@@ -1491,6 +1500,9 @@ type BillingManagerAccountAdmin struct {
 	// PaymentType The type of payment associated with the account.
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
+	// PlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+	PlanStatus *BillingManagerAccountPlanStatus `json:"plan_status,omitempty"`
+
 	// PlanType The plan tier of the billing account. Determines resource creation limits.
 	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
 
@@ -1518,6 +1530,9 @@ type BillingManagerAccountPaymentMethod string
 
 // BillingManagerAccountPaymentType The type of payment associated with the account.
 type BillingManagerAccountPaymentType string
+
+// BillingManagerAccountPlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+type BillingManagerAccountPlanStatus string
 
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
@@ -6751,6 +6766,9 @@ type ServerInterface interface {
 	// Update billing account
 	// (PUT /billing_account)
 	PutBillingAccount(c *gin.Context)
+	// Create Paddle portal session
+	// (POST /billing_account/paddle_portal_session)
+	PostBillingAccountPaddlePortalSession(c *gin.Context)
 	// Update billing account payment info
 	// (PUT /billing_account/payment_info)
 	PutBillingAccountPaymentInfo(c *gin.Context)
@@ -8742,6 +8760,19 @@ func (siw *ServerInterfaceWrapper) PutBillingAccount(c *gin.Context) {
 	}
 
 	siw.Handler.PutBillingAccount(c)
+}
+
+// PostBillingAccountPaddlePortalSession operation middleware
+func (siw *ServerInterfaceWrapper) PostBillingAccountPaddlePortalSession(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostBillingAccountPaddlePortalSession(c)
 }
 
 // PutBillingAccountPaymentInfo operation middleware
@@ -15564,6 +15595,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_account", wrapper.GetBillingAccount)
 	router.PUT(options.BaseURL+"/billing_account", wrapper.PutBillingAccount)
+	router.POST(options.BaseURL+"/billing_account/paddle_portal_session", wrapper.PostBillingAccountPaddlePortalSession)
 	router.PUT(options.BaseURL+"/billing_account/payment_info", wrapper.PutBillingAccountPaymentInfo)
 	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.GET(options.BaseURL+"/billing_accounts/:id", wrapper.GetBillingAccountsId)
@@ -16847,6 +16879,25 @@ type PutBillingAccountResponseObject interface {
 type PutBillingAccount200JSONResponse BillingManagerAccount
 
 func (response PutBillingAccount200JSONResponse) VisitPutBillingAccountResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostBillingAccountPaddlePortalSessionRequestObject struct {
+}
+
+type PostBillingAccountPaddlePortalSessionResponseObject interface {
+	VisitPostBillingAccountPaddlePortalSessionResponse(w http.ResponseWriter) error
+}
+
+type PostBillingAccountPaddlePortalSession200JSONResponse struct {
+	// Url The Paddle Customer Portal URL. Valid for a limited time.
+	Url *string `json:"url,omitempty"`
+}
+
+func (response PostBillingAccountPaddlePortalSession200JSONResponse) VisitPostBillingAccountPaddlePortalSessionResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -22255,6 +22306,9 @@ type StrictServerInterface interface {
 	// Update billing account
 	// (PUT /billing_account)
 	PutBillingAccount(ctx context.Context, request PutBillingAccountRequestObject) (PutBillingAccountResponseObject, error)
+	// Create Paddle portal session
+	// (POST /billing_account/paddle_portal_session)
+	PostBillingAccountPaddlePortalSession(ctx context.Context, request PostBillingAccountPaddlePortalSessionRequestObject) (PostBillingAccountPaddlePortalSessionResponseObject, error)
 	// Update billing account payment info
 	// (PUT /billing_account/payment_info)
 	PutBillingAccountPaymentInfo(ctx context.Context, request PutBillingAccountPaymentInfoRequestObject) (PutBillingAccountPaymentInfoResponseObject, error)
@@ -24507,6 +24561,31 @@ func (sh *strictHandler) PutBillingAccount(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutBillingAccountResponseObject); ok {
 		if err := validResponse.VisitPutBillingAccountResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostBillingAccountPaddlePortalSession operation middleware
+func (sh *strictHandler) PostBillingAccountPaddlePortalSession(ctx *gin.Context) {
+	var request PostBillingAccountPaddlePortalSessionRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostBillingAccountPaddlePortalSession(ctx, request.(PostBillingAccountPaddlePortalSessionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostBillingAccountPaddlePortalSession")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostBillingAccountPaddlePortalSessionResponseObject); ok {
+		if err := validResponse.VisitPostBillingAccountPaddlePortalSessionResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

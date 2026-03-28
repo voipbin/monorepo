@@ -263,6 +263,41 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 	return tmp.ConvertWebhookMessage(), nil
 }
 
+// BillingAccountSelfCreatePaddlePortalSession creates a Paddle portal session for the authenticated user.
+func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *amagent.Agent) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "BillingAccountSelfCreatePaddlePortalSession",
+		"agent":       a,
+		"customer_id": a.CustomerID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Infof("User has no permission.")
+		return "", fmt.Errorf("user has no permission")
+	}
+
+	c, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		log.Infof("Could not get customer info. err: %v", err)
+		return "", fmt.Errorf("could not get customer info")
+	}
+	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+
+	if c.BillingAccountID == uuid.Nil {
+		log.Infof("Customer has no billing account. customer_id: %s", c.ID)
+		return "", fmt.Errorf("no billing account")
+	}
+
+	url, err := h.reqHandler.BillingV1AccountPaddlePortalSession(ctx, c.BillingAccountID)
+	if err != nil {
+		log.Errorf("Could not create portal session. err: %v", err)
+		return "", fmt.Errorf("could not create portal session")
+	}
+
+	log.Infof("Portal session created. billing_account_id: %s", c.BillingAccountID)
+	return url, nil
+}
+
 // BillingAccountList returns a list of all billing accounts.
 func (h *serviceHandler) BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{

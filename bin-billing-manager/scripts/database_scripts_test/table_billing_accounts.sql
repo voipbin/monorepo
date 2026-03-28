@@ -5,6 +5,7 @@ create table billing_accounts(
   status varchar(255) default 'active',
 
   plan_type varchar(255),
+  plan_status varchar(255) default 'active',
 
   name    varchar(255),
   detail  text,

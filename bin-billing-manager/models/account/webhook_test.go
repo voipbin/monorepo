@@ -28,6 +28,7 @@ func TestAccount_ConvertWebhookMessage(t *testing.T) {
 				Name:          "Test Account",
 				Detail:        "Test Detail",
 				PlanType:      PlanTypeFree,
+				PlanStatus:    PlanStatusActive,
 				BalanceCredit: 9999000,
 				BalanceToken:  50,
 				PaymentType:          PaymentTypePrepaid,
@@ -78,6 +79,10 @@ func TestAccount_ConvertWebhookMessage(t *testing.T) {
 				t.Errorf("PlanType = %s, expected %s", result.PlanType, tt.account.PlanType)
 			}
 
+			if result.PlanStatus != tt.account.PlanStatus {
+				t.Errorf("PlanStatus = %s, expected %s", result.PlanStatus, tt.account.PlanStatus)
+			}
+
 			if result.BalanceCredit != tt.account.BalanceCredit {
 				t.Errorf("BalanceCredit = %d, expected %d", result.BalanceCredit, tt.account.BalanceCredit)
 			}
@@ -124,6 +129,7 @@ func TestAccount_CreateWebhookEvent(t *testing.T) {
 				Name:          "Test Account",
 				Detail:        "Test Detail",
 				PlanType:      PlanTypeFree,
+				PlanStatus:    PlanStatusActive,
 				BalanceCredit: 9999000,
 				BalanceToken:  50,
 				PaymentType:          PaymentTypePrepaid,

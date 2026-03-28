@@ -280,6 +280,21 @@ func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, size, token, filters)
 }
 
+// PaddleCreatePortalSession mocks base method.
+func (m *MockAccountHandler) PaddleCreatePortalSession(ctx context.Context, accountID uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleCreatePortalSession", ctx, accountID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PaddleCreatePortalSession indicates an expected call of PaddleCreatePortalSession.
+func (mr *MockAccountHandlerMockRecorder) PaddleCreatePortalSession(ctx, accountID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleCreatePortalSession", reflect.TypeOf((*MockAccountHandler)(nil).PaddleCreatePortalSession), ctx, accountID)
+}
+
 // PaddleCreditTopUp mocks base method.
 func (m *MockAccountHandler) PaddleCreditTopUp(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error {
 	m.ctrl.T.Helper()
@@ -348,6 +363,20 @@ func (m *MockAccountHandler) PaddleSubscriptionRenew(ctx context.Context, paddle
 func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionRenew(ctx, paddleSubID, eventID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionRenew", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionRenew), ctx, paddleSubID, eventID)
+}
+
+// PaddleSubscriptionScheduleCancel mocks base method.
+func (m *MockAccountHandler) PaddleSubscriptionScheduleCancel(ctx context.Context, paddleSubID, eventID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PaddleSubscriptionScheduleCancel", ctx, paddleSubID, eventID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PaddleSubscriptionScheduleCancel indicates an expected call of PaddleSubscriptionScheduleCancel.
+func (mr *MockAccountHandlerMockRecorder) PaddleSubscriptionScheduleCancel(ctx, paddleSubID, eventID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PaddleSubscriptionScheduleCancel", reflect.TypeOf((*MockAccountHandler)(nil).PaddleSubscriptionScheduleCancel), ctx, paddleSubID, eventID)
 }
 
 // PaddleSubscriptionUpdate mocks base method.

@@ -498,6 +498,24 @@ func (e BillingManagerAccountPaymentType) Valid() bool {
 	}
 }
 
+// Defines values for BillingManagerAccountPlanStatus.
+const (
+	BillingManagerAccountPlanStatusActive    BillingManagerAccountPlanStatus = "active"
+	BillingManagerAccountPlanStatusCanceling BillingManagerAccountPlanStatus = "canceling"
+)
+
+// Valid indicates whether the value is a known member of the BillingManagerAccountPlanStatus enum.
+func (e BillingManagerAccountPlanStatus) Valid() bool {
+	switch e {
+	case BillingManagerAccountPlanStatusActive:
+		return true
+	case BillingManagerAccountPlanStatusCanceling:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BillingManagerAccountPlanType.
 const (
 	BillingManagerAccountPlanTypeBasic        BillingManagerAccountPlanType = "basic"
@@ -3443,6 +3461,9 @@ type BillingManagerAccount struct {
 	// PaymentType The type of payment associated with the account.
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
+	// PlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+	PlanStatus *BillingManagerAccountPlanStatus `json:"plan_status,omitempty"`
+
 	// PlanType The plan tier of the billing account. Determines resource creation limits.
 	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
 
@@ -3494,6 +3515,9 @@ type BillingManagerAccountAdmin struct {
 	// PaymentType The type of payment associated with the account.
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 
+	// PlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+	PlanStatus *BillingManagerAccountPlanStatus `json:"plan_status,omitempty"`
+
 	// PlanType The plan tier of the billing account. Determines resource creation limits.
 	PlanType *BillingManagerAccountPlanType `json:"plan_type,omitempty"`
 
@@ -3521,6 +3545,9 @@ type BillingManagerAccountPaymentMethod string
 
 // BillingManagerAccountPaymentType The type of payment associated with the account.
 type BillingManagerAccountPaymentType string
+
+// BillingManagerAccountPlanStatus The subscription plan status of the billing account. Indicates whether the plan is actively running or scheduled for cancellation.
+type BillingManagerAccountPlanStatus string
 
 // BillingManagerAccountPlanType The plan tier of the billing account. Determines resource creation limits.
 type BillingManagerAccountPlanType string
