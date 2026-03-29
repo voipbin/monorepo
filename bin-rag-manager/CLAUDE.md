@@ -54,7 +54,7 @@ Multi-tenant CRUD operations for RAG configurations, documents, and queries (end
 
 ### Configuration
 
-Environment variables (sourced from `bin-manager-secrets` k8s secret via `secretKeyRef`):
+Environment variables (sourced from `voipbin` k8s secret via `secretKeyRef`):
 - `RABBITMQ_ADDRESS` - RabbitMQ connection (secret key: `RABBITMQ_ADDRESS`)
 - `GCP_PROJECT_ID` - GCP project ID for Vertex AI (secret key: `GCP_PROJECT_ID`)
 - `GCP_REGION` - GCP region for Vertex AI (secret key: `GCP_REGION`)

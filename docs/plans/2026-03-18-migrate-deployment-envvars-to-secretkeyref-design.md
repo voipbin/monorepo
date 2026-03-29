@@ -4,11 +4,11 @@
 
 ## Problem Statement
 
-29 out of 30 services use `value: ${TEMPLATE_VAR}` pattern for environment variables in their K8s deployment files. This relies on CI/CD template substitution, which means sensitive values pass through the pipeline as plain text. Only `bin-rag-manager` uses the more secure `secretKeyRef` pattern, referencing the existing `bin-manager-secrets` K8s secret.
+29 out of 30 services use `value: ${TEMPLATE_VAR}` pattern for environment variables in their K8s deployment files. This relies on CI/CD template substitution, which means sensitive values pass through the pipeline as plain text. Only `bin-rag-manager` uses the more secure `secretKeyRef` pattern, referencing the existing `voipbin` K8s secret.
 
 ## Goal
 
-Convert all 29 services from `value: ${TEMPLATE}` to `secretKeyRef` referencing `bin-manager-secrets`, following the existing `bin-rag-manager` pattern.
+Convert all 29 services from `value: ${TEMPLATE}` to `secretKeyRef` referencing `voipbin`, following the existing `bin-rag-manager` pattern.
 
 ## Approach
 
@@ -32,7 +32,7 @@ After:
 - name: DATABASE_DSN
   valueFrom:
     secretKeyRef:
-      name: bin-manager-secrets
+      name: voipbin
       key: DATABASE_DSN
 ```
 
@@ -61,7 +61,7 @@ For most vars, `secretKeyRef.key` matches the env var name directly. These are t
 
 ### Secret Key Inventory
 
-The `bin-manager-secrets` K8s secret contains 51 keys covering all template variables used across deployments. Key gap resolved:
+The `voipbin` K8s secret contains 51 keys covering all template variables used across deployments. Key gap resolved:
 - `REDIS_PASSWORD` — added to secret with empty value (Redis has no password)
 
 ## Rollout Strategy

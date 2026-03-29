@@ -33,12 +33,12 @@ spec:
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: RABBITMQ_ADDRESS
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics

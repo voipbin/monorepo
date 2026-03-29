@@ -39,7 +39,7 @@ spec:
             - name: DATABASE_DSN
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
@@ -48,47 +48,47 @@ spec:
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_PASSWORD
             - name: REDIS_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_DATABASE
             - name: SSL_PRIVKEY_BASE64
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: SSL_PRIVKEY_API_BASE64
             - name: SSL_CERT_BASE64
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: SSL_CERT_API_BASE64
             - name: GCP_PROJECT_ID
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: GCP_PROJECT_ID
             - name: GCP_BUCKET_NAME
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: GCP_BUCKET_NAME_TMP
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: JWT_KEY
           readinessProbe:
             httpGet:

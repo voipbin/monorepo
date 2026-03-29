@@ -35,12 +35,12 @@ spec:
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: CLICKHOUSE_ADDRESS
             - name: CLICKHOUSE_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: CLICKHOUSE_DATABASE
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
@@ -49,22 +49,22 @@ spec:
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: RABBITMQ_ADDRESS
             - name: HOMER_API_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: HOMER_API_ADDRESS
             - name: HOMER_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: HOMER_AUTH_TOKEN
             - name: GCS_BUCKET_NAME
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: GCP_BUCKET_NAME_MEDIA
           ports:
             - name: metrics

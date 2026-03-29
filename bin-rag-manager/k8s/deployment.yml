@@ -27,17 +27,17 @@ spec:
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: RABBITMQ_ADDRESS
             - name: GCP_PROJECT_ID
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: GCP_PROJECT_ID
             - name: GCP_REGION
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: GCP_REGION
             - name: GOOGLE_EMBEDDING_MODEL
               value: "text-embedding-004"
@@ -50,7 +50,7 @@ spec:
             - name: POSTGRESQL_DSN
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: DATABASE_DSN_POSTGRES
           ports:
             - name: metrics
