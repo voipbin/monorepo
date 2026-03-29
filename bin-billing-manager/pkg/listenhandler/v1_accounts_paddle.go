@@ -27,6 +27,9 @@ func (h *listenHandler) processV1AccountsIDPaddlePortalSessionPost(ctx context.C
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		return simpleResponse(400), nil
+	}
 
 	url, err := h.accountHandler.PaddleCreatePortalSession(ctx, id)
 	if err != nil {

@@ -111,7 +111,8 @@ func (h *paddleHandler) CreatePortalSession(ctx context.Context, paddleCustomerI
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	respBody, err := io.ReadAll(resp.Body)
+	const maxResponseSize = 1 << 20 // 1 MB
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 	if err != nil {
 		return "", fmt.Errorf("could not read response body: %w", err)
 	}

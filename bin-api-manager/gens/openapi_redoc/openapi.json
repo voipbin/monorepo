@@ -2668,6 +2668,12 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- The billing account has no linked Paddle subscription (no paddle_customer_id).\n- The Paddle API returned an error (e.g., invalid customer ID).\n"
+          },
+          "404": {
+            "description": "Billing account not found for the authenticated customer."
           }
         }
       }

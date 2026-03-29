@@ -16904,6 +16904,22 @@ func (response PostBillingAccountPaddlePortalSession200JSONResponse) VisitPostBi
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostBillingAccountPaddlePortalSession400Response struct {
+}
+
+func (response PostBillingAccountPaddlePortalSession400Response) VisitPostBillingAccountPaddlePortalSessionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostBillingAccountPaddlePortalSession404Response struct {
+}
+
+func (response PostBillingAccountPaddlePortalSession404Response) VisitPostBillingAccountPaddlePortalSessionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type PutBillingAccountPaymentInfoRequestObject struct {
 	Body *PutBillingAccountPaymentInfoJSONRequestBody
 }
