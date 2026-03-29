@@ -101,7 +101,7 @@ func (h *monitoringHandler) Run(ctx context.Context, selectors map[string][]stri
 func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodUpdated")
 
-	log.WithField("pod", p).Infof("Pod updated. namespace: %s, name: %s", p.Namespace, p.Name)
+	log.Infof("Pod updated. namespace: %s, name: %s, phase: %s", p.Namespace, p.Name, p.Status.Phase)
 	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodUpdated, p)
 
 	promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "updated").Inc()
@@ -113,7 +113,7 @@ func (h *monitoringHandler) runPodUpdated(ctx context.Context, p *corev1.Pod) er
 func (h *monitoringHandler) runPodDeleted(ctx context.Context, p *corev1.Pod) error {
 	log := logrus.WithField("func", "runPodDeleted")
 
-	log.WithField("pod", p).Infof("Pod deleted. namespace: %s, name: %s", p.Namespace, p.Name)
+	log.Infof("Pod deleted. namespace: %s, name: %s, phase: %s", p.Namespace, p.Name, p.Status.Phase)
 	h.notifyHandler.PublishEvent(ctx, pod.EventTypePodDeleted, p)
 
 	promPodStateChangeCounter.WithLabelValues(p.Namespace, p.Labels["app"], "deleted").Inc()
