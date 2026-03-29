@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -15,6 +16,7 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
 // buildHookData creates properly-marshaled Hook JSON for test requests.
@@ -36,7 +38,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 	tests := []struct {
 		name    string
 		paddle  string // raw Paddle event JSON
-		setup   func(mockAccount *accounthandler.MockAccountHandler)
+		setup   func(mockAccount *accounthandler.MockAccountHandler, mockPaddle *paddlehandler.MockPaddleHandler)
 		expectRes *sock.Response
 	}{
 		{
@@ -44,7 +46,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			// "1000" = $10.00 → 1000 × 10,000 = 10,000,000 micros
 			name:   "transaction.completed - one-time credit purchase",
 			paddle: `{"event_id":"evt_credit_001","event_type":"transaction.completed","data":{"id":"txn_001","subscription_id":null,"custom_data":{"customer_id":"a0000001-0000-0000-0000-000000000001"},"details":{"totals":{"total":"1000"}}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleCreditTopUp(
 					gomock.Any(),
 					uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
@@ -58,7 +60,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			// "2999" = $29.99 → 2999 × 10,000 = 29,990,000 micros
 			name:   "transaction.completed - subscription renewal",
 			paddle: `{"event_id":"evt_renew_001","event_type":"transaction.completed","data":{"id":"txn_002","subscription_id":"sub_001","custom_data":{"customer_id":"a0000002-0000-0000-0000-000000000001"},"details":{"totals":{"total":"2999"}}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleSubscriptionRenew(
 					gomock.Any(),
 					"sub_001",
@@ -70,7 +72,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 		{
 			name:   "subscription.created",
 			paddle: `{"event_id":"evt_sub_create_001","event_type":"subscription.created","data":{"id":"sub_001","customer_id":"ctm_paddle_001","custom_data":{"customer_id":"a0000003-0000-0000-0000-000000000001","plan_type":"basic"},"items":[{"price":{"product_id":"pro_basic"}}]}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleSubscriptionCreate(
 					gomock.Any(),
 					uuid.FromStringOrNil("a0000003-0000-0000-0000-000000000001"),
@@ -83,9 +85,9 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
-			name:   "subscription.updated",
+			name:   "subscription.updated - custom_data fallback (no price ID)",
 			paddle: `{"event_id":"evt_sub_update_001","event_type":"subscription.updated","data":{"id":"sub_002","customer_id":"ctm_paddle_002","custom_data":{"customer_id":"a0000004-0000-0000-0000-000000000001","plan_type":"professional"},"items":[{"price":{"product_id":"pro_professional"}}]}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleSubscriptionUpdate(
 					gomock.Any(),
 					"sub_002",
@@ -96,9 +98,70 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			expectRes: simpleResponse(200),
 		},
 		{
+			name:   "subscription.updated - scheduled cancellation",
+			paddle: `{"event_id":"evt_sub_sched_cancel_001","event_type":"subscription.updated","data":{"id":"sub_sched_001","customer_id":"ctm_paddle_010","custom_data":{"customer_id":"a0000010-0000-0000-0000-000000000001","plan_type":"basic"},"items":[],"scheduled_change":{"action":"cancel","effective_at":"2026-04-30T00:00:00Z"}}}`,
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
+				m.EXPECT().PaddleSubscriptionScheduleCancel(
+					gomock.Any(),
+					"sub_sched_001",
+					"evt_sub_sched_cancel_001",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
+			name:   "subscription.updated - price ID match resolves plan type",
+			paddle: `{"event_id":"evt_sub_price_001","event_type":"subscription.updated","data":{"id":"sub_price_001","customer_id":"ctm_paddle_011","custom_data":{"customer_id":"a0000011-0000-0000-0000-000000000001"},"items":[{"price":{"id":"pri_basic_001","product_id":"pro_basic"}}]}}`,
+			setup: func(m *accounthandler.MockAccountHandler, mp *paddlehandler.MockPaddleHandler) {
+				mp.EXPECT().GetPlanTypeByPriceID("pri_basic_001").Return(account.PlanTypeBasic, nil)
+				m.EXPECT().PaddleSubscriptionUpdate(
+					gomock.Any(),
+					"sub_price_001",
+					account.PlanTypeBasic,
+					"evt_sub_price_001",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
+			name:   "subscription.updated - price ID miss falls back to custom_data",
+			paddle: `{"event_id":"evt_sub_price_miss_001","event_type":"subscription.updated","data":{"id":"sub_price_miss_001","customer_id":"ctm_paddle_012","custom_data":{"customer_id":"a0000012-0000-0000-0000-000000000001","plan_type":"professional"},"items":[{"price":{"id":"pri_unknown_999","product_id":"pro_unknown"}}]}}`,
+			setup: func(m *accounthandler.MockAccountHandler, mp *paddlehandler.MockPaddleHandler) {
+				mp.EXPECT().GetPlanTypeByPriceID("pri_unknown_999").Return(account.PlanType(""), fmt.Errorf("unknown price ID"))
+				m.EXPECT().PaddleSubscriptionUpdate(
+					gomock.Any(),
+					"sub_price_miss_001",
+					account.PlanTypeProfessional,
+					"evt_sub_price_miss_001",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
+			name:   "subscription.updated - neither price ID nor custom_data resolves, skip",
+			paddle: `{"event_id":"evt_sub_no_resolve_001","event_type":"subscription.updated","data":{"id":"sub_no_resolve_001","customer_id":"ctm_paddle_013","items":[{"price":{"id":"pri_unknown_888","product_id":"pro_unknown"}}]}}`,
+			setup: func(_ *accounthandler.MockAccountHandler, mp *paddlehandler.MockPaddleHandler) {
+				mp.EXPECT().GetPlanTypeByPriceID("pri_unknown_888").Return(account.PlanType(""), fmt.Errorf("unknown price ID"))
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
+			name:   "subscription.updated - non-cancel scheduled_change falls through to plan change",
+			paddle: `{"event_id":"evt_sub_sched_pause_001","event_type":"subscription.updated","data":{"id":"sub_sched_pause_001","customer_id":"ctm_paddle_014","custom_data":{"customer_id":"a0000014-0000-0000-0000-000000000001","plan_type":"basic"},"items":[],"scheduled_change":{"action":"pause","effective_at":"2026-05-01T00:00:00Z"}}}`,
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
+				m.EXPECT().PaddleSubscriptionUpdate(
+					gomock.Any(),
+					"sub_sched_pause_001",
+					account.PlanTypeBasic,
+					"evt_sub_sched_pause_001",
+				).Return(nil)
+			},
+			expectRes: simpleResponse(200),
+		},
+		{
 			name:   "subscription.canceled",
 			paddle: `{"event_id":"evt_sub_cancel_001","event_type":"subscription.canceled","data":{"id":"sub_003","customer_id":"ctm_paddle_003","custom_data":{"customer_id":"a0000005-0000-0000-0000-000000000001"}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleSubscriptionCancel(
 					gomock.Any(),
 					"sub_003",
@@ -111,7 +174,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			// "500" = $5.00 → 500 × 10,000 = 5,000,000 micros
 			name:   "transaction.refunded - with adjustments",
 			paddle: `{"event_id":"evt_refund_001","event_type":"transaction.refunded","data":{"id":"txn_003","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"500"}}],"details":{"totals":{"total":"1000"}}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleRefund(
 					gomock.Any(),
 					uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000001"),
@@ -125,7 +188,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			// "300" = $3.00 → 300 × 10,000 = 3,000,000 micros
 			name:   "transaction.refunded - fallback to paddle_subscription_id lookup",
 			paddle: `{"event_id":"evt_refund_002","event_type":"transaction.refunded","data":{"id":"txn_004","subscription_id":"sub_fallback_001","adjustments":[{"totals":{"total":"300"}}],"details":{"totals":{"total":"1000"}}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().GetByPaddleSubscriptionID(
 					gomock.Any(),
 					"sub_fallback_001",
@@ -147,7 +210,7 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			// "-500" = -$5.00 → -500 × 10,000 = -5,000,000 micros → abs = 5,000,000
 			name:   "transaction.refunded - negative adjustment amounts normalized to positive",
 			paddle: `{"event_id":"evt_refund_neg_001","event_type":"transaction.refunded","data":{"id":"txn_neg","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"adjustments":[{"totals":{"total":"-500"}}],"details":{"totals":{"total":"1000"}}}}`,
-			setup: func(m *accounthandler.MockAccountHandler) {
+			setup: func(m *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {
 				m.EXPECT().PaddleRefund(
 					gomock.Any(),
 					uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000001"),
@@ -160,31 +223,31 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 		{
 			name:      "transaction.refunded - no adjustments returns 400",
 			paddle:    `{"event_id":"evt_refund_003","event_type":"transaction.refunded","data":{"id":"txn_005","custom_data":{"customer_id":"a0000006-0000-0000-0000-000000000001"},"details":{"totals":{"total":"500"}}}}`,
-			setup:     func(m *accounthandler.MockAccountHandler) {},
+			setup:     func(_ *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {},
 			expectRes: simpleResponse(400),
 		},
 		{
 			name:      "transaction.payment_failed - logged at error, return 200",
 			paddle:    `{"event_id":"evt_payment_fail_001","event_type":"transaction.payment_failed","data":{"id":"txn_fail_001"}}`,
-			setup:     func(m *accounthandler.MockAccountHandler) {},
+			setup:     func(_ *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {},
 			expectRes: simpleResponse(200),
 		},
 		{
 			name:      "unknown event type - return 200",
 			paddle:    `{"event_id":"evt_unknown_001","event_type":"customer.created","data":{}}`,
-			setup:     func(m *accounthandler.MockAccountHandler) {},
+			setup:     func(_ *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {},
 			expectRes: simpleResponse(200),
 		},
 		{
 			name:      "missing custom_data - return 200",
 			paddle:    `{"event_id":"evt_no_custom_001","event_type":"transaction.completed","data":{"id":"txn_no_custom","subscription_id":null,"details":{"totals":{"total":"1000"}}}}`,
-			setup:     func(m *accounthandler.MockAccountHandler) {},
+			setup:     func(_ *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {},
 			expectRes: simpleResponse(200),
 		},
 		{
 			name:      "empty event_id - return 400",
 			paddle:    `{"event_id":"","event_type":"transaction.completed","data":{"id":"txn_empty_eid"}}`,
-			setup:     func(m *accounthandler.MockAccountHandler) {},
+			setup:     func(_ *accounthandler.MockAccountHandler, _ *paddlehandler.MockPaddleHandler) {},
 			expectRes: simpleResponse(400),
 		},
 	}
@@ -196,13 +259,15 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockPaddle := paddlehandler.NewMockPaddleHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
 				accountHandler: mockAccount,
+				paddleHandler:  mockPaddle,
 			}
 
-			tt.setup(mockAccount)
+			tt.setup(mockAccount, mockPaddle)
 
 			req := &sock.Request{
 				URI:    "/v1/hooks/paddle",

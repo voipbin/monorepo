@@ -109,7 +109,7 @@ func (h *paddleHandler) CreatePortalSession(ctx context.Context, paddleCustomerI
 	if err != nil {
 		return "", fmt.Errorf("paddle API request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {

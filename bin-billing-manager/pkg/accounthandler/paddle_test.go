@@ -702,9 +702,8 @@ func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
 		paddleSubID string
 		eventID     string
 
-		responseIdempotencyErr error
-		responseAccount        *account.Account
-		responseAccountErr     error
+		responseAccount    *account.Account
+		responseAccountErr error
 
 		expectErr bool
 	}{
@@ -713,7 +712,6 @@ func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
 			paddleSubID: "sub_sched_cancel_001",
 			eventID:     "evt_sched_cancel_001",
 
-			responseIdempotencyErr: dbhandler.ErrNotFound,
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b0000010-0000-0000-0000-000000000001"),
@@ -725,11 +723,18 @@ func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:        "idempotent - already processed",
+			name:        "idempotent - repeated call sets same value",
 			paddleSubID: "sub_sched_cancel_002",
 			eventID:     "evt_sched_cancel_dup",
 
-			responseIdempotencyErr: nil, // record found → already processed
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000010-0000-0000-0000-000000000002"),
+					CustomerID: uuid.FromStringOrNil("a0000010-0000-0000-0000-000000000002"),
+				},
+				PlanType:   account.PlanTypeBasic,
+				PlanStatus: account.PlanStatusCanceling,
+			},
 
 			expectErr: false,
 		},
@@ -738,8 +743,7 @@ func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
 			paddleSubID: "sub_sched_cancel_003",
 			eventID:     "evt_sched_cancel_no_acc",
 
-			responseIdempotencyErr: dbhandler.ErrNotFound,
-			responseAccountErr:     fmt.Errorf("account not found"),
+			responseAccountErr: fmt.Errorf("account not found"),
 
 			expectErr: true,
 		},
@@ -762,21 +766,16 @@ func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			idempotencyKey := uuid.NewV5(uuid.NamespaceDNS, tt.eventID)
 
-			mockDB.EXPECT().BillingGetByIdempotencyKey(ctx, idempotencyKey).Return(&billing.Billing{}, tt.responseIdempotencyErr)
+			if tt.responseAccountErr != nil {
+				mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(nil, tt.responseAccountErr)
+			} else {
+				mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(tt.responseAccount, nil)
 
-			if tt.responseIdempotencyErr == dbhandler.ErrNotFound {
-				if tt.responseAccountErr != nil {
-					mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(nil, tt.responseAccountErr)
-				} else {
-					mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(tt.responseAccount, nil)
-
-					// Update plan_status to canceling
-					mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
-						account.FieldPlanStatus: account.PlanStatusCanceling,
-					}).Return(nil)
-				}
+				// Update plan_status to canceling
+				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+					account.FieldPlanStatus: account.PlanStatusCanceling,
+				}).Return(nil)
 			}
 
 			err := h.PaddleSubscriptionScheduleCancel(ctx, tt.paddleSubID, tt.eventID)

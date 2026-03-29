@@ -335,21 +335,15 @@ func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID,
 
 // PaddleSubscriptionScheduleCancel sets plan_status to "canceling" when Paddle
 // reports a scheduled cancellation (cancel at end of billing period).
+// No idempotency check needed: setting plan_status=canceling is inherently idempotent
+// (repeated calls produce the same result), and this operation does not create a billing
+// record that could serve as an idempotency anchor.
 func (h *accountHandler) PaddleSubscriptionScheduleCancel(ctx context.Context, paddleSubID string, eventID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "PaddleSubscriptionScheduleCancel",
 		"paddle_subscription_id": paddleSubID,
 		"event_id":               eventID,
 	})
-
-	processed, err := h.checkPaddleIdempotency(ctx, eventID)
-	if err != nil {
-		return fmt.Errorf("could not check idempotency: %w", err)
-	}
-	if processed {
-		log.Debugf("Event already processed, skipping. event_id: %s", eventID)
-		return nil
-	}
 
 	acc, err := h.db.AccountGetByPaddleSubscriptionID(ctx, paddleSubID)
 	if err != nil {
