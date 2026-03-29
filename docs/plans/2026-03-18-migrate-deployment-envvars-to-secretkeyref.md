@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Convert all 29 services' K8s deployment env vars from `value: ${TEMPLATE}` to `secretKeyRef` referencing `bin-manager-secrets`.
+**Goal:** Convert all 29 services' K8s deployment env vars from `value: ${TEMPLATE}` to `secretKeyRef` referencing `voipbin`.
 
 **Architecture:** YAML-only changes to `bin-*/k8s/deployment.yml` files. No Go code changes. Each `value: ${TEMPLATE_VAR}` entry becomes a `valueFrom.secretKeyRef` block. Hardcoded values and `fieldRef` entries are left untouched.
 
-**Tech Stack:** Kubernetes YAML, `bin-manager-secrets` K8s Secret
+**Tech Stack:** Kubernetes YAML, `voipbin` K8s Secret
 
 **Design doc:** `docs/plans/2026-03-18-migrate-deployment-envvars-to-secretkeyref-design.md`
 
@@ -24,7 +24,7 @@
 - name: DATABASE_DSN
   valueFrom:
     secretKeyRef:
-      name: bin-manager-secrets
+      name: voipbin
       key: DATABASE_DSN
 ```
 
@@ -38,7 +38,7 @@
 - name: ENGINE_KEY_CHATGPT
   valueFrom:
     secretKeyRef:
-      name: bin-manager-secrets
+      name: voipbin
       key: OPENAI_API_KEY
 ```
 
@@ -494,13 +494,13 @@ grep -r '\${' bin-*/k8s/deployment.yml
 ```
 Expected: No output (zero matches). If any matches remain, a file was missed.
 
-**Step 2: Verify all secretKeyRef entries reference `bin-manager-secrets`**
+**Step 2: Verify all secretKeyRef entries reference `voipbin`**
 
 Run:
 ```bash
 grep -A1 'secretKeyRef' bin-*/k8s/deployment.yml | grep 'name:' | sort -u
 ```
-Expected: Only `name: bin-manager-secrets`.
+Expected: Only `name: voipbin`.
 
 **Step 3: Count total conversions**
 

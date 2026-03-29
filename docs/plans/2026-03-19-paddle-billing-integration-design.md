@@ -199,7 +199,7 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 - `api/v1.0/emails/emails.go`, `messages/messages.go`, `conversation/conversation.go` — simplify handlers
 - `cmd/hook-manager/main.go` — add `PADDLE_WEBHOOK_SECRET_KEY` config, pass to serviceHandler
 - `go.mod` — add `github.com/PaddleHQ/paddle-go-sdk/v4`
-- `k8s/deployment.yml` — add env var from K8s secret (`bin-manager-secrets`)
+- `k8s/deployment.yml` — add env var from K8s secret (`voipbin`)
 - All `*_test.go` — update for new interface signatures
 
 ### bin-common-handler

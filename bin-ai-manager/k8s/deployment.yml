@@ -27,7 +27,7 @@ spec:
             - name: DATABASE_DSN
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: DATABASE_DSN_BIN
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
@@ -36,32 +36,32 @@ spec:
             - name: RABBITMQ_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: RABBITMQ_ADDRESS
             - name: REDIS_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_ADDRESS
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_PASSWORD
             - name: REDIS_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: REDIS_DATABASE
             - name: ENGINE_KEY_CHATGPT
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: OPENAI_API_KEY
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:
-                  name: bin-manager-secrets
+                  name: voipbin
                   key: CLICKHOUSE_ADDRESS
           ports:
             - name: metrics

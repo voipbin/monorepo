@@ -10,7 +10,7 @@
 
 **Design doc:** `docs/plans/2026-03-19-paddle-billing-integration-design.md`
 
-**Review 1 resolutions applied:** C1 (use `GetByCustomerID` RPC chain), C2/C3 (add `BillingGetByIdempotencyKey`), C4 (explicit `main.go` update), C5 (use cobra `PersistentFlags`), C6 (use `bin-manager-secrets`), C7 (parse decimal amounts), C8 (immediate downgrade), I1 (explicit `CostTypeNone`), I4 (use `AccountTopUpTokens`), I5 (fixed route), I8 (audit record for unlimited), I9 (use `ApplyFields` pattern), I10 (30-service verification), I12 (log+200 for missing custom_data).
+**Review 1 resolutions applied:** C1 (use `GetByCustomerID` RPC chain), C2/C3 (add `BillingGetByIdempotencyKey`), C4 (explicit `main.go` update), C5 (use cobra `PersistentFlags`), C6 (use `voipbin`), C7 (parse decimal amounts), C8 (immediate downgrade), I1 (explicit `CostTypeNone`), I4 (use `AccountTopUpTokens`), I5 (fixed route), I8 (audit record for unlimited), I9 (use `ApplyFields` pattern), I10 (30-service verification), I12 (log+200 for missing custom_data).
 
 **Review 2 resolutions applied:** R2-C1 (fix `down_revision` to `ffb1bfe3f8d7`), R2-C2/C3/C4 (Paddle-specific atomic DB methods — eliminate double-ledger), R2-C7 (verify Paddle SDK exists at v4 before implementation), R2-I2 (keep `paddle_subscription_id` after cancel), R2-I3 (reset tokens on subscription update), R2-I7 (return 400 for signature failures).
 
@@ -1272,7 +1272,7 @@ In `bin-hook-manager/k8s/deployment.yml`, add to env section:
 - name: PADDLE_WEBHOOK_SECRET_KEY
   valueFrom:
     secretKeyRef:
-      name: bin-manager-secrets
+      name: voipbin
       key: PADDLE_WEBHOOK_SECRET_KEY
 ```
 
