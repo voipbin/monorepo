@@ -50,6 +50,12 @@ type paddleTransactionData struct {
 	Adjustments []paddleAdjustment `json:"adjustments"`
 }
 
+// paddleScheduledChange represents a scheduled change on a Paddle subscription.
+type paddleScheduledChange struct {
+	Action      string `json:"action"`
+	EffectiveAt string `json:"effective_at"`
+}
+
 // paddleSubscriptionData is the minimal subscription payload.
 type paddleSubscriptionData struct {
 	ID         string            `json:"id"`
@@ -57,9 +63,11 @@ type paddleSubscriptionData struct {
 	CustomData *paddleCustomData `json:"custom_data"`
 	Items      []struct {
 		Price struct {
+			ID        string `json:"id"`
 			ProductID string `json:"product_id"`
 		} `json:"price"`
 	} `json:"items"`
+	ScheduledChange *paddleScheduledChange `json:"scheduled_change"`
 }
 
 // parsePaddleCentsToMicros converts a Paddle v2 amount string to internal micros.
@@ -218,11 +226,10 @@ func (h *listenHandler) handlePaddleSubscriptionCreated(ctx context.Context, eve
 	return simpleResponse(200), nil
 }
 
-// handlePaddleSubscriptionUpdated handles subscription.updated events (plan change).
-//
-// ASSUMPTION: The frontend updates custom_data.plan_type on the Paddle subscription
-// whenever the customer changes plans. Paddle echoes this back in the webhook.
-// If custom_data.plan_type is missing or empty, the event is silently skipped (returns 200).
+// handlePaddleSubscriptionUpdated handles subscription.updated events.
+// Handles two cases:
+//  1. Scheduled cancellation: scheduled_change.action == "cancel" → sets plan_status to "canceling"
+//  2. Plan change: resolves plan type from price ID (priority 1) or custom_data (priority 2)
 func (h *listenHandler) handlePaddleSubscriptionUpdated(ctx context.Context, event *paddleEvent) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "handlePaddleSubscriptionUpdated",
@@ -235,15 +242,42 @@ func (h *listenHandler) handlePaddleSubscriptionUpdated(ctx context.Context, eve
 		return simpleResponse(400), nil
 	}
 
-	if sub.CustomData == nil || sub.CustomData.PlanType == "" {
-		log.Infof("Missing plan_type in custom_data, skipping. subscription_id: %s", sub.ID)
+	// Case 1: Scheduled cancellation
+	if sub.ScheduledChange != nil && sub.ScheduledChange.Action == "cancel" {
+		log.Infof("Processing scheduled cancellation. subscription_id: %s, effective_at: %s", sub.ID, sub.ScheduledChange.EffectiveAt)
+		if err := h.accountHandler.PaddleSubscriptionScheduleCancel(ctx, sub.ID, event.EventID); err != nil {
+			log.Errorf("Could not process scheduled cancellation: %v", err)
+			return simpleResponse(500), nil
+		}
+		log.Infof("Scheduled cancellation recorded. subscription_id: %s", sub.ID)
 		return simpleResponse(200), nil
 	}
 
-	newPlanType := account.PlanType(sub.CustomData.PlanType)
-	if _, ok := account.PlanTokenMap[newPlanType]; !ok {
-		log.Errorf("Unknown plan_type in custom_data: %s", sub.CustomData.PlanType)
-		return simpleResponse(400), nil
+	// Case 2: Plan change — resolve plan type from price ID, then fall back to custom_data
+	var newPlanType account.PlanType
+
+	// Priority 1: Match items[].price.id against configured price IDs
+	if len(sub.Items) > 0 && sub.Items[0].Price.ID != "" {
+		pt, err := h.paddleHandler.GetPlanTypeByPriceID(sub.Items[0].Price.ID)
+		if err == nil {
+			newPlanType = pt
+		} else {
+			log.Debugf("Price ID not mapped, trying custom_data fallback. price_id: %s", sub.Items[0].Price.ID)
+		}
+	}
+
+	// Priority 2: Fall back to custom_data.plan_type
+	if newPlanType == "" && sub.CustomData != nil && sub.CustomData.PlanType != "" {
+		pt := account.PlanType(sub.CustomData.PlanType)
+		if _, ok := account.PlanTokenMap[pt]; ok {
+			newPlanType = pt
+		}
+	}
+
+	// Neither resolved — skip
+	if newPlanType == "" {
+		log.Infof("Could not resolve plan type, skipping. subscription_id: %s", sub.ID)
+		return simpleResponse(200), nil
 	}
 
 	log.Infof("Processing subscription update. subscription_id: %s, new_plan_type: %s", sub.ID, newPlanType)

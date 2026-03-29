@@ -27,6 +27,10 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+
+	PaddleAPIKey              string // PaddleAPIKey is the API key for authenticating with the Paddle API.
+	PaddlePriceIDBasic        string // PaddlePriceIDBasic is the Paddle price ID for the basic plan.
+	PaddlePriceIDProfessional string // PaddlePriceIDProfessional is the Paddle price ID for the professional plan.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -51,6 +55,9 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("paddle_api_key", "", "Paddle API key")
+	f.String("paddle_price_id_basic", "", "Paddle price ID for basic plan")
+	f.String("paddle_price_id_professional", "", "Paddle price ID for professional plan")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -60,6 +67,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+
+		"paddle_api_key":              "PADDLE_API_KEY",
+		"paddle_price_id_basic":       "PADDLE_PRICE_ID_BASIC",
+		"paddle_price_id_professional": "PADDLE_PRICE_ID_PROFESSIONAL",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -92,6 +103,10 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
+
+			PaddleAPIKey:              viper.GetString("paddle_api_key"),
+			PaddlePriceIDBasic:        viper.GetString("paddle_price_id_basic"),
+			PaddlePriceIDProfessional: viper.GetString("paddle_price_id_professional"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

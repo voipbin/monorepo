@@ -15,7 +15,8 @@ type Account struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
-	PlanType PlanType `json:"plan_type" db:"plan_type"`
+	PlanType   PlanType   `json:"plan_type" db:"plan_type"`
+	PlanStatus PlanStatus `json:"plan_status" db:"plan_status"`
 
 	BalanceCredit int64 `json:"balance_credit" db:"balance_credit"`
 	BalanceToken  int64 `json:"balance_token" db:"balance_token"`
@@ -61,4 +62,13 @@ type PaymentMethod string
 const (
 	PaymentMethodNone       PaymentMethod = ""
 	PaymentMethodCreditCard PaymentMethod = "credit card"
+)
+
+// PlanStatus defines the subscription plan status
+type PlanStatus string
+
+// list of PlanStatuses
+const (
+	PlanStatusActive    PlanStatus = "active"
+	PlanStatusCanceling PlanStatus = "canceling"
 )

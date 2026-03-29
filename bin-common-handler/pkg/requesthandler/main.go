@@ -429,6 +429,7 @@ type RequestHandler interface {
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 	BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error)
+	BillingV1AccountPaddlePortalSession(ctx context.Context, accountID uuid.UUID) (string, error)
 
 	// billing-manager billing
 	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)

@@ -15,6 +15,7 @@ import (
 
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
 // pagination parameters
@@ -38,6 +39,7 @@ type listenHandler struct {
 	utilHandler    utilhandler.UtilHandler
 	accountHandler accounthandler.AccountHandler
 	billingHandler billinghandler.BillingHandler
+	paddleHandler  paddlehandler.PaddleHandler
 }
 
 var (
@@ -64,6 +66,9 @@ var (
 
 	// hooks
 	regV1HooksPaddle = regexp.MustCompile("/v1/hooks/paddle$")
+
+	// paddle portal session
+	regV1AccountsIDPaddlePortalSession = regexp.MustCompile("/v1/accounts/" + regUUID + "/paddle_portal_session$")
 )
 
 var (
@@ -100,12 +105,14 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	accountHandler accounthandler.AccountHandler,
 	billingHandler billinghandler.BillingHandler,
+	paddleHandler paddlehandler.PaddleHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:    sockHandler,
 		utilHandler:    utilhandler.NewUtilHandler(),
 		accountHandler: accountHandler,
 		billingHandler: billingHandler,
+		paddleHandler:  paddleHandler,
 	}
 
 	return h
@@ -217,6 +224,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1BillingGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1BillingGet(ctx, m)
 		requestType = "/v1/billing"
+
+	// POST /accounts/<account-id>/paddle_portal_session
+	case regV1AccountsIDPaddlePortalSession.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccountsIDPaddlePortalSessionPost(ctx, m)
+		requestType = "/v1/accounts/<account-id>/paddle_portal_session"
 
 	////////////////////
 	// hooks

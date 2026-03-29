@@ -1450,6 +1450,21 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidResourceLimitBy
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidResourceLimitByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidResourceLimitByCustomerID), ctx, customerID, resourceType)
 }
 
+// BillingV1AccountPaddlePortalSession mocks base method.
+func (m *MockRequestHandler) BillingV1AccountPaddlePortalSession(ctx context.Context, accountID uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountPaddlePortalSession", ctx, accountID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountPaddlePortalSession indicates an expected call of BillingV1AccountPaddlePortalSession.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountPaddlePortalSession(ctx, accountID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountPaddlePortalSession", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountPaddlePortalSession), ctx, accountID)
+}
+
 // BillingV1AccountSubtractBalanceForce mocks base method.
 func (m *MockRequestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()

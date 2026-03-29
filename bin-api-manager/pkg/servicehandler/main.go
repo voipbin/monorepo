@@ -159,6 +159,7 @@ type ServiceHandler interface {
 	BillingAccountSelfGet(ctx context.Context, a *amagent.Agent) (*bmaccount.WebhookMessage, error)
 	BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *amagent.Agent, name string, detail string) (*bmaccount.WebhookMessage, error)
 	BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
+	BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *amagent.Agent) (string, error)
 	BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*bmaccount.Account, error)
 
 	// billings

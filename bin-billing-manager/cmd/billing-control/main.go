@@ -682,7 +682,7 @@ func initBillingHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accoun
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
-	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
+	accHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, nil)
 	billHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accHandler)
 
 	return accHandler, billHandler, nil

@@ -60,6 +60,8 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 replace monorepo/bin-customer-manager => ../bin-customer-manager
 
+replace monorepo/bin-direct-manager => ../bin-direct-manager
+
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
@@ -123,6 +125,7 @@ require (
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
+	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect

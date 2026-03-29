@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
 func Test_PaddleCreditTopUp(t *testing.T) {
@@ -113,6 +114,7 @@ func Test_PaddleCreditTopUp(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -248,6 +250,7 @@ func Test_PaddleSubscriptionCreate(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -345,6 +348,7 @@ func Test_PaddleSubscriptionUpdate(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -360,6 +364,11 @@ func Test_PaddleSubscriptionUpdate(t *testing.T) {
 					account.FieldPlanType: tt.newPlanType,
 				}).Return(nil)
 				mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
+
+				// Reset plan_status to active
+				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+					account.FieldPlanStatus: account.PlanStatusActive,
+				}).Return(nil)
 
 				// Token reset to new plan allowance
 				tokenAllowance := account.PlanTokenMap[tt.newPlanType]
@@ -426,6 +435,7 @@ func Test_PaddleSubscriptionCancel(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -441,6 +451,11 @@ func Test_PaddleSubscriptionCancel(t *testing.T) {
 					account.FieldPlanType: account.PlanTypeFree,
 				}).Return(nil)
 				mockDB.EXPECT().AccountGet(ctx, tt.responseAccount.ID).Return(tt.responseAccount, nil)
+
+				// Reset plan_status to active
+				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+					account.FieldPlanStatus: account.PlanStatusActive,
+				}).Return(nil)
 
 				// Token reset to free allowance
 				tokenAllowance := account.PlanTokenMap[account.PlanTypeFree]
@@ -514,6 +529,7 @@ func Test_PaddleSubscriptionRenew(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -641,6 +657,7 @@ func Test_PaddleRefund(t *testing.T) {
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				paddleHandler: nil,
 			}
 
 			ctx := context.Background()
@@ -673,6 +690,206 @@ func Test_PaddleRefund(t *testing.T) {
 			err := h.PaddleRefund(ctx, tt.customerID, tt.amountCreditMicros, tt.eventID)
 			if (err != nil) != tt.expectErr {
 				t.Errorf("PaddleRefund() error = %v, expectErr %v", err, tt.expectErr)
+			}
+		})
+	}
+}
+
+func Test_PaddleSubscriptionScheduleCancel(t *testing.T) {
+	tests := []struct {
+		name string
+
+		paddleSubID string
+		eventID     string
+
+		responseAccount    *account.Account
+		responseAccountErr error
+
+		expectErr bool
+	}{
+		{
+			name:        "normal - schedule cancel",
+			paddleSubID: "sub_sched_cancel_001",
+			eventID:     "evt_sched_cancel_001",
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000010-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000010-0000-0000-0000-000000000001"),
+				},
+				PlanType: account.PlanTypeBasic,
+			},
+
+			expectErr: false,
+		},
+		{
+			name:        "idempotent - repeated call sets same value",
+			paddleSubID: "sub_sched_cancel_002",
+			eventID:     "evt_sched_cancel_dup",
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000010-0000-0000-0000-000000000002"),
+					CustomerID: uuid.FromStringOrNil("a0000010-0000-0000-0000-000000000002"),
+				},
+				PlanType:   account.PlanTypeBasic,
+				PlanStatus: account.PlanStatusCanceling,
+			},
+
+			expectErr: false,
+		},
+		{
+			name:        "account not found",
+			paddleSubID: "sub_sched_cancel_003",
+			eventID:     "evt_sched_cancel_no_acc",
+
+			responseAccountErr: fmt.Errorf("account not found"),
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				paddleHandler: nil,
+			}
+
+			ctx := context.Background()
+
+			if tt.responseAccountErr != nil {
+				mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(nil, tt.responseAccountErr)
+			} else {
+				mockDB.EXPECT().AccountGetByPaddleSubscriptionID(ctx, tt.paddleSubID).Return(tt.responseAccount, nil)
+
+				// Update plan_status to canceling
+				mockDB.EXPECT().AccountUpdate(ctx, tt.responseAccount.ID, map[account.Field]any{
+					account.FieldPlanStatus: account.PlanStatusCanceling,
+				}).Return(nil)
+			}
+
+			err := h.PaddleSubscriptionScheduleCancel(ctx, tt.paddleSubID, tt.eventID)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("PaddleSubscriptionScheduleCancel() error = %v, expectErr %v", err, tt.expectErr)
+			}
+		})
+	}
+}
+
+func Test_PaddleCreatePortalSession(t *testing.T) {
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+
+		responseAccount    *account.Account
+		responseAccountErr error
+		responsePortalURL  string
+		responsePortalErr  error
+
+		expectURL string
+		expectErr bool
+	}{
+		{
+			name:      "normal",
+			accountID: uuid.FromStringOrNil("b0000011-0000-0000-0000-000000000001"),
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000011-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000011-0000-0000-0000-000000000001"),
+				},
+				PaddleCustomerID: "ctm_portal_001",
+			},
+			responsePortalURL: "https://checkout.paddle.com/portal/session/abc123",
+
+			expectURL: "https://checkout.paddle.com/portal/session/abc123",
+			expectErr: false,
+		},
+		{
+			name:      "no paddle customer ID",
+			accountID: uuid.FromStringOrNil("b0000012-0000-0000-0000-000000000001"),
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000012-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000012-0000-0000-0000-000000000001"),
+				},
+				PaddleCustomerID: "",
+			},
+
+			expectErr: true,
+		},
+		{
+			name:      "account not found",
+			accountID: uuid.FromStringOrNil("b0000013-0000-0000-0000-000000000001"),
+
+			responseAccountErr: fmt.Errorf("account not found"),
+
+			expectErr: true,
+		},
+		{
+			name:      "paddle API error",
+			accountID: uuid.FromStringOrNil("b0000014-0000-0000-0000-000000000001"),
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b0000014-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a0000014-0000-0000-0000-000000000001"),
+				},
+				PaddleCustomerID: "ctm_portal_002",
+			},
+			responsePortalErr: fmt.Errorf("paddle API returned status 500"),
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockPaddle := paddlehandler.NewMockPaddleHandler(mc)
+
+			h := accountHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				paddleHandler: mockPaddle,
+			}
+
+			ctx := context.Background()
+
+			if tt.responseAccountErr != nil {
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, tt.responseAccountErr)
+			} else {
+				mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+
+				if tt.responseAccount.PaddleCustomerID != "" {
+					mockPaddle.EXPECT().CreatePortalSession(ctx, tt.responseAccount.PaddleCustomerID).Return(tt.responsePortalURL, tt.responsePortalErr)
+				}
+			}
+
+			url, err := h.PaddleCreatePortalSession(ctx, tt.accountID)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("PaddleCreatePortalSession() error = %v, expectErr %v", err, tt.expectErr)
+			}
+			if url != tt.expectURL {
+				t.Errorf("PaddleCreatePortalSession() url = %v, expectURL %v", url, tt.expectURL)
 			}
 		})
 	}

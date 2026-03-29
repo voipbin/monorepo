@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 	"monorepo/bin-billing-manager/pkg/listenhandler"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 	"monorepo/bin-billing-manager/pkg/subscribehandler"
 )
 
@@ -121,11 +122,17 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
-	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
+	paddleHandler := paddlehandler.NewPaddleHandler(
+		config.Get().PaddleAPIKey,
+		config.Get().PaddlePriceIDBasic,
+		config.Get().PaddlePriceIDProfessional,
+	)
+
+	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, paddleHandler)
 	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
 
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler); err != nil {
 		return err
 	}
 
@@ -215,12 +222,12 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler)
 
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)

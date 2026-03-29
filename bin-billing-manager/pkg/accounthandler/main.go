@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
 // AccountHandler define
@@ -42,8 +43,10 @@ type AccountHandler interface {
 	PaddleSubscriptionCreate(ctx context.Context, customerID uuid.UUID, planType account.PlanType, paddleSubID string, paddleCustID string, eventID string) error
 	PaddleSubscriptionUpdate(ctx context.Context, paddleSubID string, newPlanType account.PlanType, eventID string) error
 	PaddleSubscriptionCancel(ctx context.Context, paddleSubID string, eventID string) error
+	PaddleSubscriptionScheduleCancel(ctx context.Context, paddleSubID string, eventID string) error
 	PaddleSubscriptionRenew(ctx context.Context, paddleSubID string, eventID string) error
 	PaddleRefund(ctx context.Context, customerID uuid.UUID, amountCreditMicros int64, eventID string) error
+	PaddleCreatePortalSession(ctx context.Context, accountID uuid.UUID) (string, error)
 
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
@@ -64,6 +67,7 @@ type accountHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	paddleHandler paddlehandler.PaddleHandler
 }
 
 var (
@@ -96,11 +100,12 @@ func init() {
 }
 
 // NewAccountHandler returns a new AccountHandler
-func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AccountHandler {
+func NewAccountHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, paddleHandler paddlehandler.PaddleHandler) AccountHandler {
 	return &accountHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            db,
 		notifyHandler: notifyHandler,
+		paddleHandler: paddleHandler,
 	}
 }

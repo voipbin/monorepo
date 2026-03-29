@@ -161,6 +161,14 @@ func (h *accountHandler) PaddleSubscriptionUpdate(ctx context.Context, paddleSub
 		return fmt.Errorf("could not update plan type: %w", err)
 	}
 
+	// Reset plan_status to active on plan change (clears any pending cancellation)
+	statusFields := map[account.Field]any{
+		account.FieldPlanStatus: account.PlanStatusActive,
+	}
+	if err := h.db.AccountUpdate(ctx, acc.ID, statusFields); err != nil {
+		return fmt.Errorf("could not update plan status: %w", err)
+	}
+
 	// Reset tokens to new plan allowance — atomic DB method creates billing record
 	tokenAllowance, ok := account.PlanTokenMap[newPlanType]
 	if !ok {
@@ -201,6 +209,14 @@ func (h *accountHandler) PaddleSubscriptionCancel(ctx context.Context, paddleSub
 	// Downgrade to free immediately
 	if _, err := h.UpdatePlanType(ctx, acc.ID, account.PlanTypeFree); err != nil {
 		return fmt.Errorf("could not update plan type: %w", err)
+	}
+
+	// Reset plan_status to active (cancellation is now effective, account is on free plan)
+	statusFields := map[account.Field]any{
+		account.FieldPlanStatus: account.PlanStatusActive,
+	}
+	if err := h.db.AccountUpdate(ctx, acc.ID, statusFields); err != nil {
+		return fmt.Errorf("could not update plan status: %w", err)
 	}
 
 	// NOTE: Do NOT clear paddle_subscription_id — Paddle may still send
@@ -315,4 +331,59 @@ func (h *accountHandler) PaddleRefund(ctx context.Context, customerID uuid.UUID,
 	}
 
 	return nil
+}
+
+// PaddleSubscriptionScheduleCancel sets plan_status to "canceling" when Paddle
+// reports a scheduled cancellation (cancel at end of billing period).
+// No idempotency check needed: setting plan_status=canceling is inherently idempotent
+// (repeated calls produce the same result), and this operation does not create a billing
+// record that could serve as an idempotency anchor.
+func (h *accountHandler) PaddleSubscriptionScheduleCancel(ctx context.Context, paddleSubID string, eventID string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                   "PaddleSubscriptionScheduleCancel",
+		"paddle_subscription_id": paddleSubID,
+		"event_id":               eventID,
+	})
+
+	acc, err := h.db.AccountGetByPaddleSubscriptionID(ctx, paddleSubID)
+	if err != nil {
+		return fmt.Errorf("could not get account by paddle subscription ID: %w", err)
+	}
+	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
+
+	fields := map[account.Field]any{
+		account.FieldPlanStatus: account.PlanStatusCanceling,
+	}
+	if err := h.db.AccountUpdate(ctx, acc.ID, fields); err != nil {
+		return fmt.Errorf("could not update plan status: %w", err)
+	}
+
+	log.Infof("Subscription schedule cancel recorded. account_id: %s, plan_status: canceling, paddle_subscription_id: %s", acc.ID, paddleSubID)
+	return nil
+}
+
+// PaddleCreatePortalSession creates a Paddle customer portal session for the given account.
+func (h *accountHandler) PaddleCreatePortalSession(ctx context.Context, accountID uuid.UUID) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "PaddleCreatePortalSession",
+		"account_id": accountID,
+	})
+
+	acc, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		return "", fmt.Errorf("could not get account: %w", err)
+	}
+	log.WithField("account", acc).Debugf("Retrieved account info. account_id: %s", acc.ID)
+
+	if acc.PaddleCustomerID == "" {
+		return "", fmt.Errorf("account has no paddle customer ID")
+	}
+
+	url, err := h.paddleHandler.CreatePortalSession(ctx, acc.PaddleCustomerID)
+	if err != nil {
+		return "", fmt.Errorf("could not create portal session: %w", err)
+	}
+
+	log.Infof("Portal session created. account_id: %s, paddle_customer_id: %s", acc.ID, acc.PaddleCustomerID)
+	return url, nil
 }

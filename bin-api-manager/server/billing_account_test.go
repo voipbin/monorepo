@@ -46,7 +46,7 @@ func TestGetBillingAccount(t *testing.T) {
 					ID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
 				},
 			},
-			expectRes: `{"id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","plan_status":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -120,7 +120,7 @@ func TestPutBillingAccount(t *testing.T) {
 
 			expectName:   "update name",
 			expectDetail: "update detail",
-			expectRes:    `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","plan_status":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -197,7 +197,7 @@ func TestPutBillingAccountPaymentInfo(t *testing.T) {
 
 			expectPaymentType:   bmaccount.PaymentTypePrepaid,
 			expectPaymentMethod: bmaccount.PaymentMethodCreditCard,
-			expectRes:           `{"id":"64461024-4cdf-11ee-be1f-e7111eb57d28","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"64461024-4cdf-11ee-be1f-e7111eb57d28","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","plan_type":"","plan_status":"","balance_credit":0,"balance_token":0,"payment_type":"","payment_method":"","tm_last_topup":null,"tm_next_topup":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

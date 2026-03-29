@@ -58,6 +58,21 @@ spec:
                 secretKeyRef:
                   name: bin-manager-secrets
                   key: CLICKHOUSE_ADDRESS
+            - name: PADDLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PADDLE_API_KEY
+            - name: PADDLE_PRICE_ID_BASIC
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PADDLE_PRICE_ID_BASIC
+            - name: PADDLE_PRICE_ID_PROFESSIONAL
+              valueFrom:
+                secretKeyRef:
+                  name: bin-manager-secrets
+                  key: PADDLE_PRICE_ID_PROFESSIONAL
           ports:
             - name: metrics
               protocol: "TCP"
