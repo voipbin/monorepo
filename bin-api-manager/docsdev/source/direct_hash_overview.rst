@@ -33,31 +33,33 @@ Each direct hash consists of a ``direct.`` prefix followed by 12 hexadecimal cha
 
 **Routing Flow**
 
-When an external caller dials a direct hash SIP URI, VoIPBIN resolves the hash to the underlying resource and routes the call accordingly.
+When an external caller dials a direct hash SIP URI, VoIPBIN resolves the hash to the underlying resource, automatically creates an activeflow with the appropriate action, and executes it.
 
 ::
 
-    External Caller                         VoIPBIN                          Destination
-         |                                     |                                  |
-         | INVITE                               |                                  |
-         | sip:direct.<hash>@sip.voipbin.net   |                                  |
-         +------------------------------------>|                                  |
-         |                                     |                                  |
-         |                                     | 1. Lookup hash in database       |
-         |                                     | 2. Resolve resource type and ID  |
-         |                                     | 3. Route call to resource        |
-         |                                     |                                  |
-         |                                     | INVITE (to resolved resource)    |
-         |                                     +--------------------------------->|
-         |                                     |                                  |
-         |                                     |           180 Ringing            |
-         |                                     |<---------------------------------+
-         |                                     |                                  |
-         |           Ringback tone             |           200 OK                 |
-         |<------------------------------------|<---------------------------------+
-         |                                     |                                  |
-         |           Call connected            |           Media flow             |
-         |<------------------------------------|<-------------------------------->|
+    External Caller                              VoIPBIN
+         |                                          |
+         | INVITE                                    |
+         | sip:direct.<hash>@sip.voipbin.net        |
+         +----------------------------------------->|
+         |                                          |
+         |                                          | 1. Lookup hash in database
+         |                                          | 2. Resolve resource type and ID
+         |                                          | 3. Create activeflow automatically
+         |                                          | 4. Execute activeflow
+         |                                          |
+         |           Call connected                  |
+         |<-----------------------------------------+
+         |                                          |
+         |           Media flow                     |
+         |<---------------------------------------->|
+
+The activeflow action depends on the resource type:
+
+- **Extension / Agent**: The activeflow dials the registered SIP device and bridges audio when answered.
+- **Conference**: The activeflow joins the caller into the conference bridge.
+- **AI**: The activeflow starts an AI voice agent conversation with the caller.
+- **Team**: The activeflow starts a multi-agent AI team conversation with the caller.
 
 **Comparison with Standard URIs**
 

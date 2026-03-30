@@ -215,30 +215,32 @@
 </pre></div>
 </div>
 <p><strong>Routing Flow</strong></p>
-<p>When an external caller dials a direct hash SIP URI, VoIPBIN resolves the hash to the underlying resource and routes the call accordingly.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                         <span class="n">VoIPBIN</span>                          <span class="n">Destination</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span> <span class="n">INVITE</span>                               <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>   <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">+------------------------------------&gt;|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span> <span class="mf">1.</span> <span class="n">Lookup</span> <span class="nb">hash</span> <span class="ow">in</span> <span class="n">database</span>       <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span> <span class="mf">2.</span> <span class="n">Resolve</span> <span class="n">resource</span> <span class="nb">type</span> <span class="ow">and</span> <span class="n">ID</span>  <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span> <span class="mf">3.</span> <span class="n">Route</span> <span class="n">call</span> <span class="n">to</span> <span class="n">resource</span>        <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span> <span class="n">INVITE</span> <span class="p">(</span><span class="n">to</span> <span class="n">resolved</span> <span class="n">resource</span><span class="p">)</span>    <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">+---------------------------------&gt;|</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|</span>           <span class="mi">180</span> <span class="n">Ringing</span>            <span class="o">|</span>
-     <span class="o">|</span>                                     <span class="o">|&lt;---------------------------------+</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>           <span class="n">Ringback</span> <span class="n">tone</span>             <span class="o">|</span>           <span class="mi">200</span> <span class="n">OK</span>                 <span class="o">|</span>
-     <span class="o">|&lt;------------------------------------|&lt;---------------------------------+</span>
-     <span class="o">|</span>                                     <span class="o">|</span>                                  <span class="o">|</span>
-     <span class="o">|</span>           <span class="n">Call</span> <span class="n">connected</span>            <span class="o">|</span>           <span class="n">Media</span> <span class="n">flow</span>             <span class="o">|</span>
-     <span class="o">|&lt;------------------------------------|&lt;--------------------------------&gt;|</span>
+<p>When an external caller dials a direct hash SIP URI, VoIPBIN resolves the hash to the underlying resource, automatically creates an activeflow with the appropriate action, and executes it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                              <span class="n">VoIPBIN</span>
+     <span class="o">|</span>                                          <span class="o">|</span>
+     <span class="o">|</span> <span class="n">INVITE</span>                                    <span class="o">|</span>
+     <span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>        <span class="o">|</span>
+     <span class="o">+-----------------------------------------&gt;|</span>
+     <span class="o">|</span>                                          <span class="o">|</span>
+     <span class="o">|</span>                                          <span class="o">|</span> <span class="mf">1.</span> <span class="n">Lookup</span> <span class="nb">hash</span> <span class="ow">in</span> <span class="n">database</span>
+     <span class="o">|</span>                                          <span class="o">|</span> <span class="mf">2.</span> <span class="n">Resolve</span> <span class="n">resource</span> <span class="nb">type</span> <span class="ow">and</span> <span class="n">ID</span>
+     <span class="o">|</span>                                          <span class="o">|</span> <span class="mf">3.</span> <span class="n">Create</span> <span class="n">activeflow</span> <span class="n">automatically</span>
+     <span class="o">|</span>                                          <span class="o">|</span> <span class="mf">4.</span> <span class="n">Execute</span> <span class="n">activeflow</span>
+     <span class="o">|</span>                                          <span class="o">|</span>
+     <span class="o">|</span>           <span class="n">Call</span> <span class="n">connected</span>                  <span class="o">|</span>
+     <span class="o">|&lt;-----------------------------------------+</span>
+     <span class="o">|</span>                                          <span class="o">|</span>
+     <span class="o">|</span>           <span class="n">Media</span> <span class="n">flow</span>                     <span class="o">|</span>
+     <span class="o">|&lt;----------------------------------------&gt;|</span>
 </pre></div>
 </div>
+<p>The activeflow action depends on the resource type:</p>
+<ul class="simple">
+<li><p><strong>Extension / Agent</strong>: The activeflow dials the registered SIP device and bridges audio when answered.</p></li>
+<li><p><strong>Conference</strong>: The activeflow joins the caller into the conference bridge.</p></li>
+<li><p><strong>AI</strong>: The activeflow starts an AI voice agent conversation with the caller.</p></li>
+<li><p><strong>Team</strong>: The activeflow starts a multi-agent AI team conversation with the caller.</p></li>
+</ul>
 <p><strong>Comparison with Standard URIs</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span> <span class="p">(</span><span class="n">requires</span> <span class="n">customer</span> <span class="n">domain</span> <span class="n">knowledge</span><span class="p">):</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
