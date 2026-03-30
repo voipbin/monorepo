@@ -27,6 +27,7 @@ Welcome to VoIPBIN's documentation!
    flow
    variable
    webhook
+   direct_hash
    common
 
 .. toctree::
