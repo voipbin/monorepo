@@ -39,4 +39,4 @@ Usage of ./storage-manager:
 	-rabbit_queue_notify "bin-manager.storage-manager.event"
 ```
 
-<!-- Updated dependencies: 2026-02-20 -->
+<!-- Updated dependencies: 2026-03-30 -->

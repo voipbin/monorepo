@@ -1,3 +1,3 @@
 # talk-manager
 
-<!-- Updated dependencies: 2026-02-20 -->
+<!-- Updated dependencies: 2026-03-30 -->
