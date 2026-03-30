@@ -255,4 +255,4 @@ See [CLAUDE.md](./CLAUDE.md).
 
 Copyright © 2024 VoIPBIN. All rights reserved.
 
-<!-- Updated dependencies: 2026-02-20 -->
+<!-- Updated dependencies: 2026-03-30 -->
