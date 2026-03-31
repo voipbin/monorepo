@@ -246,18 +246,29 @@
 <li><p><strong>AI</strong>: The activeflow starts an AI voice agent conversation with the caller.</p></li>
 <li><p><strong>Team</strong>: The activeflow starts a multi-agent AI team conversation with the caller.</p></li>
 </ul>
-<p><strong>Comparison with Standard URIs</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span> <span class="p">(</span><span class="n">requires</span> <span class="n">customer</span> <span class="n">domain</span> <span class="n">knowledge</span><span class="p">):</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">sip</span><span class="p">:{</span><span class="n">extension</span><span class="p">}</span><span class="o">@</span><span class="p">{</span><span class="n">customer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                   <span class="o">|</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-
-<span class="n">Direct</span> <span class="nb">hash</span> <span class="p">(</span><span class="n">public</span><span class="p">,</span> <span class="n">simplified</span><span class="p">):</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                                     <span class="o">|</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
+<p><strong>Comparison with Standard Access</strong></p>
+<p>Without direct hash, each resource type requires a different access method:</p>
+<p><strong>Extension / Agent</strong> — Standard access requires callers to know the customer-specific registrar domain.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span><span class="p">:</span>     <span class="n">sip</span><span class="p">:{</span><span class="n">extension</span><span class="p">}</span><span class="o">@</span><span class="p">{</span><span class="n">customer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>
+<span class="n">Direct</span> <span class="nb">hash</span><span class="p">:</span>  <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>
 </pre></div>
 </div>
+<p><strong>Conference</strong> — Standard access requires creating a flow with a <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> action and routing an inbound number to that flow. The caller dials the number, the flow executes, and the caller joins the conference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span><span class="p">:</span>     <span class="n">Caller</span> <span class="o">-&gt;</span> <span class="n">inbound</span> <span class="n">number</span> <span class="o">-&gt;</span> <span class="n">flow</span> <span class="p">(</span><span class="n">conference_join</span> <span class="n">action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">conference</span>
+<span class="n">Direct</span> <span class="nb">hash</span><span class="p">:</span>  <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span> <span class="o">-&gt;</span> <span class="n">conference</span>
+</pre></div>
+</div>
+<p><strong>AI</strong> — Standard access requires creating a flow with an <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action and routing an inbound number to that flow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span><span class="p">:</span>     <span class="n">Caller</span> <span class="o">-&gt;</span> <span class="n">inbound</span> <span class="n">number</span> <span class="o">-&gt;</span> <span class="n">flow</span> <span class="p">(</span><span class="n">ai_talk</span> <span class="n">action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AI</span> <span class="n">conversation</span>
+<span class="n">Direct</span> <span class="nb">hash</span><span class="p">:</span>  <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span> <span class="o">-&gt;</span> <span class="n">AI</span> <span class="n">conversation</span>
+</pre></div>
+</div>
+<p><strong>Team</strong> — Standard access requires creating a flow with a <code class="docutils literal notranslate"><span class="pre">team_talk</span></code> action and routing an inbound number to that flow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span><span class="p">:</span>     <span class="n">Caller</span> <span class="o">-&gt;</span> <span class="n">inbound</span> <span class="n">number</span> <span class="o">-&gt;</span> <span class="n">flow</span> <span class="p">(</span><span class="n">team_talk</span> <span class="n">action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Team</span> <span class="n">conversation</span>
+<span class="n">Direct</span> <span class="nb">hash</span><span class="p">:</span>  <span class="n">sip</span><span class="p">:</span><span class="n">direct</span><span class="o">.&lt;</span><span class="nb">hash</span><span class="o">&gt;</span><span class="nd">@sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span> <span class="o">-&gt;</span> <span class="n">Team</span> <span class="n">conversation</span>
+</pre></div>
+</div>
+<p>Direct hash eliminates the need for flow setup and number routing for simple, single-resource access patterns.</p>
 </section>
 <section id="supported-resources">
 <h3>Supported Resources<a class="headerlink" href="#supported-resources" title="Link to this heading"></a></h3>

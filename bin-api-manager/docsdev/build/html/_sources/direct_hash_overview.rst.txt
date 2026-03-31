@@ -61,19 +61,39 @@ The activeflow action depends on the resource type:
 - **AI**: The activeflow starts an AI voice agent conversation with the caller.
 - **Team**: The activeflow starts a multi-agent AI team conversation with the caller.
 
-**Comparison with Standard URIs**
+**Comparison with Standard Access**
+
+Without direct hash, each resource type requires a different access method:
+
+**Extension / Agent** — Standard access requires callers to know the customer-specific registrar domain.
 
 ::
 
-    Standard (requires customer domain knowledge):
-    +-----------------------------------------------------------------------+
-    | sip:{extension}@{customer-id}.registrar.voipbin.net                   |
-    +-----------------------------------------------------------------------+
+    Standard:     sip:{extension}@{customer-id}.registrar.voipbin.net
+    Direct hash:  sip:direct.<hash>@sip.voipbin.net
 
-    Direct hash (public, simplified):
-    +-----------------------------------------------------------------------+
-    | sip:direct.<hash>@sip.voipbin.net                                     |
-    +-----------------------------------------------------------------------+
+**Conference** — Standard access requires creating a flow with a ``conference_join`` action and routing an inbound number to that flow. The caller dials the number, the flow executes, and the caller joins the conference.
+
+::
+
+    Standard:     Caller -> inbound number -> flow (conference_join action) -> conference
+    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> conference
+
+**AI** — Standard access requires creating a flow with an ``ai_talk`` action and routing an inbound number to that flow.
+
+::
+
+    Standard:     Caller -> inbound number -> flow (ai_talk action) -> AI conversation
+    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> AI conversation
+
+**Team** — Standard access requires creating a flow with a ``team_talk`` action and routing an inbound number to that flow.
+
+::
+
+    Standard:     Caller -> inbound number -> flow (team_talk action) -> Team conversation
+    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> Team conversation
+
+Direct hash eliminates the need for flow setup and number routing for simple, single-resource access patterns.
 
 
 Supported Resources
