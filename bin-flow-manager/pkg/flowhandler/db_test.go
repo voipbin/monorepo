@@ -268,7 +268,6 @@ func Test_Create_DBInsertFailsCleansUpOrphanedDirect(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockAction := actionhandler.NewMockActionHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	_ = mockNotify
 	h := &flowHandler{
 		util:          mockUtil,
 		reqHandler:    mockReq,
@@ -311,6 +310,74 @@ func Test_Create_DBInsertFailsCleansUpOrphanedDirect(t *testing.T) {
 	_, err := h.Create(ctx, customerID, flow.TypeFlow, "test", "test detail", true, actions, uuid.Nil)
 	if err == nil {
 		t.Errorf("Expected error but got nil")
+	}
+}
+
+func Test_Create_DirectCreateFailsFlowStillCreated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &flowHandler{
+		util:          mockUtil,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		actionHandler: mockAction,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071")
+	flowID := uuid.FromStringOrNil("e1a2b3c4-0295-11f0-a03b-bf8d2fff2101")
+
+	// flow count check passes
+	mockDB.EXPECT().FlowCountByCustomerID(ctx, customerID).Return(0, nil)
+
+	// action generation succeeds
+	actions := []action.Action{{Type: action.TypeAnswer}}
+	mockAction.EXPECT().GenerateFlowActions(ctx, actions).Return(actions, nil)
+
+	// UUID and time setup
+	mockUtil.EXPECT().UUIDCreate().Return(flowID)
+
+	// direct hash creation fails
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "flow", flowID).Return(nil, fmt.Errorf("direct-manager unavailable"))
+
+	mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
+
+	// DB insert succeeds — flow should have zero DirectID and empty DirectHash
+	mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, f *flow.Flow) error {
+		if f.DirectID != uuid.Nil {
+			t.Errorf("Expected zero DirectID, got: %s", f.DirectID)
+		}
+		if f.DirectHash != "" {
+			t.Errorf("Expected empty DirectHash, got: %s", f.DirectHash)
+		}
+		return nil
+	})
+
+	responseFlow := &flow.Flow{
+		Identity: commonidentity.Identity{
+			ID:         flowID,
+			CustomerID: customerID,
+		},
+	}
+	mockDB.EXPECT().FlowGet(ctx, flowID).Return(responseFlow, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, responseFlow)
+
+	// DirectV1DirectDelete should NOT be called — no orphan to clean up
+
+	res, err := h.Create(ctx, customerID, flow.TypeFlow, "test", "test detail", true, actions, uuid.Nil)
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+
+	if !reflect.DeepEqual(res, responseFlow) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", responseFlow, res)
 	}
 }
 
