@@ -5164,6 +5164,10 @@ components:
             format: uuid
             x-go-type: string
           example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         wait_flow_id:
           type: string
           format: uuid
@@ -7021,6 +7025,8 @@ paths:
   /queuecalls/reference_id/{id}/kick:
     $ref: './paths/queuecalls/reference_id_id_kick.yaml'
 
+  /queues/{id}/direct-hash-regenerate:
+    $ref: './paths/queues/id_direct_hash_regenerate.yaml'
   /queues/{id}/routing_method:
     $ref: './paths/queues/id_routing_method.yaml'
   /queues/{id}/tag_ids:

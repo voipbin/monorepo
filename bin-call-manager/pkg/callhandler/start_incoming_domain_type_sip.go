@@ -105,6 +105,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 		return h.startIncomingDomainTypeSIPDirectAITeam(ctx, cn, d, source)
 	case "agent":
 		return h.startIncomingDomainTypeSIPDirectAgent(ctx, cn, d, source)
+	case "queue":
+		return h.startIncomingDomainTypeSIPDirectQueue(ctx, cn, d, source)
 	default:
 		log.Errorf("Unsupported direct resource type. resource_type: %s", d.ResourceType)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)

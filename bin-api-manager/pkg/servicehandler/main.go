@@ -700,6 +700,7 @@ type ServiceHandler interface {
 	) (*qmqueue.WebhookMessage, error)
 	QueueUpdateTagIDs(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueUpdateRoutingMethod(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
+	QueueDirectHashRegenerate(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
 
 	// queuecall handlers
 	QueuecallGet(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error)

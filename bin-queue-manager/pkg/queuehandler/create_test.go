@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -108,6 +110,12 @@ func Test_Create(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeQueue).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "queue", tt.responseUUID).Return(&dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				},
+				Hash: "test-hash",
+			}, nil)
 			mockDB.EXPECT().QueueCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueueGet(ctx, gomock.Any()).Return(tt.responseQueue, nil)
 
