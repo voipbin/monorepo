@@ -3237,6 +3237,9 @@ type FlowManagerFlow struct {
 	// Detail Detailed description of the flow.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id Unique identifier for the flow.
 	Id *string `json:"id,omitempty"`
 
@@ -7090,6 +7093,9 @@ type ServerInterface interface {
 	// Update a flow
 	// (PUT /flows/{id})
 	PutFlowsId(c *gin.Context, id string)
+	// Regenerate direct hash for flow
+	// (POST /flows/{id}/direct-hash-regenerate)
+	PostFlowsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Get a list of groupcalls
 	// (GET /groupcalls)
 	GetGroupcalls(c *gin.Context, params GetGroupcallsParams)
@@ -11433,6 +11439,30 @@ func (siw *ServerInterfaceWrapper) PutFlowsId(c *gin.Context) {
 	siw.Handler.PutFlowsId(c, id)
 }
 
+// PostFlowsIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostFlowsIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostFlowsIdDirectHashRegenerate(c, id)
+}
+
 // GetGroupcalls operation middleware
 func (siw *ServerInterfaceWrapper) GetGroupcalls(c *gin.Context) {
 
@@ -15732,6 +15762,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/flows/:id", wrapper.DeleteFlowsId)
 	router.GET(options.BaseURL+"/flows/:id", wrapper.GetFlowsId)
 	router.PUT(options.BaseURL+"/flows/:id", wrapper.PutFlowsId)
+	router.POST(options.BaseURL+"/flows/:id/direct-hash-regenerate", wrapper.PostFlowsIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/groupcalls", wrapper.GetGroupcalls)
 	router.POST(options.BaseURL+"/groupcalls", wrapper.PostGroupcalls)
 	router.DELETE(options.BaseURL+"/groupcalls/:id", wrapper.DeleteGroupcallsId)
@@ -18929,6 +18960,31 @@ func (response PutFlowsId200JSONResponse) VisitPutFlowsIdResponse(w http.Respons
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostFlowsIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostFlowsIdDirectHashRegenerateResponseObject interface {
+	VisitPostFlowsIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostFlowsIdDirectHashRegenerate200JSONResponse FlowManagerFlow
+
+func (response PostFlowsIdDirectHashRegenerate200JSONResponse) VisitPostFlowsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostFlowsIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostFlowsIdDirectHashRegenerate400Response) VisitPostFlowsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type GetGroupcallsRequestObject struct {
@@ -22699,6 +22755,9 @@ type StrictServerInterface interface {
 	// Update a flow
 	// (PUT /flows/{id})
 	PutFlowsId(ctx context.Context, request PutFlowsIdRequestObject) (PutFlowsIdResponseObject, error)
+	// Regenerate direct hash for flow
+	// (POST /flows/{id}/direct-hash-regenerate)
+	PostFlowsIdDirectHashRegenerate(ctx context.Context, request PostFlowsIdDirectHashRegenerateRequestObject) (PostFlowsIdDirectHashRegenerateResponseObject, error)
 	// Get a list of groupcalls
 	// (GET /groupcalls)
 	GetGroupcalls(ctx context.Context, request GetGroupcallsRequestObject) (GetGroupcallsResponseObject, error)
@@ -27864,6 +27923,33 @@ func (sh *strictHandler) PutFlowsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutFlowsIdResponseObject); ok {
 		if err := validResponse.VisitPutFlowsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostFlowsIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostFlowsIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostFlowsIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostFlowsIdDirectHashRegenerate(ctx, request.(PostFlowsIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostFlowsIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostFlowsIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostFlowsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

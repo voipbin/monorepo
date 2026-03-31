@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // flowGet returns the flow info.
@@ -90,6 +91,36 @@ func (h *serviceHandler) FlowDelete(ctx context.Context, a *amagent.Agent, id uu
 	tmp, err := h.reqHandler.FlowV1FlowDelete(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not delete the flow")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// FlowDirectHashRegenerate regenerates the direct hash for the flow.
+func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) (*fmflow.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "FlowDirectHashRegenerate",
+		"customer_id": a.CustomerID,
+		"flow_id":     flowID,
+	})
+	log.Debug("Regenerating flow direct hash.")
+
+	f, err := h.flowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not validate the flow info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.FlowV1FlowDirectHashRegenerate(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not regenerate flow direct hash. err: %v", err)
+		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()

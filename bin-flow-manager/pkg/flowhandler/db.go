@@ -90,6 +90,22 @@ func (h *flowHandler) Create(
 	}
 
 	id := h.util.UUIDCreate()
+
+	// create direct hash for persistent TypeFlow flows
+	var directID uuid.UUID
+	var directHash string
+	if flowType == flow.TypeFlow && persist {
+		d, errDirect := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "flow", id)
+		if errDirect != nil {
+			log.Errorf("Could not create direct hash. err: %v", errDirect)
+			// best-effort: flow is created without direct hash, can be regenerated later
+		} else {
+			log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+			directID = d.ID
+			directHash = d.Hash
+		}
+	}
+
 	f := &flow.Flow{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -104,6 +120,9 @@ func (h *flowHandler) Create(
 
 		Actions: a,
 
+		DirectID:   directID,
+		DirectHash: directHash,
+
 		OnCompleteFlowID: onCompleteFlowID,
 
 		TMCreate: h.util.TimeNow(),
@@ -116,6 +135,12 @@ func (h *flowHandler) Create(
 	case f.Persist:
 		if err := h.db.FlowCreate(ctx, f); err != nil {
 			log.Errorf("Could not create the flow in the database. err: %v", err)
+			// cleanup orphaned direct hash
+			if directID != uuid.Nil {
+				if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, directID); errDelete != nil {
+					log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", directID, errDelete)
+				}
+			}
 			return nil, err
 		}
 
@@ -205,10 +230,23 @@ func (h *flowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, err
 	})
 	log.Debug("Deleting the flow.")
 
-	err := h.db.FlowDelete(ctx, id)
-	if err != nil {
-		log.Errorf("Could not delete the flow. err: %v", err)
-		return nil, err
+	// get flow to check for direct hash cleanup
+	f, errGet := h.db.FlowGet(ctx, id)
+	if errGet != nil {
+		log.Errorf("Could not get flow for direct hash cleanup. err: %v", errGet)
+		return nil, errGet
+	}
+
+	// delete direct hash via direct-manager (best-effort, don't block flow deletion)
+	if f.DirectID != uuid.Nil {
+		if _, errDirect := h.reqHandler.DirectV1DirectDelete(ctx, f.DirectID); errDirect != nil {
+			log.Errorf("Could not delete direct hash. direct_id: %s, err: %v", f.DirectID, errDirect)
+		}
+	}
+
+	if errDelete := h.db.FlowDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete the flow. err: %v", errDelete)
+		return nil, errDelete
 	}
 
 	res, err := h.db.FlowGet(ctx, id)

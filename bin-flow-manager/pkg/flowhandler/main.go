@@ -46,6 +46,7 @@ type FlowHandler interface {
 		onCompleteFlowID uuid.UUID,
 	) (*flow.Flow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	List(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error)
 	Update(

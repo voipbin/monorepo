@@ -549,6 +549,7 @@ type ServiceHandler interface {
 		persist bool,
 	) (*fmflow.WebhookMessage, error)
 	FlowDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
+	FlowDirectHashRegenerate(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowList(ctx context.Context, a *amagent.Agent, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
 	FlowUpdate(

@@ -2487,6 +2487,21 @@ func (mr *MockServiceHandlerMockRecorder) FlowDelete(ctx, a, id any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowDelete", reflect.TypeOf((*MockServiceHandler)(nil).FlowDelete), ctx, a, id)
 }
 
+// FlowDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) FlowDirectHashRegenerate(ctx context.Context, a *agent.Agent, flowID uuid.UUID) (*flow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowDirectHashRegenerate", ctx, a, flowID)
+	ret0, _ := ret[0].(*flow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowDirectHashRegenerate indicates an expected call of FlowDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) FlowDirectHashRegenerate(ctx, a, flowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).FlowDirectHashRegenerate), ctx, a, flowID)
+}
+
 // FlowGet mocks base method.
 func (m *MockServiceHandler) FlowGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()

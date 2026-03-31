@@ -905,6 +905,7 @@ Flow B starts with these variables:
     <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 05:37:48.545532&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:10:23.604222&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -917,6 +918,7 @@ Flow B starts with these variables:
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The flow’s display name.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A human-readable description of the flow.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">actions</span></code> (Array of Object): Ordered list of actions to execute. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct flow access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows/{id}/direct-hash-regenerate</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the flow was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to the flow.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the flow was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
@@ -953,6 +955,7 @@ Flow B starts with these variables:
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4e5f6&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-21 02:11:15.033396&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>

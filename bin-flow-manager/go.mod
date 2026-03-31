@@ -83,6 +83,7 @@ require (
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
+	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da
@@ -128,7 +129,6 @@ require (
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect

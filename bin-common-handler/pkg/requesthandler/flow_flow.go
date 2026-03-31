@@ -192,6 +192,24 @@ func (r *requestHandler) FlowV1FlowList(ctx context.Context, pageToken string, p
 	return res, nil
 }
 
+// FlowV1FlowDirectHashRegenerate sends a request to flow-manager
+// to regenerate (or create) the direct hash for the given flow.
+func (r *requestHandler) FlowV1FlowDirectHashRegenerate(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows/%s/direct-hash-regenerate", flowID)
+
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodPost, "flow/flows/<flow-id>/direct-hash-regenerate", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res fmflow.Flow
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // FlowV1FlowCountByCustomerID sends a request to flow-manager
 // to get the count of flows for the given customer.
 func (r *requestHandler) FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {

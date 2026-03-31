@@ -75,6 +75,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			mockDB.EXPECT().FlowList(ctx, gomock.Any(), uint64(1000), tt.expectFilter).Return(tt.responseFlows, nil)
 
 			for _, f := range tt.responseFlows {
+				mockDB.EXPECT().FlowGet(ctx, f.ID).Return(f, nil)
 				mockDB.EXPECT().FlowDelete(ctx, f.ID).Return(nil)
 				mockDB.EXPECT().FlowGet(ctx, f.ID).Return(f, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, f)

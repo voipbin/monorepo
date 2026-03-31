@@ -104,6 +104,21 @@ func (mr *MockFlowHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFlowHandler)(nil).Delete), ctx, id)
 }
 
+// DirectHashRegenerate mocks base method.
+func (m *MockFlowHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DirectHashRegenerate", ctx, id)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DirectHashRegenerate indicates an expected call of DirectHashRegenerate.
+func (mr *MockFlowHandlerMockRecorder) DirectHashRegenerate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectHashRegenerate", reflect.TypeOf((*MockFlowHandler)(nil).DirectHashRegenerate), ctx, id)
+}
+
 // EventCustomerDeleted mocks base method.
 func (m *MockFlowHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()

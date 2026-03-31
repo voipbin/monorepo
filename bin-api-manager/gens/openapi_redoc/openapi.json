@@ -7147,6 +7147,43 @@
         }
       }
     },
+    "/flows/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for flow",
+        "description": "Regenerates the direct hash for the specified flow. If no direct hash exists, one is created. Returns the updated flow with the new direct_hash.",
+        "tags": [
+          "Flow"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the flow. Returned from the `GET /flows` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowManagerFlow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
+          }
+        }
+      }
+    },
     "/flows/{id}": {
       "get": {
         "summary": "Retrieve flow details",
@@ -19763,6 +19800,11 @@
             "items": {
               "$ref": "#/components/schemas/FlowManagerAction"
             }
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "on_complete_flow_id": {
             "type": "string",

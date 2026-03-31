@@ -4176,6 +4176,21 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1FlowDelete(ctx, flowID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowDelete), ctx, flowID)
 }
 
+// FlowV1FlowDirectHashRegenerate mocks base method.
+func (m *MockRequestHandler) FlowV1FlowDirectHashRegenerate(ctx context.Context, flowID uuid.UUID) (*flow.Flow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowV1FlowDirectHashRegenerate", ctx, flowID)
+	ret0, _ := ret[0].(*flow.Flow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowV1FlowDirectHashRegenerate indicates an expected call of FlowV1FlowDirectHashRegenerate.
+func (mr *MockRequestHandlerMockRecorder) FlowV1FlowDirectHashRegenerate(ctx, flowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowDirectHashRegenerate", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowDirectHashRegenerate), ctx, flowID)
+}
+
 // FlowV1FlowGet mocks base method.
 func (m *MockRequestHandler) FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()

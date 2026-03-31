@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -216,6 +218,17 @@ func Test_Create(t *testing.T) {
 			if !tt.expectErr {
 				mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+
+				// persistent TypeFlow flows create a direct hash
+				if tt.flowType == flow.TypeFlow && tt.persist {
+					mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "flow", tt.responseUUID).Return(&dmdirect.Direct{
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+						},
+						Hash: "test-hash",
+					}, nil)
+				}
+
 				mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 
 				if tt.persist {
@@ -243,6 +256,128 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseFlow, res)
 			}
 		})
+	}
+}
+
+func Test_Create_DBInsertFailsCleansUpOrphanedDirect(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &flowHandler{
+		util:          mockUtil,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		actionHandler: mockAction,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071")
+	flowID := uuid.FromStringOrNil("d1a2b3c4-0295-11f0-a03b-bf8d2fff2101")
+	directID := uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099")
+
+	// flow count check passes
+	mockDB.EXPECT().FlowCountByCustomerID(ctx, customerID).Return(0, nil)
+
+	// action generation succeeds
+	actions := []action.Action{{Type: action.TypeAnswer}}
+	mockAction.EXPECT().GenerateFlowActions(ctx, actions).Return(actions, nil)
+
+	// UUID and time setup
+	mockUtil.EXPECT().UUIDCreate().Return(flowID)
+
+	// direct hash creation succeeds
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "flow", flowID).Return(&dmdirect.Direct{
+		Identity: commonidentity.Identity{
+			ID: directID,
+		},
+		Hash: "test-hash-orphan",
+	}, nil)
+
+	mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
+
+	// DB insert fails
+	mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(fmt.Errorf("database connection error"))
+
+	// orphan cleanup: DirectV1DirectDelete should be called
+	mockReq.EXPECT().DirectV1DirectDelete(ctx, directID).Return(&dmdirect.Direct{}, nil)
+
+	_, err := h.Create(ctx, customerID, flow.TypeFlow, "test", "test detail", true, actions, uuid.Nil)
+	if err == nil {
+		t.Errorf("Expected error but got nil")
+	}
+}
+
+func Test_Create_DirectCreateFailsFlowStillCreated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAction := actionhandler.NewMockActionHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &flowHandler{
+		util:          mockUtil,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		actionHandler: mockAction,
+		notifyHandler: mockNotify,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071")
+	flowID := uuid.FromStringOrNil("e1a2b3c4-0295-11f0-a03b-bf8d2fff2101")
+
+	// flow count check passes
+	mockDB.EXPECT().FlowCountByCustomerID(ctx, customerID).Return(0, nil)
+
+	// action generation succeeds
+	actions := []action.Action{{Type: action.TypeAnswer}}
+	mockAction.EXPECT().GenerateFlowActions(ctx, actions).Return(actions, nil)
+
+	// UUID and time setup
+	mockUtil.EXPECT().UUIDCreate().Return(flowID)
+
+	// direct hash creation fails
+	mockReq.EXPECT().DirectV1DirectCreate(ctx, customerID, "flow", flowID).Return(nil, fmt.Errorf("direct-manager unavailable"))
+
+	mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
+
+	// DB insert succeeds — flow should have zero DirectID and empty DirectHash
+	mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, f *flow.Flow) error {
+		if f.DirectID != uuid.Nil {
+			t.Errorf("Expected zero DirectID, got: %s", f.DirectID)
+		}
+		if f.DirectHash != "" {
+			t.Errorf("Expected empty DirectHash, got: %s", f.DirectHash)
+		}
+		return nil
+	})
+
+	responseFlow := &flow.Flow{
+		Identity: commonidentity.Identity{
+			ID:         flowID,
+			CustomerID: customerID,
+		},
+	}
+	mockDB.EXPECT().FlowGet(ctx, flowID).Return(responseFlow, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, responseFlow)
+
+	// DirectV1DirectDelete should NOT be called — no orphan to clean up
+
+	res, err := h.Create(ctx, customerID, flow.TypeFlow, "test", "test detail", true, actions, uuid.Nil)
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+
+	if !reflect.DeepEqual(res, responseFlow) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", responseFlow, res)
 	}
 }
 
@@ -301,6 +436,18 @@ func Test_Delete(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "test with direct hash cleanup",
+
+			flowID: uuid.FromStringOrNil("bbc2d07e-67c5-11eb-a39d-6f0133ff0559"),
+			responseRes: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bbc2d07e-67c5-11eb-a39d-6f0133ff0559"),
+				},
+				DirectID:   uuid.FromStringOrNil("00000000-0000-0000-0000-000000000088"),
+				DirectHash: "test-hash-delete",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -318,6 +465,13 @@ func Test_Delete(t *testing.T) {
 			}
 
 			ctx := context.Background()
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseRes, nil)
+
+			// if flow has a DirectID, expect DirectV1DirectDelete call
+			if tt.responseRes.DirectID != uuid.Nil {
+				mockReq.EXPECT().DirectV1DirectDelete(ctx, tt.responseRes.DirectID).Return(&dmdirect.Direct{}, nil)
+			}
+
 			mockDB.EXPECT().FlowDelete(ctx, tt.flowID).Return(nil)
 			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseRes, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, tt.responseRes)

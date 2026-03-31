@@ -5252,6 +5252,9 @@ type FlowManagerFlow struct {
 	// Detail Detailed description of the flow.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id Unique identifier for the flow.
 	Id *string `json:"id,omitempty"`
 
