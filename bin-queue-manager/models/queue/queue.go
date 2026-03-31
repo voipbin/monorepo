@@ -20,6 +20,10 @@ type Queue struct {
 	RoutingMethod RoutingMethod `json:"routing_method,omitempty" db:"routing_method"` // queue's routing method
 	TagIDs        []uuid.UUID   `json:"tag_ids,omitempty" db:"tag_ids,json"`          // queue's tag ids
 
+	// direct hash
+	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`  // direct id for direct hash
+	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`   // direct hash
+
 	// execute
 	Execute Execute `json:"execute,omitempty" db:"execute"`
 

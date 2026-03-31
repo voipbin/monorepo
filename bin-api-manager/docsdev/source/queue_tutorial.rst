@@ -57,6 +57,29 @@ Create a new queue
 
    The ``tag_ids`` field must contain valid tag UUIDs obtained from ``GET /tags``. The ``wait_actions`` array defines what callers hear while waiting -- use ``talk`` for announcements and ``sleep`` for pauses. Timeout values (``timeout_wait``, ``timeout_service``) are in **milliseconds**: ``100000`` = 100 seconds, ``10000000`` = ~2.8 hours.
 
+Regenerate direct queue hash
+----------------------------
+Regenerate the direct hash for a queue. This invalidates the previous SIP URI and creates a new one. If the queue has no existing direct hash, one is created automatically.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/queues/<queue-id>/direct-hash-regenerate?token=<YOUR_AUTH_TOKEN>'
+
+.. code::
+
+    {
+        "id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+        "name": "test queue",
+        "detail": "test queue detail",
+        "routing_method": "random",
+        "direct_hash": "direct.e9f0a1b2c3d4",
+        ...
+    }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash -- the previous hash is permanently invalidated. The direct SIP URI format is ``sip:direct.<hash>@sip.voipbin.net``.
+
 Get list of queues
 ------------------
 Gets the list of created queues.

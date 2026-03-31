@@ -11,7 +11,7 @@ Overview
 
 Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@abc123.registrar.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
 
-Five resource types support direct hash: **extensions**, **agents**, **conferences**, **AIs**, and **teams**.
+Six resource types support direct hash: **extensions**, **agents**, **conferences**, **queues**, **AIs**, and **teams**.
 
 .. note:: **AI Implementation Hint**
 
@@ -58,6 +58,7 @@ The activeflow action depends on the resource type:
 
 - **Extension / Agent**: The activeflow dials the registered SIP device and bridges audio when answered.
 - **Conference**: The activeflow joins the caller into the conference bridge.
+- **Queue**: The activeflow joins the caller into the queue, waiting for an available agent.
 - **AI**: The activeflow starts an AI voice agent conversation with the caller.
 - **Team**: The activeflow starts a multi-agent AI team conversation with the caller.
 
@@ -88,6 +89,8 @@ Supported Resources
 +---------------+----------------+---------------------------------------------------+-------------------------------------------+
 | Team          | Yes            | ``POST /teams/{id}/direct-hash-regenerate``       | :ref:`team-overview`                      |
 +---------------+----------------+---------------------------------------------------+-------------------------------------------+
+| Queue         | Yes            | ``POST /queues/{id}/direct-hash-regenerate``      | :ref:`queue-overview`                     |
++---------------+----------------+---------------------------------------------------+-------------------------------------------+
 | Agent         | No             | ``POST /agents/{id}/direct-hash-regenerate``      | :ref:`agent_overview`                     |
 +---------------+----------------+---------------------------------------------------+-------------------------------------------+
 | AI            | No             | ``POST /ais/{id}/direct-hash-regenerate``         | :ref:`ai-overview`                        |
@@ -101,7 +104,7 @@ Managing Direct Hashes
 
 **Creating a Direct Hash**
 
-For extensions, conferences, and teams, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:
+For extensions, conferences, teams, and queues, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:
 
 .. code::
 
@@ -133,6 +136,7 @@ Use Cases
 - **SIP trunk compatibility**: Allow inbound calls from SIP trunks that cannot be configured with customer-specific domains. The shared ``sip.voipbin.net`` domain works universally.
 - **AI agent dial-in**: Provide a public SIP address for an AI voice agent so external callers can reach it directly.
 - **Conference bridge access**: Share a direct hash SIP URI as the conference dial-in number for participants.
+- **Queue dial-in**: Provide a public SIP address for a queue so external callers can join and wait for an available agent.
 - **Security rotation**: If a hash is compromised or shared unintentionally, regenerate it immediately. The old hash stops working and a new one is issued.
 
 
@@ -172,5 +176,6 @@ Related Documentation
 - :doc:`Extension Tutorial <extension_tutorial>` — Extension CRUD and direct hash regeneration example
 - :ref:`Agent Tutorial <agent-tutorial>` — Agent direct hash regeneration example
 - :doc:`Conference Tutorial <conference_tutorial>` — Conference direct hash regeneration example
+- :ref:`Queue Tutorial <queue-tutorial>` — Queue direct hash regeneration example
 - :ref:`AI Tutorial <ai-tutorial>` — AI direct hash regeneration example
 - :ref:`Team Tutorial <team-tutorial>` — Team direct hash regeneration example

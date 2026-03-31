@@ -204,7 +204,7 @@
 </ul>
 </div>
 <p>Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., <code class="docutils literal notranslate"><span class="pre">sip:office1&#64;abc123.registrar.voipbin.net</span></code>), direct hash exposes a short, unique address on a shared domain: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.</p>
-<p>Five resource types support direct hash: <strong>extensions</strong>, <strong>agents</strong>, <strong>conferences</strong>, <strong>AIs</strong>, and <strong>teams</strong>.</p>
+<p>Six resource types support direct hash: <strong>extensions</strong>, <strong>agents</strong>, <strong>conferences</strong>, <strong>queues</strong>, <strong>AIs</strong>, and <strong>teams</strong>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -243,6 +243,7 @@
 <ul class="simple">
 <li><p><strong>Extension / Agent</strong>: The activeflow dials the registered SIP device and bridges audio when answered.</p></li>
 <li><p><strong>Conference</strong>: The activeflow joins the caller into the conference bridge.</p></li>
+<li><p><strong>Queue</strong>: The activeflow joins the caller into the queue, waiting for an available agent.</p></li>
 <li><p><strong>AI</strong>: The activeflow starts an AI voice agent conversation with the caller.</p></li>
 <li><p><strong>Team</strong>: The activeflow starts a multi-agent AI team conversation with the caller.</p></li>
 </ul>
@@ -283,12 +284,17 @@
 <td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/teams/{id}/direct-hash-regenerate</span></code></p></td>
 <td><p><a class="reference internal" href="team_overview.html#team-overview"><span class="std std-ref">Overview</span></a></p></td>
 </tr>
-<tr class="row-odd"><td><p>Agent</p></td>
+<tr class="row-odd"><td><p>Queue</p></td>
+<td><p>Yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues/{id}/direct-hash-regenerate</span></code></p></td>
+<td><p><a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Overview</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Agent</p></td>
 <td><p>No</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents/{id}/direct-hash-regenerate</span></code></p></td>
 <td><p><a class="reference internal" href="agent_overview.html#agent-overview"><span class="std std-ref">Overview</span></a></p></td>
 </tr>
-<tr class="row-even"><td><p>AI</p></td>
+<tr class="row-odd"><td><p>AI</p></td>
 <td><p>No</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais/{id}/direct-hash-regenerate</span></code></p></td>
 <td><p><a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">Overview</span></a></p></td>
@@ -300,7 +306,7 @@
 <section id="managing-direct-hashes">
 <h3>Managing Direct Hashes<a class="headerlink" href="#managing-direct-hashes" title="Link to this heading"></a></h3>
 <p><strong>Creating a Direct Hash</strong></p>
-<p>For extensions, conferences, and teams, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:</p>
+<p>For extensions, conferences, teams, and queues, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST \
     &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
@@ -326,6 +332,7 @@
 <li><p><strong>SIP trunk compatibility</strong>: Allow inbound calls from SIP trunks that cannot be configured with customer-specific domains. The shared <code class="docutils literal notranslate"><span class="pre">sip.voipbin.net</span></code> domain works universally.</p></li>
 <li><p><strong>AI agent dial-in</strong>: Provide a public SIP address for an AI voice agent so external callers can reach it directly.</p></li>
 <li><p><strong>Conference bridge access</strong>: Share a direct hash SIP URI as the conference dial-in number for participants.</p></li>
+<li><p><strong>Queue dial-in</strong>: Provide a public SIP address for a queue so external callers can join and wait for an available agent.</p></li>
 <li><p><strong>Security rotation</strong>: If a hash is compromised or shared unintentionally, regenerate it immediately. The old hash stops working and a new one is issued.</p></li>
 </ul>
 </section>
@@ -382,6 +389,7 @@
 <li><p><a class="reference internal" href="extension_tutorial.html"><span class="doc">Extension Tutorial</span></a> — Extension CRUD and direct hash regeneration example</p></li>
 <li><p><a class="reference internal" href="agent_tutorial.html#agent-tutorial"><span class="std std-ref">Agent Tutorial</span></a> — Agent direct hash regeneration example</p></li>
 <li><p><a class="reference internal" href="conference_tutorial.html"><span class="doc">Conference Tutorial</span></a> — Conference direct hash regeneration example</p></li>
+<li><p><a class="reference internal" href="queue_tutorial.html#queue-tutorial"><span class="std std-ref">Queue Tutorial</span></a> — Queue direct hash regeneration example</p></li>
 <li><p><a class="reference internal" href="ai_tutorial.html#ai-tutorial"><span class="std std-ref">AI Tutorial</span></a> — AI direct hash regeneration example</p></li>
 <li><p><a class="reference internal" href="team_tutorial.html#team-tutorial"><span class="std std-ref">Team Tutorial</span></a> — Team direct hash regeneration example</p></li>
 </ul>

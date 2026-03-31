@@ -54,6 +54,9 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// fetch queue to get direct_id
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+
 			fields := map[queue.Field]any{
 				queue.FieldExecute: queue.ExecuteStop,
 			}

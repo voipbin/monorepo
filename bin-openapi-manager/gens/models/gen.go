@@ -5538,6 +5538,9 @@ type QueueManagerQueue struct {
 	// Detail Detailed description of the queue.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
 	Id *string `json:"id,omitempty"`
 

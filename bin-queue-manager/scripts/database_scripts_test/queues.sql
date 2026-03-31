@@ -10,6 +10,10 @@ create table queue_queues(
   routing_method  varchar(16),
   tag_ids         json,
 
+  -- direct hash
+  direct_id       binary(16),
+  direct_hash     varchar(255),
+
   -- execute
   execute varchar(255),
 

@@ -35,6 +35,7 @@ Queue struct
             "<string>",
             ...
         ],
+        "direct_hash": "<string>",
         "total_incoming_count": <number>,
         "total_serviced_count": <number>,
         "total_abandoned_count": <number>,
@@ -55,6 +56,7 @@ Queue struct
 * ``service_timeout`` (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to ``0`` for no timeout (talk indefinitely).
 * ``wait_queue_call_ids`` (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with ``GET /queuecalls/{id}`` to retrieve details. Read-only, managed by the system.
 * ``service_queue_call_ids`` (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with ``GET /queuecalls/{id}``. Read-only, managed by the system.
+* ``direct_hash`` (String): Hash for direct queue access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /queues/{id}/direct-hash-regenerate``.
 * ``total_incoming_count`` (Integer): Total number of calls that have entered this queue. Read-only.
 * ``total_serviced_count`` (Integer): Total number of calls that were successfully connected to an agent. Read-only.
 * ``total_abandoned_count`` (Integer): Total number of calls that left the queue without being serviced. Read-only.

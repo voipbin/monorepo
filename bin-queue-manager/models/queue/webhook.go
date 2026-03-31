@@ -21,6 +21,9 @@ type WebhookMessage struct {
 	RoutingMethod RoutingMethod `json:"routing_method,omitempty"` // queue's routing method
 	TagIDs        []uuid.UUID   `json:"tag_ids,omitempty"`        // queue's tag ids
 
+	// direct hash
+	DirectHash string `json:"direct_hash,omitempty"` // direct hash
+
 	// wait/service info
 	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty"`    // flow id for queue waiting
 	WaitTimeout    int       `json:"wait_timeout,omitempty"`    // wait queue timeout.(ms)
@@ -48,6 +51,7 @@ func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 		Detail:        h.Detail,
 		RoutingMethod: h.RoutingMethod,
 		TagIDs:        h.TagIDs,
+		DirectHash: h.DirectHash,
 
 		WaitFlowID:     h.WaitFlowID,
 		WaitTimeout:    h.WaitTimeout,
