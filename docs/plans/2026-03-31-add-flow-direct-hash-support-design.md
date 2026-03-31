@@ -70,7 +70,7 @@ No special changes — `commondatabasehandler.PrepareFields` and `GetDBFields`/`
 ### 5. Listen Handler (bin-flow-manager/pkg/listenhandler/)
 
 **New file: `v1_flows_direct_hash.go`** — Add endpoint:
-- `PUT /v1/flows/{id}/direct-hash-regenerate`
+- `POST /v1/flows/{id}/direct-hash-regenerate`
 - Extract flow ID from URI
 - Call `flowHandler.DirectHashRegenerate(ctx, id)`
 - Return updated flow as JSON

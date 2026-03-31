@@ -98,11 +98,12 @@ func (h *flowHandler) Create(
 		d, errDirect := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "flow", id)
 		if errDirect != nil {
 			log.Errorf("Could not create direct hash. err: %v", errDirect)
-			return nil, fmt.Errorf("could not create direct hash: %w", errDirect)
+			// best-effort: flow is created without direct hash, can be regenerated later
+		} else {
+			log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+			directID = d.ID
+			directHash = d.Hash
 		}
-		log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
-		directID = d.ID
-		directHash = d.Hash
 	}
 
 	f := &flow.Flow{
