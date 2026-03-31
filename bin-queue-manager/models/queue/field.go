@@ -13,6 +13,9 @@ const (
 	FieldRoutingMethod Field = "routing_method" // routing_method
 	FieldTagIDs        Field = "tag_ids"        // tag_ids
 
+	FieldDirectID   Field = "direct_id"   // direct_id
+	FieldDirectHash Field = "direct_hash" // direct_hash
+
 	FieldExecute Field = "execute" // execute
 
 	FieldWaitFlowID     Field = "wait_flow_id"     // wait_flow_id

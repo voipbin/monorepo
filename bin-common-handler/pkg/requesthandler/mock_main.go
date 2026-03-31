@@ -4892,6 +4892,21 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueDelete(ctx, queueID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueDelete", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueDelete), ctx, queueID)
 }
 
+// QueueV1QueueDirectHashRegenerate mocks base method.
+func (m *MockRequestHandler) QueueV1QueueDirectHashRegenerate(ctx context.Context, queueID uuid.UUID) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueueDirectHashRegenerate", ctx, queueID)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueueDirectHashRegenerate indicates an expected call of QueueV1QueueDirectHashRegenerate.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueDirectHashRegenerate(ctx, queueID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueDirectHashRegenerate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueDirectHashRegenerate), ctx, queueID)
+}
+
 // QueueV1QueueExecuteRun mocks base method.
 func (m *MockRequestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	m.ctrl.T.Helper()

@@ -55,6 +55,14 @@ func (h *queueHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("queue_id", id)
 
+	// create direct hash
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "queue", id)
+	if err != nil {
+		log.Errorf("Could not create direct hash. err: %v", err)
+		return nil, fmt.Errorf("could not create direct hash: %w", err)
+	}
+	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+
 	if routingMethod != queue.RoutingMethodRandom {
 		return nil, fmt.Errorf("wrong routing_method. routing_method: %s", routingMethod)
 	}
@@ -71,6 +79,9 @@ func (h *queueHandler) Create(
 
 		RoutingMethod: routingMethod,
 		TagIDs:        tagIDs,
+
+		DirectID:   d.ID,
+		DirectHash: d.Hash,
 
 		Execute: queue.ExecuteStop,
 

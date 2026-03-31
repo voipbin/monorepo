@@ -3523,6 +3523,9 @@ type QueueManagerQueue struct {
 	// Detail Detailed description of the queue.
 	Detail *string `json:"detail,omitempty"`
 
+	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	DirectHash *string `json:"direct_hash,omitempty"`
+
 	// Id The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
 	Id *string `json:"id,omitempty"`
 
@@ -7237,6 +7240,9 @@ type ServerInterface interface {
 	// Update the queue details
 	// (PUT /queues/{id})
 	PutQueuesId(c *gin.Context, id string)
+	// Regenerate direct hash for queue
+	// (POST /queues/{id}/direct-hash-regenerate)
+	PostQueuesIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Update the queue's routing method
 	// (PUT /queues/{id}/routing_method)
 	PutQueuesIdRoutingMethod(c *gin.Context, id string)
@@ -12645,6 +12651,30 @@ func (siw *ServerInterfaceWrapper) PutQueuesId(c *gin.Context) {
 	siw.Handler.PutQueuesId(c, id)
 }
 
+// PostQueuesIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostQueuesIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostQueuesIdDirectHashRegenerate(c, id)
+}
+
 // PutQueuesIdRoutingMethod operation middleware
 func (siw *ServerInterfaceWrapper) PutQueuesIdRoutingMethod(c *gin.Context) {
 
@@ -15752,6 +15782,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/queues/:id", wrapper.DeleteQueuesId)
 	router.GET(options.BaseURL+"/queues/:id", wrapper.GetQueuesId)
 	router.PUT(options.BaseURL+"/queues/:id", wrapper.PutQueuesId)
+	router.POST(options.BaseURL+"/queues/:id/direct-hash-regenerate", wrapper.PostQueuesIdDirectHashRegenerate)
 	router.PUT(options.BaseURL+"/queues/:id/routing_method", wrapper.PutQueuesIdRoutingMethod)
 	router.PUT(options.BaseURL+"/queues/:id/tag_ids", wrapper.PutQueuesIdTagIds)
 	router.GET(options.BaseURL+"/rags", wrapper.GetRags)
@@ -19815,6 +19846,31 @@ func (response PutQueuesId200JSONResponse) VisitPutQueuesIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostQueuesIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostQueuesIdDirectHashRegenerateResponseObject interface {
+	VisitPostQueuesIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostQueuesIdDirectHashRegenerate200JSONResponse QueueManagerQueue
+
+func (response PostQueuesIdDirectHashRegenerate200JSONResponse) VisitPostQueuesIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostQueuesIdDirectHashRegenerate400Response struct {
+}
+
+func (response PostQueuesIdDirectHashRegenerate400Response) VisitPostQueuesIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type PutQueuesIdRoutingMethodRequestObject struct {
 	Id   string `json:"id"`
 	Body *PutQueuesIdRoutingMethodJSONRequestBody
@@ -22793,6 +22849,9 @@ type StrictServerInterface interface {
 	// Update the queue details
 	// (PUT /queues/{id})
 	PutQueuesId(ctx context.Context, request PutQueuesIdRequestObject) (PutQueuesIdResponseObject, error)
+	// Regenerate direct hash for queue
+	// (POST /queues/{id}/direct-hash-regenerate)
+	PostQueuesIdDirectHashRegenerate(ctx context.Context, request PostQueuesIdDirectHashRegenerateRequestObject) (PostQueuesIdDirectHashRegenerateResponseObject, error)
 	// Update the queue's routing method
 	// (PUT /queues/{id}/routing_method)
 	PutQueuesIdRoutingMethod(ctx context.Context, request PutQueuesIdRoutingMethodRequestObject) (PutQueuesIdRoutingMethodResponseObject, error)
@@ -29292,6 +29351,33 @@ func (sh *strictHandler) PutQueuesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutQueuesIdResponseObject); ok {
 		if err := validResponse.VisitPutQueuesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostQueuesIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostQueuesIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostQueuesIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostQueuesIdDirectHashRegenerate(ctx, request.(PostQueuesIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostQueuesIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostQueuesIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostQueuesIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

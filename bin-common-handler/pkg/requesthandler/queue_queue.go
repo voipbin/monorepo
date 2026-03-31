@@ -326,6 +326,24 @@ func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID 
 	return &res, nil
 }
 
+// QueueV1QueueDirectHashRegenerate sends a request to queue-manager
+// to regenerate (or create) the direct hash for the given queue.
+func (r *requestHandler) QueueV1QueueDirectHashRegenerate(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
+	uri := fmt.Sprintf("/v1/queues/%s/direct-hash-regenerate", queueID)
+
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues/<queue-id>/direct-hash-regenerate", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res qmqueue.Queue
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // QueueV1QueueCountByCustomerID sends a request to queue-manager
 // to get the count of queues for the given customer.
 func (r *requestHandler) QueueV1QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {

@@ -302,6 +302,36 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *amagen
 	return res, nil
 }
 
+// QueueDirectHashRegenerate regenerates the direct hash for the queue.
+func (h *serviceHandler) QueueDirectHashRegenerate(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "QueueDirectHashRegenerate",
+		"customer_id": a.CustomerID,
+		"queue_id":    queueID,
+	})
+	log.Debug("Regenerating queue direct hash.")
+
+	q, err := h.queueGet(ctx, queueID)
+	if err != nil {
+		log.Errorf("Could not validate the queue info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.QueueV1QueueDirectHashRegenerate(ctx, queueID)
+	if err != nil {
+		log.Errorf("Could not regenerate queue direct hash. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // convertQueueFilters converts map[string]string to map[qmqueue.Field]any
 func (h *serviceHandler) convertQueueFilters(filters map[string]string) (map[qmqueue.Field]any, error) {
 	// Convert to map[string]any first

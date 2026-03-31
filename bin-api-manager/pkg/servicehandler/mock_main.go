@@ -3147,6 +3147,21 @@ func (mr *MockServiceHandlerMockRecorder) QueueDelete(ctx, a, queueID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDelete", reflect.TypeOf((*MockServiceHandler)(nil).QueueDelete), ctx, a, queueID)
 }
 
+// QueueDirectHashRegenerate mocks base method.
+func (m *MockServiceHandler) QueueDirectHashRegenerate(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queue.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueDirectHashRegenerate", ctx, a, queueID)
+	ret0, _ := ret[0].(*queue.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueDirectHashRegenerate indicates an expected call of QueueDirectHashRegenerate.
+func (mr *MockServiceHandlerMockRecorder) QueueDirectHashRegenerate(ctx, a, queueID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDirectHashRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).QueueDirectHashRegenerate), ctx, a, queueID)
+}
+
 // QueueGet mocks base method.
 func (m *MockServiceHandler) QueueGet(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()

@@ -9375,6 +9375,43 @@
         }
       }
     },
+    "/queues/{id}/direct-hash-regenerate": {
+      "post": {
+        "summary": "Regenerate direct hash for queue",
+        "description": "Regenerates the direct hash for the specified queue. If no direct hash exists, one is created. Returns the updated queue with the new direct_hash.",
+        "tags": [
+          "Queue"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the queue. Returned from the `GET /queues` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Direct hash regenerated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueManagerQueue"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unable to regenerate direct hash."
+          }
+        }
+      }
+    },
     "/queues/{id}/routing_method": {
       "put": {
         "summary": "Update the queue's routing method",
@@ -20357,6 +20394,11 @@
             "example": [
               "b1a2c3d4-e5f6-7890-abcd-ef1234567890"
             ]
+          },
+          "direct_hash": {
+            "type": "string",
+            "description": "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.",
+            "example": "a8f3b2c1d4e5"
           },
           "wait_flow_id": {
             "type": "string",

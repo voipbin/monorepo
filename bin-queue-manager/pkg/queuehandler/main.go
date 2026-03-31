@@ -64,6 +64,8 @@ type QueueHandler interface {
 
 	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 
+	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
+
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
