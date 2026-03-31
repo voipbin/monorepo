@@ -242,6 +242,28 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> field must contain valid tag UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> array defines what callers hear while waiting – use <code class="docutils literal notranslate"><span class="pre">talk</span></code> for announcements and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> for pauses. Timeout values (<code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code>, <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code>) are in <strong>milliseconds</strong>: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds, <code class="docutils literal notranslate"><span class="pre">10000000</span></code> = ~2.8 hours.</p>
 </div>
 </section>
+<section id="regenerate-direct-queue-hash">
+<h3>Regenerate direct queue hash<a class="headerlink" href="#regenerate-direct-queue-hash" title="Link to this heading"></a></h3>
+<p>Regenerate the direct hash for a queue. This invalidates the previous SIP URI and creates a new one. If the queue has no existing direct hash, one is created automatically.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues/&lt;queue-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test queue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test queue detail&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;routing_method&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;direct.e9f0a1b2c3d4&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash – the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
+</div>
+</section>
 <section id="get-list-of-queues">
 <h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Link to this heading"></a></h3>
 <p>Gets the list of created queues.</p>
@@ -308,6 +330,7 @@
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-a-new-queue">Create a new queue</a></li>
+<li><a class="reference internal" href="#regenerate-direct-queue-hash">Regenerate direct queue hash</a></li>
 <li><a class="reference internal" href="#get-list-of-queues">Get list of queues</a></li>
 </ul>
 </li>

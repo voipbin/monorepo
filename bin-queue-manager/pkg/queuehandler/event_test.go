@@ -76,6 +76,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			mockDB.EXPECT().QueueList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueues, nil)
 
 			for _, q := range tt.responseQueues {
+				// fetch queue to get direct_id
+				mockDB.EXPECT().QueueGet(ctx, q.ID).Return(q, nil)
+
 				fields := map[queue.Field]any{
 					queue.FieldExecute: queue.ExecuteStop,
 				}

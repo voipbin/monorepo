@@ -215,6 +215,7 @@
         <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;total_incoming_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;total_serviced_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;total_abandoned_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
@@ -237,6 +238,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">service_timeout</span></code> (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout (talk indefinitely).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">wait_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code> to retrieve details. Read-only, managed by the system.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">service_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code>. Read-only, managed by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct queue access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues/{id}/direct-hash-regenerate</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_incoming_count</span></code> (Integer): Total number of calls that have entered this queue. Read-only.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_serviced_count</span></code> (Integer): Total number of calls that were successfully connected to an agent. Read-only.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_abandoned_count</span></code> (Integer): Total number of calls that left the queue without being serviced. Read-only.</p></li>
