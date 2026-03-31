@@ -18,6 +18,7 @@ Flow
         "actions": [
             ...
         ],
+        "direct_hash": "<string>",
         "tm_create": "2022-02-03 05:37:48.545532",
         "tm_update": "2022-02-03 06:10:23.604222",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -28,6 +29,7 @@ Flow
 * ``name`` (String): The flow's display name.
 * ``detail`` (String): A human-readable description of the flow.
 * ``actions`` (Array of Object): Ordered list of actions to execute. See detail :ref:`here <flow-struct-action>`.
+* ``direct_hash`` (String): Hash for direct flow access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /flows/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the flow was created.
 * ``tm_update`` (String, ISO 8601): Timestamp of the last update to the flow.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the flow was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
@@ -64,6 +66,7 @@ Flow
                 }
             }
         ],
+        "direct_hash": "a1b2c3d4e5f6",
         "tm_create": "2022-03-21 02:11:15.033396",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"

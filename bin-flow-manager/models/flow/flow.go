@@ -24,6 +24,9 @@ type Flow struct {
 
 	Actions []action.Action `json:"actions,omitempty" db:"actions,json"`
 
+	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`
+	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`
+
 	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty" db:"on_complete_flow_id,uuid"` // will be triggered when this flow is completed
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`

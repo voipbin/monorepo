@@ -15,6 +15,9 @@ const (
 
 	FieldActions Field = "actions" // actions
 
+	FieldDirectID   Field = "direct_id"   // direct_id
+	FieldDirectHash Field = "direct_hash" // direct_hash
+
 	FieldOnCompleteFlowID Field = "on_complete_flow_id" // on_complete_flow_id
 
 	FieldTMCreate Field = "tm_create" // tm_create

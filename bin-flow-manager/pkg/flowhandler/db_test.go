@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -216,6 +218,17 @@ func Test_Create(t *testing.T) {
 			if !tt.expectErr {
 				mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+
+				// persistent TypeFlow flows create a direct hash
+				if tt.flowType == flow.TypeFlow && tt.persist {
+					mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "flow", tt.responseUUID).Return(&dmdirect.Direct{
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+						},
+						Hash: "test-hash",
+					}, nil)
+				}
+
 				mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 
 				if tt.persist {
@@ -318,6 +331,7 @@ func Test_Delete(t *testing.T) {
 			}
 
 			ctx := context.Background()
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseRes, nil)
 			mockDB.EXPECT().FlowDelete(ctx, tt.flowID).Return(nil)
 			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseRes, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, tt.responseRes)

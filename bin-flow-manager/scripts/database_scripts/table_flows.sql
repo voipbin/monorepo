@@ -9,6 +9,9 @@ create table flow_flows(
 
   actions json,
 
+  direct_id   binary(16),
+  direct_hash varchar(255),
+
   on_complete_flow_id BINARY(16) NOT NULL,
 
   -- timestamps

@@ -4629,6 +4629,10 @@ components:
           description: Ordered list of actions to execute in this flow.
           items:
             $ref: '#/components/schemas/FlowManagerAction'
+        direct_hash:
+          type: string
+          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
+          example: "a8f3b2c1d4e5"
         on_complete_flow_id:
           type: string
           format: uuid
@@ -6960,6 +6964,8 @@ paths:
     $ref: './paths/extensions/main.yaml'
 
 
+  /flows/{id}/direct-hash-regenerate:
+    $ref: './paths/flows/id_direct_hash_regenerate.yaml'
   /flows/{id}:
     $ref: './paths/flows/id.yaml'
   /flows:

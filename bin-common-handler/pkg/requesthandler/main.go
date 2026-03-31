@@ -977,6 +977,7 @@ type RequestHandler interface {
 	) (*fmflow.Flow, error)
 	FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
 	FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+	FlowV1FlowDirectHashRegenerate(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 
 	// flow-manager variables
 	FlowV1VariableGet(ctx context.Context, variableID uuid.UUID) (*fmvariable.Variable, error)

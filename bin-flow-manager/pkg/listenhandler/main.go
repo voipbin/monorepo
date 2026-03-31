@@ -63,7 +63,8 @@ var (
 	regV1Flows                = regexp.MustCompile("/v1/flows$")
 	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
 	regV1FlowsIDActions   = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
-	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
+	regV1FlowsIDActionsID              = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
+	regV1FlowsIDDirectHashRegenerate = regexp.MustCompile("/v1/flows/" + regUUID + "/direct-hash-regenerate$")
 
 	// variables
 	regV1VariablesID             = regexp.MustCompile("/v1/variables/" + regUUID + "$")
@@ -258,6 +259,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1FlowsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDDelete(ctx, m)
+
+	// flows/<flow-id>/direct-hash-regenerate
+	case regV1FlowsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/flows/<flow-id>/direct-hash-regenerate"
+		response, err = h.processV1FlowsIDDirectHashRegeneratePost(ctx, m)
 
 	// flows/<flow-id>/actions
 	case regV1FlowsIDActions.MatchString(m.URI) && m.Method == sock.RequestMethodPut:

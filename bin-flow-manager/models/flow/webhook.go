@@ -21,6 +21,8 @@ type WebhookMessage struct {
 
 	Actions []action.Action `json:"actions,omitempty"`
 
+	DirectHash string `json:"direct_hash,omitempty"`
+
 	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"`
 
 	TMCreate *time.Time `json:"tm_create"`
@@ -39,6 +41,8 @@ func (h *Flow) ConvertWebhookMessage() *WebhookMessage {
 		Detail: h.Detail,
 
 		Actions: h.Actions,
+
+		DirectHash: h.DirectHash,
 
 		OnCompleteFlowID: h.OnCompleteFlowID,
 
