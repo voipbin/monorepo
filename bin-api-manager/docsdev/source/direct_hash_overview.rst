@@ -63,39 +63,17 @@ The activeflow action depends on the resource type:
 
 **Comparison with Standard Access**
 
-Without direct hash, each resource type requires a different access method:
-
 In both cases, VoIPBIN internally creates an activeflow and executes it. The difference is how the caller reaches the resource — not what happens after.
 
-**Extension / Agent** — Standard access requires the caller to know the customer-specific registrar domain.
-
 ::
 
-    Standard:     sip:{extension}@{customer-id}.registrar.voipbin.net
-    Direct hash:  sip:direct.<hash>@sip.voipbin.net
+    Standard access:
+    Caller -> inbound number -> flow -> resource
 
-**Conference** — Standard access requires purchasing an inbound number, creating a flow with a ``conference_join`` action, and routing the number to that flow.
+    Direct hash access:
+    Caller -> sip:direct.<hash>@sip.voipbin.net -> resource
 
-::
-
-    Standard:     Caller -> inbound number -> flow (conference_join action) -> conference
-    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> conference
-
-**AI** — Standard access requires purchasing an inbound number, creating a flow with an ``ai_talk`` action, and routing the number to that flow.
-
-::
-
-    Standard:     Caller -> inbound number -> flow (ai_talk action) -> AI conversation
-    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> AI conversation
-
-**Team** — Standard access requires purchasing an inbound number, creating a flow with a ``team_talk`` action, and routing the number to that flow.
-
-::
-
-    Standard:     Caller -> inbound number -> flow (team_talk action) -> Team conversation
-    Direct hash:  sip:direct.<hash>@sip.voipbin.net -> Team conversation
-
-Direct hash eliminates the need for number purchase, flow creation, and number routing. VoIPBIN automatically creates the appropriate activeflow internally for both standard and direct hash access.
+Standard access requires purchasing an inbound number, creating a flow with the appropriate action, and routing the number to that flow. Direct hash eliminates all of this — VoIPBIN automatically creates the appropriate activeflow internally.
 
 
 Supported Resources
