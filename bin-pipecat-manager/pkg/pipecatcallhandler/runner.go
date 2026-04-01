@@ -529,8 +529,10 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 		// Non-blocking send to avoid stalling the WebSocket read loop (which also
 		// handles audio frames) if the flush goroutine is slow due to RabbitMQ
-		// backpressure. Dropped tokens are acceptable — intermediate events carry
-		// delta-only text, and the final message_bot_llm always has the complete text.
+		// backpressure. Dropped tokens will be missing from both intermediate and
+		// final events. In practice, the 64-token buffer drains every 200ms (~8
+		// tokens/tick), so drops only occur if PublishEvent blocks for >1.6s —
+		// extremely unlikely since it uses its own context.Background() with timeout.
 		select {
 		case se.LLMTokenChan <- msg.Data.Text:
 		default:

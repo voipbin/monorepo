@@ -330,5 +330,5 @@ If a client misses intermediate events, it simply waits for `aimessage_created` 
 
 - **Delta vs full-text**: Delta reduces bandwidth but requires clients to concatenate. Missed events cause gaps until `aimessage_created` arrives with complete text. Acceptable since the final event is authoritative.
 - **200ms batching**: Fixed interval, not configurable. Can be made configurable later if needed.
-- **Channel buffer size 64**: Handles ~1.6s of backpressure at 40 tokens/sec. If exceeded, tokens are dropped with a warning log (non-blocking send). Dropped intermediate tokens are acceptable since the final `message_bot_llm` always carries the complete text.
+- **Channel buffer size 64**: Handles ~1.6s of backpressure at 40 tokens/sec. If exceeded, tokens are dropped with a warning log (non-blocking send). Dropped tokens will be missing from both intermediate and final events. In practice, the flush goroutine drains the channel every 200ms and `PublishEvent` uses its own `context.Background()` with timeout, making drops extremely unlikely.
 - **No DB for intermediates**: Intermediates are lost if webhook delivery fails. Acceptable since `aimessage_created` has the complete message.
