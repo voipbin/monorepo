@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -122,12 +123,68 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 	}
 }
 
+func Test_getServiceNamespace(t *testing.T) {
+
+	type test struct {
+		name string
+
+		publisher string
+
+		expectNamespace string
+	}
+
+	tests := []test{
+		{
+			name:            "mapped service - transcribe-manager",
+			publisher:       string(commonoutline.ServiceNameTranscribeManager),
+			expectNamespace: "transcribe",
+		},
+		{
+			name:            "mapped service - call-manager",
+			publisher:       string(commonoutline.ServiceNameCallManager),
+			expectNamespace: "call",
+		},
+		{
+			name:            "mapped service - ai-manager",
+			publisher:       string(commonoutline.ServiceNameAIManager),
+			expectNamespace: "ai",
+		},
+		{
+			name:            "mapped service - conversation-manager",
+			publisher:       string(commonoutline.ServiceNameConversationManager),
+			expectNamespace: "conversation",
+		},
+		{
+			name:            "mapped service - queue-manager",
+			publisher:       string(commonoutline.ServiceNameQueueManager),
+			expectNamespace: "queue",
+		},
+		{
+			name:            "unmapped service falls through",
+			publisher:       "unknown-manager",
+			expectNamespace: "unknown-manager",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &subscribeHandler{}
+
+			got := h.getServiceNamespace(tt.publisher)
+			if got != tt.expectNamespace {
+				t.Errorf("Unexpected namespace. expect: %s, got: %s", tt.expectNamespace, got)
+			}
+		})
+	}
+}
+
 func Test_createTopics(t *testing.T) {
 
 	type test struct {
 		name string
 
 		messageType string
+		publisher   string
 		data        *commonWebhookData
 
 		expectTopics []string
@@ -138,6 +195,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, customer_id",
 			messageType: "activeflow_created",
+			publisher:   "test-manager",
 			data: &commonWebhookData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d5d70d9d-85ad-4ffc-90c1-fdda37c046b0"),
@@ -155,6 +213,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, customer_id, owner_id",
 			messageType: "chatroom_created",
+			publisher:   "test-manager",
 			data: &commonWebhookData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7b0966c0-da98-11ee-97df-1786497422fb"),
@@ -177,6 +236,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, owner_id",
 			messageType: "task_created",
+			publisher:   "test-manager",
 			data: &commonWebhookData{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8c0966c0-da98-11ee-97df-1786497422fb"),
@@ -194,8 +254,27 @@ func Test_createTopics(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "mapped publisher uses short namespace",
+			messageType: "transcribe_speech_interim",
+			publisher:   string(commonoutline.ServiceNameTranscribeManager),
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ae0966c0-da98-11ee-97df-1786497422fb"),
+					CustomerID: uuid.FromStringOrNil("ae6cc58a-da98-11ee-b114-3fb0f4ae9318"),
+				},
+			},
+			expectTopics: []string{
+				// Old format
+				"customer_id:ae6cc58a-da98-11ee-b114-3fb0f4ae9318:transcribe:ae0966c0-da98-11ee-97df-1786497422fb",
+				// New format (uses "transcribe" not "transcribe-manager")
+				"customer_id:ae6cc58a-da98-11ee-b114-3fb0f4ae9318:transcribe:transcribe_speech_interim:ae0966c0-da98-11ee-97df-1786497422fb",
+			},
+			expectError: false,
+		},
+		{
 			name:        "invalid message type",
 			messageType: "invalidtype",
+			publisher:   "test-manager",
 			data: &commonWebhookData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9d0966c0-da98-11ee-97df-1786497422fb"),
@@ -211,7 +290,7 @@ func Test_createTopics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &subscribeHandler{}
 
-			topics, err := h.createTopics(tt.messageType, tt.data, "test-manager")
+			topics, err := h.createTopics(tt.messageType, tt.data, tt.publisher)
 			if (err != nil) != tt.expectError {
 				t.Errorf("Unexpected error. expect: %v, got: %v", tt.expectError, err)
 			}
