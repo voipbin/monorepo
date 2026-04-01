@@ -17,6 +17,7 @@ import (
 type commonWebhookData struct {
 	commonidentity.Identity
 	commonidentity.Owner
+	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
 }
 
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
@@ -121,7 +122,11 @@ func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData
 
 	// Old format (deprecated but kept for backward compatibility)
 	if d.CustomerID != uuid.Nil {
-		res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
+		if d.AIcallID != uuid.Nil {
+			res = append(res, fmt.Sprintf("customer_id:%s:aicall:%s", d.CustomerID, d.AIcallID))
+		} else {
+			res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
+		}
 	}
 	if d.OwnerID != uuid.Nil {
 		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.OwnerID, resource, d.ID))
