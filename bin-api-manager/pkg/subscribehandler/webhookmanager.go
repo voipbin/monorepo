@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
@@ -22,22 +23,22 @@ type commonWebhookData struct {
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
 func (h *subscribeHandler) getServiceNamespace(publisher string) string {
 	namespaces := map[string]string{
-		"agent-manager":        "agent",
-		"ai-manager":           "ai",
-		"billing-manager":      "billing",
-		"call-manager":         "call",
-		"campaign-manager":     "campaign",
-		"conference-manager":   "conference",
-		"conversation-manager": "conversation",
-		"email-manager":        "email",
-		"flow-manager":         "flow",
-		"message-manager":      "message",
-		"number-manager":       "number",
-		"outdial-manager":      "outdial",
-		"queue-manager":        "queue",
-		"talk-manager":         "talk",
-		"transcribe-manager":   "transcribe",
-		"webhook-manager":      "webhook",
+		string(commonoutline.ServiceNameAgentManager):        "agent",
+		string(commonoutline.ServiceNameAIManager):           "ai",
+		string(commonoutline.ServiceNameBillingManager):      "billing",
+		string(commonoutline.ServiceNameCallManager):         "call",
+		string(commonoutline.ServiceNameCampaignManager):     "campaign",
+		string(commonoutline.ServiceNameConferenceManager):   "conference",
+		string(commonoutline.ServiceNameConversationManager): "conversation",
+		string(commonoutline.ServiceNameEmailManager):        "email",
+		string(commonoutline.ServiceNameFlowManager):         "flow",
+		string(commonoutline.ServiceNameMessageManager):      "message",
+		string(commonoutline.ServiceNameNumberManager):       "number",
+		string(commonoutline.ServiceNameOutdialManager):      "outdial",
+		string(commonoutline.ServiceNameQueueManager):        "queue",
+		string(commonoutline.ServiceNameTalkManager):         "talk",
+		string(commonoutline.ServiceNameTranscribeManager):   "transcribe",
+		string(commonoutline.ServiceNameWebhookManager):      "webhook",
 	}
 
 	if ns, ok := namespaces[publisher]; ok {
