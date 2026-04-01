@@ -31,8 +31,7 @@ type Session struct {
 	connAstOnce         sync.Once
 
 	// llm
-	LLMKey     string `json:"-"`
-	LLMBotText string `json:"-"`
+	LLMKey string `json:"-"`
 
 	// LLM intermediate event flush coordination.
 	// These fields are managed by the WebSocket read loop (single goroutine per session).

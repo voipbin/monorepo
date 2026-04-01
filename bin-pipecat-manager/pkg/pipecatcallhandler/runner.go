@@ -526,7 +526,16 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			se.LLMFlushing = true
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
-		se.LLMTokenChan <- msg.Data.Text
+
+		// Non-blocking send to avoid stalling the WebSocket read loop (which also
+		// handles audio frames) if the flush goroutine is slow due to RabbitMQ
+		// backpressure. Dropped tokens are acceptable — intermediate events carry
+		// delta-only text, and the final message_bot_llm always has the complete text.
+		select {
+		case se.LLMTokenChan <- msg.Data.Text:
+		default:
+			log.Warnf("LLM token channel full, dropping intermediate token. pipecatcall_id: %s", se.ID)
+		}
 
 	case pipecatframe.RTVIFrameTypeBotLLMStopped:
 		msg := pipecatframe.RTVIBotLLMStoppedMessage{}
@@ -538,6 +547,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			close(se.LLMStopChan)
 			<-se.LLMDoneChan
 			se.LLMFlushing = false
+		} else {
+			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
 		}
 
 	default:
@@ -618,12 +629,29 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			}
 
 			// Publish the final complete bot LLM event.
-			h.publishFinalBotLLMEvent(se, messageID, fullText)
+			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, fullText)
 			log.Debugf("Published final bot LLM event. full_text_len: %d", len(fullText))
 			return
 
 		case <-se.Ctx.Done():
-			log.Debugf("Context cancelled, stopping LLM intermediate flush.")
+			// Drain and publish final event to preserve partial LLM response in
+			// conversation history (used by summary handler). Use context.Background()
+			// because the original context is already cancelled.
+			for {
+				select {
+				case token := <-se.LLMTokenChan:
+					fullText += token
+				default:
+					goto ctxDrained
+				}
+			}
+		ctxDrained:
+			if fullText != "" {
+				h.publishFinalBotLLMEvent(context.Background(), se, messageID, fullText)
+				log.Debugf("Context cancelled, published partial final bot LLM event. full_text_len: %d", len(fullText))
+			} else {
+				log.Debugf("Context cancelled, no text accumulated.")
+			}
 			return
 		}
 	}
@@ -650,7 +678,8 @@ func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, m
 }
 
 // publishFinalBotLLMEvent publishes the final message_bot_llm event with the complete text.
-func (h *pipecatcallHandler) publishFinalBotLLMEvent(se *pipecatcall.Session, messageID uuid.UUID, fullText string) {
+// Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled.
+func (h *pipecatcallHandler) publishFinalBotLLMEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, fullText string) {
 	evt := message.Message{
 		Identity: commonidentity.Identity{
 			ID:         messageID,
@@ -665,7 +694,7 @@ func (h *pipecatcallHandler) publishFinalBotLLMEvent(se *pipecatcall.Session, me
 		Text: fullText,
 	}
 
-	h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, evt)
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeBotLLM, evt)
 }
 
 func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session, sampleRate int, numChannels int, data []byte) error {
