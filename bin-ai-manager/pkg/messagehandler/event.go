@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-ai-manager/models/message"
+	identity "monorepo/bin-common-handler/models/identity"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +22,7 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -39,12 +41,43 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created message.")
+}
+
+func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageBotLLMIntermediate",
+		"event": evt,
+	})
+
+	if evt.Text == "" {
+		return
+	}
+
+	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
+		return
+	}
+
+	webhookMsg := &message.IntermediateWebhookMessage{
+		Identity: identity.Identity{
+			ID:         evt.ID,
+			CustomerID: evt.CustomerID,
+		},
+		AIcallID:     evt.PipecatcallReferenceID,
+		ActiveflowID: evt.ActiveflowID,
+		Role:         message.RoleAssistant,
+		Content:      evt.Text,
+		Direction:    message.DirectionIncoming,
+		Sequence:     evt.Sequence,
+	}
+
+	h.notifyHandler.PublishWebhookEvent(ctx, evt.CustomerID, message.EventTypeMessageIntermediate, webhookMsg)
+	log.Debugf("Published intermediate webhook event. message_id: %s, sequence: %d", evt.ID, evt.Sequence)
 }
 
 func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message) {
@@ -53,7 +86,7 @@ func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessa
 		"event": evt,
 	})
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -98,7 +131,7 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "")
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "")
 	if err != nil {
 		log.Errorf("Could not create the notification message. err: %v", err)
 		return

@@ -31,8 +31,16 @@ type Session struct {
 	connAstOnce         sync.Once
 
 	// llm
-	LLMKey     string `json:"-"`
-	LLMBotText string `json:"-"`
+	LLMKey string `json:"-"`
+
+	// LLM intermediate event flush coordination.
+	// These fields are managed by the WebSocket read loop (single goroutine per session).
+	// The flush goroutine communicates via channels only — no shared mutable state.
+	LLMTokenChan chan string   `json:"-"` // buffered channel for LLM tokens (cap 64)
+	LLMStopChan  chan struct{} `json:"-"` // signals flush goroutine to stop
+	LLMDoneChan  chan struct{} `json:"-"` // closed when flush goroutine completes
+	LLMFlushing  bool         `json:"-"` // whether flush goroutine is running
+	LLMMessageID uuid.UUID    `json:"-"` // pre-generated message UUID for current generation
 
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`

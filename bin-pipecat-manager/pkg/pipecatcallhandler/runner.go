@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -517,7 +518,26 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-text message")
 		}
 
-		se.LLMBotText += msg.Data.Text
+		if !se.LLMFlushing {
+			se.LLMMessageID = h.utilHandler.UUIDCreate()
+			se.LLMTokenChan = make(chan string, 64)
+			se.LLMStopChan = make(chan struct{})
+			se.LLMDoneChan = make(chan struct{})
+			se.LLMFlushing = true
+			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
+		}
+
+		// Non-blocking send to avoid stalling the WebSocket read loop (which also
+		// handles audio frames) if the flush goroutine is slow due to RabbitMQ
+		// backpressure. Dropped tokens will be missing from both intermediate and
+		// final events. In practice, the 64-token buffer drains every 200ms (~8
+		// tokens/tick), so drops only occur if PublishEvent blocks for >1.6s —
+		// extremely unlikely since it uses its own context.Background() with timeout.
+		select {
+		case se.LLMTokenChan <- msg.Data.Text:
+		default:
+			log.Warnf("LLM token channel full, dropping intermediate token. pipecatcall_id: %s", se.ID)
+		}
 
 	case pipecatframe.RTVIFrameTypeBotLLMStopped:
 		msg := pipecatframe.RTVIBotLLMStoppedMessage{}
@@ -525,12 +545,13 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
-		// Capture and reset text before async publish to avoid race with next BotLLMText.
-		botText := se.LLMBotText
-		se.LLMBotText = ""
-		log.Debugf("BotLLMStopped message. text: %s", botText)
-
-		go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLM, h.newMessageEvent(se, botText))
+		if se.LLMFlushing {
+			close(se.LLMStopChan)
+			<-se.LLMDoneChan
+			se.LLMFlushing = false
+		} else {
+			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+		}
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -555,6 +576,127 @@ func (h *pipecatcallHandler) runnerHandleTextFrame(se *pipecatcall.Session, text
 	}
 
 	logrus.Debugf("Sent FLUSH_MEDIA to Asterisk to flush audio buffer")
+}
+
+// runLLMIntermediateFlush is the per-generation flush goroutine.
+// It owns all accumulated text state locally and periodically publishes
+// intermediate events with the delta text received since the last tick.
+// It runs until LLMStopChan is closed (by the BotLLMStopped handler).
+func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, messageID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runLLMIntermediateFlush",
+		"pipecatcall_id": se.ID,
+		"message_id":     messageID,
+	})
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	defer close(se.LLMDoneChan)
+
+	var fullText string
+	var deltaBuffer string
+	var sequence int
+
+	for {
+		select {
+		case token := <-se.LLMTokenChan:
+			fullText += token
+			deltaBuffer += token
+
+		case <-ticker.C:
+			if deltaBuffer != "" {
+				sequence++
+				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				log.Debugf("Published intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+				deltaBuffer = ""
+			}
+
+		case <-se.LLMStopChan:
+			// Drain remaining tokens from the channel.
+			for {
+				select {
+				case token := <-se.LLMTokenChan:
+					fullText += token
+					deltaBuffer += token
+				default:
+					goto drained
+				}
+			}
+		drained:
+			// Flush any remaining delta as the last intermediate event.
+			if deltaBuffer != "" {
+				sequence++
+				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				log.Debugf("Published final intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+			}
+
+			// Publish the final complete bot LLM event.
+			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, fullText)
+			log.Debugf("Published final bot LLM event. full_text_len: %d", len(fullText))
+			return
+
+		case <-se.Ctx.Done():
+			// Drain and publish final event to preserve partial LLM response in
+			// conversation history (used by summary handler). Use context.Background()
+			// because the original context is already cancelled.
+			for {
+				select {
+				case token := <-se.LLMTokenChan:
+					fullText += token
+				default:
+					goto ctxDrained
+				}
+			}
+		ctxDrained:
+			if fullText != "" {
+				h.publishFinalBotLLMEvent(context.Background(), se, messageID, fullText)
+				log.Debugf("Context cancelled, published partial final bot LLM event. full_text_len: %d", len(fullText))
+			} else {
+				log.Debugf("Context cancelled, no text accumulated.")
+			}
+			return
+		}
+	}
+}
+
+// publishIntermediateEvent publishes a message_bot_llm_intermediate event with the delta text.
+func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
+	evt := message.Message{
+		Identity: commonidentity.Identity{
+			ID:         messageID,
+			CustomerID: se.CustomerID,
+		},
+
+		PipecatcallID:            se.ID,
+		PipecatcallReferenceType: se.PipecatcallReferenceType,
+		PipecatcallReferenceID:   se.PipecatcallReferenceID,
+		ActiveflowID:             se.ActiveflowID,
+
+		Text:     delta,
+		Sequence: sequence,
+	}
+
+	h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLMIntermediate, evt)
+}
+
+// publishFinalBotLLMEvent publishes the final message_bot_llm event with the complete text.
+// Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled.
+func (h *pipecatcallHandler) publishFinalBotLLMEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, fullText string) {
+	evt := message.Message{
+		Identity: commonidentity.Identity{
+			ID:         messageID,
+			CustomerID: se.CustomerID,
+		},
+
+		PipecatcallID:            se.ID,
+		PipecatcallReferenceType: se.PipecatcallReferenceType,
+		PipecatcallReferenceID:   se.PipecatcallReferenceID,
+		ActiveflowID:             se.ActiveflowID,
+
+		Text: fullText,
+	}
+
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeBotLLM, evt)
 }
 
 func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session, sampleRate int, numChannels int, data []byte) error {

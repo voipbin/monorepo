@@ -44,18 +44,18 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, customerID, aicallID, activeflowID uuid.UUID, direction message.Direction, role message.Role, content string, toolCalls []message.ToolCall, toolCallID string) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, id, customerID, aicallID, activeflowID uuid.UUID, direction message.Direction, role message.Role, content string, toolCalls []message.ToolCall, toolCallID string) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID)
+	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, id, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, id, customerID, aicallID, activeflowID, direction, role, content, toolCalls, toolCallID)
 }
 
 // EventPMMessageBotLLM mocks base method.
@@ -68,6 +68,18 @@ func (m *MockMessageHandler) EventPMMessageBotLLM(ctx context.Context, evt *mess
 func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotLLM(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotLLM", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotLLM), ctx, evt)
+}
+
+// EventPMMessageBotLLMIntermediate mocks base method.
+func (m *MockMessageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageBotLLMIntermediate", ctx, evt)
+}
+
+// EventPMMessageBotLLMIntermediate indicates an expected call of EventPMMessageBotLLMIntermediate.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotLLMIntermediate(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotLLMIntermediate", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotLLMIntermediate), ctx, evt)
 }
 
 // EventPMMessageUserLLM mocks base method.

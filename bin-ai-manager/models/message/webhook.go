@@ -53,3 +53,22 @@ func (h *Message) CreateWebhookEvent() ([]byte, error) {
 
 	return m, nil
 }
+
+// IntermediateWebhookMessage is the external-facing struct for aimessage_intermediate events.
+// It carries delta text content (not full accumulated text) and a sequence number for ordering.
+type IntermediateWebhookMessage struct {
+	identity.Identity
+
+	AIcallID     uuid.UUID `json:"aicall_id,omitempty"`
+	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
+
+	Role      Role      `json:"role"`
+	Content   string    `json:"content"`
+	Direction Direction `json:"direction"`
+
+	Sequence int `json:"sequence"`
+}
+
+func (h *IntermediateWebhookMessage) CreateWebhookEvent() ([]byte, error) {
+	return json.Marshal(h)
+}
