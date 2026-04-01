@@ -96,6 +96,9 @@ select:
     return
 
   case <-ctx.Done():
+    drain remaining tokens from llmTokenChan
+    if fullText != "":
+      publish "message_bot_llm" with {UUID, fullText} using context.Background()
     close(llmDoneChan)
     return
 ```
@@ -119,10 +122,11 @@ The read loop's `BotLLMStopped` handler sends a stop signal and blocks on `<-llm
 ### Session Teardown Mid-Generation
 
 If the call ends while the LLM is generating (context cancelled):
-- The flush goroutine exits via `case <-ctx.Done()`, closing `llmDoneChan`.
+- The flush goroutine exits via `case <-ctx.Done()`.
+- Remaining tokens are drained from `llmTokenChan`.
+- If any text was accumulated, a final `message_bot_llm` event is published using `context.Background()` (since the original context is cancelled) to preserve the partial LLM response in conversation history for the summary handler.
 - The ticker is stopped (deferred `ticker.Stop()`).
-- The read loop unblocks from `<-llmDoneChan` and cleans up.
-- No publish attempts after context cancellation.
+- `llmDoneChan` is closed, unblocking the read loop for cleanup.
 
 ### Multiple Generations Per Session
 
@@ -302,7 +306,7 @@ If a client misses intermediate events, it simply waits for `aimessage_created` 
 |----------|----------|
 | Empty LLM response (no tokens) | No flush goroutine spawned, no intermediates. `BotLLMStopped` publishes empty final (skipped by AI Manager as today). |
 | Very short response (< 200ms) | Flush goroutine spawned but ticker doesn't fire. `BotLLMStopped` flushes all tokens as one intermediate, then publishes final. |
-| Call ends mid-generation | Context cancelled → flush goroutine exits via `ctx.Done()`, closes `llmDoneChan`. No final event published. |
+| Call ends mid-generation | Context cancelled → flush goroutine drains remaining tokens and publishes final `message_bot_llm` with partial text (via `context.Background()`), preserving conversation history. |
 | RabbitMQ slow (backpressure) | Token channel buffered at 64. At ~40 tokens/sec, gives ~1.6s buffer before blocking the WebSocket read loop. |
 | Multiple generations per session | Each generation gets its own flush goroutine, UUID, and sequence. Clean reset between generations. |
 
@@ -326,5 +330,5 @@ If a client misses intermediate events, it simply waits for `aimessage_created` 
 
 - **Delta vs full-text**: Delta reduces bandwidth but requires clients to concatenate. Missed events cause gaps until `aimessage_created` arrives with complete text. Acceptable since the final event is authoritative.
 - **200ms batching**: Fixed interval, not configurable. Can be made configurable later if needed.
-- **Channel buffer size 64**: Handles ~1.6s of backpressure at 40 tokens/sec. If exceeded, the WebSocket read loop blocks, which also blocks audio forwarding. Acceptable for typical scenarios.
+- **Channel buffer size 64**: Handles ~1.6s of backpressure at 40 tokens/sec. If exceeded, tokens are dropped with a warning log (non-blocking send). Dropped intermediate tokens are acceptable since the final `message_bot_llm` always carries the complete text.
 - **No DB for intermediates**: Intermediates are lost if webhook delivery fails. Acceptable since `aimessage_created` has the complete message.
