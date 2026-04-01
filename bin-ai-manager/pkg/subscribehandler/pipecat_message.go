@@ -45,6 +45,24 @@ func (h *subscribeHandler) processEventPMMessageBotLLM(ctx context.Context, m *s
 	return nil
 }
 
+func (h *subscribeHandler) processEventPMMessageBotLLMIntermediate(ctx context.Context, m *sock.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventPMMessageBotLLMIntermediate",
+		"event": m,
+	})
+	log.Debugf("Received the pipecat-manager's message_bot_llm_intermediate event.")
+
+	var evt pmmessage.Message
+	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	h.messageHandler.EventPMMessageBotLLMIntermediate(ctx, &evt)
+
+	return nil
+}
+
 func (h *subscribeHandler) processEventPMTeamMemberSwitched(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventPMTeamMemberSwitched",

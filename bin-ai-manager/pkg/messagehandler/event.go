@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-ai-manager/models/message"
+	identity "monorepo/bin-common-handler/models/identity"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -46,6 +47,37 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created message.")
+}
+
+func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventPMMessageBotLLMIntermediate",
+		"event": evt,
+	})
+
+	if evt.Text == "" {
+		return
+	}
+
+	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
+		return
+	}
+
+	webhookMsg := &message.IntermediateWebhookMessage{
+		Identity: identity.Identity{
+			ID:         evt.ID,
+			CustomerID: evt.CustomerID,
+		},
+		AIcallID:     evt.PipecatcallReferenceID,
+		ActiveflowID: evt.ActiveflowID,
+		Role:         message.RoleAssistant,
+		Content:      evt.Text,
+		Direction:    message.DirectionIncoming,
+		Sequence:     evt.Sequence,
+	}
+
+	h.notifyHandler.PublishWebhookEvent(ctx, evt.CustomerID, message.EventTypeMessageIntermediate, webhookMsg)
+	log.Debugf("Published intermediate webhook event. message_id: %s, sequence: %d", evt.ID, evt.Sequence)
 }
 
 func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message) {

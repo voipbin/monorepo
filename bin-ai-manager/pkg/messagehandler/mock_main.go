@@ -70,6 +70,18 @@ func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotLLM(ctx, evt any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotLLM", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotLLM), ctx, evt)
 }
 
+// EventPMMessageBotLLMIntermediate mocks base method.
+func (m *MockMessageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMMessageBotLLMIntermediate", ctx, evt)
+}
+
+// EventPMMessageBotLLMIntermediate indicates an expected call of EventPMMessageBotLLMIntermediate.
+func (mr *MockMessageHandlerMockRecorder) EventPMMessageBotLLMIntermediate(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageBotLLMIntermediate", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageBotLLMIntermediate), ctx, evt)
+}
+
 // EventPMMessageUserLLM mocks base method.
 func (m *MockMessageHandler) EventPMMessageUserLLM(ctx context.Context, evt *message0.Message) {
 	m.ctrl.T.Helper()

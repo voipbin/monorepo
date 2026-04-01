@@ -320,6 +320,7 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			// 1. messageHandler.Create
 			mockMessage.EXPECT().Create(
 				ctx,
+				uuid.Nil,
 				tt.aicall.CustomerID,
 				tt.aicall.ID,
 				tt.aicall.ActiveflowID,

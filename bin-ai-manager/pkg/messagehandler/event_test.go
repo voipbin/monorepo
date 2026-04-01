@@ -127,6 +127,66 @@ func TestEventPMMessageBotLLM(t *testing.T) {
 	}
 }
 
+func TestEventPMMessageBotLLMIntermediate(t *testing.T) {
+	tests := []struct {
+		name          string
+		event         *pmmessage.Message
+		expectPublish bool
+	}{
+		{
+			name: "publishes_intermediate_webhook_for_aicall",
+			event: &pmmessage.Message{
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
+				Text:                     "Hello world",
+				Sequence:                 1,
+			},
+			expectPublish: true,
+		},
+		{
+			name: "ignores_empty_text",
+			event: &pmmessage.Message{
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				Text:                     "",
+			},
+			expectPublish: false,
+		},
+		{
+			name: "ignores_non_aicall_reference",
+			event: &pmmessage.Message{
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeCall,
+				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+				Text:                     "Should be ignored",
+			},
+			expectPublish: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(ctrl)
+			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+
+			if tt.expectPublish {
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.event.CustomerID, message.EventTypeMessageIntermediate, gomock.Any()).Times(1)
+			}
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   utilhandler.NewUtilHandler(),
+			}
+
+			h.EventPMMessageBotLLMIntermediate(context.Background(), tt.event)
+		})
+	}
+}
+
 func TestEventPMMessageUserLLM(t *testing.T) {
 	tests := []struct {
 		name      string

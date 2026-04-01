@@ -35,6 +35,7 @@ type MessageHandler interface {
 
 	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message)
+	EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 	EventPMTeamMemberSwitched(ctx context.Context, evt *pmmessage.MemberSwitchedEvent)
 }
