@@ -96,6 +96,64 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			},
 			expectEvent: `{"data":{"customer_id":"7b6cc58a-da98-11ee-b114-3fb0f4ae9318","id":"7b0966c0-da98-11ee-97df-1786497422fb","owner_id":"7b3d4468-da98-11ee-a5f0-e32e2e370da3"},"type":"chatroom_created"}`,
 		},
+		{
+			name: "aimessage_created with aicall_id",
+
+			request: &sock.Event{
+				Type:      "webhook_published",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data: json.RawMessage([]byte(`{
+					"data": {
+					  "data": {
+						"id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+						"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+						"aicall_id": "c3d4e5f6-a1b2-7890-abcd-1234567890ef"
+					  },
+					  "type": "aimessage_created"
+					},
+					"data_type": "application/json",
+					"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+				  }`)),
+			},
+
+			expectTopics: []string{
+				// Old format uses aicall_id instead of aimessage_id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
+				// New format (service-namespaced)
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webhook:aimessage_created:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+			},
+			expectEvent: `{"data":{"aicall_id":"c3d4e5f6-a1b2-7890-abcd-1234567890ef","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890"},"type":"aimessage_created"}`,
+		},
+		{
+			name: "aimessage_intermediate with aicall_id",
+
+			request: &sock.Event{
+				Type:      "webhook_published",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data: json.RawMessage([]byte(`{
+					"data": {
+					  "data": {
+						"id": "b2c3d4e5-f6a1-7890-abcd-234567890ef1",
+						"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+						"aicall_id": "c3d4e5f6-a1b2-7890-abcd-1234567890ef"
+					  },
+					  "type": "aimessage_intermediate"
+					},
+					"data_type": "application/json",
+					"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+				  }`)),
+			},
+
+			expectTopics: []string{
+				// Old format uses aicall_id instead of aimessage_id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
+				// New format (service-namespaced)
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webhook:aimessage_intermediate:b2c3d4e5-f6a1-7890-abcd-234567890ef1",
+			},
+			expectEvent: `{"data":{"aicall_id":"c3d4e5f6-a1b2-7890-abcd-1234567890ef","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","id":"b2c3d4e5-f6a1-7890-abcd-234567890ef1"},"type":"aimessage_intermediate"}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -190,6 +248,42 @@ func Test_createTopics(t *testing.T) {
 				"agent_id:8c3d4468-da98-11ee-a5f0-e32e2e370da3:task:8c0966c0-da98-11ee-97df-1786497422fb",
 				// New format
 				"agent_id:8c3d4468-da98-11ee-a5f0-e32e2e370da3:test-manager:task_created:8c0966c0-da98-11ee-97df-1786497422fb",
+			},
+			expectError: false,
+		},
+		{
+			name:        "aimessage_created with aicall_id uses aicall topic",
+			messageType: "aimessage_created",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				AIcallID: uuid.FromStringOrNil("c3d4e5f6-a1b2-7890-abcd-1234567890ef"),
+			},
+			expectTopics: []string{
+				// Old format uses aicall_id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
+				// New format
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:aimessage_created:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+			},
+			expectError: false,
+		},
+		{
+			name:        "aimessage_intermediate with aicall_id uses aicall topic",
+			messageType: "aimessage_intermediate",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2c3d4e5-f6a1-7890-abcd-234567890ef1"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				AIcallID: uuid.FromStringOrNil("c3d4e5f6-a1b2-7890-abcd-1234567890ef"),
+			},
+			expectTopics: []string{
+				// Old format uses aicall_id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
+				// New format
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:aimessage_intermediate:b2c3d4e5-f6a1-7890-abcd-234567890ef1",
 			},
 			expectError: false,
 		},
