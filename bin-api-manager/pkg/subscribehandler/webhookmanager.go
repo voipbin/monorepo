@@ -31,6 +31,7 @@ func (h *subscribeHandler) getServiceNamespace(publisher string) string {
 		"billing-manager":      "billing",
 		"campaign-manager":     "campaign",
 		"conversation-manager": "conversation",
+		"transcribe-manager":   "transcribe",
 		"webhook-manager":      "webhook",
 	}
 
