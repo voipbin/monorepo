@@ -22,15 +22,20 @@ type commonWebhookData struct {
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
 func (h *subscribeHandler) getServiceNamespace(publisher string) string {
 	namespaces := map[string]string{
-		"talk-manager":         "talk",
-		"message-manager":      "message",
-		"call-manager":         "call",
-		"conference-manager":   "conference",
-		"flow-manager":         "flow",
 		"agent-manager":        "agent",
+		"ai-manager":           "ai",
 		"billing-manager":      "billing",
+		"call-manager":         "call",
 		"campaign-manager":     "campaign",
+		"conference-manager":   "conference",
 		"conversation-manager": "conversation",
+		"email-manager":        "email",
+		"flow-manager":         "flow",
+		"message-manager":      "message",
+		"number-manager":       "number",
+		"outdial-manager":      "outdial",
+		"queue-manager":        "queue",
+		"talk-manager":         "talk",
 		"transcribe-manager":   "transcribe",
 		"webhook-manager":      "webhook",
 	}
