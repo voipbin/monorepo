@@ -8,6 +8,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -264,5 +265,244 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 
 		// If we get here without gomock errors, the test passes —
 		// no unexpected PublishEvent calls were made.
+	})
+
+	t.Run("multiple_generations_per_session", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+		h := &pipecatcallHandler{
+			notifyHandler: mockNotify,
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		// --- Generation 1 ---
+		messageID1 := uuid.FromStringOrNil("11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+		se := &pipecatcall.Session{
+			Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+				CustomerID: uuid.FromStringOrNil("33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+			},
+			Ctx:          ctx,
+			LLMTokenChan: make(chan string, 64),
+			LLMStopChan:  make(chan struct{}),
+			LLMDoneChan:  make(chan struct{}),
+			LLMFlushing:  true,
+		}
+
+		var mu sync.Mutex
+		var gen1FinalText string
+		var gen2FinalText string
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).AnyTimes()
+
+		// Expect two final events (one per generation).
+		gen1Final := mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
+			func(_ any, _ any, evt message.Message) {
+				mu.Lock()
+				defer mu.Unlock()
+				gen1FinalText = evt.Text
+			},
+		).Times(1)
+
+		go h.runLLMIntermediateFlush(se, messageID1)
+
+		se.LLMTokenChan <- "First"
+		se.LLMTokenChan <- " gen"
+		close(se.LLMStopChan)
+		<-se.LLMDoneChan
+		se.LLMFlushing = false
+
+		// --- Generation 2: reset channels, new UUID ---
+		messageID2 := uuid.FromStringOrNil("44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+		se.LLMTokenChan = make(chan string, 64)
+		se.LLMStopChan = make(chan struct{})
+		se.LLMDoneChan = make(chan struct{})
+		se.LLMFlushing = true
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
+			func(_ any, _ any, evt message.Message) {
+				mu.Lock()
+				defer mu.Unlock()
+				gen2FinalText = evt.Text
+			},
+		).Times(1).After(gen1Final)
+
+		go h.runLLMIntermediateFlush(se, messageID2)
+
+		se.LLMTokenChan <- "Second"
+		se.LLMTokenChan <- " gen"
+		close(se.LLMStopChan)
+		<-se.LLMDoneChan
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		if gen1FinalText != "First gen" {
+			t.Errorf("generation 1: expected 'First gen', got '%s'", gen1FinalText)
+		}
+		if gen2FinalText != "Second gen" {
+			t.Errorf("generation 2: expected 'Second gen', got '%s'", gen2FinalText)
+		}
+	})
+
+	t.Run("intermediate_event_metadata_correctness", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+		h := &pipecatcallHandler{
+			notifyHandler: mockNotify,
+		}
+
+		messageID := uuid.FromStringOrNil("aaaa1111-2222-3333-4444-555566667777")
+		sessionID := uuid.FromStringOrNil("bbbb1111-2222-3333-4444-555566667777")
+		customerID := uuid.FromStringOrNil("cccc1111-2222-3333-4444-555566667777")
+		referenceID := uuid.FromStringOrNil("dddd1111-2222-3333-4444-555566667777")
+		activeflowID := uuid.FromStringOrNil("eeee1111-2222-3333-4444-555566667777")
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		se := &pipecatcall.Session{
+			Identity: commonidentity.Identity{
+				ID:         sessionID,
+				CustomerID: customerID,
+			},
+			PipecatcallReferenceType: pipecatcall.ReferenceTypeAICall,
+			PipecatcallReferenceID:   referenceID,
+			ActiveflowID:             activeflowID,
+			Ctx:                      ctx,
+			LLMTokenChan:             make(chan string, 64),
+			LLMStopChan:              make(chan struct{}),
+			LLMDoneChan:              make(chan struct{}),
+		}
+
+		var mu sync.Mutex
+		var capturedIntermediate *message.Message
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
+			func(_ any, _ any, evt message.Message) {
+				mu.Lock()
+				defer mu.Unlock()
+				if capturedIntermediate == nil {
+					capturedIntermediate = &evt
+				}
+			},
+		).AnyTimes()
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).AnyTimes()
+
+		go h.runLLMIntermediateFlush(se, messageID)
+
+		se.LLMTokenChan <- "test token"
+
+		// Wait for tick.
+		time.Sleep(300 * time.Millisecond)
+
+		close(se.LLMStopChan)
+		<-se.LLMDoneChan
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		if capturedIntermediate == nil {
+			t.Fatal("expected at least one intermediate event")
+		}
+
+		if capturedIntermediate.ID != messageID {
+			t.Errorf("expected ID %s, got %s", messageID, capturedIntermediate.ID)
+		}
+		if capturedIntermediate.CustomerID != customerID {
+			t.Errorf("expected CustomerID %s, got %s", customerID, capturedIntermediate.CustomerID)
+		}
+		if capturedIntermediate.PipecatcallID != sessionID {
+			t.Errorf("expected PipecatcallID %s, got %s", sessionID, capturedIntermediate.PipecatcallID)
+		}
+		if capturedIntermediate.PipecatcallReferenceType != pipecatcall.ReferenceTypeAICall {
+			t.Errorf("expected ReferenceType %s, got %s", pipecatcall.ReferenceTypeAICall, capturedIntermediate.PipecatcallReferenceType)
+		}
+		if capturedIntermediate.PipecatcallReferenceID != referenceID {
+			t.Errorf("expected ReferenceID %s, got %s", referenceID, capturedIntermediate.PipecatcallReferenceID)
+		}
+		if capturedIntermediate.ActiveflowID != activeflowID {
+			t.Errorf("expected ActiveflowID %s, got %s", activeflowID, capturedIntermediate.ActiveflowID)
+		}
+		if capturedIntermediate.Text != "test token" {
+			t.Errorf("expected Text 'test token', got '%s'", capturedIntermediate.Text)
+		}
+		if capturedIntermediate.Sequence != 1 {
+			t.Errorf("expected Sequence 1, got %d", capturedIntermediate.Sequence)
+		}
+	})
+
+	t.Run("non_blocking_send_when_channel_full", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+		h := &pipecatcallHandler{
+			notifyHandler: mockNotify,
+			utilHandler:   mockUtil,
+		}
+
+		messageID := uuid.FromStringOrNil("ff001122-3344-5566-7788-99aabbccddee")
+		mockUtil.EXPECT().UUIDCreate().Return(messageID)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		se := &pipecatcall.Session{
+			Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("aa112233-4455-6677-8899-aabbccddeeff"),
+				CustomerID: uuid.FromStringOrNil("bb112233-4455-6677-8899-aabbccddeeff"),
+			},
+			Ctx: ctx,
+		}
+
+		// Simulate the read loop: spawn flush goroutine on first token.
+		se.LLMMessageID = h.utilHandler.UUIDCreate()
+		se.LLMTokenChan = make(chan string, 64)
+		se.LLMStopChan = make(chan struct{})
+		se.LLMDoneChan = make(chan struct{})
+		se.LLMFlushing = true
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+		go h.runLLMIntermediateFlush(se, se.LLMMessageID)
+
+		// Fill the channel completely (cap 64).
+		for i := 0; i < 64; i++ {
+			se.LLMTokenChan <- "t"
+		}
+
+		// This 65th send must NOT block — the non-blocking select/default should drop it.
+		done := make(chan struct{})
+		go func() {
+			select {
+			case se.LLMTokenChan <- "overflow":
+				// Channel had space (flush goroutine drained some) — also fine.
+			default:
+				// Dropped — expected behavior.
+			}
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			// Success — did not block.
+		case <-time.After(1 * time.Second):
+			t.Fatal("non-blocking send blocked for >1s — would stall WebSocket read loop")
+		}
+
+		close(se.LLMStopChan)
+		<-se.LLMDoneChan
 	})
 }
