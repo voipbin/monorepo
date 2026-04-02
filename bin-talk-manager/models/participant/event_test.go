@@ -10,8 +10,8 @@ func TestEventTypeConstants(t *testing.T) {
 		constant string
 		expected string
 	}{
-		{"event_participant_added", EventParticipantAdded, "participant_added"},
-		{"event_participant_removed", EventParticipantRemoved, "participant_removed"},
+		{"event_participant_added", EventParticipantAdded, "chatparticipant_added"},
+		{"event_participant_removed", EventParticipantRemoved, "chatparticipant_removed"},
 	}
 
 	for _, tt := range tests {
