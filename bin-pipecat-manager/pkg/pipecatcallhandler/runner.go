@@ -643,6 +643,8 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 	for {
 		select {
 		case token := <-se.LLMTokenChan:
+			// Always accumulate llmFullText even in TTS mode — if ctx.Done() fires
+			// before any TTS text arrives, llmFullText is used as the fallback final text.
 			llmFullText += token
 			if !ttsReceived {
 				deltaBuffer += token

@@ -502,6 +502,66 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		}
 	})
 
+	t.Run("tts_stop_before_llm_stop_late_llm_stop_is_noop", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &pipecatcallHandler{notifyHandler: mockNotify}
+
+		messageID := uuid.FromStringOrNil("tt000010-1010-1010-1010-101010101010")
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		se := newTestSession(ctx,
+			uuid.FromStringOrNil("tt000011-1111-1111-1111-111111111111"),
+			uuid.FromStringOrNil("tt000012-1212-1212-1212-121212121212"),
+		)
+		se.LLMFlushing = true
+
+		var mu sync.Mutex
+		var finalText string
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).AnyTimes()
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
+			func(_ any, _ any, evt message.Message) {
+				mu.Lock()
+				defer mu.Unlock()
+				finalText = evt.Text
+			},
+		).Times(1)
+
+		go h.runLLMIntermediateFlush(se, messageID)
+
+		// LLM is still generating tokens.
+		se.LLMTokenChan <- "Hello there. How can I help?"
+
+		// TTS receives and speaks partial text.
+		se.TTSTextChan <- "Hello there."
+
+		time.Sleep(50 * time.Millisecond)
+
+		// User interrupts — TTS stops BEFORE LLM finishes.
+		close(se.TTSStopChan)
+		<-se.LLMDoneChan
+		se.LLMFlushing = false
+
+		// Now LLM stop arrives late — should be a no-op because LLMFlushing is false.
+		if se.LLMFlushing {
+			close(se.LLMStopChan)
+			<-se.LLMDoneChan
+		}
+		// If we get here without panic or deadlock, the late LLM stop was correctly ignored.
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		if finalText != "Hello there." {
+			t.Errorf("expected final text 'Hello there.', got '%s'", finalText)
+		}
+	})
+
 	t.Run("llm_stop_before_tts_stop_goroutine_keeps_running", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
