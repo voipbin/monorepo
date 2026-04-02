@@ -22,6 +22,7 @@ const (
 	RTVIFrameTypeUserStoppedSpeaking = "user-stopped-speaking"
 	RTVIFrameTypeBotStartedSpeaking  = "bot-started-speaking"
 	RTVIFrameTypeBotStoppedSpeaking  = "bot-stopped-speaking"
+	RTVIFrameTypeBotOutput           = "bot-output"
 	RTVIFrameTypeMetrics             = "metrics"
 
 	// pipecat-manager -> pipecat request frame types

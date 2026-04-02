@@ -372,6 +372,22 @@ type RTVIBotTTSTextMessage struct {
 	Data  RTVITextMessageData `json:"data"`
 }
 
+// RTVIBotOutputMessageData provides data for bot-output RTVI messages.
+type RTVIBotOutputMessageData struct {
+	Text         string `json:"text"`
+	Spoken       bool   `json:"spoken"`
+	AggregatedBy string `json:"aggregated_by"`
+}
+
+// RTVIBotOutputMessage contains sentence-aggregated bot output.
+// spoken=false means the text is about to be sent to TTS (pre-TTS timing).
+// spoken=true means the text has been synthesized by TTS (post-TTS timing).
+type RTVIBotOutputMessage struct {
+	Label string                    `json:"label"` // RTVIMessageLabel
+	Type  string                    `json:"type"`  // "bot-output"
+	Data  RTVIBotOutputMessageData  `json:"data"`
+}
+
 // RTVIAudioMessageData provides data for audio-based RTVI messages.
 type RTVIAudioMessageData struct {
 	Audio       string `json:"audio"` // base64 encoded audio

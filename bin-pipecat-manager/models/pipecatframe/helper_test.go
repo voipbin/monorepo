@@ -128,6 +128,11 @@ func TestRTVIFrameTypeConstants(t *testing.T) {
 			expected: "bot-stopped-speaking",
 		},
 		{
+			name:     "bot_output",
+			constant: RTVIFrameTypeBotOutput,
+			expected: "bot-output",
+		},
+		{
 			name:     "metrics",
 			constant: RTVIFrameTypeMetrics,
 			expected: "metrics",

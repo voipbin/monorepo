@@ -44,9 +44,11 @@ type Session struct {
 
 	// TTS sync channels for voice call intermediate event synchronization.
 	// TTSTextChan carries sentence-level TTS text chunks from the read loop to the flush goroutine.
-	// TTSStopChan is closed when bot-tts-stopped is received, signaling TTS completion.
-	TTSTextChan chan string   `json:"-"` // TTS text chunks from bot-tts-text events (cap 16)
-	TTSStopChan chan struct{} `json:"-"` // closed when bot-tts-stopped received
+	// TTSStopChan is closed when TTS is done (bot-tts-stopped or bot-stopped-speaking).
+	// TTSStopClosed guards against double-close since both signals may arrive.
+	TTSTextChan  chan string   `json:"-"` // TTS text chunks from bot-output/bot-tts-text events (cap 16)
+	TTSStopChan  chan struct{} `json:"-"` // closed when TTS done
+	TTSStopClosed bool        `json:"-"` // true after TTSStopChan has been closed
 
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`

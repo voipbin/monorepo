@@ -525,6 +525,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			se.LLMDoneChan = make(chan struct{})
 			se.TTSTextChan = make(chan string, 16)
 			se.TTSStopChan = make(chan struct{})
+			se.TTSStopClosed = false
 			se.LLMFlushing = true
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
@@ -579,12 +580,39 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 
 	case pipecatframe.RTVIFrameTypeBotTTSStopped:
-		if se.LLMFlushing {
+		if se.LLMFlushing && !se.TTSStopClosed {
+			se.TTSStopClosed = true
 			close(se.TTSStopChan)
 			<-se.LLMDoneChan
 			se.LLMFlushing = false
 		} else {
-			log.Debugf("BotTTSStopped received but no flush goroutine is running.")
+			log.Debugf("BotTTSStopped received but no flush goroutine is running or already stopped.")
+		}
+
+	case pipecatframe.RTVIFrameTypeBotOutput:
+		msg := pipecatframe.RTVIBotOutputMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-output message")
+		}
+
+		// bot-output with spoken=false carries sentence-aggregated text that is about
+		// to be sent to TTS. Use it as the TTS-sync trigger for intermediate events.
+		if se.LLMFlushing && msg.Data.Text != "" {
+			select {
+			case se.TTSTextChan <- msg.Data.Text:
+			case <-se.LLMDoneChan:
+				log.Debugf("bot-output arrived but flush goroutine already exited.")
+			}
+		}
+
+	case pipecatframe.RTVIFrameTypeBotStoppedSpeaking:
+		// bot-stopped-speaking signals that all TTS audio has been played.
+		// Use it as the TTS-done signal when bot-tts-stopped is not available.
+		if se.LLMFlushing && !se.TTSStopClosed {
+			se.TTSStopClosed = true
+			close(se.TTSStopChan)
+			<-se.LLMDoneChan
+			se.LLMFlushing = false
 		}
 
 	default:
