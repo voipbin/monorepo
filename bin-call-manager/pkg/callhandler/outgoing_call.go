@@ -129,11 +129,11 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
-	// validate customer is not frozen (also fetches customer for subsequent checks)
-	cu, notFrozen := h.ValidateCustomerNotFrozen(ctx, customerID)
-	if !notFrozen {
-		log.Infof("Customer account is frozen. Rejecting outgoing call. customer_id: %s", customerID)
-		return nil, fmt.Errorf("customer account is frozen")
+	// validate customer status (also fetches customer for subsequent checks)
+	cu, validStatus := h.ValidateCustomerStatusOutgoing(ctx, customerID)
+	if !validStatus {
+		log.Infof("Customer account is not active. Rejecting outgoing call. customer_id: %s", customerID)
+		return nil, fmt.Errorf("customer account is not active")
 	}
 
 	// validate customer identity verification for outgoing PSTN calls

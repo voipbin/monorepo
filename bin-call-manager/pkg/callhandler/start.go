@@ -568,10 +568,10 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	// create call id
 	id := h.utilHandler.UUIDCreate()
 
-	// validate customer is not frozen
-	_, notFrozen := h.ValidateCustomerNotFrozen(ctx, customerID)
-	if !notFrozen {
-		log.Errorf("Customer account is frozen. Rejecting incoming call. customer_id: %s", customerID)
+	// validate customer status
+	_, validStatus := h.ValidateCustomerStatusIncoming(ctx, customerID)
+	if !validStatus {
+		log.Errorf("Customer account is not active. Rejecting incoming call. customer_id: %s", customerID)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
 		return
 	}
