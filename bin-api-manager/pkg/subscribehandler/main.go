@@ -131,10 +131,6 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	switch {
 
-	//// talk-manager
-	case m.Publisher == string(commonoutline.ServiceNameTalkManager):
-		err = h.processEventTalkManager(ctx, m)
-
 	//// webhook-manager
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
 		err = h.processEventWebhookManagerWebhookPublished(ctx, m)

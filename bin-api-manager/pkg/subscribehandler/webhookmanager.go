@@ -18,6 +18,7 @@ type commonWebhookData struct {
 	commonidentity.Identity
 	commonidentity.Owner
 	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
+	ChatID   uuid.UUID `json:"chat_id,omitempty"`
 }
 
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
@@ -85,7 +86,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	}
 	log.Debugf("Created data. data: %s", string(data))
 
-	topics, err := h.createTopics(whData.Type, d, m.Publisher)
+	topics, err := h.createTopics(ctx, whData.Type, d, m.Publisher)
 	if err != nil {
 		log.Errorf("Could not create the topics")
 		return fmt.Errorf("could not create the topics")
@@ -102,8 +103,8 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	return nil
 }
 
-// createTopic generates the topics
-func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData, publisher string) ([]string, error) {
+// createTopics generates the topics
+func (h *subscribeHandler) createTopics(ctx context.Context, messageType string, d *commonWebhookData, publisher string) ([]string, error) {
 
 	res := []string{}
 
@@ -116,24 +117,53 @@ func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData
 	service := h.getServiceNamespace(publisher)
 
 	// OLD FORMAT (backward compatible):
-	resource := tmps[0] // "message" from "message_created"
+	resource := tmps[0]
 
-	// Generate both old and new formats (for migration period)
-
-	// Old format (deprecated but kept for backward compatibility)
-	if d.CustomerID != uuid.Nil {
-		if d.AIcallID != uuid.Nil {
+	switch resource {
+	case "aimessage":
+		if d.CustomerID != uuid.Nil {
 			res = append(res, fmt.Sprintf("customer_id:%s:aicall:%s", d.CustomerID, d.AIcallID))
-		} else {
+		}
+
+	case "chat", "chatmessage", "chatparticipant":
+		chatID := d.ChatID
+		if chatID == uuid.Nil {
+			chatID = d.ID
+		}
+
+		if d.CustomerID != uuid.Nil {
+			res = append(res, fmt.Sprintf("customer_id:%s:chat:%s", d.CustomerID, chatID))
+		}
+		if d.OwnerID != uuid.Nil {
+			res = append(res, fmt.Sprintf("agent_id:%s:chat:%s", d.OwnerID, chatID))
+		}
+
+		// Fan-out to all chat participants
+		if chatID != uuid.Nil {
+			participants, err := h.reqHandler.TalkV1ParticipantList(ctx, chatID)
+			if err == nil {
+				for _, p := range participants {
+					if p.OwnerID == d.OwnerID {
+						continue
+					}
+					// Old format
+					res = append(res, fmt.Sprintf("agent_id:%s:chat:%s", p.OwnerID, chatID))
+					// New format
+					res = append(res, fmt.Sprintf("agent_id:%s:%s:%s:%s", p.OwnerID, service, messageType, d.ID))
+				}
+			}
+		}
+
+	default:
+		if d.CustomerID != uuid.Nil {
 			res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
 		}
-	}
-	if d.OwnerID != uuid.Nil {
-		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.OwnerID, resource, d.ID))
+		if d.OwnerID != uuid.Nil {
+			res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.OwnerID, resource, d.ID))
+		}
 	}
 
 	// NEW FORMAT (service-namespaced):
-	// agent_id:AGENT_ID:talk:message_created:MSG_ID
 	if d.CustomerID != uuid.Nil {
 		res = append(res, fmt.Sprintf("customer_id:%s:%s:%s:%s", d.CustomerID, service, messageType, d.ID))
 	}
