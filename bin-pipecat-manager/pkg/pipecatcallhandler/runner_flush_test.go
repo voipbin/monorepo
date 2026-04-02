@@ -28,7 +28,6 @@ func newTestSession(ctx context.Context, sessionID, customerID uuid.UUID) *pipec
 		LLMStopChan:  make(chan struct{}),
 		LLMDoneChan:  make(chan struct{}),
 		TTSTextChan:  make(chan string, 16),
-		TTSStopChan:  make(chan struct{}),
 	}
 }
 
@@ -280,7 +279,6 @@ func Test_runLLMIntermediateFlush_TextMode(t *testing.T) {
 		se.LLMStopChan = make(chan struct{})
 		se.LLMDoneChan = make(chan struct{})
 		se.TTSTextChan = make(chan string, 16)
-		se.TTSStopChan = make(chan struct{})
 		se.LLMFlushing = true
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
@@ -311,7 +309,7 @@ func Test_runLLMIntermediateFlush_TextMode(t *testing.T) {
 }
 
 // ============================================================================
-// TTS mode tests (new behavior)
+// TTS mode tests (debounce timer-based TTS completion detection)
 // ============================================================================
 
 func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
@@ -321,7 +319,7 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		defer mc.Finish()
 
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		h := &pipecatcallHandler{notifyHandler: mockNotify}
+		h := &pipecatcallHandler{notifyHandler: mockNotify, ttsDrainTimeout: 50 * time.Millisecond}
 
 		messageID := uuid.FromStringOrNil("tt111111-1111-1111-1111-111111111111")
 		ctx, cancel := context.WithCancel(context.Background())
@@ -354,7 +352,8 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		// Give goroutine time to process.
 		time.Sleep(50 * time.Millisecond)
 
-		close(se.TTSStopChan)
+		// Signal LLM done — starts debounce timer, which fires after 50ms.
+		close(se.LLMStopChan)
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -379,12 +378,12 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		}
 	})
 
-	t.Run("tts_stop_publishes_final_with_tts_text_only", func(t *testing.T) {
+	t.Run("debounce_publishes_final_with_tts_text_only", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		h := &pipecatcallHandler{notifyHandler: mockNotify}
+		h := &pipecatcallHandler{notifyHandler: mockNotify, ttsDrainTimeout: 50 * time.Millisecond}
 
 		messageID := uuid.FromStringOrNil("tt444444-4444-4444-4444-444444444444")
 		ctx, cancel := context.WithCancel(context.Background())
@@ -430,14 +429,10 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		// Signal LLM done (should NOT trigger final in TTS mode).
+		// Signal LLM done — starts debounce timer in TTS mode.
 		close(se.LLMStopChan)
 
-		// Small delay to verify goroutine keeps running.
-		time.Sleep(50 * time.Millisecond)
-
-		// Signal TTS done (should trigger final).
-		close(se.TTSStopChan)
+		// Debounce timer fires after 50ms with no new TTS text.
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -489,8 +484,8 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		// User interrupts — TTS stops early.
-		close(se.TTSStopChan)
+		// User interrupts — context cancelled (barge-in).
+		cancel()
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -502,7 +497,7 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		}
 	})
 
-	t.Run("tts_stop_before_llm_stop_late_llm_stop_is_noop", func(t *testing.T) {
+	t.Run("bargein_before_llm_stop_late_llm_stop_is_noop", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
@@ -542,8 +537,8 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		// User interrupts — TTS stops BEFORE LLM finishes.
-		close(se.TTSStopChan)
+		// User interrupts — context cancelled BEFORE LLM finishes.
+		cancel()
 		<-se.LLMDoneChan
 		se.LLMFlushing = false
 
@@ -562,12 +557,12 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 		}
 	})
 
-	t.Run("llm_stop_before_tts_stop_goroutine_keeps_running", func(t *testing.T) {
+	t.Run("llm_stop_before_tts_done_goroutine_keeps_running", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		h := &pipecatcallHandler{notifyHandler: mockNotify}
+		h := &pipecatcallHandler{notifyHandler: mockNotify, ttsDrainTimeout: 100 * time.Millisecond}
 
 		messageID := uuid.FromStringOrNil("tt000001-1111-1111-1111-111111111111")
 		ctx, cancel := context.WithCancel(context.Background())
@@ -605,17 +600,14 @@ func Test_runLLMIntermediateFlush_TTSMode(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		// LLM finishes generating (but TTS is still speaking).
+		// LLM finishes generating — starts debounce timer (100ms).
 		close(se.LLMStopChan)
 
-		// More TTS chunks arrive AFTER LLM stop.
-		time.Sleep(50 * time.Millisecond)
+		// More TTS chunks arrive AFTER LLM stop — resets debounce timer.
+		time.Sleep(20 * time.Millisecond)
 		se.TTSTextChan <- " Second sentence."
 
-		time.Sleep(50 * time.Millisecond)
-
-		// TTS finishes speaking.
-		close(se.TTSStopChan)
+		// Debounce timer fires 100ms after last TTS text.
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -693,7 +685,7 @@ func Test_runLLMIntermediateFlush_ModeSwitching(t *testing.T) {
 		defer mc.Finish()
 
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		h := &pipecatcallHandler{notifyHandler: mockNotify}
+		h := &pipecatcallHandler{notifyHandler: mockNotify, ttsDrainTimeout: 50 * time.Millisecond}
 
 		messageID := uuid.FromStringOrNil("ms111111-1111-1111-1111-111111111111")
 		ctx, cancel := context.WithCancel(context.Background())
@@ -738,7 +730,8 @@ func Test_runLLMIntermediateFlush_ModeSwitching(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		close(se.TTSStopChan)
+		// Signal LLM done — starts debounce timer (50ms).
+		close(se.LLMStopChan)
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -856,7 +849,7 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 		}
 	})
 
-	t.Run("tts_stop_after_goroutine_already_exited_no_panic", func(t *testing.T) {
+	t.Run("late_events_after_goroutine_exited_no_panic", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
@@ -883,14 +876,16 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 		<-se.LLMDoneChan
 		se.LLMFlushing = false
 
-		// Simulate the read loop receiving bot-tts-stopped after goroutine exited.
-		// In the read loop, this is guarded by `if se.LLMFlushing`.
+		// Simulate the read loop receiving late TTS events after goroutine exited.
+		// The read loop's LLMFlushing guard prevents sends to dead channels.
 		// This test verifies the guard works — no panic, no block.
 		if se.LLMFlushing {
-			close(se.TTSStopChan)
-			<-se.LLMDoneChan // This would deadlock if LLMFlushing check is missing.
+			// This block never executes because LLMFlushing is false.
+			// If the guard were missing, this could panic or deadlock.
+			se.TTSTextChan <- "late text"
+			<-se.LLMDoneChan
 		}
-		// If we get here, the guard correctly prevented the close/wait.
+		// If we get here, the guard correctly prevented the operation.
 	})
 
 	t.Run("metadata_correctness_in_tts_mode", func(t *testing.T) {
@@ -898,7 +893,7 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 		defer mc.Finish()
 
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-		h := &pipecatcallHandler{notifyHandler: mockNotify}
+		h := &pipecatcallHandler{notifyHandler: mockNotify, ttsDrainTimeout: 50 * time.Millisecond}
 
 		messageID := uuid.FromStringOrNil("rl777777-7777-7777-7777-777777777777")
 		sessionID := uuid.FromStringOrNil("rl888888-8888-8888-8888-888888888888")
@@ -942,7 +937,8 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond)
 
-		close(se.TTSStopChan)
+		// Signal LLM done — starts debounce timer (50ms).
+		close(se.LLMStopChan)
 		<-se.LLMDoneChan
 
 		mu.Lock()
@@ -1014,7 +1010,6 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 		se.LLMStopChan = make(chan struct{})
 		se.LLMDoneChan = make(chan struct{})
 		se.TTSTextChan = make(chan string, 16)
-		se.TTSStopChan = make(chan struct{})
 		se.LLMFlushing = true
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()

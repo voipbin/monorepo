@@ -62,6 +62,8 @@ const (
 	defaultPushFrameTimeout = 50 * time.Millisecond // 50ms for real-time audio
 
 	defaultRunnerWebsocketChanBufferSize = 150 // ~3 seconds at 50fps
+
+	defaultTTSDrainTimeout = 2 * time.Second // debounce timeout after bot-llm-stopped in TTS mode
 )
 
 type pipecatcallHandler struct {
@@ -77,6 +79,8 @@ type pipecatcallHandler struct {
 	pipecatframeHandler PipecatframeHandler
 
 	hostID string
+
+	ttsDrainTimeout time.Duration // debounce timeout for TTS completion detection after bot-llm-stopped
 
 	mapPipecatcallSession map[uuid.UUID]*pipecatcall.Session
 	muPipecatcallSession  sync.Mutex
@@ -103,6 +107,8 @@ func NewPipecatcallHandler(
 		pipecatframeHandler: NewPipecatframeHandler(),
 
 		hostID: hostID,
+
+		ttsDrainTimeout: defaultTTSDrainTimeout,
 
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},

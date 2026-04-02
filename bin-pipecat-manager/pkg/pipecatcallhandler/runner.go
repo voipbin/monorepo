@@ -524,8 +524,6 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})
 			se.TTSTextChan = make(chan string, 16)
-			se.TTSStopChan = make(chan struct{})
-			se.TTSStopClosed = false
 			se.LLMFlushing = true
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
@@ -551,14 +549,14 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		if se.LLMFlushing {
 			close(se.LLMStopChan)
 			// In text mode, the goroutine exits on LLMStopChan — wait for it.
-			// In TTS mode, the goroutine keeps running for TTSStopChan — don't wait.
+			// In TTS mode, the goroutine starts a debounce timer — don't wait.
 			select {
 			case <-se.LLMDoneChan:
 				// Text mode: goroutine exited, reset state.
 				se.LLMFlushing = false
 			default:
-				// TTS mode: goroutine still running, will exit on TTSStopChan.
-				log.Debugf("BotLLMStopped in TTS mode, goroutine continues for TTS events.")
+				// TTS mode: goroutine still running, will exit on debounce timer.
+				log.Debugf("BotLLMStopped in TTS mode, goroutine continues for remaining TTS text.")
 			}
 		} else {
 			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
@@ -580,14 +578,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 
 	case pipecatframe.RTVIFrameTypeBotTTSStopped:
-		if se.LLMFlushing && !se.TTSStopClosed {
-			se.TTSStopClosed = true
-			close(se.TTSStopChan)
-			<-se.LLMDoneChan
-			se.LLMFlushing = false
-		} else {
-			log.Debugf("BotTTSStopped received but no flush goroutine is running or already stopped.")
-		}
+		log.Debugf("BotTTSStopped received (informational, per-chunk event).")
 
 	case pipecatframe.RTVIFrameTypeBotOutput:
 		msg := pipecatframe.RTVIBotOutputMessage{}
@@ -595,8 +586,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-output message")
 		}
 
-		// bot-output with spoken=false carries sentence-aggregated text that is about
-		// to be sent to TTS. Use it as the TTS-sync trigger for intermediate events.
+		// bot-output carries sentence-aggregated text about to be sent to TTS.
+		// Feed it to the flush goroutine for TTS-synchronized intermediate events.
 		if se.LLMFlushing && msg.Data.Text != "" {
 			select {
 			case se.TTSTextChan <- msg.Data.Text:
@@ -606,14 +597,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 
 	case pipecatframe.RTVIFrameTypeBotStoppedSpeaking:
-		// bot-stopped-speaking signals that all TTS audio has been played.
-		// Use it as the TTS-done signal when bot-tts-stopped is not available.
-		if se.LLMFlushing && !se.TTSStopClosed {
-			se.TTSStopClosed = true
-			close(se.TTSStopChan)
-			<-se.LLMDoneChan
-			se.LLMFlushing = false
-		}
+		log.Debugf("BotStoppedSpeaking received (informational, per-chunk event).")
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -645,12 +629,14 @@ func (h *pipecatcallHandler) runnerHandleTextFrame(se *pipecatcall.Session, text
 // It supports two modes, auto-detected at runtime:
 //   - Text mode (no TTS): 200ms timer batches LLM tokens into intermediate events.
 //     bot-llm-stopped triggers drain + final event with full LLM text.
-//   - TTS mode (voice calls): bot-tts-text events trigger intermediate events with
-//     natural sentence chunks. bot-tts-stopped triggers final event with accumulated
-//     TTS text only (not full LLM output). Timer-driven intermediates stop once TTS
-//     mode is entered.
+//   - TTS mode (voice calls): bot-output events trigger intermediate events with
+//     natural sentence chunks. After bot-llm-stopped, a debounce timer waits for
+//     remaining TTS text. Final event uses accumulated TTS text only.
 //
-// Mode switches from text to TTS on the first bot-tts-text event received.
+// Mode switches from text to TTS on the first bot-output/bot-tts-text event received.
+//
+// TTS completion is detected via debounce timer (not bot-stopped-speaking/bot-tts-stopped)
+// because those events fire per TTS chunk, not at the end of all TTS output.
 func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, messageID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runLLMIntermediateFlush",
@@ -662,11 +648,20 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 	defer ticker.Stop()
 	defer close(se.LLMDoneChan)
 
-	var llmFullText string  // accumulated from LLM tokens (used in text mode)
-	var ttsFullText string  // accumulated from TTS chunks (used in TTS mode)
-	var deltaBuffer string  // for timer-driven intermediates (text mode only)
+	var llmFullText string // accumulated from LLM tokens (used in text mode)
+	var ttsFullText string // accumulated from TTS chunks (used in TTS mode)
+	var deltaBuffer string // for timer-driven intermediates (text mode only)
 	var sequence int
-	var ttsReceived bool    // true once first bot-tts-text arrives
+	var ttsReceived bool // true once first TTS text arrives
+	var llmStopped bool  // true after bot-llm-stopped
+
+	// ttsDrainChan is nil until bot-llm-stopped in TTS mode, which starts the debounce timer.
+	// It fires when no more TTS text has arrived for h.ttsDrainTimeout after LLM stopped.
+	var ttsDrainTimer *time.Timer
+	var ttsDrainChan <-chan time.Time
+
+	// Local copy of LLMStopChan — nilled after first receive to prevent closed-channel spin.
+	llmStopChan := se.LLMStopChan
 
 	for {
 		select {
@@ -693,7 +688,14 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			h.publishIntermediateEvent(se, messageID, ttsText, sequence)
 			log.Debugf("Published intermediate event (TTS mode). sequence: %d, tts_chunk_len: %d", sequence, len(ttsText))
 
-		case <-se.LLMStopChan:
+			// Reset debounce timer if LLM already stopped (more TTS chunks arriving).
+			if llmStopped && ttsDrainTimer != nil {
+				ttsDrainTimer.Reset(h.ttsDrainTimeout)
+			}
+
+		case <-llmStopChan:
+			llmStopChan = nil // prevent closed-channel spin in select
+			llmStopped = true
 			if !ttsReceived {
 				// Text mode: drain remaining tokens and publish final.
 				for {
@@ -716,17 +718,37 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 				log.Debugf("Published final bot LLM event (text mode). full_text_len: %d", len(llmFullText))
 				return
 			}
-			// TTS mode: note LLM done, keep running for TTS events.
-			log.Debugf("LLM stopped in TTS mode, waiting for TTS stop.")
+			// TTS mode: start debounce timer to wait for remaining TTS text chunks.
+			// The sentence aggregator flushes on LLM stop, so remaining bot-output events
+			// arrive shortly after. The timer resets on each new TTS text.
+			ttsDrainTimer = time.NewTimer(h.ttsDrainTimeout)
+			ttsDrainChan = ttsDrainTimer.C
+			log.Debugf("LLM stopped in TTS mode, waiting for remaining TTS text (timeout: %v).", h.ttsDrainTimeout)
 
-		case <-se.TTSStopChan:
-			// TTS done: publish final with TTS-received text only.
+		case <-ttsDrainChan:
+			// Debounce timer fired: no more TTS text for ttsDrainTimeout after LLM stopped.
+			// Drain any remaining TTS text from the channel buffer before publishing final.
+			for {
+				select {
+				case ttsText := <-se.TTSTextChan:
+					ttsFullText += ttsText
+					sequence++
+					h.publishIntermediateEvent(se, messageID, ttsText, sequence)
+					log.Debugf("Published intermediate event (TTS drain). sequence: %d, tts_chunk_len: %d", sequence, len(ttsText))
+				default:
+					goto ttsDrained
+				}
+			}
+		ttsDrained:
 			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, ttsFullText)
 			log.Debugf("Published final bot LLM event (TTS mode). tts_text_len: %d", len(ttsFullText))
 			return
 
 		case <-se.Ctx.Done():
-			// Session teardown: drain both channels, publish partial final.
+			// Session teardown: stop debounce timer, drain both channels, publish partial final.
+			if ttsDrainTimer != nil {
+				ttsDrainTimer.Stop()
+			}
 			for {
 				select {
 				case token := <-se.LLMTokenChan:
