@@ -15,12 +15,13 @@ import (
 	"monorepo/bin-call-manager/models/call"
 )
 
-// ValidateCustomerNotFrozen returns the customer and true if the given customer is not frozen.
-// Returns nil and false if the customer is frozen. Returns nil and true (fail-open) if
-// customer-manager is unavailable.
-func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID uuid.UUID) (*cucustomer.Customer, bool) {
+// ValidateCustomerStatusOutgoing returns the customer and true if the customer status is active.
+// Only active customers are allowed to make outgoing calls.
+// Returns (customer, false) if the status is not active.
+// Returns (nil, true) if customer-manager is unavailable (fail-open).
+func (h *callHandler) ValidateCustomerStatusOutgoing(ctx context.Context, customerID uuid.UUID) (*cucustomer.Customer, bool) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ValidateCustomerNotFrozen",
+		"func":        "ValidateCustomerStatusOutgoing",
 		"customer_id": customerID,
 	})
 
@@ -33,8 +34,35 @@ func (h *callHandler) ValidateCustomerNotFrozen(ctx context.Context, customerID 
 	}
 	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
-	if cu.Status == cucustomer.StatusFrozen {
-		log.Infof("Customer account is frozen. Rejecting call.")
+	if cu.Status != cucustomer.StatusActive {
+		log.Infof("Customer account is not active. Rejecting outgoing call. status: %s", cu.Status)
+		return cu, false
+	}
+
+	return cu, true
+}
+
+// ValidateCustomerStatusIncoming returns the customer and true if the customer status is active or initial.
+// Active and initial customers are allowed to receive incoming calls.
+// Returns (customer, false) if the status is not active or initial.
+// Returns (nil, true) if customer-manager is unavailable (fail-open).
+func (h *callHandler) ValidateCustomerStatusIncoming(ctx context.Context, customerID uuid.UUID) (*cucustomer.Customer, bool) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ValidateCustomerStatusIncoming",
+		"customer_id": customerID,
+	})
+
+	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if err != nil {
+		// Fail open: if customer-manager is unavailable, allow the call rather than
+		// rejecting ALL calls. Billing-manager provides a second enforcement layer.
+		log.Errorf("Could not get customer info, failing open. err: %v", err)
+		return nil, true
+	}
+	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+
+	if cu.Status != cucustomer.StatusActive && cu.Status != cucustomer.StatusInitial {
+		log.Infof("Customer account is not active or initial. Rejecting incoming call. status: %s", cu.Status)
 		return cu, false
 	}
 
