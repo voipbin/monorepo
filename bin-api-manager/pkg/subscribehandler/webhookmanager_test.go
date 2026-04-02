@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -11,6 +12,8 @@ import (
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
+	requesthandler "monorepo/bin-common-handler/pkg/requesthandler"
+	tkparticipant "monorepo/bin-talk-manager/models/participant"
 )
 
 func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
@@ -19,6 +22,11 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 		name string
 
 		request *sock.Event
+
+		// For chat events that need participant fan-out
+		chatID       uuid.UUID
+		participants []*tkparticipant.Participant
+		participantErr error
 
 		expectTopics []string
 		expectEvent  string
@@ -154,6 +162,114 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			},
 			expectEvent: `{"data":{"aicall_id":"c3d4e5f6-a1b2-7890-abcd-1234567890ef","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","id":"b2c3d4e5-f6a1-7890-abcd-234567890ef1"},"type":"aimessage_intermediate"}`,
 		},
+		{
+			name: "chatmessage_created with participants",
+
+			request: &sock.Event{
+				Type:      "webhook_published",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data: json.RawMessage([]byte(`{
+					"data": {
+					  "data": {
+						"id": "a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+						"customer_id": "550e8400-e29b-41d4-a716-446655440000",
+						"owner_id": "cdb5213a-8003-11ec-84ca-9fa226fcda9f",
+						"chat_id": "e66d1da0-3ed7-11ef-9208-4bcc069917a1"
+					  },
+					  "type": "chatmessage_created"
+					},
+					"data_type": "application/json",
+					"customer_id": "550e8400-e29b-41d4-a716-446655440000"
+				  }`)),
+			},
+
+			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b22d1da0-3ed7-11ef-9208-4bcc069917a3"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("ddb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+			},
+
+			expectTopics: []string{
+				// Old format - customer chat topic
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Old format - owner chat topic
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - old format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - new format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:webhook:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:webhook:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - owner
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:webhook:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+			},
+			expectEvent: `{"data":{"chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1","customer_id":"550e8400-e29b-41d4-a716-446655440000","id":"a11d1da0-3ed7-11ef-9208-4bcc069917a1","owner_id":"cdb5213a-8003-11ec-84ca-9fa226fcda9f"},"type":"chatmessage_created"}`,
+		},
+		{
+			name: "chat_created with participants (chatID fallback to d.ID)",
+
+			request: &sock.Event{
+				Type:      "webhook_published",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data: json.RawMessage([]byte(`{
+					"data": {
+					  "data": {
+						"id": "e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+						"customer_id": "550e8400-e29b-41d4-a716-446655440000"
+					  },
+					  "type": "chat_created"
+					},
+					"data_type": "application/json",
+					"customer_id": "550e8400-e29b-41d4-a716-446655440000"
+				  }`)),
+			},
+
+			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+			},
+
+			expectTopics: []string{
+				// Old format - customer chat topic
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out participant - old format (d.OwnerID is nil, so all participants get topics)
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out participant - new format
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:webhook:chat_created:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:webhook:chat_created:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			},
+			expectEvent: `{"data":{"customer_id":"550e8400-e29b-41d4-a716-446655440000","id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1"},"type":"chat_created"}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -162,9 +278,20 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			defer mc.Finish()
 
 			mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &subscribeHandler{
 				zmqpubHandler: mockZMQ,
+				reqHandler:    mockReq,
+			}
+
+			// Set up participant list mock for chat events
+			if tt.chatID != uuid.Nil {
+				if tt.participantErr != nil {
+					mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), tt.chatID).Return(nil, tt.participantErr)
+				} else {
+					mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), tt.chatID).Return(tt.participants, nil)
+				}
 			}
 
 			for _, topic := range tt.expectTopics {
@@ -187,6 +314,11 @@ func Test_createTopics(t *testing.T) {
 
 		messageType string
 		data        *commonWebhookData
+
+		// For chat events that need participant fan-out
+		chatID       uuid.UUID
+		participants []*tkparticipant.Participant
+		participantErr error
 
 		expectTopics []string
 		expectError  bool
@@ -288,6 +420,170 @@ func Test_createTopics(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "chatmessage_created with chat_id and participants",
+			messageType: "chatmessage_created",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a11d1da0-3ed7-11ef-9208-4bcc069917a1"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b22d1da0-3ed7-11ef-9208-4bcc069917a3"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerID: uuid.FromStringOrNil("ddb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+			},
+
+			expectTopics: []string{
+				// Old format - customer chat
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Old format - owner chat
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - old format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - new format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:test-manager:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - owner
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+			},
+			expectError: false,
+		},
+		{
+			name:        "chat_created with chatID nil fallback to d.ID",
+			messageType: "chat_created",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+			},
+
+			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+			},
+
+			expectTopics: []string{
+				// Old format - customer chat (chatID = d.ID)
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out participant - old format (d.OwnerID is nil, so no skip)
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out participant - new format
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chat_created:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:test-manager:chat_created:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			},
+			expectError: false,
+		},
+		{
+			name:        "chatparticipant_added with chat_id",
+			messageType: "chatparticipant_added",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b22d1da0-3ed7-11ef-9208-4bcc069917a3"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerID: uuid.FromStringOrNil("ddb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+			},
+
+			expectTopics: []string{
+				// Old format - customer chat
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Old format - owner chat
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - old format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Fan-out other participant - new format
+				"agent_id:ddb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chatparticipant_added:f66d1da0-3ed7-11ef-9208-4bcc069917a2",
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:test-manager:chatparticipant_added:f66d1da0-3ed7-11ef-9208-4bcc069917a2",
+				// New format - owner
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chatparticipant_added:f66d1da0-3ed7-11ef-9208-4bcc069917a2",
+			},
+			expectError: false,
+		},
+		{
+			name:        "chatmessage_created with participant lookup failure",
+			messageType: "chatmessage_created",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a11d1da0-3ed7-11ef-9208-4bcc069917a1"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			chatID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			participantErr: fmt.Errorf("rpc error"),
+
+			expectTopics: []string{
+				// Old format - customer chat
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// Old format - owner chat
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:chat:e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// No fan-out topics (participant lookup failed)
+				// New format - customer
+				"customer_id:550e8400-e29b-41d4-a716-446655440000:test-manager:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+				// New format - owner
+				"agent_id:cdb5213a-8003-11ec-84ca-9fa226fcda9f:test-manager:chatmessage_created:a11d1da0-3ed7-11ef-9208-4bcc069917a1",
+			},
+			expectError: false,
+		},
+		{
 			name:        "invalid message type",
 			messageType: "invalidtype",
 			data: &commonWebhookData{
@@ -303,20 +599,38 @@ func Test_createTopics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &subscribeHandler{}
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			topics, err := h.createTopics(tt.messageType, tt.data, "test-manager")
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &subscribeHandler{
+				reqHandler: mockReq,
+			}
+
+			// Set up participant list mock for chat events
+			if tt.chatID != uuid.Nil {
+				if tt.participantErr != nil {
+					mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), tt.chatID).Return(nil, tt.participantErr)
+				} else {
+					mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), tt.chatID).Return(tt.participants, nil)
+				}
+			}
+
+			ctx := context.Background()
+
+			topics, err := h.createTopics(ctx, tt.messageType, tt.data, "test-manager")
 			if (err != nil) != tt.expectError {
 				t.Errorf("Unexpected error. expect: %v, got: %v", tt.expectError, err)
 			}
 
 			if len(topics) != len(tt.expectTopics) {
-				t.Errorf("Unexpected number of topics. expect: %d, got: %d", len(tt.expectTopics), len(topics))
+				t.Errorf("Unexpected number of topics. expect: %d, got: %d\nexpect: %v\ngot: %v", len(tt.expectTopics), len(topics), tt.expectTopics, topics)
 			}
 
 			for i, topic := range topics {
 				if topic != tt.expectTopics[i] {
-					t.Errorf("Unexpected topic. expect: %s, got: %s", tt.expectTopics[i], topic)
+					t.Errorf("Unexpected topic at index %d. expect: %s, got: %s", i, tt.expectTopics[i], topic)
 				}
 			}
 		})
