@@ -42,6 +42,12 @@ type Session struct {
 	LLMFlushing  bool         `json:"-"` // whether flush goroutine is running
 	LLMMessageID uuid.UUID    `json:"-"` // pre-generated message UUID for current generation
 
+	// TTS sync channels for voice call intermediate event synchronization.
+	// TTSTextChan carries sentence-level TTS text chunks from the read loop to the flush goroutine.
+	// TTSStopChan is closed when bot-tts-stopped is received, signaling TTS completion.
+	TTSTextChan chan string   `json:"-"` // TTS text chunks from bot-tts-text events (cap 16)
+	TTSStopChan chan struct{} `json:"-"` // closed when bot-tts-stopped received
+
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`
 }

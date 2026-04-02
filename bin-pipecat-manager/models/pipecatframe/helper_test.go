@@ -98,6 +98,11 @@ func TestRTVIFrameTypeConstants(t *testing.T) {
 			expected: "bot-tts-started",
 		},
 		{
+			name:     "bot_tts_text",
+			constant: RTVIFrameTypeBotTTSText,
+			expected: "bot-tts-text",
+		},
+		{
 			name:     "bot_tts_stopped",
 			constant: RTVIFrameTypeBotTTSStopped,
 			expected: "bot-tts-stopped",

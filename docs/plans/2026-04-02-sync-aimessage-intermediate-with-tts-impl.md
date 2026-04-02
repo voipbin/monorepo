@@ -1,3 +1,116 @@
+# Sync aimessage_intermediate with TTS — Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Synchronize intermediate and final AI message events with TTS output for voice calls, while preserving existing 200ms timer behavior for text-based calls.
+
+**Architecture:** Dual-mode flush goroutine that auto-detects voice vs text calls. Two new channels (`TTSTextChan`, `TTSStopChan`) carry TTS events from the read loop to the goroutine. Mode switches from text to TTS on first `bot-tts-text` event.
+
+**Tech Stack:** Go, gomock, gorilla/websocket, RabbitMQ (via notifyHandler)
+
+**Design doc:** `docs/plans/2026-04-02-sync-aimessage-intermediate-with-tts.md`
+
+---
+
+### Task 1: Add RTVIFrameTypeBotTTSText constant
+
+**Files:**
+- Modify: `bin-pipecat-manager/models/pipecatframe/helper.go:18` (add constant between existing TTS constants)
+- Modify: `bin-pipecat-manager/models/pipecatframe/helper_test.go:100` (add test case)
+
+**Step 1: Add test case for the new constant**
+
+In `helper_test.go`, add this test case inside `TestRTVIFrameTypeConstants` after the `bot_tts_started` case (line 99):
+
+```go
+		{
+			name:     "bot_tts_text",
+			constant: RTVIFrameTypeBotTTSText,
+			expected: "bot-tts-text",
+		},
+```
+
+**Step 2: Run test to verify it fails**
+
+Run: `cd bin-pipecat-manager && go test -v -run TestRTVIFrameTypeConstants ./models/pipecatframe/...`
+Expected: Compilation error — `RTVIFrameTypeBotTTSText` undefined.
+
+**Step 3: Add the constant**
+
+In `helper.go`, add between `RTVIFrameTypeBotTTSStarted` and `RTVIFrameTypeBotTTSStopped` (line 19):
+
+```go
+	RTVIFrameTypeBotTTSText    = "bot-tts-text"
+```
+
+The const block should look like:
+```go
+	RTVIFrameTypeBotTTSStarted = "bot-tts-started"
+	RTVIFrameTypeBotTTSText    = "bot-tts-text"
+	RTVIFrameTypeBotTTSStopped = "bot-tts-stopped"
+```
+
+**Step 4: Run test to verify it passes**
+
+Run: `cd bin-pipecat-manager && go test -v -run TestRTVIFrameTypeConstants ./models/pipecatframe/...`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add bin-pipecat-manager/models/pipecatframe/helper.go bin-pipecat-manager/models/pipecatframe/helper_test.go
+git commit -m "NOJIRA-Sync-aimessage-intermediate-with-tts
+
+- bin-pipecat-manager: Add RTVIFrameTypeBotTTSText constant for bot-tts-text events"
+```
+
+---
+
+### Task 2: Add TTS channels to Session struct
+
+**Files:**
+- Modify: `bin-pipecat-manager/models/pipecatcall/session.go:43` (add fields after LLMMessageID)
+
+**Step 1: Add TTSTextChan and TTSStopChan fields**
+
+After line 43 (`LLMMessageID uuid.UUID`), add:
+
+```go
+	// TTS sync channels for voice call intermediate event synchronization.
+	// TTSTextChan carries sentence-level TTS text chunks from the read loop to the flush goroutine.
+	// TTSStopChan is closed when bot-tts-stopped is received, signaling TTS completion.
+	TTSTextChan chan string   `json:"-"` // TTS text chunks from bot-tts-text events (cap 16)
+	TTSStopChan chan struct{} `json:"-"` // closed when bot-tts-stopped received
+```
+
+**Step 2: Run tests to verify nothing breaks**
+
+Run: `cd bin-pipecat-manager && go test ./models/pipecatcall/...`
+Expected: PASS (no logic change, just new fields)
+
+**Step 3: Commit**
+
+```bash
+git add bin-pipecat-manager/models/pipecatcall/session.go
+git commit -m "NOJIRA-Sync-aimessage-intermediate-with-tts
+
+- bin-pipecat-manager: Add TTSTextChan and TTSStopChan to Session for TTS event sync"
+```
+
+---
+
+### Task 3: Write failing tests for dual-mode flush goroutine
+
+This is the largest task — rewrite `runner_flush_test.go` with 15 test cases. The tests are written first (TDD); they will fail until the goroutine is updated in Task 4.
+
+**Files:**
+- Rewrite: `bin-pipecat-manager/pkg/pipecatcallhandler/runner_flush_test.go`
+
+**Step 1: Write the complete test file**
+
+Replace the entire contents of `runner_flush_test.go` with the following. The existing 6 tests are preserved (updated to create TTS channels) and 9 new TTS-mode tests are added.
+
+```go
 package pipecatcallhandler
 
 import (
@@ -986,3 +1099,334 @@ func Test_runLLMIntermediateFlush_ReadLoopIntegration(t *testing.T) {
 		<-se.LLMDoneChan
 	})
 }
+```
+
+**Step 2: Run tests to verify they fail**
+
+Run: `cd bin-pipecat-manager && go test -v -run Test_runLLMIntermediateFlush ./pkg/pipecatcallhandler/...`
+
+Expected: Text-mode tests PASS (existing behavior preserved). TTS-mode tests FAIL because the goroutine doesn't handle `TTSTextChan` or `TTSStopChan` yet — they will hang or produce wrong results (the goroutine never reads from these channels).
+
+**Note:** Some TTS tests may hang because the goroutine never exits via `TTSStopChan`. Run with `-timeout 30s` to limit hanging.
+
+**Step 3: Commit the failing tests**
+
+```bash
+git add bin-pipecat-manager/pkg/pipecatcallhandler/runner_flush_test.go
+git commit -m "NOJIRA-Sync-aimessage-intermediate-with-tts
+
+- bin-pipecat-manager: Add TTS-mode test cases for dual-mode flush goroutine (tests fail until implementation)"
+```
+
+---
+
+### Task 4: Evolve flush goroutine to dual-mode
+
+**Files:**
+- Modify: `bin-pipecat-manager/pkg/pipecatcallhandler/runner.go:585-660` (rewrite `runLLMIntermediateFlush`)
+
+**Step 1: Replace the flush goroutine implementation**
+
+Replace the entire `runLLMIntermediateFlush` function (lines 585-660) with the dual-mode version:
+
+```go
+// runLLMIntermediateFlush is the per-generation flush goroutine.
+//
+// It supports two modes, auto-detected at runtime:
+//   - Text mode (no TTS): 200ms timer batches LLM tokens into intermediate events.
+//     bot-llm-stopped triggers drain + final event with full LLM text.
+//   - TTS mode (voice calls): bot-tts-text events trigger intermediate events with
+//     natural sentence chunks. bot-tts-stopped triggers final event with accumulated
+//     TTS text only (not full LLM output). Timer-driven intermediates stop once TTS
+//     mode is entered.
+//
+// Mode switches from text to TTS on the first bot-tts-text event received.
+func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, messageID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runLLMIntermediateFlush",
+		"pipecatcall_id": se.ID,
+		"message_id":     messageID,
+	})
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	defer close(se.LLMDoneChan)
+
+	var llmFullText string  // accumulated from LLM tokens (used in text mode)
+	var ttsFullText string  // accumulated from TTS chunks (used in TTS mode)
+	var deltaBuffer string  // for timer-driven intermediates (text mode only)
+	var sequence int
+	var ttsReceived bool    // true once first bot-tts-text arrives
+
+	for {
+		select {
+		case token := <-se.LLMTokenChan:
+			llmFullText += token
+			if !ttsReceived {
+				deltaBuffer += token
+			}
+
+		case <-ticker.C:
+			if !ttsReceived && deltaBuffer != "" {
+				sequence++
+				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				log.Debugf("Published intermediate event (text mode). sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+				deltaBuffer = ""
+			}
+
+		case ttsText := <-se.TTSTextChan:
+			ttsReceived = true
+			ttsFullText += ttsText
+			sequence++
+			h.publishIntermediateEvent(se, messageID, ttsText, sequence)
+			log.Debugf("Published intermediate event (TTS mode). sequence: %d, tts_chunk_len: %d", sequence, len(ttsText))
+
+		case <-se.LLMStopChan:
+			if !ttsReceived {
+				// Text mode: drain remaining tokens and publish final.
+				for {
+					select {
+					case token := <-se.LLMTokenChan:
+						llmFullText += token
+						deltaBuffer += token
+					default:
+						goto llmDrained
+					}
+				}
+			llmDrained:
+				if deltaBuffer != "" {
+					sequence++
+					h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+					log.Debugf("Published final intermediate event (text mode). sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+				}
+
+				h.publishFinalBotLLMEvent(se.Ctx, se, messageID, llmFullText)
+				log.Debugf("Published final bot LLM event (text mode). full_text_len: %d", len(llmFullText))
+				return
+			}
+			// TTS mode: note LLM done, keep running for TTS events.
+			log.Debugf("LLM stopped in TTS mode, waiting for TTS stop.")
+
+		case <-se.TTSStopChan:
+			// TTS done: publish final with TTS-received text only.
+			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, ttsFullText)
+			log.Debugf("Published final bot LLM event (TTS mode). tts_text_len: %d", len(ttsFullText))
+			return
+
+		case <-se.Ctx.Done():
+			// Session teardown: drain both channels, publish partial final.
+			for {
+				select {
+				case token := <-se.LLMTokenChan:
+					llmFullText += token
+				default:
+					goto ctxLLMDrained
+				}
+			}
+		ctxLLMDrained:
+			for {
+				select {
+				case ttsText := <-se.TTSTextChan:
+					ttsFullText += ttsText
+					ttsReceived = true
+				default:
+					goto ctxTTSDrained
+				}
+			}
+		ctxTTSDrained:
+			finalText := llmFullText
+			if ttsReceived {
+				finalText = ttsFullText
+			}
+			if finalText != "" {
+				h.publishFinalBotLLMEvent(context.Background(), se, messageID, finalText)
+				log.Debugf("Context cancelled, published partial final bot LLM event. final_text_len: %d, tts_mode: %v", len(finalText), ttsReceived)
+			} else {
+				log.Debugf("Context cancelled, no text accumulated.")
+			}
+			return
+		}
+	}
+}
+```
+
+**Step 2: Run all tests to verify text-mode tests still pass and TTS tests now pass**
+
+Run: `cd bin-pipecat-manager && go test -v -timeout 60s -run Test_runLLMIntermediateFlush ./pkg/pipecatcallhandler/...`
+Expected: All 15 tests PASS.
+
+**Step 3: Commit**
+
+```bash
+git add bin-pipecat-manager/pkg/pipecatcallhandler/runner.go
+git commit -m "NOJIRA-Sync-aimessage-intermediate-with-tts
+
+- bin-pipecat-manager: Evolve flush goroutine to dual-mode (text/TTS) with auto-detection"
+```
+
+---
+
+### Task 5: Add bot-tts-text and bot-tts-stopped handlers in read loop
+
+**Files:**
+- Modify: `bin-pipecat-manager/pkg/pipecatcallhandler/runner.go:515-555` (modify `receiveMessageFrameTypeMessage`)
+
+**Step 1: Add TTSTextChan and TTSStopChan initialization in bot-llm-text handler**
+
+In the `RTVIFrameTypeBotLLMText` case (around line 523-525), add the new channel creation alongside existing ones. Replace lines 522-527:
+
+```go
+		if !se.LLMFlushing {
+			se.LLMMessageID = h.utilHandler.UUIDCreate()
+			se.LLMTokenChan = make(chan string, 64)
+			se.LLMStopChan = make(chan struct{})
+			se.LLMDoneChan = make(chan struct{})
+			se.TTSTextChan = make(chan string, 16)
+			se.TTSStopChan = make(chan struct{})
+			se.LLMFlushing = true
+			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
+		}
+```
+
+**Step 2: Add bot-tts-text case**
+
+After the `RTVIFrameTypeBotLLMStopped` case (after line 554), add the new `RTVIFrameTypeBotTTSText` case:
+
+```go
+	case pipecatframe.RTVIFrameTypeBotTTSText:
+		msg := pipecatframe.RTVIBotTTSTextMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-tts-text message")
+		}
+
+		if se.LLMFlushing {
+			select {
+			case se.TTSTextChan <- msg.Data.Text:
+			case <-se.LLMDoneChan:
+				// Goroutine already exited (text mode finished first).
+				log.Debugf("TTS text arrived but flush goroutine already exited.")
+			}
+		}
+
+	case pipecatframe.RTVIFrameTypeBotTTSStopped:
+		if se.LLMFlushing {
+			close(se.TTSStopChan)
+			<-se.LLMDoneChan
+			se.LLMFlushing = false
+		} else {
+			log.Debugf("BotTTSStopped received but no flush goroutine is running.")
+		}
+```
+
+**Step 3: Make bot-llm-stopped non-blocking**
+
+Replace the `RTVIFrameTypeBotLLMStopped` case (lines 542-554) with the non-blocking version:
+
+```go
+	case pipecatframe.RTVIFrameTypeBotLLMStopped:
+		msg := pipecatframe.RTVIBotLLMStoppedMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
+		}
+
+		if se.LLMFlushing {
+			close(se.LLMStopChan)
+			// In text mode, the goroutine exits on LLMStopChan — wait for it.
+			// In TTS mode, the goroutine keeps running for TTSStopChan — don't wait.
+			// We use a non-blocking check: if LLMDoneChan is already closed, the
+			// goroutine exited (text mode). Otherwise, it's in TTS mode.
+			select {
+			case <-se.LLMDoneChan:
+				// Text mode: goroutine exited, reset state.
+				se.LLMFlushing = false
+			default:
+				// TTS mode: goroutine still running, will exit on TTSStopChan.
+				log.Debugf("BotLLMStopped in TTS mode, goroutine continues for TTS events.")
+			}
+		} else {
+			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+		}
+```
+
+**Step 4: Run all tests**
+
+Run: `cd bin-pipecat-manager && go test -v -timeout 60s ./pkg/pipecatcallhandler/...`
+Expected: All tests PASS.
+
+**Step 5: Run full verification workflow**
+
+Run:
+```bash
+cd /home/pchero/gitvoipbin/monorepo/.worktrees/NOJIRA-Sync-aimessage-intermediate-with-tts/bin-pipecat-manager && \
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
+```
+Expected: All pass.
+
+**Step 6: Commit**
+
+```bash
+git add bin-pipecat-manager/pkg/pipecatcallhandler/runner.go
+git commit -m "NOJIRA-Sync-aimessage-intermediate-with-tts
+
+- bin-pipecat-manager: Add bot-tts-text and bot-tts-stopped handlers in read loop
+- bin-pipecat-manager: Make bot-llm-stopped non-blocking for TTS mode compatibility"
+```
+
+---
+
+### Task 6: Final verification and push
+
+**Step 1: Run full verification one more time**
+
+```bash
+cd /home/pchero/gitvoipbin/monorepo/.worktrees/NOJIRA-Sync-aimessage-intermediate-with-tts/bin-pipecat-manager && \
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test -v ./... && \
+golangci-lint run -v --timeout 5m
+```
+
+**Step 2: Verify all tests pass with race detector**
+
+```bash
+cd /home/pchero/gitvoipbin/monorepo/.worktrees/NOJIRA-Sync-aimessage-intermediate-with-tts/bin-pipecat-manager && \
+go test -race -timeout 60s ./pkg/pipecatcallhandler/...
+```
+
+**Step 3: Check for conflicts with main**
+
+```bash
+cd /home/pchero/gitvoipbin/monorepo/.worktrees/NOJIRA-Sync-aimessage-intermediate-with-tts && \
+git fetch origin main && \
+git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"
+```
+
+**Step 4: Push and create PR**
+
+```bash
+git push -u origin NOJIRA-Sync-aimessage-intermediate-with-tts
+```
+
+Then create PR with title `NOJIRA-Sync-aimessage-intermediate-with-tts`.
+
+---
+
+## Summary of Changes
+
+| File | Change |
+|------|--------|
+| `bin-pipecat-manager/models/pipecatframe/helper.go` | Add `RTVIFrameTypeBotTTSText = "bot-tts-text"` constant |
+| `bin-pipecat-manager/models/pipecatframe/helper_test.go` | Add test for new constant |
+| `bin-pipecat-manager/models/pipecatcall/session.go` | Add `TTSTextChan chan string`, `TTSStopChan chan struct{}` |
+| `bin-pipecat-manager/pkg/pipecatcallhandler/runner.go` | Dual-mode flush goroutine + `bot-tts-text`/`bot-tts-stopped` handlers + non-blocking `bot-llm-stopped` |
+| `bin-pipecat-manager/pkg/pipecatcallhandler/runner_flush_test.go` | 15 test cases: 5 text mode, 5 TTS mode, 2 mode switching, 4 integration |
+
+**No changes needed:**
+- Python side (`bot-tts-text` enabled by default in Pipecat >= 0.0.101)
+- AI Manager (same event types and webhook structs)
+- OpenAPI specs (no API-facing changes)

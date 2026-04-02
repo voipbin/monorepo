@@ -523,6 +523,8 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			se.LLMTokenChan = make(chan string, 64)
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})
+			se.TTSTextChan = make(chan string, 16)
+			se.TTSStopChan = make(chan struct{})
 			se.LLMFlushing = true
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
@@ -547,10 +549,42 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 
 		if se.LLMFlushing {
 			close(se.LLMStopChan)
+			// In text mode, the goroutine exits on LLMStopChan — wait for it.
+			// In TTS mode, the goroutine keeps running for TTSStopChan — don't wait.
+			select {
+			case <-se.LLMDoneChan:
+				// Text mode: goroutine exited, reset state.
+				se.LLMFlushing = false
+			default:
+				// TTS mode: goroutine still running, will exit on TTSStopChan.
+				log.Debugf("BotLLMStopped in TTS mode, goroutine continues for TTS events.")
+			}
+		} else {
+			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+		}
+
+	case pipecatframe.RTVIFrameTypeBotTTSText:
+		msg := pipecatframe.RTVIBotTTSTextMessage{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-tts-text message")
+		}
+
+		if se.LLMFlushing {
+			select {
+			case se.TTSTextChan <- msg.Data.Text:
+			case <-se.LLMDoneChan:
+				// Goroutine already exited (text mode finished first).
+				log.Debugf("TTS text arrived but flush goroutine already exited.")
+			}
+		}
+
+	case pipecatframe.RTVIFrameTypeBotTTSStopped:
+		if se.LLMFlushing {
+			close(se.TTSStopChan)
 			<-se.LLMDoneChan
 			se.LLMFlushing = false
 		} else {
-			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+			log.Debugf("BotTTSStopped received but no flush goroutine is running.")
 		}
 
 	default:
@@ -579,9 +613,16 @@ func (h *pipecatcallHandler) runnerHandleTextFrame(se *pipecatcall.Session, text
 }
 
 // runLLMIntermediateFlush is the per-generation flush goroutine.
-// It owns all accumulated text state locally and periodically publishes
-// intermediate events with the delta text received since the last tick.
-// It runs until LLMStopChan is closed (by the BotLLMStopped handler).
+//
+// It supports two modes, auto-detected at runtime:
+//   - Text mode (no TTS): 200ms timer batches LLM tokens into intermediate events.
+//     bot-llm-stopped triggers drain + final event with full LLM text.
+//   - TTS mode (voice calls): bot-tts-text events trigger intermediate events with
+//     natural sentence chunks. bot-tts-stopped triggers final event with accumulated
+//     TTS text only (not full LLM output). Timer-driven intermediates stop once TTS
+//     mode is entered.
+//
+// Mode switches from text to TTS on the first bot-tts-text event received.
 func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, messageID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "runLLMIntermediateFlush",
@@ -593,64 +634,95 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 	defer ticker.Stop()
 	defer close(se.LLMDoneChan)
 
-	var fullText string
-	var deltaBuffer string
+	var llmFullText string  // accumulated from LLM tokens (used in text mode)
+	var ttsFullText string  // accumulated from TTS chunks (used in TTS mode)
+	var deltaBuffer string  // for timer-driven intermediates (text mode only)
 	var sequence int
+	var ttsReceived bool    // true once first bot-tts-text arrives
 
 	for {
 		select {
 		case token := <-se.LLMTokenChan:
-			fullText += token
-			deltaBuffer += token
+			llmFullText += token
+			if !ttsReceived {
+				deltaBuffer += token
+			}
 
 		case <-ticker.C:
-			if deltaBuffer != "" {
+			if !ttsReceived && deltaBuffer != "" {
 				sequence++
 				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
-				log.Debugf("Published intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+				log.Debugf("Published intermediate event (text mode). sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
 				deltaBuffer = ""
 			}
 
-		case <-se.LLMStopChan:
-			// Drain remaining tokens from the channel.
-			for {
-				select {
-				case token := <-se.LLMTokenChan:
-					fullText += token
-					deltaBuffer += token
-				default:
-					goto drained
-				}
-			}
-		drained:
-			// Flush any remaining delta as the last intermediate event.
-			if deltaBuffer != "" {
-				sequence++
-				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
-				log.Debugf("Published final intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
-			}
+		case ttsText := <-se.TTSTextChan:
+			ttsReceived = true
+			ttsFullText += ttsText
+			sequence++
+			h.publishIntermediateEvent(se, messageID, ttsText, sequence)
+			log.Debugf("Published intermediate event (TTS mode). sequence: %d, tts_chunk_len: %d", sequence, len(ttsText))
 
-			// Publish the final complete bot LLM event.
-			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, fullText)
-			log.Debugf("Published final bot LLM event. full_text_len: %d", len(fullText))
+		case <-se.LLMStopChan:
+			if !ttsReceived {
+				// Text mode: drain remaining tokens and publish final.
+				for {
+					select {
+					case token := <-se.LLMTokenChan:
+						llmFullText += token
+						deltaBuffer += token
+					default:
+						goto llmDrained
+					}
+				}
+			llmDrained:
+				if deltaBuffer != "" {
+					sequence++
+					h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+					log.Debugf("Published final intermediate event (text mode). sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
+				}
+
+				h.publishFinalBotLLMEvent(se.Ctx, se, messageID, llmFullText)
+				log.Debugf("Published final bot LLM event (text mode). full_text_len: %d", len(llmFullText))
+				return
+			}
+			// TTS mode: note LLM done, keep running for TTS events.
+			log.Debugf("LLM stopped in TTS mode, waiting for TTS stop.")
+
+		case <-se.TTSStopChan:
+			// TTS done: publish final with TTS-received text only.
+			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, ttsFullText)
+			log.Debugf("Published final bot LLM event (TTS mode). tts_text_len: %d", len(ttsFullText))
 			return
 
 		case <-se.Ctx.Done():
-			// Drain and publish final event to preserve partial LLM response in
-			// conversation history (used by summary handler). Use context.Background()
-			// because the original context is already cancelled.
+			// Session teardown: drain both channels, publish partial final.
 			for {
 				select {
 				case token := <-se.LLMTokenChan:
-					fullText += token
+					llmFullText += token
 				default:
-					goto ctxDrained
+					goto ctxLLMDrained
 				}
 			}
-		ctxDrained:
-			if fullText != "" {
-				h.publishFinalBotLLMEvent(context.Background(), se, messageID, fullText)
-				log.Debugf("Context cancelled, published partial final bot LLM event. full_text_len: %d", len(fullText))
+		ctxLLMDrained:
+			for {
+				select {
+				case ttsText := <-se.TTSTextChan:
+					ttsFullText += ttsText
+					ttsReceived = true
+				default:
+					goto ctxTTSDrained
+				}
+			}
+		ctxTTSDrained:
+			finalText := llmFullText
+			if ttsReceived {
+				finalText = ttsFullText
+			}
+			if finalText != "" {
+				h.publishFinalBotLLMEvent(context.Background(), se, messageID, finalText)
+				log.Debugf("Context cancelled, published partial final bot LLM event. final_text_len: %d, tts_mode: %v", len(finalText), ttsReceived)
 			} else {
 				log.Debugf("Context cancelled, no text accumulated.")
 			}

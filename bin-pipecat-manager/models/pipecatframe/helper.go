@@ -16,6 +16,7 @@ const (
 	RTVIFrameTypeBotLLMStarted       = "bot-llm-started"
 	RTVIFrameTypeBotLLMStopped       = "bot-llm-stopped"
 	RTVIFrameTypeBotTTSStarted       = "bot-tts-started"
+	RTVIFrameTypeBotTTSText          = "bot-tts-text"
 	RTVIFrameTypeBotTTSStopped       = "bot-tts-stopped"
 	RTVIFrameTypeUserStartedSpeaking = "user-started-speaking"
 	RTVIFrameTypeUserStoppedSpeaking = "user-stopped-speaking"
