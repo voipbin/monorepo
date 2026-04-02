@@ -513,10 +513,9 @@
    <span class="o">|</span> <span class="n">Subscribe</span> <span class="n">to</span> <span class="n">talk</span> <span class="n">events</span>     <span class="o">|</span>
    <span class="o">+-----------------------------&gt;|</span>
    <span class="o">|</span>                              <span class="o">|</span>
-   <span class="o">|&lt;====</span> <span class="n">message_created</span> <span class="o">========|</span>
-   <span class="o">|&lt;====</span> <span class="n">message_updated</span> <span class="o">========|</span>
-   <span class="o">|&lt;====</span> <span class="n">participant_joined</span> <span class="o">=====|</span>
-   <span class="o">|&lt;====</span> <span class="n">reaction_added</span> <span class="o">=========|</span>
+   <span class="o">|&lt;====</span> <span class="n">chatmessage_created</span> <span class="o">====|</span>
+   <span class="o">|&lt;====</span> <span class="n">chat_created</span> <span class="o">===========|</span>
+   <span class="o">|&lt;====</span> <span class="n">chatparticipant_added</span> <span class="o">==|</span>
    <span class="o">|</span>                              <span class="o">|</span>
 </pre></div>
 </div>
@@ -528,26 +527,29 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>message_created</p></td>
-<td><p>New message sent to talk</p></td>
+<tr class="row-even"><td><p>chat_created</p></td>
+<td><p>New chat session created</p></td>
 </tr>
-<tr class="row-odd"><td><p>message_updated</p></td>
-<td><p>Message edited</p></td>
+<tr class="row-odd"><td><p>chat_updated</p></td>
+<td><p>Chat session details updated</p></td>
 </tr>
-<tr class="row-even"><td><p>message_deleted</p></td>
-<td><p>Message removed</p></td>
+<tr class="row-even"><td><p>chat_deleted</p></td>
+<td><p>Chat session deleted</p></td>
 </tr>
-<tr class="row-odd"><td><p>reaction_added</p></td>
-<td><p>Reaction added to message</p></td>
+<tr class="row-odd"><td><p>chatmessage_created</p></td>
+<td><p>New message sent to chat</p></td>
 </tr>
-<tr class="row-even"><td><p>reaction_removed</p></td>
-<td><p>Reaction removed from message</p></td>
+<tr class="row-even"><td><p>chatmessage_deleted</p></td>
+<td><p>Message removed from chat</p></td>
 </tr>
-<tr class="row-odd"><td><p>participant_joined</p></td>
-<td><p>Agent joined the talk</p></td>
+<tr class="row-odd"><td><p>chatmessage_reaction_updated</p></td>
+<td><p>Reaction added or removed on a message</p></td>
 </tr>
-<tr class="row-even"><td><p>participant_left</p></td>
-<td><p>Agent left the talk</p></td>
+<tr class="row-even"><td><p>chatparticipant_added</p></td>
+<td><p>Participant joined the chat</p></td>
+</tr>
+<tr class="row-odd"><td><p>chatparticipant_removed</p></td>
+<td><p>Participant left the chat</p></td>
 </tr>
 </tbody>
 </table>

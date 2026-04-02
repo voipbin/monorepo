@@ -212,14 +212,14 @@ func Test_extractResource(t *testing.T) {
 			expected:  "chat",
 		},
 		{
-			name:      "message_created",
-			eventType: "message_created",
-			expected:  "message",
+			name:      "chatmessage_created",
+			eventType: "chatmessage_created",
+			expected:  "chatmessage",
 		},
 		{
-			name:      "participant_added",
-			eventType: "participant_added",
-			expected:  "participant",
+			name:      "chatparticipant_added",
+			eventType: "chatparticipant_added",
+			expected:  "chatparticipant",
 		},
 		{
 			name:      "single word",
