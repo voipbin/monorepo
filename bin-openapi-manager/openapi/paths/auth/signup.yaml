@@ -4,7 +4,7 @@ post:
     Initiates a new customer account registration. The request must include `accepted_tos: true`
     to confirm Terms of Service agreement.
 
-    On success, returns a customer object and a temporary token. On failure (e.g., duplicate email),
+    On success, returns a customer object and a provisioned access key. On failure (e.g., duplicate email),
     still returns HTTP 200 with an empty body to prevent email enumeration attacks.
 
     After signup, the customer receives a verification email. Use `POST /auth/email-verify` with the
@@ -21,7 +21,7 @@ post:
     '200':
       description: |
         Signup initiated successfully, or silently ignored if the email already exists (to prevent enumeration).
-        On success, the response contains the customer object and a temporary token.
+        On success, the response contains the customer object and a provisioned access key.
         On failure, the response body is an empty JSON object `{}`.
       content:
         application/json:

@@ -65,7 +65,7 @@ Response:
 
 .. note:: **AI Implementation Hint**
 
-   If you signed up via the headless flow (``POST /auth/complete-signup``), the response already includes an ``accesskey`` with a valid token — you do not need to create another one. Use ``POST /v1.0/accesskeys`` only if you need additional keys or want to set a custom expiration via the ``expire`` (Integer, Optional) field.
+   If you signed up via the API (``POST /auth/signup``), the response already includes an ``accesskey`` with a valid token — you do not need to create another one. Use ``POST /v1.0/accesskeys`` only if you need additional keys or want to set a custom expiration via the ``expire`` (Integer, Optional) field.
 
 Using Credentials in API Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -587,23 +587,6 @@ func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) 
 	return res.ConvertWebhookMessage(), nil
 }
 
-// CustomerCompleteSignup validates OTP and returns an auto-provisioned AccessKey.
-// This is a public endpoint — no authentication required.
-func (h *serviceHandler) CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResultWebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "CustomerCompleteSignup",
-	})
-	log.Debug("Processing customer complete signup.")
-
-	res, err := h.reqHandler.CustomerV1CustomerCompleteSignup(ctx, tempToken, code)
-	if err != nil {
-		log.Errorf("Could not complete signup. err: %v", err)
-		return nil, err
-	}
-
-	return res.ConvertWebhookMessage(), nil
-}
-
 // convertCustomerFilters converts map[string]string to map[cscustomer.Field]any
 func (h *serviceHandler) convertCustomerFilters(filters map[string]string) (map[cscustomer.Field]any, error) {
 	// Convert to map[string]any first

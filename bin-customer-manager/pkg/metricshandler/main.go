@@ -90,15 +90,6 @@ var (
 		[]string{"status"},
 	)
 
-	// CompleteSignupTotal counts headless complete-signup attempts by outcome.
-	CompleteSignupTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "complete_signup_total",
-			Help:      "Total number of headless complete-signup attempts",
-		},
-		[]string{"status"},
-	)
 )
 
 func init() {
@@ -111,6 +102,5 @@ func init() {
 		RPCCallTotal,
 		SignupTotal,
 		EmailVerificationTotal,
-		CompleteSignupTotal,
 	)
 }

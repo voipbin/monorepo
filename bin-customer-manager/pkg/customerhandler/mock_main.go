@@ -42,21 +42,6 @@ func (m *MockCustomerHandler) EXPECT() *MockCustomerHandlerMockRecorder {
 	return m.recorder
 }
 
-// CompleteSignup mocks base method.
-func (m *MockCustomerHandler) CompleteSignup(ctx context.Context, tempToken, code string) (*customer.CompleteSignupResult, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CompleteSignup", ctx, tempToken, code)
-	ret0, _ := ret[0].(*customer.CompleteSignupResult)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CompleteSignup indicates an expected call of CompleteSignup.
-func (mr *MockCustomerHandlerMockRecorder) CompleteSignup(ctx, tempToken, code any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompleteSignup", reflect.TypeOf((*MockCustomerHandler)(nil).CompleteSignup), ctx, tempToken, code)
-}
-
 // Create mocks base method.
 func (m *MockCustomerHandler) Create(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

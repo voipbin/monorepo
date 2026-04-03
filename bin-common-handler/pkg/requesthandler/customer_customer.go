@@ -232,33 +232,6 @@ func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, toke
 	return &res, nil
 }
 
-// CustomerV1CustomerCompleteSignup sends a complete-signup request to customer-manager.
-func (r *requestHandler) CustomerV1CustomerCompleteSignup(ctx context.Context, tempToken string, code string) (*cscustomer.CompleteSignupResult, error) {
-	uri := "/v1/customers/complete_signup"
-
-	reqData := csrequest.V1DataCustomersCompleteSignupPost{
-		TempToken: tempToken,
-		Code:      code,
-	}
-
-	m, err := json.Marshal(reqData)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/complete_signup", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res cscustomer.CompleteSignupResult
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
 // CustomerV1CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error) {

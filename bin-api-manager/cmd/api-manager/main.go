@@ -228,8 +228,6 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	auth.POST("/signup", service.PostCustomerSignup)
 	auth.GET("/email-verify", service.GetCustomerEmailVerify)
 	auth.POST("/email-verify", service.PostCustomerEmailVerify)
-	auth.POST("/complete-signup", service.PostCustomerCompleteSignup)
-
 	// Authenticated auth routes (require middleware)
 	authProtected := app.Group("/auth")
 	authProtected.Use(middleware.Authenticate())
