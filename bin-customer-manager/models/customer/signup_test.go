@@ -27,7 +27,6 @@ func Test_SignupResult_ConvertWebhookMessage(t *testing.T) {
 					TermsAgreedVersion: "2026-02-22T00:00:00Z",
 					TermsAgreedIP:      "192.168.1.1",
 				},
-				TempToken: "tmp_abc123",
 			},
 			expectRes: &SignupResultWebhookMessage{
 				Customer: &WebhookMessage{
@@ -35,7 +34,6 @@ func Test_SignupResult_ConvertWebhookMessage(t *testing.T) {
 					Name:  "test",
 					Email: "test@example.com",
 				},
-				TempToken: "tmp_abc123",
 			},
 		},
 		{
@@ -46,7 +44,6 @@ func Test_SignupResult_ConvertWebhookMessage(t *testing.T) {
 					Name:  "test",
 					Email: "test@example.com",
 				},
-				TempToken: "tmp_abc123",
 				Accesskey: &accesskey.Accesskey{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
@@ -61,7 +58,6 @@ func Test_SignupResult_ConvertWebhookMessage(t *testing.T) {
 					Name:  "test",
 					Email: "test@example.com",
 				},
-				TempToken: "tmp_abc123",
 				Accesskey: &accesskey.WebhookMessage{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
@@ -72,13 +68,9 @@ func Test_SignupResult_ConvertWebhookMessage(t *testing.T) {
 			},
 		},
 		{
-			name: "nil customer",
-			input: &SignupResult{
-				TempToken: "tmp_abc123",
-			},
-			expectRes: &SignupResultWebhookMessage{
-				TempToken: "tmp_abc123",
-			},
+			name:      "nil customer",
+			input:     &SignupResult{},
+			expectRes: &SignupResultWebhookMessage{},
 		},
 	}
 
@@ -99,7 +91,6 @@ func Test_SignupResult_ConvertWebhookMessage_excludes_terms_fields(t *testing.T)
 			TermsAgreedVersion: "2026-02-22T00:00:00Z",
 			TermsAgreedIP:      "192.168.1.1",
 		},
-		TempToken: "tmp_abc123",
 	}
 
 	res := input.ConvertWebhookMessage()
@@ -201,32 +192,5 @@ func Test_EmailVerifyResult_ConvertWebhookMessage_excludes_terms_fields(t *testi
 	}
 	if _, exists := customerRaw["terms_agreed_ip"]; exists {
 		t.Error("terms_agreed_ip should not appear in WebhookMessage JSON")
-	}
-}
-
-func Test_CompleteSignupResult_ConvertWebhookMessage(t *testing.T) {
-	tests := []struct {
-		name      string
-		input     *CompleteSignupResult
-		expectRes *CompleteSignupResultWebhookMessage
-	}{
-		{
-			name: "normal",
-			input: &CompleteSignupResult{
-				CustomerID: "81133fc8-4a01-11ee-8dbf-4bbf6dd46254",
-			},
-			expectRes: &CompleteSignupResultWebhookMessage{
-				CustomerID: "81133fc8-4a01-11ee-8dbf-4bbf6dd46254",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res := tt.input.ConvertWebhookMessage()
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
 	}
 }

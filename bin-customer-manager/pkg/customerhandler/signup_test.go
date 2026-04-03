@@ -111,9 +111,8 @@ func Test_Signup(t *testing.T) {
 			mockAccesskey.EXPECT().Create(ctx, tt.responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-			// token + signup session + email
+			// token + email
 			mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), tt.responseUUID, gomock.Any()).Return(nil)
-			mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().EmailV1EmailSend(ctx, customer.IDSystem, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 
 			res, err := h.Signup(ctx, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, "192.168.1.1")
@@ -386,6 +385,47 @@ func Test_Signup_customerCreateError(t *testing.T) {
 	}
 }
 
+func Test_Signup_accesskeyCreateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	responseUUID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000005")
+	h := &customerHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	// validateCreate passes
+	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
+	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
+
+	// create customer succeeds
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
+
+	// AccessKey creation fails
+	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(nil, fmt.Errorf("accesskey create error"))
+
+	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
 func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -422,60 +462,18 @@ func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
 	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-	// Redis EmailVerifyTokenSet fails
+	// Redis EmailVerifyTokenSet fails — non-fatal, result still returned
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(fmt.Errorf("redis error"))
 
-	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
-	if err == nil {
-		t.Errorf("Wrong match. expect: error, got: nil")
+	res, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok (redis failure non-fatal), got: %v", err)
 	}
-}
-
-func Test_Signup_signupSessionSetError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
-
-	responseUUID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000003")
-	h := &customerHandler{
-		utilHandler:      mockUtil,
-		reqHandler:       mockReq,
-		db:               mockDB,
-		cache:            mockCache,
-		notifyHandler:    mockNotify,
-		accesskeyHandler: mockAccesskey,
+	if res == nil {
+		t.Fatalf("Wrong match. expect: result, got: nil")
 	}
-	ctx := context.Background()
-
-	// validateCreate passes
-	mockUtil.EXPECT().EmailIsValid("test@voipbin.net").Return(true)
-	mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*customer.Customer{}, nil)
-	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
-
-	// create customer succeeds
-	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
-	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
-	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
-
-	// AccessKey + event (happen before token storage)
-	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
-
-	// token + OTP generation succeeds
-	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)
-
-	// Redis SignupSessionSet fails
-	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("redis session error"))
-
-	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
-	if err == nil {
-		t.Errorf("Wrong match. expect: error, got: nil")
+	if res.Customer == nil {
+		t.Errorf("Wrong match. expect: customer in result, got: nil")
 	}
 }
 
@@ -519,9 +517,8 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-	// token + session storage succeeds
+	// token storage succeeds
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)
-	mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	// email send FAILS — should be non-fatal
 	mockReq.EXPECT().EmailV1EmailSend(ctx, customer.IDSystem, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("email service down"))
@@ -535,9 +532,6 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	}
 	if res.Customer == nil {
 		t.Errorf("Wrong match. expect: customer in result, got: nil")
-	}
-	if res.TempToken == "" {
-		t.Errorf("Wrong match. expect: temp_token in result, got: empty")
 	}
 }
 
@@ -662,8 +656,71 @@ func Test_sendVerificationEmail(t *testing.T) {
 		gomock.Any(),
 	).Return(nil, nil)
 
-	err := h.sendVerificationEmail(ctx, "test@voipbin.net", "testtoken123", "123456")
+	err := h.sendVerificationEmail(ctx, "test@voipbin.net", "testtoken123")
 	if err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_sendVerificationEmail_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{
+		reqHandler: mockReq,
+	}
+	ctx := context.Background()
+
+	mockReq.EXPECT().EmailV1EmailSend(
+		ctx,
+		gomock.Any(),
+		gomock.Any(),
+		gomock.Any(),
+		gomock.Any(),
+		gomock.Any(),
+		gomock.Any(),
+	).Return(nil, fmt.Errorf("email service error"))
+
+	err := h.sendVerificationEmail(ctx, "test@voipbin.net", "testtoken")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_EmailVerify_customerGetAfterUpdateError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000003")
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
+
+	h := &customerHandler{
+		db:               mockDB,
+		cache:            mockCache,
+		notifyHandler:    mockNotify,
+		accesskeyHandler: mockAccesskey,
+	}
+	ctx := context.Background()
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_get_fail").Return(customerID, nil)
+	// verification lock
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		EmailVerified: false,
+	}, nil)
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "token_get_fail").Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db get error after update"))
+
+	_, err := h.EmailVerify(ctx, "token_get_fail")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }

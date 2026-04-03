@@ -3,17 +3,13 @@ package customerhandler
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
-	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-customer-manager/internal/config"
 	"monorepo/bin-customer-manager/models/customer"
-	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/metricshandler"
 
 	"github.com/gofrs/uuid"
@@ -21,27 +17,10 @@ import (
 )
 
 const (
-	emailVerifyTokenTTL       = time.Hour
-	emailVerifyTokenLen       = 32 // 32 bytes = 64 hex chars
-	tempTokenLen              = 16 // 16 bytes = 32 hex chars
-	maxSignupAttempts         = 5
-	defaultAccesskeyExpire    = 365 * 24 * time.Hour // 1 year
+	emailVerifyTokenTTL    = time.Hour
+	emailVerifyTokenLen    = 32 // 32 bytes = 64 hex chars
+	defaultAccesskeyExpire = 365 * 24 * time.Hour // 1 year
 )
-
-func cryptoRandInt(min, max int) (int, error) {
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
-	if err != nil {
-		return 0, fmt.Errorf("could not generate random number: %w", err)
-	}
-	return int(n.Int64()) + min, nil
-}
-
-// hashOTP returns the SHA-256 hex digest of the given OTP code.
-// This allows storing a hash in Redis instead of the plaintext OTP.
-func hashOTP(code string) string {
-	h := sha256.Sum256([]byte(code))
-	return hex.EncodeToString(h[:])
-}
 
 // Signup creates an unverified customer and sends a verification email.
 func (h *customerHandler) Signup(
@@ -124,61 +103,17 @@ func (h *customerHandler) Signup(
 		Headless: true,
 	})
 
-	// generate verification token
-	tokenBytes := make([]byte, emailVerifyTokenLen)
-	if _, err := rand.Read(tokenBytes); err != nil {
-		log.Errorf("Could not generate random token. err: %v", err)
-		metricshandler.SignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not generate verification token")
-	}
-	token := hex.EncodeToString(tokenBytes)
-
-	// store token in Redis
-	if err := h.cache.EmailVerifyTokenSet(ctx, token, id, emailVerifyTokenTTL); err != nil {
-		log.Errorf("Could not store verification token. err: %v", err)
-		metricshandler.SignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not store verification token")
-	}
-
-	// generate OTP code (100000..999999 inclusive)
-	otpNum, err := cryptoRandInt(100000, 1000000)
-	if err != nil {
-		log.Errorf("Could not generate OTP code. err: %v", err)
-		metricshandler.SignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not generate verification code")
-	}
-	otpCode := fmt.Sprintf("%06d", otpNum)
-
-	// generate temp_token
-	tempTokenBytes := make([]byte, tempTokenLen)
-	if _, err := rand.Read(tempTokenBytes); err != nil {
-		log.Errorf("Could not generate temp token. err: %v", err)
-		metricshandler.SignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not generate temp token")
-	}
-	tempToken := hex.EncodeToString(tempTokenBytes)
-
-	// store signup session in Redis (store hashed OTP for defense-in-depth)
-	session := &cachehandler.SignupSession{
-		CustomerID:  id,
-		OTPCode:     hashOTP(otpCode),
-		VerifyToken: token,
-	}
-	if err := h.cache.SignupSessionSet(ctx, tempToken, session, emailVerifyTokenTTL); err != nil {
-		log.Errorf("Could not store signup session. err: %v", err)
-		metricshandler.SignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not store signup session")
-	}
-
-	// send verification email
-	if err := h.sendVerificationEmail(ctx, email, token, otpCode); err != nil {
-		log.Errorf("Could not send verification email. err: %v", err)
-		// still return the customer even if email sending fails
+	// Best-effort verification email: generate token, store in Redis, and send email.
+	// Failures here are non-fatal because the customer and access key are already committed
+	// and cannot be rolled back. The client needs the SignupResult to authenticate.
+	// If the verification email fails, the customer can re-request signup to trigger a new email.
+	if err := h.sendSignupVerification(ctx, id, email); err != nil {
+		log.Errorf("Could not complete verification email flow. err: %v", err)
 	}
 
 	metricshandler.SignupTotal.WithLabelValues("success").Inc()
 
-	return &customer.SignupResult{Customer: res, TempToken: tempToken, Accesskey: ak}, nil
+	return &customer.SignupResult{Customer: res, Accesskey: ak}, nil
 }
 
 // EmailVerify validates a verification token and activates the customer.
@@ -246,125 +181,56 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 
 	// get updated customer
-	res, err := h.db.CustomerGet(ctx, customerID)
+	updated, err := h.db.CustomerGet(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get updated customer. err: %v", err)
 		metricshandler.EmailVerificationTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not get verified customer")
 	}
-	log.WithField("customer", res).Debugf("Customer verified. customer_id: %s", res.ID)
+	log.WithField("customer", updated).Debugf("Customer verified. customer_id: %s", updated.ID)
 
 	// Send password reset email so browser users can set their admin password.
 	// Non-fatal — customer is verified even if this fails.
-	if err := h.reqHandler.AgentV1PasswordForgot(ctx, 30000, res.Email); err != nil {
+	if err := h.reqHandler.AgentV1PasswordForgot(ctx, 30000, updated.Email); err != nil {
 		log.Errorf("Could not send password reset email. err: %v", err)
 	}
 
 	metricshandler.EmailVerificationTotal.WithLabelValues("success").Inc()
 
 	return &customer.EmailVerifyResult{
-		Customer: res,
+		Customer: updated,
 	}, nil
 }
 
-// CompleteSignup validates an OTP code and completes the headless signup flow.
-func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, code string) (*customer.CompleteSignupResult, error) {
+// sendSignupVerification generates a verification token, stores it in Redis, and sends the verification email.
+func (h *customerHandler) sendSignupVerification(ctx context.Context, customerID uuid.UUID, email string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "CompleteSignup",
+		"func":  "sendSignupVerification",
+		"email": email,
 	})
-	log.Debug("Processing headless signup completion.")
 
-	// Rate limit check
-	count, err := h.cache.SignupAttemptIncrement(ctx, tempToken, emailVerifyTokenTTL)
-	if err != nil {
-		log.Errorf("Could not increment attempt counter. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("internal error")
+	tokenBytes := make([]byte, emailVerifyTokenLen)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		log.Errorf("Could not generate random token. err: %v", err)
+		return fmt.Errorf("could not generate verification token: %w", err)
 	}
-	if count > maxSignupAttempts {
-		log.Infof("Too many attempts for temp_token.")
-		metricshandler.CompleteSignupTotal.WithLabelValues("rate_limited").Inc()
-		return nil, ErrTooManyAttempts
+	token := hex.EncodeToString(tokenBytes)
+
+	if err := h.cache.EmailVerifyTokenSet(ctx, token, customerID, emailVerifyTokenTTL); err != nil {
+		log.Errorf("Could not store verification token. err: %v", err)
+		return fmt.Errorf("could not store verification token: %w", err)
 	}
 
-	// Get signup session from Redis
-	session, err := h.cache.SignupSessionGet(ctx, tempToken)
-	if err != nil {
-		log.Errorf("Could not get signup session. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_token").Inc()
-		return nil, fmt.Errorf("invalid or expired temp_token")
-	}
-	log.Debugf("Found signup session. customer_id: %s", session.CustomerID)
-
-	// Validate OTP using constant-time comparison to prevent timing attacks.
-	// The stored OTP is a SHA-256 hash, so hash the user input before comparing.
-	if subtle.ConstantTimeCompare([]byte(session.OTPCode), []byte(hashOTP(code))) != 1 {
-		log.Infof("Invalid OTP code.")
-		metricshandler.CompleteSignupTotal.WithLabelValues("invalid_code").Inc()
-		return nil, fmt.Errorf("invalid verification code")
+	if err := h.sendVerificationEmail(ctx, email, token); err != nil {
+		log.Errorf("Could not send verification email. err: %v", err)
+		return err
 	}
 
-	// Acquire verification lock to prevent concurrent verification race
-	locked, err := h.cache.VerifyLockAcquire(ctx, session.CustomerID, 30*time.Second)
-	if err != nil {
-		log.Errorf("Could not acquire verify lock. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("internal error")
-	}
-	if !locked {
-		log.Infof("Verification already in progress. customer_id: %s", session.CustomerID)
-		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
-		return &customer.CompleteSignupResult{
-			CustomerID: session.CustomerID.String(),
-		}, nil
-	}
-	defer func() { _ = h.cache.VerifyLockRelease(ctx, session.CustomerID) }()
-
-	// Guard against double-verification (e.g., if Redis cleanup failed on a previous successful call)
-	cu, err := h.db.CustomerGet(ctx, session.CustomerID)
-	if err != nil {
-		log.Errorf("Could not get customer. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("customer not found")
-	}
-	if cu.EmailVerified {
-		log.Infof("Customer already verified. customer_id: %s", cu.ID)
-		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
-
-		// Clean up Redis keys
-		_ = h.cache.SignupSessionDelete(ctx, tempToken)
-		_ = h.cache.SignupAttemptDelete(ctx, tempToken)
-		_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
-		return &customer.CompleteSignupResult{
-			CustomerID: session.CustomerID.String(),
-		}, nil
-	}
-
-	// Mark customer as verified and activate
-	fields := map[customer.Field]any{
-		customer.FieldEmailVerified: true,
-		customer.FieldStatus:        string(customer.StatusActive),
-	}
-	if err := h.db.CustomerUpdate(ctx, session.CustomerID, fields); err != nil {
-		log.Errorf("Could not update customer. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not verify customer")
-	}
-
-	// Delete all Redis keys (session + attempts + email verify token)
-	_ = h.cache.SignupSessionDelete(ctx, tempToken)
-	_ = h.cache.SignupAttemptDelete(ctx, tempToken)
-	_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
-
-	metricshandler.CompleteSignupTotal.WithLabelValues("success").Inc()
-
-	return &customer.CompleteSignupResult{
-		CustomerID: session.CustomerID.String(),
-	}, nil
+	return nil
 }
 
 // sendVerificationEmail sends a verification email to the customer.
-func (h *customerHandler) sendVerificationEmail(ctx context.Context, email string, token string, otpCode string) error {
+func (h *customerHandler) sendVerificationEmail(ctx context.Context, email string, token string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "sendVerificationEmail",
 		"email": email,
@@ -376,17 +242,9 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	subject := "VoIPBin - Verify Your Email"
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
-			"Your verification code is: %s\n\n"+
-			"To complete signup via API:\n\n"+
-			"POST %s/auth/complete-signup\n"+
-			"Content-Type: application/json\n"+
-			"{\"temp_token\": \"<from signup response>\", \"code\": \"%s\"}\n\n"+
-			"Or click the link below to verify via browser (expires in 1 hour):\n\n"+
+			"Click the link below to verify your email address (expires in 1 hour):\n\n"+
 			"%s\n\n"+
 			"If you did not create this account, you can safely ignore this email.",
-		otpCode,
-		cfg.EmailVerifyBaseURL,
-		otpCode,
 		verifyLink,
 	)
 

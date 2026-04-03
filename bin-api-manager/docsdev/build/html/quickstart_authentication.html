@@ -242,7 +242,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>If you signed up via the headless flow (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/complete-signup</span></code>), the response already includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with a valid token — you do not need to create another one. Use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/accesskeys</span></code> only if you need additional keys or want to set a custom expiration via the <code class="docutils literal notranslate"><span class="pre">expire</span></code> (Integer, Optional) field.</p>
+<p>If you signed up via the API (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>), the response already includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with a valid token — you do not need to create another one. Use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/accesskeys</span></code> only if you need additional keys or want to set a custom expiration via the <code class="docutils literal notranslate"><span class="pre">expire</span></code> (Integer, Optional) field.</p>
 </div>
 </section>
 <section id="using-credentials-in-api-requests">

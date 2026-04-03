@@ -2295,7 +2295,7 @@
     "/auth/signup": {
       "post": {
         "summary": "Create a new customer account (self-service signup).",
-        "description": "Initiates a new customer account registration. The request must include `accepted_tos: true`\nto confirm Terms of Service agreement.\n\nOn success, returns a customer object and a temporary token. On failure (e.g., duplicate email),\nstill returns HTTP 200 with an empty body to prevent email enumeration attacks.\n\nAfter signup, the customer receives a verification email. Use `POST /auth/email-verify` with the\ntoken from the email to verify the account.\n",
+        "description": "Initiates a new customer account registration. The request must include `accepted_tos: true`\nto confirm Terms of Service agreement.\n\nOn success, returns a customer object and a provisioned access key. On failure (e.g., duplicate email),\nstill returns HTTP 200 with an empty body to prevent email enumeration attacks.\n\nAfter signup, the customer receives a verification email. Use `POST /auth/email-verify` with the\ntoken from the email to verify the account.\n",
         "tags": [
           "Auth"
         ],
@@ -2311,7 +2311,7 @@
         },
         "responses": {
           "200": {
-            "description": "Signup initiated successfully, or silently ignored if the email already exists (to prevent enumeration).\nOn success, the response contains the customer object and a temporary token.\nOn failure, the response body is an empty JSON object `{}`.\n",
+            "description": "Signup initiated successfully, or silently ignored if the email already exists (to prevent enumeration).\nOn success, the response contains the customer object and a provisioned access key.\nOn failure, the response body is an empty JSON object `{}`.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2356,43 +2356,6 @@
           },
           "400": {
             "description": "Bad request. Possible causes:\n- Token is invalid, expired, or already used.\n- Request body is malformed JSON.\n- `token` field is missing.\n"
-          }
-        }
-      }
-    },
-    "/auth/complete-signup": {
-      "post": {
-        "summary": "Complete headless signup with OTP verification.",
-        "description": "Completes a headless (API-based) signup flow by validating a one-time password (OTP) code.\nThe `temp_token` is returned from `POST /auth/signup` and the `code` is the OTP sent to the customer.\n\nOn success, returns the customer ID and a provisioned access key.\n",
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestBodyAuthCompleteSignupPOST"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Signup completed successfully. Returns the customer ID and access key credentials.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerManagerCompleteSignupResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request. Possible causes:\n- `temp_token` is invalid or expired.\n- `code` is incorrect.\n- Request body is malformed JSON.\n- Required fields are missing.\n"
-          },
-          "429": {
-            "description": "Too many OTP verification attempts. Try again later."
           }
         }
       }
@@ -22207,37 +22170,12 @@
           }
         }
       },
-      "RequestBodyAuthCompleteSignupPOST": {
-        "type": "object",
-        "required": [
-          "temp_token",
-          "code"
-        ],
-        "description": "Request body for POST /auth/complete-signup (headless OTP verification).",
-        "properties": {
-          "temp_token": {
-            "type": "string",
-            "description": "Temporary token returned from the `POST /auth/signup` response.",
-            "example": "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
-          },
-          "code": {
-            "type": "string",
-            "description": "One-time password (OTP) code sent to the customer for verification.",
-            "example": "123456"
-          }
-        }
-      },
       "CustomerManagerSignupResult": {
         "type": "object",
-        "description": "Result of a successful signup. Contains the newly created customer, a temporary token for headless signup completion via `POST /auth/complete-signup`, and a provisioned access key.",
+        "description": "Result of a successful signup. Contains the newly created customer and a provisioned access key.",
         "properties": {
           "customer": {
             "$ref": "#/components/schemas/CustomerManagerCustomer"
-          },
-          "temp_token": {
-            "type": "string",
-            "description": "Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification.",
-            "example": "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
           },
           "accesskey": {
             "$ref": "#/components/schemas/CustomerManagerAccesskey"
@@ -22253,22 +22191,6 @@
         "properties": {
           "customer": {
             "$ref": "#/components/schemas/CustomerManagerCustomer"
-          }
-        }
-      },
-      "CustomerManagerCompleteSignupResult": {
-        "type": "object",
-        "required": [
-          "customer_id"
-        ],
-        "description": "Result of a successful headless signup completion. Contains the customer ID.",
-        "properties": {
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "x-go-type": "string",
-            "description": "The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details.",
-            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
           }
         }
       },

@@ -705,7 +705,6 @@ func Test_CustomerSignup(t *testing.T) {
 					TermsAgreedVersion: "2026-02-22T00:00:00Z",
 					TermsAgreedIP:      "192.168.1.1",
 				},
-				TempToken: "tmp_abc123",
 			},
 			expectRes: &cscustomer.SignupResultWebhookMessage{
 				Customer: &cscustomer.WebhookMessage{
@@ -713,7 +712,6 @@ func Test_CustomerSignup(t *testing.T) {
 					Name:  "Test Corp",
 					Email: "test@example.com",
 				},
-				TempToken: "tmp_abc123",
 			},
 		},
 	}

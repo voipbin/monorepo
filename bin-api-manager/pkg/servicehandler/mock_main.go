@@ -2022,21 +2022,6 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversatio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationUpdate), ctx, a, conversationID, fields)
 }
 
-// CustomerCompleteSignup mocks base method.
-func (m *MockServiceHandler) CustomerCompleteSignup(ctx context.Context, tempToken, code string) (*customer.CompleteSignupResultWebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerCompleteSignup", ctx, tempToken, code)
-	ret0, _ := ret[0].(*customer.CompleteSignupResultWebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerCompleteSignup indicates an expected call of CustomerCompleteSignup.
-func (mr *MockServiceHandlerMockRecorder) CustomerCompleteSignup(ctx, tempToken, code any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCompleteSignup", reflect.TypeOf((*MockServiceHandler)(nil).CustomerCompleteSignup), ctx, tempToken, code)
-}
-
 // CustomerCreate mocks base method.
 func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *agent.Agent, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

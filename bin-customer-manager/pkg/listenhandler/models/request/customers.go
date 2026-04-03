@@ -68,9 +68,4 @@ type V1DataCustomersEmailVerifyPost struct {
 	Token string `json:"token"`
 }
 
-// V1DataCustomersCompleteSignupPost is request struct for POST /v1/customers/complete_signup
-type V1DataCustomersCompleteSignupPost struct {
-	TempToken string `json:"temp_token"`
-	Code      string `json:"code"`
-}
 
