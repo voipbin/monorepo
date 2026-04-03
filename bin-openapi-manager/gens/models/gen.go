@@ -4558,10 +4558,8 @@ type CustomerManagerAccesskey struct {
 	TokenPrefix *string `json:"token_prefix,omitempty"`
 }
 
-// CustomerManagerCompleteSignupResult Result of a successful headless signup completion. Contains the customer ID and a provisioned access key.
+// CustomerManagerCompleteSignupResult Result of a successful headless signup completion. Contains the customer ID.
 type CustomerManagerCompleteSignupResult struct {
-	Accesskey *CustomerManagerAccesskey `json:"accesskey,omitempty"`
-
 	// CustomerId The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details.
 	CustomerId string `json:"customer_id"`
 }
@@ -4695,10 +4693,9 @@ type CustomerManagerCustomerStatus string
 // CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
 type CustomerManagerCustomerWebhookMethod string
 
-// CustomerManagerEmailVerifyResult Result of a successful email verification. Contains the verified customer and a provisioned access key.
+// CustomerManagerEmailVerifyResult Result of a successful email verification. Contains the verified customer.
 type CustomerManagerEmailVerifyResult struct {
-	Accesskey CustomerManagerAccesskey `json:"accesskey"`
-	Customer  CustomerManagerCustomer  `json:"customer"`
+	Customer CustomerManagerCustomer `json:"customer"`
 }
 
 // CustomerManagerMetadata Configuration flags for a customer account. Controls platform behavior
@@ -4712,9 +4709,10 @@ type CustomerManagerMetadata struct {
 	RtpDebug *bool `json:"rtp_debug,omitempty"`
 }
 
-// CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`.
+// CustomerManagerSignupResult Result of a successful signup. Contains the newly created customer, a temporary token for headless signup completion via `POST /auth/complete-signup`, and a provisioned access key.
 type CustomerManagerSignupResult struct {
-	Customer *CustomerManagerCustomer `json:"customer,omitempty"`
+	Accesskey *CustomerManagerAccesskey `json:"accesskey,omitempty"`
+	Customer  *CustomerManagerCustomer  `json:"customer,omitempty"`
 
 	// TempToken Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification.
 	TempToken *string `json:"temp_token,omitempty"`

@@ -8,10 +8,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 )
@@ -36,14 +34,11 @@ func Test_processV1CustomersCompleteSignupPost(t *testing.T) {
 
 			responseResult: &customer.CompleteSignupResult{
 				CustomerID: "d1d2d3d4-0000-0000-0000-000000000001",
-				Accesskey: &accesskey.Accesskey{
-					ID: uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee"),
-				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"customer_id":"d1d2d3d4-0000-0000-0000-000000000001","accesskey":{"id":"aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee","customer_id":"00000000-0000-0000-0000-000000000000","token_prefix":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
+				Data:       []byte(`{"customer_id":"d1d2d3d4-0000-0000-0000-000000000001"}`),
 			},
 		},
 	}

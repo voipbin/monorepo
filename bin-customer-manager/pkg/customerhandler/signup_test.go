@@ -107,6 +107,10 @@ func Test_Signup(t *testing.T) {
 			})
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(tt.responseCustomer, nil)
 
+			// create access key + publish event (now at signup time)
+			mockAccesskey.EXPECT().Create(ctx, tt.responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
+
 			// token + signup session + email
 			mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), tt.responseUUID, gomock.Any()).Return(nil)
 			mockCache.EXPECT().SignupSessionSet(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -255,8 +259,8 @@ func Test_EmailVerify(t *testing.T) {
 		)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseUpdated, nil)
-			mockAccesskey.EXPECT().Create(ctx, tt.responseCustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
+			// password reset email for browser users
+			mockReq.EXPECT().AgentV1PasswordForgot(ctx, 30000, tt.responseUpdated.Email).Return(nil)
 
 			res, err := h.EmailVerify(ctx, tt.token)
 			if err != nil {
@@ -414,6 +418,10 @@ func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
 
+	// AccessKey + event (happen before token storage)
+	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
+
 	// Redis EmailVerifyTokenSet fails
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(fmt.Errorf("redis error"))
 
@@ -454,6 +462,10 @@ func Test_Signup_signupSessionSetError(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
+
+	// AccessKey + event (happen before token storage)
+	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 	// token + OTP generation succeeds
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)
@@ -502,6 +514,10 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(responseCustomer, nil)
+
+	// AccessKey + event (happen before token storage)
+	mockAccesskey.EXPECT().Create(ctx, responseUUID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 	// token + session storage succeeds
 	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), responseUUID, gomock.Any()).Return(nil)

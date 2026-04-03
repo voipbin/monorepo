@@ -13,7 +13,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
@@ -23,7 +22,6 @@ import (
 func Test_CompleteSignup(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000001")
-	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
 
 	tests := []struct {
 		name string
@@ -104,24 +102,10 @@ func Test_CompleteSignup(t *testing.T) {
 				},
 			)
 
-			// create access key (now before Redis cleanup)
-			mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
-				ID: accesskeyID,
-			}, nil)
-
-			// cleanup Redis keys (now after access key creation)
+			// cleanup Redis keys
 			mockCache.EXPECT().SignupSessionDelete(ctx, tt.tempToken).Return(nil)
 			mockCache.EXPECT().SignupAttemptDelete(ctx, tt.tempToken).Return(nil)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.responseSession.VerifyToken).Return(nil)
-
-			// get customer for event
-			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-				ID:            customerID,
-				EmailVerified: true,
-			}, nil)
-
-			// publish event with headless=true
-			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 			res, err := h.CompleteSignup(ctx, tt.tempToken, tt.code)
 			if tt.expectErr {
@@ -141,10 +125,6 @@ func Test_CompleteSignup(t *testing.T) {
 
 			if res.CustomerID != tt.expectCustomerID {
 				t.Errorf("Wrong customer_id. expect: %s, got: %s", tt.expectCustomerID, res.CustomerID)
-			}
-
-			if res.Accesskey == nil {
-				t.Errorf("Wrong match. expect: accesskey in result, got: nil")
 			}
 		})
 	}
@@ -213,12 +193,9 @@ func Test_CompleteSignup_rateLimitAtBoundary(t *testing.T) {
 		EmailVerified: false,
 	}, nil)
 	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{}, nil)
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_boundary").Return(nil)
 	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{ID: customerID}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 	res, err := h.CompleteSignup(ctx, "tmp_boundary", "654321")
 	if err != nil {
@@ -360,109 +337,6 @@ func Test_CompleteSignup_customerUpdateError(t *testing.T) {
 	}
 }
 
-func Test_CompleteSignup_accesskeyCreateError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000005")
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
-
-	h := &customerHandler{
-		db:               mockDB,
-		cache:            mockCache,
-		notifyHandler:    mockNotify,
-		accesskeyHandler: mockAccesskey,
-	}
-	ctx := context.Background()
-
-	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_ak_err", gomock.Any()).Return(int64(1), nil)
-	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_ak_err").Return(&cachehandler.SignupSession{
-		CustomerID:  customerID,
-		OTPCode:     hashOTP("123456"),
-		VerifyToken: "vt",
-	}, nil)
-	// verification lock
-	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
-	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
-	// double-verification guard — customer not yet verified
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-		ID:            customerID,
-		EmailVerified: false,
-	}, nil)
-	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	// AccessKey creation fails — Redis keys should NOT be cleaned up (user can retry)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(nil, fmt.Errorf("accesskey creation failed"))
-
-	_, err := h.CompleteSignup(ctx, "tmp_ak_err", "123456")
-	if err == nil {
-		t.Errorf("Wrong match. expect: error, got: nil")
-	}
-	if err.Error() != "could not create access key" {
-		t.Errorf("Wrong error message. expect: could not create access key, got: %v", err)
-	}
-}
-
-func Test_CompleteSignup_customerGetFailureNonFatal(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	customerID := uuid.FromStringOrNil("d1d2d3d4-0000-0000-0000-000000000006")
-	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
-
-	h := &customerHandler{
-		db:               mockDB,
-		cache:            mockCache,
-		notifyHandler:    mockNotify,
-		accesskeyHandler: mockAccesskey,
-	}
-	ctx := context.Background()
-
-	mockCache.EXPECT().SignupAttemptIncrement(ctx, "tmp_get_fail", gomock.Any()).Return(int64(1), nil)
-	mockCache.EXPECT().SignupSessionGet(ctx, "tmp_get_fail").Return(&cachehandler.SignupSession{
-		CustomerID:  customerID,
-		OTPCode:     hashOTP("123456"),
-		VerifyToken: "vt",
-	}, nil)
-	// verification lock
-	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
-	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
-	// double-verification guard — customer not yet verified
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-		ID:            customerID,
-		EmailVerified: false,
-	}, nil)
-	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
-		ID: accesskeyID,
-	}, nil)
-	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_get_fail").Return(nil)
-	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_get_fail").Return(nil)
-	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "vt").Return(nil)
-
-	// CustomerGet fails — event should NOT be published, but result should still be returned
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(nil, fmt.Errorf("db get error"))
-
-	res, err := h.CompleteSignup(ctx, "tmp_get_fail", "123456")
-	if err != nil {
-		t.Errorf("Wrong match. expect: ok (CustomerGet failure is non-fatal), got: %v", err)
-	}
-	if res == nil {
-		t.Fatalf("Wrong match. expect: result, got: nil")
-	}
-	if res.Accesskey == nil {
-		t.Errorf("Wrong match. expect: accesskey in result, got: nil")
-	}
-	if res.CustomerID != customerID.String() {
-		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
-	}
-}
 
 func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -496,11 +370,6 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 		ID:            customerID,
 		EmailVerified: true,
 	}, nil)
-	// AccessKey creation attempt in already-verified guard
-	accesskeyID := uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee")
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(&accesskey.Accesskey{
-		ID: accesskeyID,
-	}, nil)
 	// Redis cleanup on early return
 	mockCache.EXPECT().SignupSessionDelete(ctx, "tmp_already_verified").Return(nil)
 	mockCache.EXPECT().SignupAttemptDelete(ctx, "tmp_already_verified").Return(nil)
@@ -515,10 +384,6 @@ func Test_CompleteSignup_alreadyVerified(t *testing.T) {
 	}
 	if res.CustomerID != customerID.String() {
 		t.Errorf("Wrong customer_id. expect: %s, got: %s", customerID.String(), res.CustomerID)
-	}
-	// already-verified path now attempts AccessKey creation
-	if res.Accesskey == nil {
-		t.Errorf("Wrong match. expect: accesskey in result, got: nil")
 	}
 }
 
@@ -558,57 +423,6 @@ func Test_CompleteSignup_guardCustomerGetError(t *testing.T) {
 	}
 	if err.Error() != "customer not found" {
 		t.Errorf("Wrong error message. expect: customer not found, got: %v", err)
-	}
-}
-
-func Test_EmailVerify_accesskeyCreateError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	customerID := uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000001")
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
-
-	h := &customerHandler{
-		db:               mockDB,
-		cache:            mockCache,
-		notifyHandler:    mockNotify,
-		accesskeyHandler: mockAccesskey,
-	}
-	ctx := context.Background()
-
-	mockCache.EXPECT().EmailVerifyTokenGet(ctx, "token_ak_fail").Return(customerID, nil)
-	// verification lock
-	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, 30*time.Second).Return(true, nil)
-	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-		ID:            customerID,
-		EmailVerified: false,
-	}, nil)
-	mockDB.EXPECT().CustomerUpdate(ctx, customerID, gomock.Any()).Return(nil)
-	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, "token_ak_fail").Return(nil)
-	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-		ID:            customerID,
-		EmailVerified: true,
-	}, nil)
-	// AccessKey creation fails — should be non-fatal
-	mockAccesskey.EXPECT().Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire).Return(nil, fmt.Errorf("accesskey error"))
-	mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
-
-	res, err := h.EmailVerify(ctx, "token_ak_fail")
-	if err != nil {
-		t.Errorf("Wrong match. expect: ok (accesskey failure is non-fatal), got: %v", err)
-	}
-	if res == nil {
-		t.Fatalf("Wrong match. expect: result, got: nil")
-	}
-	if res.Customer == nil {
-		t.Fatalf("Wrong match. expect: customer in result, got: nil")
-	}
-	if res.Accesskey != nil {
-		t.Errorf("Wrong match. expect: nil accesskey (creation failed), got: %v", res.Accesskey)
 	}
 }
 

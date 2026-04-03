@@ -107,6 +107,23 @@ func (h *customerHandler) Signup(
 	}
 	log.WithField("customer", res).Debugf("Created unverified customer. customer_id: %s", res.ID)
 
+	// Create AccessKey at signup time so headless clients can authenticate immediately
+	ak, err := h.accesskeyHandler.Create(ctx, id, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
+	if err != nil {
+		log.Errorf("Could not create access key during signup. err: %v", err)
+		metricshandler.SignupTotal.WithLabelValues("error").Inc()
+		return nil, fmt.Errorf("could not create access key")
+	}
+	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
+
+	// Publish customer_created event with headless=true at signup time.
+	// This triggers downstream resource creation (billing, agent, storage).
+	// Must only be published here — billing-manager and storage-manager have no idempotency guards.
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
+		Customer: res,
+		Headless: true,
+	})
+
 	// generate verification token
 	tokenBytes := make([]byte, emailVerifyTokenLen)
 	if _, err := rand.Read(tokenBytes); err != nil {
@@ -159,11 +176,9 @@ func (h *customerHandler) Signup(
 		// still return the customer even if email sending fails
 	}
 
-	// do NOT publish customer_created event — wait for email verification
-
 	metricshandler.SignupTotal.WithLabelValues("success").Inc()
 
-	return &customer.SignupResult{Customer: res, TempToken: tempToken}, nil
+	return &customer.SignupResult{Customer: res, TempToken: tempToken, Accesskey: ak}, nil
 }
 
 // EmailVerify validates a verification token and activates the customer.
@@ -239,24 +254,16 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 	log.WithField("customer", res).Debugf("Customer verified. customer_id: %s", res.ID)
 
-	// Create AccessKey (auto-provisioning)
-	ak, err := h.accesskeyHandler.Create(ctx, customerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
-	if err != nil {
-		log.Errorf("Could not create access key during email verify. err: %v", err)
-		// Non-fatal — customer is verified but key creation failed
+	// Send password reset email so browser users can set their admin password.
+	// Non-fatal — customer is verified even if this fails.
+	if err := h.reqHandler.AgentV1PasswordForgot(ctx, 30000, res.Email); err != nil {
+		log.Errorf("Could not send password reset email. err: %v", err)
 	}
-
-	// publish customer_created event with headless=false
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
-		Customer: res,
-		Headless: false,
-	})
 
 	metricshandler.EmailVerificationTotal.WithLabelValues("success").Inc()
 
 	return &customer.EmailVerifyResult{
-		Customer:  res,
-		Accesskey: ak,
+		Customer: res,
 	}, nil
 }
 
@@ -324,20 +331,12 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 		log.Infof("Customer already verified. customer_id: %s", cu.ID)
 		metricshandler.CompleteSignupTotal.WithLabelValues("already_verified").Inc()
 
-		// Attempt AccessKey creation in case a previous call verified the customer
-		// but failed at AccessKey creation. Non-fatal if it fails (key may already exist).
-		ak, akErr := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
-		if akErr != nil {
-			log.Infof("Could not create access key for already-verified customer (may already exist). err: %v", akErr)
-		}
-
 		// Clean up Redis keys
 		_ = h.cache.SignupSessionDelete(ctx, tempToken)
 		_ = h.cache.SignupAttemptDelete(ctx, tempToken)
 		_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
 		return &customer.CompleteSignupResult{
 			CustomerID: session.CustomerID.String(),
-			Accesskey:  ak,
 		}, nil
 	}
 
@@ -352,40 +351,15 @@ func (h *customerHandler) CompleteSignup(ctx context.Context, tempToken string, 
 		return nil, fmt.Errorf("could not verify customer")
 	}
 
-	// Create AccessKey BEFORE cleaning up Redis keys, so if this fails
-	// the user can retry with the same temp_token and OTP code.
-	ak, err := h.accesskeyHandler.Create(ctx, session.CustomerID, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
-	if err != nil {
-		log.Errorf("Could not create access key. err: %v", err)
-		metricshandler.CompleteSignupTotal.WithLabelValues("error").Inc()
-		return nil, fmt.Errorf("could not create access key")
-	}
-
 	// Delete all Redis keys (session + attempts + email verify token)
 	_ = h.cache.SignupSessionDelete(ctx, tempToken)
 	_ = h.cache.SignupAttemptDelete(ctx, tempToken)
 	_ = h.cache.EmailVerifyTokenDelete(ctx, session.VerifyToken)
-	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
-
-	// Get verified customer for event publishing
-	cu, err = h.db.CustomerGet(ctx, session.CustomerID)
-	if err != nil {
-		log.Errorf("Could not get verified customer. err: %v", err)
-	}
-
-	// Publish customer_created event with headless=true
-	if cu != nil {
-		h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, &customer.CustomerCreatedEvent{
-			Customer: cu,
-			Headless: true,
-		})
-	}
 
 	metricshandler.CompleteSignupTotal.WithLabelValues("success").Inc()
 
 	return &customer.CompleteSignupResult{
 		CustomerID: session.CustomerID.String(),
-		Accesskey:  ak,
 	}, nil
 }
 

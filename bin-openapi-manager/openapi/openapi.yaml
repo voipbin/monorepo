@@ -6679,7 +6679,7 @@ components:
 
     CustomerManagerSignupResult:
       type: object
-      description: "Result of a successful signup. Contains the newly created customer and a temporary token for headless signup completion via `POST /auth/complete-signup`."
+      description: "Result of a successful signup. Contains the newly created customer, a temporary token for headless signup completion via `POST /auth/complete-signup`, and a provisioned access key."
       properties:
         customer:
           $ref: '#/components/schemas/CustomerManagerCustomer'
@@ -6687,24 +6687,23 @@ components:
           type: string
           description: "Temporary token for headless signup flow. Use with `POST /auth/complete-signup` to complete registration without email verification."
           example: "tmp_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"
+        accesskey:
+          $ref: '#/components/schemas/CustomerManagerAccesskey'
 
     CustomerManagerEmailVerifyResult:
       type: object
       required:
         - customer
-        - accesskey
-      description: Result of a successful email verification. Contains the verified customer and a provisioned access key.
+      description: Result of a successful email verification. Contains the verified customer.
       properties:
         customer:
           $ref: '#/components/schemas/CustomerManagerCustomer'
-        accesskey:
-          $ref: '#/components/schemas/CustomerManagerAccesskey'
 
     CustomerManagerCompleteSignupResult:
       type: object
       required:
         - customer_id
-      description: "Result of a successful headless signup completion. Contains the customer ID and a provisioned access key."
+      description: "Result of a successful headless signup completion. Contains the customer ID."
       properties:
         customer_id:
           type: string
@@ -6712,8 +6711,6 @@ components:
           x-go-type: string
           description: "The unique identifier of the newly created customer. Use with `GET /customers/{id}` to retrieve full customer details."
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-        accesskey:
-          $ref: '#/components/schemas/CustomerManagerAccesskey'
 
     RequestBodyAuthUnregisterPOST:
       type: object
