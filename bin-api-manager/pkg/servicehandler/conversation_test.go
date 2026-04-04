@@ -11,6 +11,7 @@ import (
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -33,13 +34,13 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
@@ -106,7 +107,7 @@ func Test_ConversationGet(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		customer       *amagent.Agent
+		customer       *auth.AuthIdentity
 		conversationID uuid.UUID
 
 		response  *cvconversation.Conversation
@@ -114,13 +115,13 @@ func Test_ConversationGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("828e75ba-ed24-11ec-bbf2-7f0e56ac76f1"),
 
@@ -171,7 +172,7 @@ func Test_ConversationUpdate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		conversationID uuid.UUID
 		fileds         map[cvconversation.Field]any
@@ -181,13 +182,13 @@ func Test_ConversationUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			conversationID: uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
 			fileds: map[cvconversation.Field]any{

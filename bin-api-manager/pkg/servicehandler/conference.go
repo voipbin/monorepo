@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"monorepo/bin-api-manager/models/auth"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
@@ -38,14 +39,18 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, id uuid.UUID) (*cfco
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceGet",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"conference_id": id,
 	})
 	log.Debugf("Get conference. conference: %s", id)
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference
 	tmp, err := h.conferenceGet(ctx, id)
@@ -65,14 +70,18 @@ func (h *serviceHandler) ConferenceGet(ctx context.Context, a *amagent.Agent, id
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConferenceGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -115,7 +124,7 @@ func (h *serviceHandler) ConferenceList(ctx context.Context, a *amagent.Agent, s
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conferenceID uuid.UUID,
 	confType cfconference.Type,
 	name string,
@@ -139,6 +148,10 @@ func (h *serviceHandler) ConferenceCreate(
 	})
 	log.Debugf("Creating a conference.")
 
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -153,13 +166,17 @@ func (h *serviceHandler) ConferenceCreate(
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceDelete",
 		"agent":         a,
 		"conference_id": conferenceID,
 	})
 	log.Debug("Destroying conference.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, conferenceID)
@@ -187,7 +204,7 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *amagent.Agent,
 // ConferenceUpdate is a service handler for conference updating.
 func (h *serviceHandler) ConferenceUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conferenceID uuid.UUID,
 	name string,
 	detail string,
@@ -208,6 +225,10 @@ func (h *serviceHandler) ConferenceUpdate(
 		"post_flow_id":  postFlowID,
 	})
 	log.Debugf("Updating conference. conference_id: %s", conferenceID)
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, conferenceID)
@@ -243,12 +264,16 @@ func (h *serviceHandler) ConferenceUpdate(
 // ConferenceRecordingStart is a service handler for conference recording start.
 func (h *serviceHandler) ConferenceRecordingStart(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conferenceID uuid.UUID,
 	format cmrecording.Format,
 	duration int,
 	onEndFlowID uuid.UUID,
 ) (*cfconference.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
@@ -270,7 +295,11 @@ func (h *serviceHandler) ConferenceRecordingStart(
 }
 
 // ConferenceRecordingStop is a service handler for conference recording stop.
-func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *auth.AuthIdentity, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, confID)
@@ -293,13 +322,17 @@ func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *amagent
 }
 
 // ConferenceTranscribeStart is a service handler for conference transcribe start.
-func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceTranscribeStart",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"conference_id": conferenceID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, conferenceID)
@@ -324,13 +357,17 @@ func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *amage
 }
 
 // ConferenceTranscribeStop is a service handler for conference transcribe stop.
-func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceTranscribeStop",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"conference_id": conferenceID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferenceGet(ctx, conferenceID)
@@ -356,13 +393,17 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagen
 }
 
 // ConferenceDirectHashRegenerate regenerates the direct hash for the conference.
-func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceDirectHashRegenerate",
 		"customer_id":   a.CustomerID,
 		"conference_id": conferenceID,
 	})
 	log.Debug("Regenerating conference direct hash.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
@@ -387,13 +428,17 @@ func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *
 
 // ConferenceMediaStreamStart starts a media streaming of the conference
 // it returns error if it failed.
-func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceMediaStreamStart",
 		"agent":         a,
 		"conference_id": conferenceID,
 		"encapsulation": encapsulation,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {

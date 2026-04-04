@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,16 +15,13 @@ func (h *server) GetRecordingfilesId(c *gin.Context, id string) {
 		"recordingfile_id": id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -34,7 +30,7 @@ func (h *server) GetRecordingfilesId(c *gin.Context, id string) {
 		return
 	}
 
-	downloadURI, err := h.serviceHandler.RecordingfileGet(c.Request.Context(), &a, target)
+	downloadURI, err := h.serviceHandler.RecordingfileGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
 		c.AbortWithStatus(400)

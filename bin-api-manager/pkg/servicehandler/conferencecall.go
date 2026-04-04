@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -32,14 +33,18 @@ func (h *serviceHandler) conferencecallGet(ctx context.Context, id uuid.UUID) (*
 }
 
 // ConferencecallGet vaildates the customer's ownership and returns the conferencecall info.
-func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
+func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "ConferencecallGet",
 		"customer_id":       a.CustomerID,
-		"username":          a.Username,
+		"username":          a.DisplayName(),
 		"conferencecall_id": id,
 	})
 	log.Debugf("Get conferencecall. conferencecall_id: %s", id)
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference
 	tmp, err := h.conferencecallGet(ctx, id)
@@ -59,14 +64,18 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *amagent.Agent
 
 // ConferencecallGets gets the list of conferencecall.
 // It returns list of conferencecalls if it succeed.
-func (h *serviceHandler) ConferencecallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error) {
+func (h *serviceHandler) ConferencecallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConferencecallGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -106,13 +115,17 @@ func (h *serviceHandler) ConferencecallList(ctx context.Context, a *amagent.Agen
 }
 
 // ConferencecallKick is a service handler for kick the conferencecall from the conference.
-func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *amagent.Agent, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
+func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *auth.AuthIdentity, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "ConferencecallKick",
 		"customer_id":       a.CustomerID,
-		"username":          a.Username,
+		"username":          a.DisplayName(),
 		"conferencecall_id": conferencecallID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conference for ownership check
 	c, err := h.conferencecallGet(ctx, conferencecallID)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -36,14 +37,18 @@ func (h *serviceHandler) messageGet(ctx context.Context, messageID uuid.UUID) (*
 // MessageGets sends a request to getting a list of messages
 // It sends a request to the message-manager to getting a list of messages.
 // it returns list of messages if it succeed.
-func (h *serviceHandler) MessageList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       "token",
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -77,12 +82,16 @@ func (h *serviceHandler) MessageList(ctx context.Context, a *amagent.Agent, size
 // MessageSend handles message send request.
 // It sends a request to the message-manager to create(send) a new message.
 // it returns created message information if it succeed.
-func (h *serviceHandler) MessageSend(ctx context.Context, a *amagent.Agent, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageSend",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if len(destinations) <= 0 {
 		log.Errorf("The destination is empty. destinations: %d", len(destinations))
@@ -108,13 +117,17 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *amagent.Agent, sour
 // MessageGet handles message get request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"message_id":  id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get message info
 	tmp, err := h.messageGet(ctx, id)
@@ -141,13 +154,17 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *amagent.Agent, id uu
 // MessageDelete handles message delete request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"message_id":  id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get message info
 	m, err := h.messageGet(ctx, id)

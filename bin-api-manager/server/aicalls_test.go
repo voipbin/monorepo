@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -21,7 +22,7 @@ func Test_PostAicalls(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -36,11 +37,11 @@ func Test_PostAicalls(t *testing.T) {
 	}{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aicalls",
 			reqBody:  []byte(`{"assistance_type":"ai","assistance_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33","language":"en-US"}`),
@@ -73,7 +74,7 @@ func Test_PostAicalls(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -81,7 +82,7 @@ func Test_PostAicalls(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().AIcallCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedAssistanceType,
 				tt.expectedAssistanceID,
 				tt.expectedReferenceType,
@@ -104,7 +105,7 @@ func Test_aicallsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -118,11 +119,11 @@ func Test_aicallsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aicalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -141,11 +142,11 @@ func Test_aicallsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aicalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -191,12 +192,12 @@ func Test_aicallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAIcalls, nil)
+			mockSvc.EXPECT().AIcallGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAIcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -214,7 +215,7 @@ func Test_aicallsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -225,11 +226,11 @@ func Test_aicallsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aicalls/f199188b-8d78-4778-8891-8f276cd56de5",
 
@@ -259,12 +260,12 @@ func Test_aicallsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallGet(req.Context(), &tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
+			mockSvc.EXPECT().AIcallGet(req.Context(), tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -282,7 +283,7 @@ func Test_aicallsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -293,11 +294,11 @@ func Test_aicallsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aicalls/c1a95988-5382-4769-98a9-b404823a64bf",
 
@@ -327,12 +328,12 @@ func Test_aicallsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallDelete(req.Context(), &tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
+			mockSvc.EXPECT().AIcallDelete(req.Context(), tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

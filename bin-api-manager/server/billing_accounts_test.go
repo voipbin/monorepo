@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -22,7 +23,7 @@ func Test_GetBillingAccountsId(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery         string
 		billingAccountID uuid.UUID
@@ -34,11 +35,11 @@ func Test_GetBillingAccountsId(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 				},
-			},
+			}),
 
 			reqQuery:         "/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4",
 			billingAccountID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
@@ -67,12 +68,12 @@ func Test_GetBillingAccountsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountGet(req.Context(), tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -90,7 +91,7 @@ func Test_PutBillingAccountsId(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -106,11 +107,11 @@ func Test_PutBillingAccountsId(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/billing_accounts/8d1d01bc-4cdd-11ee-a22f-03714037d3db",
 			reqBody:  []byte(`{"name":"update name","detail":"update detail"}`),
@@ -143,14 +144,14 @@ func Test_PutBillingAccountsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectName, tt.expectDetail).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), tt.agent, tt.expectBillingAccountID, tt.expectName, tt.expectDetail).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -169,7 +170,7 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -185,11 +186,11 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/billing_accounts/64461024-4cdf-11ee-be1f-e7111eb57d28/payment_info",
 			reqBody:  []byte(`{"payment_type":"prepaid","payment_method":"credit card"}`),
@@ -222,14 +223,14 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectPaymentType, tt.expectPaymentMethod).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), tt.agent, tt.expectBillingAccountID, tt.expectPaymentType, tt.expectPaymentMethod).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -248,7 +249,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -263,11 +264,11 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 				},
-			},
+			}),
 
 			reqQuery: "/billing_accounts/605eae78-11eb-11ee-b8d3-6fd8da9d9879/balance_add_force",
 			reqBody:  []byte(`{"balance": 20.0}`),
@@ -299,12 +300,12 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -322,7 +323,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -337,11 +338,11 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 				},
-			},
+			}),
 
 			reqQuery: "/billing_accounts/e4e38ff6-11eb-11ee-879b-cb22a78168e4/balance_subtract_force",
 			reqBody:  []byte(`{"balance": 20.0}`),
@@ -373,12 +374,12 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

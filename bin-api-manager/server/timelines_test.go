@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -20,7 +21,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,12 +36,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 	}{
 		{
 			name: "valid request with calls resource type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events?page_size=10",
 
@@ -61,12 +62,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 		},
 		{
 			name: "valid request with conferences resource type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/conferences/a1b2c3d4-8f36-11ed-a01a-efb53befe93a/events?page_size=20&page_token=some-token",
 
@@ -87,12 +88,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 		},
 		{
 			name: "valid request with flows resource type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/flows/b2c3d4e5-8f36-11ed-a01a-efb53befe93a/events",
 
@@ -107,12 +108,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 		},
 		{
 			name: "valid request with activeflows resource type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/activeflows/c3d4e5f6-8f36-11ed-a01a-efb53befe93a/events",
 
@@ -147,7 +148,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -155,7 +156,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 
 			mockSvc.EXPECT().TimelineEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectResourceType,
 				tt.expectResourceID,
 				tt.expectPageSize,
@@ -216,18 +217,18 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *test
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 	}{
 		{
 			name: "invalid resource type returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/invalid_type/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 		},
@@ -247,7 +248,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *test
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -265,18 +266,18 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_id(t *testin
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 	}{
 		{
 			name: "invalid resource id returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/calls/invalid-uuid/events",
 		},
@@ -296,7 +297,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_id(t *testin
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -314,7 +315,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -327,12 +328,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 	}{
 		{
 			name: "resource not found returns 404",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 
@@ -345,12 +346,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 		},
 		{
 			name: "permission denied returns 404",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 
@@ -377,7 +378,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -385,7 +386,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 
 			mockSvc.EXPECT().TimelineEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectResourceType,
 				tt.expectResourceID,
 				tt.expectPageSize,
@@ -404,7 +405,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -417,12 +418,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 	}{
 		{
 			name: "internal error returns 500",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 
@@ -449,7 +450,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -457,7 +458,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 
 			mockSvc.EXPECT().TimelineEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectResourceType,
 				tt.expectResourceID,
 				tt.expectPageSize,

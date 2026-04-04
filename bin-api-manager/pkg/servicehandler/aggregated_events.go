@@ -8,6 +8,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-api-manager/models/auth"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
@@ -62,12 +63,16 @@ import (
 // validates ownership/permissions, and queries timeline-manager.
 func (h *serviceHandler) AggregatedEventList(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	activeflowID uuid.UUID,
 	callID uuid.UUID,
 	pageSize int,
 	pageToken string,
 ) ([]*TimelineEvent, string, error) {
+	if a.IsDirect() {
+		return nil, "", fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "AggregatedEventList",
 		"customer_id":   a.CustomerID,

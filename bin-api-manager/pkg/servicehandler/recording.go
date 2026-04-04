@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -37,12 +38,16 @@ func (h *serviceHandler) recordingGet(ctx context.Context, recordingID uuid.UUID
 }
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RecordingGet",
 		"customer_id": a.CustomerID,
 		"recording":   id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get recording info from call-manager
 	rec, err := h.recordingGet(ctx, id)
@@ -64,14 +69,18 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *amagent.Agent, id 
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RecordingGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -112,13 +121,17 @@ func (h *serviceHandler) RecordingList(ctx context.Context, a *amagent.Agent, si
 // RecordingDelete sends a request to call-manager
 // to deleting a recording.
 // it returns deleted recording info if it succeed.
-func (h *serviceHandler) RecordingDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "RecordingDelete",
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"recording_id": id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	r, err := h.recordingGet(ctx, id)
 	if err != nil {

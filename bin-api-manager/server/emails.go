@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	ememail "monorepo/bin-email-manager/models/email"
@@ -17,16 +16,13 @@ func (h *server) PostEmails(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostEmailsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -45,7 +41,7 @@ func (h *server) PostEmails(c *gin.Context) {
 		attachments = append(attachments, ConvertEmailMamagerEmailAttachment(v))
 	}
 
-	res, err := h.serviceHandler.EmailSend(c.Request.Context(), &a, destinations, req.Subject, req.Content, attachments)
+	res, err := h.serviceHandler.EmailSend(c.Request.Context(), a, destinations, req.Subject, req.Content, attachments)
 	if err != nil {
 		log.Errorf("Could not send an email. err: %v", err)
 		c.AbortWithStatus(400)
@@ -61,16 +57,13 @@ func (h *server) GetEmails(c *gin.Context, params openapi_server.GetEmailsParams
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -86,7 +79,7 @@ func (h *server) GetEmails(c *gin.Context, params openapi_server.GetEmailsParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.EmailList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.EmailList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get email list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,16 +102,13 @@ func (h *server) GetEmailsId(c *gin.Context, id string) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -127,7 +117,7 @@ func (h *server) GetEmailsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.EmailGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.EmailGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get email. err: %v", err)
 		c.AbortWithStatus(400)
@@ -144,16 +134,13 @@ func (h *server) DeleteEmailsId(c *gin.Context, id string) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -162,7 +149,7 @@ func (h *server) DeleteEmailsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.EmailDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.EmailDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the item. err: %v", err)
 		c.AbortWithStatus(400)

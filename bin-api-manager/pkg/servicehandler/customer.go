@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -34,7 +35,7 @@ func (h *serviceHandler) customerGet(ctx context.Context, customerID uuid.UUID) 
 // CustomerCreate validates the customer's ownership and creates a new customer
 func (h *serviceHandler) CustomerCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	email string,
@@ -48,6 +49,10 @@ func (h *serviceHandler) CustomerCreate(
 		"email": email,
 	})
 	log.Debug("Creating a new customer.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// check permission
 	// only project super admin permssion can create a new customer.
@@ -67,11 +72,15 @@ func (h *serviceHandler) CustomerCreate(
 
 // CustomerGet returns customer info of given customerID.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerGet",
 		"customer_id": customerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
@@ -90,11 +99,15 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *amagent.Agent, cust
 
 // CustomerSelfGet returns the authenticated agent's own customer info.
 // Requires CustomerAdmin or CustomerManager permission.
-func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfGet",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
@@ -113,7 +126,7 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *amagent.Agent) 
 }
 
 // CustomerGets returns list of all customers
-func (h *serviceHandler) CustomerList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "CustomerGets",
 		"agent":   a,
@@ -122,6 +135,10 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *amagent.Agent, siz
 		"filters": filters,
 	})
 	log.Debug("Received request detail.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// check permission
 	// only project super admin permssion allowed
@@ -161,7 +178,7 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *amagent.Agent, siz
 // Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	id uuid.UUID,
 	name string,
 	detail string,
@@ -174,7 +191,7 @@ func (h *serviceHandler) CustomerUpdate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "CustomerUpdate",
 		"customer_id":    id,
-		"username":       a.Username,
+		"username":       a.DisplayName(),
 		"name":           name,
 		"detail":         detail,
 		"email":          email,
@@ -183,6 +200,10 @@ func (h *serviceHandler) CustomerUpdate(
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
@@ -210,7 +231,7 @@ func (h *serviceHandler) CustomerUpdate(
 // Requires CustomerAdmin permission.
 func (h *serviceHandler) CustomerSelfUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	email string,
@@ -223,6 +244,10 @@ func (h *serviceHandler) CustomerSelfUpdate(
 		"func":        "CustomerSelfUpdate",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -240,12 +265,16 @@ func (h *serviceHandler) CustomerSelfUpdate(
 
 // CustomerDelete sends a request to customer-manager
 // to delete the customer.
-func (h *serviceHandler) CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// check permission
 	// only admin permssion allowed
@@ -271,12 +300,16 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, a *amagent.Agent, c
 
 // CustomerFreeze sends a request to customer-manager
 // to freeze the customer account (schedule deletion).
-func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerFreeze",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// check permission
 	// only admin permission allowed
@@ -302,12 +335,16 @@ func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *amagent.Agent, c
 
 // CustomerRecover sends a request to customer-manager
 // to recover the customer account (cancel scheduled deletion).
-func (h *serviceHandler) CustomerRecover(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerRecover",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// check permission
 	// only admin permission allowed
@@ -333,12 +370,16 @@ func (h *serviceHandler) CustomerRecover(ctx context.Context, a *amagent.Agent, 
 
 // CustomerSelfFreeze handles self-service account freeze (schedule deletion).
 // Requires CustomerAdmin permission and operates on the agent's own customer account.
-func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfFreeze",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -363,12 +404,16 @@ func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *amagent.Agen
 // CustomerSelfFreezeAndDelete handles self-service immediate account deletion.
 // Freezes and immediately deletes the account (skips 30-day grace period).
 // Requires CustomerAdmin permission.
-func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfFreezeAndDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -392,12 +437,16 @@ func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *ama
 
 // CustomerSelfRecover handles self-service account recovery (cancel scheduled deletion).
 // Requires CustomerAdmin permission and operates on the agent's own customer account.
-func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfRecover",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -422,12 +471,16 @@ func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *amagent.Age
 // CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "CustomerUpdateBillingAccountID",
 		"customer_id":        customerID,
 		"billing_account_id": billingAccountID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
@@ -458,11 +511,15 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 
 // CustomerUpdateMetadata updates the customer's internal metadata.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerUpdateMetadata",
 		"customer_id": customerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
@@ -487,12 +544,16 @@ func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *amagent.
 
 // CustomerSelfUpdateBillingAccountID updates the authenticated agent's own customer's billing account ID.
 // Requires CustomerAdmin permission.
-func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "CustomerSelfUpdateBillingAccountID",
 		"customer_id":        a.CustomerID,
 		"billing_account_id": billingAccountID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -521,11 +582,15 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 
 // CustomerSelfUpdateMetadata updates the authenticated agent's own customer's metadata.
 // Requires CustomerAdmin permission.
-func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *amagent.Agent, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfUpdateMetadata",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")

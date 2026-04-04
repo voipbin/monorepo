@@ -12,6 +12,7 @@ import (
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -23,7 +24,7 @@ func Test_FlowCreate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		flowName         string
 		detail           string
@@ -37,13 +38,13 @@ func Test_FlowCreate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			flowName: "test name",
 			detail:   "test detail",
@@ -112,7 +113,7 @@ func Test_FlowDelete(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		flowID uuid.UUID
 
 		responseFlow *fmflow.Flow
@@ -120,13 +121,13 @@ func Test_FlowDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
 
 			responseFlow: &fmflow.Flow{
@@ -185,7 +186,7 @@ func Test_FlowGet(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		flowID uuid.UUID
 
 		response  *fmflow.Flow
@@ -193,13 +194,13 @@ func Test_FlowGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 
 			response: &fmflow.Flow{
@@ -225,13 +226,13 @@ func Test_FlowGet(t *testing.T) {
 		},
 		{
 			name: "action answer",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 
 			response: &fmflow.Flow{
@@ -299,7 +300,7 @@ func Test_FlowList(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -309,13 +310,13 @@ func Test_FlowList(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
@@ -371,13 +372,13 @@ func Test_FlowList(t *testing.T) {
 		},
 		{
 			name: "1 action",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
@@ -455,7 +456,7 @@ func Test_FlowUpdate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		flowID           uuid.UUID
 		flowName         string
@@ -469,13 +470,13 @@ func Test_FlowUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			flowID:   uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 			flowName: "test name",
@@ -548,7 +549,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		flowID  uuid.UUID
 		actions []fmaction.Action
 
@@ -557,13 +558,13 @@ func Test_FlowUpdateActions(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("1058806a-45c1-4bc0-9605-1148e20008c1"),
 			actions: []fmaction.Action{
 				{

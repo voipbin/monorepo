@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -39,14 +40,18 @@ func (h *serviceHandler) numberGet(ctx context.Context, id uuid.UUID) (*nmnumber
 // NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
-func (h *serviceHandler) NumberList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -89,13 +94,17 @@ func (h *serviceHandler) NumberList(ctx context.Context, a *amagent.Agent, size 
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num string, numType nmnumber.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity, num string, numType nmnumber.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"numbers":     num,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if num == "" {
 		log.Errorf("Not acceptable number. num: %s", num)
@@ -136,13 +145,17 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *amagent.Agent, num
 // NumberGet handles number get request.
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
-func (h *serviceHandler) NumberGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"number":      id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get number info
 	tmp, err := h.numberGet(ctx, id)
@@ -163,13 +176,17 @@ func (h *serviceHandler) NumberGet(ctx context.Context, a *amagent.Agent, id uui
 // NumberDelete handles number delete request.
 // It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
-func (h *serviceHandler) NumberDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"number":      id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get number info
 	n, err := h.numberGet(ctx, id)
@@ -197,14 +214,18 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *amagent.Agent, id 
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "NumberUpdate",
-		"agent":           a,
+		"username":        a.DisplayName(),
 		"number_id":       id,
 		"call_flow_id":    callFlowID,
 		"message_flow_id": messageFlowID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get number
 	n, err := h.numberGet(ctx, id)
@@ -244,12 +265,16 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *amagent.Agent, id 
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *amagent.Agent, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberUpdateFlowIDs",
 		"customer_id": a.CustomerID,
 		"number_id":   id,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get number
 	n, err := h.numberGet(ctx, id)
@@ -276,12 +301,16 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *amagent.Age
 
 // NumberUpdateMetadata updates the number's metadata.
 // Requires CustomerAdmin or CustomerManager permission.
-func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *amagent.Agent, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "NumberUpdateMetadata",
 		"number_id": id,
 		"metadata":  metadata,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get number
 	n, err := h.numberGet(ctx, id)
@@ -309,12 +338,16 @@ func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *amagent.Ag
 // NumberRenew handles number renew request.
 // It sends a request to the number-manager to renew the numbers.
 // it returns renewed numbers information if it succeed.
-func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRenew string) ([]*nmnumber.Number, error) {
+func (h *serviceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberRenew",
 		"customer_id": a.CustomerID,
 		"tm_renew":    tmRenew,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// project admin only
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -338,11 +371,11 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRe
 }
 
 // numberVerifyFlow returns true if the agent has a correct permission for the given flow
-func (h *serviceHandler) numberVerifyFlow(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) bool {
+func (h *serviceHandler) numberVerifyFlow(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "numberVerifyFlow",
-		"agent":   a,
-		"flow_id": flowID,
+		"func":     "numberVerifyFlow",
+		"username": a.DisplayName(),
+		"flow_id":  flowID,
 	})
 
 	if flowID == uuid.Nil {

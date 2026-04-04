@@ -17,6 +17,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -25,7 +26,7 @@ func Test_AIcallCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent          *amagent.Agent
+		agent          *auth.AuthIdentity
 		assistanceType amaicall.AssistanceType
 		assistanceID   uuid.UUID
 		referenceType  amaicall.ReferenceType
@@ -41,13 +42,13 @@ func Test_AIcallCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			assistanceType: amaicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
 			referenceType:  amaicall.ReferenceTypeCall,
@@ -116,7 +117,7 @@ func Test_AIcallListByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		size    uint64
 		token   string
 		filters map[amaicall.Field]any
@@ -127,13 +128,13 @@ func Test_AIcallListByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 			filters: map[amaicall.Field]any{
@@ -191,7 +192,7 @@ func Test_AIcallGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		aicallID uuid.UUID
 
 		response  *amaicall.AIcall
@@ -200,13 +201,13 @@ func Test_AIcallGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aicallID: uuid.FromStringOrNil("2c10c2af-fb73-416e-ab86-8e91e7db32c4"),
 
 			response: &amaicall.AIcall{
@@ -256,7 +257,7 @@ func Test_AIcallDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		aicallID uuid.UUID
 
 		responseAicall *amaicall.AIcall
@@ -265,13 +266,13 @@ func Test_AIcallDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 
 			responseAicall: &amaicall.AIcall{

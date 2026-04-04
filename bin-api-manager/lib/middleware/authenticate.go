@@ -8,6 +8,7 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
@@ -29,32 +30,35 @@ func Authenticate() gin.HandlerFunc {
 			"request_address": c.ClientIP,
 		})
 
-		authData, err := getAuthData(c)
+		authType, authString, err := getAuthString(c)
 		if err != nil {
 			c.AbortWithStatus(401)
 			return
 		}
 
-		// get agent info
-		tmpAgent, err := json.Marshal(authData["agent"])
+		serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+		var identity *auth.AuthIdentity
+
+		switch authType {
+		case authTypeToken:
+			identity, err = authenticateToken(c, log, serviceHandler, authString)
+		case authTypeAccesskey:
+			identity, err = authenticateAccesskey(c, log, serviceHandler, authString)
+		default:
+			err = fmt.Errorf("unknown auth type: %s", authType)
+		}
+
 		if err != nil {
-			log.Errorf("Could not marshal the token data. err: %v", err)
+			log.Infof("Authentication failed. err: %v", err)
 			c.AbortWithStatus(401)
 			return
 		}
 
-		a := amagent.Agent{}
-		if err := json.Unmarshal(tmpAgent, &a); err != nil {
-			log.Errorf("Could not marshal the customer. err: %v", err)
-
-			c.AbortWithStatus(401)
-			return
-		}
-
-		c.Set("agent", a)
+		c.Set("auth_identity", identity)
 
 		// Check if customer account is frozen
-		if isFrozenAccountBlocked(c, &a) {
+		if isFrozenAccountBlocked(c, identity) {
 			return // response already sent by isFrozenAccountBlocked
 		}
 
@@ -62,10 +66,93 @@ func Authenticate() gin.HandlerFunc {
 	}
 }
 
+// authenticateToken handles JWT token authentication and returns an AuthIdentity.
+func authenticateToken(c *gin.Context, log *logrus.Entry, sh servicehandler.ServiceHandler, tokenString string) (*auth.AuthIdentity, error) {
+	authData, err := sh.AuthJWTParse(c.Request.Context(), tokenString)
+	if err != nil {
+		log.Infof("Could not parse JWT token. err: %v", err)
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return buildJWTIdentity(log, authData)
+}
+
+// buildJWTIdentity inspects the "type" field in JWT claims and builds the appropriate AuthIdentity.
+func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth.AuthIdentity, error) {
+	tokenType, _ := authData["type"].(string)
+
+	switch tokenType {
+	case "direct":
+		raw, ok := authData["direct"]
+		if !ok {
+			return nil, fmt.Errorf("direct token missing direct scope")
+		}
+
+		buf, err := json.Marshal(raw)
+		if err != nil {
+			log.Errorf("Could not marshal direct scope. err: %v", err)
+			return nil, fmt.Errorf("invalid direct scope")
+		}
+
+		var scope auth.DirectScope
+		if err := json.Unmarshal(buf, &scope); err != nil {
+			log.Errorf("Could not unmarshal direct scope. err: %v", err)
+			return nil, fmt.Errorf("invalid direct scope")
+		}
+
+		return auth.NewDirectIdentity(&scope), nil
+
+	default:
+		// "agent" or missing (backward compat) — treat as agent token
+		raw, ok := authData["agent"]
+		if !ok {
+			return nil, fmt.Errorf("token missing agent data")
+		}
+
+		buf, err := json.Marshal(raw)
+		if err != nil {
+			log.Errorf("Could not marshal agent data. err: %v", err)
+			return nil, fmt.Errorf("invalid agent data")
+		}
+
+		var a amagent.Agent
+		if err := json.Unmarshal(buf, &a); err != nil {
+			log.Errorf("Could not unmarshal agent data. err: %v", err)
+			return nil, fmt.Errorf("invalid agent data")
+		}
+
+		return auth.NewAgentIdentity(&a), nil
+	}
+}
+
+// authenticateAccesskey handles accesskey authentication and returns an AuthIdentity.
+func authenticateAccesskey(c *gin.Context, log *logrus.Entry, sh servicehandler.ServiceHandler, accesskeyToken string) (*auth.AuthIdentity, error) {
+	ak, err := sh.AccesskeyRawGetByToken(c.Request.Context(), accesskeyToken)
+	if err != nil {
+		log.Infof("Could not get accesskey. err: %v", err)
+		return nil, fmt.Errorf("invalid accesskey")
+	}
+
+	curTime := time.Now().UTC()
+	if ak.TMExpire != nil && ak.TMExpire.Before(curTime) {
+		return nil, fmt.Errorf("accesskey expired")
+	}
+	if ak.TMDelete != nil {
+		return nil, fmt.Errorf("accesskey deleted")
+	}
+
+	return auth.NewAccesskeyIdentity(ak), nil
+}
+
 // isFrozenAccountBlocked checks if a customer's account is frozen and blocks
 // non-allowed requests with a 403 DELETION_SCHEDULED response.
 // Returns true if the request was blocked, false if it should proceed.
-func isFrozenAccountBlocked(c *gin.Context, a *amagent.Agent) bool {
+func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
+	// Direct tokens skip frozen check
+	if a.IsDirect() {
+		return false
+	}
+
 	// Skip check for project super admins (they can always access)
 	if a.HasPermission(amagent.PermissionProjectSuperAdmin) {
 		return false
@@ -104,25 +191,6 @@ func isFrozenAccountBlocked(c *gin.Context, a *amagent.Agent) bool {
 		"recovery_endpoint":      "DELETE /auth/unregister",
 	})
 	return true
-}
-
-func getAuthData(c *gin.Context) (map[string]interface{}, error) {
-	authType, authString, err := getAuthString(c)
-	if err != nil {
-		return nil, err
-	}
-
-	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
-	switch authType {
-	case authTypeToken:
-		return serviceHandler.AuthJWTParse(c.Request.Context(), authString)
-
-	case authTypeAccesskey:
-		return serviceHandler.AuthAccesskeyParse(c.Request.Context(), authString)
-
-	default:
-		return nil, fmt.Errorf("unknown auth type: %s", authType)
-	}
 }
 
 func getAuthString(c *gin.Context) (string, string, error) {
@@ -170,7 +238,7 @@ func getTokenString(c *gin.Context) string {
 	return res
 }
 
-// getTokenString returns the token string from the gin context.
+// getAccesskey returns the accesskey string from the gin context.
 func getAccesskey(c *gin.Context) string {
 	// get token from the cookie
 	res, err := c.Cookie("accesskey")

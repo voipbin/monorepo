@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,15 +14,14 @@ func (h *server) GetCampaigncalls(c *gin.Context, params openapi_server.GetCampa
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -40,7 +38,7 @@ func (h *server) GetCampaigncalls(c *gin.Context, params openapi_server.GetCampa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.CampaigncallList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.CampaigncallList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get campaigncalls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -62,15 +60,14 @@ func (h *server) GetCampaigncallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -80,7 +77,7 @@ func (h *server) GetCampaigncallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaigncallGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CampaigncallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,15 +93,14 @@ func (h *server) DeleteCampaigncallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -114,7 +110,7 @@ func (h *server) DeleteCampaigncallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaigncallDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CampaigncallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the campaigncall. err: %v", err)
 		c.AbortWithStatus(400)

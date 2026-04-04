@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
-	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,11 +16,15 @@ import (
 // TransferStart sends a request to transfer-manager
 // to start a transfer
 // it returns transfer info if it succeed.
-func (h *serviceHandler) TransferStart(ctx context.Context, a *amagent.Agent, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error) {
+func (h *serviceHandler) TransferStart(ctx context.Context, a *auth.AuthIdentity, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":                 "TransferStart",
 		"customer_id":          a.CustomerID,
-		"username":             a.Username,
+		"username":             a.DisplayName(),
 		"transfer_type":        transferType,
 		"transferer_call_id":   transfererCallID,
 		"transferee_addresses": transfereeAddresses,

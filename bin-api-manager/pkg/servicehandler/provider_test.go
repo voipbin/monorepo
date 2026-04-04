@@ -12,6 +12,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -23,7 +25,7 @@ func Test_ProviderGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		response  *rmprovider.Provider
@@ -34,13 +36,13 @@ func Test_ProviderGet(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("0c6f3dd3-929e-4d3b-8231-5e8c10db6c21"),
 
 			&rmprovider.Provider{
@@ -86,7 +88,7 @@ func Test_ProviderList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -98,13 +100,13 @@ func Test_ProviderList(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			"2021-03-01T01:00:00.995000Z",
 			10,
 
@@ -154,7 +156,7 @@ func Test_ProviderCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent        *amagent.Agent
+		agent *auth.AuthIdentity
 		providerType rmprovider.Type
 		hostname     string
 		techPrefix   string
@@ -171,13 +173,13 @@ func Test_ProviderCreate(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			rmprovider.TypeSIP,
 			"test.com",
 			"0001",
@@ -251,7 +253,7 @@ func Test_ProviderDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		providerID uuid.UUID
 
 		responseProvider *rmprovider.Provider
@@ -262,13 +264,13 @@ func Test_ProviderDelete(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("3b889381-8944-49fa-8220-1a3b8b4d0894"),
 
 			&rmprovider.Provider{
@@ -315,7 +317,7 @@ func Test_ProviderUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		providerID   uuid.UUID
 		providerType rmprovider.Type
@@ -334,13 +336,13 @@ func Test_ProviderUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("9d4a55e6-f197-497a-a359-06d1858de39e"),
 			rmprovider.TypeSIP,

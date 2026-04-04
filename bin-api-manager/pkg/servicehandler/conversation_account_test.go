@@ -11,6 +11,7 @@ import (
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func Test_ConversationAccountListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -32,13 +33,13 @@ func Test_ConversationAccountListByCustomerID(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
@@ -104,7 +105,7 @@ func Test_ConversationAccountGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		accountID uuid.UUID
 
 		response  *cvaccount.Account
@@ -112,13 +113,13 @@ func Test_ConversationAccountGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			accountID: uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
 
@@ -169,7 +170,7 @@ func Test_ConversationAccountCreate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		accountType    cvaccount.Type
 		accountName    string
@@ -183,13 +184,13 @@ func Test_ConversationAccountCreate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			accountType:    cvaccount.TypeLine,
 			accountName:    "test name",
@@ -246,7 +247,7 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		accountID uuid.UUID
 		fileds    map[cvaccount.Field]any
 
@@ -255,13 +256,13 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accountID: uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
 			fileds: map[cvaccount.Field]any{
 				cvaccount.FieldName:   "test name",
@@ -319,7 +320,7 @@ func Test_ConversationAccountDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		accountID uuid.UUID
 
 		response  *cvaccount.Account
@@ -327,13 +328,13 @@ func Test_ConversationAccountDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accountID: uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
 
 			response: &cvaccount.Account{

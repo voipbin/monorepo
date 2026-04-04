@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,15 +34,19 @@ func (h *serviceHandler) conversationAccountGet(ctx context.Context, conversatio
 
 // ConversationAccountGetsByCustomerID gets the list of conversation accounts of the given customer id.
 // It returns list of conversation accounts if it succeed.
-func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvaccount.WebhookMessage, error) {
+func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountGetsByCustomerID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
 	log.Debug("Getting a conversation accounts.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -76,14 +81,18 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 
 // ConversationAccountGet gets the conversation of the given id.
 // It returns conversation account if it succeed.
-func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cvaccount.WebhookMessage, error) {
+func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "ConversationAccountGet",
 		"customer_id":             a.CustomerID,
-		"username":                a.Username,
+		"username":                a.DisplayName(),
 		"conversation_account_id": id,
 	})
 	log.Debug("Getting an conversation account.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get
 	tmp, err := h.conversationAccountGet(ctx, id)
@@ -104,7 +113,7 @@ func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *amagent.
 // ConversationAccountCreate creates a new conversation account
 func (h *serviceHandler) ConversationAccountCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	accountType cvaccount.Type,
 	name string,
 	detail string,
@@ -115,9 +124,13 @@ func (h *serviceHandler) ConversationAccountCreate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
 	log.Debug("Creating a new conversation account.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
@@ -135,13 +148,17 @@ func (h *serviceHandler) ConversationAccountCreate(
 }
 
 // ConversationAccountUpdate updates the conversation account
-func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *amagent.Agent, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.WebhookMessage, error) {
+func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountUpdate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
 	log.Debug("Creating a new conversation account.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get campaign
 	ca, err := h.conversationAccountGet(ctx, accountID)
@@ -166,13 +183,17 @@ func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *amage
 }
 
 // ConversationAccountDelete deletes the conversation account
-func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*cvaccount.WebhookMessage, error) {
+func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
 	log.Debug("Creating a new conversation account.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get campaign
 	ca, err := h.conversationAccountGet(ctx, accountID)

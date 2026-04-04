@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,13 +14,12 @@ func (h *server) PostTags(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -33,7 +31,7 @@ func (h *server) PostTags(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.TagCreate(c.Request.Context(), &a, req.Name, req.Detail)
+	res, err := h.serviceHandler.TagCreate(c.Request.Context(), a, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a new tag. err: %v", err)
 		c.AbortWithStatus(400)
@@ -50,13 +48,12 @@ func (h *server) DeleteTagsId(c *gin.Context, id string) {
 		"tag_id":          id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -68,7 +65,7 @@ func (h *server) DeleteTagsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TagDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TagDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -85,13 +82,12 @@ func (h *server) GetTagsId(c *gin.Context, id string) {
 		"tag_id":          id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -103,7 +99,7 @@ func (h *server) GetTagsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TagGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TagGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -119,13 +115,12 @@ func (h *server) GetTags(c *gin.Context, params openapi_server.GetTagsParams) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -144,7 +139,7 @@ func (h *server) GetTags(c *gin.Context, params openapi_server.GetTagsParams) {
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TagList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TagList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -167,13 +162,12 @@ func (h *server) PutTagsId(c *gin.Context, id string) {
 		"tag_id":          id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -192,7 +186,7 @@ func (h *server) PutTagsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TagUpdate(c.Request.Context(), &a, target, req.Name, req.Detail)
+	res, err := h.serviceHandler.TagUpdate(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
 		c.AbortWithStatus(400)

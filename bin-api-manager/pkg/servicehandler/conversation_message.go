@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 
@@ -18,7 +19,7 @@ import (
 // It returns list of conversation messages if it succeed.
 func (h *serviceHandler) ConversationMessageGetsByConversationID(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conversationID uuid.UUID,
 	size uint64,
 	token string,
@@ -27,11 +28,15 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 		"func":            "ConversationMessageGetsByConversationID",
 		"customer_id":     a.CustomerID,
 		"conversation_id": conversationID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"size":            size,
 		"token":           token,
 	})
 	log.Debug("Getting a conversation messages.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conversation to check the permission
 	c, err := h.conversationGet(ctx, conversationID)
@@ -64,7 +69,7 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 // It returns list of conversation messages if it succeed.
 func (h *serviceHandler) conversationMessageGetsByConversationID(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conversationID uuid.UUID,
 	size uint64,
 	token string,
@@ -73,7 +78,7 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 		"func":            "conversationMessageGetsByConversationID",
 		"customer_id":     a.CustomerID,
 		"conversation_id": conversationID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"size":            size,
 		"token":           token,
 	})
@@ -100,7 +105,7 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 // ConversationMessageSend send a message to the conversation.
 func (h *serviceHandler) ConversationMessageSend(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conversationID uuid.UUID,
 	text string,
 	medias []cvmedia.Media,
@@ -111,6 +116,10 @@ func (h *serviceHandler) ConversationMessageSend(
 		"conversation_id": conversationID,
 	})
 	log.Debugf("Sending a message. conversation_id: %s", conversationID)
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get conversation to check the permission
 	c, err := h.conversationGet(ctx, conversationID)
@@ -136,7 +145,7 @@ func (h *serviceHandler) ConversationMessageSend(
 // conversationMessageSend send a message to the conversation.
 func (h *serviceHandler) conversationMessageSend(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conversationID uuid.UUID,
 	text string,
 	medias []cvmedia.Media,

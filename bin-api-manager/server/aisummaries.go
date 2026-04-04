@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
@@ -16,15 +15,14 @@ func (h *server) PostAisummaries(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostAisummariesJSONBody
@@ -37,7 +35,7 @@ func (h *server) PostAisummaries(c *gin.Context) {
 	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 
-	res, err := h.serviceHandler.AISummaryCreate(c.Request.Context(), &a, onEndFlowID, amsummary.ReferenceType(req.ReferenceType), referenceID, req.Language)
+	res, err := h.serviceHandler.AISummaryCreate(c.Request.Context(), a, onEndFlowID, amsummary.ReferenceType(req.ReferenceType), referenceID, req.Language)
 	if err != nil {
 		log.Errorf("Could not create AI. err: %v", err)
 		c.AbortWithStatus(400)
@@ -53,15 +51,14 @@ func (h *server) GetAisummaries(c *gin.Context, params openapi_server.GetAisumma
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -78,7 +75,7 @@ func (h *server) GetAisummaries(c *gin.Context, params openapi_server.GetAisumma
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.AISummaryGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.AISummaryGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a ai summary list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -101,15 +98,14 @@ func (h *server) GetAisummariesId(c *gin.Context, id string) {
 		"ai_id":           id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -119,7 +115,7 @@ func (h *server) GetAisummariesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AISummaryGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AISummaryGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get an AI. err: %v", err)
 		c.AbortWithStatus(400)
@@ -136,15 +132,14 @@ func (h *server) DeleteAisummariesId(c *gin.Context, id string) {
 		"ai_id":           id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -154,7 +149,7 @@ func (h *server) DeleteAisummariesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AISummaryDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AISummaryDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the ai summary. err: %v", err)
 		c.AbortWithStatus(400)

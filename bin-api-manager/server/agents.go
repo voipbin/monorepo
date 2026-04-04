@@ -17,16 +17,15 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	pageSize := uint64(100)
@@ -56,7 +55,7 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 		filters["status"] = string(*params.Status)
 	}
 
-	tmps, err := h.serviceHandler.AgentList(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.AgentList(c.Request.Context(), a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -78,15 +77,14 @@ func (h *server) PostAgents(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostAgentsJSONBody
@@ -110,7 +108,7 @@ func (h *server) PostAgents(c *gin.Context) {
 		}
 	}
 
-	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), &a, req.Username, req.Password, req.Name, req.Detail, amagent.RingMethod(req.RingMethod), amagent.Permission(req.Permission), tagIDs, addresses)
+	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), a, req.Username, req.Password, req.Name, req.Detail, amagent.RingMethod(req.RingMethod), amagent.Permission(req.Permission), tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -126,16 +124,15 @@ func (h *server) GetAgentsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -145,7 +142,7 @@ func (h *server) GetAgentsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AgentGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AgentGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the agent info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -161,16 +158,15 @@ func (h *server) DeleteAgentsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -180,7 +176,7 @@ func (h *server) DeleteAgentsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AgentDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AgentDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the delete the agent info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -196,16 +192,15 @@ func (h *server) PutAgentsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -238,7 +233,7 @@ func (h *server) PutAgentsId(c *gin.Context, id string) {
 	}
 
 	// update the agent
-	res, err := h.serviceHandler.AgentUpdate(c.Request.Context(), &a, target, name, detail, amagent.RingMethod(ringMethod))
+	res, err := h.serviceHandler.AgentUpdate(c.Request.Context(), a, target, name, detail, amagent.RingMethod(ringMethod))
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -254,16 +249,15 @@ func (h *server) PutAgentsIdAddresses(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -287,7 +281,7 @@ func (h *server) PutAgentsIdAddresses(c *gin.Context, id string) {
 		}
 	}
 
-	res, err := h.serviceHandler.AgentUpdateAddresses(c.Request.Context(), &a, target, addresses)
+	res, err := h.serviceHandler.AgentUpdateAddresses(c.Request.Context(), a, target, addresses)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -303,16 +297,15 @@ func (h *server) PutAgentsIdTagIds(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -336,7 +329,7 @@ func (h *server) PutAgentsIdTagIds(c *gin.Context, id string) {
 		}
 	}
 
-	res, err := h.serviceHandler.AgentUpdateTagIDs(c.Request.Context(), &a, target, tagIDs)
+	res, err := h.serviceHandler.AgentUpdateTagIDs(c.Request.Context(), a, target, tagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -352,16 +345,15 @@ func (h *server) PutAgentsIdStatus(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"auth":     a,
+		"username": a.AgentUsername(),
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -383,7 +375,7 @@ func (h *server) PutAgentsIdStatus(c *gin.Context, id string) {
 		status = amagent.Status(*req.Status)
 	}
 
-	res, err := h.serviceHandler.AgentUpdateStatus(c.Request.Context(), &a, target, status)
+	res, err := h.serviceHandler.AgentUpdateStatus(c.Request.Context(), a, target, status)
 	if err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
 		c.AbortWithStatus(400)
@@ -399,15 +391,14 @@ func (h *server) PutAgentsIdPermission(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -429,7 +420,7 @@ func (h *server) PutAgentsIdPermission(c *gin.Context, id string) {
 		permission = amagent.Permission(*req.Permission)
 	}
 
-	res, err := h.serviceHandler.AgentUpdatePermission(c.Request.Context(), &a, target, permission)
+	res, err := h.serviceHandler.AgentUpdatePermission(c.Request.Context(), a, target, permission)
 	if err != nil {
 		log.Errorf("Could not update the agent's permission. err: %v", err)
 		c.AbortWithStatus(400)
@@ -445,15 +436,14 @@ func (h *server) PutAgentsIdPassword(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -480,7 +470,7 @@ func (h *server) PutAgentsIdPassword(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AgentUpdatePassword(c.Request.Context(), &a, target, password)
+	res, err := h.serviceHandler.AgentUpdatePassword(c.Request.Context(), a, target, password)
 	if err != nil {
 		log.Errorf("Could not update the agent's password. err: %v", err)
 		c.AbortWithStatus(400)
@@ -497,15 +487,14 @@ func (h *server) PostAgentsIdDirectHashRegenerate(c *gin.Context, id openapi_typ
 		"agent_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	// Convert openapi_types.UUID to uuid.UUID
@@ -516,7 +505,7 @@ func (h *server) PostAgentsIdDirectHashRegenerate(c *gin.Context, id openapi_typ
 		return
 	}
 
-	res, err := h.serviceHandler.AgentDirectHashRegenerate(c.Request.Context(), &a, agentID)
+	res, err := h.serviceHandler.AgentDirectHashRegenerate(c.Request.Context(), a, agentID)
 	if err != nil {
 		log.Errorf("Could not regenerate agent direct hash. err: %v", err)
 		c.AbortWithStatus(400)

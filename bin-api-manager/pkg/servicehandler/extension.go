@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,7 +34,7 @@ func (h *serviceHandler) extensionGet(ctx context.Context, id uuid.UUID) (*rmext
 }
 
 // ExtensionCreate is a service handler for flow creation.
-func (h *serviceHandler) ExtensionCreate(ctx context.Context, a *amagent.Agent, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionCreate(ctx context.Context, a *auth.AuthIdentity, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ExtensionCreate",
 		"customer_id": a.CustomerID,
@@ -42,6 +43,10 @@ func (h *serviceHandler) ExtensionCreate(ctx context.Context, a *amagent.Agent, 
 		"detail":      detail,
 	})
 	log.Debug("Creating a new extension.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
@@ -59,13 +64,17 @@ func (h *serviceHandler) ExtensionCreate(ctx context.Context, a *amagent.Agent, 
 }
 
 // ExtensionDelete deletes the extension of the given id.
-func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"extension_id": id,
 	})
 	log.Debug("Deleting a extension.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	e, err := h.extensionGet(ctx, id)
 	if err != nil {
@@ -90,13 +99,17 @@ func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *amagent.Agent, 
 
 // ExtensionGet gets the extension of the given id.
 // It returns extension if it succeed.
-func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"extension_id": id,
 	})
 	log.Debug("Getting a extension.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.extensionGet(ctx, id)
 	if err != nil {
@@ -115,7 +128,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id 
 
 // ExtensionGetsByCustomerID gets the list of extensions of the given customer id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ExtensionGetsByCustomerID",
 		"agent": a,
@@ -123,6 +136,10 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, si
 		"token": token,
 	})
 	log.Debug("Getting a extensions.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -162,13 +179,17 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, si
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionUpdate",
 		"customer_id":  a.CustomerID,
 		"extension_id": id,
 	})
 	log.Debug("Updating an extension.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	e, err := h.extensionGet(ctx, id)
 	if err != nil {
@@ -192,13 +213,17 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 }
 
 // ExtensionDirectHashRegenerate regenerates the direct hash for the extension.
-func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionDirectHashRegenerate",
 		"customer_id":  a.CustomerID,
 		"extension_id": extensionID,
 	})
 	log.Debug("Regenerating extension direct hash.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	e, err := h.extensionGet(ctx, extensionID)
 	if err != nil {

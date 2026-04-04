@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -29,7 +29,7 @@ const (
 )
 
 // subscriptionRun creates a new websocket and starts socket message listen.
-func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWriter, r *http.Request, a *amagent.Agent) error {
+func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWriter, r *http.Request, a *auth.AuthIdentity) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "subscriptionRun",
 		"agent": a,
@@ -78,7 +78,7 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	go h.subscriptionRunPinger(newCtx, newCancel, ws, &writeMu)
 
 	<-newCtx.Done()
-	log.Debugf("Websocket connection has been closed. agent_id: %s", a.ID)
+	log.Debugf("Websocket connection has been closed. agent_id: %s", a.AgentID())
 
 	return nil
 }
@@ -106,7 +106,7 @@ func (h *websockHandler) subscriptionRunZMQSub(
 func (h *websockHandler) subscriptionRunWebsock(
 	ctx context.Context,
 	cancel context.CancelFunc,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	ws *websocket.Conn,
 	zmqSub zmqsubhandler.ZMQSubHandler,
 ) {
@@ -140,7 +140,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 }
 
 // subscriptionHandleMessage handles the message from the websock and do the subscription/unsubscription.
-func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *amagent.Agent, zmqSub zmqsubhandler.ZMQSubHandler, m *hook.Hook) error {
+func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *auth.AuthIdentity, zmqSub zmqsubhandler.ZMQSubHandler, m *hook.Hook) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "subscriptionHandleMessage",
 		"agent":   a,

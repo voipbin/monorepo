@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -24,7 +25,7 @@ func Test_outdialsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -38,11 +39,11 @@ func Test_outdialsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
@@ -61,11 +62,11 @@ func Test_outdialsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
@@ -110,12 +111,12 @@ func Test_outdialsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutdialGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdials, nil)
+			mockSvc.EXPECT().OutdialGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -133,7 +134,7 @@ func Test_outdialsPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -148,11 +149,11 @@ func Test_outdialsPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials",
 			reqBody:  []byte(`{"campaign_id":"5770a50e-1a94-45fc-9ba1-79064573cf06","name":"test name","detail":"test detail","data":"test data"}`),
@@ -186,13 +187,13 @@ func Test_outdialsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", "/outdials", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialCreate(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectData).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialCreate(req.Context(), tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectData).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -210,7 +211,7 @@ func Test_outdialsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -221,11 +222,11 @@ func Test_outdialsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/3bb463ed-aa6e-4b64-9fc5-b1fc62096b67",
 
@@ -255,12 +256,12 @@ func Test_outdialsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutdialGet(req.Context(), &tt.agent, tt.expectOutdialID).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialGet(req.Context(), tt.agent, tt.expectOutdialID).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -278,7 +279,7 @@ func Test_outdialsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -289,11 +290,11 @@ func Test_outdialsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/37877e5d-ebe3-492d-be8c-54d62e98b4db",
 
@@ -323,12 +324,12 @@ func Test_outdialsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutdialDelete(req.Context(), &tt.agent, tt.expectOutdialID).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialDelete(req.Context(), tt.agent, tt.expectOutdialID).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -342,7 +343,7 @@ func Test_outdialsIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -356,11 +357,11 @@ func Test_outdialsIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/38114323-144a-499c-bfde-f3d8af114a7a",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
@@ -393,13 +394,13 @@ func Test_outdialsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", "/outdials/"+tt.expectOutdialID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateBasicInfo(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialUpdateBasicInfo(req.Context(), tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -417,7 +418,7 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -430,11 +431,11 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/607ea822-121d-4a52-ad3f-3f5320445ec8/campaign_id",
 			reqBody:  []byte(`{"campaign_id":"caad42fb-8266-4a24-be3f-9963ba14a20a"}`),
@@ -466,13 +467,13 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateCampaignID(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectCampaignID).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialUpdateCampaignID(req.Context(), tt.agent, tt.expectOutdialID, tt.expectCampaignID).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -490,7 +491,7 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -503,11 +504,11 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/056eefbd-8afa-402a-8c9e-681040ec8803/data",
 			reqBody:  []byte(`{"data":"test data"}`),
@@ -539,13 +540,13 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateData(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectData).Return(tt.responseOutdial, nil)
+			mockSvc.EXPECT().OutdialUpdateData(req.Context(), tt.agent, tt.expectOutdialID, tt.expectData).Return(tt.responseOutdial, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -563,7 +564,7 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -583,11 +584,11 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/726d6b88-2028-44fe-a415-a58067d98acf/targets",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001"},"destination_1":{"type":"tel","target":"+821100000002"},"destination_2":{"type":"tel","target":"+821100000003"},"destination_3":{"type":"tel","target":"+821100000004"},"destination_4":{"type":"tel","target":"+821100000005"}}`),
@@ -639,13 +640,13 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail, tt.expectData, tt.expectDestination0, tt.expectDestination1, tt.expectDestination2, tt.expectDestination3, tt.expectDestination4).Return(tt.responseOutdialtarget, nil)
+			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail, tt.expectData, tt.expectDestination0, tt.expectDestination1, tt.expectDestination2, tt.expectDestination3, tt.expectDestination4).Return(tt.responseOutdialtarget, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -663,7 +664,7 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -675,11 +676,11 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/112950f8-e3d3-4585-b858-125a59f8f51f/targets/86a52dde-c523-11ec-a8b0-53d9628a5d7f",
 
@@ -708,13 +709,13 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetGet(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectOutdialtargetID).Return(tt.responseOutdialtarget, nil)
+			mockSvc.EXPECT().OutdialtargetGet(req.Context(), tt.agent, tt.expectOutdialID, tt.expectOutdialtargetID).Return(tt.responseOutdialtarget, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -732,7 +733,7 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -744,11 +745,11 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/112950f8-e3d3-4585-b858-125a59f8f51f/targets/0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e",
 
@@ -777,13 +778,13 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetDelete(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectOutdialtargetID).Return(tt.responseOutdialtarget, nil)
+			mockSvc.EXPECT().OutdialtargetDelete(req.Context(), tt.agent, tt.expectOutdialID, tt.expectOutdialtargetID).Return(tt.responseOutdialtarget, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -800,7 +801,7 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 func Test_outdialsIDTargetGET(t *testing.T) {
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -815,11 +816,11 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20T03:23:21.995000Z",
 
@@ -837,11 +838,11 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20T03:23:21.995000Z",
 
@@ -881,12 +882,12 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(req.Context(), &tt.agent, tt.expectOutdialID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdialtargets, nil)
+			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(req.Context(), tt.agent, tt.expectOutdialID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdialtargets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

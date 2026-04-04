@@ -8,6 +8,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -26,7 +28,7 @@ func Test_SpeakingCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent *auth.AuthIdentity
 		referenceType tmstreaming.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -42,13 +44,13 @@ func Test_SpeakingCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			referenceType: tmstreaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"),
 			language:      "en-US",
@@ -76,13 +78,13 @@ func Test_SpeakingCreate(t *testing.T) {
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: 0,
-			},
+			}),
 			referenceType: tmstreaming.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"),
 			language:      "en-US",
@@ -145,7 +147,7 @@ func Test_SpeakingGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeaking *tmspeaking.Speaking
@@ -156,13 +158,13 @@ func Test_SpeakingGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeaking: &tmspeaking.Speaking{
@@ -185,13 +187,13 @@ func Test_SpeakingGet(t *testing.T) {
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeaking: &tmspeaking.Speaking{
@@ -245,7 +247,7 @@ func Test_SpeakingList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -259,13 +261,13 @@ func Test_SpeakingList(t *testing.T) {
 		{
 			name: "normal with token",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "2024-01-01T00:00:00.000000Z",
 			pageSize:  10,
 
@@ -293,13 +295,13 @@ func Test_SpeakingList(t *testing.T) {
 		{
 			name: "empty page token defaults",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			pageToken: "",
 			pageSize:  100,
 
@@ -366,7 +368,7 @@ func Test_SpeakingSay(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		speakingID uuid.UUID
 		text       string
 
@@ -379,13 +381,13 @@ func Test_SpeakingSay(t *testing.T) {
 		{
 			name: "normal pod-targeted",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 			text:       "hello world",
 
@@ -418,13 +420,13 @@ func Test_SpeakingSay(t *testing.T) {
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 			text:       "hello world",
 
@@ -484,7 +486,7 @@ func Test_SpeakingFlush(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet   *tmspeaking.Speaking
@@ -496,13 +498,13 @@ func Test_SpeakingFlush(t *testing.T) {
 		{
 			name: "normal pod-targeted",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{
@@ -534,13 +536,13 @@ func Test_SpeakingFlush(t *testing.T) {
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{
@@ -599,7 +601,7 @@ func Test_SpeakingStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet  *tmspeaking.Speaking
@@ -611,13 +613,13 @@ func Test_SpeakingStop(t *testing.T) {
 		{
 			name: "normal pod-targeted",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{
@@ -649,13 +651,13 @@ func Test_SpeakingStop(t *testing.T) {
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{
@@ -714,7 +716,7 @@ func Test_SpeakingDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet    *tmspeaking.Speaking
@@ -727,13 +729,13 @@ func Test_SpeakingDelete(t *testing.T) {
 		{
 			name: "normal stops active session first",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{
@@ -771,13 +773,13 @@ func Test_SpeakingDelete(t *testing.T) {
 		{
 			name: "already stopped skips stop",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			speakingID: uuid.FromStringOrNil("c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"),
 
 			responseSpeakingGet: &tmspeaking.Speaking{

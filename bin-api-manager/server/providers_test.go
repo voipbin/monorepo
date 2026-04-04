@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_providersGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,11 +36,11 @@ func Test_providersGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -56,11 +57,11 @@ func Test_providersGet(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -100,13 +101,13 @@ func Test_providersGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseProviders, nil)
+			mockSvc.EXPECT().ProviderList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseProviders, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -124,7 +125,7 @@ func Test_providersPost(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -144,11 +145,11 @@ func Test_providersPost(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers",
 			reqBody:  []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header_1":"val1","header_2":"val2"},"name":"test name","detail":"test detail"}`),
@@ -186,7 +187,7 @@ func Test_providersPost(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -195,7 +196,7 @@ func Test_providersPost(t *testing.T) {
 
 			mockSvc.EXPECT().ProviderCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectType,
 				tt.expectHostname,
 				tt.expectTechPrefix,
@@ -221,7 +222,7 @@ func Test_providersIDGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -234,11 +235,11 @@ func Test_providersIDGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers/d091abe2-5160-11ed-b13c-57769429b0f0",
 
@@ -267,13 +268,13 @@ func Test_providersIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGet(req.Context(), &tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderGet(req.Context(), tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -291,7 +292,7 @@ func Test_providersIDDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -304,11 +305,11 @@ func Test_providersIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers/528bae9a-5161-11ed-b6c1-03e42a38600c",
 
@@ -336,13 +337,13 @@ func Test_providersIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderDelete(req.Context(), &tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderDelete(req.Context(), tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -360,7 +361,7 @@ func Test_providersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -380,11 +381,11 @@ func Test_providersIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/providers/169cbfe0-5162-11ed-9be1-872503f37e02",
 			reqBody:  []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header_1":"val1","header_2":"val2"},"name":"update name", "detail":"update detail"}`),
@@ -424,13 +425,13 @@ func Test_providersIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ProviderUpdate(req.Context(), &tt.agent, tt.expectProviderID, tt.expectProviderType, tt.expectHostname, tt.expectTechPrefix, tt.expectTechPostfix, tt.expectTechHeaders, tt.expectName, tt.expectDetail).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderUpdate(req.Context(), tt.agent, tt.expectProviderID, tt.expectProviderType, tt.expectHostname, tt.expectTechPrefix, tt.expectTechPostfix, tt.expectTechHeaders, tt.expectName, tt.expectDetail).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

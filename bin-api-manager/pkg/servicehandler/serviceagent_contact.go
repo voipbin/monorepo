@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -16,7 +17,7 @@ import (
 // to create a contact for the service agent's customer.
 func (h *serviceHandler) ServiceAgentContactCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	firstName string,
 	lastName string,
 	displayName string,
@@ -29,6 +30,10 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 	emails []cmrequest.EmailCreate,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactCreate",
 		"customer_id": a.CustomerID,
@@ -66,7 +71,11 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 
 // ServiceAgentContactGet sends a request to contact-manager
 // to get a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactGet",
 		"customer_id": a.CustomerID,
@@ -90,7 +99,11 @@ func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *amagent.
 
 // ServiceAgentContactList sends a request to contact-manager
 // to get a list of contacts for the service agent's customer.
-func (h *serviceHandler) ServiceAgentContactList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "ServiceAgentContactList",
 		"agent":   a,
@@ -133,7 +146,7 @@ func (h *serviceHandler) ServiceAgentContactList(ctx context.Context, a *amagent
 // to update a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	firstName *string,
 	lastName *string,
@@ -143,6 +156,10 @@ func (h *serviceHandler) ServiceAgentContactUpdate(
 	externalID *string,
 	notes *string,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactUpdate",
 		"customer_id": a.CustomerID,
@@ -182,7 +199,11 @@ func (h *serviceHandler) ServiceAgentContactUpdate(
 
 // ServiceAgentContactDelete sends a request to contact-manager
 // to delete a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactDelete",
 		"customer_id": a.CustomerID,
@@ -212,7 +233,11 @@ func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *amage
 
 // ServiceAgentContactLookup sends a request to contact-manager
 // to lookup a contact by phone or email for the service agent.
-func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *amagent.Agent, phoneE164 string, email string) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactLookup",
 		"customer_id": a.CustomerID,
@@ -239,13 +264,17 @@ func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *amage
 // to add a phone number to a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	number string,
 	numberE164 string,
 	phoneType string,
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactPhoneNumberCreate",
 		"customer_id": a.CustomerID,
@@ -277,11 +306,15 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 // to update a phone number on a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	phoneNumberID uuid.UUID,
 	fields map[string]any,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ServiceAgentContactPhoneNumberUpdate",
 		"customer_id":     a.CustomerID,
@@ -312,7 +345,11 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 
 // ServiceAgentContactPhoneNumberDelete sends a request to contact-manager
 // to remove a phone number from a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ServiceAgentContactPhoneNumberDelete",
 		"customer_id":     a.CustomerID,
@@ -345,12 +382,16 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Contex
 // to add an email to a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactEmailCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	address string,
 	emailType string,
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactEmailCreate",
 		"customer_id": a.CustomerID,
@@ -382,11 +423,15 @@ func (h *serviceHandler) ServiceAgentContactEmailCreate(
 // to update an email on a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	emailID uuid.UUID,
 	fields map[string]any,
 ) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactEmailUpdate",
 		"customer_id": a.CustomerID,
@@ -417,7 +462,11 @@ func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 
 // ServiceAgentContactEmailDelete sends a request to contact-manager
 // to remove an email from a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactEmailDelete",
 		"customer_id": a.CustomerID,
@@ -448,7 +497,11 @@ func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *
 
 // ServiceAgentContactTagAdd sends a request to contact-manager
 // to add a tag to a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactTagAdd",
 		"customer_id": a.CustomerID,
@@ -479,7 +532,11 @@ func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *amage
 
 // ServiceAgentContactTagRemove sends a request to contact-manager
 // to remove a tag from a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentContactTagRemove",
 		"customer_id": a.CustomerID,

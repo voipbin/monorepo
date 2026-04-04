@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -21,7 +22,7 @@ func Test_billingsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,11 +36,11 @@ func Test_billingsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/billings?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -58,11 +59,11 @@ func Test_billingsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/billings?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -107,13 +108,13 @@ func Test_billingsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().BillingList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseBillings, nil)
+			mockSvc.EXPECT().BillingList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseBillings, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,13 +34,17 @@ func (h *serviceHandler) routeGet(ctx context.Context, routeID uuid.UUID) (*rmro
 
 // RouteGet sends a request to route-manager
 // to getting the route.
-func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
+func (h *serviceHandler) RouteGet(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"agent_id":    routeID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// permission check
 	// only project admin allowed
@@ -60,13 +65,17 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.Route, error) {
+func (h *serviceHandler) RouteList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "RouteGets",
-		"username": a.Username,
+		"username": a.DisplayName(),
 		"size":     size,
 		"token":    token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -98,14 +107,18 @@ func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size u
 // RouteGetsByCustomerID sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.Route, error) {
+func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, size uint64, token string) ([]*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGetsByCustomerID",
 		"customer_id": customerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -140,7 +153,7 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.A
 // it returns created route info if it succeed.
 func (h *serviceHandler) RouteCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	customerID uuid.UUID,
 	name string,
 	detail string,
@@ -151,9 +164,13 @@ func (h *serviceHandler) RouteCreate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteCreate",
 		"customer_id": customerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"provider_id": providerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// permission check
 	// only project admin allowed
@@ -183,13 +200,17 @@ func (h *serviceHandler) RouteCreate(
 // RouteDelete sends a request to route-manager
 // to deleting the route.
 // it returns error if it failed.
-func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
+func (h *serviceHandler) RouteDelete(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"route_id":    routeID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// permission check
 	// only project admin allowed
@@ -219,7 +240,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, rout
 // it returns error if it failed.
 func (h *serviceHandler) RouteUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	routeID uuid.UUID,
 	name string,
 	detail string,
@@ -230,8 +251,12 @@ func (h *serviceHandler) RouteUpdate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteUpdate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// permission check
 	// only project admin allowed

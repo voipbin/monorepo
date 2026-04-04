@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmrecording "monorepo/bin-call-manager/models/recording"
@@ -22,7 +23,7 @@ func Test_conferencesPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -41,11 +42,11 @@ func Test_conferencesPOST(t *testing.T) {
 	}{
 		{
 			name: "all data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences",
 			reqBody:  []byte(`{"id": "3371da98-1e1e-11f0-a1ac-938c84c82aeb", "type": "conference", "name": "test name", "detail": "test detail", "data":{"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_flow_id": "3aa67eb8-1e1e-11f0-b497-8fc31b393da4", "post_flow_id": "3acff27a-1e1e-11f0-ad92-03d48bf8463a"}`),
@@ -71,11 +72,11 @@ func Test_conferencesPOST(t *testing.T) {
 		},
 		{
 			name: "empty data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences",
 			reqBody:  []byte(`{}`),
@@ -107,7 +108,7 @@ func Test_conferencesPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -115,7 +116,7 @@ func Test_conferencesPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ConferenceCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedID,
 				tt.expectedType,
 				tt.expectedName,
@@ -142,7 +143,7 @@ func TestConferencesIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -151,11 +152,11 @@ func TestConferencesIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb",
 			responseConference: &cfconference.WebhookMessage{
@@ -182,12 +183,12 @@ func TestConferencesIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceGet(req.Context(), tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -202,7 +203,7 @@ func Test_conferencesIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -211,11 +212,11 @@ func Test_conferencesIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
 
@@ -244,12 +245,12 @@ func Test_conferencesIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceDelete(req.Context(), tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -264,7 +265,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -281,11 +282,11 @@ func Test_conferencesIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
 			reqBody:  []byte(`{"name": "update name", "detail": "update detail", "data": {"key1": "val1", "key2": 2.1}, "timeout": 86400, "pre_flow_id": "00000000-0000-0000-0000-000000000000", "post_flow_id": "00000000-0000-0000-0000-000000000000"}`),
@@ -324,7 +325,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -332,7 +333,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ConferenceUpdate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedConferenceID,
 				tt.expectedName,
 				tt.expectedDetail,
@@ -355,7 +356,7 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -368,11 +369,11 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
 			reqBody:  []byte(`{"format":"wav","duration":600,"on_end_flow_id": "523cf054-0567-11f0-82fe-1b103d8f043c"}`),
@@ -404,13 +405,13 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), tt.agent, tt.expectedConferenceID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -425,7 +426,7 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -434,11 +435,11 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/f1f4d55c-910c-11ed-ad67-8768a5ad30d8/recording_stop",
 
@@ -466,13 +467,13 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -487,7 +488,7 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -499,11 +500,11 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9/transcribe_start",
 			reqBody:  []byte(`{"language": "en-US"}`),
@@ -534,13 +535,13 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectLanguage).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), tt.agent, tt.expectConferenceID, tt.expectLanguage).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -555,7 +556,7 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -564,11 +565,11 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/conferences/af8db78c-98ec-11ed-9d8c-ffdf26e9202d/transcribe_stop",
 
@@ -596,13 +597,13 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -617,7 +618,7 @@ func Test_conferencesIDMediaStreamGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -628,11 +629,11 @@ func Test_conferencesIDMediaStreamGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			"/conferences/fb250b7c-eb49-11ee-a795-1386bac55428/media_stream?encapsulation=rtp",
 
@@ -656,14 +657,14 @@ func Test_conferencesIDMediaStreamGET(t *testing.T) {
 			c, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConferenceMediaStreamStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectEncapsulation, c.Writer, req).Return(nil)
+			mockSvc.EXPECT().ConferenceMediaStreamStart(req.Context(), tt.agent, tt.expectConferenceID, tt.expectEncapsulation, c.Writer, req).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

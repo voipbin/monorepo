@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_accesskeyGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		accesskeyID uuid.UUID
 
 		responseAccesskey *csaccesskey.Accesskey
@@ -29,13 +30,13 @@ func Test_accesskeyGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f1d53156-8dec-11ee-98a0-6ba69fe98bd2"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accesskeyID: uuid.FromStringOrNil("9c1078ba-ab47-11ef-b8b7-27bf39014b86"),
 
 			responseAccesskey: &csaccesskey.Accesskey{
@@ -79,7 +80,7 @@ func Test_AccesskeyCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		accesskeyName string
 		detail        string
 		expire        int32
@@ -91,13 +92,13 @@ func Test_AccesskeyCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accesskeyName: "test name",
 			detail:        "test detail",
 			expire:        86400000,
@@ -147,7 +148,7 @@ func Test_AccesskeyGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		accesskeyID uuid.UUID
 
 		responseAccesskey *csaccesskey.Accesskey
@@ -157,13 +158,13 @@ func Test_AccesskeyGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accesskeyID: uuid.FromStringOrNil("589ebbc2-ab48-11ef-a7b6-0be2f7042cdf"),
 
 			responseAccesskey: &csaccesskey.Accesskey{
@@ -215,7 +216,7 @@ func Test_AccesskeyList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		size    uint64
 		token   string
 		filters map[csaccesskey.Field]any
@@ -225,13 +226,13 @@ func Test_AccesskeyList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 			map[csaccesskey.Field]any{
@@ -252,13 +253,13 @@ func Test_AccesskeyList(t *testing.T) {
 		},
 		{
 			"2 results",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 			map[csaccesskey.Field]any{
@@ -319,7 +320,7 @@ func Test_AccesskeyDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		accesskeyID   uuid.UUID
 		accesskeyName string
 		detail        string
@@ -328,13 +329,13 @@ func Test_AccesskeyDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			accesskeyID: uuid.FromStringOrNil("bde73c60-ab49-11ef-810d-7b7404934537"),
 
 			responseAccesskey: &csaccesskey.Accesskey{
@@ -377,7 +378,7 @@ func Test_AccesskeyUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		agentID   uuid.UUID
 		addresses []commonaddress.Address
 
@@ -386,13 +387,13 @@ func Test_AccesskeyUpdate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			[]commonaddress.Address{
 				{

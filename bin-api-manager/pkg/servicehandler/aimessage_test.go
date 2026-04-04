@@ -5,6 +5,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -20,7 +21,7 @@ func Test_AImessageCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		aicallID uuid.UUID
 		role     ammessage.Role
 		content  string
@@ -32,13 +33,13 @@ func Test_AImessageCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aicallID: uuid.FromStringOrNil("556b07aa-f31c-11ef-8b45-8782c358d446"),
 			role:     ammessage.RoleUser,
 			content:  "test text",
@@ -96,7 +97,7 @@ func Test_AImessageListByAIcallID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		aicallID uuid.UUID
 		size     uint64
 		token    string
@@ -109,13 +110,13 @@ func Test_AImessageListByAIcallID(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aicallID: uuid.FromStringOrNil("24d250de-f31d-11ef-846e-9ba3307567d6"),
 			size:     10,
 			token:    "2020-09-20T03:23:20.995000Z",
@@ -193,7 +194,7 @@ func Test_AImessageGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		messageID uuid.UUID
 
 		response  *ammessage.Message
@@ -201,13 +202,13 @@ func Test_AImessageGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			messageID: uuid.FromStringOrNil("b8bf966c-f31d-11ef-ba3b-834c48052c25"),
 
 			response: &ammessage.Message{
@@ -257,7 +258,7 @@ func Test_AImessageDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		messageID uuid.UUID
 
 		response *ammessage.Message
@@ -266,13 +267,13 @@ func Test_AImessageDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			messageID: uuid.FromStringOrNil("b8e73d98-f31d-11ef-8b29-8b31b17b57dc"),
 
 			response: &ammessage.Message{

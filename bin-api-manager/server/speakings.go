@@ -5,7 +5,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 )
@@ -17,13 +16,12 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -41,7 +39,7 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.SpeakingList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.SpeakingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get speaking list: %v", err)
 		c.AbortWithStatus(400)
@@ -64,13 +62,12 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -127,7 +124,7 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingCreate(c.Request.Context(), &a, referenceType, referenceID, language, provider, voiceID, direction)
+	speaking, err := h.serviceHandler.SpeakingCreate(c.Request.Context(), a, referenceType, referenceID, language, provider, voiceID, direction)
 	if err != nil {
 		log.Errorf("Could not create speaking: %v", err)
 		c.AbortWithStatus(400)
@@ -144,13 +141,12 @@ func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -162,7 +158,7 @@ func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingDelete(c.Request.Context(), &a, speakingID)
+	speaking, err := h.serviceHandler.SpeakingDelete(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not delete speaking: %v", err)
 		c.AbortWithStatus(400)
@@ -179,13 +175,12 @@ func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -197,7 +192,7 @@ func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingGet(c.Request.Context(), &a, speakingID)
+	speaking, err := h.serviceHandler.SpeakingGet(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not get speaking: %v", err)
 		c.AbortWithStatus(400)
@@ -214,13 +209,12 @@ func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -232,7 +226,7 @@ func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingFlush(c.Request.Context(), &a, speakingID)
+	speaking, err := h.serviceHandler.SpeakingFlush(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not flush speaking: %v", err)
 		c.AbortWithStatus(400)
@@ -249,13 +243,12 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -286,7 +279,7 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingSay(c.Request.Context(), &a, speakingID, req.Text)
+	speaking, err := h.serviceHandler.SpeakingSay(c.Request.Context(), a, speakingID, req.Text)
 	if err != nil {
 		log.Errorf("Could not say text: %v", err)
 		c.AbortWithStatus(400)
@@ -303,13 +296,12 @@ func (h *server) PostSpeakingsIdStop(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -321,7 +313,7 @@ func (h *server) PostSpeakingsIdStop(c *gin.Context, id string) {
 		return
 	}
 
-	speaking, err := h.serviceHandler.SpeakingStop(c.Request.Context(), &a, speakingID)
+	speaking, err := h.serviceHandler.SpeakingStop(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not stop speaking: %v", err)
 		c.AbortWithStatus(400)

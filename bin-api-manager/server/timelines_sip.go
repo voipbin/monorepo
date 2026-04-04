@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -21,13 +20,12 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 	log.Info("Handler called - SIP analysis request received")
 
 	// Get agent from context
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Error("Could not find agent info")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Convert openapi_types.UUID to uuid.UUID
@@ -38,7 +36,7 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 		return
 	}
 
-	res, err := h.serviceHandler.TimelineSIPAnalysisGet(c.Request.Context(), &a, callUUID)
+	res, err := h.serviceHandler.TimelineSIPAnalysisGet(c.Request.Context(), a, callUUID)
 	if err != nil {
 		log.Infof("Could not get SIP analysis: %v", err)
 		switch err.Error() {
@@ -66,13 +64,12 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 	log.Info("Handler called - PCAP request received")
 
 	// Get agent from context
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Error("Could not find agent info")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Convert openapi_types.UUID to uuid.UUID
@@ -83,7 +80,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 		return
 	}
 
-	pcapData, err := h.serviceHandler.TimelineSIPPcapGet(c.Request.Context(), &a, callUUID)
+	pcapData, err := h.serviceHandler.TimelineSIPPcapGet(c.Request.Context(), a, callUUID)
 	if err != nil {
 		log.Infof("Could not get PCAP data: %v", err)
 		switch err.Error() {

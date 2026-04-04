@@ -3,15 +3,18 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/models/auth"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // accesskeyGet returns accesskey
-func (h *serviceHandler) accesskeyGet(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error) {
+func (h *serviceHandler) accesskeyGet(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error) {
 	res, err := h.reqHandler.CustomerV1AccesskeyGet(ctx, accesskeyID)
 	if err != nil {
 		return nil, err
@@ -31,10 +34,14 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *amagent.Agent, acc
 // AccesskeyCreate sends a request to customer-manager
 // to create a accesskey.
 // it returns created accesskey info if it succeed.
-func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *amagent.Agent, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "AccesskeyCreate",
-		"agent":  a,
+		"auth":   a.DisplayName(),
 		"name":   name,
 		"detail": detail,
 		"expire": expire,
@@ -63,7 +70,11 @@ func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *amagent.Agent, 
 // AccesskeyGet sends a request to customer-manager
 // to getting a accesskey.
 // it returns accesskey if it succeed.
-func (h *serviceHandler) AccesskeyGet(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyGet(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AccesskeyGet",
 		"customer_id":  a.CustomerID,
@@ -122,11 +133,14 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 // AccesskeyGets sends a request to customer-manager
 // to getting a list of accesskeys.
 // it returns list of accesskeys if it succeed.
-func (h *serviceHandler) AccesskeyList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*csaccesskey.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AccesskeyGets",
 		"customer_id": a.CustomerID,
-		"agent_id":    a.CustomerID,
 		"size":        size,
 		"token":       token,
 	})
@@ -164,11 +178,15 @@ func (h *serviceHandler) AccesskeyList(ctx context.Context, a *amagent.Agent, si
 // AccesskeyDelete sends a request to customer-manager
 // to delete the accesskey.
 // it returns accesskey if it succeed.
-func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AccesskeyDelete",
 		"customer_id":  a.CustomerID,
-		"agent_id":     a.ID,
+		"auth":         a.DisplayName(),
 		"accesskey_id": accesskeyID,
 	})
 
@@ -196,11 +214,15 @@ func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *amagent.Agent, 
 
 // AccesskeyUpdate sends a request to customer-manager
 // to update the accesskey info.
-func (h *serviceHandler) AccesskeyUpdate(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyUpdate(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AccesskeyUpdate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 	})
 
 	ak, err := h.accesskeyGet(ctx, a, accesskeyID)

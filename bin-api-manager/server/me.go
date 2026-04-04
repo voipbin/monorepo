@@ -1,8 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -13,19 +11,15 @@ func (h *server) GetMe(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
+	log = log.WithField("agent", a)
 
-	res, err := h.serviceHandler.AgentGet(c.Request.Context(), &a, a.ID)
+	res, err := h.serviceHandler.AgentGet(c.Request.Context(), a, a.AgentID())
 	if err != nil {
 		log.Infof("Could not get the agent info. err: %v", err)
 		c.AbortWithStatus(400)

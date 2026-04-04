@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gofrs/uuid"
@@ -16,15 +15,14 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -41,7 +39,7 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.BillingList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.BillingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get billing accounts info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,15 +61,14 @@ func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UU
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	// Convert openapi_types.UUID to uuid.UUID
@@ -82,7 +79,7 @@ func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UU
 		return
 	}
 
-	billing, err := h.serviceHandler.BillingGet(c.Request.Context(), &a, billingID)
+	billing, err := h.serviceHandler.BillingGet(c.Request.Context(), a, billingID)
 	if err != nil {
 		logrus.Errorf("Could not get billing info. err: %v", err)
 		c.AbortWithStatus(400)

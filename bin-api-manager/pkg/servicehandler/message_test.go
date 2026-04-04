@@ -13,6 +13,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -24,7 +26,7 @@ func Test_MessageList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -33,13 +35,13 @@ func Test_MessageList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2021-03-01T01:00:00.995000Z",
 			10,
 
@@ -98,7 +100,7 @@ func Test_MessageGet(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		response  *mmmessage.Message
@@ -106,13 +108,13 @@ func Test_MessageGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
 
 			&mmmessage.Message{
@@ -164,7 +166,7 @@ func Test_MessageSend(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		source       *commonaddress.Address
 		destinations []commonaddress.Address
@@ -175,13 +177,13 @@ func Test_MessageSend(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			&commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -239,7 +241,7 @@ func Test_MessageDelete(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		response  *mmmessage.Message
@@ -247,13 +249,13 @@ func Test_MessageDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
 
 			&mmmessage.Message{

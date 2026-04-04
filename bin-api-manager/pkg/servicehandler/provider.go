@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,13 +34,17 @@ func (h *serviceHandler) providerGet(ctx context.Context, id uuid.UUID) (*rmprov
 
 // ProviderGet sends a request to route-manager
 // to getting the provider.
-func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, providerID uuid.UUID) (*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"provider_id": providerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.providerGet(ctx, providerID)
 	if err != nil {
@@ -58,14 +63,18 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, prov
 // ProviderGets sends a request to route-manager
 // to getting a list of providers.
 // it returns providers info if it succeed.
-func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -95,7 +104,7 @@ func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, siz
 // ProviderCreate is a service handler for provider creation.
 func (h *serviceHandler) ProviderCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	providerType rmprovider.Type,
 	hostname string,
 	techPrefix string,
@@ -108,6 +117,10 @@ func (h *serviceHandler) ProviderCreate(
 		"func":        "ProviderCreate",
 		"customer_id": a.CustomerID,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Creating a new provider.")
 
 	// permission check
@@ -136,13 +149,17 @@ func (h *serviceHandler) ProviderCreate(
 }
 
 // ProviderDelete deletes the provider.
-func (h *serviceHandler) ProviderDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"provider_id": id,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Deleting a outplan.")
 
 	// permission check
@@ -173,7 +190,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *amagent.Agent, i
 // it returns error if it failed.
 func (h *serviceHandler) ProviderUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	providerID uuid.UUID,
 	providerType rmprovider.Type,
 	hostname string,
@@ -188,6 +205,10 @@ func (h *serviceHandler) ProviderUpdate(
 		"customer_id": a.CustomerID,
 		"provider_id": providerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")

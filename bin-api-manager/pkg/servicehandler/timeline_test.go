@@ -21,6 +21,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -43,7 +44,7 @@ func Test_TimelineEventList_calls(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -56,13 +57,13 @@ func Test_TimelineEventList_calls(t *testing.T) {
 	}{
 		{
 			name: "valid call timeline request",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "calls",
 			resourceID:   callID,
 			pageSize:     10,
@@ -150,7 +151,7 @@ func Test_TimelineEventList_conferences(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -163,13 +164,13 @@ func Test_TimelineEventList_conferences(t *testing.T) {
 	}{
 		{
 			name: "valid conference timeline request",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "conferences",
 			resourceID:   conferenceID,
 			pageSize:     10,
@@ -251,7 +252,7 @@ func Test_TimelineEventList_flows(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -264,13 +265,13 @@ func Test_TimelineEventList_flows(t *testing.T) {
 	}{
 		{
 			name: "valid flow timeline request",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "flows",
 			resourceID:   flowID,
 			pageSize:     10,
@@ -352,7 +353,7 @@ func Test_TimelineEventList_activeflows(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -365,13 +366,13 @@ func Test_TimelineEventList_activeflows(t *testing.T) {
 	}{
 		{
 			name: "valid activeflow timeline request",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "activeflows",
 			resourceID:   activeflowID,
 			pageSize:     10,
@@ -449,7 +450,7 @@ func Test_TimelineEventList_timeline_service_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -461,13 +462,13 @@ func Test_TimelineEventList_timeline_service_error(t *testing.T) {
 	}{
 		{
 			name: "timeline service error",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "calls",
 			resourceID:   callID,
 			pageSize:     10,
@@ -526,7 +527,7 @@ func Test_TimelineEventList_empty_response(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -539,13 +540,13 @@ func Test_TimelineEventList_empty_response(t *testing.T) {
 	}{
 		{
 			name: "empty timeline response",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "calls",
 			resourceID:   callID,
 			pageSize:     10,
@@ -605,7 +606,7 @@ func Test_TimelineEventList_error_invalid_resource_type(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -613,13 +614,13 @@ func Test_TimelineEventList_error_invalid_resource_type(t *testing.T) {
 	}{
 		{
 			name: "invalid resource type",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "invalid_type",
 			resourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			pageSize:     10,
@@ -654,7 +655,7 @@ func Test_TimelineEventList_error_resource_not_found(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -664,13 +665,13 @@ func Test_TimelineEventList_error_resource_not_found(t *testing.T) {
 	}{
 		{
 			name: "resource not found",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "calls",
 			resourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			pageSize:     10,
@@ -713,7 +714,7 @@ func Test_TimelineEventList_error_permission_denied(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		resourceType string
 		resourceID   uuid.UUID
 		pageSize     int
@@ -723,13 +724,13 @@ func Test_TimelineEventList_error_permission_denied(t *testing.T) {
 	}{
 		{
 			name: "permission denied - different customer",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: agentCustomerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			resourceType: "calls",
 			resourceID:   callID,
 			pageSize:     10,

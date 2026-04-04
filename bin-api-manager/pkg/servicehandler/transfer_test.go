@@ -18,6 +18,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -26,7 +27,7 @@ func Test_TransferStart(t *testing.T) {
 	type test struct {
 		name string
 
-		agent               *amagent.Agent
+		agent               *auth.AuthIdentity
 		transferType        tmtransfer.Type
 		transfererCallID    uuid.UUID
 		transfereeAddresses []commonaddress.Address
@@ -41,13 +42,13 @@ func Test_TransferStart(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			transferType:     tmtransfer.TypeAttended,
 			transfererCallID: uuid.FromStringOrNil("00d773d4-dd3b-11ed-bcad-d3c44f5b7491"),
 			transfereeAddresses: []commonaddress.Address{

@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	rmrag "monorepo/bin-rag-manager/models/rag"
 )
 
@@ -28,7 +29,11 @@ func (h *serviceHandler) ragGet(ctx context.Context, id uuid.UUID) (*rmrag.Rag, 
 	return res, nil
 }
 
-func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagCreate(ctx context.Context, a *auth.AuthIdentity, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagCreate",
 		"customer_id": a.CustomerID,
@@ -50,7 +55,11 @@ func (h *serviceHandler) RagCreate(ctx context.Context, a *amagent.Agent, name, 
 	return res, nil
 }
 
-func (h *serviceHandler) RagGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagGet",
 		"customer_id": a.CustomerID,
@@ -72,7 +81,11 @@ func (h *serviceHandler) RagGet(ctx context.Context, a *amagent.Agent, id uuid.U
 	return res, nil
 }
 
-func (h *serviceHandler) RagGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagGets",
 		"customer_id": a.CustomerID,
@@ -107,7 +120,11 @@ func (h *serviceHandler) RagGets(ctx context.Context, a *amagent.Agent, size uin
 	return res, nil
 }
 
-func (h *serviceHandler) RagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagUpdate",
 		"customer_id": a.CustomerID,
@@ -135,7 +152,11 @@ func (h *serviceHandler) RagUpdate(ctx context.Context, a *amagent.Agent, id uui
 	return res, nil
 }
 
-func (h *serviceHandler) RagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagDelete",
 		"customer_id": a.CustomerID,
@@ -162,7 +183,11 @@ func (h *serviceHandler) RagDelete(ctx context.Context, a *amagent.Agent, id uui
 	return res, nil
 }
 
-func (h *serviceHandler) RagAddSources(ctx context.Context, a *amagent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagAddSources",
 		"customer_id": a.CustomerID,
@@ -191,7 +216,11 @@ func (h *serviceHandler) RagAddSources(ctx context.Context, a *amagent.Agent, ra
 	return res, nil
 }
 
-func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *amagent.Agent, ragID, sourceID uuid.UUID) (*rmrag.WebhookMessage, error) {
+func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *auth.AuthIdentity, ragID, sourceID uuid.UUID) (*rmrag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RagRemoveSource",
 		"customer_id": a.CustomerID,

@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,13 +14,12 @@ func (h *server) GetServiceAgentsTags(c *gin.Context, params openapi_server.GetS
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -40,7 +38,7 @@ func (h *server) GetServiceAgentsTags(c *gin.Context, params openapi_server.GetS
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTagList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTagList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -64,13 +62,12 @@ func (h *server) GetServiceAgentsTagsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -82,7 +79,7 @@ func (h *server) GetServiceAgentsTagsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTagGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTagGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get the tag info. err: %v", err)
 		c.AbortWithStatus(400)

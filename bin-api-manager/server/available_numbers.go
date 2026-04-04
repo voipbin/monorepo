@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -16,15 +15,14 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -53,7 +51,7 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		return
 	}
 
-	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), &a, pageSize, countryCode, numType)
+	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), a, pageSize, countryCode, numType)
 	if err != nil {
 		log.Errorf("Could not get available numbers. err: %v", err)
 		c.AbortWithStatus(500)

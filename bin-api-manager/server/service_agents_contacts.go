@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -16,13 +15,12 @@ func (h *server) GetServiceAgentsContacts(c *gin.Context, params openapi_server.
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -46,7 +44,7 @@ func (h *server) GetServiceAgentsContacts(c *gin.Context, params openapi_server.
 		"deleted":     "false",
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentContactList(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.ServiceAgentContactList(c.Request.Context(), a, pageSize, pageToken, filters)
 	if err != nil {
 		logrus.Errorf("Could not get contacts info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -70,13 +68,12 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -171,7 +168,7 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 
 	res, err := h.serviceHandler.ServiceAgentContactCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		firstName,
 		lastName,
 		displayName,
@@ -200,13 +197,12 @@ func (h *server) GetServiceAgentsContactsId(c *gin.Context, id string) {
 		"contact_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -218,7 +214,7 @@ func (h *server) GetServiceAgentsContactsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentContactGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the contact info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -235,13 +231,12 @@ func (h *server) PutServiceAgentsContactsId(c *gin.Context, id string) {
 		"contact_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -262,7 +257,7 @@ func (h *server) PutServiceAgentsContactsId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.ServiceAgentContactUpdate(
 		c.Request.Context(),
-		&a,
+		a,
 		target,
 		req.FirstName,
 		req.LastName,
@@ -288,13 +283,12 @@ func (h *server) DeleteServiceAgentsContactsId(c *gin.Context, id string) {
 		"contact_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -306,7 +300,7 @@ func (h *server) DeleteServiceAgentsContactsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentContactDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -322,13 +316,12 @@ func (h *server) GetServiceAgentsContactsLookup(c *gin.Context, params openapi_s
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -349,7 +342,7 @@ func (h *server) GetServiceAgentsContactsLookup(c *gin.Context, params openapi_s
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactLookup(c.Request.Context(), &a, phoneE164, email)
+	res, err := h.serviceHandler.ServiceAgentContactLookup(c.Request.Context(), a, phoneE164, email)
 	if err != nil {
 		log.Infof("Could not lookup the contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -365,13 +358,12 @@ func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id stri
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -400,7 +392,7 @@ func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id stri
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberCreate(c.Request.Context(), &a, target, req.Number, "", phoneType, isPrimary)
+	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberCreate(c.Request.Context(), a, target, req.Number, "", phoneType, isPrimary)
 	if err != nil {
 		log.Errorf("Could not add phone number to contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -416,13 +408,12 @@ func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Cont
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -459,7 +450,7 @@ func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Cont
 		fields["is_primary"] = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberUpdate(c.Request.Context(), &a, contactID, phoneNumID, fields)
+	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberUpdate(c.Request.Context(), a, contactID, phoneNumID, fields)
 	if err != nil {
 		log.Errorf("Could not update phone number on contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -475,13 +466,12 @@ func (h *server) DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.C
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -500,7 +490,7 @@ func (h *server) DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.C
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberDelete(c.Request.Context(), &a, contactID, phoneNumID)
+	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberDelete(c.Request.Context(), a, contactID, phoneNumID)
 	if err != nil {
 		log.Infof("Could not delete phone number from contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -516,13 +506,12 @@ func (h *server) PostServiceAgentsContactsIdEmails(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -551,7 +540,7 @@ func (h *server) PostServiceAgentsContactsIdEmails(c *gin.Context, id string) {
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactEmailCreate(c.Request.Context(), &a, target, string(req.Address), emailType, isPrimary)
+	res, err := h.serviceHandler.ServiceAgentContactEmailCreate(c.Request.Context(), a, target, string(req.Address), emailType, isPrimary)
 	if err != nil {
 		log.Errorf("Could not add email to contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -567,13 +556,12 @@ func (h *server) PutServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id stri
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -610,7 +598,7 @@ func (h *server) PutServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id stri
 		fields["is_primary"] = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactEmailUpdate(c.Request.Context(), &a, contactID, emlID, fields)
+	res, err := h.serviceHandler.ServiceAgentContactEmailUpdate(c.Request.Context(), a, contactID, emlID, fields)
 	if err != nil {
 		log.Errorf("Could not update email on contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -626,13 +614,12 @@ func (h *server) DeleteServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id s
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -651,7 +638,7 @@ func (h *server) DeleteServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id s
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactEmailDelete(c.Request.Context(), &a, contactID, emlID)
+	res, err := h.serviceHandler.ServiceAgentContactEmailDelete(c.Request.Context(), a, contactID, emlID)
 	if err != nil {
 		log.Infof("Could not delete email from contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -667,13 +654,12 @@ func (h *server) PostServiceAgentsContactsIdTags(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -699,7 +685,7 @@ func (h *server) PostServiceAgentsContactsIdTags(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactTagAdd(c.Request.Context(), &a, contactID, tagID)
+	res, err := h.serviceHandler.ServiceAgentContactTagAdd(c.Request.Context(), a, contactID, tagID)
 	if err != nil {
 		log.Errorf("Could not add tag to contact. err: %v", err)
 		c.AbortWithStatus(400)
@@ -715,13 +701,12 @@ func (h *server) DeleteServiceAgentsContactsIdTagsTagId(c *gin.Context, id strin
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -740,7 +725,7 @@ func (h *server) DeleteServiceAgentsContactsIdTagsTagId(c *gin.Context, id strin
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactTagRemove(c.Request.Context(), &a, contactID, tID)
+	res, err := h.serviceHandler.ServiceAgentContactTagRemove(c.Request.Context(), a, contactID, tID)
 	if err != nil {
 		log.Infof("Could not remove tag from contact. err: %v", err)
 		c.AbortWithStatus(400)

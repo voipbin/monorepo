@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"monorepo/bin-api-manager/models/auth"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -41,17 +42,21 @@ func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created calls and groupcalls info if it succeed.
-func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"flow_id":     flowID,
 		"actions":     actions,
 		"source":      source,
 		"destination": destinations,
 	})
 	log.Debug("Creating a new call.")
+
+	if a.IsDirect() {
+		return nil, nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, nil, fmt.Errorf("user has no permission")
@@ -127,13 +132,17 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowI
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get call
 	c, err := h.callGet(ctx, callID)
@@ -155,14 +164,18 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID u
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -253,13 +266,17 @@ func (h *serviceHandler) convertCallFilters(filters map[string]string) (map[cmca
 // CallDelete sends a request to call-manager
 // to delete the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -308,13 +325,17 @@ func (h *serviceHandler) callDelete(ctx context.Context, callID uuid.UUID) (*cmc
 // CallHangup sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallHangup(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallHangup",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -345,13 +366,17 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callI
 // CallTalk sends a request to call-manager
 // to talk to the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, language string, provider string, voiceID string) error {
+func (h *serviceHandler) CallTalk(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, text string, language string, provider string, voiceID string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallTalk",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -378,12 +403,16 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID 
 // CallHoldOn sends a request to call-manager
 // to hold the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallHoldOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallHoldOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallHoldOn",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -410,12 +439,16 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, a *amagent.Agent, callI
 // CallHoldOff sends a request to call-manager
 // to unhold the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallHoldOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallHoldOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallHoldOff",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -442,12 +475,16 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, a *amagent.Agent, call
 // CallMuteOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMuteOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error {
+func (h *serviceHandler) CallMuteOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallMuteOn",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -474,12 +511,16 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, a *amagent.Agent, callI
 // CallMuteOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMuteOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error {
+func (h *serviceHandler) CallMuteOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallMuteOff",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -506,12 +547,16 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, a *amagent.Agent, call
 // CallMOHOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMOHOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallMOHOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallMOHOn",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -538,12 +583,16 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, a *amagent.Agent, callID
 // CallMOHOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMOHOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallMOHOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallMOHOff",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -570,12 +619,16 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, a *amagent.Agent, callI
 // CallSilenceOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallSilenceOn",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -602,12 +655,16 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *amagent.Agent, ca
 // CallSilenceOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
+func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallSilenceOff",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -633,13 +690,17 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, c
 
 // CallMediaStreamStart starts a media streaming of the call
 // it returns error if it failed.
-func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *amagent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "CallMediaStreamStart",
 		"agent":         a,
 		"call_id":       callID,
 		"encapsulation": encapsulation,
 	})
+
+	if a.IsDirect() {
+		return fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -666,7 +727,7 @@ func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *amagent.Ag
 // it returns error if it failed.
 func (h *serviceHandler) CallRecordingStart(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	callID uuid.UUID,
 	format cmrecording.Format,
 	endOfSilence int,
@@ -674,6 +735,10 @@ func (h *serviceHandler) CallRecordingStart(
 	duration int,
 	onEndFlowID uuid.UUID,
 ) (*cmcall.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {
@@ -706,7 +771,11 @@ func (h *serviceHandler) CallRecordingStart(
 // CallRecordingStop sends a request to call-manager
 // to stop the recording.
 // it returns error if it failed.
-func (h *serviceHandler) CallRecordingStop(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	c, err := h.callGet(ctx, callID)
 	if err != nil {

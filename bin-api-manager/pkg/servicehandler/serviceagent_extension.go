@@ -3,7 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
@@ -11,14 +11,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity) ([]*rmextension.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ServiceAgentExtensionGets",
 		"agent": a,
 	})
 
 	res := []*rmextension.WebhookMessage{}
-	for _, address := range a.Addresses {
+	for _, address := range a.Agent.Addresses {
 		if address.Type != commonaddress.TypeExtension {
 			continue
 		}
@@ -36,7 +40,11 @@ func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *amage
 	return res, nil
 }
 
-func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ServiceAgentExtensionGet",
 		"agent": a,
@@ -48,7 +56,7 @@ func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *amagen
 		return nil, err
 	}
 
-	for _, address := range a.Addresses {
+	for _, address := range a.Agent.Addresses {
 		if address.Type != commonaddress.TypeExtension {
 			continue
 		}

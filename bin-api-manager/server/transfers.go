@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
@@ -26,13 +25,12 @@ func (h *server) PostTransfers(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -50,7 +48,7 @@ func (h *server) PostTransfers(c *gin.Context) {
 		transfereeAddresses = append(transfereeAddresses, ConvertCommonAddress(v))
 	}
 
-	res, err := h.serviceHandler.TransferStart(c.Request.Context(), &a, tmtransfer.Type(req.TransferType), transfererCallID, transfereeAddresses)
+	res, err := h.serviceHandler.TransferStart(c.Request.Context(), a, tmtransfer.Type(req.TransferType), transfererCallID, transfereeAddresses)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)

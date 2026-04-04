@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -18,7 +19,7 @@ func Test_ServiceAgentAgentList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -31,13 +32,13 @@ func Test_ServiceAgentAgentList(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			size:  100,
 			token: "2021-03-01T01:00:00.995000Z",
 
@@ -105,7 +106,7 @@ func Test_ServiceAgentAgentGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		agentID uuid.UUID
 
 		responseAgent *amagent.Agent
@@ -116,13 +117,13 @@ func Test_ServiceAgentAgentGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			agentID: uuid.FromStringOrNil("daf9bea2-3f9e-11ef-9fa2-3bf0ad5fa0ae"),
 
 			responseAgent: &amagent.Agent{

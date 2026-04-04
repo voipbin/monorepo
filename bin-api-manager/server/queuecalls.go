@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,16 +14,13 @@ func (h *server) GetQueuecalls(c *gin.Context, params openapi_server.GetQueuecal
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -41,7 +37,7 @@ func (h *server) GetQueuecalls(c *gin.Context, params openapi_server.GetQueuecal
 	}
 
 	// get tmps
-	tmps, err := h.serviceHandler.QueuecallList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.QueuecallList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queuecalls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -64,16 +60,13 @@ func (h *server) GetQueuecallsId(c *gin.Context, id string) {
 		"queuecall_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -82,7 +75,7 @@ func (h *server) GetQueuecallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueuecallGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueuecallGet(c.Request.Context(), a, target)
 	if err != nil || res == nil {
 		log.Errorf("Could not get the conferencecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -98,16 +91,13 @@ func (h *server) DeleteQueuecallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -116,7 +106,7 @@ func (h *server) DeleteQueuecallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueuecallDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueuecallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -132,16 +122,13 @@ func (h *server) PostQueuecallsIdKick(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -150,7 +137,7 @@ func (h *server) PostQueuecallsIdKick(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueuecallKick(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueuecallKick(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -166,16 +153,13 @@ func (h *server) PostQueuecallsReferenceIdIdKick(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -184,7 +168,7 @@ func (h *server) PostQueuecallsReferenceIdIdKick(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueuecallKickByReferenceID(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueuecallKickByReferenceID(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)

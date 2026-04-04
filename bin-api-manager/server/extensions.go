@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -16,16 +15,13 @@ func (h *server) PostExtensions(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostExtensionsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -34,7 +30,7 @@ func (h *server) PostExtensions(c *gin.Context) {
 		return
 	}
 
-	ext, err := h.serviceHandler.ExtensionCreate(c.Request.Context(), &a, req.Extension, req.Password, req.Name, req.Detail)
+	ext, err := h.serviceHandler.ExtensionCreate(c.Request.Context(), a, req.Extension, req.Password, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -50,16 +46,13 @@ func (h *server) GetExtensions(c *gin.Context, params openapi_server.GetExtensio
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -75,7 +68,7 @@ func (h *server) GetExtensions(c *gin.Context, params openapi_server.GetExtensio
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ExtensionList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ExtensionList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -98,16 +91,13 @@ func (h *server) GetExtensionsId(c *gin.Context, id string) {
 		"extension_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -116,7 +106,7 @@ func (h *server) GetExtensionsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ExtensionGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ExtensionGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -133,16 +123,13 @@ func (h *server) PutExtensionsId(c *gin.Context, id string) {
 		"extension_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -158,7 +145,7 @@ func (h *server) PutExtensionsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ExtensionUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Password)
+	res, err := h.serviceHandler.ExtensionUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -174,16 +161,13 @@ func (h *server) DeleteExtensionsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -192,7 +176,7 @@ func (h *server) DeleteExtensionsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ExtensionDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ExtensionDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -209,16 +193,13 @@ func (h *server) PostExtensionsIdDirectHashRegenerate(c *gin.Context, id openapi
 		"extension_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	// Convert openapi_types.UUID to uuid.UUID
 	extensionID, err := uuid.FromString(id.String())
@@ -228,7 +209,7 @@ func (h *server) PostExtensionsIdDirectHashRegenerate(c *gin.Context, id openapi
 		return
 	}
 
-	res, err := h.serviceHandler.ExtensionDirectHashRegenerate(c.Request.Context(), &a, extensionID)
+	res, err := h.serviceHandler.ExtensionDirectHashRegenerate(c.Request.Context(), a, extensionID)
 	if err != nil {
 		log.Errorf("Could not regenerate extension direct hash. err: %v", err)
 		c.AbortWithStatus(400)

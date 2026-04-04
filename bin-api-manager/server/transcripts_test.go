@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -20,7 +21,7 @@ func Test_transcriptsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,11 +36,11 @@ func Test_transcriptsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("83f82e1a-828d-11ed-89ea-9f7ac48ae9b8"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcripts?transcribe_id=8425d50e-828d-11ed-a91c-f77fe2ce8202&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -73,14 +74,14 @@ func Test_transcriptsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscriptList(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscripts, nil)
+			mockSvc.EXPECT().TranscriptList(req.Context(), tt.agent, tt.expectTranscribeID).Return(tt.responseTranscripts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

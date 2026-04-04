@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +20,12 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	})
 
 	// Get agent from context
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Error("Could not find agent info")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Validate resource_type
@@ -66,7 +64,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	}
 
 	// Call servicehandler
-	events, nextPageToken, err := h.serviceHandler.TimelineEventList(c.Request.Context(), &a, string(resourceType), resourceUUID, pageSize, pageToken)
+	events, nextPageToken, err := h.serviceHandler.TimelineEventList(c.Request.Context(), a, string(resourceType), resourceUUID, pageSize, pageToken)
 	if err != nil {
 		log.Infof("Failed to get timeline events: %v", err)
 		if err.Error() == "user has no permission" || err.Error() == "not found" {

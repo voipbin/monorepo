@@ -3,6 +3,8 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+
+	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	smaccount "monorepo/bin-storage-manager/models/account"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -28,13 +30,17 @@ func (h *serviceHandler) storageAccountGet(ctx context.Context, accountID uuid.U
 // StorageAccountGet sends a request to storage-manager
 // to getting a storage account.
 // it returns storage account if it succeed.
-func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *auth.AuthIdentity, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "StorageAccountGet",
 		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"username":           a.DisplayName(),
 		"storage_account_id": storageAccountID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get storage account
 	sa, err := h.storageAccountGet(ctx, storageAccountID)
@@ -55,12 +61,16 @@ func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *amagent.Agent
 // StorageAccountGetByCustomerID sends a request to storage-manager
 // to getting a storage account.
 // it returns storage account if it succeed.
-func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *amagent.Agent) (*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *auth.AuthIdentity) (*smaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountGetByCustomerID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	filters := map[string]string{
 		"customer_id": a.CustomerID.String(),
@@ -92,13 +102,17 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 // StorageAccountDelete sends a request to storage-manager
 // to deleting a storage account.
 // it returns storage account if it succeed.
-func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.Account, error) {
+func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *auth.AuthIdentity, storageAccountID uuid.UUID) (*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "StorageAccountDelete",
 		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"username":           a.DisplayName(),
 		"storage_account_id": storageAccountID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get storage account
 	ba, err := h.storageAccountGet(ctx, storageAccountID)
@@ -122,14 +136,18 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Ag
 // StorageAccountGets sends a request to storage-manager
 // to getting a list of storage accounts.
 // it returns list of storage accounts if it succeed.
-func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.Account, error) {
+func (h *serviceHandler) StorageAccountList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -169,12 +187,16 @@ func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agen
 // StorageAccountCreate sends a request to storage-manager
 // to create a new storage accounts.
 // it returns created storage account if it succeed.
-func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.Account, error) {
+func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")

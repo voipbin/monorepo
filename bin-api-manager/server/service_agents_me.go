@@ -15,18 +15,17 @@ func (h *server) GetServiceAgentsMe(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
 
-	res, err := h.serviceHandler.ServiceAgentMeGet(c.Request.Context(), &a)
+	res, err := h.serviceHandler.ServiceAgentMeGet(c.Request.Context(), a)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -42,13 +41,12 @@ func (h *server) PutServiceAgentsMe(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -60,7 +58,7 @@ func (h *server) PutServiceAgentsMe(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentMeUpdate(c.Request.Context(), &a, req.Name, req.Detail, amagent.RingMethod(req.RingMethod))
+	res, err := h.serviceHandler.ServiceAgentMeUpdate(c.Request.Context(), a, req.Name, req.Detail, amagent.RingMethod(req.RingMethod))
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -76,13 +74,12 @@ func (h *server) PutServiceAgentsMeAddresses(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -99,7 +96,7 @@ func (h *server) PutServiceAgentsMeAddresses(c *gin.Context) {
 		addresses = append(addresses, ConvertCommonAddress(v))
 	}
 
-	res, err := h.serviceHandler.ServiceAgentMeUpdateAddresses(c.Request.Context(), &a, addresses)
+	res, err := h.serviceHandler.ServiceAgentMeUpdateAddresses(c.Request.Context(), a, addresses)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,16 +112,15 @@ func (h *server) PutServiceAgentsMeStatus(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent":    a,
-		"username": a.Username,
+		"username": a.DisplayName(),
 	})
 
 	var req openapi_server.PutServiceAgentsMeStatusJSONBody
@@ -134,7 +130,7 @@ func (h *server) PutServiceAgentsMeStatus(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentMeUpdateStatus(c.Request.Context(), &a, amagent.Status(req.Status))
+	res, err := h.serviceHandler.ServiceAgentMeUpdateStatus(c.Request.Context(), a, amagent.Status(req.Status))
 	if err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
 		c.AbortWithStatus(400)
@@ -150,16 +146,15 @@ func (h *server) PutServiceAgentsMePassword(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent":    a,
-		"username": a.Username,
+		"username": a.DisplayName(),
 	})
 
 	var req openapi_server.PutServiceAgentsMePasswordJSONBody
@@ -169,7 +164,7 @@ func (h *server) PutServiceAgentsMePassword(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentMeUpdatePassword(c.Request.Context(), &a, req.Password)
+	res, err := h.serviceHandler.ServiceAgentMeUpdatePassword(c.Request.Context(), a, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the agent's password. err: %v", err)
 		c.AbortWithStatus(400)

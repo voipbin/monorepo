@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -18,15 +17,14 @@ func (h *server) GetConferences(c *gin.Context, params openapi_server.GetConfere
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -43,7 +41,7 @@ func (h *server) GetConferences(c *gin.Context, params openapi_server.GetConfere
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConferenceList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ConferenceList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get conferences. err: %v", err)
 		c.AbortWithStatus(400)
@@ -65,15 +63,14 @@ func (h *server) PostConferences(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostConferencesJSONBody
@@ -92,7 +89,7 @@ func (h *server) PostConferences(c *gin.Context) {
 
 	res, err := h.serviceHandler.ConferenceCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		id,
 		cfconference.Type(req.Type),
 		req.Name,
@@ -118,15 +115,14 @@ func (h *server) GetConferencesId(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -136,7 +132,7 @@ func (h *server) GetConferencesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConferenceGet(c.Request.Context(), a, target)
 	if err != nil || res == nil {
 		log.Errorf("Could not get the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -153,15 +149,14 @@ func (h *server) PutConferencesId(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -181,7 +176,7 @@ func (h *server) PutConferencesId(c *gin.Context, id string) {
 	preFlowID := uuid.FromStringOrNil(req.PreFlowId)
 	postFlowID := uuid.FromStringOrNil(req.PostFlowId)
 
-	res, err := h.serviceHandler.ConferenceUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Data, req.Timeout, preFlowID, postFlowID)
+	res, err := h.serviceHandler.ConferenceUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Data, req.Timeout, preFlowID, postFlowID)
 	if err != nil || res == nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -198,15 +193,14 @@ func (h *server) DeleteConferencesId(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -216,7 +210,7 @@ func (h *server) DeleteConferencesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConferenceDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -233,15 +227,14 @@ func (h *server) PostConferencesIdRecordingStart(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -259,7 +252,7 @@ func (h *server) PostConferencesIdRecordingStart(c *gin.Context, id string) {
 	}
 	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
 
-	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), &a, target, cmrecording.Format(req.Format), req.Duration, onEndFlowID)
+	res, err := h.serviceHandler.ConferenceRecordingStart(c.Request.Context(), a, target, cmrecording.Format(req.Format), req.Duration, onEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -276,15 +269,14 @@ func (h *server) PostConferencesIdRecordingStop(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -294,7 +286,7 @@ func (h *server) PostConferencesIdRecordingStop(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceRecordingStop(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConferenceRecordingStop(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -311,15 +303,14 @@ func (h *server) PostConferencesIdTranscribeStart(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -336,7 +327,7 @@ func (h *server) PostConferencesIdTranscribeStart(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceTranscribeStart(c.Request.Context(), &a, target, req.Language)
+	res, err := h.serviceHandler.ConferenceTranscribeStart(c.Request.Context(), a, target, req.Language)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -353,15 +344,14 @@ func (h *server) PostConferencesIdTranscribeStop(c *gin.Context, id string) {
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -371,7 +361,7 @@ func (h *server) PostConferencesIdTranscribeStop(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceTranscribeStop(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConferenceTranscribeStop(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not stop the conference transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -388,15 +378,14 @@ func (h *server) GetConferencesIdMediaStream(c *gin.Context, id string, params o
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -406,7 +395,7 @@ func (h *server) GetConferencesIdMediaStream(c *gin.Context, id string, params o
 		return
 	}
 
-	if errMedia := h.serviceHandler.ConferenceMediaStreamStart(c.Request.Context(), &a, target, params.Encapsulation, c.Writer, c.Request); errMedia != nil {
+	if errMedia := h.serviceHandler.ConferenceMediaStreamStart(c.Request.Context(), a, target, params.Encapsulation, c.Writer, c.Request); errMedia != nil {
 		log.Errorf("Could not start the conference media streaming. err: %v", errMedia)
 		c.AbortWithStatus(400)
 		return
@@ -422,15 +411,14 @@ func (h *server) PostConferencesIdDirectHashRegenerate(c *gin.Context, id openap
 		"conference_id":   id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	// Convert openapi_types.UUID to uuid.UUID
@@ -441,7 +429,7 @@ func (h *server) PostConferencesIdDirectHashRegenerate(c *gin.Context, id openap
 		return
 	}
 
-	res, err := h.serviceHandler.ConferenceDirectHashRegenerate(c.Request.Context(), &a, conferenceID)
+	res, err := h.serviceHandler.ConferenceDirectHashRegenerate(c.Request.Context(), a, conferenceID)
 	if err != nil {
 		log.Errorf("Could not regenerate conference direct hash. err: %v", err)
 		c.AbortWithStatus(400)

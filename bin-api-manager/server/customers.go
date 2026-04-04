@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -16,13 +15,12 @@ func (h *server) PostCustomers(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	var req openapi_server.PostCustomersJSONBody
@@ -34,7 +32,7 @@ func (h *server) PostCustomers(c *gin.Context) {
 
 	res, err := h.serviceHandler.CustomerCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		req.Name,
 		req.Detail,
 		req.Email,
@@ -58,13 +56,12 @@ func (h *server) GetCustomers(c *gin.Context, params openapi_server.GetCustomers
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
@@ -85,7 +82,7 @@ func (h *server) GetCustomers(c *gin.Context, params openapi_server.GetCustomers
 		"deleted": "false",
 	}
 
-	tmps, err := h.serviceHandler.CustomerList(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.CustomerList(c.Request.Context(), a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get a customers list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -108,13 +105,12 @@ func (h *server) GetCustomersId(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -124,7 +120,7 @@ func (h *server) GetCustomersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CustomerGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,13 +137,12 @@ func (h *server) PutCustomersId(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -164,7 +159,7 @@ func (h *server) PutCustomersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cucustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
+	res, err := h.serviceHandler.CustomerUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cucustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -181,13 +176,12 @@ func (h *server) DeleteCustomersId(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -197,7 +191,7 @@ func (h *server) DeleteCustomersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CustomerDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -214,13 +208,12 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -244,7 +237,7 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, target, billingAccountID)
+	res, err := h.serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), a, target, billingAccountID)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -261,13 +254,12 @@ func (h *server) PutCustomersIdMetadata(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -288,7 +280,7 @@ func (h *server) PutCustomersIdMetadata(c *gin.Context, id string) {
 		RTPDebug: req.RtpDebug != nil && *req.RtpDebug,
 	}
 
-	res, err := h.serviceHandler.CustomerUpdateMetadata(c.Request.Context(), &a, target, metadata)
+	res, err := h.serviceHandler.CustomerUpdateMetadata(c.Request.Context(), a, target, metadata)
 	if err != nil {
 		log.Errorf("Could not update the customer metadata. err: %v", err)
 		c.AbortWithStatus(400)
@@ -305,13 +297,12 @@ func (h *server) PostCustomersIdFreeze(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -321,7 +312,7 @@ func (h *server) PostCustomersIdFreeze(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerFreeze(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CustomerFreeze(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not freeze the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -338,13 +329,12 @@ func (h *server) PostCustomersIdRecover(c *gin.Context, id string) {
 		"customer_id":     id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
@@ -354,7 +344,7 @@ func (h *server) PostCustomersIdRecover(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerRecover(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CustomerRecover(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not recover the customer. err: %v", err)
 		c.AbortWithStatus(400)

@@ -16,6 +16,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -27,7 +29,7 @@ func Test_GroupcallGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		groupcallID uuid.UUID
 
 		responseGroupcall *cmgroupcall.Groupcall
@@ -36,13 +38,13 @@ func Test_GroupcallGet(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
 
 			&cmgroupcall.Groupcall{
@@ -95,7 +97,7 @@ func Test_GroupcallCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent *auth.AuthIdentity
 		source       commonaddress.Address
 		destinations []commonaddress.Address
 		flowID       uuid.UUID
@@ -110,13 +112,13 @@ func Test_GroupcallCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			source: commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
@@ -189,7 +191,7 @@ func Test_GroupcallHangup(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent *auth.AuthIdentity
 		groupcallID uuid.UUID
 
 		responseGroupcall *cmgroupcall.Groupcall
@@ -198,13 +200,13 @@ func Test_GroupcallHangup(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			groupcallID: uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
 
 			responseGroupcall: &cmgroupcall.Groupcall{
@@ -258,7 +260,7 @@ func Test_GroupcallDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent *auth.AuthIdentity
 		groupcallID uuid.UUID
 
 		responseGroupcall *cmgroupcall.Groupcall
@@ -267,13 +269,13 @@ func Test_GroupcallDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			groupcallID: uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
 
 			responseGroupcall: &cmgroupcall.Groupcall{

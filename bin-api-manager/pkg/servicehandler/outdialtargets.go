@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
@@ -18,7 +19,7 @@ import (
 // It returns created outdialtarget if it succeed.
 func (h *serviceHandler) OutdialtargetCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	outdialID uuid.UUID,
 	name string,
 	detail string,
@@ -32,10 +33,14 @@ func (h *serviceHandler) OutdialtargetCreate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outdial_id":  outdialID,
 		"data":        data,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Executing OutdialUpdateData.")
 
 	// get outdial
@@ -74,13 +79,17 @@ func (h *serviceHandler) OutdialtargetCreate(
 
 // OutdialtargetGet gets an outdialtarget.
 // It returns outdialtarget if it succeed.
-func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *amagent.Agent, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
+func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdentity, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outdial_id":  outdialID,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Executing OutdialtargetGet.")
 
 	// get outdial
@@ -114,14 +123,18 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *amagent.Agent,
 
 // OutdialtargetGetsByOutdialID gets the list of outdialtargets of the given outdial id.
 // It returns list of outdialtargets if it succeed.
-func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *amagent.Agent, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error) {
+func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *auth.AuthIdentity, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetGetsByOutdialID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Getting a outdials.")
 
 	if token == "" {
@@ -159,13 +172,17 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *am
 
 // OutdialtargetDelete deletes an outdialtarget.
 // It returns deleted outdialtarget if it succeed.
-func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *amagent.Agent, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
+func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthIdentity, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outdial_id":  outdialID,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Executing OutdialtargetDelete.")
 
 	// get outdial

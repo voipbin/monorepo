@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
@@ -16,16 +15,13 @@ func (h *server) GetProviders(c *gin.Context, params openapi_server.GetProviders
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -41,7 +37,7 @@ func (h *server) GetProviders(c *gin.Context, params openapi_server.GetProviders
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ProviderList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ProviderList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get providers info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,16 +59,13 @@ func (h *server) PostProviders(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostProvidersJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -94,7 +87,7 @@ func (h *server) PostProviders(c *gin.Context) {
 
 	res, err := h.serviceHandler.ProviderCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		rmprovider.Type(req.Type),
 		req.Hostname,
 		req.TechPrefix,
@@ -119,16 +112,13 @@ func (h *server) DeleteProvidersId(c *gin.Context, id string) {
 		"provider_id":     id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -137,7 +127,7 @@ func (h *server) DeleteProvidersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ProviderDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ProviderDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the delete the provider info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -154,16 +144,13 @@ func (h *server) GetProvidersId(c *gin.Context, id string) {
 		"provider_id":     id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -172,7 +159,7 @@ func (h *server) GetProvidersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ProviderGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ProviderGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the provider info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -188,16 +175,13 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -226,7 +210,7 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.ProviderUpdate(
 		c.Request.Context(),
-		&a,
+		a,
 		target,
 		rmprovider.Type(req.Type),
 		req.Hostname,

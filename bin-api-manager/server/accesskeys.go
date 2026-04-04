@@ -1,8 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
-
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -16,15 +14,14 @@ func (h *server) GetAccesskeys(c *gin.Context, params openapi_server.GetAccesske
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -41,7 +38,7 @@ func (h *server) GetAccesskeys(c *gin.Context, params openapi_server.GetAccesske
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.AccesskeyList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.AccesskeyList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,15 +60,14 @@ func (h *server) PostAccesskeys(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostAccesskeysJSONBody
@@ -96,7 +92,7 @@ func (h *server) PostAccesskeys(c *gin.Context) {
 		expire = int(*req.Expire)
 	}
 
-	res, err := h.serviceHandler.AccesskeyCreate(c.Request.Context(), &a, name, detail, int32(expire))
+	res, err := h.serviceHandler.AccesskeyCreate(c.Request.Context(), a, name, detail, int32(expire))
 	if err != nil {
 		log.Errorf("Could not create a accesskey. err: %v", err)
 		c.AbortWithStatus(400)
@@ -112,15 +108,14 @@ func (h *server) GetAccesskeysId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -131,7 +126,7 @@ func (h *server) GetAccesskeysId(c *gin.Context, id string) {
 	}
 	log = log.WithField("accesskey_id", target)
 
-	res, err := h.serviceHandler.AccesskeyGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AccesskeyGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -147,21 +142,20 @@ func (h *server) DeleteAccesskeysId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
 	log = log.WithField("accesskey_id", target)
 
-	res, err := h.serviceHandler.AccesskeyDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AccesskeyDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -177,15 +171,14 @@ func (h *server) PutAccesskeysId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -208,7 +201,7 @@ func (h *server) PutAccesskeysId(c *gin.Context, id string) {
 		detail = *req.Detail
 	}
 
-	res, err := h.serviceHandler.AccesskeyUpdate(c.Request.Context(), &a, target, name, detail)
+	res, err := h.serviceHandler.AccesskeyUpdate(c.Request.Context(), a, target, name, detail)
 	if err != nil {
 		log.Errorf("Could not update the accesskey. err: %v", err)
 		c.AbortWithStatus(400)

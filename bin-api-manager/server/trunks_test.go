@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_trunksPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -41,11 +42,11 @@ func Test_trunksPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/trunks",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","domain_name":"test","auth_types":["basic"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
@@ -84,14 +85,14 @@ func Test_trunksPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TrunkCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectDomainName, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(tt.responseTrunk, nil)
+			mockSvc.EXPECT().TrunkCreate(req.Context(), tt.agent, tt.expectName, tt.expectDetail, tt.expectDomainName, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(tt.responseTrunk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -109,7 +110,7 @@ func Test_trunksGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -123,11 +124,11 @@ func Test_trunksGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/trunks?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -165,14 +166,14 @@ func Test_trunksGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TrunkList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTrunks, nil)
+			mockSvc.EXPECT().TrunkList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTrunks, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -190,7 +191,7 @@ func Test_TrunksIDGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -203,11 +204,11 @@ func Test_TrunksIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/trunks/733b46f6-5588-11ee-b04e-c781770c2c87",
 
@@ -238,12 +239,12 @@ func Test_TrunksIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().TrunkGet(req.Context(), &tt.agent, tt.expectTrunkID).Return(tt.responseTrunk, nil)
+			mockSvc.EXPECT().TrunkGet(req.Context(), tt.agent, tt.expectTrunkID).Return(tt.responseTrunk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -261,7 +262,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -278,11 +279,11 @@ func Test_TrunksIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","auth_types":["basic"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
@@ -315,13 +316,13 @@ func Test_TrunksIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), &tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,7 +336,7 @@ func Test_trunksIDDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery      string
 		expectTrunkID uuid.UUID
@@ -344,11 +345,11 @@ func Test_trunksIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery:      "/trunks/73ee8bce-558a-11ee-a104-5771d8493db0",
 			expectTrunkID: uuid.FromStringOrNil("73ee8bce-558a-11ee-a104-5771d8493db0"),
@@ -370,12 +371,12 @@ func Test_trunksIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().TrunkDelete(req.Context(), &tt.agent, tt.expectTrunkID).Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkDelete(req.Context(), tt.agent, tt.expectTrunkID).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

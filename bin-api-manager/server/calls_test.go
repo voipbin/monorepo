@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -25,7 +26,7 @@ func Test_CallsPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqBody []byte
 
@@ -42,11 +43,11 @@ func Test_CallsPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqBody: []byte(`{"source":{"type":"sip","target":"source@test.voipbin.net"},"destinations":[{"type":"sip","target":"destination@test.voipbin.net"}],"flow_id":"f0f80af2-d7c8-11ef-bc6a-03858a6b220f","actions":[{"type":"answer"}]}`),
 
@@ -100,14 +101,14 @@ func Test_CallsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", "/calls", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallCreate(req.Context(), &tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().CallCreate(req.Context(), tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -126,7 +127,7 @@ func Test_CallsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -140,11 +141,11 @@ func Test_CallsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -163,11 +164,11 @@ func Test_CallsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -213,13 +214,13 @@ func Test_CallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().CallList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -237,7 +238,7 @@ func Test_CallsIDGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -249,11 +250,11 @@ func Test_CallsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/395518ca-830a-11eb-badc-b3582bc51917",
 
@@ -283,13 +284,13 @@ func Test_CallsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallGet(req.Context(), tt.agent, tt.responseCall.ID).Return(tt.responseCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -306,7 +307,7 @@ func Test_callsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -317,11 +318,11 @@ func Test_callsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/72709904-719c-11ed-94f7-b78b75ad5dce",
 
@@ -351,12 +352,12 @@ func Test_callsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallDelete(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallDelete(req.Context(), tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -374,7 +375,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -385,11 +386,11 @@ func Test_callsIDHangupPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/09b9bf4c-8927-11ed-b16c-5719373564c9/hangup",
 
@@ -419,12 +420,12 @@ func Test_callsIDHangupPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallHangup(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallHangup(req.Context(), tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -442,7 +443,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -457,11 +458,11 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
 			reqBody:  []byte(`{"text":"hello world","language":"en-US"}`),
@@ -474,11 +475,11 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 		},
 		{
 			name: "with provider and voice_id",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
 			reqBody:  []byte(`{"text":"hello world","language":"en-US","provider":"gcp","voice_id":"en-US-Wavenet-A"}`),
@@ -506,14 +507,14 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectProvider, tt.expectVoiceID).Return(nil)
+			mockSvc.EXPECT().CallTalk(req.Context(), tt.agent, tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectProvider, tt.expectVoiceID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -527,7 +528,7 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -537,11 +538,11 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/eb763a4a-cf0f-11ed-a989-8fbebcdb62c2/hold",
 
@@ -564,14 +565,14 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallHoldOn(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -585,7 +586,7 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -595,11 +596,11 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/ebbb2f06-cf0f-11ed-be2c-27600beaf155/hold",
 
@@ -622,14 +623,14 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallHoldOff(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -643,7 +644,7 @@ func Test_CallsIDMutePOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -655,11 +656,11 @@ func Test_CallsIDMutePOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5/mute",
 			reqBody:  []byte(`{"direction":"both"}`),
@@ -684,14 +685,14 @@ func Test_CallsIDMutePOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
+			mockSvc.EXPECT().CallMuteOn(req.Context(), tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -705,7 +706,7 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -717,11 +718,11 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/97b7fadc-cf10-11ed-b07a-7b718bb9eef9/mute",
 			reqBody:  []byte(`{"direction":"both"}`),
@@ -746,14 +747,14 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
+			mockSvc.EXPECT().CallMuteOff(req.Context(), tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -767,7 +768,7 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -777,11 +778,11 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/4c72ec78-d13e-11ed-b853-cff593bdd1af/moh",
 
@@ -804,14 +805,14 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallMOHOn(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -825,7 +826,7 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -835,11 +836,11 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/4cb3b1ae-d13e-11ed-a27d-f78da612d3c4/moh",
 
@@ -862,14 +863,14 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallMOHOff(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -883,7 +884,7 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -893,11 +894,11 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/836320ae-d13e-11ed-9b0c-efff68751c5a/silence",
 
@@ -920,14 +921,14 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallSilenceOn(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -941,7 +942,7 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -951,11 +952,11 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/839a7b62-d13e-11ed-9448-e71729a96494/silence",
 
@@ -978,14 +979,14 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallSilenceOff(req.Context(), tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -999,7 +1000,7 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -1010,11 +1011,11 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/906c71fe-e922-11ee-808c-a721a8e44e90/media_stream?encapsulation=rtp",
 
@@ -1038,14 +1039,14 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 			c, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), &tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req).Return(nil)
+			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1059,7 +1060,7 @@ func Test_PostCallsIdRecordingStart(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -1077,12 +1078,12 @@ func Test_PostCallsIdRecordingStart(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d30e7702-0567-11f0-89b1-1ff587d35570"),
 					CustomerID: uuid.FromStringOrNil("d33296b4-0567-11f0-8801-3f3e7d9612e6"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/d30e7702-0567-11f0-89b1-1ff587d35570/recording_start",
 			reqBody:  []byte(`{"format":"wav","end_of_silence":10,"end_of_key":"1","duration":600,"on_end_flow_id":"d3578cb2-0567-11f0-82cf-5362e575afc8"}`),
@@ -1117,7 +1118,7 @@ func Test_PostCallsIdRecordingStart(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -1126,7 +1127,7 @@ func Test_PostCallsIdRecordingStart(t *testing.T) {
 
 			mockSvc.EXPECT().CallRecordingStart(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedCallID,
 				tt.expectedFormat,
 				tt.epxectEndOfSilence,
@@ -1147,7 +1148,7 @@ func Test_PostCallsIdRecordingStop(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -1159,11 +1160,11 @@ func Test_PostCallsIdRecordingStop(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ee49e0c2-0569-11f0-83fc-b32453293d26"),
 				},
-			},
+			}),
 
 			reqQuery: "/calls/ee49e0c2-0569-11f0-83fc-b32453293d26/recording_stop",
 
@@ -1192,14 +1193,14 @@ func Test_PostCallsIdRecordingStop(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallRecordingStop(req.Context(), &tt.agent, tt.expectedCallID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallRecordingStop(req.Context(), tt.agent, tt.expectedCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

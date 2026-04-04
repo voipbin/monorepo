@@ -17,6 +17,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -33,13 +34,13 @@ func Test_AggregatedEventList_NeitherProvided(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	_, _, err := h.AggregatedEventList(ctx, agent, uuid.Nil, uuid.Nil, 10, "")
 	if err == nil {
@@ -66,13 +67,13 @@ func Test_AggregatedEventList_BothProvided(t *testing.T) {
 	activeflowID := uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a")
 	callID := uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	_, _, err := h.AggregatedEventList(ctx, agent, activeflowID, callID, 10, "")
 	if err == nil {
@@ -98,13 +99,13 @@ func Test_AggregatedEventList_ActiveflowNotFound(t *testing.T) {
 
 	activeflowID := uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	mockReq.EXPECT().FlowV1ActiveflowGet(ctx, activeflowID).Return(nil, fmt.Errorf("not found"))
 
@@ -134,13 +135,13 @@ func Test_AggregatedEventList_ActiveflowNoPermission(t *testing.T) {
 	activeflowCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentCustomerID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: agentCustomerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testActiveflow := &fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{
@@ -177,13 +178,13 @@ func Test_AggregatedEventList_ActiveflowSuccess(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testActiveflow := &fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{
@@ -253,13 +254,13 @@ func Test_AggregatedEventList_CallNotFound(t *testing.T) {
 
 	callID := uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(nil, fmt.Errorf("not found"))
 
@@ -289,13 +290,13 @@ func Test_AggregatedEventList_CallNoPermission(t *testing.T) {
 	callCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentCustomerID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: agentCustomerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testCall := &cmcall.Call{
 		Identity: commonidentity.Identity{
@@ -331,13 +332,13 @@ func Test_AggregatedEventList_CallNoActiveflow(t *testing.T) {
 	callID := uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a")
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testCall := &cmcall.Call{
 		Identity: commonidentity.Identity{
@@ -376,13 +377,13 @@ func Test_AggregatedEventList_CallSuccess(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testCall := &cmcall.Call{
 		Identity: commonidentity.Identity{
@@ -443,13 +444,13 @@ func Test_AggregatedEventList_TimelineRPCError(t *testing.T) {
 	activeflowID := uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a")
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testActiveflow := &fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{
@@ -492,13 +493,13 @@ func Test_AggregatedEventList_SuccessWithConversion(t *testing.T) {
 	callID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000")
 	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testActiveflow := &fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{
@@ -580,13 +581,13 @@ func Test_AggregatedEventList_UnknownEventTypeSkipped(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	testTimestamp := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: customerID,
 		},
 		Permission: amagent.PermissionCustomerAdmin,
-	}
+	})
 
 	testActiveflow := &fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{

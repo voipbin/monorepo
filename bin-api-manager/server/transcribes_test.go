@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -40,11 +41,11 @@ func Test_transcribesPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcribes",
 			reqBody:  []byte(`{"reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US","direction":"both","on_end_flow_id":"199a8a78-0944-11f0-b57c-dbf18b86df64"}`),
@@ -80,7 +81,7 @@ func Test_transcribesPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -89,7 +90,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 			mockSvc.EXPECT().TranscribeStart(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
 				tt.expectLanguage,
@@ -114,7 +115,7 @@ func Test_transcribesGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -128,11 +129,11 @@ func Test_transcribesGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcribes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -165,14 +166,14 @@ func Test_transcribesGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -190,7 +191,7 @@ func Test_transcribesIDGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -203,11 +204,11 @@ func Test_transcribesIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c7631adc-828a-11ed-bfb9-87aeb6847454"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcribes/cced3564-828a-11ed-902f-6b70b24b6821",
 
@@ -237,14 +238,14 @@ func Test_transcribesIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeGet(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribe, nil)
+			mockSvc.EXPECT().TranscribeGet(req.Context(), tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -262,7 +263,7 @@ func Test_transcribesIDDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -275,11 +276,11 @@ func Test_transcribesIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9534352c-828b-11ed-985f-5b1e2478a83f"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcribes/9563c0da-828b-11ed-9ca3-d735336f3293",
 
@@ -309,14 +310,14 @@ func Test_transcribesIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeDelete(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeDelete(req.Context(), tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -334,7 +335,7 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -347,11 +348,11 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c5e620e0-828b-11ed-ba7c-4be64b7a1acc"),
 				},
-			},
+			}),
 
 			reqQuery: "/transcribes/c61977a6-828b-11ed-b4c5-f73135cd3f5a/stop",
 
@@ -381,14 +382,14 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeStop(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeStop(req.Context(), tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -16,6 +16,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -46,7 +47,7 @@ func Test_TimelineSIPAnalysisGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall     *cmcall.Call
@@ -58,13 +59,13 @@ func Test_TimelineSIPAnalysisGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID: callID,
 
 			responseCall:    call,
@@ -146,7 +147,7 @@ func Test_TimelineSIPPcapGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall    *cmcall.Call
@@ -158,13 +159,13 @@ func Test_TimelineSIPPcapGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID: callID,
 
 			responseCall:    call,

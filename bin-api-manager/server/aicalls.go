@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
@@ -16,15 +15,14 @@ func (h *server) PostAicalls(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostAicallsJSONRequestBody
@@ -37,7 +35,7 @@ func (h *server) PostAicalls(c *gin.Context) {
 	assistanceID := uuid.FromStringOrNil(req.AssistanceId)
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 
-	res, err := h.serviceHandler.AIcallCreate(c.Request.Context(), &a, amaicall.AssistanceType(req.AssistanceType), assistanceID, amaicall.ReferenceType(req.ReferenceType), referenceID)
+	res, err := h.serviceHandler.AIcallCreate(c.Request.Context(), a, amaicall.AssistanceType(req.AssistanceType), assistanceID, amaicall.ReferenceType(req.ReferenceType), referenceID)
 	if err != nil {
 		log.Errorf("Could not create AI. err: %v", err)
 		c.AbortWithStatus(400)
@@ -53,15 +51,14 @@ func (h *server) GetAicalls(c *gin.Context, params openapi_server.GetAicallsPara
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -78,7 +75,7 @@ func (h *server) GetAicalls(c *gin.Context, params openapi_server.GetAicallsPara
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.AIcallGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.AIcallGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get AI list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -100,15 +97,14 @@ func (h *server) GetAicallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -118,7 +114,7 @@ func (h *server) GetAicallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AIcallGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AIcallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get AI. err: %v", err)
 		c.AbortWithStatus(400)
@@ -134,15 +130,14 @@ func (h *server) DeleteAicallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -152,7 +147,7 @@ func (h *server) DeleteAicallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AIcallDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AIcallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the aicall. err: %v", err)
 		c.AbortWithStatus(400)

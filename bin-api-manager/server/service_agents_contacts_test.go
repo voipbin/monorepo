@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -22,7 +23,7 @@ func Test_GetServiceAgentsContacts(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,12 +36,12 @@ func Test_GetServiceAgentsContacts(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -66,12 +67,12 @@ func Test_GetServiceAgentsContacts(t *testing.T) {
 		},
 		{
 			name: "more than 2 results",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -120,12 +121,12 @@ func Test_GetServiceAgentsContacts(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseContacts, nil)
+			mockSvc.EXPECT().ServiceAgentContactList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseContacts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -143,7 +144,7 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -165,12 +166,12 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts",
 			reqBody:  []byte(`{"first_name":"John","last_name":"Doe","display_name":"John Doe","company":"Acme","job_title":"Engineer","source":"api","external_id":"ext-123","notes":"test note"}`),
@@ -219,7 +220,7 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -228,7 +229,7 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 
 			mockSvc.EXPECT().ServiceAgentContactCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectFirstName,
 				tt.expectLastName,
 				tt.expectDisplayName,
@@ -258,7 +259,7 @@ func Test_GetServiceAgentsContactsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -269,12 +270,12 @@ func Test_GetServiceAgentsContactsId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
@@ -307,12 +308,12 @@ func Test_GetServiceAgentsContactsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactGet(req.Context(), &tt.agent, tt.expectContactID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactGet(req.Context(), tt.agent, tt.expectContactID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -330,7 +331,7 @@ func Test_PutServiceAgentsContactsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -349,12 +350,12 @@ func Test_PutServiceAgentsContactsId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 			reqBody:  []byte(`{"first_name":"Updated","last_name":"Name"}`),
@@ -395,7 +396,7 @@ func Test_PutServiceAgentsContactsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -404,7 +405,7 @@ func Test_PutServiceAgentsContactsId(t *testing.T) {
 
 			mockSvc.EXPECT().ServiceAgentContactUpdate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectContactID,
 				tt.expectFirstName,
 				tt.expectLastName,
@@ -431,7 +432,7 @@ func Test_DeleteServiceAgentsContactsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -442,12 +443,12 @@ func Test_DeleteServiceAgentsContactsId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff",
 
@@ -481,12 +482,12 @@ func Test_DeleteServiceAgentsContactsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactDelete(req.Context(), &tt.agent, tt.expectContactID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactDelete(req.Context(), tt.agent, tt.expectContactID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -504,7 +505,7 @@ func Test_GetServiceAgentsContactsLookup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -516,12 +517,12 @@ func Test_GetServiceAgentsContactsLookup(t *testing.T) {
 	}{
 		{
 			name: "lookup by phone",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/lookup?phone=%2B15551234567",
 
@@ -541,12 +542,12 @@ func Test_GetServiceAgentsContactsLookup(t *testing.T) {
 		},
 		{
 			name: "lookup by email",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/lookup?email=john@example.com",
 
@@ -580,12 +581,12 @@ func Test_GetServiceAgentsContactsLookup(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactLookup(req.Context(), &tt.agent, tt.expectPhone, tt.expectEmail).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactLookup(req.Context(), tt.agent, tt.expectPhone, tt.expectEmail).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -603,7 +604,7 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -619,12 +620,12 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/phone_numbers",
 			reqBody:  []byte(`{"number":"+15551234567","type":"mobile","is_primary":true}`),
@@ -670,14 +671,14 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactPhoneNumberCreate(req.Context(), &tt.agent, tt.expectContactID, tt.expectNumber, tt.expectNumberE164, tt.expectPhoneType, tt.expectIsPrimary).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactPhoneNumberCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectNumber, tt.expectNumberE164, tt.expectPhoneType, tt.expectIsPrimary).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusCreated {
@@ -695,7 +696,7 @@ func Test_PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -709,12 +710,12 @@ func Test_PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/phone_numbers/a1b2c3d4-0001-11ec-0001-000000000001",
 			reqBody:  []byte(`{"number":"+15559999999"}`),
@@ -758,14 +759,14 @@ func Test_PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactPhoneNumberUpdate(req.Context(), &tt.agent, tt.expectContactID, tt.expectPhoneNumberID, tt.expectFields).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactPhoneNumberUpdate(req.Context(), tt.agent, tt.expectContactID, tt.expectPhoneNumberID, tt.expectFields).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -783,7 +784,7 @@ func Test_DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -795,12 +796,12 @@ func Test_DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/phone_numbers/a1b2c3d4-0001-11ec-0001-000000000001",
 
@@ -834,12 +835,12 @@ func Test_DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactPhoneNumberDelete(req.Context(), &tt.agent, tt.expectContactID, tt.expectPhoneNumberID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactPhoneNumberDelete(req.Context(), tt.agent, tt.expectContactID, tt.expectPhoneNumberID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -857,7 +858,7 @@ func Test_PostServiceAgentsContactsIdEmails(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -872,12 +873,12 @@ func Test_PostServiceAgentsContactsIdEmails(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/emails",
 			reqBody:  []byte(`{"address":"john@example.com","type":"work","is_primary":true}`),
@@ -922,14 +923,14 @@ func Test_PostServiceAgentsContactsIdEmails(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactEmailCreate(req.Context(), &tt.agent, tt.expectContactID, tt.expectAddress, tt.expectEmailType, tt.expectIsPrimary).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactEmailCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddress, tt.expectEmailType, tt.expectIsPrimary).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusCreated {
@@ -947,7 +948,7 @@ func Test_PutServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -961,12 +962,12 @@ func Test_PutServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/emails/b2c3d4e5-0002-11ec-0002-000000000002",
 			reqBody:  []byte(`{"address":"updated@example.com"}`),
@@ -1010,14 +1011,14 @@ func Test_PutServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactEmailUpdate(req.Context(), &tt.agent, tt.expectContactID, tt.expectEmailID, tt.expectFields).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactEmailUpdate(req.Context(), tt.agent, tt.expectContactID, tt.expectEmailID, tt.expectFields).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1035,7 +1036,7 @@ func Test_DeleteServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -1047,12 +1048,12 @@ func Test_DeleteServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/emails/b2c3d4e5-0002-11ec-0002-000000000002",
 
@@ -1086,12 +1087,12 @@ func Test_DeleteServiceAgentsContactsIdEmailsEmailId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactEmailDelete(req.Context(), &tt.agent, tt.expectContactID, tt.expectEmailID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactEmailDelete(req.Context(), tt.agent, tt.expectContactID, tt.expectEmailID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1109,7 +1110,7 @@ func Test_PostServiceAgentsContactsIdTags(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -1122,12 +1123,12 @@ func Test_PostServiceAgentsContactsIdTags(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/tags",
 			reqBody:  []byte(`{"tag_id":"d4e5f6a7-0003-11ec-0003-000000000003"}`),
@@ -1165,14 +1166,14 @@ func Test_PostServiceAgentsContactsIdTags(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactTagAdd(req.Context(), &tt.agent, tt.expectContactID, tt.expectTagID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactTagAdd(req.Context(), tt.agent, tt.expectContactID, tt.expectTagID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusCreated {
@@ -1190,7 +1191,7 @@ func Test_DeleteServiceAgentsContactsIdTagsTagId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -1202,12 +1203,12 @@ func Test_DeleteServiceAgentsContactsIdTagsTagId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/tags/d4e5f6a7-0003-11ec-0003-000000000003",
 
@@ -1241,12 +1242,12 @@ func Test_DeleteServiceAgentsContactsIdTagsTagId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentContactTagRemove(req.Context(), &tt.agent, tt.expectContactID, tt.expectTagID).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactTagRemove(req.Context(), tt.agent, tt.expectContactID, tt.expectTagID).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

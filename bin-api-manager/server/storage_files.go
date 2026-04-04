@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	smfile "monorepo/bin-storage-manager/models/file"
 	"net/http"
@@ -22,13 +21,12 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -52,7 +50,7 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.StorageFileCreate(c.Request.Context(), &a, f, smfile.Type(fileType), "", "", header.Filename)
+	res, err := h.serviceHandler.StorageFileCreate(c.Request.Context(), a, f, smfile.Type(fileType), "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
@@ -68,13 +66,12 @@ func (h *server) GetStorageFiles(c *gin.Context, params openapi_server.GetStorag
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -93,7 +90,7 @@ func (h *server) GetStorageFiles(c *gin.Context, params openapi_server.GetStorag
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.StorageFileList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.StorageFileList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,13 +112,12 @@ func (h *server) GetStorageFilesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -133,7 +129,7 @@ func (h *server) GetStorageFilesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.StorageFileGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.StorageFileGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a file. err: %v", err)
 		c.AbortWithStatus(400)
@@ -149,13 +145,12 @@ func (h *server) DeleteStorageFilesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -167,7 +162,7 @@ func (h *server) DeleteStorageFilesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.StorageFileDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.StorageFileDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
 		c.AbortWithStatus(400)
@@ -184,13 +179,12 @@ func (h *server) GetStorageFilesIdFile(c *gin.Context, id openapi_types.UUID) {
 		"file_id":         id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -202,7 +196,7 @@ func (h *server) GetStorageFilesIdFile(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	downloadURI, err := h.serviceHandler.StorageFileDownloadRedirect(c.Request.Context(), &a, target)
+	downloadURI, err := h.serviceHandler.StorageFileDownloadRedirect(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get storage file download URL. err: %v", err)
 		c.AbortWithStatus(400)

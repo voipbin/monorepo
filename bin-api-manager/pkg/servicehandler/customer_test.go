@@ -13,6 +13,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -25,7 +26,7 @@ func Test_CustomerCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		customerName  string
 		detail        string
 		email         string
@@ -46,13 +47,13 @@ func Test_CustomerCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			customerName:  "test",
 			detail:        "test detail",
 			email:         "test@test.com",
@@ -120,7 +121,7 @@ func TestCustomerGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseCustomer *cscustomer.Customer
@@ -131,12 +132,12 @@ func TestCustomerGet(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 
 			&cscustomer.Customer{
@@ -181,7 +182,7 @@ func Test_CustomerSelfGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 		expectRes        *cscustomer.WebhookMessage
@@ -189,13 +190,13 @@ func Test_CustomerSelfGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
@@ -240,7 +241,7 @@ func Test_CustomerList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		size          uint64
 		token         string
 		filters       map[string]string
@@ -254,12 +255,12 @@ func Test_CustomerList(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			10,
 			"2020-09-20T03:23:20.995000Z",
@@ -315,7 +316,7 @@ func Test_CustomerUpdate(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id            uuid.UUID
 		customerName  string
@@ -334,12 +335,12 @@ func Test_CustomerUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			"name new",
 			"detail new",
@@ -391,7 +392,7 @@ func Test_CustomerUpdate(t *testing.T) {
 func Test_CustomerSelfUpdate(t *testing.T) {
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		customerName  string
 		detail        string
@@ -407,13 +408,13 @@ func Test_CustomerSelfUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			customerName:  "name new",
 			detail:        "detail new",
 			email:         "test@test.com",
@@ -465,7 +466,7 @@ func Test_CustomerDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseCustomers *cscustomer.Customer
@@ -476,12 +477,12 @@ func Test_CustomerDelete(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 
 			&cscustomer.Customer{
@@ -528,7 +529,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		customerID       uuid.UUID
 		billingAccountID uuid.UUID
@@ -542,12 +543,12 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			customerID:       uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 			billingAccountID: uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
@@ -602,7 +603,7 @@ func Test_CustomerSelfUpdateBillingAccountID(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		billingAccountID uuid.UUID
 
@@ -615,13 +616,13 @@ func Test_CustomerSelfUpdateBillingAccountID(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			billingAccountID: uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
 
@@ -773,7 +774,7 @@ func Test_CustomerSelfFreezeAndDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 		expectRes        *cscustomer.WebhookMessage
@@ -781,13 +782,13 @@ func Test_CustomerSelfFreezeAndDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
@@ -844,13 +845,13 @@ func Test_CustomerSelfFreezeAndDelete_PermissionDenied(t *testing.T) {
 
 	ctx := context.Background()
 
-	agent := &amagent.Agent{
+	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 			CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 		},
 		Permission: amagent.PermissionCustomerAgent, // not admin
-	}
+	})
 
 	_, err := h.CustomerSelfFreezeAndDelete(ctx, agent)
 	if err == nil {

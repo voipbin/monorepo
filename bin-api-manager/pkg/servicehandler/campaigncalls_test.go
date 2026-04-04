@@ -12,6 +12,7 @@ import (
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -24,7 +25,7 @@ func Test_CampaigncallList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -33,13 +34,13 @@ func Test_CampaigncallList(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 
@@ -103,7 +104,7 @@ func Test_campaigncallListByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		campaignID uuid.UUID
 		pageToken  string
 		pageSize   uint64
@@ -114,13 +115,13 @@ func Test_campaigncallListByCampaignID(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("8ac37eee-c86a-11ec-ba1f-9bdb87f79ae6"),
 			"2020-10-20T01:00:00.995000Z",
 			10,
@@ -191,7 +192,7 @@ func Test_CampaigncallGet(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		agent          *amagent.Agent
+		agent          *auth.AuthIdentity
 		campaigncallID uuid.UUID
 
 		response  *cacampaigncall.Campaigncall
@@ -199,13 +200,13 @@ func Test_CampaigncallGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
 
 			&cacampaigncall.Campaigncall{
@@ -256,7 +257,7 @@ func Test_CampaigncallDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseCampaigncall *cacampaigncall.Campaigncall
@@ -264,13 +265,13 @@ func Test_CampaigncallDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
 
 			&cacampaigncall.Campaigncall{

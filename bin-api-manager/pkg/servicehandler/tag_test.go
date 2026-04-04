@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -23,7 +24,7 @@ func Test_TagCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		tagName string
 		detail  string
 
@@ -32,13 +33,13 @@ func Test_TagCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"test1 name",
 			"test1 detail",
 
@@ -87,7 +88,7 @@ func Test_TagList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -96,13 +97,13 @@ func Test_TagList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 
@@ -123,13 +124,13 @@ func Test_TagList(t *testing.T) {
 		},
 		{
 			"2 results",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 
@@ -192,7 +193,7 @@ func Test_TagGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		tagID uuid.UUID
 
 		response  *tmtag.Tag
@@ -200,13 +201,13 @@ func Test_TagGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&tmtag.Tag{
@@ -256,7 +257,7 @@ func Test_TagDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		tagID uuid.UUID
 
 		resTagGet *tmtag.Tag
@@ -264,13 +265,13 @@ func Test_TagDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&tmtag.Tag{
@@ -321,7 +322,7 @@ func Test_TagUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *amagent.Agent
+		customer *auth.AuthIdentity
 		tagID    uuid.UUID
 		tagName  string
 		detail   string
@@ -331,13 +332,13 @@ func Test_TagUpdate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			"test1",
 			"detail",

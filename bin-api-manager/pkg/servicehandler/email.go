@@ -3,10 +3,12 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+
+	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	ememail "monorepo/bin-email-manager/models/email"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -30,12 +32,16 @@ func (h *serviceHandler) emailGet(ctx context.Context, emailID uuid.UUID) (*emem
 // EmailSend sends an email.
 func (h *serviceHandler) EmailSend(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	destinations []commonaddress.Address,
 	subject string,
 	content string,
 	attachments []ememail.Attachment,
 ) (*ememail.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
@@ -52,7 +58,11 @@ func (h *serviceHandler) EmailSend(
 
 // EmailGets gets the list of email of the given customer id.
 // It returns list of emails if it succeed.
-func (h *serviceHandler) EmailList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*ememail.WebhookMessage, error) {
+func (h *serviceHandler) EmailList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*ememail.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
@@ -91,7 +101,11 @@ func (h *serviceHandler) EmailList(ctx context.Context, a *amagent.Agent, size u
 
 // EmailGet gets the email of the given id.
 // It returns email if it succeed.
-func (h *serviceHandler) EmailGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ememail.WebhookMessage, error) {
+func (h *serviceHandler) EmailGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ememail.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.emailGet(ctx, id)
 	if err != nil {
@@ -107,7 +121,11 @@ func (h *serviceHandler) EmailGet(ctx context.Context, a *amagent.Agent, id uuid
 }
 
 // EmailDelete deletes the email of the given id.
-func (h *serviceHandler) EmailDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ememail.WebhookMessage, error) {
+func (h *serviceHandler) EmailDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ememail.WebhookMessage, error) {
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get flow
 	f, err := h.emailGet(ctx, id)

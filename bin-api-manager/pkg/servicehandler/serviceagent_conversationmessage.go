@@ -3,7 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 
@@ -15,13 +15,17 @@ import (
 // ServiceAgentConversationMessageGets sends a request to conversation-manager
 // to getting the list of conversation messages of the given conversation id.
 // it returns list of conversation messages if it succeed.
-func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	cv, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
 
-	if cv.OwnerID != a.ID {
+	if cv.OwnerID != a.AgentID() {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -47,11 +51,15 @@ func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context
 // ServiceAgentConversationMessageSend send a message to the conversation.
 func (h *serviceHandler) ServiceAgentConversationMessageSend(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	conversationID uuid.UUID,
 	text string,
 	medias []cvmedia.Media,
 ) (*cvmessage.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ServiceAgentConversationMessageSend",
 		"customer_id":     a.CustomerID,
@@ -66,7 +74,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
 	}
 
-	if c.OwnerID != a.ID {
+	if c.OwnerID != a.AgentID() {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 

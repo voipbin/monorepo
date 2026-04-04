@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,16 +14,13 @@ func (h *server) PostOutdials(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostOutdialsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -35,7 +31,7 @@ func (h *server) PostOutdials(c *gin.Context) {
 
 	campaignID := uuid.FromStringOrNil(req.CampaignId)
 
-	res, err := h.serviceHandler.OutdialCreate(c.Request.Context(), &a, campaignID, req.Name, req.Detail, req.Data)
+	res, err := h.serviceHandler.OutdialCreate(c.Request.Context(), a, campaignID, req.Name, req.Detail, req.Data)
 	if err != nil {
 		log.Errorf("Could not create a outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -51,16 +47,13 @@ func (h *server) GetOutdials(c *gin.Context, params openapi_server.GetOutdialsPa
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 	pageSize := uint64(100)
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
@@ -75,7 +68,7 @@ func (h *server) GetOutdials(c *gin.Context, params openapi_server.GetOutdialsPa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.OutdialGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.OutdialGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a outdial list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -98,16 +91,13 @@ func (h *server) GetOutdialsId(c *gin.Context, id string) {
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -116,7 +106,7 @@ func (h *server) GetOutdialsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutdialGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.OutdialGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -133,16 +123,13 @@ func (h *server) DeleteOutdialsId(c *gin.Context, id string) {
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -151,7 +138,7 @@ func (h *server) DeleteOutdialsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutdialDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.OutdialDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -168,16 +155,13 @@ func (h *server) PutOutdialsId(c *gin.Context, id string) {
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -193,7 +177,7 @@ func (h *server) PutOutdialsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutdialUpdateBasicInfo(c.Request.Context(), &a, target, req.Name, req.Detail)
+	res, err := h.serviceHandler.OutdialUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -210,16 +194,13 @@ func (h *server) PutOutdialsIdCampaignId(c *gin.Context, id string) {
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -237,7 +218,7 @@ func (h *server) PutOutdialsIdCampaignId(c *gin.Context, id string) {
 
 	campaignID := uuid.FromStringOrNil(req.CampaignId)
 
-	res, err := h.serviceHandler.OutdialUpdateCampaignID(c.Request.Context(), &a, target, campaignID)
+	res, err := h.serviceHandler.OutdialUpdateCampaignID(c.Request.Context(), a, target, campaignID)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -254,16 +235,13 @@ func (h *server) PutOutdialsIdData(c *gin.Context, id string) {
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -279,7 +257,7 @@ func (h *server) PutOutdialsIdData(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutdialUpdateData(c.Request.Context(), &a, target, req.Data)
+	res, err := h.serviceHandler.OutdialUpdateData(c.Request.Context(), a, target, req.Data)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -295,16 +273,13 @@ func (h *server) PostOutdialsIdTargets(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -326,7 +301,7 @@ func (h *server) PostOutdialsIdTargets(c *gin.Context, id string) {
 	destination3 := ConvertCommonAddress(req.Destination3)
 	destination4 := ConvertCommonAddress(req.Destination4)
 
-	res, err := h.serviceHandler.OutdialtargetCreate(c.Request.Context(), &a, target, req.Name, req.Detail, req.Data, &destination0, &destination1, &destination2, &destination3, &destination4)
+	res, err := h.serviceHandler.OutdialtargetCreate(c.Request.Context(), a, target, req.Name, req.Detail, req.Data, &destination0, &destination1, &destination2, &destination3, &destination4)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -344,16 +319,13 @@ func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetI
 		"target_id":       targetId,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -364,7 +336,7 @@ func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetI
 
 	targetID := uuid.FromStringOrNil(targetId)
 
-	res, err := h.serviceHandler.OutdialtargetGet(c.Request.Context(), &a, target, targetID)
+	res, err := h.serviceHandler.OutdialtargetGet(c.Request.Context(), a, target, targetID)
 	if err != nil {
 		log.Errorf("Could not get the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
@@ -382,16 +354,13 @@ func (h *server) DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targ
 		"target_id":       targetId,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -402,7 +371,7 @@ func (h *server) DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targ
 
 	targetID := uuid.FromStringOrNil(targetId)
 
-	res, err := h.serviceHandler.OutdialtargetDelete(c.Request.Context(), &a, target, targetID)
+	res, err := h.serviceHandler.OutdialtargetDelete(c.Request.Context(), a, target, targetID)
 	if err != nil {
 		log.Errorf("Could not delete the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
@@ -419,16 +388,13 @@ func (h *server) GetOutdialsIdTargets(c *gin.Context, id string, params openapi_
 		"outdial_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -451,7 +417,7 @@ func (h *server) GetOutdialsIdTargets(c *gin.Context, id string, params openapi_
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.OutdialtargetGetsByOutdialID(c.Request.Context(), &a, target, pageSize, pageToken)
+	tmps, err := h.serviceHandler.OutdialtargetGetsByOutdialID(c.Request.Context(), a, target, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a outdial list. err: %v", err)
 		c.AbortWithStatus(400)

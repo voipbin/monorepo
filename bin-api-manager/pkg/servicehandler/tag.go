@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	tmtag "monorepo/bin-tag-manager/models/tag"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
+	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -25,11 +25,15 @@ func (h *serviceHandler) tagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Ta
 // TagCreate sends a request to agent-manager
 // to creating a tag.
 // it returns created tag info if it succeed.
-func (h *serviceHandler) TagCreate(ctx context.Context, a *amagent.Agent, name string, detail string) (*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string) (*tmtag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
 
 	// permission check
@@ -54,11 +58,15 @@ func (h *serviceHandler) TagCreate(ctx context.Context, a *amagent.Agent, name s
 
 // AgentGet sends a request to agent-manager
 // to getting a tag.
-func (h *serviceHandler) TagGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmtag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"tag_id":      id,
 	})
 
@@ -81,11 +89,15 @@ func (h *serviceHandler) TagGet(ctx context.Context, a *amagent.Agent, id uuid.U
 
 // TagGets sends a request to agent-manager
 // to getting a list of tags.
-func (h *serviceHandler) TagList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
 
 	if token == "" {
@@ -118,11 +130,15 @@ func (h *serviceHandler) TagList(ctx context.Context, a *amagent.Agent, size uin
 
 // TagDelete sends a request to call-manager
 // to delete the tag.
-func (h *serviceHandler) TagDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmtag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"tag_id":      id,
 	})
 
@@ -153,11 +169,15 @@ func (h *serviceHandler) TagDelete(ctx context.Context, a *amagent.Agent, id uui
 
 // TagUpdate sends a request to call-manager
 // to update the tag.
-func (h *serviceHandler) TagUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*tmtag.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagUpdate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"tag_id":      id,
 	})
 

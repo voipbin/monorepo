@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,13 +14,12 @@ func (h *server) GetTranscripts(c *gin.Context, params openapi_server.GetTranscr
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -43,7 +41,7 @@ func (h *server) GetTranscripts(c *gin.Context, params openapi_server.GetTranscr
 	transcribeID := uuid.FromStringOrNil(params.TranscribeId)
 	log.Debugf("Received request detail. transcribe_id: %s, page_size: %d, page_token: %s", transcribeID, pageSize, pageToken)
 
-	tmps, err := h.serviceHandler.TranscriptList(c.Request.Context(), &a, transcribeID)
+	tmps, err := h.serviceHandler.TranscriptList(c.Request.Context(), a, transcribeID)
 	if err != nil {
 		logrus.Errorf("Could not get transcribes info. err: %v", err)
 		c.AbortWithStatus(400)

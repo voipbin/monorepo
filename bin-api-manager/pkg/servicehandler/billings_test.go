@@ -8,6 +8,7 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
 
@@ -23,7 +24,7 @@ func Test_BillingList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -33,13 +34,13 @@ func Test_BillingList(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 

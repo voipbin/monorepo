@@ -6,6 +6,7 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
 	"github.com/gofrs/uuid"
@@ -15,9 +16,13 @@ import (
 // TimelineSIPAnalysisGet retrieves SIP analysis (messages + RTCP stats) for a call.
 func (h *serviceHandler) TimelineSIPAnalysisGet(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	callID uuid.UUID,
 ) (*tmsipmessage.SIPAnalysisResponse, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TimelineSIPAnalysisGet",
 		"customer_id": a.CustomerID,
@@ -84,9 +89,13 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 // TimelineSIPPcapGet retrieves PCAP data for a call.
 func (h *serviceHandler) TimelineSIPPcapGet(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	callID uuid.UUID,
 ) ([]byte, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TimelineSIPPcapGet",
 		"customer_id": a.CustomerID,

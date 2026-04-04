@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 
@@ -15,16 +14,15 @@ func (h *server) GetBillingAccount(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithField("agent", a)
+	log = log.WithField("auth", a)
 
-	res, err := h.serviceHandler.BillingAccountSelfGet(c.Request.Context(), &a)
+	res, err := h.serviceHandler.BillingAccountSelfGet(c.Request.Context(), a)
 	if err != nil {
 		log.Infof("Could not get the billing account info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -40,14 +38,13 @@ func (h *server) PutBillingAccount(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithField("agent", a)
+	log = log.WithField("auth", a)
 
 	var req openapi_server.PutBillingAccountJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -66,7 +63,7 @@ func (h *server) PutBillingAccount(c *gin.Context) {
 		detail = *req.Detail
 	}
 
-	res, err := h.serviceHandler.BillingAccountSelfUpdateBasicInfo(c.Request.Context(), &a, name, detail)
+	res, err := h.serviceHandler.BillingAccountSelfUpdateBasicInfo(c.Request.Context(), a, name, detail)
 	if err != nil {
 		log.Errorf("Could not update. err: %v", err)
 		c.AbortWithStatus(400)
@@ -82,14 +79,13 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithField("agent", a)
+	log = log.WithField("auth", a)
 
 	var req openapi_server.PutBillingAccountPaymentInfoJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -108,7 +104,7 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 		paymentMethod = bmaccount.PaymentMethod(*req.PaymentMethod)
 	}
 
-	res, err := h.serviceHandler.BillingAccountSelfUpdatePaymentInfo(c.Request.Context(), &a, paymentType, paymentMethod)
+	res, err := h.serviceHandler.BillingAccountSelfUpdatePaymentInfo(c.Request.Context(), a, paymentType, paymentMethod)
 	if err != nil {
 		log.Errorf("Could not update payment info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -124,16 +120,15 @@ func (h *server) PostBillingAccountPaddlePortalSession(c *gin.Context) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithField("agent", a)
+	log = log.WithField("auth", a)
 
-	url, err := h.serviceHandler.BillingAccountSelfCreatePaddlePortalSession(c.Request.Context(), &a)
+	url, err := h.serviceHandler.BillingAccountSelfCreatePaddlePortalSession(c.Request.Context(), a)
 	if err != nil {
 		log.Infof("Could not create portal session. err: %v", err)
 		c.AbortWithStatus(400)

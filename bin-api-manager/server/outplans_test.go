@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
@@ -22,7 +23,7 @@ func Test_outplansPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -43,11 +44,11 @@ func Test_outplansPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
@@ -90,7 +91,7 @@ func Test_outplansPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -98,7 +99,7 @@ func Test_outplansPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectSource,
@@ -127,7 +128,7 @@ func Test_outplansGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -141,11 +142,11 @@ func Test_outplansGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -164,11 +165,11 @@ func Test_outplansGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -214,13 +215,13 @@ func Test_outplansGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutplans, nil)
+			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutplans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -238,7 +239,7 @@ func Test_outplansIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		rqeQuery string
 
@@ -249,11 +250,11 @@ func Test_outplansIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			rqeQuery: "/outplans/1b27088c-c64c-11ec-b7df-b37c8b4c4c13",
 
@@ -283,12 +284,12 @@ func Test_outplansIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.rqeQuery, nil)
-			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
+			mockSvc.EXPECT().OutplanGet(req.Context(), tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -306,7 +307,7 @@ func Test_outplansIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -317,11 +318,11 @@ func Test_outplansIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans/3b58765e-c64c-11ec-a2c1-03acafdff2d7",
 
@@ -351,12 +352,12 @@ func Test_outplansIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
+			mockSvc.EXPECT().OutplanDelete(req.Context(), tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -374,7 +375,7 @@ func Test_outplansIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -388,11 +389,11 @@ func Test_outplansIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans/5ad57130-c64c-11ec-b131-a787ac641f8a",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
@@ -425,13 +426,13 @@ func Test_outplansIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.agent, tt.expectOutplanID, tt.expectName, tt.expectDetail).Return(tt.responseOuplan, nil)
+			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), tt.agent, tt.expectOutplanID, tt.expectName, tt.expectDetail).Return(tt.responseOuplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -449,7 +450,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -469,11 +470,11 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/outplans/d94e07e8-c64c-11ec-9e9d-8b700336c5ef/dial_info",
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
@@ -515,7 +516,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -523,7 +524,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanUpdateDialInfo(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectOutplanID,
 				tt.expectSource,
 				tt.expectDialTimeout,

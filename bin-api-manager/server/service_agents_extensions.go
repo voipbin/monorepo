@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +14,17 @@ func (h *server) GetServiceAgentsExtensions(c *gin.Context, params openapi_serve
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
 
-	tmps, err := h.serviceHandler.ServiceAgentExtensionList(c.Request.Context(), &a)
+	tmps, err := h.serviceHandler.ServiceAgentExtensionList(c.Request.Context(), a)
 	if err != nil {
 		log.Errorf("Could not get extensions info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -49,13 +47,12 @@ func (h *server) GetServiceAgentsExtensionsId(c *gin.Context, id string) {
 		"extension_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -67,7 +64,7 @@ func (h *server) GetServiceAgentsExtensionsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentExtensionGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentExtensionGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		c.AbortWithStatus(400)

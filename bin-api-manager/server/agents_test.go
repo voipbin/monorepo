@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -21,7 +22,7 @@ func Test_PostAgents(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqBody []byte
 
@@ -39,11 +40,11 @@ func Test_PostAgents(t *testing.T) {
 	}{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cb6256c-8df4-11ee-bc2b-476ff1dc3eb8"),
 				},
-			},
+			}),
 
 			reqBody: []byte(`{"username":"test1","password":"password1","name":"test1 name","detail":"test1 detail","ring_method":"ringall","permission":255,"tag_ids":["682374ac-d7c6-11ef-8f43-8f2c18384cd4","70100856-d7c6-11ef-9eeb-d389722f0caf"],"addresses":[{"type":"tel","target":"+123456789"}]}`),
 
@@ -73,11 +74,11 @@ func Test_PostAgents(t *testing.T) {
 		},
 		{
 			name: "empty",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
 				},
-			},
+			}),
 
 			reqBody: []byte(`{}`),
 
@@ -112,14 +113,14 @@ func Test_PostAgents(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", "/agents", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentCreate(req.Context(), tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -137,7 +138,7 @@ func Test_GetAgents(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -150,11 +151,11 @@ func Test_GetAgents(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents?page_size=11&page_token=2020-09-20T03:23:20.995000Z&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3",
 
@@ -178,11 +179,11 @@ func Test_GetAgents(t *testing.T) {
 		},
 		{
 			name: "1 tag id and status",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d5c0be4-8df4-11ee-866d-e7d040a2316f"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
 
@@ -207,11 +208,11 @@ func Test_GetAgents(t *testing.T) {
 		},
 		{
 			name: "more than 2 tag ids",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents?page_size=10&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c&status=available",
 
@@ -254,13 +255,13 @@ func Test_GetAgents(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().AgentList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters).Return(tt.responseAgents, nil)
+			mockSvc.EXPECT().AgentList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters).Return(tt.responseAgents, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -279,7 +280,7 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -292,11 +293,11 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
 			reqBody:  []byte(`{"status":"available"}`),
@@ -327,13 +328,13 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedStatus).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), tt.agent, tt.expectedAgentID, tt.expectedStatus).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -351,7 +352,7 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -364,11 +365,11 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/permission",
 			reqBody:  []byte(`{"permission":32}`),
@@ -399,13 +400,13 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdatePermission(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPermission).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdatePermission(req.Context(), tt.agent, tt.expectedAgentID, tt.expectedPermission).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -423,7 +424,7 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -436,11 +437,11 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d3481932-d3cf-11ee-ab64-5b6368efe4ce"),
 				},
-			},
+			}),
 
 			reqQuery: "/agents/d3481932-d3cf-11ee-ab64-5b6368efe4ce/password",
 			reqBody:  []byte(`{"password":"updatepassword"}`),
@@ -471,13 +472,13 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdatePassword(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPassword).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdatePassword(req.Context(), tt.agent, tt.expectedAgentID, tt.expectedPassword).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -495,7 +496,7 @@ func Test_PutAgentsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqBody []byte
 
@@ -509,11 +510,11 @@ func Test_PutAgentsId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
-			},
+			}),
 
 			reqBody: []byte(`{"name":"test name","detail":"test detail","ring_method":"ringall"}`),
 
@@ -531,11 +532,11 @@ func Test_PutAgentsId(t *testing.T) {
 		},
 		{
 			name: "with nil fields",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
-			},
+			}),
 
 			reqBody: []byte(`{}`),
 
@@ -567,14 +568,14 @@ func Test_PutAgentsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", "/agents/"+tt.expectedAgentID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentUpdate(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdate(req.Context(), tt.agent, tt.expectedAgentID, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

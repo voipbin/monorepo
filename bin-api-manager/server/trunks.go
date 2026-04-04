@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 
@@ -16,13 +15,12 @@ func (h *server) PostTrunks(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -39,7 +37,7 @@ func (h *server) PostTrunks(c *gin.Context) {
 		authTyps = append(authTyps, rmsipauth.AuthType(v))
 	}
 
-	res, err := h.serviceHandler.TrunkCreate(c.Request.Context(), &a, req.Name, req.Detail, req.DomainName, authTyps, req.Username, req.Password, req.AllowedIps)
+	res, err := h.serviceHandler.TrunkCreate(c.Request.Context(), a, req.Name, req.Detail, req.DomainName, authTyps, req.Username, req.Password, req.AllowedIps)
 	if err != nil {
 		log.Errorf("Could not create a trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -55,13 +53,12 @@ func (h *server) GetTrunks(c *gin.Context, params openapi_server.GetTrunksParams
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -80,7 +77,7 @@ func (h *server) GetTrunks(c *gin.Context, params openapi_server.GetTrunksParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TrunkList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TrunkList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a trunk list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -103,13 +100,12 @@ func (h *server) GetTrunksId(c *gin.Context, id string) {
 		"trunk_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -121,7 +117,7 @@ func (h *server) GetTrunksId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TrunkGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TrunkGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -138,13 +134,12 @@ func (h *server) PutTrunksId(c *gin.Context, id string) {
 		"trunk_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -168,7 +163,7 @@ func (h *server) PutTrunksId(c *gin.Context, id string) {
 		authTyps = append(authTyps, rmsipauth.AuthType(v))
 	}
 
-	res, err := h.serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), &a, target, req.Name, req.Detail, authTyps, req.Username, req.Password, req.AllowedIps)
+	res, err := h.serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, authTyps, req.Username, req.Password, req.AllowedIps)
 	if err != nil {
 		log.Errorf("Could not update the trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -185,13 +180,12 @@ func (h *server) DeleteTrunksId(c *gin.Context, id string) {
 		"trunk_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -203,7 +197,7 @@ func (h *server) DeleteTrunksId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TrunkDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TrunkDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the trunk. err: %v", err)
 		c.AbortWithStatus(400)

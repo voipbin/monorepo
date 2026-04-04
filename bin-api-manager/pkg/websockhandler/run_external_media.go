@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -19,7 +19,7 @@ import (
 )
 
 // RunExternalMedia creates a new websocket and starts socket message listen.
-func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWriter, r *http.Request, a *amagent.Agent, callID uuid.UUID) error {
+func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWriter, r *http.Request, a *auth.AuthIdentity, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "RunExternalMedia",
 		"agent": a,

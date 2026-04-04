@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	amteam "monorepo/bin-ai-manager/models/team"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	amteam "monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -32,13 +32,17 @@ func (h *serviceHandler) teamGet(ctx context.Context, id uuid.UUID) (*amteam.Tea
 // TeamCreate is a service handler for team creation.
 func (h *serviceHandler) TeamCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	startMemberID uuid.UUID,
 	members []amteam.Member,
 	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "TeamCreate",
 		"customer_id":     a.CustomerID,
@@ -72,7 +76,11 @@ func (h *serviceHandler) TeamCreate(
 }
 
 // TeamDirectHashRegenerate regenerates the direct hash for the team.
-func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *amagent.Agent, teamID uuid.UUID) (*amteam.WebhookMessage, error) {
+func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, teamID uuid.UUID) (*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TeamDirectHashRegenerate",
 		"customer_id": a.CustomerID,
@@ -102,11 +110,15 @@ func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *amagen
 }
 
 // TeamGetsByCustomerID gets the list of teams of the given customer id.
-func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amteam.WebhookMessage, error) {
+func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TeamGetsByCustomerID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
@@ -168,11 +180,15 @@ func (h *serviceHandler) convertTeamFilters(filters map[string]string) (map[amte
 }
 
 // TeamGet gets the team of the given id.
-func (h *serviceHandler) TeamGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error) {
+func (h *serviceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TeamGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"team_id":     id,
 	})
 
@@ -192,11 +208,15 @@ func (h *serviceHandler) TeamGet(ctx context.Context, a *amagent.Agent, id uuid.
 }
 
 // TeamDelete deletes the team.
-func (h *serviceHandler) TeamDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amteam.WebhookMessage, error) {
+func (h *serviceHandler) TeamDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TeamDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"team_id":     id,
 	})
 	log.Debug("Deleting a team.")
@@ -225,7 +245,7 @@ func (h *serviceHandler) TeamDelete(ctx context.Context, a *amagent.Agent, id uu
 // TeamUpdate is a service handler for team update.
 func (h *serviceHandler) TeamUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	id uuid.UUID,
 	name string,
 	detail string,
@@ -233,6 +253,10 @@ func (h *serviceHandler) TeamUpdate(
 	members []amteam.Member,
 	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "TeamUpdate",
 		"customer_id":     a.CustomerID,

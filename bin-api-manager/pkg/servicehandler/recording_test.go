@@ -12,6 +12,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -22,7 +24,7 @@ func Test_RecordingList(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		size  uint64
 		token string
@@ -36,13 +38,13 @@ func Test_RecordingList(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-10-20T01:00:00.995000Z",
 
@@ -122,7 +124,7 @@ func Test_RecordingDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent *auth.AuthIdentity
 		recordingID uuid.UUID
 
 		responseRecording *cmrecording.Recording
@@ -131,13 +133,13 @@ func Test_RecordingDelete(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
 
 			&cmrecording.Recording{

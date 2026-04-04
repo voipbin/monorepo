@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -21,7 +22,7 @@ func Test_ServiceAgentContactCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		firstName    string
 		lastName     string
 		displayName  string
@@ -42,13 +43,13 @@ func Test_ServiceAgentContactCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			firstName:    "John",
 			lastName:     "Doe",
 			displayName:  "John Doe",
@@ -154,7 +155,7 @@ func Test_ServiceAgentContactGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 
 		responseContact *cmcontact.Contact
@@ -165,13 +166,13 @@ func Test_ServiceAgentContactGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 
 			responseContact: &cmcontact.Contact{
@@ -228,7 +229,7 @@ func Test_ServiceAgentContactList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		size    uint64
 		token   string
 		filters map[string]string
@@ -241,13 +242,13 @@ func Test_ServiceAgentContactList(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			size:  10,
 			token: "2021-03-01T01:00:00.995000Z",
 			filters: map[string]string{
@@ -331,7 +332,7 @@ func Test_ServiceAgentContactUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		contactID   uuid.UUID
 		firstName   *string
 		lastName    *string
@@ -353,13 +354,13 @@ func Test_ServiceAgentContactUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			firstName: &firstName,
 			lastName:  &lastName,
@@ -435,7 +436,7 @@ func Test_ServiceAgentContactDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 
 		responseContactGet    *cmcontact.Contact
@@ -447,13 +448,13 @@ func Test_ServiceAgentContactDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 
 			responseContactGet: &cmcontact.Contact{
@@ -515,7 +516,7 @@ func Test_ServiceAgentContactLookup(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		phoneE164 string
 		email     string
 
@@ -527,13 +528,13 @@ func Test_ServiceAgentContactLookup(t *testing.T) {
 		{
 			name: "lookup by phone",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			phoneE164: "+15551234567",
 			email:     "",
 
@@ -559,13 +560,13 @@ func Test_ServiceAgentContactLookup(t *testing.T) {
 		{
 			name: "lookup by email",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			phoneE164: "",
 			email:     "john@example.com",
 
@@ -623,7 +624,7 @@ func Test_ServiceAgentContactPhoneNumberCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		contactID  uuid.UUID
 		number     string
 		numberE164 string
@@ -639,13 +640,13 @@ func Test_ServiceAgentContactPhoneNumberCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID:  uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			number:     "+15551234567",
 			numberE164: "",
@@ -725,7 +726,7 @@ func Test_ServiceAgentContactPhoneNumberUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		contactID     uuid.UUID
 		phoneNumberID uuid.UUID
 		fields        map[string]any
@@ -739,13 +740,13 @@ func Test_ServiceAgentContactPhoneNumberUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID:     uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			phoneNumberID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 			fields: map[string]any{
@@ -821,7 +822,7 @@ func Test_ServiceAgentContactPhoneNumberDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		contactID     uuid.UUID
 		phoneNumberID uuid.UUID
 
@@ -834,13 +835,13 @@ func Test_ServiceAgentContactPhoneNumberDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID:     uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			phoneNumberID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 
@@ -901,7 +902,7 @@ func Test_ServiceAgentContactEmailCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 		address   string
 		emailType string
@@ -916,13 +917,13 @@ func Test_ServiceAgentContactEmailCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			address:   "john@example.com",
 			emailType: "work",
@@ -1001,7 +1002,7 @@ func Test_ServiceAgentContactEmailUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 		emailID   uuid.UUID
 		fields    map[string]any
@@ -1015,13 +1016,13 @@ func Test_ServiceAgentContactEmailUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			emailID:   uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
 			fields: map[string]any{
@@ -1097,7 +1098,7 @@ func Test_ServiceAgentContactEmailDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 		emailID   uuid.UUID
 
@@ -1110,13 +1111,13 @@ func Test_ServiceAgentContactEmailDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			emailID:   uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
 
@@ -1177,7 +1178,7 @@ func Test_ServiceAgentContactTagAdd(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 		tagID     uuid.UUID
 
@@ -1190,13 +1191,13 @@ func Test_ServiceAgentContactTagAdd(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			tagID:     uuid.FromStringOrNil("d4e5f6a7-0003-11ec-0003-000000000003"),
 
@@ -1263,7 +1264,7 @@ func Test_ServiceAgentContactTagRemove(t *testing.T) {
 	type test struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		contactID uuid.UUID
 		tagID     uuid.UUID
 
@@ -1276,13 +1277,13 @@ func Test_ServiceAgentContactTagRemove(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			contactID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 			tagID:     uuid.FromStringOrNil("d4e5f6a7-0003-11ec-0003-000000000003"),
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
@@ -22,7 +23,7 @@ func Test_customersPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -40,12 +41,12 @@ func Test_customersPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
@@ -80,7 +81,7 @@ func Test_customersPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -89,7 +90,7 @@ func Test_customersPOST(t *testing.T) {
 
 			mockSvc.EXPECT().CustomerCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectEmail,
@@ -115,7 +116,7 @@ func Test_customersGet(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -128,11 +129,11 @@ func Test_customersGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/customers?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -166,14 +167,14 @@ func Test_customersGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseCustomers, nil)
+			mockSvc.EXPECT().CustomerList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -191,7 +192,7 @@ func Test_customersIDGet(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -202,12 +203,12 @@ func Test_customersIDGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
@@ -235,14 +236,14 @@ func Test_customersIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -260,7 +261,7 @@ func Test_customersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -279,12 +280,12 @@ func Test_customersIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 			reqBody:  []byte(`{"name":"new name","detail":"new detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
@@ -320,14 +321,14 @@ func Test_customersIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEmail, tt.expectPhoneNumber, tt.expectAddress, tt.expectWebhookMethod, tt.expectWebhookURI).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), tt.agent, tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEmail, tt.expectPhoneNumber, tt.expectAddress, tt.expectWebhookMethod, tt.expectWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -345,7 +346,7 @@ func Test_customersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -356,12 +357,12 @@ func Test_customersIDDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
@@ -389,14 +390,14 @@ func Test_customersIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerDelete(req.Context(), tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -414,7 +415,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -427,12 +428,12 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",
 			reqBody:  []byte(`{"billing_account_id":"ccc776b6-1773-11ee-bea5-d78345c015af"}`),
@@ -461,14 +462,14 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -486,7 +487,7 @@ func Test_customersIDMetadataPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -499,12 +500,12 @@ func Test_customersIDMetadataPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/metadata",
 			reqBody:  []byte(`{"rtp_debug":true}`),
@@ -534,14 +535,14 @@ func Test_customersIDMetadataPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateMetadata(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedMetadata).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdateMetadata(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedMetadata).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -559,19 +560,19 @@ func Test_customersIDMetadataPut_invalid_id(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
 	}{
 		{
 			name: "invalid uuid returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/invalid-uuid/metadata",
 			reqBody:  []byte(`{"rtp_debug":true}`),
@@ -592,7 +593,7 @@ func Test_customersIDMetadataPut_invalid_id(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -611,7 +612,7 @@ func Test_customersIDMetadataPut_service_error(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -621,12 +622,12 @@ func Test_customersIDMetadataPut_service_error(t *testing.T) {
 	}{
 		{
 			name: "service error returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/metadata",
 			reqBody:  []byte(`{"rtp_debug":true}`),
@@ -650,14 +651,14 @@ func Test_customersIDMetadataPut_service_error(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateMetadata(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedMetadata).Return(nil, fmt.Errorf("permission denied"))
+			mockSvc.EXPECT().CustomerUpdateMetadata(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedMetadata).Return(nil, fmt.Errorf("permission denied"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusBadRequest {

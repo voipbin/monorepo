@@ -12,6 +12,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -23,7 +25,7 @@ func Test_RouteGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseRoute *rmroute.Route
@@ -34,13 +36,13 @@ func Test_RouteGet(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("19dd98af-0e61-4735-909f-e0da0873ef44"),
 
 			&rmroute.Route{
@@ -88,7 +90,7 @@ func Test_RouteList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		pageToken string
 		pageSize  uint64
@@ -101,13 +103,13 @@ func Test_RouteList(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			"2021-03-01T01:00:00.995000Z",
 			10,
@@ -158,7 +160,7 @@ func Test_RouteListByCustomerID(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		customerID uuid.UUID
 		pageToken  string
@@ -172,13 +174,13 @@ func Test_RouteListByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("3ebe976f-ecca-436a-a2d3-bc0c75501882"),
 			"2021-03-01T01:00:00.995000Z",
@@ -230,7 +232,7 @@ func Test_RouteCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		customerID uuid.UUID
 		routeName  string
@@ -247,13 +249,13 @@ func Test_RouteCreate(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("cf7339a3-fb3b-44ff-aedd-2b999f89fd7b"),
 			"test name",
@@ -322,7 +324,7 @@ func Test_RouteDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent   *amagent.Agent
+		agent *auth.AuthIdentity
 		routeID uuid.UUID
 
 		responseRoute *rmroute.Route
@@ -333,13 +335,13 @@ func Test_RouteDelete(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("15700708-0f25-4d46-b72e-1d489abc2cea"),
 
 			&rmroute.Route{
@@ -388,7 +390,7 @@ func Test_RouteUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		routeID    uuid.UUID
 		routeName  string
@@ -405,13 +407,13 @@ func Test_RouteUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
 			"update name",

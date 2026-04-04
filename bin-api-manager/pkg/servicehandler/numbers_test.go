@@ -16,6 +16,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -26,7 +28,7 @@ func Test_OrderNumberList(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		pageToken string
 		pageSize  uint64
@@ -38,13 +40,13 @@ func Test_OrderNumberList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2021-03-01T01:00:00.995000Z",
 			10,
 
@@ -102,7 +104,7 @@ func Test_OrderNumberGet(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		response  *nmnumber.Number
@@ -110,13 +112,13 @@ func Test_OrderNumberGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&nmnumber.Number{
@@ -168,7 +170,7 @@ func Test_OrderNumberGetError(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseNumber *nmnumber.Number
@@ -177,13 +179,13 @@ func Test_OrderNumberGetError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
 
 			&nmnumber.Number{
@@ -230,7 +232,7 @@ func Test_NumberCreate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		num           string
 		numType       nmnumber.Type
@@ -244,13 +246,13 @@ func Test_NumberCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			"+821021656521",
 			nmnumber.Type(""),
@@ -311,7 +313,7 @@ func Test_NumberDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		responseGet    *nmnumber.Number
@@ -321,13 +323,13 @@ func Test_NumberDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 
 			&nmnumber.Number{
@@ -394,7 +396,7 @@ func Test_NumberUpdate(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id            uuid.UUID
 		callFlowID    uuid.UUID
@@ -411,13 +413,13 @@ func Test_NumberUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 			uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
@@ -504,7 +506,7 @@ func Test_NumberUpdateError(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id            uuid.UUID
 		callFlowID    uuid.UUID
@@ -518,13 +520,13 @@ func Test_NumberUpdateError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
 			uuid.FromStringOrNil("bfa09172-2ca2-11ee-88a7-775c33dab2a6"),
@@ -576,7 +578,7 @@ func Test_NumberRenew(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		tmRenew string
 
@@ -587,13 +589,13 @@ func Test_NumberRenew(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			tmRenew: "2021-03-02T01:00:00.995000Z",
 
@@ -657,7 +659,7 @@ func Test_numberVerifyFlow(t *testing.T) {
 	type test struct {
 		name string
 
-		agent  *amagent.Agent
+		agent *auth.AuthIdentity
 		flowID uuid.UUID
 
 		responseFlow *fmflow.Flow
@@ -669,13 +671,13 @@ func Test_numberVerifyFlow(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
 					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
 
 			responseFlow: &fmflow.Flow{
@@ -690,13 +692,13 @@ func Test_numberVerifyFlow(t *testing.T) {
 		{
 			name: "flow id nil",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
 					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.Nil,
 
 			expectRes: true,

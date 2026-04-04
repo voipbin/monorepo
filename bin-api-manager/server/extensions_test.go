@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -22,7 +23,7 @@ func TestExtensionsPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -39,11 +40,11 @@ func TestExtensionsPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/extensions",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","extension":"test","password":"password"}`),
@@ -77,14 +78,14 @@ func TestExtensionsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", "/extensions", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.agent, tt.expectExtension, tt.expectPassword, tt.expectName, tt.expectDetail).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionCreate(req.Context(), tt.agent, tt.expectExtension, tt.expectPassword, tt.expectName, tt.expectDetail).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -102,7 +103,7 @@ func Test_ExtensionsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -116,11 +117,11 @@ func Test_ExtensionsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/extensions?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -153,12 +154,12 @@ func Test_ExtensionsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExntesions, nil)
+			mockSvc.EXPECT().ExtensionList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExntesions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -176,7 +177,7 @@ func Test_ExtensionsIDGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -189,11 +190,11 @@ func Test_ExtensionsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/extensions/2fbb29c0-6fb0-11eb-b2ef-4303769ecba5",
 
@@ -223,12 +224,12 @@ func Test_ExtensionsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/extensions/%s", tt.responseExntesion.ID), nil)
-			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.agent, tt.responseExntesion.ID).Return(tt.responseExntesion, nil)
+			mockSvc.EXPECT().ExtensionGet(req.Context(), tt.agent, tt.responseExntesion.ID).Return(tt.responseExntesion, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -246,7 +247,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -263,11 +264,11 @@ func TestExtensionsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/extensions/67492c7a-6fb0-11eb-8b3f-d7eb268910df",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","password":"update password"}`),
@@ -301,14 +302,14 @@ func TestExtensionsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", "/extensions/"+tt.extensionID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -326,7 +327,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -339,11 +340,11 @@ func TestExtensionsIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/extensions/be0c2b70-6fb0-11eb-849d-3f923b334d3b",
 
@@ -373,12 +374,12 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.agent, tt.expectExtensionID).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionDelete(req.Context(), tt.agent, tt.expectExtensionID).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
