@@ -35,19 +35,43 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 
 		switch tmps[0] {
 		case "customer_id":
-			if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
-				// the agent has no permission for this topic
-				return false
-			}
-
-			if tmpID != a.CustomerID {
-				// the customer id must be the same
+			if len(tmps) == 4 {
+				// 4-part: "customer_id:<uuid>:<resource_type>:<resource_id>"
+				// Note: resource_id (tmps[3]) is NOT validated against DirectScope.ResourceID
+				// because they refer to different things. DirectScope.ResourceID is the parent
+				// resource (e.g., AI), while tmps[3] is a child resource (e.g., aicall).
+				if tmpID != a.CustomerID {
+					return false
+				}
+				if a.IsDirect() {
+					// Direct token: validate resource type is allowed
+					if !a.HasAllowedResourceType(tmps[2]) {
+						return false
+					}
+				} else {
+					// Agent/accesskey: same permission check as 2-part
+					if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
+						return false
+					}
+				}
+			} else if len(tmps) >= 2 {
+				// 2-part or 3-part: "customer_id:<uuid>" or "customer_id:<uuid>:<suffix>"
+				if a.IsDirect() {
+					// Direct tokens cannot subscribe to broad customer topics
+					return false
+				}
+				if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
+					return false
+				}
+				if tmpID != a.CustomerID {
+					return false
+				}
+			} else {
 				return false
 			}
 
 		case "agent_id":
 			if tmpID != a.AgentID() {
-				//
 				return false
 			}
 
@@ -77,19 +101,43 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *auth.AuthIdentity
 
 	switch tmps[0] {
 	case "customer_id":
-		if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
-			// the agent has no permission for this topic
-			return false
-		}
-
-		if tmpID != a.CustomerID {
-			// the customer id must be the same
+		if len(tmps) == 4 {
+			// 4-part: "customer_id:<uuid>:<resource_type>:<resource_id>"
+			// Note: resource_id (tmps[3]) is NOT validated against DirectScope.ResourceID
+			// because they refer to different things. DirectScope.ResourceID is the parent
+			// resource (e.g., AI), while tmps[3] is a child resource (e.g., aicall).
+			if tmpID != a.CustomerID {
+				return false
+			}
+			if a.IsDirect() {
+				// Direct token: validate resource type is allowed
+				if !a.HasAllowedResourceType(tmps[2]) {
+					return false
+				}
+			} else {
+				// Agent/accesskey: same permission check as 2-part
+				if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
+					return false
+				}
+			}
+		} else if len(tmps) >= 2 {
+			// 2-part or 3-part: "customer_id:<uuid>" or "customer_id:<uuid>:<suffix>"
+			if a.IsDirect() {
+				// Direct tokens cannot subscribe to broad customer topics
+				return false
+			}
+			if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
+				return false
+			}
+			if tmpID != a.CustomerID {
+				return false
+			}
+		} else {
 			return false
 		}
 
 	case "agent_id":
 		if tmpID != a.AgentID() {
-			//
 			return false
 		}
 

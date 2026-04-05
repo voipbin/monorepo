@@ -96,6 +96,7 @@ import (
 
 const (
 	TokenExpiration = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
+	BootExpiration  = time.Hour * 4      // direct boot token expiration time. 4 hours
 )
 
 // ServiceHandler is interface for service handle
@@ -146,6 +147,7 @@ type ServiceHandler interface {
 	AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error)
 	AuthPasswordForgot(ctx context.Context, username string) error
 	AuthPasswordReset(ctx context.Context, token string, password string) error
+	AuthBoot(ctx context.Context, directHash string) (*BootResponse, error)
 
 	// available numbers
 	AvailableNumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)

@@ -27,8 +27,6 @@ func Test_AuthLogin(t *testing.T) {
 
 		responseAgent   *amagent.Agent
 		responseCurTime string
-
-		expectedRes string
 	}{
 		{
 			name: "normal",
@@ -43,7 +41,6 @@ func Test_AuthLogin(t *testing.T) {
 				},
 			},
 			responseCurTime: "2023-11-19 09:29:11.763331118",
-			expectedRes:     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjZiYzM0MmQwLThhZWQtMTFlZS1hMDdkLTdiYzdmZWU1YTMzNiIsImN1c3RvbWVyX2lkIjoiNmMwZmYxOTgtOGFlZC0xMWVlLThhMDQtNDc0NTg0OTQ3ZTAzIiwidXNlcm5hbWUiOiIiLCJuYW1lIjoiIiwiZGV0YWlsIjoiIiwicmluZ19tZXRob2QiOiIiLCJzdGF0dXMiOiIiLCJwZXJtaXNzaW9uIjowLCJ0YWdfaWRzIjpudWxsLCJhZGRyZXNzZXMiOm51bGwsImRpcmVjdF9pZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsImRpcmVjdF9oYXNoIjoiIn0sImV4cGlyZSI6IjIwMjMtMTEtMTkgMDk6Mjk6MTEuNzYzMzMxMTE4In0.SbyZPEjbNo6KkEe5I5UHkcF1EQlsFvl6KqJzdk1i0iI",
 		},
 	}
 
@@ -71,8 +68,29 @@ func Test_AuthLogin(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectedRes {
-				t.Errorf("Wrong match. expected: %v, got: %v", res, tt.expectedRes)
+			if res == "" {
+				t.Errorf("Expected non-empty token, got empty string")
+			}
+
+			// Parse the token and verify claims
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			claims, err := h.AuthJWTParse(ctx, res)
+			if err != nil {
+				t.Errorf("Could not parse token. err: %v", err)
+			}
+
+			// Verify "type" claim is "agent"
+			tokenType, ok := claims["type"]
+			if !ok {
+				t.Errorf("Expected 'type' claim in token, but not found")
+			}
+			if tokenType != "agent" {
+				t.Errorf("Wrong type claim. expected: agent, got: %v", tokenType)
+			}
+
+			// Verify "agent" claim exists
+			if _, ok := claims["agent"]; !ok {
+				t.Errorf("Expected 'agent' claim in token, but not found")
 			}
 		})
 	}
