@@ -6739,6 +6739,8 @@ components:
           example: "660e8400-e29b-41d4-a716-446655440001"
         expire:
           type: string
+          format: date-time
+          x-go-type: string
           description: "Token expiry timestamp in ISO 8601 format."
           example: "2026-04-07T12:00:00Z"
 

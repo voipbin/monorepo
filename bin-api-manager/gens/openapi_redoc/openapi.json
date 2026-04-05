@@ -22300,6 +22300,8 @@
           },
           "expire": {
             "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
             "description": "Token expiry timestamp in ISO 8601 format.",
             "example": "2026-04-07T12:00:00Z"
           }

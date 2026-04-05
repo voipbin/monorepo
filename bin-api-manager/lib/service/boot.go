@@ -28,8 +28,12 @@ func PostBoot(c *gin.Context) {
 		return
 	}
 
+	directHashLog := req.DirectHash
+	if len(directHashLog) > 12 {
+		directHashLog = directHashLog[:12] + "..."
+	}
 	log = log.WithFields(logrus.Fields{
-		"direct_hash": req.DirectHash,
+		"direct_hash": directHashLog,
 	})
 	log.Debugf("Processing boot request.")
 
